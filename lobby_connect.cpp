@@ -26,6 +26,7 @@
 #include <thread>
 #include <string>
 #include <vector>
+#include <fstream>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -58,22 +59,23 @@ top:
 
         std::cout << std::endl << "--------------Menu-------------" << std::endl << "\tappid\tname\tcommand line" << std::endl;
 
-        std::vector<std::string> arguments;
+        std::vector<std::pair<std::string, uint32>> arguments;
         for (int i = 0; i < friend_count; ++i) {
             CSteamID id = SteamFriends()->GetFriendByIndex(i, k_EFriendFlagAll);
             const char *name = SteamFriends()->GetFriendPersonaName(id);
             const char *connect = SteamFriends()->GetFriendRichPresence( id, "connect");
             FriendGameInfo_t friend_info = {};
             SteamFriends()->GetFriendGamePlayed(id, &friend_info);
+            auto appid = friend_info.m_gameID.AppID();
 
             if (strlen(connect) > 0) {
-                std::cout << arguments.size() << "\t" << friend_info.m_gameID.AppID() << "\t" << name << "\t" << connect << std::endl;
-                arguments.push_back(connect);
+                std::cout << arguments.size() << "\t" << appid << "\t" << name << "\t" << connect << std::endl;
+                arguments.emplace_back(connect, appid);
             } else {
                 if (friend_info.m_steamIDLobby != k_steamIDNil) {
                     std::string connect = "+connect_lobby " + std::to_string(friend_info.m_steamIDLobby.ConvertToUint64());
-                    std::cout << arguments.size() << "\t" << friend_info.m_gameID.AppID() << "\t" << name << "\t" << connect << std::endl;
-                    arguments.push_back(connect);
+                    std::cout << arguments.size() << "\t" << appid << "\t" << name << "\t" << connect << std::endl;
+                    arguments.emplace_back(connect, appid);
                 }
             }
         }
@@ -85,24 +87,40 @@ top:
 
         if (choice >= arguments.size()) goto top;
 
+        auto connect = arguments[choice].first;
 #ifdef _WIN32
-        std::cout << "starting the game with: " << arguments[choice] << std::endl << "Please select the game exe" << std::endl;
+        auto appid = arguments[choice].second;
+        std::cout << "starting the game with: " << connect << std::endl;
 
-        OPENFILENAMEA ofn;
-        char szFileName[MAX_PATH] = "";
-        ZeroMemory(&ofn, sizeof(ofn));
-        ofn.lStructSize = sizeof(ofn);
-        ofn.hwndOwner = 0;
-        ofn.lpstrFilter = "Exe Files (*.exe)\0*.exe\0All Files (*.*)\0*.*\0";
-        ofn.lpstrFile = szFileName;
-        ofn.nMaxFile = MAX_PATH;
-        ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
-        ofn.lpstrDefExt = "txt";
-        if(GetOpenFileNameA(&ofn))
-        {
-            std::string filename = szFileName;
-            filename = "\"" + filename + "\" " + arguments[choice];
+        char szBaseDirectory[MAX_PATH] = "";
+        GetModuleFileNameA(0, szBaseDirectory, MAX_PATH);
+        if (auto bs = strrchr(szBaseDirectory, '\\')) {
+            *bs = '\0';
+        }
+        auto lobbyFile = std::string(szBaseDirectory) + "\\lobby_connect_" + std::to_string(appid) + ".txt";
+
+        auto readLobbyFile = [&lobbyFile]() {
+            std::string data;
+            std::ifstream ifs(lobbyFile);
+            if (ifs.is_open())
+                std::getline(ifs, data);
+            return data;
+        };
+
+        auto writeLobbyFile = [&lobbyFile](const std::string& data) {
+            std::ofstream ofs(lobbyFile);
+            ofs << data << std::endl;
+        };
+
+        auto fileExists = [](const std::string& filename) {
+            std::ifstream ifs(filename);
+            return ifs.is_open();
+        };
+        
+        auto joinLobby = [&connect](std::string filename) {
+            filename = "\"" + filename + "\" " + connect;
             std::cout << filename << std::endl;
+
             STARTUPINFOA lpStartupInfo;
             PROCESS_INFORMATION lpProcessInfo;
 
@@ -110,15 +128,38 @@ top:
             lpStartupInfo.cb = sizeof( lpStartupInfo );
             ZeroMemory( &lpProcessInfo, sizeof( lpProcessInfo ) );
 
-            CreateProcessA( NULL,
+            auto success = !!CreateProcessA( NULL,
                         const_cast<char *>(filename.c_str()), NULL, NULL,
                         NULL, NULL, NULL, NULL,
                         &lpStartupInfo,
                         &lpProcessInfo
                         );
+
+            CloseHandle(lpProcessInfo.hThread);
+            CloseHandle(lpProcessInfo.hProcess);
+            return success;
+        };
+
+        std::string filename = readLobbyFile();
+        if (filename.empty() || !fileExists(filename) || !joinLobby(filename)) {
+            std::cout << "Please select the game exe" << std::endl;
+
+            OPENFILENAMEA ofn;
+            char szFileName[MAX_PATH] = "";
+            ZeroMemory(&ofn, sizeof(ofn));
+            ofn.lStructSize = sizeof(ofn);
+            ofn.hwndOwner = 0;
+            ofn.lpstrFilter = "Exe Files (*.exe)\0*.exe\0All Files (*.*)\0*.*\0";
+            ofn.lpstrFile = szFileName;
+            ofn.nMaxFile = MAX_PATH;
+            ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+            ofn.lpstrDefExt = "exe";
+            if(GetOpenFileNameA(&ofn) && joinLobby(szFileName)) {
+                writeLobbyFile(szFileName);
+            }
         }
 #else
-        std::cout << "Please launch the game with these arguments: " << arguments[choice] << std::endl;
+        std::cout << "Please launch the game with these arguments: " << connect << std::endl;
 #endif
     }
 }
