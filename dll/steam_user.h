@@ -319,8 +319,10 @@ HAuthTicket GetAuthSessionTicket( void *pTicket, int cbMaxTicket, uint32 *pcbTic
 // the ticket will be returned in callback GetTicketForWebApiResponse_t
 HAuthTicket GetAuthTicketForWebApi( const char *pchIdentity )
 {
-    PRINT_DEBUG("TODO: Steam_User::GetAuthTicketForWebApi %s\n", pchIdentity);
-    return 0;
+    PRINT_DEBUG("Steam_User::GetAuthTicketForWebApi %s\n", pchIdentity);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    return ticket_manager->getWebApiTicket(pchIdentity);
 }
 
 // Authenticate ticket from entity steamID to be sure it is valid and isnt reused

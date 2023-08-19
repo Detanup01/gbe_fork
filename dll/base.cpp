@@ -387,6 +387,23 @@ uint32 Auth_Ticket_Manager::getTicket( void *pTicket, int cbMaxTicket, uint32 *p
     return ttt;
 }
 
+uint32 Auth_Ticket_Manager::getWebApiTicket( const char* pchIdentity )
+{
+    // https://docs.unity.com/ugs/en-us/manual/authentication/manual/platform-signin-steam
+    GetTicketForWebApiResponse_t data{};
+    uint32 cbTicket = 0;
+    Auth_Ticket_Data ticket_data = getTicketData(data.m_rgubTicket, STEAM_AUTH_TICKET_SIZE, &cbTicket);
+    data.m_cubTicket = (int)cbTicket;
+    uint32 ttt = ticket_data.number;
+    data.m_hAuthTicket = ttt;
+    data.m_eResult = k_EResultOK;
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), STEAM_TICKET_PROCESS_TIME);
+
+    outbound.push_back(ticket_data);
+
+    return ttt;
+}
+
 CSteamID Auth_Ticket_Manager::fakeUser()
 {
     Auth_Ticket_Data data = {};

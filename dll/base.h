@@ -413,6 +413,7 @@ public:
 
     void Callback(Common_Message *msg);
     uint32 getTicket( void *pTicket, int cbMaxTicket, uint32 *pcbTicket );
+    uint32 getWebApiTicket( const char *pchIdentity );
     void cancelTicket(uint32 number);
     EBeginAuthSessionResult beginAuth(const void *pAuthTicket, int cbAuthTicket, CSteamID steamID);
     bool endAuth(CSteamID id);
