@@ -32,6 +32,33 @@ struct Mod_entry {
     PublishedFileId_t id;
     std::string title;
     std::string path;
+
+    std::string previewURL;
+    EWorkshopFileType fileType;
+    std::string description;
+    uint64 steamIDOwner;
+    uint32 timeCreated;
+    uint32 timeUpdated;
+    uint32 timeAddedToUserList;
+    ERemoteStoragePublishedFileVisibility visibility;
+    bool banned;
+    bool acceptedForUse;
+    bool tagsTruncated;
+    std::string tags; 
+    // file/url information
+    UGCHandle_t handleFile = k_UGCHandleInvalid;
+    UGCHandle_t handlePreviewFile = k_UGCHandleInvalid;
+    std::string primaryFileName;
+    int32 primaryFileSize;
+    std::string previewFileName;
+    int32 previewFileSize;
+    std::string workshopItemURL;
+    // voting information
+    uint32 votesUp;
+    uint32 votesDown;
+    float score;
+    // collection details
+    uint32 numChildren;
 };
 
 struct Leaderboard_config {
@@ -63,6 +90,12 @@ struct Controller_Settings {
     std::map<std::string, std::map<std::string, std::pair<std::set<std::string>, std::string>>> action_sets;
     std::map<std::string, std::string> action_set_layer_parents;
     std::map<std::string, std::map<std::string, std::pair<std::set<std::string>, std::string>>> action_set_layers;
+};
+
+struct Group_Clans {
+    CSteamID id;
+    std::string name;
+    std::string tag;
 };
 
 class Settings {
@@ -119,6 +152,7 @@ public:
 
     //mod stuff
     void addMod(PublishedFileId_t id, std::string title, std::string path);
+    void addModDetails(PublishedFileId_t id, Mod_entry details);
     Mod_entry getMod(PublishedFileId_t id);
     bool isModInstalled(PublishedFileId_t id);
     std::set<PublishedFileId_t> modSet();
@@ -138,10 +172,12 @@ public:
 
     //subscribed lobby/group ids
     std::set<uint64> subscribed_groups;
+    std::vector<Group_Clans> subscribed_groups_clans;
 
     //images
     std::map<int, struct Image_Data> images;
     int add_image(std::string data, uint32 width, uint32 height);
+    bool disable_account_avatar = false;
 
     //controller
     struct Controller_Settings controller_settings;
@@ -150,8 +186,12 @@ public:
     //networking
     bool disable_networking = false;
 
+    //gameserver source query
+    bool disable_source_query = false;
+
     //overlay
     bool disable_overlay = false;
+    bool disable_overlay_achievement_notification = false;
 
     //app build id
     int build_id = 10;
@@ -167,6 +207,9 @@ public:
 
     //warn people who use local save
     bool warn_local_save = false;
+
+    //steamhttp external download support
+    bool http_online = false;
 };
 
 #endif

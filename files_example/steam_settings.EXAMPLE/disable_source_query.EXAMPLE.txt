@@ -1,0 +1,1 @@
+Rename this to: disable_source_query.txt to not send server details for the server browser. Only works for game servers.

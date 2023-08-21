@@ -16,6 +16,8 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "base.h"
+#include "common_includes.h"
+#include <curl/curl.h>
 
 
 struct Steam_Http_Request {

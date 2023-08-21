@@ -30,6 +30,9 @@
 #define STB_IMAGE_WRITE_STATIC
 #include "../stb/stb_image_write.h"
 
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include "../stb/stb_image_resize.h"
+
 struct File_Data {
     std::string name;
 };
@@ -159,6 +162,11 @@ std::vector<std::string> Local_Storage::get_filenames_path(std::string path)
 std::vector<image_pixel_t> Local_Storage::load_image(std::string const& image_path)
 {
     return std::vector<image_pixel_t>();
+}
+
+std::string Local_Storage::load_image_resized(std::string const& image_path, std::string const& image_data, int resolution)
+{
+    return "";
 }
 
 bool Local_Storage::save_screenshot(std::string const& image_path, uint8_t* img_ptr, int32_t width, int32_t height, int32_t channels)
@@ -781,6 +789,34 @@ std::vector<image_pixel_t> Local_Storage::load_image(std::string const& image_pa
 
     reset_LastError();
     return res;
+}
+
+std::string Local_Storage::load_image_resized(std::string const& image_path, std::string const& image_data, int resolution)
+{
+    int width, height;
+    char *resized_img = (char *)malloc(sizeof(char) * 184 * 184 * 4);
+    unsigned char* img;
+
+    if (image_path.length() > 0)
+    {
+        img = stbi_load(image_path.c_str(), &width, &height, nullptr, 4);
+
+        if (img != nullptr)
+        {
+            stbir_resize_uint8(img, width, height, NULL, (unsigned char *)resized_img, resolution, resolution, NULL, 4);
+            stbi_image_free(img);
+        }
+    }
+    else if (image_data.length() > 0)
+    {
+        stbir_resize_uint8((unsigned char *)image_data.c_str(), 184, 184, NULL, (unsigned char *)resized_img, resolution, resolution, NULL, 4);
+    }
+
+    std::string resized_image(resized_img, resolution * resolution * 4);
+    free(resized_img);
+
+    reset_LastError();
+    return resized_image;
 }
 
 bool Local_Storage::save_screenshot(std::string const& image_path, uint8_t* img_ptr, int32_t width, int32_t height, int32_t channels)

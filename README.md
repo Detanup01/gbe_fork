@@ -64,6 +64,21 @@ cd vcpkg
 ./bootstrap-vcpkg.bat
 ./vcpkg install protobuf --triplet x86-windows-static
 ./vcpkg install protobuf --triplet x64-windows-static
+
+./vcpkg install curl --triplet x86-windows-static
+./vcpkg install curl --triplet x64-windows-static
+
+cd..
+git clone https://github.com/BinaryAlien/libssq.git
+cd libssq
+mkdir build32
+:: -G source: https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html
+cmake -G "Visual Studio 17 2022" -A Win32 -S . -B "build32"
+cmake --build build32 --config Release
+mkdir build64
+cmake -G "Visual Studio 17 2022" -A x64 -S . -B "build64"
+cmake --build build64 --config Release
+
 cd ..
 git clone https://gitlab.com/Mr_Goldberg/goldberg_emulator.git
 cd goldberg_emulator

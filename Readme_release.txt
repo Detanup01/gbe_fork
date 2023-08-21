@@ -56,6 +56,11 @@ Subscribed Groups:
 Some games like payday 2 check which groups you are subscribed in and unlock things based on that. You can provide a list of subscribed groups to the game with a steam_settings\subscribed_groups.txt file.
 See steam_settings.EXAMPLE\subscribed_groups.EXAMPLE.txt for an example for payday 2.
 
+Subscribed Groups (Clans):
+Some games like counter-strike check which groups you are subscribed in and allow you to choose a group clan. You can provide a list of subscribed group ids, names, and tags to the game with a subscribed_groups_clans.txt file placed in the Goldberg SteamEmu Saves\settings or in steam_settings folder.
+Group ids must be valid and can be obtained by pasting '/memberslistxml/?xml=1' at the end of a Steam group page. Double tabs that are used as seperators must not be removed.
+See steam_settings.EXAMPLE\subscribed_groups_clans.EXAMPLE.txt for an example.
+
 App paths:
 Some rare games might need to be provided one or more paths to app ids. For example the path to where a dlc is installed. This sets the paths returned by the Steam_Apps::GetAppInstallDir function.
 See steam_settings.EXAMPLE\app_paths.EXAMPLE.txt for an example.
@@ -65,6 +70,7 @@ Note that paths are treated as relative paths from where the steam_api dll is lo
 Mods:
 Put your mods in the steam_settings\mods\ folder. The steam_settings folder must be placed right beside my emulator dll.
 Mod folders must be a number corresponding to the file id of the mod.
+Some games may require extra information about a mod. This information can be passed to the game by using a mods.EXAMPLE.txt file and mod_images folder stored in the steam_settings folder.
 See the steam_settings.EXAMPLE folder for an example.
 
 Steam appid:
@@ -123,6 +129,18 @@ For example this url: https://en.wikipedia.org/wiki/Main_Page
 Would be: steam_settings\http\en.wikipedia.org\wiki\Main_Page
 The Main_Page file would contain the data returned by the steamHTTP api when it tries to access: https://en.wikipedia.org/wiki/Main_Page
 An example that was made for payday 2 can be found in steam_settings.EXAMPLE
+To allow external downloads which will be stored in this steam_settings\http folder copy the http_online file from the example folder to the steam_settings folder with .EXAMPLE removed from the file name.
+
+Avatar:
+Copy a PNG or JPG image to your Goldberg SteamEmu Saves\settings or steam_settings folder and name it account_avatar
+You can also set a default profile picture for users who are missing one by copying a similar file called account_avatar_default
+For games that do not work with avatars you can place a disable_account_avatar.txt file into the steam_settings folder.
+You can find examples in steam_settings.EXAMPLE
+
+Server browser:
+Create a text file called serverbrowser.txt with a list of ips in the Goldberg SteamEmu Saves\7\remote folder.
+serverbrowser_favorites.txt and serverbrowser_history.txt are also stored in this folder.
+Best to keep amount of servers to a low since server browser is not threaded yet and will cause the game to freeze for a bit while refreshing.
 
 
 Support for CPY steam_api(64).dll cracks: See the build in the experimental folder.

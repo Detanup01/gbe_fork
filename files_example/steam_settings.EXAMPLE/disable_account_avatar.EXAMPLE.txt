@@ -1,0 +1,1 @@
+Rename this to: disable_account_avatar.txt to disable avatar functionality.

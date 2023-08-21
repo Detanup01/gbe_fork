@@ -138,6 +138,36 @@ void Settings::addMod(PublishedFileId_t id, std::string title, std::string path)
     mods.push_back(new_entry);
 }
 
+void Settings::addModDetails(PublishedFileId_t id, Mod_entry details)
+{
+    auto f = std::find_if(mods.begin(), mods.end(), [&id](Mod_entry const& item) { return item.id == id; });
+    if (f != mods.end()) {
+        f->previewURL = details.previewURL;
+        f->fileType = details.fileType;
+        f->description = details.description;
+        f->steamIDOwner = details.steamIDOwner;
+        f->timeCreated = details.timeCreated;
+        f->timeUpdated = details.timeUpdated;
+        f->timeAddedToUserList = details.timeAddedToUserList;
+        f->visibility = details.visibility;
+        f->banned = details.banned;
+        f->acceptedForUse = details.acceptedForUse;
+        f->tagsTruncated = details.tagsTruncated;
+        f->tags = details.tags;
+        f->handleFile = details.handleFile;
+        f->handlePreviewFile = details.handlePreviewFile;
+        f->primaryFileName = details.primaryFileName;
+        f->primaryFileSize = details.primaryFileSize;
+        f->previewFileName = details.previewFileName;
+        f->previewFileSize = details.previewFileSize;
+        f->workshopItemURL = details.workshopItemURL;
+        f->votesUp = details.votesUp;
+        f->votesDown = details.votesDown;
+        f->score = details.score;
+        f->numChildren = details.numChildren;
+    }
+}
+
 Mod_entry Settings::getMod(PublishedFileId_t id)
 {
     auto f = std::find_if(mods.begin(), mods.end(), [&id](Mod_entry const& item) { return item.id == id; });

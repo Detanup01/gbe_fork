@@ -42,6 +42,46 @@ static void load_custom_broadcasts(std::string broadcasts_filepath, std::set<IP_
     }
 }
 
+static void load_subscribed_groups_clans(std::string clans_filepath, Settings *settings_client, Settings *settings_server)
+{
+    PRINT_DEBUG("Group clans file path: %s\n", clans_filepath.c_str());
+    std::ifstream clans_file(utf8_decode(clans_filepath));
+    consume_bom(clans_file);
+    if (clans_file.is_open()) {
+        std::string line;
+        while (std::getline(clans_file, line)) {
+            if (line.length() < 0) continue;
+
+            std::size_t seperator1 = line.find("\t\t");
+            std::size_t seperator2 = line.rfind("\t\t");
+            std::string clan_id;
+            std::string clan_name;
+            std::string clan_tag;
+            if ((seperator1 != std::string::npos) && (seperator2 != std::string::npos)) {
+                clan_id = line.substr(0, seperator1);
+                clan_name = line.substr(seperator1+2, seperator2-2);
+                clan_tag = line.substr(seperator2+2);
+
+                // fix persistant tabbing problem for clan name
+                std::size_t seperator3 = clan_name.find("\t");
+                std::string clan_name_fix = clan_name.substr(0, seperator3);
+                clan_name = clan_name_fix;
+            }
+
+            Group_Clans nclan;
+            nclan.id = CSteamID( std::stoull(clan_id.c_str(), NULL, 0) );
+            nclan.name = clan_name;
+            nclan.tag = clan_tag;
+
+            try {
+                settings_client->subscribed_groups_clans.push_back(nclan);
+                settings_server->subscribed_groups_clans.push_back(nclan);
+                PRINT_DEBUG("Added clan %s\n", clan_name.c_str());
+            } catch (...) {}
+        }
+    }
+}
+
 template<typename Out>
 static void split_string(const std::string &s, char delim, Out result) {
     std::stringstream ss(s);
@@ -296,9 +336,13 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     }
 
     bool steam_offline_mode = false;
+    bool steamhttp_online_mode = false;
     bool disable_networking = false;
     bool disable_overlay = false;
+    bool disable_overlay_achievement_notification = false;
     bool disable_lobby_creation = false;
+    bool disable_source_query = false;
+    bool disable_account_avatar = false;
     int build_id = 10;
 
     bool warn_forced = false;
@@ -311,12 +355,20 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
             PRINT_DEBUG("steam settings path %s\n", p.c_str());
             if (p == "offline.txt") {
                 steam_offline_mode = true;
+            } else if (p == "http_online.txt") {
+                steamhttp_online_mode = true;
             } else if (p == "disable_networking.txt") {
                 disable_networking = true;
             } else if (p == "disable_overlay.txt") {
                 disable_overlay = true;
+            } else if (p == "disable_overlay_achievement_notification.txt") {
+                disable_overlay_achievement_notification = true;
             } else if (p == "disable_lobby_creation.txt") {
                 disable_lobby_creation = true;
+            } else if (p == "disable_source_query.txt") {
+                disable_source_query = true;
+            } else if (p == "disable_account_avatar.txt") {
+                disable_account_avatar = true;
             } else if (p == "force_language.txt") {
                 int len = Local_Storage::get_file_data(steam_settings_path + "force_language.txt", language, sizeof(language) - 1);
                 if (len > 0) {
@@ -363,8 +415,14 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     settings_server->disable_networking = disable_networking;
     settings_client->disable_overlay = disable_overlay;
     settings_server->disable_overlay = disable_overlay;
+    settings_client->disable_overlay_achievement_notification = disable_overlay_achievement_notification;
+    settings_server->disable_overlay_achievement_notification = disable_overlay_achievement_notification;
     settings_client->disable_lobby_creation = disable_lobby_creation;
     settings_server->disable_lobby_creation = disable_lobby_creation;
+    settings_client->disable_source_query = disable_source_query;
+    settings_server->disable_source_query = disable_source_query;
+    settings_client->disable_account_avatar = disable_account_avatar;
+    settings_server->disable_account_avatar = disable_account_avatar;
     settings_client->build_id = build_id;
     settings_server->build_id = build_id;
     settings_client->warn_forced = warn_forced;
@@ -373,6 +431,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     settings_server->warn_local_save = local_save;
     settings_client->supported_languages = supported_languages;
     settings_server->supported_languages = supported_languages;
+    settings_client->http_online = steamhttp_online_mode;
+    settings_server->http_online = steamhttp_online_mode;
 
     {
         std::string dlc_config_path = Local_Storage::get_game_settings_path() + "DLC.txt";
@@ -606,16 +666,86 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
         }
     }
 
+    load_subscribed_groups_clans(local_storage->get_global_settings_path() + "subscribed_groups_clans.txt", settings_client, settings_server);
+    load_subscribed_groups_clans(Local_Storage::get_game_settings_path() + "subscribed_groups_clans.txt", settings_client, settings_server);
+
     {
         std::string mod_path = Local_Storage::get_game_settings_path() + "mods";
-        std::vector<std::string> paths = Local_Storage::get_filenames_path(mod_path);
-        for (auto & p: paths) {
-            PRINT_DEBUG("mod directory %s\n", p.c_str());
-            try {
-                PublishedFileId_t id = std::stoull(p);
-                settings_client->addMod(id, p, mod_path + PATH_SEPARATOR + p);
-                settings_server->addMod(id, p, mod_path + PATH_SEPARATOR + p);
-            } catch (...) {}
+        nlohmann::json mod_items = nlohmann::json::object();
+        static constexpr auto mods_json_file = "mods.json";
+        std::string mods_json_path = Local_Storage::get_game_settings_path() + mods_json_file;
+        if (local_storage->load_json(mods_json_path, mod_items)) {
+            for (auto mod = mod_items.begin(); mod != mod_items.end(); ++mod) {
+                try {
+                    Mod_entry newMod;
+                    newMod.id = std::stoull(mod.key());
+                    newMod.title = mod.value().value("title", std::string(mod.key()));
+                    newMod.path = mod_path + PATH_SEPARATOR + std::string(mod.key());
+                    newMod.fileType = k_EWorkshopFileTypeCommunity;
+                    newMod.description = mod.value().value("description", std::string(""));
+                    newMod.steamIDOwner = mod.value().value("steam_id_owner", (uint64)0);
+                    newMod.timeCreated = mod.value().value("time_created", (uint32)1554997000);
+                    newMod.timeUpdated = mod.value().value("time_updated", (uint32)1554997000);
+                    newMod.timeAddedToUserList = mod.value().value("time_added", (uint32)1554997000);
+                    newMod.visibility = k_ERemoteStoragePublishedFileVisibilityPublic;
+                    newMod.banned = false;
+                    newMod.acceptedForUse = true;
+                    newMod.tagsTruncated = false;
+                    newMod.tags = mod.value().value("tags", std::string(""));
+                    newMod.primaryFileName = mod.value().value("primary_filename", std::string(""));
+                    newMod.primaryFileSize = mod.value().value("primary_filesize", (int32)1000000);
+                    newMod.previewFileName = mod.value().value("preview_filename", std::string(""));
+                    newMod.previewFileSize = mod.value().value("preview_filesize", (int32)1000000);
+                    newMod.workshopItemURL = mod.value().value("workshop_item_url", std::string(""));
+                    newMod.votesUp = mod.value().value("upvotes", (uint32)1);
+                    newMod.votesDown = mod.value().value("downvotes", (uint32)0);
+                    newMod.score = 1.0f;
+                    newMod.numChildren = mod.value().value("num_children", (uint32)0);
+                    newMod.previewURL = "file://" + Local_Storage::get_game_settings_path() + "mod_images/" + newMod.previewFileName;
+                    settings_client->addMod(newMod.id, newMod.title, newMod.path);
+                    settings_server->addMod(newMod.id, newMod.title, newMod.path);
+                    settings_client->addModDetails(newMod.id, newMod);
+                    settings_server->addModDetails(newMod.id, newMod);
+                } catch (std::exception& e) {
+                    PRINT_DEBUG("MODLOADER ERROR: %s\n", e.what());
+                }
+            }
+        } else {
+            std::vector<std::string> paths = Local_Storage::get_filenames_path(mod_path);
+            for (auto & p: paths) {
+                PRINT_DEBUG("mod directory %s\n", p.c_str());
+                try {
+                    Mod_entry newMod;
+                    newMod.id = std::stoull(p);
+                    newMod.title = p;
+                    newMod.path = mod_path + PATH_SEPARATOR + p;
+                    newMod.fileType = k_EWorkshopFileTypeCommunity;
+                    newMod.description = "";
+                    newMod.steamIDOwner = (uint64)0;
+                    newMod.timeCreated = (uint32)1554997000;
+                    newMod.timeUpdated = (uint32)1554997000;
+                    newMod.timeAddedToUserList = (uint32)1554997000;
+                    newMod.visibility = k_ERemoteStoragePublishedFileVisibilityPublic;
+                    newMod.banned = false;
+                    newMod.acceptedForUse = true;
+                    newMod.tagsTruncated = false;
+                    newMod.tags = "";
+                    newMod.primaryFileName = "";
+                    newMod.primaryFileSize = (int32)1000000;
+                    newMod.previewFileName = "";
+                    newMod.previewFileSize = (int32)1000000;
+                    newMod.workshopItemURL = "";
+                    newMod.votesUp = (uint32)1;
+                    newMod.votesDown = (uint32)0;
+                    newMod.score = 1.0f;
+                    newMod.numChildren = (uint32)0;
+                    newMod.previewURL = "";
+                    settings_client->addMod(newMod.id, newMod.title, newMod.path);
+                    settings_server->addMod(newMod.id, newMod.title, newMod.path);
+                    settings_client->addModDetails(newMod.id, newMod);
+                    settings_server->addModDetails(newMod.id, newMod);
+                } catch (...) {}
+            }
         }
     }
 

@@ -343,6 +343,16 @@ static Lobby_Member *get_lobby_member(Lobby *lobby, CSteamID user_id)
 int GetFavoriteGameCount()
 {
     PRINT_DEBUG("GetFavoriteGameCount\n");
+    std::string file_path = Local_Storage::get_user_appdata_path() + "/7/" + Local_Storage::remote_storage_folder + "/serverbrowser_favorites.txt";
+    unsigned long long file_size = file_size_(file_path);
+    if (file_size) {
+        std::string list;
+        list.resize(file_size);
+        Local_Storage::get_file_data(file_path, (char *)list.data(), file_size, 0);
+        auto list_lines = std::count(list.begin(), list.end(), '\n');
+        list_lines += (!list.empty() && list.back() != '\n');
+        return list_lines;
+    }
     return 0;
 }
 
@@ -363,8 +373,72 @@ bool GetFavoriteGame( int iGame, AppId_t *pnAppID, uint32 *pnIP, uint16 *pnConnP
 int AddFavoriteGame( AppId_t nAppID, uint32 nIP, uint16 nConnPort, uint16 nQueryPort, uint32 unFlags, uint32 rTime32LastPlayedOnServer )
 {
     PRINT_DEBUG("AddFavoriteGame %lu %lu %hu %hu %lu %lu\n", nAppID, nIP, nConnPort, nQueryPort, unFlags, rTime32LastPlayedOnServer);
-    //TODO: what should this return?
-    return 0;
+
+    std::string file_path;
+    unsigned long long file_size;
+
+    if (unFlags == 1) {
+        file_path = Local_Storage::get_user_appdata_path() + "/7/" + Local_Storage::remote_storage_folder + "/serverbrowser_favorites.txt";
+        file_size = file_size_(file_path);
+    }
+    else if (unFlags == 2) {
+        file_path = Local_Storage::get_user_appdata_path() + "/7/" + Local_Storage::remote_storage_folder + "/serverbrowser_history.txt";
+        file_size = file_size_(file_path);
+    }
+    else {
+        return 0;
+    }
+
+    unsigned char ip[4];
+    ip[0] = nIP & 0xFF;
+    ip[1] = (nIP >> 8) & 0xFF;
+    ip[2] = (nIP >> 16) & 0xFF;
+    ip[3] = (nIP >> 24) & 0xFF;
+    char newip[24];
+    snprintf(newip, sizeof(newip), "%d.%d.%d.%d:%d\n", ip[3], ip[2], ip[1], ip[0], nConnPort);
+    std::string newip_string;
+    newip_string.append(newip);
+
+    if (file_size) {
+        std::string list;
+        list.resize(file_size);
+        Local_Storage::get_file_data(file_path, (char *)list.data(), file_size, 0);
+        auto list_lines = std::count(list.begin(), list.end(), '\n');
+        list_lines += (!list.empty() && list.back() != '\n');
+
+        std::size_t find_ip = list.find(newip_string);
+        if (find_ip == std::string::npos) {
+            list.append(newip_string);
+            list.append("\n");
+ 
+            std::size_t file_directory = file_path.rfind("/");
+            std::string directory_path;
+            std::string file_name;
+            if (file_directory != std::string::npos) {
+                directory_path = file_path.substr(0, file_directory);
+                file_name = file_path.substr(file_directory);
+            }
+            Local_Storage::store_file_data(directory_path, file_name, (char *)list.data(), list.size());
+
+            return ++list_lines;
+        }
+
+        return list_lines;
+    }
+    else {
+        newip_string.append("\n");
+
+        std::size_t file_directory = file_path.rfind("/");
+        std::string directory_path;
+        std::string file_name;
+        if (file_directory != std::string::npos) {
+            directory_path = file_path.substr(0, file_directory);
+            file_name = file_path.substr(file_directory);
+        }
+        Local_Storage::store_file_data(directory_path, file_name, (char *)newip_string.data(), newip_string.size());
+
+        return 1;
+    }
 }
 
 
@@ -372,6 +446,54 @@ int AddFavoriteGame( AppId_t nAppID, uint32 nIP, uint16 nConnPort, uint16 nQuery
 bool RemoveFavoriteGame( AppId_t nAppID, uint32 nIP, uint16 nConnPort, uint16 nQueryPort, uint32 unFlags )
 {
     PRINT_DEBUG("RemoveFavoriteGame\n");
+
+    std::string file_path;
+    unsigned long long file_size;
+
+    if (unFlags == 1) {
+        file_path = Local_Storage::get_user_appdata_path() + "/7/" + Local_Storage::remote_storage_folder + "/serverbrowser_favorites.txt";
+        file_size = file_size_(file_path);
+    }
+    else if (unFlags == 2) {
+        file_path = Local_Storage::get_user_appdata_path() + "/7/" + Local_Storage::remote_storage_folder + "/serverbrowser_history.txt";
+        file_size = file_size_(file_path);
+    }
+    else {
+        return false;
+    }
+
+    if (file_size) {
+        std::string list;
+        list.resize(file_size);
+        Local_Storage::get_file_data(file_path, (char *)list.data(), file_size, 0);
+
+        unsigned char ip[4];
+        ip[0] = nIP & 0xFF;
+        ip[1] = (nIP >> 8) & 0xFF;
+        ip[2] = (nIP >> 16) & 0xFF;
+        ip[3] = (nIP >> 24) & 0xFF;
+        char newip[24];
+        snprintf((char *)newip, sizeof(newip), "%d.%d.%d.%d:%d\n", ip[3], ip[2], ip[1], ip[0], nConnPort);
+        std::string newip_string;
+        newip_string.append(newip);
+
+        std::size_t list_ip = list.find(newip_string);
+        if (list_ip != std::string::npos) {
+            list.erase(list_ip, newip_string.length());
+
+            std::size_t file_directory = file_path.rfind("/");
+            std::string directory_path;
+            std::string file_name;
+            if (file_directory != std::string::npos) {
+                directory_path = file_path.substr(0, file_directory);
+                file_name = file_path.substr(file_directory);
+            }
+            Local_Storage::store_file_data(directory_path, file_name, (char *)list.data(), list.size());
+
+            return true;
+        }
+    }
+
     return false;
 }
 

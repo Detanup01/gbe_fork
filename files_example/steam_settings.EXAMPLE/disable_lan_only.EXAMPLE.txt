@@ -1,0 +1,1 @@
+Rename this to: disable_lan_only.txt to disable LAN only functionality.

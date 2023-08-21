@@ -61,7 +61,7 @@ struct Notification
     static constexpr float r = 0.16;
     static constexpr float g = 0.29;
     static constexpr float b = 0.48;
-    static constexpr float max_alpha = 0.5f;
+    static constexpr float max_alpha = 1.0f;
 
     int id;
     uint8 type;

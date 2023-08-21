@@ -375,6 +375,18 @@ bool BIsBehindNAT()
 void AdvertiseGame( CSteamID steamIDGameServer, uint32 unIPServer, uint16 usPortServer )
 {
     PRINT_DEBUG("AdvertiseGame\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    Gameserver *server = new Gameserver();
+    server->set_id(steamIDGameServer.ConvertToUint64());
+    server->set_ip(unIPServer);
+    server->set_port(usPortServer);
+    server->set_query_port(usPortServer);
+    server->set_appid(settings->get_local_game_id().ToUint64());
+    server->set_type(eFriendsServer);
+    Common_Message msg;
+    msg.set_allocated_gameserver(server);
+    msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
+    network->sendToAllIndividuals(&msg, true);
 }
 
 // Requests a ticket encrypted with an app specific shared key

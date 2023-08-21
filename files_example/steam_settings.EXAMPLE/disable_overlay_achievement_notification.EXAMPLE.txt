@@ -1,0 +1,1 @@
+Rename this to: disable_overlay_achievement_notification.EXAMPLE.txt to disable the achievement notifications.

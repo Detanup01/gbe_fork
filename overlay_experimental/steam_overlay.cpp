@@ -1,4 +1,5 @@
 #include "steam_overlay.h"
+#include "steam_overlay_translations.h"
 
 #ifdef EMU_OVERLAY
 
@@ -377,7 +378,7 @@ void Steam_Overlay::FriendConnect(Friend _friend)
     if (id != 0)
     {
         auto& item = friends[_friend];
-        item.window_title = std::move(_friend.name() + " playing " + std::to_string(_friend.appid()));
+        item.window_title = std::move(_friend.name() + translationPlaying[current_language] + std::to_string(_friend.appid()));
         item.window_state = window_state_none;
         item.id = id;
         memset(item.chat_input, 0, max_chat_len);
@@ -416,20 +417,22 @@ void Steam_Overlay::AddMessageNotification(std::string const& message)
 void Steam_Overlay::AddAchievementNotification(nlohmann::json const& ach)
 {
     std::lock_guard<std::recursive_mutex> lock(notifications_mutex);
-    int id = find_free_notification_id(notifications);
-    if (id != 0)
-    {
-        Notification notif;
-        notif.id = id;
-        notif.type = notification_type_achievement;
-        // Load achievement image
-        notif.message = ach["displayName"].get<std::string>() + "\n" + ach["description"].get<std::string>();
-        notif.start_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
-        notifications.emplace_back(notif);
-        have_notifications = true;
+    if (!settings->disable_overlay_achievement_notification) {
+        int id = find_free_notification_id(notifications);
+        if (id != 0)
+        {
+            Notification notif;
+            notif.id = id;
+            notif.type = notification_type_achievement;
+            // Load achievement image
+            notif.message = ach["displayName"].get<std::string>() + "\n" + ach["description"].get<std::string>();
+            notif.start_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
+            notifications.emplace_back(notif);
+            have_notifications = true;
+        }
+        else
+            PRINT_DEBUG("No more free id to create a notification window\n");
     }
-    else
-        PRINT_DEBUG("No more free id to create a notification window\n");
 
     std::string ach_name = ach.value("name", "");
     for (auto &a : achievements) {
@@ -453,7 +456,11 @@ void Steam_Overlay::AddInviteNotification(std::pair<const Friend, friend_window_
         notif.id = id;
         notif.type = notification_type_invite;
         notif.frd = &wnd_state;
-        notif.message = wnd_state.first.name() + " invited you to join a game";
+
+        char tmp[TRANSLATION_BUFFER_SIZE];
+        snprintf(tmp, sizeof(tmp), translationInvitedYouToJoinTheGame[current_language], wnd_state.first.name(), wnd_state.first.id());
+        notif.message = tmp;
+
         notif.start_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
         notifications.emplace_back(notif);
         have_notifications = true;
@@ -495,7 +502,7 @@ void Steam_Overlay::BuildContextMenu(Friend const& frd, friend_window_state& sta
     {
         bool close_popup = false;
 
-        if (ImGui::Button("Chat"))
+        if (ImGui::Button(translationChat[current_language]))
         {
             state.window_state |= window_state_show;
             close_popup = true;
@@ -503,13 +510,20 @@ void Steam_Overlay::BuildContextMenu(Friend const& frd, friend_window_state& sta
         // If we have the same appid, activate the invite/join buttons
         if (settings->get_local_game_id().AppID() == frd.appid())
         {
-            if (i_have_lobby && ImGui::Button("Invite###PopupInvite"))
+            std::string translationInvite_tmp;
+            std::string translationJoin_tmp;
+            translationInvite_tmp.append(translationInvite[current_language]);
+            translationInvite_tmp.append("##PopupInvite");
+            translationJoin_tmp.append(translationJoin[current_language]);
+            translationJoin_tmp.append("##PopupInvite");
+
+            if (i_have_lobby && ImGui::Button(translationInvite_tmp.c_str()))
             {
                 state.window_state |= window_state_invite;
                 has_friend_action.push(frd);
                 close_popup = true;
             }
-            if (state.joinable && ImGui::Button("Join###PopupJoin"))
+            if (state.joinable && ImGui::Button(translationJoin_tmp.c_str()))
             {
                 state.window_state |= window_state_join;
                 has_friend_action.push(frd);
@@ -554,15 +568,15 @@ void Steam_Overlay::BuildFriendWindow(Friend const& frd, friend_window_state& st
         // Fill this with the chat box and maybe the invitation
         if (state.window_state & (window_state_lobby_invite | window_state_rich_invite))
         {
-            ImGui::LabelText("##label", "%s invited you to join the game.", frd.name().c_str());
+            ImGui::LabelText("##label", translationInvitedYouToJoinTheGame[current_language], frd.name().c_str(), frd.appid());
             ImGui::SameLine();
-            if (ImGui::Button("Accept"))
+            if (ImGui::Button(translationAccept[current_language]))
             {
                 state.window_state |= window_state_join;
                 this->has_friend_action.push(frd);
             }
             ImGui::SameLine();
-            if (ImGui::Button("Refuse"))
+            if (ImGui::Button(translationRefuse[current_language]))
             {
                 state.window_state &= ~(window_state_lobby_invite | window_state_rich_invite);
             }
@@ -591,7 +605,7 @@ void Steam_Overlay::BuildFriendWindow(Friend const& frd, friend_window_state& st
         // |------------------------------|
         float wnd_width = ImGui::GetWindowContentRegionWidth();
         ImGuiStyle &style = ImGui::GetStyle();
-        wnd_width -= ImGui::CalcTextSize("Send").x + style.FramePadding.x * 2 + style.ItemSpacing.x + 1;
+        wnd_width -= ImGui::CalcTextSize(translationSend[current_language]).x + style.FramePadding.x * 2 + style.ItemSpacing.x + 1;
 
         ImGui::PushItemWidth(wnd_width);
         if (ImGui::InputText("##chat_line", state.chat_input, max_chat_len, ImGuiInputTextFlags_EnterReturnsTrue))
@@ -603,7 +617,7 @@ void Steam_Overlay::BuildFriendWindow(Friend const& frd, friend_window_state& st
 
         ImGui::SameLine();
 
-        if (ImGui::Button("Send"))
+        if (ImGui::Button(translationSend[current_language]))
         {
             send_chat_msg = true;
         }
@@ -677,7 +691,7 @@ void Steam_Overlay::BuildNotifications(int width, int height)
                 case notification_type_invite:
                     {
                         ImGui::TextWrapped("%s", it->message.c_str());
-                        if (ImGui::Button("Join"))
+                        if (ImGui::Button(translationJoin[current_language]))
                         {
                             it->frd->second.window_state |= window_state_join;
                             friend_actions_temp.push(it->frd->first);
@@ -726,6 +740,43 @@ void Steam_Overlay::CreateFonts()
     for (auto & x : achievements) {
         font_builder.AddText(x.title.c_str());
         font_builder.AddText(x.description.c_str());
+    }
+    for (int i = 0; i < TRANSLATION_NUMBER_OF_LANGUAGES; i++) {
+        font_builder.AddText(translationChat[i]);
+        font_builder.AddText(translationInvite[i]);
+        font_builder.AddText(translationJoin[i]);
+        font_builder.AddText(translationInvitedYouToJoinTheGame[i]);
+        font_builder.AddText(translationAccept[i]);
+        font_builder.AddText(translationRefuse[i]);
+        font_builder.AddText(translationSend[i]);
+        font_builder.AddText(translationSteamOverlay[i]);
+        font_builder.AddText(translationUserPlaying[i]);
+        font_builder.AddText(translationRenderer[i]);
+        font_builder.AddText(translationShowAchievements[i]);
+        font_builder.AddText(translationSettings[i]);
+        font_builder.AddText(translationFriends[i]);
+        font_builder.AddText(translationAchievementWindow[i]);
+        font_builder.AddText(translationListOfAchievements[i]);
+        font_builder.AddText(translationAchievements[i]);
+        font_builder.AddText(translationHiddenAchievement[i]);
+        font_builder.AddText(translationAchievedOn[i]);
+        font_builder.AddText(translationNotAchieved[i]);
+        font_builder.AddText(translationGlobalSettingsWindow[i]);
+        font_builder.AddText(translationGlobalSettingsWindowDescription[i]);
+        font_builder.AddText(translationUsername[i]);
+        font_builder.AddText(translationLanguage[i]);
+        font_builder.AddText(translationSelectedLanguage[i]);
+        font_builder.AddText(translationRestartTheGameToApply[i]);
+        font_builder.AddText(translationSave[i]);
+        font_builder.AddText(translationWarning[i]);
+        font_builder.AddText(translationWarningWarningWarning[i]);
+        font_builder.AddText(translationWarningDescription1[i]);
+        font_builder.AddText(translationWarningDescription2[i]);
+        font_builder.AddText(translationWarningDescription3[i]);
+        font_builder.AddText(translationWarningDescription4[i]);
+        font_builder.AddText(translationSteamOverlayURL[i]);
+        font_builder.AddText(translationClose[i]);
+        font_builder.AddText(translationPlaying[i]);
     }
 
     font_builder.AddRanges(Fonts->GetGlyphRangesDefault());
@@ -799,31 +850,31 @@ void Steam_Overlay::OverlayProc()
 
         bool show = true;
 
-        if (ImGui::Begin("SteamOverlay", &show, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus))
+        if (ImGui::Begin(translationSteamOverlay[current_language], &show, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus))
         {
-            ImGui::LabelText("##label", "Username: %s(%llu) playing %u",
+            ImGui::LabelText("##label", translationUserPlaying[current_language],
                 settings->get_local_name(),
                 settings->get_local_steam_id().ConvertToUint64(),
                 settings->get_local_game_id().AppID());
             ImGui::SameLine();
 
-            ImGui::LabelText("##label", "Renderer: %s", (_renderer == nullptr ? "Unknown" : _renderer->GetLibraryName().c_str()));
+            ImGui::LabelText("##label", translationRenderer[current_language], (_renderer == nullptr ? "Unknown" : _renderer->GetLibraryName().c_str()));
 
             ImGui::Spacing();
-            if (ImGui::Button("Show Achievements")) {
+            if (ImGui::Button(translationShowAchievements[current_language])) {
                 show_achievements = true;
             }
 
             ImGui::SameLine();
 
-            if (ImGui::Button("Settings")) {
+            if (ImGui::Button(translationSettings[current_language])) {
                 show_settings = true;
             }
 
             ImGui::Spacing();
             ImGui::Spacing();
 
-            ImGui::LabelText("##label", "Friends");
+            ImGui::LabelText("##label", translationFriends[current_language]);
 
             std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
             if (!friends.empty())
@@ -851,9 +902,9 @@ void Steam_Overlay::OverlayProc()
             if (show_achievements && achievements.size()) {
                 ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 32, ImGui::GetFontSize() * 32), ImVec2(8192, 8192));
                 bool show = show_achievements;
-                if (ImGui::Begin("Achievement Window", &show)) {
-                    ImGui::Text("List of achievements");
-                    ImGui::BeginChild("Achievements");
+                if (ImGui::Begin(translationAchievementWindow[current_language], &show)) {
+                    ImGui::Text(translationListOfAchievements[current_language]);
+                    ImGui::BeginChild(translationAchievements[current_language]);
                     for (auto & x : achievements) {
                         bool achieved = x.achieved;
                         bool hidden = x.hidden && !achieved;
@@ -861,7 +912,7 @@ void Steam_Overlay::OverlayProc()
                         ImGui::Separator();
                         ImGui::Text("%s", x.title.c_str());
                         if (hidden) {
-                            ImGui::Text("hidden achievement");
+                            ImGui::Text(translationHiddenAchievement[current_language]);
                         } else {
                             ImGui::TextWrapped("%s", x.description.c_str());
                         }
@@ -871,9 +922,9 @@ void Steam_Overlay::OverlayProc()
                             time_t unlock_time = (time_t)x.unlock_time;
                             std::strftime(buffer, 80, "%Y-%m-%d at %H:%M:%S", std::localtime(&unlock_time));
 
-                            ImGui::TextColored(ImVec4(0, 255, 0, 255), "achieved on %s", buffer);
+                            ImGui::TextColored(ImVec4(0, 255, 0, 255), translationAchievedOn[current_language], buffer);
                         } else {
-                            ImGui::TextColored(ImVec4(255, 0, 0, 255), "not achieved");
+                            ImGui::TextColored(ImVec4(255, 0, 0, 255), translationNotAchieved[current_language]);
                         }
                         ImGui::Separator();
                     }
@@ -884,37 +935,37 @@ void Steam_Overlay::OverlayProc()
             }
 
             if (show_settings) {
-                if (ImGui::Begin("Global Settings Window", &show_settings)) {
-                    ImGui::Text("These are global emulator settings and will apply to all games.");
+                if (ImGui::Begin(translationGlobalSettingsWindow[current_language], &show_settings)) {
+                    ImGui::Text(translationGlobalSettingsWindowDescription[current_language]);
 
                     ImGui::Separator();
 
-                    ImGui::Text("Username:");
+                    ImGui::Text(translationUsername[current_language]);
                     ImGui::SameLine();
                     ImGui::InputText("##username", username_text, sizeof(username_text), disable_forced ? ImGuiInputTextFlags_ReadOnly : 0);
 
                     ImGui::Separator();
 
-                    ImGui::Text("Language:");
+                    ImGui::Text(translationLanguage[current_language]);
 
                     if (ImGui::ListBox("##language", &current_language, valid_languages, sizeof(valid_languages) / sizeof(char *), 7)) {
 
                     }
 
-                    ImGui::Text("Selected Language: %s", valid_languages[current_language]);
+                    ImGui::Text(translationSelectedLanguage[current_language], valid_languages[current_language]);
 
                     ImGui::Separator();
 
                     if (!disable_forced) {
-                        ImGui::Text("You may have to restart the game for these to apply.");
-                        if (ImGui::Button("Save")) {
+                        ImGui::Text(translationRestartTheGameToApply[current_language]);
+                        if (ImGui::Button(translationSave[current_language])) {
                             save_settings = true;
                             show_settings = false;
                         }
                     } else {
-                        ImGui::TextColored(ImVec4(255, 0, 0, 255), "WARNING WARNING WARNING");
-                        ImGui::TextWrapped("Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.");
-                        ImGui::TextColored(ImVec4(255, 0, 0, 255), "WARNING WARNING WARNING");
+                        ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
+                        ImGui::TextWrapped(translationWarningDescription1[current_language]);
+                        ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
                     }
                 }
 
@@ -925,13 +976,13 @@ void Steam_Overlay::OverlayProc()
             if (url.size()) {
                 bool show = true;
                 if (ImGui::Begin(URL_WINDOW_NAME, &show)) {
-                    ImGui::Text("The game tried to get the steam overlay to open this url:");
+                    ImGui::Text(translationSteamOverlayURL[current_language]);
                     ImGui::Spacing();
                     ImGui::PushItemWidth(ImGui::CalcTextSize(url.c_str()).x + 20);
                     ImGui::InputText("##url_copy", (char *)url.data(), url.size(), ImGuiInputTextFlags_ReadOnly);
                     ImGui::PopItemWidth();
                     ImGui::Spacing();
-                    if (ImGui::Button("Close") || !show)
+                    if (ImGui::Button(translationClose[current_language]) || !show)
                         show_url = "";
                     // ImGui::SetWindowSize(ImVec2(ImGui::CalcTextSize(url.c_str()).x + 10, 0));
                 }
@@ -942,21 +993,21 @@ void Steam_Overlay::OverlayProc()
             if (show_warning) {
                 ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 32, ImGui::GetFontSize() * 32), ImVec2(8192, 8192));
                 ImGui::SetNextWindowFocus();
-                if (ImGui::Begin("WARNING", &show_warning)) {
+                if (ImGui::Begin(translationWarning[current_language], &show_warning)) {
                     if (appid == 0) {
-                        ImGui::TextColored(ImVec4(255, 0, 0, 255), "WARNING WARNING WARNING");
-                        ImGui::TextWrapped("AppID is 0, please create a steam_appid.txt with the right appid and restart the game.");
-                        ImGui::TextColored(ImVec4(255, 0, 0, 255), "WARNING WARNING WARNING");
+                        ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
+                        ImGui::TextWrapped(translationWarningDescription2[current_language]);
+                        ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
                     }
                     if (local_save) {
-                        ImGui::TextColored(ImVec4(255, 0, 0, 255), "WARNING WARNING WARNING");
-                        ImGui::TextWrapped("local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.");
-                        ImGui::TextColored(ImVec4(255, 0, 0, 255), "WARNING WARNING WARNING");
+                        ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
+                        ImGui::TextWrapped(translationWarningDescription3[current_language]);
+                        ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
                     }
                     if (warning_forced) {
-                        ImGui::TextColored(ImVec4(255, 0, 0, 255), "WARNING WARNING WARNING");
-                        ImGui::TextWrapped("Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.");
-                        ImGui::TextColored(ImVec4(255, 0, 0, 255), "WARNING WARNING WARNING");
+                        ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
+                        ImGui::TextWrapped(translationWarningDescription4[current_language]);
+                        ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
                     }
                 }
                 ImGui::End();
@@ -994,7 +1045,7 @@ void Steam_Overlay::Callback(Common_Message *msg)
                 friend_info->second.window_state |= window_state_need_attention;
             }
 
-            AddMessageNotification(friend_info->first.name() + " says: " + steam_message.message());
+            AddMessageNotification(friend_info->first.name() + ": " + steam_message.message());
             NotifyUser(friend_info->second);
         }
     }

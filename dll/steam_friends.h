@@ -102,11 +102,82 @@ struct Avatar_Numbers add_friend_avatars(CSteamID id)
         return avatar_ids->second;
     }
 
-    //TODO: get real image data from self/other peers
     struct Avatar_Numbers avatar_numbers;
     std::string small_avatar(32 * 32 * 4, 0);
     std::string medium_avatar(64 * 64 * 4, 0);
     std::string large_avatar(184 * 184 * 4, 0);
+
+    if (!(settings->disable_account_avatar) && (id == settings->get_local_steam_id())) {
+        std::string file_path;
+        unsigned long long file_size;
+
+        for (int i = 0; i < 3; i++) {
+            std::string file_name;
+            if (i == 0) file_name = "account_avatar.png";
+            if (i == 1) file_name = "account_avatar.jpg";
+            if (i == 2) file_name = "account_avatar.jpeg";
+            file_path = Local_Storage::get_game_settings_path() + file_name;
+            file_size = file_size_(file_path);
+            if (file_size) break;
+        }
+
+        if (!file_size) {
+            for (int i = 0; i < 3; i++) {
+                std::string file_name;
+                if (i == 0) file_name = "account_avatar.png";
+                if (i == 1) file_name = "account_avatar.jpg";
+                if (i == 2) file_name = "account_avatar.jpeg";
+                file_path = Local_Storage::get_user_appdata_path() + "/settings/" + file_name;
+                file_size = file_size_(file_path);
+                if (file_size) break;
+            }
+        }
+
+        // no else statement here for default or else this breaks default images for friends
+        if (file_size) {
+            small_avatar = Local_Storage::load_image_resized(file_path, "", 32);
+            medium_avatar = Local_Storage::load_image_resized(file_path, "", 64);
+            large_avatar = Local_Storage::load_image_resized(file_path, "", 184);
+        }
+    } else if (!(settings->disable_account_avatar)) {
+        Friend *f = find_friend(id);
+        if (f && (large_avatar.compare(f->avatar()) != 0)) {
+            large_avatar = f->avatar();
+            medium_avatar = Local_Storage::load_image_resized("", f->avatar(), 64);
+            small_avatar = Local_Storage::load_image_resized("", f->avatar(), 32);
+        } else {
+            std::string file_path;
+            unsigned long long file_size;
+
+            for (int i = 0; i < 3; i++) {
+                std::string file_name;
+                if (i == 0) file_name = "account_avatar_default.png";
+                if (i == 1) file_name = "account_avatar_default.jpg";
+                if (i == 2) file_name = "account_avatar_default.jpeg";
+                file_path = Local_Storage::get_game_settings_path() + file_name;
+                file_size = file_size_(file_path);
+                if (file_size) break;
+            }
+
+            if (!file_size) {
+                for (int i = 0; i < 3; i++) {
+                    std::string file_name;
+                    if (i == 0) file_name = "account_avatar_default.png";
+                    if (i == 1) file_name = "account_avatar_default.jpg";
+                    if (i == 2) file_name = "account_avatar_default.jpeg";
+                    file_path = Local_Storage::get_user_appdata_path() + "/settings/" + file_name;
+                    file_size = file_size_(file_path);
+                    if (file_size) break;
+                }
+            }
+
+            if (file_size) {
+                small_avatar = Local_Storage::load_image_resized(file_path, "", 32);
+                medium_avatar = Local_Storage::load_image_resized(file_path, "", 64);
+                large_avatar = Local_Storage::load_image_resized(file_path, "", 184);
+            }
+        }
+    }
 
     avatar_numbers.smallest = settings->add_image(small_avatar, 32, 32);
     avatar_numbers.medium = settings->add_image(medium_avatar, 64, 64);
@@ -441,24 +512,37 @@ bool HasFriend( CSteamID steamIDFriend, EFriendFlags eFriendFlags )
 int GetClanCount()
 {
     PRINT_DEBUG("Steam_Friends::GetClanCount\n");
-    return 0;
+    int counter = 0;
+    for (auto &c : settings->subscribed_groups_clans) counter++;
+    return counter;
 }
 
 CSteamID GetClanByIndex( int iClan )
 {
     PRINT_DEBUG("Steam_Friends::GetClanByIndex\n");
+    int counter = 0;
+    for (auto &c : settings->subscribed_groups_clans) {
+        if (counter == iClan) return c.id;
+        counter++;
+    }
     return k_steamIDNil;
 }
 
 const char *GetClanName( CSteamID steamIDClan )
 {
     PRINT_DEBUG("Steam_Friends::GetClanName\n");
+    for (auto &c : settings->subscribed_groups_clans) {
+        if (c.id.ConvertToUint64() == steamIDClan.ConvertToUint64()) return c.name.c_str();
+    }
     return "";
 }
 
 const char *GetClanTag( CSteamID steamIDClan )
 {
     PRINT_DEBUG("Steam_Friends::GetClanTag\n");
+    for (auto &c : settings->subscribed_groups_clans) {
+        if (c.id.ConvertToUint64() == steamIDClan.ConvertToUint64()) return c.tag.c_str();
+    }
     return "";
 }
 
@@ -1101,6 +1185,9 @@ void Callback(Common_Message *msg)
             f->set_name(settings->get_local_name());
             f->set_appid(settings->get_local_game_id().AppID());
             f->set_lobby_id(settings->get_lobby().ConvertToUint64());
+            int avatar_number = GetLargeFriendAvatar(settings->get_local_steam_id());
+            if (settings->images[avatar_number].data.length() > 0) f->set_avatar(settings->images[avatar_number].data);
+            else f->set_avatar("");
             msg_.set_allocated_friend_(f);
             network->sendTo(&msg_, true);
         }

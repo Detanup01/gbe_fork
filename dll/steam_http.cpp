@@ -58,6 +58,40 @@ HTTPRequestHandle Steam_HTTP::CreateHTTPRequest( EHTTPMethod eHTTPRequestMethod,
             long long read = Local_Storage::get_file_data(file_path, (char *)request.response.data(), file_size, 0);
             if (read < 0) read = 0;
             if (read != file_size) request.response.resize(read);
+        } else if (!settings->disable_networking && settings->http_online) {
+            std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+            std::size_t url_directory = file_path.rfind("/");
+            std::string directory_path;
+            std::string file_name;
+            if (url_directory != std::string::npos) {
+                directory_path = file_path.substr(0, url_directory);
+                file_name = file_path.substr(url_directory);
+            }
+            Local_Storage::store_file_data(directory_path, file_name, (char *)"", sizeof(""));
+
+#if defined(STEAM_WIN32)
+            FILE *hfile = fopen(file_path.c_str(), "wb");
+#else
+            FILE *hfile = fopen(file_path.c_str(), "w");
+#endif
+            CURL *chttp = curl_easy_init();
+            curl_easy_setopt(chttp, CURLOPT_URL, url.c_str());
+            curl_easy_setopt(chttp, CURLOPT_WRITEDATA, (void *)hfile);
+            curl_easy_setopt(chttp, CURLOPT_TIMEOUT, 60L);
+            curl_easy_setopt(chttp, CURLOPT_NOSIGNAL, 1L);
+            curl_easy_setopt(chttp, CURLOPT_USE_SSL, CURLUSESSL_TRY);
+            curl_easy_perform(chttp);
+            curl_easy_cleanup(chttp);
+            fclose(hfile);
+
+            file_size = file_size_(file_path);
+            if (file_size) {
+                request.response.resize(file_size);
+                long long read = Local_Storage::get_file_data(file_path, (char *)request.response.data(), file_size, 0);
+                if (read < 0) read = 0;
+                if (read != file_size) request.response.resize(read);
+            }
         }
     }
 

@@ -1,0 +1,31 @@
+{
+	"111111111": {
+		"title": "Example Workshop Item",
+		"description": "Example Workshop Item with all Details",
+		"steam_id_owner": 11111111111111111,
+		"time_created": 1554997000,
+		"time_updated": 1554997000,
+		"time_added": 1554997000,
+		"tags": "Maps, exampleTag, exampleTag2",
+		"primary_filename": "test.sav",
+		"primary_filesize": 1000000,
+		"preview_filename": "test.png",
+		"preview_filesize": 1000000,
+		"workshop_item_url": "https://steamcommunity.com/sharedfiles/filedetails/?id=111111111",
+		"upvotes": 1,
+		"downvotes": 0,
+		"num_children": 0
+	},
+	
+	"222222222": {
+		"title": "Example Workshop Item",
+		"description": "Example Workshop Item with all Details"
+	},
+	
+	"333333333": {
+		"title": "Example Workshop Item"
+	},
+	
+	"444444444": {
+	}
+}
