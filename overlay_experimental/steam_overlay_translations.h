@@ -1,5 +1,5 @@
 
-const int TRANSLATION_NUMBER_OF_LANGUAGES = 29;
+const int TRANSLATION_NUMBER_OF_LANGUAGES = 30;
 const int TRANSLATION_BUFFER_SIZE = 256;
 
 // C:\Program Files (x86)\Steam\tenfoot\resource\localization\tenfoot_*.txt
@@ -90,7 +90,10 @@ const char translationChat[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
 	"Чат",
 
 	// 28 - Vietnamese
-	"Trò chuyện"
+	"Trò chuyện",
+
+	// 29 - Croatian
+	"Razgovor"
 };
 
 // C:\Program Files (x86)\Steam\tenfoot\resource\localization\tenfoot_*.txt
@@ -181,7 +184,10 @@ const char translationInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
 	"Запросити у гру",
 
 	// 28 - Vietnamese
-	"Mời vào trò chơi"
+	"Mời vào trò chơi",
+
+	// 29 - Croatian
+	"Pozovi u igru"
 };
 
 // C:\Program Files (x86)\Steam\tenfoot\resource\localization\tenfoot_*.txt
@@ -272,98 +278,104 @@ const char translationJoin[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
 	"Прийняти запрошення до гри",
 
 	// 28 - Vietnamese
-	"Nhập lời mời"
+	"Nhập lời mời",
+
+	// 29 - Croatian
+	"Prihvati poziv"
 };
 
 // C:\Program Files (x86)\Steam\tenfoot\resource\localization\tenfoot_*.txt
 // friends_chat_game_invite_details
 const char translationInvitedYouToJoinTheGame[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-	"%s has invited you to play GAME_ID_%d",
+	"%s has invited you to play %d",
 
 	// 1 - Arabic
-	"%s has invited you to play GAME_ID_%d",
+	"%s has invited you to play %d",
 
 	// 2 - Bulgarian
-	"%s Ви покани да играете GAME_ID_%d",
+	"%s Ви покани да играете %d",
 
 	// 3 - Simplified Chinese
-	"%s 已邀请您玩 GAME_ID_%d",
+	"%s 已邀请您玩 %d",
 
 	// 4 - Traditional Chinese
-	"%s 邀請您一同遊玩 GAME_ID_%d",
+	"%s 邀請您一同遊玩 %d",
 
 	// 5 - Czech
-	"%s Vás pozval do hry GAME_ID_%d",
+	"%s Vás pozval do hry %d",
 
 	// 6 - Danish
-	"%s har inviteret dig til at spille GAME_ID_%d",
+	"%s har inviteret dig til at spille %d",
 
 	// 7 - Dutch
-	"%s heeft je uitgenodigd om GAME_ID_%d te spelen",
+	"%s heeft je uitgenodigd om %d te spelen",
 
 	// 8 - Finnish
-	"%s on kutsunut sinut pelaamaan peliä GAME_ID_%d",
+	"%s on kutsunut sinut pelaamaan peliä %d",
 
 	// 9 - French
-	"%s vous a invité à jouer à GAME_ID_%d",
+	"%s vous a invité à jouer à %d",
 
 	// 10 - German
-	"%s hat Sie eingeladen, GAME_ID_%d zu spielen",
+	"%s hat Sie eingeladen, %d zu spielen",
 
 	// 11 - Greek
-	"Ο %s σας προσκάλεσε να παίξετε GAME_ID_%d",
+	"Ο %s σας προσκάλεσε να παίξετε %d",
 
 	// 12 - Hungarian
-	"%s játszani hívott a(z) GAME_ID_%d játékba.",
+	"%s játszani hívott a(z) %d játékba.",
 
 	// 13 - Italian
-	"%s ti ha invitato a giocare a GAME_ID_%d",
+	"%s ti ha invitato a giocare a %d",
 
 	// 14 - Japanese
-	"%s があなたを GAME_ID_%d のプレイに招待しています",
+	"%s があなたを %d のプレイに招待しています",
 
 	// 15 - Korean
-	"%s님이 GAME_ID_%d 게임을 하자고 초대했습니다.",
+	"%s님이 %d 게임을 하자고 초대했습니다.",
 
 	// 16 - Norwegian
-	"%s har invitert deg til å spille GAME_ID_%d",
+	"%s har invitert deg til å spille %d",
 
 	// 17 - Polish
-	"%s zaprasza cię do gry w GAME_ID_%d",
+	"%s zaprasza cię do gry w %d",
 
 	// 18 - Portuguese
-	"%s convidou-te para jogar GAME_ID_%d",
+	"%s convidou-te para jogar %d",
 
 	// 19 - Brazilian Portuguese
-	"%s convidou você para jogar GAME_ID_%d",
+	"%s convidou você para jogar %d",
 
 	// 20 - Romanian
-	"%s te-a invitat să jucați GAME_ID_%d",
+	"%s te-a invitat să jucați %d",
 
 	// 21 - Russian
-	"%s приглашает вас в GAME_ID_%d",
+	"%s приглашает вас в %d",
 
 	// 22 - Spanish
-	"%s te ha invitado a jugar a GAME_ID_%d",
+	"%s te ha invitado a jugar a %d",
 
 	// 23 - Latin American
-	"%s te invitó a jugar GAME_ID_%d",
+	"%s te invitó a jugar %d",
 
 	// 24 - Swedish
-	"%s har bjudit in dig att spela GAME_ID_%d",
+	"%s har bjudit in dig att spela %d",
 
 	// 25 - Thai
-	"%s ได้เชิญคุณเล่น GAME_ID_%d",
+	"%s ได้เชิญคุณเล่น %d",
 
 	// 26 - Turkish
-	"%s sizi GAME_ID_%d oynamaya davet etti",
+	"%s sizi %d oynamaya davet etti",
 
 	// 27 - Ukrainian
-	"%s запросив вас пограти у GAME_ID_%d",
+	"%s запросив вас пограти у %d",
 
 	// 28 - Vietnamese
-	"%s mời bạn chơi GAME_ID_%d"
+	"%s mời bạn chơi %d",
+
+	// 29 - Croatian
+	"%s vas je pozvao igrati %d"
 };
 
 // C:\Program Files (x86)\Steam\tenfoot\resource\localization\tenfoot_*.txt
@@ -454,7 +466,10 @@ const char translationAccept[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
 	"Прийняти",
 
 	// 28 - Vietnamese
-	"Đồng ý"
+	"Đồng ý",
+
+	// 29 - Croatian
+	"Prihvati"
 };
 
 // C:\Program Files (x86)\Steam\tenfoot\resource\localization\tenfoot_*.txt
@@ -545,7 +560,10 @@ const char translationRefuse[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
 	"Відхилити",
 
 	// 28 - Vietnamese
-	"Phớt lờ"
+	"Phớt lờ",
+
+	// 29 - Croatian
+	"Ignoriraj"
 };
 
 // C:\Program Files (x86)\Steam\tenfoot\resource\localization\tenfoot_*.txt
@@ -636,7 +654,10 @@ const char translationSend[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
 	"Надіслати повідомлення",
 
 	// 28 - Vietnamese
-	"Gửi thông điệp"
+	"Gửi thông điệp",
+
+	// 29 - Croatian
+	"Pošalji Poruku"
 };
 
 // C:\Program Files (x86)\Steam\tenfoot\resource\localization\tenfoot_*.txt
@@ -727,7 +748,10 @@ const char translationSteamOverlay[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_
 	"Оверлей Steam",
 
 	// 28 - Vietnamese
-	"Lớp phủ Steam"
+	"Lớp phủ Steam",
+
+	// 29 - Croatian
+	"Steam Overlay"
 };
 
 const char translationUserPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -816,7 +840,10 @@ const char translationUserPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
 	"Username: %s(%llu) playing %u",
 
 	// 28 - Vietnamese
-	"Username: %s(%llu) playing %u"
+	"Username: %s(%llu) playing %u",
+
+	// 29 - Croatian
+	"Igrač: %s(%llu) igra %u"
 };
 
 const char translationRenderer[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -905,6 +932,9 @@ const char translationRenderer[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
 	"Renderer: %s",
 
 	// 28 - Vietnamese
+	"Renderer: %s",
+
+	// 29 - Croatian
 	"Renderer: %s"
 };
 
@@ -994,7 +1024,10 @@ const char translationShowAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
 	"Show Achievements",
 
 	// 28 - Vietnamese
-	"Show Achievements"
+	"Show Achievements",
+
+	// 29 - Croatian
+	"Prikaži Postignuća"
 };
 
 // C:\Program Files (x86)\Steam\resource\overlay_*.txt
@@ -1085,7 +1118,10 @@ const char translationSettings[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
 	"Налаштування",
 
 	// 28 - Vietnamese
-	"Thiết lập"
+	"Thiết lập",
+
+	// 29 - Croatian
+	"Postavke"
 };
 
 // C:\Program Files (x86)\Steam\resource\overlay_*.txt
@@ -1176,7 +1212,11 @@ const char translationFriends[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
 	"Друзі",
 
 	// 28 - Vietnamese
-	"Bạn bè"
+	"Bạn bè",
+
+	// 29 - Croatian
+	"Prijatelji"
+
 };
 
 const char translationAchievementWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -1265,7 +1305,10 @@ const char translationAchievementWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
 	"Achievement Window",
 
 	// 28 - Vietnamese
-	"Achievement Window"
+	"Achievement Window",
+
+	// 29 - Croatian
+	"Prozor Postignuća"
 };
 
 const char translationListOfAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -1354,7 +1397,10 @@ const char translationListOfAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSL
 	"List of achievements",
 
 	// 28 - Vietnamese
-	"List of achievements"
+	"List of achievements",
+
+	// 29 - Croatian
+	"Popis postignuća"
 };
 
 const char translationAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -1443,7 +1489,10 @@ const char translationAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_
 	"Achievements",
 
 	// 28 - Vietnamese
-	"Achievements"
+	"Achievements",
+
+	// 29 - Croatian
+	"Postignuća"
 };
 
 const char translationHiddenAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -1532,7 +1581,10 @@ const char translationHiddenAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
 	"hidden achievement",
 
 	// 28 - Vietnamese
-	"hidden achievement"
+	"hidden achievement",
+
+	// 29 - Croatian
+	"Sakrivena postignuća"
 };
 
 const char translationAchievedOn[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -1621,7 +1673,10 @@ const char translationAchievedOn[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BU
 	"achieved on %s",
 
 	// 28 - Vietnamese
-	"achieved on %s"
+	"achieved on %s",
+
+	// 29 - Croatian
+	"postignuto %s"
 };
 
 const char translationNotAchieved[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -1710,7 +1765,10 @@ const char translationNotAchieved[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
 	"not achieved",
 
 	// 28 - Vietnamese
-	"not achieved"
+	"not achieved",
+
+	// 29 - Croatian
+	"nije postignuto"
 };
 
 const char translationGlobalSettingsWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -1799,7 +1857,10 @@ const char translationGlobalSettingsWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRAN
 	"Global Settings Window",
 
 	// 28 - Vietnamese
-	"Global Settings Window"
+	"Global Settings Window",
+
+	// 29 - Croatian
+	"Prozor Globalnih Postavki"
 };
 
 const char translationGlobalSettingsWindowDescription[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -1888,7 +1949,10 @@ const char translationGlobalSettingsWindowDescription[TRANSLATION_NUMBER_OF_LANG
 	"These are global emulator settings and will apply to all games.",
 
 	// 28 - Vietnamese
-	"These are global emulator settings and will apply to all games."
+	"These are global emulator settings and will apply to all games.",
+
+	// 29 - Croatian
+	"Ovo su globalne postavke emulatora i primjenjuju se na sve igre."
 };
 
 const char translationUsername[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -1977,7 +2041,10 @@ const char translationUsername[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
 	"Username:",
 
 	// 28 - Vietnamese
-	"Username:"
+	"Username:",
+
+	// 29 - Croatian
+	"Korisničko Ime:"
 };
 
 const char translationLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -2066,7 +2133,10 @@ const char translationLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
 	"Language:",
 
 	// 28 - Vietnamese
-	"Language:"
+	"Language:",
+
+	// 29 - Croatian
+	"Jezik:"
 };
 
 const char translationSelectedLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -2155,7 +2225,10 @@ const char translationSelectedLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
 	"Selected Language: %s",
 
 	// 28 - Vietnamese
-	"Selected Language: %s"
+	"Selected Language: %s",
+
+	// 29 - Croatian
+	"Odabrani Jezik: %s"
 };
 
 const char translationRestartTheGameToApply[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -2244,7 +2317,10 @@ const char translationRestartTheGameToApply[TRANSLATION_NUMBER_OF_LANGUAGES][TRA
 	"You may have to restart the game for these to apply.",
 
 	// 28 - Vietnamese
-	"You may have to restart the game for these to apply."
+	"You may have to restart the game for these to apply.",
+
+	// 29 - Croatian
+	"Možda ćete trebati ponovo pokrenuti igru."
 };
 
 const char translationSave[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -2333,7 +2409,10 @@ const char translationSave[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
 	"Save",
 
 	// 28 - Vietnamese
-	"Save"
+	"Save",
+
+	// 29 - Croatian
+	"Spremi"
 };
 
 const char translationWarning[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -2422,7 +2501,10 @@ const char translationWarning[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
 	"WARNING",
 
 	// 28 - Vietnamese
-	"WARNING"
+	"WARNING",
+
+	// 29 - Croatian
+	"UPOZORENJE"
 };
 
 const char translationWarningWarningWarning[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -2511,7 +2593,10 @@ const char translationWarningWarningWarning[TRANSLATION_NUMBER_OF_LANGUAGES][TRA
 	"WARNING WARNING WARNING",
 
 	// 28 - Vietnamese
-	"WARNING WARNING WARNING"
+	"WARNING WARNING WARNING",
+
+	// 29 - Croatian
+	"UPOZORENJE UPOZORENJE UPOZORENJE"
 };
 
 const char translationWarningDescription1[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -2600,7 +2685,10 @@ const char translationWarningDescription1[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
 	"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 28 - Vietnamese
-	"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work."
+	"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+
+	// 29 - Croatian
+	"Neke steam_settings/force_*.txt datoteke su otkrivene. Molimo da ih izbrišete ako želite da ovaj izbornik radi."
 };
 
 const char translationWarningDescription2[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -2689,7 +2777,10 @@ const char translationWarningDescription2[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
 	"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 28 - Vietnamese
-	"AppID is 0, please create a steam_appid.txt with the right appid and restart the game."
+	"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+
+	// 29 - Croatian
+	"AppID je 0, molimo napravite steam_appid.txt sa točnim appid-em i ponovo pokrenite igru."
 };
 
 const char translationWarningDescription3[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -2778,7 +2869,10 @@ const char translationWarningDescription3[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
 	"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 28 - Vietnamese
-	"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this."
+	"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+
+	// 29 - Croatian
+	"Datoteka local_save.txt je otkrivena u mapi igre. Molimo vas da je obiršete ako ne želite ovo."
 };
 
 const char translationWarningDescription4[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -2867,7 +2961,10 @@ const char translationWarningDescription4[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
 	"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 28 - Vietnamese
-	"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings."
+	"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+
+	// 29 - Croatian
+	"Neke steam_settings/force_*.txt datoteke su otkrivene. Možda nećete moći spremiti neke postavke."
 };
 
 const char translationSteamOverlayURL[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -2956,7 +3053,10 @@ const char translationSteamOverlayURL[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
 	"The game tried to get the steam overlay to open this url:",
 
 	// 28 - Vietnamese
-	"The game tried to get the steam overlay to open this url:"
+	"The game tried to get the steam overlay to open this url:",
+
+	// 29 - Croatian
+	"Igra je pokušala otvoriti ovaj URL pomoću steam overlaya:"
 };
 
 // C:\Program Files (x86)\Steam\resource\vgui_*.txt
@@ -3047,7 +3147,10 @@ const char translationClose[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_
 	"Закрити",
 
 	// 28 - Vietnamese
-	"Đóng"
+	"Đóng",
+
+	// 29 - Croatian
+	"Zatvori"
 };
 
 const char translationPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -3136,5 +3239,8 @@ const char translationPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
 	" playing ",
 
 	// 28 - Vietnamese
-	" playing "
+	" playing ",
+
+	// 29 - Croatian
+	" igra "
 };

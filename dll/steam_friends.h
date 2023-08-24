@@ -1201,6 +1201,7 @@ void Callback(Common_Message *msg)
                 friends.push_back(msg->friend_());
                 overlay->FriendConnect(msg->friend_());
                 persona_change((uint64)msg->friend_().id(), k_EPersonaChangeName);
+                GetLargeFriendAvatar((uint64)msg->friend_().id());
             }
         } else {
             std::map<std::string, std::string> map1(f->rich_presence().begin(), f->rich_presence().end());

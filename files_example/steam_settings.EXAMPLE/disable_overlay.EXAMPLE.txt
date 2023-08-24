@@ -1,1 +1,1 @@
-Rename this to: disable_overlay.EXAMPLE.txt to disable the overlay.
+Rename this to: disable_overlay.txt to disable the overlay.

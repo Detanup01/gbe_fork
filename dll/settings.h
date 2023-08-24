@@ -98,6 +98,10 @@ struct Group_Clans {
     std::string tag;
 };
 
+struct Overlay_Appearance {
+    float font_size = 16.0;
+};
+
 class Settings {
     CSteamID steam_id;
     CGameID game_id;
@@ -192,6 +196,8 @@ public:
     //overlay
     bool disable_overlay = false;
     bool disable_overlay_achievement_notification = false;
+    bool disable_overlay_friend_notification = false;
+    Overlay_Appearance overlay_appearance;
 
     //app build id
     int build_id = 10;

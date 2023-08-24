@@ -1,0 +1,1 @@
+Rename this to: disable_overlay_friend_notification.txt to disable the friend invite and message notifications.

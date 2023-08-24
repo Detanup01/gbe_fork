@@ -82,6 +82,36 @@ static void load_subscribed_groups_clans(std::string clans_filepath, Settings *s
     }
 }
 
+static void load_overlay_appearance(std::string appearance_filepath, Settings *settings_client, Settings *settings_server)
+{
+    PRINT_DEBUG("Overlay appearance file path: %s\n", appearance_filepath.c_str());
+    std::ifstream appearance_file(utf8_decode(appearance_filepath));
+    consume_bom(appearance_file);
+    if (appearance_file.is_open()) {
+        std::string line;
+        while (std::getline(appearance_file, line)) {
+            if (line.length() < 0) continue;
+
+            std::size_t seperator = line.find(" ");
+            std::string name;
+            std::string value;
+            if (seperator != std::string::npos) {
+                name = line.substr(0, seperator);
+                value = line.substr(seperator);
+            }
+
+            try {
+                if (name.compare("Font_Size") == 0) {
+                    float nfont_size = std::stoull(value, NULL, 0);
+                    settings_client->overlay_appearance.font_size = nfont_size;
+                    settings_server->overlay_appearance.font_size = nfont_size;
+                }
+                PRINT_DEBUG("Overlay appearance %s %s\n", name.c_str(), value.c_str());
+            } catch (...) {}
+        }
+    }
+}
+
 template<typename Out>
 static void split_string(const std::string &s, char delim, Out result) {
     std::stringstream ss(s);
@@ -340,6 +370,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     bool disable_networking = false;
     bool disable_overlay = false;
     bool disable_overlay_achievement_notification = false;
+    bool disable_overlay_friend_notification = false;
     bool disable_lobby_creation = false;
     bool disable_source_query = false;
     bool disable_account_avatar = false;
@@ -363,6 +394,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
                 disable_overlay = true;
             } else if (p == "disable_overlay_achievement_notification.txt") {
                 disable_overlay_achievement_notification = true;
+            } else if (p == "disable_overlay_friend_notification.txt") {
+                disable_overlay_friend_notification = true;
             } else if (p == "disable_lobby_creation.txt") {
                 disable_lobby_creation = true;
             } else if (p == "disable_source_query.txt") {
@@ -417,6 +450,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     settings_server->disable_overlay = disable_overlay;
     settings_client->disable_overlay_achievement_notification = disable_overlay_achievement_notification;
     settings_server->disable_overlay_achievement_notification = disable_overlay_achievement_notification;
+    settings_client->disable_overlay_friend_notification = disable_overlay_friend_notification;
+    settings_server->disable_overlay_friend_notification = disable_overlay_friend_notification;
     settings_client->disable_lobby_creation = disable_lobby_creation;
     settings_server->disable_lobby_creation = disable_lobby_creation;
     settings_client->disable_source_query = disable_source_query;
@@ -668,6 +703,9 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
 
     load_subscribed_groups_clans(local_storage->get_global_settings_path() + "subscribed_groups_clans.txt", settings_client, settings_server);
     load_subscribed_groups_clans(Local_Storage::get_game_settings_path() + "subscribed_groups_clans.txt", settings_client, settings_server);
+
+    load_overlay_appearance(local_storage->get_global_settings_path() + "overlay_appearance.txt", settings_client, settings_server);
+    load_overlay_appearance(Local_Storage::get_game_settings_path() + "overlay_appearance.txt", settings_client, settings_server);
 
     {
         std::string mod_path = Local_Storage::get_game_settings_path() + "mods";

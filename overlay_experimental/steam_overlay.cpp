@@ -48,7 +48,8 @@ static constexpr char *valid_languages[] = {
     "thai",
     "turkish",
     "ukrainian",
-    "vietnamese"
+    "vietnamese",
+    "croatian"
 };
 
 #define URL_WINDOW_NAME "URL Window"
@@ -324,6 +325,7 @@ void Steam_Overlay::ShowOverlay(bool state)
 
 void Steam_Overlay::NotifyUser(friend_window_state& friend_state)
 {
+    if (settings->disable_overlay_friend_notification) return;
     if (!(friend_state.window_state & window_state_show) || !show_overlay)
     {
         friend_state.window_state |= window_state_need_attention;
@@ -398,6 +400,7 @@ void Steam_Overlay::FriendDisconnect(Friend _friend)
 
 void Steam_Overlay::AddMessageNotification(std::string const& message)
 {
+    if (settings->disable_overlay_friend_notification) return;
     std::lock_guard<std::recursive_mutex> lock(notifications_mutex);
     int id = find_free_notification_id(notifications);
     if (id != 0)
@@ -448,6 +451,7 @@ void Steam_Overlay::AddAchievementNotification(nlohmann::json const& ach)
 
 void Steam_Overlay::AddInviteNotification(std::pair<const Friend, friend_window_state>& wnd_state)
 {
+    if (settings->disable_overlay_friend_notification) return;
     std::lock_guard<std::recursive_mutex> lock(notifications_mutex);
     int id = find_free_notification_id(notifications);
     if (id != 0)
@@ -731,7 +735,7 @@ void Steam_Overlay::CreateFonts()
 
     ImFontConfig fontcfg;
 
-    float font_size = 16.0;
+    float font_size = settings->overlay_appearance.font_size;
     fontcfg.OversampleH = fontcfg.OversampleV = 1;
     fontcfg.PixelSnapH = true;
     fontcfg.SizePixels = font_size;
