@@ -18,12 +18,13 @@
 #ifndef __INCLUDED_STEAM_USER_STATS_H__
 #define __INCLUDED_STEAM_USER_STATS_H__
 
+#include <limits>
 #include "base.h"
 #include "../overlay_experimental/steam_overlay.h"
 
 struct Steam_Leaderboard_Score {
     CSteamID steam_id;
-    int32 score = 0;
+    int32 score;
     std::vector<int32> score_details;
 };
 
@@ -831,6 +832,7 @@ SteamAPICall_t FindOrCreateLeaderboard( const char *pchLeaderboardName, ELeaderb
         leaderboard.name = std::string(pchLeaderboardName);
         leaderboard.sort_method = eLeaderboardSortMethod;
         leaderboard.display_type = eLeaderboardDisplayType;
+        leaderboard.self_score.score = eLeaderboardSortMethod == k_ELeaderboardSortMethodAscending ? INT_MAX : INT_MIN;
 
         std::vector<Steam_Leaderboard_Score> scores = load_leaderboard_scores(pchLeaderboardName);
         for (auto &s : scores) {
@@ -1021,7 +1023,9 @@ SteamAPICall_t UploadLeaderboardScore( SteamLeaderboard_t hSteamLeaderboard, ELe
 
     bool changed = false;
     if (eLeaderboardUploadScoreMethod == k_ELeaderboardUploadScoreMethodKeepBest) {
-        if (leaderboards[hSteamLeaderboard - 1].self_score.score <= score.score) {
+        if (leaderboards[hSteamLeaderboard - 1].sort_method == k_ELeaderboardSortMethodAscending
+            ? leaderboards[hSteamLeaderboard - 1].self_score.score >= score.score
+            : leaderboards[hSteamLeaderboard - 1].self_score.score <= score.score) {
             leaderboards[hSteamLeaderboard - 1].self_score = score;
             changed = true;
         }
