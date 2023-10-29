@@ -213,6 +213,7 @@ public:
 
     //warn people who use local save
     bool warn_local_save = false;
+    std::string local_save;
 
     //steamhttp external download support
     bool http_online = false;

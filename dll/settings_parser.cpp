@@ -469,6 +469,11 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     settings_client->http_online = steamhttp_online_mode;
     settings_server->http_online = steamhttp_online_mode;
 
+    if (local_save) {
+        settings_client->local_save = save_path;
+        settings_server->local_save = save_path;
+    }
+
     {
         std::string dlc_config_path = Local_Storage::get_game_settings_path() + "DLC.txt";
         std::ifstream input( utf8_decode(dlc_config_path) );

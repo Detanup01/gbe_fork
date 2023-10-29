@@ -87,6 +87,9 @@ public:
     std::vector<image_pixel_t> load_image(std::string const& image_path);
     static std::string load_image_resized(std::string const& image_path, std::string const& image_data, int resolution);
     bool save_screenshot(std::string const& image_path, uint8_t* img_ptr, int32_t width, int32_t height, int32_t channels);
+
+    static std::string sanitize_string(std::string name);
+    static std::string desanitize_string(std::string name);
 };
 
 #endif

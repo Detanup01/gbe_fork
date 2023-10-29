@@ -174,6 +174,16 @@ bool Local_Storage::save_screenshot(std::string const& image_path, uint8_t* img_
     return false;
 }
 
+std::string Local_Storage::sanitize_string(std::string name)
+{
+    return "";
+}
+
+std::string Local_Storage::desanitize_string(std::string name)
+{
+    return "";
+}
+
 #else
 #if defined(__WINDOWS__)
 
@@ -457,6 +467,8 @@ static std::string replace_with(std::string s, std::string const &old, const cha
 
 static std::string sanitize_file_name(std::string name)
 {
+    if (name.empty()) return name;
+    
     //I'm not sure all of these are necessary but just to be sure
     if (name[0] == '.' && name.size() > 2 && (name[1] == '\\' || name[1] == '/')) name.erase(0, 2);
 
@@ -478,6 +490,8 @@ static std::string sanitize_file_name(std::string name)
 
 static std::string desanitize_file_name(std::string name)
 {
+    if (name.empty()) return name;
+    
     //I'm not sure all of these are necessary but just to be sure
     name = replace_with(name, ".SLASH.", "/");
     name = replace_with(name, ".B_SLASH.", "\\");
@@ -794,21 +808,20 @@ std::vector<image_pixel_t> Local_Storage::load_image(std::string const& image_pa
 std::string Local_Storage::load_image_resized(std::string const& image_path, std::string const& image_data, int resolution)
 {
     std::string resized_image(resolution * resolution * 4, 0);
-    char* resized_img = (char*)malloc(sizeof(char) * resolution * resolution * 4);
+    char *resized_img = (char*)malloc(sizeof(char) * resolution * resolution * 4);
     PRINT_DEBUG("Local_Storage::load_image_resized: %s for resized image (%i)\n", (resized_img == nullptr ? "could not allocate memory" : "memory allocated"), (resolution * resolution * 4));
 
     if (resized_img != nullptr) {
         if (image_path.length() > 0) {
             int width, height;
-            unsigned char* img = stbi_load(image_path.c_str(), &width, &height, nullptr, 4);
+            unsigned char *img = stbi_load(image_path.c_str(), &width, &height, nullptr, 4);
             PRINT_DEBUG("Local_Storage::load_image_resized: \"%s\" %s\n", image_path.c_str(), (img == nullptr ? stbi_failure_reason() : "loaded"));
             if (img != nullptr) {
                 stbir_resize_uint8(img, width, height, NULL, (unsigned char*)resized_img, resolution, resolution, NULL, 4);
                 resized_image = std::string(resized_img, resolution * resolution * 4);
                 stbi_image_free(img);
             }
-        }
-        else if (image_data.length() > 0) {
+        } else if (image_data.length() > 0) {
             stbir_resize_uint8((unsigned char*)image_data.c_str(), 184, 184, NULL, (unsigned char*)resized_img, resolution, resolution, NULL, 4);
             resized_image = std::string(resized_img, resolution * resolution * 4);
         }
@@ -825,6 +838,16 @@ bool Local_Storage::save_screenshot(std::string const& image_path, uint8_t* img_
     create_directory(screenshot_path);
     screenshot_path += image_path;
     return stbi_write_png(screenshot_path.c_str(), width, height, channels, img_ptr, 0) == 1;
+}
+
+std::string Local_Storage::sanitize_string(std::string name)
+{
+    return sanitize_file_name(name);
+}
+
+std::string Local_Storage::desanitize_string(std::string name)
+{
+    return desanitize_file_name(name);
 }
 
 #endif

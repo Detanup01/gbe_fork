@@ -51,7 +51,7 @@ HTTPRequestHandle Steam_HTTP::CreateHTTPRequest( EHTTPMethod eHTTPRequestMethod,
     struct Steam_Http_Request request;
     if (url_index) {
         if (url[url.size() - 1] == '/') url += "index.html";
-        std::string file_path = Local_Storage::get_game_settings_path() + "http/" + url.substr(url_index);
+        std::string file_path = Local_Storage::get_game_settings_path() + "http/" + Local_Storage::sanitize_string(url.substr(url_index));
         unsigned long long file_size = file_size_(file_path);
         if (file_size) {
             request.response.resize(file_size);

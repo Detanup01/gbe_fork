@@ -127,7 +127,13 @@ struct Avatar_Numbers add_friend_avatars(CSteamID id)
                 if (i == 0) file_name = "account_avatar.png";
                 if (i == 1) file_name = "account_avatar.jpg";
                 if (i == 2) file_name = "account_avatar.jpeg";
-                file_path = Local_Storage::get_user_appdata_path() + "/settings/" + file_name;
+
+                if (settings->local_save.length() > 0) {
+                    file_path = settings->local_save + "/settings/" + file_name;
+                } else {
+                    file_path = Local_Storage::get_user_appdata_path() + "/settings/" + file_name;
+                }
+
                 file_size = file_size_(file_path);
                 if (file_size) break;
             }
@@ -165,7 +171,13 @@ struct Avatar_Numbers add_friend_avatars(CSteamID id)
                     if (i == 0) file_name = "account_avatar_default.png";
                     if (i == 1) file_name = "account_avatar_default.jpg";
                     if (i == 2) file_name = "account_avatar_default.jpeg";
-                    file_path = Local_Storage::get_user_appdata_path() + "/settings/" + file_name;
+
+                    if (settings->local_save.length() > 0) {
+                        file_path = settings->local_save + "/settings/" + file_name;
+                    } else {
+                        file_path = Local_Storage::get_user_appdata_path() + "/settings/" + file_name;
+                    }
+
                     file_size = file_size_(file_path);
                     if (file_size) break;
                 }
