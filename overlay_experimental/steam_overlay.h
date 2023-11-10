@@ -68,6 +68,7 @@ struct Notification
     std::chrono::seconds start_time;
     std::string message;
     std::pair<const Friend, friend_window_state>* frd;
+    std::weak_ptr<uint64_t> icon;
 };
 
 struct Overlay_Achievement
@@ -75,9 +76,11 @@ struct Overlay_Achievement
     std::string name;
     std::string title;
     std::string description;
+    std::string icon_name;
     bool hidden;
     bool achieved;
     uint32 unlock_time;
+    std::weak_ptr<uint64_t> icon;
 };
 
 #ifdef EMU_OVERLAY
@@ -142,6 +145,7 @@ class Steam_Overlay
     bool IHaveLobby();
 
     void NotifyUser(friend_window_state& friend_state);
+    void NotifyUserAchievement();
 
     // Right click on friend
     void BuildContextMenu(Friend const& frd, friend_window_state &state);
@@ -167,6 +171,7 @@ public:
     void HookReady(bool ready);
 
     void CreateFonts();
+    void LoadAudio();
     void OverlayProc();
 
     void OpenOverlayInvite(CSteamID lobbyId);

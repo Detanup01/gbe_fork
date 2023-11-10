@@ -100,6 +100,7 @@ struct Group_Clans {
 
 struct Overlay_Appearance {
     float font_size = 16.0;
+    float icon_size = 64.0;
 };
 
 class Settings {
@@ -217,6 +218,9 @@ public:
 
     //steamhttp external download support
     bool http_online = false;
+
+    //steam deck flag
+    bool steam_deck = false;
 };
 
 #endif

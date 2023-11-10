@@ -417,8 +417,8 @@ ESteamIPv6ConnectivityState GetIPv6ConnectivityState( ESteamIPv6ConnectivityProt
 // returns true if currently running on the Steam Deck device
 bool IsSteamRunningOnSteamDeck()
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
-    return false;
+    PRINT_DEBUG("%s %i\n", __FUNCTION__, (int)settings->steam_deck);
+    return settings->steam_deck;
 }
 
 // Opens a floating keyboard over the game content and sends OS keyboard keys directly to the game.

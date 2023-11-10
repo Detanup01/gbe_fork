@@ -105,6 +105,10 @@ static void load_overlay_appearance(std::string appearance_filepath, Settings *s
                     float nfont_size = std::stoull(value, NULL, 0);
                     settings_client->overlay_appearance.font_size = nfont_size;
                     settings_server->overlay_appearance.font_size = nfont_size;
+                } else if (name.compare("Icon_Size") == 0) {
+                    float nicon_size = std::stoull(value, NULL, 0);
+                    settings_client->overlay_appearance.icon_size = nicon_size;
+                    settings_server->overlay_appearance.icon_size = nicon_size;
                 }
                 PRINT_DEBUG("Overlay appearance %s %s\n", name.c_str(), value.c_str());
             } catch (...) {}
@@ -253,7 +257,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     bool local_save = false;
 
     {
-        char array[33] = {};
+        char array[256] = {};
         if (Local_Storage::get_file_data(program_path + "local_save.txt", array, sizeof(array) - 1) != -1) {
             save_path = program_path + Settings::sanitize(array);
             local_save = true;
@@ -366,6 +370,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     }
 
     bool steam_offline_mode = false;
+    bool steam_deck_mode = false;
     bool steamhttp_online_mode = false;
     bool disable_networking = false;
     bool disable_overlay = false;
@@ -386,6 +391,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
             PRINT_DEBUG("steam settings path %s\n", p.c_str());
             if (p == "offline.txt") {
                 steam_offline_mode = true;
+            } else if (p == "steam_deck.txt") {
+                steam_deck_mode = true;
             } else if (p == "http_online.txt") {
                 steamhttp_online_mode = true;
             } else if (p == "disable_networking.txt") {
@@ -466,6 +473,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     settings_server->warn_local_save = local_save;
     settings_client->supported_languages = supported_languages;
     settings_server->supported_languages = supported_languages;
+    settings_client->steam_deck = steam_deck_mode;
+    settings_server->steam_deck = steam_deck_mode;
     settings_client->http_online = steamhttp_online_mode;
     settings_server->http_online = steamhttp_online_mode;
 

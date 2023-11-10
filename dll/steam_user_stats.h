@@ -597,6 +597,22 @@ int GetAchievementIcon( const char *pchName )
     return 0;
 }
 
+std::string get_achievement_icon_name( const char *pchName, bool pbAchieved )
+{
+    if (pchName == nullptr) return "";
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    try {
+        auto it = defined_achievements_find(pchName);
+        if (it != defined_achievements.end()) {
+            if (pbAchieved) return it.value()["icon"].get<std::string>();
+            else return it.value()["icon_gray"].get<std::string>();
+        }
+    } catch (...) {}
+
+    return "";
+}
+
 
 // Get general attributes for an achievement. Accepts the following keys:
 // - "name" and "desc" for retrieving the localized achievement name and description (returned in UTF8)

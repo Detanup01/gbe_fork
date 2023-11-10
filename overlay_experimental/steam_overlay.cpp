@@ -101,6 +101,10 @@ int find_free_notification_id(std::vector<Notification> const& notifications)
 #endif
 
 #include "notification.h"
+char *notif_achievement_wav_custom;
+char *notif_invite_wav_custom;
+bool notif_achievement_wav_custom_inuse = false;
+bool notif_invite_wav_custom_inuse = false;
 
 void Steam_Overlay::steam_overlay_run_every_runcb(void* object)
 {
@@ -330,7 +334,24 @@ void Steam_Overlay::NotifyUser(friend_window_state& friend_state)
     {
         friend_state.window_state |= window_state_need_attention;
 #ifdef __WINDOWS__
-        PlaySound((LPCSTR)notif_invite_wav, NULL, SND_ASYNC | SND_MEMORY);
+        if (notif_invite_wav_custom_inuse) {
+            PlaySoundA((LPCSTR)notif_invite_wav_custom, NULL, SND_ASYNC | SND_MEMORY);
+        } else {
+            PlaySoundA((LPCSTR)notif_invite_wav, NULL, SND_ASYNC | SND_MEMORY);
+        }
+#endif
+    }
+}
+
+void Steam_Overlay::NotifyUserAchievement()
+{
+    if (settings->disable_overlay_achievement_notification) return;
+    if (!show_overlay)
+    {
+#ifdef __WINDOWS__
+        if (notif_achievement_wav_custom_inuse) {
+            PlaySoundA((LPCSTR)notif_achievement_wav_custom, NULL, SND_ASYNC | SND_MEMORY);
+        }
 #endif
     }
 }
@@ -427,10 +448,21 @@ void Steam_Overlay::AddAchievementNotification(nlohmann::json const& ach)
             Notification notif;
             notif.id = id;
             notif.type = notification_type_achievement;
+
             // Load achievement image
+            std::string file_path = Local_Storage::get_game_settings_path() + ach["icon"].get<std::string>();
+            unsigned long long file_size = file_size_(file_path);
+            if (file_size) {
+                std::string img = Local_Storage::load_image_resized(file_path, "", settings->overlay_appearance.icon_size);
+                if (img.length() > 0) {
+                    if (_renderer) notif.icon = _renderer->CreateImageResource((void*)img.c_str(), settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size);
+                }
+            }
+
             notif.message = ach["displayName"].get<std::string>() + "\n" + ach["description"].get<std::string>();
             notif.start_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
             notifications.emplace_back(notif);
+            NotifyUserAchievement();
             have_notifications = true;
         }
         else
@@ -690,7 +722,24 @@ void Steam_Overlay::BuildNotifications(int width, int height)
             switch (it->type)
             {
                 case notification_type_achievement:
-                    ImGui::TextWrapped("%s", it->message.c_str());
+                    {
+                        if (!it->icon.expired()) {
+                            ImGui::BeginTable("imgui_table", 2);
+                            ImGui::TableSetupColumn("imgui_table_image", ImGuiTableColumnFlags_WidthFixed, settings->overlay_appearance.icon_size);
+                            ImGui::TableSetupColumn("imgui_table_text");
+                            ImGui::TableNextRow(ImGuiTableRowFlags_None, settings->overlay_appearance.icon_size);
+
+                            ImGui::TableSetColumnIndex(0);
+                            ImGui::Image((ImU64)*it->icon.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
+
+                            ImGui::TableSetColumnIndex(1);
+                            ImGui::TextWrapped("%s", it->message.c_str());
+
+                            ImGui::EndTable();
+                        } else {
+                            ImGui::TextWrapped("%s", it->message.c_str());
+                        }
+                    }
                     break;
                 case notification_type_invite:
                     {
@@ -826,6 +875,51 @@ void Steam_Overlay::CreateFonts()
     reset_LastError();
 }
 
+void Steam_Overlay::LoadAudio()
+{
+    std::string file_path;
+    std::string file_name;
+    unsigned long long file_size;
+
+    for (int i = 0; i < 2; i++) {
+        if (i == 0) file_name = "overlay_achievement_notification.wav";
+        if (i == 1) file_name = "overlay_friend_notification.wav";
+
+        file_path = Local_Storage::get_game_settings_path() + file_name;
+        file_size = file_size_(file_path);
+        if (!file_size) {
+            if (settings->local_save.length() > 0) {
+                file_path = settings->local_save + "/settings/" + file_name;
+            } else {
+                file_path = Local_Storage::get_user_appdata_path() + "/settings/" + file_name;
+            }
+            file_size = file_size_(file_path);
+        }
+        if (file_size) {
+            std::ifstream myfile;
+            myfile.open(utf8_decode(file_path), std::ios::binary | std::ios::in);
+            if (myfile.is_open()) {
+                myfile.seekg (0, myfile.end);
+                int length = myfile.tellg();
+                myfile.seekg (0, myfile.beg);
+
+                if (i == 0) {
+                    notif_achievement_wav_custom = new char [length];
+                    myfile.read (notif_achievement_wav_custom, length);
+                    notif_achievement_wav_custom_inuse = true;
+                }
+                if (i == 1) {
+                    notif_invite_wav_custom = new char [length];
+                    myfile.read (notif_invite_wav_custom, length);
+                    notif_invite_wav_custom_inuse = true;
+                }
+
+                myfile.close();
+            }
+        }
+    }
+}
+
 // Try to make this function as short as possible or it might affect game's fps.
 void Steam_Overlay::OverlayProc()
 {
@@ -854,15 +948,21 @@ void Steam_Overlay::OverlayProc()
 
         bool show = true;
 
-        if (ImGui::Begin(translationSteamOverlay[current_language], &show, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus))
+        char tmp[TRANSLATION_BUFFER_SIZE];
+        snprintf(tmp, sizeof(tmp), translationRenderer[current_language], (_renderer == nullptr ? "Unknown" : _renderer->GetLibraryName().c_str()));
+        std::string windowTitle;
+        windowTitle.append(translationSteamOverlay[current_language]);
+        windowTitle.append(" (");
+        windowTitle.append(tmp);
+        windowTitle.append(")");
+
+        if (ImGui::Begin(windowTitle.c_str(), &show, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus))
         {
             ImGui::LabelText("##label", translationUserPlaying[current_language],
                 settings->get_local_name(),
                 settings->get_local_steam_id().ConvertToUint64(),
                 settings->get_local_game_id().AppID());
             ImGui::SameLine();
-
-            ImGui::LabelText("##label", translationRenderer[current_language], (_renderer == nullptr ? "Unknown" : _renderer->GetLibraryName().c_str()));
 
             ImGui::Spacing();
             if (ImGui::Button(translationShowAchievements[current_language])) {
@@ -913,8 +1013,34 @@ void Steam_Overlay::OverlayProc()
                         bool achieved = x.achieved;
                         bool hidden = x.hidden && !achieved;
 
+                        if (x.icon.expired()) {
+                            std::string file_path = Local_Storage::get_game_settings_path() + x.icon_name;
+                            unsigned long long file_size = file_size_(file_path);
+                            if (file_size) {
+                                std::string img = Local_Storage::load_image_resized(file_path, "", settings->overlay_appearance.icon_size);
+                                if (img.length() > 0) {
+                                    if (_renderer) x.icon = _renderer->CreateImageResource((void*)img.c_str(), settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size);
+                                }
+                            }
+                        }
+
                         ImGui::Separator();
-                        ImGui::Text("%s", x.title.c_str());
+
+                        if (!x.icon.expired()) {
+                            ImGui::BeginTable(x.title.c_str(), 2);
+                            ImGui::TableSetupColumn("imgui_table_image", ImGuiTableColumnFlags_WidthFixed, settings->overlay_appearance.icon_size);
+                            ImGui::TableSetupColumn("imgui_table_text");
+                            ImGui::TableNextRow(ImGuiTableRowFlags_None, settings->overlay_appearance.icon_size);
+
+                            ImGui::TableSetColumnIndex(0);
+                            ImGui::Image((ImU64)*x.icon.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
+
+                            ImGui::TableSetColumnIndex(1);
+                            ImGui::Text("%s", x.title.c_str());
+                        } else {
+                            ImGui::Text("%s", x.title.c_str());
+                        }
+
                         if (hidden) {
                             ImGui::Text(translationHiddenAchievement[current_language]);
                         } else {
@@ -930,6 +1056,9 @@ void Steam_Overlay::OverlayProc()
                         } else {
                             ImGui::TextColored(ImVec4(255, 0, 0, 255), translationNotAchieved[current_language]);
                         }
+
+                        if (!x.icon.expired()) ImGui::EndTable();
+
                         ImGui::Separator();
                     }
                     ImGui::EndChild();
@@ -1084,6 +1213,9 @@ void Steam_Overlay::RunCallbacks()
                     ach.unlock_time = 0;
                 }
 
+                if (achieved) ach.icon_name = steamUserStats->get_achievement_icon_name(ach.name.c_str(), true);
+                else ach.icon_name = steamUserStats->get_achievement_icon_name(ach.name.c_str(), false);
+
                 achievements.push_back(ach);
             }
 
@@ -1096,6 +1228,7 @@ void Steam_Overlay::RunCallbacks()
             _renderer = future_renderer.get();
             PRINT_DEBUG("got renderer %p\n", _renderer);
             CreateFonts();
+            LoadAudio();
         }
     }
 

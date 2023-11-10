@@ -1,0 +1,1 @@
+Rename this to: steam_deck.txt to pretend steam is running on a steam deck.

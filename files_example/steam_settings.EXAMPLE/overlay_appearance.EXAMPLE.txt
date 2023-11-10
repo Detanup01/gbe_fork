@@ -1,1 +1,2 @@
 Font_Size 16.0
+Icon_Size 64.0
