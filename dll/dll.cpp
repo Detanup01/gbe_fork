@@ -132,9 +132,12 @@ ISteamClient *g_pSteamClientGameServer;
 static Steam_Client *steamclient_instance;
 Steam_Client *get_steam_client()
 {
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!steamclient_instance) {
-        steamclient_instance = new Steam_Client();
+        std::lock_guard<std::recursive_mutex> lock(global_mutex);
+        // if we win the thread arbitration for the first time, this will still be null
+        if (!steamclient_instance) {
+            steamclient_instance = new Steam_Client();
+        }
     }
 
     return steamclient_instance;
