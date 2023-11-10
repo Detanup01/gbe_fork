@@ -160,13 +160,14 @@ def generate_controller_config(controller_vdf, config_dir):
 
     #print(all_bindings)
 
-    if not os.path.exists(config_dir):
-        os.makedirs(config_dir)
+    if all_bindings:
+        if not os.path.exists(config_dir):
+            os.makedirs(config_dir)
 
-    for k in all_bindings:
-        with open(os.path.join(config_dir, k + '.txt'), 'w') as f:
-            for b in all_bindings[k]:
-                f.write(b + "=" + ','.join(all_bindings[k][b]) + "\n")
+        for k in all_bindings:
+            with open(os.path.join(config_dir, k + '.txt'), 'w') as f:
+                for b in all_bindings[k]:
+                    f.write(b + "=" + ','.join(all_bindings[k][b]) + "\n")
 
 
 if __name__ == '__main__':

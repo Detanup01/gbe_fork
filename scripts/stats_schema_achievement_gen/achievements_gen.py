@@ -2,6 +2,7 @@ import vdf
 import sys
 import os
 import json
+import copy
 
 
 STAT_TYPE_INT = '1'
@@ -9,11 +10,13 @@ STAT_TYPE_FLOAT = '2'
 STAT_TYPE_AVGRATE = '3'
 STAT_TYPE_BITS = '4'
 
-def generate_stats_achievements(schema, config_directory):
+def generate_stats_achievements(
+        schema, config_directory
+    ) -> tuple[list[dict], list[dict], bool, bool]:
     schema = vdf.binary_loads(schema)
     # print(schema)
-    achievements_out = []
-    stats_out = []
+    achievements_out : list[dict] = []
+    stats_out : list[dict] = []
 
     for appid in schema:
         sch = schema[appid]
@@ -25,15 +28,19 @@ def generate_stats_achievements(schema, config_directory):
                 for ach_num in achs:
                     out = {}
                     ach = achs[ach_num]
-                    out["hidden"] = '0'
+                    out['hidden'] = 0
                     for x in ach['display']:
                         value = ach['display'][x]
                         if x == 'name':
                             x = 'displayName'
-                        if x == 'desc':
+                        elif x == 'desc':
                             x = 'description'
-                        if x == 'Hidden':
+                        elif x == 'Hidden' or f'{x}'.lower() == 'hidden':
                             x = 'hidden'
+                            try:
+                                value = int(value)
+                            except Exception as e:
+                                pass
                         out[x] = value
                     out['name'] = ach['name']
                     if 'progress' in ach:
@@ -57,20 +64,39 @@ def generate_stats_achievements(schema, config_directory):
                 stats_out += [out]
             #print(stat_info[s])
 
+    copy_default_unlocked_img = False
+    copy_default_locked_img = False
+    output_ach = copy.deepcopy(achievements_out)
+    for out_ach in output_ach:
+        icon = out_ach.get("icon", None)
+        if icon:
+            out_ach["icon"] = f"img/{icon}"
+        else:
+            out_ach["icon"] = r'img/steam_default_icon_unlocked.jpg'
+            copy_default_unlocked_img = True
 
+        icon_gray = out_ach.get("icon_gray", None)
+        if icon_gray:
+            out_ach["icon_gray"] = f"img/{icon_gray}"
+        else:
+            out_ach["icon_gray"] = r'img/steam_default_icon_locked.jpg'
+            copy_default_locked_img = True
 
-    output_ach = json.dumps(achievements_out, indent=4)
-    output_stats = ""
+        icongray = out_ach.get("icongray", None)
+        if icongray:
+            out_ach["icongray"] = f"{icongray}"
+
+    output_stats : list[str] = []
     for s in stats_out:
         default_num = 0
-        if (s['type'] == 'int'):
+        if f"{s['type']}".lower() == 'int':
             try:
                 default_num = int(s['default'])
             except ValueError:
                 default_num = int(float(s['default']))
         else:
             default_num = float(s['default'])
-        output_stats += "{}={}={}\n".format(s['name'], s['type'], default_num)
+        output_stats.append(f"{s['name']}={s['type']}={default_num}\n")
 
     # print(output_ach)
     # print(output_stats)
@@ -78,13 +104,16 @@ def generate_stats_achievements(schema, config_directory):
     if not os.path.exists(config_directory):
         os.makedirs(config_directory)
 
-    with open(os.path.join(config_directory, "achievements.json"), 'w') as f:
-        f.write(output_ach)
+    if output_ach:
+        with open(os.path.join(config_directory, "achievements.json"), 'wt', encoding='utf-8') as f:
+            json.dump(output_ach, f, indent=2)
 
-    with open(os.path.join(config_directory, "stats.txt"), 'w', encoding='utf-8') as f:
-        f.write(output_stats)
+    if output_stats:
+        with open(os.path.join(config_directory, "stats.txt"), 'wt', encoding='utf-8') as f:
+            f.writelines(output_stats)
 
-    return (achievements_out, stats_out)
+    return (achievements_out, stats_out,
+            copy_default_unlocked_img, copy_default_locked_img)
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
