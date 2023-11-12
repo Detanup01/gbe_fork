@@ -833,7 +833,7 @@ BOOL WINAPI DllMain( HINSTANCE, DWORD dwReason, LPVOID ) {
                 DetourAttach( &(PVOID &)Real_Connect, Mine_Connect );
                 DetourAttach( &(PVOID &)Real_WSAConnect, Mine_WSAConnect );
 
-                HMODULE winhttp = GetModuleHandle("winhttp.dll");
+                HMODULE winhttp = GetModuleHandleA("winhttp.dll");
                 if (winhttp) {
                     Real_WinHttpConnect = (decltype(Real_WinHttpConnect))GetProcAddress(winhttp, "WinHttpConnect");
                     DetourAttach( &(PVOID &)Real_WinHttpConnect, Mine_WinHttpConnect );
