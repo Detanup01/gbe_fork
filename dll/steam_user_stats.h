@@ -487,6 +487,9 @@ bool SetAchievement( const char *pchName )
 {
     PRINT_DEBUG("SetAchievement %s\n", pchName);
     if (pchName == nullptr) return false;
+    
+    if (settings->achievement_bypass) return true;
+
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     try {

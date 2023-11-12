@@ -102,13 +102,93 @@ static void load_overlay_appearance(std::string appearance_filepath, Settings *s
 
             try {
                 if (name.compare("Font_Size") == 0) {
-                    float nfont_size = std::stoull(value, NULL, 0);
+                    float nfont_size = std::stof(value, NULL);
                     settings_client->overlay_appearance.font_size = nfont_size;
                     settings_server->overlay_appearance.font_size = nfont_size;
                 } else if (name.compare("Icon_Size") == 0) {
-                    float nicon_size = std::stoull(value, NULL, 0);
+                    float nicon_size = std::stof(value, NULL);
                     settings_client->overlay_appearance.icon_size = nicon_size;
                     settings_server->overlay_appearance.icon_size = nicon_size;
+                } else if (name.compare("Notification_R") == 0) {
+                    float nnotification_r = std::stof(value, NULL);
+                    settings_client->overlay_appearance.notification_r = nnotification_r;
+                    settings_server->overlay_appearance.notification_r = nnotification_r;
+                } else if (name.compare("Notification_G") == 0) {
+                    float nnotification_g = std::stof(value, NULL);
+                    settings_client->overlay_appearance.notification_g = nnotification_g;
+                    settings_server->overlay_appearance.notification_g = nnotification_g;
+                } else if (name.compare("Notification_B") == 0) {
+                    float nnotification_b = std::stof(value, NULL);
+                    settings_client->overlay_appearance.notification_b = nnotification_b;
+                    settings_server->overlay_appearance.notification_b = nnotification_b;
+                } else if (name.compare("Notification_A") == 0) {
+                    float nnotification_a = std::stof(value, NULL);
+                    settings_client->overlay_appearance.notification_a = nnotification_a;
+                    settings_server->overlay_appearance.notification_a = nnotification_a;
+                } else if (name.compare("Background_R") == 0) {
+                    float nbackground_r = std::stof(value, NULL);
+                    settings_client->overlay_appearance.background_r = nbackground_r;
+                    settings_server->overlay_appearance.background_r = nbackground_r;
+                } else if (name.compare("Background_G") == 0) {
+                    float nbackground_g = std::stof(value, NULL);
+                    settings_client->overlay_appearance.background_g = nbackground_g;
+                    settings_server->overlay_appearance.background_g = nbackground_g;
+                } else if (name.compare("Background_B") == 0) {
+                    float nbackground_b = std::stof(value, NULL);
+                    settings_client->overlay_appearance.background_b = nbackground_b;
+                    settings_server->overlay_appearance.background_b = nbackground_b;
+                } else if (name.compare("Background_A") == 0) {
+                    float nbackground_a = std::stof(value, NULL);
+                    settings_client->overlay_appearance.background_a = nbackground_a;
+                    settings_server->overlay_appearance.background_a = nbackground_a;
+                } else if (name.compare("Element_R") == 0) {
+                    float nelement_r = std::stof(value, NULL);
+                    settings_client->overlay_appearance.element_r = nelement_r;
+                    settings_server->overlay_appearance.element_r = nelement_r;
+                } else if (name.compare("Element_G") == 0) {
+                    float nelement_g = std::stof(value, NULL);
+                    settings_client->overlay_appearance.element_g = nelement_g;
+                    settings_server->overlay_appearance.element_g = nelement_g;
+                } else if (name.compare("Element_B") == 0) {
+                    float nelement_b = std::stof(value, NULL);
+                    settings_client->overlay_appearance.element_b = nelement_b;
+                    settings_server->overlay_appearance.element_b = nelement_b;
+                } else if (name.compare("Element_A") == 0) {
+                    float nelement_a = std::stof(value, NULL);
+                    settings_client->overlay_appearance.element_a = nelement_a;
+                    settings_server->overlay_appearance.element_a = nelement_a;
+                } else if (name.compare("ElementHovered_R") == 0) {
+                    float nelement_hovered_r = std::stof(value, NULL);
+                    settings_client->overlay_appearance.element_hovered_r = nelement_hovered_r;
+                    settings_server->overlay_appearance.element_hovered_r = nelement_hovered_r;
+                } else if (name.compare("ElementHovered_G") == 0) {
+                    float nelement_hovered_g = std::stof(value, NULL);
+                    settings_client->overlay_appearance.element_hovered_g = nelement_hovered_g;
+                    settings_server->overlay_appearance.element_hovered_g = nelement_hovered_g;
+                } else if (name.compare("ElementHovered_B") == 0) {
+                    float nelement_hovered_b = std::stof(value, NULL);
+                    settings_client->overlay_appearance.element_hovered_b = nelement_hovered_b;
+                    settings_server->overlay_appearance.element_hovered_b = nelement_hovered_b;
+                } else if (name.compare("ElementHovered_A") == 0) {
+                    float nelement_hovered_a = std::stof(value, NULL);
+                    settings_client->overlay_appearance.element_hovered_a = nelement_hovered_a;
+                    settings_server->overlay_appearance.element_hovered_a = nelement_hovered_a;
+                } else if (name.compare("ElementActive_R") == 0) {
+                    float nelement_active_r = std::stof(value, NULL);
+                    settings_client->overlay_appearance.element_active_r = nelement_active_r;
+                    settings_server->overlay_appearance.element_active_r = nelement_active_r;
+                } else if (name.compare("ElementActive_G") == 0) {
+                    float nelement_active_g = std::stof(value, NULL);
+                    settings_client->overlay_appearance.element_active_g = nelement_active_g;
+                    settings_server->overlay_appearance.element_active_g = nelement_active_g;
+                } else if (name.compare("ElementActive_B") == 0) {
+                    float nelement_active_b = std::stof(value, NULL);
+                    settings_client->overlay_appearance.element_active_b = nelement_active_b;
+                    settings_server->overlay_appearance.element_active_b = nelement_active_b;
+                } else if (name.compare("ElementActive_A") == 0) {
+                    float nelement_active_a = std::stof(value, NULL);
+                    settings_client->overlay_appearance.element_active_a = nelement_active_a;
+                    settings_server->overlay_appearance.element_active_a = nelement_active_a;
                 }
                 PRINT_DEBUG("Overlay appearance %s %s\n", name.c_str(), value.c_str());
             } catch (...) {}
@@ -376,9 +456,11 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     bool disable_overlay = false;
     bool disable_overlay_achievement_notification = false;
     bool disable_overlay_friend_notification = false;
+    bool disable_overlay_warning = false;
     bool disable_lobby_creation = false;
     bool disable_source_query = false;
     bool disable_account_avatar = false;
+    bool achievement_bypass = false;
     int build_id = 10;
 
     bool warn_forced = false;
@@ -403,12 +485,16 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
                 disable_overlay_achievement_notification = true;
             } else if (p == "disable_overlay_friend_notification.txt") {
                 disable_overlay_friend_notification = true;
+            } else if (p == "disable_overlay_warning.txt") {
+                disable_overlay_warning = true;
             } else if (p == "disable_lobby_creation.txt") {
                 disable_lobby_creation = true;
             } else if (p == "disable_source_query.txt") {
                 disable_source_query = true;
             } else if (p == "disable_account_avatar.txt") {
                 disable_account_avatar = true;
+            } else if (p == "achievements_bypass.txt") {
+                achievement_bypass = true;
             } else if (p == "force_language.txt") {
                 int len = Local_Storage::get_file_data(steam_settings_path + "force_language.txt", language, sizeof(language) - 1);
                 if (len > 0) {
@@ -459,6 +545,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     settings_server->disable_overlay_achievement_notification = disable_overlay_achievement_notification;
     settings_client->disable_overlay_friend_notification = disable_overlay_friend_notification;
     settings_server->disable_overlay_friend_notification = disable_overlay_friend_notification;
+    settings_client->disable_overlay_warning = disable_overlay_warning;
+    settings_server->disable_overlay_warning = disable_overlay_warning;
     settings_client->disable_lobby_creation = disable_lobby_creation;
     settings_server->disable_lobby_creation = disable_lobby_creation;
     settings_client->disable_source_query = disable_source_query;
@@ -477,6 +565,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     settings_server->steam_deck = steam_deck_mode;
     settings_client->http_online = steamhttp_online_mode;
     settings_server->http_online = steamhttp_online_mode;
+    settings_client->achievement_bypass = achievement_bypass;
+    settings_server->achievement_bypass = achievement_bypass;
 
     if (local_save) {
         settings_client->local_save = save_path;

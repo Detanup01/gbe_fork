@@ -452,6 +452,10 @@ void Steam_Overlay::AddAchievementNotification(nlohmann::json const& ach)
             // Load achievement image
             std::string file_path = Local_Storage::get_game_settings_path() + ach["icon"].get<std::string>();
             unsigned long long file_size = file_size_(file_path);
+            if (!file_size) {
+                file_path = Local_Storage::get_game_settings_path() + "achievement_images/" + ach["icon"].get<std::string>();
+                file_size = file_size_(file_path);
+            }
             if (file_size) {
                 std::string img = Local_Storage::load_image_resized(file_path, "", settings->overlay_appearance.icon_size);
                 if (img.length() > 0) {
@@ -695,23 +699,23 @@ void Steam_Overlay::BuildNotifications(int width, int height)
 
             if ( elapsed_notif < Notification::fade_in)
             {
-                float alpha = Notification::max_alpha * (elapsed_notif.count() / static_cast<float>(Notification::fade_in.count()));
+                float alpha = settings->overlay_appearance.notification_a * (elapsed_notif.count() / static_cast<float>(Notification::fade_in.count()));
                 ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, alpha));
-                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(Notification::r, Notification::g, Notification::b, alpha));
+                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(settings->overlay_appearance.notification_r, settings->overlay_appearance.notification_g, settings->overlay_appearance.notification_b, alpha));
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 255, 255, alpha*2));
             }
             else if ( elapsed_notif > Notification::fade_out_start)
             {
-                float alpha = Notification::max_alpha * ((Notification::show_time - elapsed_notif).count() / static_cast<float>(Notification::fade_out.count()));
+                float alpha = settings->overlay_appearance.notification_a * ((Notification::show_time - elapsed_notif).count() / static_cast<float>(Notification::fade_out.count()));
                 ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, alpha));
-                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(Notification::r, Notification::g, Notification::b, alpha));
+                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(settings->overlay_appearance.notification_r, settings->overlay_appearance.notification_g, settings->overlay_appearance.notification_b, alpha));
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 255, 255, alpha*2));
             }
             else
             {
-                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, Notification::max_alpha));
-                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(Notification::r, Notification::g, Notification::b, Notification::max_alpha));
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 255, 255, Notification::max_alpha*2));
+                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, settings->overlay_appearance.notification_a));
+                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(settings->overlay_appearance.notification_r, settings->overlay_appearance.notification_g, settings->overlay_appearance.notification_b, settings->overlay_appearance.notification_a));
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 255, 255, settings->overlay_appearance.notification_a*2));
             }
             
             ImGui::SetNextWindowPos(ImVec2((float)width - width * Notification::width, Notification::height * font_size * i ));
@@ -956,6 +960,33 @@ void Steam_Overlay::OverlayProc()
         windowTitle.append(tmp);
         windowTitle.append(")");
 
+        if ((settings->overlay_appearance.background_r != -1.0) && (settings->overlay_appearance.background_g != -1.0) && (settings->overlay_appearance.background_b != -1.0) && (settings->overlay_appearance.background_a != -1.0)) {
+            ImVec4 colorSet = ImVec4(settings->overlay_appearance.background_r, settings->overlay_appearance.background_g, settings->overlay_appearance.background_b, settings->overlay_appearance.background_a);
+            ImGui::PushStyleColor(ImGuiCol_WindowBg, colorSet);
+        }
+        if ((settings->overlay_appearance.element_r != -1.0) && (settings->overlay_appearance.element_g != -1.0) && (settings->overlay_appearance.element_b != -1.0) && (settings->overlay_appearance.element_a != -1.0)) {
+            ImVec4 colorSet = ImVec4(settings->overlay_appearance.element_r, settings->overlay_appearance.element_g, settings->overlay_appearance.element_b, settings->overlay_appearance.element_a);
+            ImGui::PushStyleColor(ImGuiCol_TitleBgActive, colorSet);
+            ImGui::PushStyleColor(ImGuiCol_Button, colorSet);
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, colorSet);
+            ImGui::PushStyleColor(ImGuiCol_ResizeGrip, colorSet);
+        }
+        if ((settings->overlay_appearance.element_hovered_r != -1.0) && (settings->overlay_appearance.element_hovered_g != -1.0) && (settings->overlay_appearance.element_hovered_b != -1.0) && (settings->overlay_appearance.element_hovered_a != -1.0)) {
+            ImVec4 colorSet = ImVec4(settings->overlay_appearance.element_hovered_r, settings->overlay_appearance.element_hovered_g, settings->overlay_appearance.element_hovered_b, settings->overlay_appearance.element_hovered_a);
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colorSet);
+            ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, colorSet);
+            ImGui::PushStyleColor(ImGuiCol_ResizeGripHovered, colorSet);
+            ImGui::PushStyleColor(ImGuiCol_HeaderHovered, colorSet);
+        }
+        if ((settings->overlay_appearance.element_active_r != -1.0) && (settings->overlay_appearance.element_active_g != -1.0) && (settings->overlay_appearance.element_active_b != -1.0) && (settings->overlay_appearance.element_active_a != -1.0)) {
+            ImVec4 colorSet = ImVec4(settings->overlay_appearance.element_active_r, settings->overlay_appearance.element_active_g, settings->overlay_appearance.element_active_b, settings->overlay_appearance.element_active_a);
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, colorSet);
+            ImGui::PushStyleColor(ImGuiCol_FrameBgActive, colorSet);
+            ImGui::PushStyleColor(ImGuiCol_ResizeGripActive, colorSet);
+            ImGui::PushStyleColor(ImGuiCol_Header, colorSet);
+            ImGui::PushStyleColor(ImGuiCol_HeaderActive, colorSet);
+        }
+
         if (ImGui::Begin(windowTitle.c_str(), &show, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus))
         {
             ImGui::LabelText("##label", translationUserPlaying[current_language],
@@ -1016,6 +1047,10 @@ void Steam_Overlay::OverlayProc()
                         if (x.icon.expired()) {
                             std::string file_path = Local_Storage::get_game_settings_path() + x.icon_name;
                             unsigned long long file_size = file_size_(file_path);
+                            if (!file_size) {
+                                file_path = Local_Storage::get_game_settings_path() + "achievement_images/" + x.icon_name;
+                                file_size = file_size_(file_path);
+                            }
                             if (file_size) {
                                 std::string img = Local_Storage::load_image_resized(file_path, "", settings->overlay_appearance.icon_size);
                                 if (img.length() > 0) {
@@ -1023,17 +1058,35 @@ void Steam_Overlay::OverlayProc()
                                 }
                             }
                         }
+                        if (x.icon_gray.expired()) {
+                            std::string file_path = Local_Storage::get_game_settings_path() + x.icon_gray_name;
+                            unsigned long long file_size = file_size_(file_path);
+                            if (!file_size) {
+                                file_path = Local_Storage::get_game_settings_path() + "achievement_images/" + x.icon_gray_name;
+                                file_size = file_size_(file_path);
+                            }
+                            if (file_size) {
+                                std::string img = Local_Storage::load_image_resized(file_path, "", settings->overlay_appearance.icon_size);
+                                if (img.length() > 0) {
+                                    if (_renderer) x.icon_gray = _renderer->CreateImageResource((void*)img.c_str(), settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size);
+                                }
+                            }
+                        }
 
                         ImGui::Separator();
 
-                        if (!x.icon.expired()) {
+                        if (!x.icon.expired() && !x.icon_gray.expired()) {
                             ImGui::BeginTable(x.title.c_str(), 2);
                             ImGui::TableSetupColumn("imgui_table_image", ImGuiTableColumnFlags_WidthFixed, settings->overlay_appearance.icon_size);
                             ImGui::TableSetupColumn("imgui_table_text");
                             ImGui::TableNextRow(ImGuiTableRowFlags_None, settings->overlay_appearance.icon_size);
 
                             ImGui::TableSetColumnIndex(0);
-                            ImGui::Image((ImU64)*x.icon.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
+                            if (achieved) {
+                                ImGui::Image((ImU64)*x.icon.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
+                            } else {
+                                ImGui::Image((ImU64)*x.icon_gray.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
+                            }
 
                             ImGui::TableSetColumnIndex(1);
                             ImGui::Text("%s", x.title.c_str());
@@ -1057,7 +1110,7 @@ void Steam_Overlay::OverlayProc()
                             ImGui::TextColored(ImVec4(255, 0, 0, 255), translationNotAchieved[current_language]);
                         }
 
-                        if (!x.icon.expired()) ImGui::EndTable();
+                        if (!x.icon.expired() && !x.icon_gray.expired()) ImGui::EndTable();
 
                         ImGui::Separator();
                     }
@@ -1122,7 +1175,7 @@ void Steam_Overlay::OverlayProc()
                 ImGui::End();
             }
 
-            bool show_warning = local_save || warning_forced || appid == 0;
+            bool show_warning = (local_save & !settings->disable_overlay_warning) || warning_forced || appid == 0;
             if (show_warning) {
                 ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 32, ImGui::GetFontSize() * 32), ImVec2(8192, 8192));
                 ImGui::SetNextWindowFocus();
@@ -1213,8 +1266,8 @@ void Steam_Overlay::RunCallbacks()
                     ach.unlock_time = 0;
                 }
 
-                if (achieved) ach.icon_name = steamUserStats->get_achievement_icon_name(ach.name.c_str(), true);
-                else ach.icon_name = steamUserStats->get_achievement_icon_name(ach.name.c_str(), false);
+                ach.icon_name = steamUserStats->get_achievement_icon_name(ach.name.c_str(), true);
+                ach.icon_gray_name = steamUserStats->get_achievement_icon_name(ach.name.c_str(), false);
 
                 achievements.push_back(ach);
             }

@@ -1121,7 +1121,7 @@ const char *GetGlyphPNGForActionOrigin( EInputActionOrigin eOrigin, ESteamInputG
 {
     PRINT_DEBUG("TODO %s\n", __FUNCTION__);
     //TODO SteamInput005
-    return "";
+    return GetGlyphForActionOrigin(eOrigin);
 }
 
 // Get a local path to a SVG file for the provided origin's glyph. 

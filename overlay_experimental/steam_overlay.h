@@ -58,10 +58,6 @@ struct Notification
     static constexpr std::chrono::milliseconds fade_out  = std::chrono::milliseconds(2000);
     static constexpr std::chrono::milliseconds show_time = std::chrono::milliseconds(6000) + fade_in + fade_out;
     static constexpr std::chrono::milliseconds fade_out_start = show_time - fade_out;
-    static constexpr float r = 0.16;
-    static constexpr float g = 0.29;
-    static constexpr float b = 0.48;
-    static constexpr float max_alpha = 1.0f;
 
     int id;
     uint8 type;
@@ -77,10 +73,12 @@ struct Overlay_Achievement
     std::string title;
     std::string description;
     std::string icon_name;
+    std::string icon_gray_name;
     bool hidden;
     bool achieved;
     uint32 unlock_time;
     std::weak_ptr<uint64_t> icon;
+    std::weak_ptr<uint64_t> icon_gray;
 };
 
 #ifdef EMU_OVERLAY

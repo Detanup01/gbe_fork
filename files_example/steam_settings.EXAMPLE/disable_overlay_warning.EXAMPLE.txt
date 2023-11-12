@@ -1,0 +1,1 @@
+Rename this to: disable_overlay_warning.txt to disable the local_save warning.

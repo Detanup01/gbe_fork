@@ -101,6 +101,26 @@ struct Group_Clans {
 struct Overlay_Appearance {
     float font_size = 16.0;
     float icon_size = 64.0;
+    float notification_r = 0.16;
+    float notification_g = 0.29;
+    float notification_b = 0.48;
+    float notification_a = 1.0;
+    float background_r = -1.0;
+    float background_g = -1.0;
+    float background_b = -1.0;
+    float background_a = -1.0;
+    float element_r = -1.0;
+    float element_g = -1.0;
+    float element_b = -1.0;
+    float element_a = -1.0;
+    float element_hovered_r = -1.0;
+    float element_hovered_g = -1.0;
+    float element_hovered_b = -1.0;
+    float element_hovered_a = -1.0;
+    float element_active_r = -1.0;
+    float element_active_g = -1.0;
+    float element_active_b = -1.0;
+    float element_active_a = -1.0;
 };
 
 class Settings {
@@ -174,6 +194,8 @@ public:
     //stats
     std::map<std::string, Stat_config> getStats() { return stats; }
     void setStatDefiniton(std::string name, struct Stat_config stat_config) {stats[ascii_to_lowercase(name)] = stat_config; }
+    // bypass to make SetAchievement() always return true, prevent some games from breaking
+    bool achievement_bypass = false;
 
     //subscribed lobby/group ids
     std::set<uint64> subscribed_groups;
@@ -198,6 +220,7 @@ public:
     bool disable_overlay = false;
     bool disable_overlay_achievement_notification = false;
     bool disable_overlay_friend_notification = false;
+    bool disable_overlay_warning = false;
     Overlay_Appearance overlay_appearance;
 
     //app build id

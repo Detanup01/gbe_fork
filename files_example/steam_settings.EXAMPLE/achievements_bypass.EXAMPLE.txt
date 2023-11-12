@@ -1,0 +1,1 @@
+Rename this to: achievements_bypass.txt to make SetAchievement() always return true.
