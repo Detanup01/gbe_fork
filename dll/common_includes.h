@@ -171,6 +171,7 @@ inline std::string ascii_to_lowercase(std::string data) {
 
 // Other libs includes
 #include "../json/json.hpp"
+#include "../utfcpp/utf8.h"
 #include "../controller/gamepad.h"
 
 // Steamsdk includes
