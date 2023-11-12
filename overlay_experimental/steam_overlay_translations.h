@@ -914,10 +914,10 @@ const char translationRenderer[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
 	"Renderer: %s",
 
 	// 22 - Spanish
-	"Renderer: %s",
+	"Renderizador: %s",
 
 	// 23 - Latin American
-	"Renderer: %s",
+	"Renderizador: %s",
 
 	// 24 - Swedish
 	"Renderer: %s",
@@ -1006,10 +1006,10 @@ const char translationShowAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
 	"Show Achievements",
 
 	// 22 - Spanish
-	"Show Achievements",
+	"Mostrar Logros",
 
 	// 23 - Latin American
-	"Show Achievements",
+	"Mostrar Logros",
 
 	// 24 - Swedish
 	"Show Achievements",
@@ -1287,7 +1287,7 @@ const char translationAchievementWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
 	"Achievement Window",
 
 	// 22 - Spanish
-	"Achievement Window",
+	"Ventana de Logros",
 
 	// 23 - Latin American
 	"Achievement Window",
@@ -1379,7 +1379,7 @@ const char translationListOfAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSL
 	"List of achievements",
 
 	// 22 - Spanish
-	"List of achievements",
+	"Lista de Logros",
 
 	// 23 - Latin American
 	"List of achievements",
@@ -1471,7 +1471,7 @@ const char translationAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_
 	"Achievements",
 
 	// 22 - Spanish
-	"Achievements",
+	"Logros",
 
 	// 23 - Latin American
 	"Achievements",
@@ -1563,10 +1563,10 @@ const char translationHiddenAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
 	"hidden achievement",
 
 	// 22 - Spanish
-	"hidden achievement",
+	"Logro oculto",
 
 	// 23 - Latin American
-	"hidden achievement",
+	"Logro oculto",
 
 	// 24 - Swedish
 	"hidden achievement",
@@ -1655,10 +1655,10 @@ const char translationAchievedOn[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BU
 	"achieved on %s",
 
 	// 22 - Spanish
-	"achieved on %s",
+	"desbloqueado el %s",
 
 	// 23 - Latin American
-	"achieved on %s",
+	"logrado el %s",
 
 	// 24 - Swedish
 	"achieved on %s",
@@ -1747,10 +1747,10 @@ const char translationNotAchieved[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
 	"not achieved",
 
 	// 22 - Spanish
-	"not achieved",
+	"bloqueado",
 
 	// 23 - Latin American
-	"not achieved",
+	"no logrado",
 
 	// 24 - Swedish
 	"not achieved",
@@ -1839,10 +1839,10 @@ const char translationGlobalSettingsWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRAN
 	"Global Settings Window",
 
 	// 22 - Spanish
-	"Global Settings Window",
+	"Ventana de Configuración",
 
 	// 23 - Latin American
-	"Global Settings Window",
+	"Ventana de Párametros",
 
 	// 24 - Swedish
 	"Global Settings Window",
@@ -1931,7 +1931,7 @@ const char translationGlobalSettingsWindowDescription[TRANSLATION_NUMBER_OF_LANG
 	"These are global emulator settings and will apply to all games.",
 
 	// 22 - Spanish
-	"These are global emulator settings and will apply to all games.",
+	"Configuración del emulador para aplicar a todos los juegos.",
 
 	// 23 - Latin American
 	"These are global emulator settings and will apply to all games.",
@@ -2023,10 +2023,10 @@ const char translationUsername[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
 	"Username:",
 
 	// 22 - Spanish
-	"Username:",
+	"Usuario:",
 
 	// 23 - Latin American
-	"Username:",
+	"Usuario:",
 
 	// 24 - Swedish
 	"Username:",
@@ -2115,10 +2115,10 @@ const char translationLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
 	"Language:",
 
 	// 22 - Spanish
-	"Language:",
+	"Idioma:",
 
 	// 23 - Latin American
-	"Language:",
+	"Lenguaje:",
 
 	// 24 - Swedish
 	"Language:",
@@ -2207,10 +2207,10 @@ const char translationSelectedLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
 	"Selected Language: %s",
 
 	// 22 - Spanish
-	"Selected Language: %s",
+	"Selecciona Idioma: %s",
 
 	// 23 - Latin American
-	"Selected Language: %s",
+	"Selecciona Lenguaje: %s",
 
 	// 24 - Swedish
 	"Selected Language: %s",
@@ -2299,7 +2299,7 @@ const char translationRestartTheGameToApply[TRANSLATION_NUMBER_OF_LANGUAGES][TRA
 	"You may have to restart the game for these to apply.",
 
 	// 22 - Spanish
-	"You may have to restart the game for these to apply.",
+	"Quizás debas reiniciar el juego para aplicar los cambios.",
 
 	// 23 - Latin American
 	"You may have to restart the game for these to apply.",
@@ -2391,10 +2391,10 @@ const char translationSave[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
 	"Save",
 
 	// 22 - Spanish
-	"Save",
+	"Guardar",
 
 	// 23 - Latin American
-	"Save",
+	"Guardar",
 
 	// 24 - Swedish
 	"Save",
@@ -2483,7 +2483,7 @@ const char translationWarning[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
 	"WARNING",
 
 	// 22 - Spanish
-	"WARNING",
+	"ADVERTENCIA",
 
 	// 23 - Latin American
 	"WARNING",
@@ -2575,7 +2575,7 @@ const char translationWarningWarningWarning[TRANSLATION_NUMBER_OF_LANGUAGES][TRA
 	"WARNING WARNING WARNING",
 
 	// 22 - Spanish
-	"WARNING WARNING WARNING",
+	"ADVERTENCIA ADVERTENCIA ADVERTENCIA",
 
 	// 23 - Latin American
 	"WARNING WARNING WARNING",
@@ -2667,7 +2667,7 @@ const char translationWarningDescription1[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
 	"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 22 - Spanish
-	"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+	"Un archivo de steam_settings/force_*.txt ha sido detectado. Por favor bórralo si quieres que el menu funcione.",
 
 	// 23 - Latin American
 	"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
@@ -2759,7 +2759,7 @@ const char translationWarningDescription2[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
 	"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 22 - Spanish
-	"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+	"AppID es 0, por favor crea un steam_appid.txt con la appid correcta y reinicia el juego.",
 
 	// 23 - Latin American
 	"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
@@ -2851,7 +2851,7 @@ const char translationWarningDescription3[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
 	"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 22 - Spanish
-	"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+	"local_save.txt detectado, el emulador está guardando en la carpeta del juego. Por favor bórralo si no quieres esto.",
 
 	// 23 - Latin American
 	"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
@@ -2943,7 +2943,7 @@ const char translationWarningDescription4[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
 	"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 22 - Spanish
-	"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+	"Un archivo steam_settings/force_*.txt ha sido detectado. No podrás guardar ciertas configuraciones.",
 
 	// 23 - Latin American
 	"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
@@ -3035,7 +3035,7 @@ const char translationSteamOverlayURL[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
 	"The game tried to get the steam overlay to open this url:",
 
 	// 22 - Spanish
-	"The game tried to get the steam overlay to open this url:",
+	"El juego intentó abrir una interfaz de steam en esta url:",
 
 	// 23 - Latin American
 	"The game tried to get the steam overlay to open this url:",
@@ -3221,10 +3221,10 @@ const char translationPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
 	" playing ",
 
 	// 22 - Spanish
-	" playing ",
+	" jugando ",
 
 	// 23 - Latin American
-	" playing ",
+	" jugando ",
 
 	// 24 - Swedish
 	" playing ",
