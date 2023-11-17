@@ -184,6 +184,7 @@ zlib_lib64="$deps_dir/zlib/install64/lib"
 
 release_incs_both=(
   "$ssq_inc"
+  "utfcpp"
 )
 release_incs32=(
   "${release_incs_both[@]}"
@@ -212,7 +213,7 @@ release_libs_dir64=(
 )
 
 release_ignore_warn="-Wno-return-type -Wno-switch -Wno-int-to-void-pointer-cast -Wno-null-conversion"
-common_defs="-DGNUC -DCURL_STATICLIB"
+common_defs="-DGNUC -DUTF_CPP_CPLUSPLUS=201703L -DCURL_STATICLIB"
 release_defs="$dbg_defs $common_defs"
 release_src=(
   "dll/*.cpp"
