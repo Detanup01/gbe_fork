@@ -190,11 +190,11 @@ set zlib_inc64=/I"%deps_dir%\zlib\install64\include"
 set zlib_lib32="%deps_dir%\zlib\install32\lib\zlibstatic.lib"
 set zlib_lib64="%deps_dir%\zlib\install64\lib\zlibstatic.lib"
 
-set release_incs_both=%ssq_inc%
+set release_incs_both=%ssq_inc% /Iutfcpp
 set release_incs32=%release_incs_both% %curl_inc32% %protob_inc32% %zlib_inc32%
 set release_incs64=%release_incs_both% %curl_inc64% %protob_inc64% %zlib_inc64%
 
-set "common_defs=/DCURL_STATICLIB /D_MT /DUNICODE /D_UNICODE"
+set "common_defs=/DUTF_CPP_CPLUSPLUS=201703L /DCURL_STATICLIB /D_MT /DUNICODE /D_UNICODE"
 set "release_defs=%dbg_defs% %common_defs%"
 
 :: copied from Visual Studio 2022
