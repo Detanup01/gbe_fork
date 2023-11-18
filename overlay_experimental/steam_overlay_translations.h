@@ -819,7 +819,7 @@ const char translationUserPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
 	"Username: %s(%llu) playing %u",
 
 	// 21 - Russian
-	"Username: %s(%llu) playing %u",
+	"Имя пользователя: %s(%llu) играет в %u",
 
 	// 22 - Spanish
 	"Username: %s(%llu) playing %u",
@@ -911,7 +911,7 @@ const char translationRenderer[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
 	"Renderer: %s",
 
 	// 21 - Russian
-	"Renderer: %s",
+	"Рендер: %s",
 
 	// 22 - Spanish
 	"Renderizador: %s",
@@ -1003,7 +1003,7 @@ const char translationShowAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
 	"Show Achievements",
 
 	// 21 - Russian
-	"Show Achievements",
+	"Показать Достижения",
 
 	// 22 - Spanish
 	"Mostrar Logros",
@@ -1284,7 +1284,7 @@ const char translationAchievementWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
 	"Achievement Window",
 
 	// 21 - Russian
-	"Achievement Window",
+	"Окно Достижений",
 
 	// 22 - Spanish
 	"Ventana de Logros",
@@ -1376,7 +1376,7 @@ const char translationListOfAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSL
 	"List of achievements",
 
 	// 21 - Russian
-	"List of achievements",
+	"Список достижений",
 
 	// 22 - Spanish
 	"Lista de Logros",
@@ -1468,7 +1468,7 @@ const char translationAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_
 	"Achievements",
 
 	// 21 - Russian
-	"Achievements",
+	"Достижения",
 
 	// 22 - Spanish
 	"Logros",
@@ -1560,7 +1560,7 @@ const char translationHiddenAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
 	"hidden achievement",
 
 	// 21 - Russian
-	"hidden achievement",
+	"скрытое достижение",
 
 	// 22 - Spanish
 	"Logro oculto",
@@ -1652,7 +1652,7 @@ const char translationAchievedOn[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BU
 	"achieved on %s",
 
 	// 21 - Russian
-	"achieved on %s",
+	"получено %s",
 
 	// 22 - Spanish
 	"desbloqueado el %s",
@@ -1744,7 +1744,7 @@ const char translationNotAchieved[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
 	"not achieved",
 
 	// 21 - Russian
-	"not achieved",
+	"не получено",
 
 	// 22 - Spanish
 	"bloqueado",
@@ -1836,7 +1836,7 @@ const char translationGlobalSettingsWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRAN
 	"Global Settings Window",
 
 	// 21 - Russian
-	"Global Settings Window",
+	"Окно Глобальных Настроек",
 
 	// 22 - Spanish
 	"Ventana de Configuración",
@@ -1928,7 +1928,7 @@ const char translationGlobalSettingsWindowDescription[TRANSLATION_NUMBER_OF_LANG
 	"These are global emulator settings and will apply to all games.",
 
 	// 21 - Russian
-	"These are global emulator settings and will apply to all games.",
+	"Это глобальные настройки эмулятора, которые будут применяться ко всем играм.",
 
 	// 22 - Spanish
 	"Configuración del emulador para aplicar a todos los juegos.",
@@ -2020,7 +2020,7 @@ const char translationUsername[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
 	"Username:",
 
 	// 21 - Russian
-	"Username:",
+	"Имя пользователя:",
 
 	// 22 - Spanish
 	"Usuario:",
@@ -2112,7 +2112,7 @@ const char translationLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
 	"Language:",
 
 	// 21 - Russian
-	"Language:",
+	"Язык:",
 
 	// 22 - Spanish
 	"Idioma:",
@@ -2204,7 +2204,7 @@ const char translationSelectedLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
 	"Selected Language: %s",
 
 	// 21 - Russian
-	"Selected Language: %s",
+	"Выбранный Язык: %s",
 
 	// 22 - Spanish
 	"Selecciona Idioma: %s",
@@ -2296,7 +2296,7 @@ const char translationRestartTheGameToApply[TRANSLATION_NUMBER_OF_LANGUAGES][TRA
 	"You may have to restart the game for these to apply.",
 
 	// 21 - Russian
-	"You may have to restart the game for these to apply.",
+	"Для применения изменений может потребоваться перезапуск игры.",
 
 	// 22 - Spanish
 	"Quizás debas reiniciar el juego para aplicar los cambios.",
@@ -2388,7 +2388,7 @@ const char translationSave[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
 	"Save",
 
 	// 21 - Russian
-	"Save",
+	"Сохранить",
 
 	// 22 - Spanish
 	"Guardar",
@@ -2480,7 +2480,7 @@ const char translationWarning[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
 	"WARNING",
 
 	// 21 - Russian
-	"WARNING",
+	"ВНИМАНИЕ",
 
 	// 22 - Spanish
 	"ADVERTENCIA",
@@ -2572,7 +2572,7 @@ const char translationWarningWarningWarning[TRANSLATION_NUMBER_OF_LANGUAGES][TRA
 	"WARNING WARNING WARNING",
 
 	// 21 - Russian
-	"WARNING WARNING WARNING",
+	"ВНИМАНИЕ ВНИМАНИЕ ВНИМАНИЕ",
 
 	// 22 - Spanish
 	"ADVERTENCIA ADVERTENCIA ADVERTENCIA",
@@ -2664,7 +2664,7 @@ const char translationWarningDescription1[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
 	"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 21 - Russian
-	"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+	"Обнаружены файлы steam_settings/force_*.txt. Пожалуйста, удалите их, если хотите, чтобы это меню работало.",
 
 	// 22 - Spanish
 	"Un archivo de steam_settings/force_*.txt ha sido detectado. Por favor bórralo si quieres que el menu funcione.",
@@ -2756,7 +2756,7 @@ const char translationWarningDescription2[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
 	"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 21 - Russian
-	"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+	"AppID равен 0, пожалуйста, создайте файл steam_appid.txt с правильным appid и перезапустите игру.",
 
 	// 22 - Spanish
 	"AppID es 0, por favor crea un steam_appid.txt con la appid correcta y reinicia el juego.",
@@ -2848,7 +2848,7 @@ const char translationWarningDescription3[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
 	"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 21 - Russian
-	"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+	"Обнаружен файл local_save.txt, эмулятор сохраняет локально в папку с игрой, если вам это не нужно, удалите его.",
 
 	// 22 - Spanish
 	"local_save.txt detectado, el emulador está guardando en la carpeta del juego. Por favor bórralo si no quieres esto.",
@@ -2940,7 +2940,7 @@ const char translationWarningDescription4[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
 	"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 21 - Russian
-	"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+	"Обнаружены файлы steam_settings/force_*.txt. Вы не сможете сохранить некоторые настройки.",
 
 	// 22 - Spanish
 	"Un archivo steam_settings/force_*.txt ha sido detectado. No podrás guardar ciertas configuraciones.",
@@ -3032,7 +3032,7 @@ const char translationSteamOverlayURL[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
 	"The game tried to get the steam overlay to open this url:",
 
 	// 21 - Russian
-	"The game tried to get the steam overlay to open this url:",
+	"Игра пыталась заставить оверлей Steam открыть этот url:",
 
 	// 22 - Spanish
 	"El juego intentó abrir una interfaz de steam en esta url:",
@@ -3218,7 +3218,7 @@ const char translationPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
 	" playing ",
 
 	// 21 - Russian
-	" playing ",
+	" играет в ",
 
 	// 22 - Spanish
 	" jugando ",
