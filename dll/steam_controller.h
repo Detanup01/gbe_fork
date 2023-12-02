@@ -1180,7 +1180,11 @@ EControllerActionOrigin TranslateActionOrigin( ESteamInputType eDestinationInput
 
 EInputActionOrigin TranslateActionOrigin( ESteamInputType eDestinationInputType, EInputActionOrigin eSourceOrigin )
 {
-    PRINT_DEBUG("Steam_Controller::TranslateActionOrigin steaminput\n");
+    PRINT_DEBUG("Steam_Controller::TranslateActionOrigin steaminput destinationinputtype %d sourceorigin %d\n", eDestinationInputType, eSourceOrigin );
+ 
+    if (eDestinationInputType == k_ESteamInputType_XBox360Controller)
+        return eSourceOrigin;
+ 
     return k_EInputActionOrigin_None;
 }
 
