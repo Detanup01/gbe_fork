@@ -41,6 +41,7 @@ public ISteamUGC013,
 public ISteamUGC014,
 public ISteamUGC015,
 public ISteamUGC016,
+public ISteamUGC017,
 public ISteamUGC
 {
     class Settings *settings;
@@ -537,11 +538,16 @@ bool SetItemVisibility( UGCUpdateHandle_t handle, ERemoteStoragePublishedFileVis
 
 bool SetItemTags( UGCUpdateHandle_t updateHandle, const SteamParamStringArray_t *pTags )
 {
+    PRINT_DEBUG("Steam_UGC::SetItemTags old\n");
+    return false;
+}
+
+bool SetItemTags( UGCUpdateHandle_t updateHandle, const SteamParamStringArray_t *pTags, bool bAllowAdminTags )
+{
     PRINT_DEBUG("Steam_UGC::SetItemTags\n");
     return false;
 }
  // change the tags of an UGC item
-
 
 bool SetItemContent( UGCUpdateHandle_t handle, const char *pszContentFolder )
 {
@@ -929,5 +935,11 @@ SteamAPICall_t GetWorkshopEULAStatus()
     return 0;
 }
 
+// Return the user's community content descriptor preferences
+uint32 GetUserContentDescriptorPreferences( EUGCContentDescriptorID *pvecDescriptors, uint32 cMaxEntries )
+{
+    PRINT_DEBUG("%s\n", __FUNCTION__);
+    return 0;
+}
 
 };

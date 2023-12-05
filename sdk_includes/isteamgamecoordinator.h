@@ -1,4 +1,4 @@
-//====== Copyright �, Valve Corporation, All rights reserved. =======
+//====== Copyright ©, Valve Corporation, All rights reserved. =======
 //
 // Purpose: interface to the game coordinator for this application
 //
@@ -33,6 +33,8 @@ class ISteamGameCoordinator
 public:
 
 	// sends a message to the Game Coordinator
+	// Note this underscore isn't a mistake, on MSVC SendMessage is a function defined in WinUser.h
+	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage
 	virtual EGCResults SendMessage_( uint32 unMsgType, const void *pubData, uint32 cubData ) = 0;
 
 	// returns true if there is a message waiting from the game coordinator

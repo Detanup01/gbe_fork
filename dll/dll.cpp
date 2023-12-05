@@ -19,30 +19,30 @@
 #include "dll.h"
 
 
-static char old_client[128] = "SteamClient017";
-static char old_gameserver[128] = "SteamGameServer012";
-static char old_gameserver_stats[128] = "SteamGameServerStats001";
-static char old_user[128] = "SteamUser018";
-static char old_friends[128] = "SteamFriends015";
-static char old_utils[128] = "SteamUtils007";
-static char old_matchmaking[128] = "SteamMatchMaking009";
-static char old_matchmaking_servers[128] = "SteamMatchMakingServers002";
-static char old_userstats[128] = "STEAMUSERSTATS_INTERFACE_VERSION011";
-static char old_apps[128] = "STEAMAPPS_INTERFACE_VERSION007";
-static char old_networking[128] = "SteamNetworking005";
-static char old_remote_storage_interface[128] = "STEAMREMOTESTORAGE_INTERFACE_VERSION013";
-static char old_screenshots[128] = "STEAMSCREENSHOTS_INTERFACE_VERSION002";
-static char old_http[128] = "STEAMHTTP_INTERFACE_VERSION002";
-static char old_unified_messages[128] = "STEAMUNIFIEDMESSAGES_INTERFACE_VERSION001";
-static char old_controller[128] = "SteamController003";
-static char old_ugc_interface[128] = "STEAMUGC_INTERFACE_VERSION007";
-static char old_applist[128] = "STEAMAPPLIST_INTERFACE_VERSION001";
-static char old_music[128] = "STEAMMUSIC_INTERFACE_VERSION001";
-static char old_music_remote[128] = "STEAMMUSICREMOTE_INTERFACE_VERSION001";
-static char old_html_surface[128] = "STEAMHTMLSURFACE_INTERFACE_VERSION_003";
-static char old_inventory[128] = "STEAMINVENTORY_INTERFACE_V001";
-static char old_video[128] = "STEAMVIDEO_INTERFACE_V001";
-static char old_masterserver_updater[128] = "SteamMasterServerUpdater001";
+static char old_client[128] = STEAMCLIENT_INTERFACE_VERSION; //"SteamClient017";
+static char old_gameserver[128] = STEAMGAMESERVER_INTERFACE_VERSION; //"SteamGameServer012";
+static char old_gameserver_stats[128] = STEAMGAMESERVERSTATS_INTERFACE_VERSION; //"SteamGameServerStats001";
+static char old_user[128] = STEAMUSER_INTERFACE_VERSION; //"SteamUser018";
+static char old_friends[128] = STEAMFRIENDS_INTERFACE_VERSION; //"SteamFriends015";
+static char old_utils[128] = STEAMUTILS_INTERFACE_VERSION; //"SteamUtils007";
+static char old_matchmaking[128] = STEAMMATCHMAKING_INTERFACE_VERSION; //"SteamMatchMaking009";
+static char old_matchmaking_servers[128] = STEAMMATCHMAKINGSERVERS_INTERFACE_VERSION; //"SteamMatchMakingServers002";
+static char old_userstats[128] = STEAMUSERSTATS_INTERFACE_VERSION; //"STEAMUSERSTATS_INTERFACE_VERSION011";
+static char old_apps[128] = STEAMAPPS_INTERFACE_VERSION; //"STEAMAPPS_INTERFACE_VERSION007";
+static char old_networking[128] = STEAMNETWORKING_INTERFACE_VERSION; //"SteamNetworking005";
+static char old_remote_storage_interface[128] = STEAMREMOTESTORAGE_INTERFACE_VERSION; //"STEAMREMOTESTORAGE_INTERFACE_VERSION013";
+static char old_screenshots[128] = STEAMSCREENSHOTS_INTERFACE_VERSION; //"STEAMSCREENSHOTS_INTERFACE_VERSION002";
+static char old_http[128] = STEAMHTTP_INTERFACE_VERSION; //"STEAMHTTP_INTERFACE_VERSION002";
+static char old_unified_messages[128] = STEAMUNIFIEDMESSAGES_INTERFACE_VERSION; //"STEAMUNIFIEDMESSAGES_INTERFACE_VERSION001";
+static char old_controller[128] = STEAMCONTROLLER_INTERFACE_VERSION; //"SteamController003";
+static char old_ugc_interface[128] = STEAMUGC_INTERFACE_VERSION; //"STEAMUGC_INTERFACE_VERSION007";
+static char old_applist[128] = STEAMAPPLIST_INTERFACE_VERSION; //"STEAMAPPLIST_INTERFACE_VERSION001";
+static char old_music[128] = STEAMMUSIC_INTERFACE_VERSION; //"STEAMMUSIC_INTERFACE_VERSION001";
+static char old_music_remote[128] = STEAMMUSICREMOTE_INTERFACE_VERSION; //"STEAMMUSICREMOTE_INTERFACE_VERSION001";
+static char old_html_surface[128] = STEAMHTMLSURFACE_INTERFACE_VERSION; //"STEAMHTMLSURFACE_INTERFACE_VERSION_003";
+static char old_inventory[128] = STEAMINVENTORY_INTERFACE_VERSION; //"STEAMINVENTORY_INTERFACE_V001";
+static char old_video[128] = STEAMVIDEO_INTERFACE_VERSION; //"STEAMVIDEO_INTERFACE_V001";
+static char old_masterserver_updater[128] = STEAMMASTERSERVERUPDATER_INTERFACE_VERSION; //"SteamMasterServerUpdater001";
 
 static bool try_load_steam_interfaces(std::string interfaces_path)
 {
@@ -62,24 +62,31 @@ static bool try_load_steam_interfaces(std::string interfaces_path)
         line.erase(std::remove(line.begin(), line.end(), '\t'), line.end());
 #define REPLACE_WITH_FILE(s, f) {if (line.find(s) != std::string::npos) {strncpy(f, line.c_str(), sizeof(f) - 1); continue;}}
         REPLACE_WITH_FILE("SteamClient", old_client);
+        REPLACE_WITH_FILE("SteamGameServer", old_gameserver);
         REPLACE_WITH_FILE("SteamGameServerStats", old_gameserver_stats);
+        REPLACE_WITH_FILE("SteamUser", old_user);
         REPLACE_WITH_FILE("SteamFriends", old_friends);
-        REPLACE_WITH_FILE("SteamMatchMakingServers", old_matchmaking_servers);
+        REPLACE_WITH_FILE("SteamUtils", old_utils);
         REPLACE_WITH_FILE("SteamMatchMaking", old_matchmaking);
+        REPLACE_WITH_FILE("SteamMatchMakingServers", old_matchmaking_servers);
+        REPLACE_WITH_FILE("STEAMUSERSTATS_INTERFACE_VERSION", old_userstats);
+        REPLACE_WITH_FILE("STEAMAPPS_INTERFACE_VERSION", old_apps);
+        REPLACE_WITH_FILE("SteamNetworking", old_networking);
         REPLACE_WITH_FILE("STEAMREMOTESTORAGE_INTERFACE_VERSION", old_remote_storage_interface);
         REPLACE_WITH_FILE("STEAMSCREENSHOTS_INTERFACE_VERSION", old_screenshots);
         REPLACE_WITH_FILE("STEAMHTTP_INTERFACE_VERSION", old_http);
+        REPLACE_WITH_FILE("STEAMUNIFIEDMESSAGES_INTERFACE_VERSION", old_unified_messages);
         REPLACE_WITH_FILE("STEAMCONTROLLER_INTERFACE_VERSION", old_controller);
         REPLACE_WITH_FILE("SteamController", old_controller);
         REPLACE_WITH_FILE("STEAMUGC_INTERFACE_VERSION", old_ugc_interface);
-        REPLACE_WITH_FILE("STEAMINVENTORY_INTERFACE", old_inventory);
-        REPLACE_WITH_FILE("STEAMUSERSTATS_INTERFACE_VERSION", old_userstats);
-        REPLACE_WITH_FILE("STEAMAPPS_INTERFACE_VERSION", old_apps);
+        REPLACE_WITH_FILE("STEAMAPPLIST_INTERFACE_VERSION", old_applist);
+        REPLACE_WITH_FILE("STEAMMUSIC_INTERFACE_VERSION", old_music);
+        REPLACE_WITH_FILE("STEAMMUSICREMOTE_INTERFACE_VERSION", old_music_remote);
         REPLACE_WITH_FILE("STEAMHTMLSURFACE_INTERFACE_VERSION", old_html_surface);
-        REPLACE_WITH_FILE("SteamNetworking", old_networking);
-        REPLACE_WITH_FILE("SteamUser", old_user);
-        REPLACE_WITH_FILE("SteamUtils", old_utils);
-        REPLACE_WITH_FILE("SteamGameServer", old_gameserver);
+        REPLACE_WITH_FILE("STEAMVIDEO_INTERFACE", old_video);
+        REPLACE_WITH_FILE("STEAMINVENTORY_INTERFACE", old_inventory);
+        REPLACE_WITH_FILE("SteamMasterServerUpdater", old_masterserver_updater);
+
         PRINT_DEBUG("NOT REPLACED %s\n", line.c_str());
 #undef REPLACE_WITH_FILE
     }
@@ -238,6 +245,31 @@ STEAMAPI_API void * S_CALLTYPE SteamInternal_ContextInit( void *pContextInitData
 }
 
 //steam_api.h
+
+// Initialize the Steamworks SDK.
+// On success k_ESteamAPIInitResult_OK is returned.  Otherwise, if pOutErrMsg is non-NULL,
+// it will receive a non-localized message that explains the reason for the failure
+//
+// Example usage:
+// 
+//   SteamErrMsg errMsg;
+//   if ( SteamAPI_Init(&errMsg) != k_ESteamAPIInitResult_OK )
+//       FatalError( "Failed to init Steam.  %s", errMsg );
+STEAMAPI_API ESteamAPIInitResult S_CALLTYPE SteamInternal_SteamAPI_Init( const char *pszInternalCheckInterfaceVersions, SteamErrMsg *pOutErrMsg )
+{
+    PRINT_DEBUG("SteamInternal_SteamAPI_Init: %s\n", pszInternalCheckInterfaceVersions);
+    if (SteamAPI_Init()) {
+        return ESteamAPIInitResult::k_ESteamAPIInitResult_OK;
+    }
+
+    if (pOutErrMsg) {
+        memcpy(*pOutErrMsg, "SteamInitEx failed", 18);
+        (*pOutErrMsg)[18] = 0;
+        (*pOutErrMsg)[19] = 0;
+    }
+    return ESteamAPIInitResult::k_ESteamAPIInitResult_FailedGeneric;
+}
+
 // SteamAPI_Init must be called before using any other API functions. If it fails, an
 // error message will be output to the debugger (or stderr) with further information.
 static HSteamPipe user_steam_pipe;
@@ -642,12 +674,28 @@ STEAMAPI_API steam_bool S_CALLTYPE SteamInternal_GameServer_Init( uint32 unIP, u
     return get_steam_client()->steam_gameserver->InitGameServer(unIP, usGamePort, usQueryPort, unFlags, 0, pchVersionString);
 }
 
+STEAMAPI_API ESteamAPIInitResult S_CALLTYPE SteamInternal_GameServer_Init_V2( uint32 unIP, uint16 usGamePort, uint16 usQueryPort, EServerMode eServerMode, const char *pchVersionString, const char *pszInternalCheckInterfaceVersions, SteamErrMsg *pOutErrMsg )
+{
+    PRINT_DEBUG("SteamInternal_GameServer_Init_V2 %u %hu %hu %u %s %s\n", unIP, usGamePort, usQueryPort, eServerMode, pchVersionString, pszInternalCheckInterfaceVersions);
+    if (SteamInternal_GameServer_Init(unIP, 0, usGamePort, usQueryPort, eServerMode, pchVersionString)) {
+        return ESteamAPIInitResult::k_ESteamAPIInitResult_OK;
+    }
+    if (pOutErrMsg) {
+        memcpy(*pOutErrMsg, "GameServer_V2 failed", 20);
+        (*pOutErrMsg)[20] = 0;
+        (*pOutErrMsg)[21] = 0;
+    }
+    return ESteamAPIInitResult::k_ESteamAPIInitResult_FailedGeneric;
+}
+
 //SteamGameServer004 and before:
 //STEAMAPI_API steam_bool SteamGameServer_Init( uint32 unIP, uint16 usPort, uint16 usGamePort, uint16 usSpectatorPort, uint16 usQueryPort, EServerMode eServerMode, int nGameAppId, const char *pchGameDir, const char *pchVersionString );
 //SteamGameServer010 and before:
 //STEAMAPI_API steam_bool SteamGameServer_Init( uint32 unIP, uint16 usPort, uint16 usGamePort, uint16 usSpectatorPort, uint16 usQueryPort, EServerMode eServerMode, const char *pchGameDir, const char *pchVersionString );
 //SteamGameServer011 and later:
 //STEAMAPI_API steam_bool SteamGameServer_Init( uint32 unIP, uint16 usSteamPort, uint16 usGamePort, uint16 usQueryPort, EServerMode eServerMode, const char *pchVersionString );
+//SteamGameServer015 and later:
+//STEAMAPI_API steam_bool SteamGameServer_Init( uint32 unIP, uint16 usGamePort, uint16 usQueryPort, EServerMode eServerMode, const char *pchVersionString );
 STEAMAPI_API steam_bool SteamGameServer_Init( uint32 unIP, uint16 usSteamPort, uint16 usGamePort, uint16 unknown, EServerMode eServerMode, void *unknown1, void *unknown2, void *unknown3 )
 {
     const char *pchVersionString;

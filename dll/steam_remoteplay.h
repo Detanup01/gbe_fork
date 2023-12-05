@@ -18,6 +18,7 @@
 #include "base.h"
 
 class Steam_RemotePlay :
+public ISteamRemotePlay001,
 public ISteamRemotePlay
 {
     class Settings *settings;
@@ -102,6 +103,12 @@ ESteamDeviceFormFactor GetSessionClientFormFactor( uint32 unSessionID )
 bool BGetSessionClientResolution( uint32 unSessionID, int *pnResolutionX, int *pnResolutionY )
 {
     PRINT_DEBUG("Steam_RemotePlay::BGetSessionClientResolution\n");
+    return false;
+}
+
+bool BStartRemotePlayTogether( bool bShowOverlay )
+{
+    PRINT_DEBUG("Steam_RemotePlay::BStartRemotePlayTogether: %d\n", (int)bShowOverlay);
     return false;
 }
 

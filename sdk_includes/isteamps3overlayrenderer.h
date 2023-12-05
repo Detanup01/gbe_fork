@@ -1,4 +1,4 @@
-//====== Copyright � 1996-2010, Valve Corporation, All rights reserved. =======
+//====== Copyright © 1996-2010, Valve Corporation, All rights reserved. =======
 //
 // Purpose: interface the game must provide Steam with on PS3 in order for the
 // Steam overlay to render.

@@ -65,6 +65,12 @@
 typedef int32 HSteamPipe;
 // handle to single instance of a steam user
 typedef int32 HSteamUser;
+
+// A fixed size buffer to receive an error message that is returned by some API
+// calls.
+const int k_cchMaxSteamErrMsg = 1024;
+typedef char SteamErrMsg[ k_cchMaxSteamErrMsg ];
+
 // function prototype
 #if defined( POSIX )
 #define __cdecl

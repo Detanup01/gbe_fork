@@ -1785,15 +1785,16 @@ EResult GetGameCoordinatorServerLogin( SteamDatagramGameCoordinatorServerLogin *
 HSteamNetConnection ConnectP2PCustomSignaling( ISteamNetworkingConnectionCustomSignaling *pSignaling, const SteamNetworkingIdentity *pPeerIdentity, int nOptions, const SteamNetworkingConfigValue_t *pOptions )
 {
     PRINT_DEBUG("Steam_Networking_Sockets::ConnectP2PCustomSignaling old\n");
-    return ConnectP2PCustomSignaling(pSignaling, pPeerIdentity, 0, nOptions, pOptions);
+    //return ConnectP2PCustomSignaling(pSignaling, pPeerIdentity, 0, nOptions, pOptions);
+    return k_HSteamNetConnection_Invalid;
 }
 
-HSteamNetConnection ConnectP2PCustomSignaling( ISteamNetworkingConnectionCustomSignaling *pSignaling, const SteamNetworkingIdentity *pPeerIdentity, int nRemoteVirtualPort, int nOptions, const SteamNetworkingConfigValue_t *pOptions )
+//HSteamNetConnection ConnectP2PCustomSignaling( ISteamNetworkingConnectionCustomSignaling *pSignaling, const SteamNetworkingIdentity *pPeerIdentity, int nRemoteVirtualPort, int nOptions, const SteamNetworkingConfigValue_t *pOptions )
+HSteamNetConnection ConnectP2PCustomSignaling( ISteamNetworkingConnectionSignaling *pSignaling, const SteamNetworkingIdentity *pPeerIdentity, int nRemoteVirtualPort, int nOptions, const SteamNetworkingConfigValue_t *pOptions )
 {
     PRINT_DEBUG("Steam_Networking_Sockets::ConnectP2PCustomSignaling\n");
     return k_HSteamNetConnection_Invalid;
 }
-
 
 /// Called when custom signaling has received a message.  When your
 /// signaling channel receives a message, it should save off whatever
@@ -1825,6 +1826,12 @@ HSteamNetConnection ConnectP2PCustomSignaling( ISteamNetworkingConnectionCustomS
 /// If you expect to be using relayed connections, then you probably want
 /// to call ISteamNetworkingUtils::InitRelayNetworkAccess() when your app initializes
 bool ReceivedP2PCustomSignal( const void *pMsg, int cbMsg, ISteamNetworkingCustomSignalingRecvContext *pContext )
+{
+    PRINT_DEBUG("Steam_Networking_Sockets::ReceivedP2PCustomSignal old\n");
+    return false;
+}
+
+bool ReceivedP2PCustomSignal( const void *pMsg, int cbMsg, ISteamNetworkingSignalingRecvContext *pContext )
 {
     PRINT_DEBUG("Steam_Networking_Sockets::ReceivedP2PCustomSignal\n");
     return false;
