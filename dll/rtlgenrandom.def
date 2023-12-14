@@ -1,3 +1,0 @@
-LIBRARY advapi32.dll
-EXPORTS
-SystemFunction036

@@ -22,8 +22,9 @@
 static void
 randombytes(char * const buf, const size_t size)
 {
-    while (!RtlGenRandom((PVOID) buf, (ULONG) size)) {
-        PRINT_DEBUG("RtlGenRandom ERROR\n");
+    // NT_SUCCESS is: return value >= 0, including Ntdef.h causes so many errors
+    while (BCryptGenRandom(NULL, (PUCHAR) buf, (ULONG) size, BCRYPT_USE_SYSTEM_PREFERRED_RNG) < 0) {
+        PRINT_DEBUG("BCryptGenRandom ERROR\n");
         Sleep(100);
     }
 
