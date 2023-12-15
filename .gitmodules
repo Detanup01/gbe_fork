@@ -1,0 +1,20 @@
+[submodule "third-party/build/linux"]
+	path = third-party/build/linux
+	url = git@github.com:otavepto/gbe_fork-deps.git
+	branch = build/linux
+[submodule "third-party/common/win"]
+	path = third-party/common/win
+	url = git@github.com:otavepto/gbe_fork-deps.git
+	branch = common/win
+[submodule "third-party/deps/common"]
+	path = third-party/deps/common
+	url = git@github.com:otavepto/gbe_fork-deps.git
+	branch = deps/common
+[submodule "third-party/deps/linux"]
+	path = third-party/deps/linux
+	url = git@github.com:otavepto/gbe_fork-deps.git
+	branch = deps/linux
+[submodule "third-party/deps/win"]
+	path = third-party/deps/win
+	url = git@github.com:otavepto/gbe_fork-deps.git
+	branch = deps/win

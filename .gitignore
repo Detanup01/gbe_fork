@@ -26,3 +26,5 @@ scripts/login_temp/
 scripts/**/__pycache__/
 scripts/generate_emu_config.spec
 scripts/my_login.txt
+
+third-party/
