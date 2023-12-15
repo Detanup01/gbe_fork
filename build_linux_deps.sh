@@ -22,7 +22,9 @@ fi
 script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 deps_dir="$script_dir/build-linux-deps"
 third_party_dir="$script_dir/third-party"
-mycmake="$third_party_dir/cmake-3.27.7-linux-x86_64/bin/cmake"
+third_party_deps_dir="$third_party_dir/deps/linux"
+third_party_common_dir="$third_party_dir/deps/common/src"
+mycmake="$third_party_deps_dir/cmake-3.27.7-linux-x86_64/bin/cmake"
 
 [[ -f "$mycmake" ]] || {
   echo "[X] Couldn't find cmake" >&2
@@ -70,6 +72,8 @@ mkdir -p "$deps_dir" || {
 }
 
 echo; echo 
+
+last_code=0
 
 
 ############## required packages ##############
@@ -121,23 +125,25 @@ EOL
 
 echo ; echo
 
-
 ############## common CMAKE args ##############
 # https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS_CONFIG.html#variable:CMAKE_%3CLANG%3E_FLAGS_%3CCONFIG%3E
 cmake_common_args='-G "Unix Makefiles" -S .'
 cmake_common_defs="-DCMAKE_BUILD_TYPE=Release -DCMAKE_C_STANDARD_REQUIRED=ON -DCMAKE_CXX_STANDARD_REQUIRED=ON -DCMAKE_C_STANDARD=17 -DCMAKE_CXX_STANDARD=17 -DCMAKE_POSITION_INDEPENDENT_CODE=True -DBUILD_SHARED_LIBS=OFF"
-cmake_gen32="rm -f -r build32/ && rm -f -r install32/ && mkdir build32/ && mkdir install32/ && '$mycmake' $cmake_common_args -B build32 -DCMAKE_TOOLCHAIN_FILE=$deps_dir/32-bit-toolchain.cmake -DCMAKE_INSTALL_PREFIX=install32 $cmake_common_defs"
-cmake_gen64="rm -f -r build64/ && rm -f -r install64/ && mkdir build64/ && mkdir install64/ && '$mycmake' $cmake_common_args -B build64 -DCMAKE_TOOLCHAIN_FILE=$deps_dir/64-bit-toolchain.cmake -DCMAKE_INSTALL_PREFIX=install64 $cmake_common_defs"
+recreate_32="rm -f -r build32/ && rm -f -r install32/ && mkdir build32/ && mkdir install32/"
+recreate_64="rm -f -r build64/ && rm -f -r install64/ && mkdir build64/ && mkdir install64/"
+cmake_gen32="'$mycmake' $cmake_common_args -B build32 -DCMAKE_TOOLCHAIN_FILE=$deps_dir/32-bit-toolchain.cmake -DCMAKE_INSTALL_PREFIX=install32 $cmake_common_defs"
+cmake_gen64="'$mycmake' $cmake_common_args -B build64 -DCMAKE_TOOLCHAIN_FILE=$deps_dir/64-bit-toolchain.cmake -DCMAKE_INSTALL_PREFIX=install64 $cmake_common_defs"
 cmake_build32="'$mycmake' --build build32 --config Release --parallel $build_threads $VERBOSITY"
 cmake_build64="'$mycmake' --build build64 --config Release --parallel $build_threads $VERBOSITY"
-
+clean_gen32="[[ -d build32 ]] && rm -f -r build32/"
+clean_gen64="[[ -d build64 ]] && rm -f -r build64/"
 
 chmod 777 "$mycmake"
 
 
 ############## build ssq ##############
 echo // building ssq lib
-tar -zxf "$third_party_dir/v3.0.0.tar.gz" -C "$deps_dir"
+tar -zxf "$third_party_common_dir/v3.0.0.tar.gz" -C "$deps_dir"
 
 for i in {1..10}; do
   mv "$deps_dir/libssq-3.0.0" "$deps_dir/ssq" && { break; } || { sleep 1; }
@@ -146,11 +152,17 @@ done
 chmod -R 777 "$deps_dir/ssq"
 pushd "$deps_dir/ssq"
 
+eval $recreate_32
 eval $cmake_gen32
+last_code=$((last_code + $?))
 eval $cmake_build32
+last_code=$((last_code + $?))
 
+eval $recreate_64
 eval $cmake_gen64
+last_code=$((last_code + $?))
 eval $cmake_build64
+last_code=$((last_code + $?))
 
 popd
 echo ; echo
@@ -158,7 +170,7 @@ echo ; echo
 
 ############## build zlib ##############
 echo // building zlib lib
-tar -zxf "$third_party_dir/zlib-1.3.tar.gz" -C "$deps_dir"
+tar -zxf "$third_party_common_dir/zlib-1.3.tar.gz" -C "$deps_dir"
 
 for i in {1..10}; do
   mv "$deps_dir/zlib-1.3" "$deps_dir/zlib" && { break; } || { sleep 1; }
@@ -167,11 +179,19 @@ done
 chmod -R 777 "$deps_dir/zlib"
 pushd "$deps_dir/zlib"
 
+eval $recreate_32
 eval $cmake_gen32
+last_code=$((last_code + $?))
 eval $cmake_build32 --target install
+last_code=$((last_code + $?))
+eval $clean_gen32
 
+eval $recreate_64
 eval $cmake_gen64
+last_code=$((last_code + $?))
 eval $cmake_build64 --target install
+last_code=$((last_code + $?))
+eval $clean_gen64
 
 popd
 echo ; echo
@@ -216,7 +236,7 @@ wild_zlib_64=(
 
 ############## build curl ##############
 echo // building curl lib
-tar -zxf "$third_party_dir/curl-8.4.0.tar.gz" -C "$deps_dir"
+tar -zxf "$third_party_common_dir/curl-8.4.0.tar.gz" -C "$deps_dir"
 
 for i in {1..10}; do
   mv "$deps_dir/curl-8.4.0" "$deps_dir/curl" && { break; } || { sleep 1; }
@@ -227,11 +247,19 @@ pushd "$deps_dir/curl"
 
 curl_common_defs="-DBUILD_CURL_EXE=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC_CURL=OFF -DBUILD_STATIC_LIBS=ON -DCURL_USE_OPENSSL=OFF -DCURL_ZLIB=ON"
 
+eval $recreate_32
 eval $cmake_gen32 $curl_common_defs "${wild_zlib_32[@]}" -DCMAKE_SHARED_LINKER_FLAGS_INIT="'$deps_dir/zlib/install32/lib/libz.a'" -DCMAKE_MODULE_LINKER_FLAGS_INIT="'$deps_dir/zlib/install32/lib/libz.a'" -DCMAKE_EXE_LINKER_FLAGS_INIT="'$deps_dir/zlib/install32/lib/libz.a'"
+last_code=$((last_code + $?))
 eval $cmake_build32 --target install
+last_code=$((last_code + $?))
+eval $clean_gen32
 
+eval $recreate_64
 eval $cmake_gen64 $curl_common_defs "${wild_zlib_64[@]}" -DCMAKE_SHARED_LINKER_FLAGS_INIT="'$deps_dir/zlib/install64/lib/libz.a'" -DCMAKE_MODULE_LINKER_FLAGS_INIT="'$deps_dir/zlib/install64/lib/libz.a'" -DCMAKE_EXE_LINKER_FLAGS_INIT="'$deps_dir/zlib/install64/lib/libz.a'"
+last_code=$((last_code + $?))
 eval $cmake_build64 --target install
+last_code=$((last_code + $?))
+eval $clean_gen64
 
 popd
 echo ; echo
@@ -239,7 +267,7 @@ echo ; echo
 
 ############## build protobuf ##############
 echo // building protobuf lib
-tar -zxf "$third_party_dir/v21.12.tar.gz" -C "$deps_dir"
+tar -zxf "$third_party_common_dir/v21.12.tar.gz" -C "$deps_dir"
 
 for i in {1..10}; do
   mv "$deps_dir/protobuf-21.12" "$deps_dir/protobuf" && { break; } || { sleep 1; }
@@ -250,11 +278,21 @@ pushd "$deps_dir/protobuf"
 
 proto_common_defs="-Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_SHARED_LIBS=OFF -Dprotobuf_WITH_ZLIB=ON"
 
+eval $recreate_32
 eval $cmake_gen32 $proto_common_defs "${wild_zlib_32[@]}" -DCMAKE_SHARED_LINKER_FLAGS_INIT="'$deps_dir/zlib/install32/lib/libz.a'" -DCMAKE_MODULE_LINKER_FLAGS_INIT="'$deps_dir/zlib/install32/lib/libz.a'" -DCMAKE_EXE_LINKER_FLAGS_INIT="'$deps_dir/zlib/install32/lib/libz.a'"
+last_code=$((last_code + $?))
 eval $cmake_build32 --target install
+last_code=$((last_code + $?))
+eval $clean_gen32
 
+eval $recreate_64
 eval $cmake_gen64 $proto_common_defs "${wild_zlib_64[@]}" -DCMAKE_SHARED_LINKER_FLAGS_INIT="'$deps_dir/zlib/install64/lib/libz.a'" -DCMAKE_MODULE_LINKER_FLAGS_INIT="'$deps_dir/zlib/install64/lib/libz.a'" -DCMAKE_EXE_LINKER_FLAGS_INIT="'$deps_dir/zlib/install64/lib/libz.a'"
+last_code=$((last_code + $?))
 eval $cmake_build64 --target install
+last_code=$((last_code + $?))
+eval $clean_gen64
 
 popd
 echo ; echo
+
+exit $last_code

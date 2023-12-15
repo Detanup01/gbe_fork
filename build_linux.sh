@@ -156,6 +156,7 @@ deps_dir="build-linux-deps"
 build_root_dir="build-linux/$build_folder"
 build_temp_dir="build-linux-temp"
 third_party_dir="third-party"
+third_party_build_dir="$third_party_dir/build/linux"
 build_root_32="$build_root_dir/x32"
 build_root_64="$build_root_dir/x64"
 build_root_tools="$build_root_dir/tools"
@@ -234,7 +235,7 @@ release_libs=(
 protoc_exe_32="$deps_dir/protobuf/install32/bin/protoc"
 protoc_exe_64="$deps_dir/protobuf/install64/bin/protoc"
 
-parallel_exe="$third_party_dir/rush-v0.5.4-linux/rush"
+parallel_exe="$third_party_build_dir/rush-v0.5.4-linux/rush"
 
 [ ! -d "$deps_dir" ] && {
   echo "[X] Dependencies dir \"$deps_dir\" was not found" >&2;
@@ -259,6 +260,8 @@ parallel_exe="$third_party_dir/rush-v0.5.4-linux/rush"
 chmod 777 "$parallel_exe"
 
 echo "[?] All build operations will use $build_threads parallel jobs"
+
+last_code=0
 
 ### create folders + copy common scripts
 echo // creating dirs + copying tools
@@ -301,7 +304,7 @@ function build_for () {
   rm -f -r -d "$tmp_work_dir"
   mkdir -p "$tmp_work_dir" || {
     echo [X] "Failed to create compilation directory" >&2;
-    exit 1;
+    return 1;
   }
   
   local build_cmds=()
@@ -377,6 +380,7 @@ if [[ "$BUILD_LIB32" = "1" ]]; then
 
   extra_src_files=("controller/*.c")
   build_for 1 0 "$build_root_32/libsteam_api.so" '-DCONTROLLER_SUPPORT' extra_src_files 
+  last_code=$((last_code + $?))
 fi
 
 if [[ "$BUILD_CLIENT32" = "1" ]]; then
@@ -384,6 +388,7 @@ if [[ "$BUILD_CLIENT32" = "1" ]]; then
   
   extra_src_files=("controller/*.c")
   build_for 1 0 "$build_root_32/steamclient.so" '-DCONTROLLER_SUPPORT -DSTEAMCLIENT_DLL' extra_src_files 
+  last_code=$((last_code + $?))
 fi
 
 if [[ "$BUILD_TOOL_LOBBY32" = "1" ]]; then
@@ -391,6 +396,7 @@ if [[ "$BUILD_TOOL_LOBBY32" = "1" ]]; then
   
   extra_src_files=("lobby_connect.cpp")
   build_for 1 1 "$build_root_tools/lobby_connect_x32" '-DNO_DISK_WRITES -DLOBBY_CONNECT' extra_src_files 
+  last_code=$((last_code + $?))
 fi
 
 echo; echo 
@@ -409,6 +415,7 @@ if [[ "$BUILD_LIB64" = "1" ]]; then
   
   extra_src_files=("controller/*.c")
   build_for 0 0 "$build_root_64/libsteam_api.so" '-DCONTROLLER_SUPPORT' extra_src_files 
+  last_code=$((last_code + $?))
 fi
 
 if [[ "$BUILD_CLIENT64" = "1" ]]; then
@@ -416,6 +423,7 @@ if [[ "$BUILD_CLIENT64" = "1" ]]; then
   
   extra_src_files=("controller/*.c")
   build_for 0 0 "$build_root_64/steamclient.so" '-DCONTROLLER_SUPPORT -DSTEAMCLIENT_DLL' extra_src_files 
+  last_code=$((last_code + $?))
 fi
 
 if [[ "$BUILD_TOOL_LOBBY64" = "1" ]]; then
@@ -423,6 +431,7 @@ if [[ "$BUILD_TOOL_LOBBY64" = "1" ]]; then
   
   extra_src_files=("lobby_connect.cpp")
   build_for 0 1 "$build_root_tools/lobby_connect_x64" '-DNO_DISK_WRITES -DLOBBY_CONNECT' extra_src_files 
+  last_code=$((last_code + $?))
 fi
 
 echo; echo 
@@ -433,3 +442,4 @@ rm -f dll/net.pb.cc
 rm -f dll/net.pb.h
 rm -f -r -d "$build_temp_dir"
 
+exit $last_code

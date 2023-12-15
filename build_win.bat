@@ -249,53 +249,62 @@ echo // cleaning up to build 32
 call build_win_clean.bat
 mkdir "%build_temp_dir%"
 
-echo // invoking protobuf compiler - 32
-"%protoc_exe_32%" -I.\dll\ --cpp_out=.\dll\ .\dll\net.proto
 call build_win_set_env.bat 32 || (
   endlocal
   call :err_msg "Couldn't find Visual Studio or build tools - 32"
   set /a last_code=1
   goto :end_script
 )
+
+echo // invoking protobuf compiler - 32
+"%protoc_exe_32%" -I.\dll\ --cpp_out=.\dll\ .\dll\net.proto
+set /a last_code+=errorlevel
 echo: & echo:
 
 if %BUILD_LIB32% equ 1 (
   call :compile_lib32
+  set /a last_code+=errorlevel
   echo: & echo:
 )
 
 if %BUILD_EXP_LIB32% equ 1 (
   call :compile_experimental_lib32
+  set /a last_code+=errorlevel
   echo: & echo:
 )
 
 if %BUILD_EXP_CLIENT32% equ 1 (
   call :compile_experimental_client32
+  set /a last_code+=errorlevel
   echo: & echo:
 )
 
 if %BUILD_EXPCLIENT32% equ 1 (
   call :compile_experimentalclient_32
+  set /a last_code+=errorlevel
   echo: & echo:
 )
 
 :: steamclient_loader
 if %BUILD_EXPCLIENT_LDR% equ 1 (
   call :compile_experimentalclient_ldr
+  set /a last_code+=errorlevel
   echo: & echo:
 )
 
 :: tools (x32)
 if %BUILD_TOOL_FIND_ITFS% equ 1 (
   call :compile_tool_itf
+  set /a last_code+=errorlevel
   echo: & echo:
 )
 if %BUILD_TOOL_LOBBY% equ 1 (
   call :compile_tool_lobby
+  set /a last_code+=errorlevel
   echo: & echo:
 )
 
-endlocal
+endlocal & set /a last_code=%last_code%
 
 
 :: some times the next build will fail, a timeout solved it
@@ -309,37 +318,43 @@ echo // cleaning up to build 64
 call build_win_clean.bat
 mkdir "%build_temp_dir%"
 
-echo // invoking protobuf compiler - 64
-"%protoc_exe_64%" -I.\dll\ --cpp_out=.\dll\ .\dll\net.proto
 call build_win_set_env.bat 64 || (
   endlocal
   call :err_msg "Couldn't find Visual Studio or build tools - 64"
   set /a last_code=1
   goto :end_script
 )
+
+echo // invoking protobuf compiler - 64
+"%protoc_exe_64%" -I.\dll\ --cpp_out=.\dll\ .\dll\net.proto
+set /a last_code+=errorlevel
 echo: & echo:
 
 if %BUILD_LIB64% equ 1 (
   call :compile_lib64
+  set /a last_code+=errorlevel
   echo: & echo:
 )
 
 if %BUILD_EXP_LIB64% equ 1 (
   call :compile_experimental_lib64
+  set /a last_code+=errorlevel
   echo: & echo:
 )
 
 if %BUILD_EXP_CLIENT64% equ 1 (
   call :compile_experimental_client64
+  set /a last_code+=errorlevel
   echo: & echo:
 )
 
 if %BUILD_EXPCLIENT64% equ 1 (
   call :compile_experimentalclient_64
+  set /a last_code+=errorlevel
   echo: & echo:
 )
 
-endlocal
+endlocal & set /a last_code=%last_code%
 
 
 :: copy configs + examples

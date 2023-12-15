@@ -10,6 +10,12 @@ pushd "%~dp0"
 set "vs_static_path="
 
 set "third_party_dir=third-party"
+set "third_party_common_dir=%third_party_dir%\common\win"
+
+if not exist "%third_party_common_dir%\vswhere\vswhere.exe" (
+  call :err_msg "vswhere.exe wasn't found in third-party folder"
+  goto :end_script_with_err
+)
 
 set "arch="
 if "%~1"=="32" (
@@ -24,7 +30,7 @@ if "%~1"=="32" (
 
 set "my_vs_path=%vs_static_path%"
 if "%my_vs_path%"=="" (
-  for /f "tokens=* delims=" %%A in ('"%third_party_dir%\vswhere.exe" -prerelease -latest -nocolor -nologo -property installationPath 2^>nul') do (
+  for /f "tokens=* delims=" %%A in ('"%third_party_common_dir%\vswhere\vswhere.exe" -prerelease -latest -nocolor -nologo -property installationPath 2^>nul') do (
     set "my_vs_path=%%~A\VC\Auxiliary\Build"
   )
 )
@@ -43,9 +49,11 @@ echo Using Visual Studio found in: "%my_vs_path%"
 popd
 endlocal & (
   call "%my_vs_path%\vcvars%arch%.bat" && (
+    echo: & echo:
     exit /b 0
   ) || (
     1>&2 echo [X] Visual Studio script "vcvars%arch%.bat" failed
+    echo: & echo:
     exit /b 1
   )
 )

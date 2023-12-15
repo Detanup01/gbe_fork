@@ -5,8 +5,12 @@ pushd "%~dp0"
 
 set "deps_dir=build-win-deps"
 set "third_party_dir=third-party"
-set "extractor=%third_party_dir%\7za-win\7za.exe"
-set "mycmake=%~dp0%third_party_dir%\cmake-3.27.7-windows-x86_64\bin\cmake.exe"
+set "third_party_deps_dir=%third_party_dir%\deps\win"
+set "third_party_common_dir=%third_party_dir%\deps\common\src"
+set "extractor=%third_party_deps_dir%\7za-win\7za.exe"
+set "mycmake=%~dp0%third_party_deps_dir%\cmake-3.27.7-windows-x86_64\bin\cmake.exe"
+
+set /a last_code=0
 
 if not exist "%extractor%" (
     call :err_msg "Couldn't find extraction tool"
@@ -63,8 +67,6 @@ if %jobs_count% lss 2 (
     set /a jobs_count=2
 )
 
-set /a last_code=0
-
 call :extract_all_deps
 
 :: ############## common CMAKE args ##############
@@ -77,6 +79,8 @@ set cmake_gen32="%mycmake%" %cmake_common_args% -A Win32 -B build32 -DCMAKE_INST
 set cmake_gen64="%mycmake%" %cmake_common_args% -A x64 -B build64 -DCMAKE_INSTALL_PREFIX=install64 %cmake_common_defs%
 set cmake_build32="%mycmake%" --build build32 --config Release --parallel %jobs_count% %VERBOSITY%
 set cmake_build64="%mycmake%" --build build64 --config Release --parallel %jobs_count% %VERBOSITY%
+set "clean_gen32=if exist build32\ rmdir /s /q build32"
+set "clean_gen64=if exist build64\ rmdir /s /q build64"
 
 :: "-DCMAKE_C_STANDARD_LIBRARIES=kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib" "-DCMAKE_CXX_STANDARD_LIBRARIES=kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib"
 
@@ -110,9 +114,11 @@ call "%~dp0build_win_set_env.bat" 32 || (
     goto :end_script
 )
 %recreate_32%
-%cmake_gen32% 
+%cmake_gen32%
+set /a _exit=errorlevel
 %cmake_build32%
-endlocal
+set /a _exit+=errorlevel
+endlocal & set /a last_code+=%_exit%
 
 setlocal
 call "%~dp0build_win_set_env.bat" 64 || (
@@ -123,9 +129,11 @@ call "%~dp0build_win_set_env.bat" 64 || (
     goto :end_script
 )
 %recreate_64%
-%cmake_gen64% 
+%cmake_gen64%
+set /a _exit=errorlevel
 %cmake_build64%
-endlocal
+set /a _exit+=errorlevel
+endlocal & set /a last_code+=%_exit%
 
 popd
 echo: & echo:
@@ -145,8 +153,11 @@ call "%~dp0build_win_set_env.bat" 32 || (
 )
 %recreate_32%
 %cmake_gen32%
+set /a _exit=errorlevel
 %cmake_build32% --target install
-endlocal
+set /a _exit+=errorlevel
+%clean_gen32%
+endlocal & set /a last_code+=%_exit%
 
 setlocal
 call "%~dp0build_win_set_env.bat" 64 || (
@@ -158,8 +169,11 @@ call "%~dp0build_win_set_env.bat" 64 || (
 )
 %recreate_64%
 %cmake_gen64%
+set /a _exit=errorlevel
 %cmake_build64% --target install
-endlocal
+set /a _exit+=errorlevel
+%clean_gen64%
+endlocal & set /a last_code+=%_exit%
 
 popd
 echo: & echo:
@@ -209,8 +223,11 @@ call "%~dp0build_win_set_env.bat" 32 || (
 )
 %recreate_32%
 %cmake_gen32% %curl_common_defs% %wild_zlib_32% "-DCMAKE_SHARED_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install32\lib\zlibstatic.lib" "-DCMAKE_MODULE_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install32\lib\zlibstatic.lib" "-DCMAKE_EXE_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install32\lib\zlibstatic.lib"
+set /a _exit=errorlevel
 %cmake_build32% --target install
-endlocal
+set /a _exit+=errorlevel
+%clean_gen32%
+endlocal & set /a last_code+=%_exit%
 
 setlocal
 call "%~dp0build_win_set_env.bat" 64 || (
@@ -222,8 +239,11 @@ call "%~dp0build_win_set_env.bat" 64 || (
 )
 %recreate_64%
 %cmake_gen64% %curl_common_defs% %wild_zlib_64% "-DCMAKE_SHARED_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install64\lib\zlibstatic.lib" "-DCMAKE_MODULE_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install64\lib\zlibstatic.lib" "-DCMAKE_EXE_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install64\lib\zlibstatic.lib"
+set /a _exit=errorlevel
 %cmake_build64% --target install
-endlocal
+set /a _exit+=errorlevel
+%clean_gen64%
+endlocal & set /a last_code+=%_exit%
 
 popd
 echo: & echo:
@@ -245,8 +265,11 @@ call "%~dp0build_win_set_env.bat" 32 || (
 )
 %recreate_32%
 %cmake_gen32% %proto_common_defs% %wild_zlib_32% "-DCMAKE_SHARED_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install32\lib\zlibstatic.lib" "-DCMAKE_MODULE_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install32\lib\zlibstatic.lib" "-DCMAKE_EXE_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install32\lib\zlibstatic.lib"
+set /a _exit=errorlevel
 %cmake_build32% --target install
-endlocal
+set /a _exit+=errorlevel
+%clean_gen32%
+endlocal & set /a last_code+=%_exit%
 
 setlocal
 call "%~dp0build_win_set_env.bat" 64 || (
@@ -258,8 +281,11 @@ call "%~dp0build_win_set_env.bat" 64 || (
 )
 %recreate_64%
 %cmake_gen64% %proto_common_defs% %wild_zlib_64% "-DCMAKE_SHARED_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install64\lib\zlibstatic.lib" "-DCMAKE_MODULE_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install64\lib\zlibstatic.lib" "-DCMAKE_EXE_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install64\lib\zlibstatic.lib"
+set /a _exit=errorlevel
 %cmake_build64% --target install
-endlocal
+set /a _exit+=errorlevel
+%clean_gen64%
+endlocal & set /a last_code+=%_exit%
 
 popd
 echo: & echo:
@@ -286,16 +312,16 @@ goto :end_script
             goto :extract_all_deps_end
         )
 
-        echo // Extracting archive "%third_party_dir%\%%~A" to "%deps_dir%\%%~B"
+        echo // Extracting archive "%third_party_common_dir%\%%~A" to "%deps_dir%\%%~B"
         for /f "usebackq tokens=* delims=" %%Z in ('"%%~nA"') do (
             if /i "%%~xZ%%~xA"==".tar.gz" (
-                "%extractor%" x "%third_party_dir%\%%~A" -so | "%extractor%" x -si -ttar -y -aoa -o"%deps_dir%\%%~B" || (
+                "%extractor%" x "%third_party_common_dir%\%%~A" -so | "%extractor%" x -si -ttar -y -aoa -o"%deps_dir%\%%~B" || (
                     call :err_msg "Extraction failed"
                     set /a last_code=1
                     goto :end_script
                 )
             ) else (
-                "%extractor%" x "%third_party_dir%\%%~A" -y -aoa -o"%deps_dir%\%%~B" || (
+                "%extractor%" x "%third_party_common_dir%\%%~A" -y -aoa -o"%deps_dir%\%%~B" || (
                     call :err_msg "Extraction failed"
                     set /a last_code=1
                     goto :end_script
