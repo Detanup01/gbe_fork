@@ -1,0 +1,101 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Windows-build
+
+on:
+  push:
+    branches: [ "ci_runner" ]
+  pull_request:
+    branches: [ "ci_runner" ]
+
+permissions:
+  contents: read
+
+env:
+  # Expected format {owner}/{repo}.
+  DEPS_REPO: 'otavepto/gbe_fork-deps'
+  THIRD_PARTY_BASE_DIR: 'third-party'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout branch
+      uses: actions/checkout@v4
+
+    # just to be sure Visual Studio is available
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1.3.1
+
+### deps
+    - name: Check cache for deps
+      id: cache-deps-win
+      uses: actions/cache@v3
+      with:
+        key: ${{ runner.os }}-deps
+        path: build-win-deps
+
+    - name: Clone third-party deps (deps/win)
+      if: steps.cache-deps-win.outputs.cache-hit != 'true'
+      uses: actions/checkout@v4
+      with:
+        repository: "${{env.DEPS_REPO}}"
+        ref: 'deps/win'
+        path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/win"
+        lfs: true
+
+    - name: Clone third-party deps (deps/common)
+      if: steps.cache-deps-win.outputs.cache-hit != 'true'
+      uses: actions/checkout@v4
+      with:
+        repository: "${{env.DEPS_REPO}}"
+        ref: 'deps/common'
+        path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/common"
+        lfs: true
+
+    - name: Clone third-party deps (common/win)
+      if: steps.cache-deps-win.outputs.cache-hit != 'true'
+      uses: actions/checkout@v4
+      with:
+        repository: "${{env.DEPS_REPO}}"
+        ref: 'common/win'
+        path: "${{env.THIRD_PARTY_BASE_DIR}}/common/win"
+        lfs: true
+
+    - name: Build deps
+      if: steps.cache-deps-win.outputs.cache-hit != 'true'
+      shell: cmd
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: build_win_deps.bat
+
+    - name: Clean third-party deps
+      if: steps.cache-deps-win.outputs.cache-hit != 'true'
+      shell: cmd
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: rmdir /s /q third-party & exit /b 0
+
+### build
+    - name: Clone third-party build helpers (common/win)
+      uses: actions/checkout@v4
+      with:
+        repository: "${{env.DEPS_REPO}}"
+        ref: 'common/win'
+        path: "${{env.THIRD_PARTY_BASE_DIR}}/common/win"
+        lfs: true
+
+    - name: Build release mode
+      shell: cmd
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: build_win.bat release
+
+    - name: Build debug mode
+      shell: cmd
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: build_win.bat debug
+
+### upload artifact
+  #- name: Upload 
