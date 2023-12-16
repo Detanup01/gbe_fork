@@ -20,12 +20,12 @@ jobs:
     - name: Install dependencies
       shell: bash
       working-directory: ${{ github.workspace }}/scripts
-      run: sudo chmod 77 recreate_venv_linux.sh && ./recreate_venv_linux.sh
+      run: sudo chmod 77 recreate_venv_linux.sh && sudo ./recreate_venv_linux.sh
 
     - name: Rebuild
       shell: bash
       working-directory: ${{ github.workspace }}/scripts
-      run: sudo chmod 77 rebuild_linux.sh && ./rebuild_linux.sh
+      run: sudo chmod 77 rebuild_linux.sh && sudo ./rebuild_linux.sh
 
     - name: Upload build
       uses: actions/upload-artifact@v4
