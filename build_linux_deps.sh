@@ -27,13 +27,14 @@ third_party_common_dir="$third_party_dir/deps/common/src"
 mycmake="$third_party_deps_dir/cmake-3.27.7-linux-x86_64/bin/cmake"
 
 [[ -f "$mycmake" ]] || {
-  echo "[X] Couldn't find cmake" >&2
-  exit 1
+  echo "[X] Couldn't find cmake" >&2;
+  exit 1;
 }
 
 # < 0: deduce, > 1: force
 PARALLEL_THREADS_OVERRIDE=-1
 VERBOSITY=''
+INSTALL_PACKAGES_ONLY=0
 
 for (( i=1; i<=$#; i++ )); do
   var="${!i}"
@@ -47,11 +48,40 @@ for (( i=1; i<=$#; i++ )); do
     #echo "[?] Overriding parralel build jobs count with $PARALLEL_THREADS_OVERRIDE"
   elif [[ "$var" = "-verbose" ]]; then
     VERBOSITY='-v'
+  elif [[ "$var" = "-packages_only" ]]; then
+    INSTALL_PACKAGES_ONLY=1
   else
     echo "[X] Invalid arg: $var" >&2
     exit 1
   fi
 done
+
+
+last_code=0
+
+
+############## required packages ##############
+echo // installing required packages
+apt update -y
+last_code=$((last_code + $?))
+apt install coreutils -y # echo, printf, etc...
+last_code=$((last_code + $?))
+apt install build-essential -y
+last_code=$((last_code + $?))
+apt install gcc-multilib g++-multilib -y # needed for 32-bit builds
+last_code=$((last_code + $?))
+apt install clang -y
+last_code=$((last_code + $?))
+apt install binutils -y # (optional) contains the tool 'readelf' mainly, and other usefull binary stuff
+last_code=$((last_code + $?))
+apt install tar -y # we need to extract packages
+last_code=$((last_code + $?))
+#apt install cmake git wget unzip -y
+
+# exit early if we should install packages only, used by CI mainly
+[[ "$INSTALL_PACKAGES_ONLY" -ne 0 ]] && exit $last_code
+
+echo ; echo
 
 
 # use 70%
@@ -72,22 +102,6 @@ mkdir -p "$deps_dir" || {
 }
 
 echo; echo 
-
-last_code=0
-
-
-############## required packages ##############
-echo // installing required packages
-apt update -y
-apt install coreutils -y # echo, printf, etc...
-apt install build-essential -y
-apt install gcc-multilib g++-multilib -y # needed for 32-bit builds
-apt install clang -y
-apt install binutils -y # (optional) contains the tool 'readelf' mainly, and other usefull binary stuff
-apt install tar -y # we need to extract packages
-#apt install cmake git wget unzip -y
-
-echo ; echo
 
 
 ############## copy CMAKE toolchains to the home directory

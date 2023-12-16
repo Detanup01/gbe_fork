@@ -73,6 +73,10 @@ jobs:
         path: build-linux-deps
         fail-on-cache-miss: true
 
+    - name: Install required packages
+      shell: bash
+      run: sudo chmod 777 build_linux_deps.sh && sudo ./build_linux_deps.sh -packages_only
+
     - name: Clone third-party build helpers (build/linux)
       uses: actions/checkout@v4
       with:
