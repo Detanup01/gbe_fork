@@ -1,0 +1,112 @@
+name: Linux-build
+
+on:
+  push:
+    branches: [ "ci_runner" ]
+  pull_request:
+    branches: [ "ci_runner" ]
+
+permissions:
+  contents: read
+
+env:
+  # Expected format {owner}/{repo}.
+  DEPS_REPO: 'otavepto/gbe_fork-deps'
+  THIRD_PARTY_BASE_DIR: 'third-party'
+
+jobs:
+  dependencies:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Lookup cache for deps
+      id: cache-deps-linux
+      uses: actions/cache@v3
+      with:
+        key: ${{ runner.os }}-deps
+        path: build-linux-deps
+        lookup-only: true
+
+    # we need the repo to build the deps since it has the build scripts
+    - name: Checkout branch
+      if: steps.cache-deps-linux.outputs.cache-hit != 'true'
+      uses: actions/checkout@v4
+
+    - name: Clone third-party deps (deps/linux)
+      if: steps.cache-deps-linux.outputs.cache-hit != 'true'
+      uses: actions/checkout@v4
+      with:
+        repository: "${{env.DEPS_REPO}}"
+        ref: 'deps/linux'
+        path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/linux"
+        lfs: true
+
+    - name: Clone third-party deps (deps/common)
+      if: steps.cache-deps-linux.outputs.cache-hit != 'true'
+      uses: actions/checkout@v4
+      with:
+        repository: "${{env.DEPS_REPO}}"
+        ref: 'deps/common'
+        path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/common"
+        lfs: true
+
+    - name: Build deps
+      if: steps.cache-deps-linux.outputs.cache-hit != 'true'
+      shell: bash
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: sudo ./build_linux_deps.sh
+
+
+  build:
+    needs: [ dependencies ]
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout branch
+      uses: actions/checkout@v4
+
+### deps
+    - name: Grab cache for deps
+      id: cache-deps-linux
+      uses: actions/cache@v3
+      with:
+        key: ${{ runner.os }}-deps
+        path: build-linux-deps
+        fail-on-cache-miss: true
+
+    - name: Clone third-party build helpers (build/linux)
+      uses: actions/checkout@v4
+      with:
+        repository: "${{env.DEPS_REPO}}"
+        ref: 'build/linux'
+        path: "${{env.THIRD_PARTY_BASE_DIR}}/build/linux"
+        lfs: true
+
+### build + upload release
+    - name: Build release mode
+      shell: bash
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: build_linux.sh release
+
+    - name: Upload build (release)
+      uses: actions/upload-artifact@v4
+      with:
+        name: "build-linux-release-${{ github.sha }}"
+        path: 'build-linux/release/'
+        if-no-files-found: 'error'
+        compression-level: 9
+    
+### build + upload debug
+    - name: Build debug mode
+      shell: bash
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: build_linux.sh debug
+
+    - name: Upload build (debug)
+      uses: actions/upload-artifact@v4
+      with:
+        name: "build-linux-debug-${{ github.sha }}"
+        path: 'build-linux/debug/'
+        if-no-files-found: 'error'
+        compression-level: 9
+    

@@ -1,0 +1,47 @@
+name: Generate emu config (Windows)
+
+on:
+  push:
+    branches: [ "ci_runner" ]
+  pull_request:
+    branches: [ "ci_runner" ]
+
+permissions:
+  contents: read
+
+env:
+  # Expected format {owner}/{repo}.
+  DEPS_REPO: 'otavepto/gbe_fork-deps'
+  THIRD_PARTY_BASE_DIR: 'third-party'
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+    - name: Checkout branch
+      uses: actions/checkout@v4
+    
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      shell: cmd
+      working-directory: ${{env.GITHUB_WORKSPACE}}/scripts
+      run: recreate_venv.bat
+
+    - name: Rebuild
+      shell: cmd
+      working-directory: ${{env.GITHUB_WORKSPACE}}/scripts
+      run: rebuild.bat
+
+    - name: Upload build
+      uses: actions/upload-artifact@v4
+      with:
+        name: "generate_emu_config-win-${{ github.sha }}"
+        path: 'scripts/bin/generate_emu_config/'
+        if-no-files-found: 'error'
+        compression-level: 9
+    
