@@ -3,22 +3,29 @@ name: Emu build (Linux)
 on:
   push:
     branches: [ 
-      "ci-build-emu-linux",
+      "ci-build-emu-linux*",
       "ci-build-all"
     ]
+    tags:        
+      - release*
   pull_request:
     branches: [ "dev" ]
+  workflow_dispatch:
+    # nothing
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   # Expected format {owner}/{repo}.
   DEPS_REPO: 'otavepto/gbe_fork'
   THIRD_PARTY_BASE_DIR: 'third-party'
+
   DEPS_CACHE_KEY: emu-deps-linux
   DEPS_CACHE_DIR: build-linux-deps
-
+  
+  PACKAGE_ROOT_PATH: "build-linux/package"
+  
 jobs:
   dependencies:
     runs-on: ubuntu-22.04
@@ -97,12 +104,18 @@ jobs:
       working-directory: ${{ github.workspace }}
       run:  "sudo chmod 777 build_linux.sh && ./build_linux.sh release"
 
-    - name: Upload build (release)
+    - name: Package build (release)
+      if: success()
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: sudo chmod 77 package_linux.sh && sudo ./package_linux.sh release
+
+    - name: Upload build pacakge (release)
       if: success()
       uses: actions/upload-artifact@v4
       with:
         name: "build-linux-release-${{ github.sha }}"
-        path: 'build-linux/release/'
+        path: "${{ env.PACKAGE_ROOT_PATH }}/release/"
         if-no-files-found: 'error'
         compression-level: 9
         retention-days: 1
@@ -114,13 +127,25 @@ jobs:
       working-directory: ${{ github.workspace }}
       run:  "sudo chmod 777 build_linux.sh && ./build_linux.sh debug"
 
-    - name: Upload build (debug)
+    - name: Package build (debug)
+      if: success()
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: sudo chmod 77 package_linux.sh && sudo ./package_linux.sh debug
+
+    - name: Upload build pacakge (debug)
       if: success()
       uses: actions/upload-artifact@v4
       with:
         name: "build-linux-debug-${{ github.sha }}"
-        path: 'build-linux/debug/'
+        path: "${{ env.PACKAGE_ROOT_PATH }}/debug/"
         if-no-files-found: 'error'
         compression-level: 9
         retention-days: 1
+    
+    - name: Release
+      if: success() && startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: "${{ env.PACKAGE_ROOT_PATH }}/**/*"
     

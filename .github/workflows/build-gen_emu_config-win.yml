@@ -3,14 +3,27 @@ name: Generate emu config script (Windows)
 on:
   push:
     branches: [ 
-      "ci-build-gen-win",
+      "ci-build-gen-win*",
       "ci-build-all"
     ]
+    tags:        
+      - release*
   pull_request:
     branches: [ "dev" ]
+  workflow_dispatch:
+    # nothing
 
 permissions:
-  contents: read
+  contents: write
+
+env:
+  ARTIFACT_NAME: "generate_emu_config-win-${{ github.sha }}"
+  ARTIFACT_ROOT_PATH: "scripts/bin/win"
+  PACKAGE_ROOT_PATH: "scripts/bin/package"
+  
+  # Expected format {owner}/{repo}.
+  DEPS_REPO: 'otavepto/gbe_fork'
+  THIRD_PARTY_BASE_DIR: 'third-party'
 
 jobs:
   build:
@@ -25,6 +38,13 @@ jobs:
     - name: Checkout branch
       uses: actions/checkout@v4
     
+    - name: Clone third-party deps (deps/win)
+      uses: actions/checkout@v4
+      with:
+        repository: "${{env.DEPS_REPO}}"
+        ref: 'third-party/deps/win'
+        path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/win"
+
     - name: Install dependencies
       shell: cmd
       working-directory: ${{ github.workspace }}/scripts
@@ -35,12 +55,23 @@ jobs:
       working-directory: ${{ github.workspace }}/scripts
       run: rebuild_win.bat
 
-    - name: Upload build
+    - name: Package build
+      shell: cmd
+      working-directory: ${{ github.workspace }}/scripts
+      run: package_win.bat
+
+    - name: Upload build package
       uses: actions/upload-artifact@v4
       with:
-        name: "generate_emu_config-win-${{ github.sha }}"
-        path: 'scripts/bin/win/'
+        name: "${{ env.ARTIFACT_NAME }}"
+        path: "${{ env.PACKAGE_ROOT_PATH }}/win/"
         if-no-files-found: 'error'
         compression-level: 9
         retention-days: 1
+
+    - name: Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: "${{ env.PACKAGE_ROOT_PATH }}/**/*"
     
