@@ -2,9 +2,12 @@ name: Generate emu config (Linux)
 
 on:
   push:
-    branches: [ "ci_runner" ]
-  # pull_request:
-  #   branches: [ "ci_runner" ]
+    branches: [ 
+      "ci-build-gen-linux",
+      "ci-build-all"
+    ]
+  pull_request:
+    branches: [ "dev" ]
 
 permissions:
   contents: read

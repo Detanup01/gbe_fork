@@ -2,9 +2,12 @@ name: Generate emu config (Windows)
 
 on:
   push:
-    branches: [ "ci_runner" ]
-  # pull_request:
-  #   branches: [ "ci_runner" ]
+    branches: [ 
+      "ci-build-gen-win",
+      "ci-build-all"
+    ]
+  pull_request:
+    branches: [ "dev" ]
 
 permissions:
   contents: read
