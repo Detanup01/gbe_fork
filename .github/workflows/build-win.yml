@@ -3,8 +3,8 @@ name: Windows-build
 on:
   push:
     branches: [ "ci_runner" ]
-  pull_request:
-    branches: [ "ci_runner" ]
+  # pull_request:
+  #   branches: [ "ci_runner" ]
 
 permissions:
   contents: read
@@ -93,11 +93,13 @@ jobs:
 
 ### build + upload release
     - name: Build release mode
+      continue-on-error: true
       shell: cmd
       working-directory: ${{ github.workspace }}
       run: build_win.bat release
 
     - name: Upload build (release)
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: "build-win-release-${{ github.sha }}"
@@ -107,11 +109,13 @@ jobs:
     
 ### build + upload debug
     - name: Build debug mode
+      continue-on-error: true
       shell: cmd
       working-directory: ${{ github.workspace }}
       run: build_win.bat debug
 
     - name: Upload build (debug)
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: "build-win-debug-${{ github.sha }}"

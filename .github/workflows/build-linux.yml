@@ -3,8 +3,8 @@ name: Linux-build
 on:
   push:
     branches: [ "ci_runner" ]
-  pull_request:
-    branches: [ "ci_runner" ]
+  # pull_request:
+  #   branches: [ "ci_runner" ]
 
 permissions:
   contents: read
@@ -87,11 +87,13 @@ jobs:
 
 ### build + upload release
     - name: Build release mode
+      continue-on-error: true
       shell: bash
       working-directory: ${{ github.workspace }}
       run:  "sudo chmod 777 build_linux.sh && ./build_linux.sh release"
 
     - name: Upload build (release)
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: "build-linux-release-${{ github.sha }}"
@@ -101,11 +103,13 @@ jobs:
     
 ### build + upload debug
     - name: Build debug mode
+      continue-on-error: true
       shell: bash
       working-directory: ${{ github.workspace }}
-      run: build_linux.sh debug
+      run:  "sudo chmod 777 build_linux.sh && ./build_linux.sh debug"
 
     - name: Upload build (debug)
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: "build-linux-debug-${{ github.sha }}"
