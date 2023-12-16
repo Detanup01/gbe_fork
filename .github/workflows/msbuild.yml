@@ -20,24 +20,22 @@ env:
   THIRD_PARTY_BASE_DIR: 'third-party'
 
 jobs:
-  build:
+  deps:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout branch
-      uses: actions/checkout@v4
-
-    # just to be sure Visual Studio is available
-    - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.3.1
-
-### deps
-    - name: Check cache for deps
+    - name: Lookup cache for deps
       id: cache-deps-win
       uses: actions/cache@v3
       with:
         key: ${{ runner.os }}-deps
         path: build-win-deps
+        lookup-only: true
+
+    # we need the repo to build the deps since it has the build scripts
+    - name: Checkout branch
+      if: steps.cache-deps-win.outputs.cache-hit != 'true'
+      uses: actions/checkout@v4
 
     - name: Clone third-party deps (deps/win)
       if: steps.cache-deps-win.outputs.cache-hit != 'true'
@@ -72,11 +70,22 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: build_win_deps.bat
 
-    - name: Clean third-party deps
-      if: steps.cache-deps-win.outputs.cache-hit != 'true'
-      shell: cmd
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: rmdir /s /q third-party & exit /b 0
+
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout branch
+      uses: actions/checkout@v4
+
+### deps
+    - name: Grab cache for deps
+      id: cache-deps-win
+      uses: actions/cache@v3
+      with:
+        key: ${{ runner.os }}-deps
+        path: build-win-deps
+        fail-on-cache-miss: true
 
 ### build
     - name: Clone third-party build helpers (common/win)
@@ -97,5 +106,20 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: build_win.bat debug
 
-### upload artifact
-  #- name: Upload 
+### upload artifacts
+    - name: Upload build (release)
+      uses: actions/upload-artifact@v4
+      with:
+        name: 'build-win-release'
+        path: 'build-win/release/'
+        if-no-files-found: 'error'
+        compression-level: 9
+    
+    - name: Upload build (debug)
+      uses: actions/upload-artifact@v4
+      with:
+        name: 'build-win-debug'
+        path: 'build-win/debug/'
+        if-no-files-found: 'error'
+        compression-level: 9
+    
