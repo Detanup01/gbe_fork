@@ -1,8 +1,3 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
 name: Windows-build
 
 on:
@@ -20,8 +15,8 @@ env:
   THIRD_PARTY_BASE_DIR: 'third-party'
 
 jobs:
-  deps:
-    runs-on: windows-latest
+  dependencies:
+    runs-on: windows-2022
 
     steps:
     - name: Lookup cache for deps
@@ -72,7 +67,8 @@ jobs:
 
 
   build:
-    runs-on: windows-latest
+    needs: [ dependencies ]
+    runs-on: windows-2022
 
     steps:
     - name: Checkout branch
