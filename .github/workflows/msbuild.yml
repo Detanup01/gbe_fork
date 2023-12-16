@@ -87,7 +87,6 @@ jobs:
         path: build-win-deps
         fail-on-cache-miss: true
 
-### build
     - name: Clone third-party build helpers (common/win)
       uses: actions/checkout@v4
       with:
@@ -96,29 +95,30 @@ jobs:
         path: "${{env.THIRD_PARTY_BASE_DIR}}/common/win"
         lfs: true
 
+### build + upload release
     - name: Build release mode
       shell: cmd
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: build_win.bat release
 
+    - name: Upload build (release)
+      uses: actions/upload-artifact@v4
+      with:
+        name: "build-win-release-${{ github.sha }}"
+        path: 'build-win/release/'
+        if-no-files-found: 'error'
+        compression-level: 9
+    
+### build + upload debug
     - name: Build debug mode
       shell: cmd
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: build_win.bat debug
 
-### upload artifacts
-    - name: Upload build (release)
-      uses: actions/upload-artifact@v4
-      with:
-        name: 'build-win-release'
-        path: 'build-win/release/'
-        if-no-files-found: 'error'
-        compression-level: 9
-    
     - name: Upload build (debug)
       uses: actions/upload-artifact@v4
       with:
-        name: 'build-win-debug'
+        name: "build-win-debug-${{ github.sha }}"
         path: 'build-win/debug/'
         if-no-files-found: 'error'
         compression-level: 9
