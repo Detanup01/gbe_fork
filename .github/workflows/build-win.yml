@@ -1,4 +1,4 @@
-name: Windows-build
+name: Emu build (Windows)
 
 on:
   push:

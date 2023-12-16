@@ -1,4 +1,4 @@
-name: Generate emu config (Windows)
+name: Generate emu config script (Windows)
 
 on:
   push:

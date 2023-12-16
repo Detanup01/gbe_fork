@@ -1,4 +1,4 @@
-name: Linux-build
+name: Emu build (Linux)
 
 on:
   push:

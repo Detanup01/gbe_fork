@@ -1,4 +1,4 @@
-name: Generate emu config (Linux)
+name: Generate emu config script (Linux)
 
 on:
   push:
