@@ -15,13 +15,13 @@ steamclient.exp
 steamclient.lib
 out/*
 
-scripts/.py/
-scripts/.venv/
-scripts/.env/
+scripts/.py*/
+scripts/.venv*/
+scripts/.env*/
 scripts/.vscode/
 scripts/backup/
 scripts/bin/
-scripts/build_tmp/
+scripts/build_tmp*/
 scripts/login_temp/
 scripts/**/__pycache__/
 scripts/generate_emu_config.spec
