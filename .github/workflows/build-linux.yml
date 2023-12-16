@@ -13,6 +13,8 @@ env:
   # Expected format {owner}/{repo}.
   DEPS_REPO: 'otavepto/gbe_fork-deps'
   THIRD_PARTY_BASE_DIR: 'third-party'
+  DEPS_CACHE_KEY: emu-deps-linux
+  DEPS_CACHE_DIR: build-linux-deps
 
 jobs:
   dependencies:
@@ -20,20 +22,20 @@ jobs:
 
     steps:
     - name: Lookup cache for deps
-      id: cache-deps-linux
+      id: emu-deps-cache-step
       uses: actions/cache@v3
       with:
-        key: ${{ runner.os }}-deps
-        path: build-linux-deps
+        key: ${{ env.DEPS_CACHE_KEY }}
+        path: ${{ env.DEPS_CACHE_DIR }}
         lookup-only: true
 
     # we need the repo to build the deps since it has the build scripts
     - name: Checkout branch
-      if: steps.cache-deps-linux.outputs.cache-hit != 'true'
+      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
       uses: actions/checkout@v4
 
     - name: Clone third-party deps (deps/linux)
-      if: steps.cache-deps-linux.outputs.cache-hit != 'true'
+      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
       uses: actions/checkout@v4
       with:
         repository: "${{env.DEPS_REPO}}"
@@ -42,7 +44,7 @@ jobs:
         lfs: true
 
     - name: Clone third-party deps (deps/common)
-      if: steps.cache-deps-linux.outputs.cache-hit != 'true'
+      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
       uses: actions/checkout@v4
       with:
         repository: "${{env.DEPS_REPO}}"
@@ -51,7 +53,7 @@ jobs:
         lfs: true
 
     - name: Build deps
-      if: steps.cache-deps-linux.outputs.cache-hit != 'true'
+      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
       shell: bash
       run: sudo chmod 777 build_linux_deps.sh && sudo ./build_linux_deps.sh
 
@@ -66,11 +68,11 @@ jobs:
 
 ### deps
     - name: Grab cache for deps
-      id: cache-deps-linux
+      id: emu-deps-cache-step
       uses: actions/cache@v3
       with:
-        key: ${{ runner.os }}-deps
-        path: build-linux-deps
+        key: ${{ env.DEPS_CACHE_KEY }}
+        path: ${{ env.DEPS_CACHE_DIR }}
         fail-on-cache-miss: true
 
     - name: Install required packages

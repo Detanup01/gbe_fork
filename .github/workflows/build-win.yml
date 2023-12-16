@@ -13,6 +13,8 @@ env:
   # Expected format {owner}/{repo}.
   DEPS_REPO: 'otavepto/gbe_fork-deps'
   THIRD_PARTY_BASE_DIR: 'third-party'
+  DEPS_CACHE_KEY: emu-deps-win
+  DEPS_CACHE_DIR: build-win-deps
 
 jobs:
   dependencies:
@@ -20,20 +22,20 @@ jobs:
 
     steps:
     - name: Lookup cache for deps
-      id: cache-deps-win
+      id: emu-deps-cache-step
       uses: actions/cache@v3
       with:
-        key: ${{ runner.os }}-deps
-        path: build-win-deps
+        key: ${{ env.DEPS_CACHE_KEY }}
+        path: ${{ env.DEPS_CACHE_DIR }}
         lookup-only: true
 
     # we need the repo to build the deps since it has the build scripts
     - name: Checkout branch
-      if: steps.cache-deps-win.outputs.cache-hit != 'true'
+      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
       uses: actions/checkout@v4
 
     - name: Clone third-party deps (deps/win)
-      if: steps.cache-deps-win.outputs.cache-hit != 'true'
+      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
       uses: actions/checkout@v4
       with:
         repository: "${{env.DEPS_REPO}}"
@@ -42,7 +44,7 @@ jobs:
         lfs: true
 
     - name: Clone third-party deps (deps/common)
-      if: steps.cache-deps-win.outputs.cache-hit != 'true'
+      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
       uses: actions/checkout@v4
       with:
         repository: "${{env.DEPS_REPO}}"
@@ -51,7 +53,7 @@ jobs:
         lfs: true
 
     - name: Clone third-party deps (common/win)
-      if: steps.cache-deps-win.outputs.cache-hit != 'true'
+      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
       uses: actions/checkout@v4
       with:
         repository: "${{env.DEPS_REPO}}"
@@ -60,7 +62,7 @@ jobs:
         lfs: true
 
     - name: Build deps
-      if: steps.cache-deps-win.outputs.cache-hit != 'true'
+      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
       shell: cmd
       working-directory: ${{ github.workspace }}
       run: build_win_deps.bat
@@ -76,11 +78,11 @@ jobs:
 
 ### deps
     - name: Grab cache for deps
-      id: cache-deps-win
+      id: emu-deps-cache-step
       uses: actions/cache@v3
       with:
-        key: ${{ runner.os }}-deps
-        path: build-win-deps
+        key: ${{ env.DEPS_CACHE_KEY }}
+        path: ${{ env.DEPS_CACHE_DIR }}
         fail-on-cache-miss: true
 
     - name: Clone third-party build helpers (common/win)
