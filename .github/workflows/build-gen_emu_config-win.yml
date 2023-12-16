@@ -39,4 +39,5 @@ jobs:
         path: 'scripts/bin/win/'
         if-no-files-found: 'error'
         compression-level: 9
+        retention-days: 1
     

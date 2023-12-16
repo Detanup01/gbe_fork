@@ -102,6 +102,7 @@ jobs:
         path: 'build-linux/release/'
         if-no-files-found: 'error'
         compression-level: 9
+        retention-days: 1
     
 ### build + upload debug
     - name: Build debug mode
@@ -118,4 +119,5 @@ jobs:
         path: 'build-linux/debug/'
         if-no-files-found: 'error'
         compression-level: 9
+        retention-days: 1
     

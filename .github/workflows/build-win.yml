@@ -108,6 +108,7 @@ jobs:
         path: 'build-win/release/'
         if-no-files-found: 'error'
         compression-level: 9
+        retention-days: 1
     
 ### build + upload debug
     - name: Build debug mode
@@ -124,4 +125,5 @@ jobs:
         path: 'build-win/debug/'
         if-no-files-found: 'error'
         compression-level: 9
+        retention-days: 1
     
