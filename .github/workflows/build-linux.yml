@@ -14,7 +14,7 @@ permissions:
 
 env:
   # Expected format {owner}/{repo}.
-  DEPS_REPO: 'otavepto/gbe_fork-deps'
+  DEPS_REPO: 'otavepto/gbe_fork'
   THIRD_PARTY_BASE_DIR: 'third-party'
   DEPS_CACHE_KEY: emu-deps-linux
   DEPS_CACHE_DIR: build-linux-deps
@@ -42,7 +42,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: "${{env.DEPS_REPO}}"
-        ref: 'deps/linux'
+        ref: 'third-party/deps/linux'
         path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/linux"
         lfs: true
 
@@ -51,7 +51,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: "${{env.DEPS_REPO}}"
-        ref: 'deps/common'
+        ref: 'third-party/deps/common'
         path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/common"
         lfs: true
 
@@ -86,7 +86,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: "${{env.DEPS_REPO}}"
-        ref: 'build/linux'
+        ref: 'third-party/build/linux'
         path: "${{env.THIRD_PARTY_BASE_DIR}}/build/linux"
         lfs: true
 

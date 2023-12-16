@@ -14,7 +14,7 @@ permissions:
 
 env:
   # Expected format {owner}/{repo}.
-  DEPS_REPO: 'otavepto/gbe_fork-deps'
+  DEPS_REPO: 'otavepto/gbe_fork'
   THIRD_PARTY_BASE_DIR: 'third-party'
   DEPS_CACHE_KEY: emu-deps-win
   DEPS_CACHE_DIR: build-win-deps
@@ -42,7 +42,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: "${{env.DEPS_REPO}}"
-        ref: 'deps/win'
+        ref: 'third-party/deps/win'
         path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/win"
         lfs: true
 
@@ -51,7 +51,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: "${{env.DEPS_REPO}}"
-        ref: 'deps/common'
+        ref: 'third-party/deps/common'
         path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/common"
         lfs: true
 
@@ -60,7 +60,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: "${{env.DEPS_REPO}}"
-        ref: 'common/win'
+        ref: 'third-party/common/win'
         path: "${{env.THIRD_PARTY_BASE_DIR}}/common/win"
         lfs: true
 
@@ -92,7 +92,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: "${{env.DEPS_REPO}}"
-        ref: 'common/win'
+        ref: 'third-party/common/win'
         path: "${{env.THIRD_PARTY_BASE_DIR}}/common/win"
         lfs: true
 
