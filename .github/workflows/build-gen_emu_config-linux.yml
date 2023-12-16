@@ -1,0 +1,37 @@
+name: Generate emu config (Windows)
+
+on:
+  push:
+    branches: [ "ci_runner" ]
+  # pull_request:
+  #   branches: [ "ci_runner" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout branch
+      uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ github.workspace }}/scripts
+      run: sudo chmod 77 recreate_venv_linux.sh && ./recreate_venv_linux.sh
+
+    - name: Rebuild
+      shell: bash
+      working-directory: ${{ github.workspace }}/scripts
+      run: sudo chmod 77 rebuild_linux.sh && ./rebuild_linux.sh
+
+    - name: Upload build
+      uses: actions/upload-artifact@v4
+      with:
+        name: "generate_emu_config-linux-${{ github.sha }}"
+        path: 'scripts/bin/linux/'
+        if-no-files-found: 'error'
+        compression-level: 9
+    

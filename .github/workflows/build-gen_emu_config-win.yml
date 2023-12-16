@@ -3,16 +3,11 @@ name: Generate emu config (Windows)
 on:
   push:
     branches: [ "ci_runner" ]
-  pull_request:
-    branches: [ "ci_runner" ]
+  # pull_request:
+  #   branches: [ "ci_runner" ]
 
 permissions:
   contents: read
-
-env:
-  # Expected format {owner}/{repo}.
-  DEPS_REPO: 'otavepto/gbe_fork-deps'
-  THIRD_PARTY_BASE_DIR: 'third-party'
 
 jobs:
   build:
@@ -30,18 +25,18 @@ jobs:
     - name: Install dependencies
       shell: cmd
       working-directory: ${{ github.workspace }}/scripts
-      run: recreate_venv.bat
+      run: recreate_venv_win.bat
 
     - name: Rebuild
       shell: cmd
       working-directory: ${{ github.workspace }}/scripts
-      run: rebuild.bat
+      run: rebuild_win.bat
 
     - name: Upload build
       uses: actions/upload-artifact@v4
       with:
         name: "generate_emu_config-win-${{ github.sha }}"
-        path: 'scripts/bin/generate_emu_config/'
+        path: 'scripts/bin/win/'
         if-no-files-found: 'error'
         compression-level: 9
     
