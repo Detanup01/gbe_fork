@@ -53,8 +53,7 @@ jobs:
     - name: Build deps
       if: steps.cache-deps-linux.outputs.cache-hit != 'true'
       shell: bash
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: sudo ./build_linux_deps.sh
+      run: sudo chmod 777 build_linux_deps.sh && sudo ./build_linux_deps.sh
 
 
   build:
@@ -85,8 +84,8 @@ jobs:
 ### build + upload release
     - name: Build release mode
       shell: bash
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: build_linux.sh release
+      working-directory: ${{ github.workspace }}
+      run:  "sudo chmod 777 build_linux.sh && ./build_linux.sh release"
 
     - name: Upload build (release)
       uses: actions/upload-artifact@v4
@@ -99,7 +98,7 @@ jobs:
 ### build + upload debug
     - name: Build debug mode
       shell: bash
-      working-directory: ${{env.GITHUB_WORKSPACE}}
+      working-directory: ${{ github.workspace }}
       run: build_linux.sh debug
 
     - name: Upload build (debug)

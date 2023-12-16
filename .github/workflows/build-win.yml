@@ -62,7 +62,7 @@ jobs:
     - name: Build deps
       if: steps.cache-deps-win.outputs.cache-hit != 'true'
       shell: cmd
-      working-directory: ${{env.GITHUB_WORKSPACE}}
+      working-directory: ${{ github.workspace }}
       run: build_win_deps.bat
 
 
@@ -94,7 +94,7 @@ jobs:
 ### build + upload release
     - name: Build release mode
       shell: cmd
-      working-directory: ${{env.GITHUB_WORKSPACE}}
+      working-directory: ${{ github.workspace }}
       run: build_win.bat release
 
     - name: Upload build (release)
@@ -108,7 +108,7 @@ jobs:
 ### build + upload debug
     - name: Build debug mode
       shell: cmd
-      working-directory: ${{env.GITHUB_WORKSPACE}}
+      working-directory: ${{ github.workspace }}
       run: build_win.bat debug
 
     - name: Upload build (debug)
