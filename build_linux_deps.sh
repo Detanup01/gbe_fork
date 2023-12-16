@@ -26,11 +26,6 @@ third_party_deps_dir="$third_party_dir/deps/linux"
 third_party_common_dir="$third_party_dir/deps/common/src"
 mycmake="$third_party_deps_dir/cmake-3.27.7-linux-x86_64/bin/cmake"
 
-[[ -f "$mycmake" ]] || {
-  echo "[X] Couldn't find cmake" >&2;
-  exit 1;
-}
-
 # < 0: deduce, > 1: force
 PARALLEL_THREADS_OVERRIDE=-1
 VERBOSITY=''
@@ -83,6 +78,11 @@ last_code=$((last_code + $?))
 
 echo ; echo
 
+
+[[ -f "$mycmake" ]] || {
+  echo "[X] Couldn't find cmake" >&2;
+  exit 1;
+}
 
 # use 70%
 build_threads="$(( $(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 0) * 70 / 100 ))"
