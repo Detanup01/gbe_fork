@@ -461,6 +461,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     bool disable_source_query = false;
     bool disable_account_avatar = false;
     bool achievement_bypass = false;
+    bool is_beta_branch = false;
     int build_id = 10;
 
     bool warn_forced = false;
@@ -495,6 +496,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
                 disable_account_avatar = true;
             } else if (p == "achievements_bypass.txt") {
                 achievement_bypass = true;
+            } else if (p == "is_beta_branch.txt") {
+                is_beta_branch = true;
             } else if (p == "force_language.txt") {
                 int len = Local_Storage::get_file_data(steam_settings_path + "force_language.txt", language, sizeof(language) - 1);
                 if (len > 0) {
@@ -567,6 +570,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     settings_server->http_online = steamhttp_online_mode;
     settings_client->achievement_bypass = achievement_bypass;
     settings_server->achievement_bypass = achievement_bypass;
+    settings_client->is_beta_branch = is_beta_branch;
+    settings_server->is_beta_branch = is_beta_branch;
 
     if (local_save) {
         settings_client->local_save = save_path;
@@ -833,6 +838,29 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
             settings_client->assume_any_app_installed = true;
             settings_server->assume_any_app_installed = true;
             PRINT_DEBUG("Assuming any app is installed\n");
+        }
+    }
+
+    {
+        std::string installed_apps_list_path = Local_Storage::get_game_settings_path() + "force_branch_name.txt";
+        std::ifstream input( utf8_decode(installed_apps_list_path) );
+        if (input.is_open()) {
+            consume_bom(input);
+            std::string line;
+            getline( input, line );
+            
+            constexpr const char * const whitespaces = " \t\r\n";
+            size_t start = line.find_first_not_of(whitespaces);
+            size_t end = line.find_last_not_of(whitespaces);
+            line = start == end
+                ? std::string()
+                : line.substr(start, end - start + 1);
+            
+            if (!line.empty()) {
+                settings_client->current_branch_name = line;
+                settings_server->current_branch_name = line;
+                PRINT_DEBUG("Forcing current branch name to '%s'\n", line.c_str());
+            }
         }
     }
 

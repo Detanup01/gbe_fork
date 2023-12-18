@@ -170,17 +170,17 @@ void Steam_Apps::RequestAppProofOfPurchaseKey( AppId_t nAppID )
 }
 
 // returns current beta branch name, 'public' is the default branch
+// "true if the user is on a beta branch; otherwise, false"
+// https://partner.steamgames.com/doc/api/ISteamApps
 bool Steam_Apps::GetCurrentBetaName( char *pchName, int cchNameBufferSize )
 {
     PRINT_DEBUG("GetCurrentBetaName %i\n", cchNameBufferSize);
-    if (!pchName) return false;
 
-    if (sizeof("public") > cchNameBufferSize) {
-        return false;
+    if (pchName && cchNameBufferSize > settings->current_branch_name.size()) {
+        memcpy(pchName, settings->current_branch_name.c_str(), settings->current_branch_name.size());
     }
 
-    memcpy(pchName, "public", sizeof("public"));
-    return true;
+    return settings->is_beta_branch;
 }
 
 // signal Steam that game files seems corrupt or missing

@@ -1,0 +1,1 @@
+rename to: is_beta_branch.txt to tell the game that we're playing on a beta branch.

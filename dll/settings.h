@@ -211,6 +211,10 @@ public:
     bool assume_any_app_installed = true;
     bool appIsInstalled(AppId_t appID);
 
+    //is playing on beta branch + current/forced branch name
+    bool is_beta_branch = false;
+    std::string current_branch_name = "public";
+
     //controller
     struct Controller_Settings controller_settings;
     std::string glyphs_directory;
