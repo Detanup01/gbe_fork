@@ -241,12 +241,13 @@ HSteamPipe Steam_Client::CreateSteamPipe()
 
 // Releases a previously created communications pipe
 // NOT THREADSAFE - ensure that no other threads are accessing Steamworks API when calling
+// "true if the pipe was valid and released successfully; otherwise, false"
+// https://partner.steamgames.com/doc/api/ISteamClient
 bool Steam_Client::BReleaseSteamPipe( HSteamPipe hSteamPipe )
 {
     PRINT_DEBUG("BReleaseSteamPipe %i\n", hSteamPipe);
     if (steam_pipes.count(hSteamPipe)) {
-        steam_pipes.erase(hSteamPipe);
-        return true;
+        return steam_pipes.erase(hSteamPipe) > 0;
     }
 
     return false;
