@@ -1,3 +1,35 @@
+* More accurate implementation for BIsAppInstalled(), it now rejects uint32_max
+
+* Allow behavior customizization via installed_app_ids.txt config file
+
+* Limit/Lock list of installed apps on an empty file (similar to dlc.txt)
+
+* Changed the behavior of GetCurrentBetaName() to comply with the docs, might break stuff
+
+* Allow customizing the behavior via is_beta_branch.txt + force_branch_name.txt config files
+
+* New script to generate native executable for `generate_emu_config` on Linux using pyinstaller
+
+* Setup Github Worflows to:
+  * Build `generate_emu_config` for `Linux` when you push code to a branch whose name matches the pattern `ci-build-gen-linux*`
+  * Build `generate_emu_config` for `Windows` when you push code to a branch whose name matches the pattern `ci-build-gen-win*`
+  * Build the emu for `Linux` when you push code to a branch whose name matches the pattern `ci-build-emu-linux*`
+  * Build the emu for `Windows` when you push code to a branch whose name matches the pattern `ci-build-emu-win*`
+  * Build everything when you push code to a branch whose name is `ci-build-all`
+  * Build everything and create a release when you push a tag whose name matches the pattern `release*`
+
+* Packaging scripts for both Windows & Linux, usable locally and via Github Workflows
+  * For the emu:
+    * First run `build_win_deps.bat` (Windows)  
+    or `sudo ./build_linux_deps.sh` (Linux)
+    * Run `build_win.bat release` + `build_win.bat debug` (Windows)  
+    or `./build_linux.sh release` + `./build_linux.sh debug` (Linux)
+    * Finally run `package_win.bat release` + `package_win.bat debug` (Windows)  
+    or `sudo ./package_linux.sh release` + `sudo ./package_linux.sh debug` (Linux)
+  * The same goes for `generate_emu_config` (scripts folder) but the scripts do not take any arguments, so no `release` or `debug`
+
+* Added all third-party dependencies as local branches in this repo + refer to these branches as submodules, making the repo self contained
+
 * based on cvsR4U1 by ce20fdf2 from viewtopic.php?p=2936697#p2936697
 
 * apply the fix for the Linux build (due to newer glibc) from this pull request by Randy Li: https://gitlab.com/Mr_Goldberg/goldberg_emulator/-/merge_requests/42/
