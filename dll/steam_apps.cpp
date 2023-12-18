@@ -245,11 +245,20 @@ uint32 Steam_Apps::GetAppInstallDir( AppId_t appID, char *pchFolder, uint32 cchF
 bool Steam_Apps::BIsAppInstalled( AppId_t appID )
 {
     PRINT_DEBUG("BIsAppInstalled %u\n", appID);
-    // is this true? it seems to indicate a non-steam game
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    // "0 Base Goldsource Shared Binaries"
+    // https://developer.valvesoftware.com/wiki/Steam_Application_IDs
     if (appID == 0) return true;
     // game LEGO® 2K Drive (app id 1451810) checks for a proper steam behavior by sending uint32_max and expects false in return
     if (appID == UINT32_MAX) return false;
     if (appID == settings->get_local_game_id().AppID()) return true;
+
+    // only check for DLC if the the list is limited/bounded,
+    // calling hasDLC() wehn unlockAllDLCs is true will always satisfy the below condition
+    if (!settings->allDLCUnlocked() && settings->hasDLC(appID)) {
+        return false;
+    }
 
     return settings->appIsInstalled(appID);
 }

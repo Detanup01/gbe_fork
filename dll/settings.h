@@ -167,6 +167,7 @@ public:
     unsigned int DLCCount();
     bool hasDLC(AppId_t appID);
     bool getDLC(unsigned int index, AppId_t &appID, bool &available, std::string &name);
+    bool allDLCUnlocked() const;
 
     //Depots
     std::vector<DepotId_t> depots;

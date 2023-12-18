@@ -251,6 +251,11 @@ bool Settings::getDLC(unsigned int index, AppId_t &appID, bool &available, std::
     return true;
 }
 
+bool Settings::allDLCUnlocked() const
+{
+    return this->unlockAllDLCs;
+}
+
 void Settings::setAppInstallPath(AppId_t appID, std::string path)
 {
     app_paths[appID] = path;
