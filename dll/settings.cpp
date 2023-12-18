@@ -280,3 +280,14 @@ int Settings::add_image(std::string data, uint32 width, uint32 height)
     images[last] = dt;
     return last;
 }
+
+bool Settings::appIsInstalled(AppId_t appID)
+{
+    if (this->assume_any_app_installed) return true;
+
+    auto f = std::find_if(installed_app_ids.begin(), installed_app_ids.end(), [&appID](AppId_t const& item) { return item == appID; });
+    if (installed_app_ids.end() == f)
+        return false;
+
+    return true;
+}

@@ -805,6 +805,37 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
         }
     }
 
+    {
+        std::string installed_apps_list_path = Local_Storage::get_game_settings_path() + "installed_app_ids.txt";
+        std::ifstream input( utf8_decode(installed_apps_list_path) );
+        if (input.is_open()) {
+            settings_client->assume_any_app_installed = false;
+            settings_server->assume_any_app_installed = false;
+            PRINT_DEBUG("Limiting/Locking installed apps\n");
+            consume_bom(input);
+            for( std::string line; getline( input, line ); ) {
+                if (!line.empty() && line[line.length()-1] == '\n') {
+                    line.pop_back();
+                }
+
+                if (!line.empty() && line[line.length()-1] == '\r') {
+                    line.pop_back();
+                }
+
+                try {
+                    AppId_t app_id = std::stoul(line);
+                    settings_client->installed_app_ids.insert(app_id);
+                    settings_server->installed_app_ids.insert(app_id);
+                    PRINT_DEBUG("Added installed app with ID %u\n", app_id);
+                } catch (...) {}
+            }
+        } else {
+            settings_client->assume_any_app_installed = true;
+            settings_server->assume_any_app_installed = true;
+            PRINT_DEBUG("Assuming any app is installed\n");
+        }
+    }
+
     load_subscribed_groups_clans(local_storage->get_global_settings_path() + "subscribed_groups_clans.txt", settings_client, settings_server);
     load_subscribed_groups_clans(Local_Storage::get_game_settings_path() + "subscribed_groups_clans.txt", settings_client, settings_server);
 

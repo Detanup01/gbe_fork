@@ -206,6 +206,11 @@ public:
     int add_image(std::string data, uint32 width, uint32 height);
     bool disable_account_avatar = false;
 
+    //installed app ids, Steam_Apps::BIsAppInstalled()
+    std::set<AppId_t> installed_app_ids;
+    bool assume_any_app_installed = true;
+    bool appIsInstalled(AppId_t appID);
+
     //controller
     struct Controller_Settings controller_settings;
     std::string glyphs_directory;

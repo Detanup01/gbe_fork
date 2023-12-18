@@ -240,10 +240,18 @@ uint32 Steam_Apps::GetAppInstallDir( AppId_t appID, char *pchFolder, uint32 cchF
 }
 
 // returns true if that app is installed (not necessarily owned)
+// "This only works for base applications, not Downloadable Content (DLC). Use BIsDlcInstalled for DLC instead"
+// https://partner.steamgames.com/doc/api/ISteamApps
 bool Steam_Apps::BIsAppInstalled( AppId_t appID )
 {
     PRINT_DEBUG("BIsAppInstalled %u\n", appID);
-    return true;
+    // is this true? it seems to indicate a non-steam game
+    if (appID == 0) return true;
+    // game LEGO® 2K Drive (app id 1451810) checks for a proper steam behavior by sending uint32_max and expects false in return
+    if (appID == UINT32_MAX) return false;
+    if (appID == settings->get_local_game_id().AppID()) return true;
+
+    return settings->appIsInstalled(appID);
 }
 
 // returns the SteamID of the original owner. If different from current user, it's borrowed
