@@ -78,6 +78,7 @@ bool Steam_Apps::BIsSubscribedApp( AppId_t appID )
     PRINT_DEBUG("BIsSubscribedApp %u\n", appID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (appID == 0) return true; //I think appid 0 is always owned
+    if (appID == UINT32_MAX) return false; // check Steam_Apps::BIsAppInstalled()
     if (appID == settings->get_local_game_id().AppID()) return true;
     return settings->hasDLC(appID);
 }
@@ -89,6 +90,7 @@ bool Steam_Apps::BIsDlcInstalled( AppId_t appID )
     PRINT_DEBUG("BIsDlcInstalled %u\n", appID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (appID == 0) return true;
+    if (appID == UINT32_MAX) return false; // check Steam_Apps::BIsAppInstalled()
     return settings->hasDLC(appID);
 }
 
@@ -339,7 +341,7 @@ SteamAPICall_t Steam_Apps::GetFileDetails( const char* pszFileName )
 // If game was already running and launched again, the NewUrlLaunchParameters_t will be fired.
 int Steam_Apps::GetLaunchCommandLine( char *pszCommandLine, int cubCommandLine )
 {
-    PRINT_DEBUG("GetLaunchCommandLine\n");
+    PRINT_DEBUG("TODO GetLaunchCommandLine\n");
     return 0;
 }
 
