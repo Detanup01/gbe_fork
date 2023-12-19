@@ -257,50 +257,58 @@ call build_win_set_env.bat 32 || (
 )
 
 echo // invoking protobuf compiler - 32
-"%protoc_exe_32%" -I.\dll\ --cpp_out=.\dll\ .\dll\net.proto
-set /a last_code+=errorlevel
+"%protoc_exe_32%" -I.\dll\ --cpp_out=.\dll\ .\dll\net.proto || (
+  set /a last_code+=1
+)
 echo: & echo:
 
 if %BUILD_LIB32% equ 1 (
-  call :compile_lib32
-  set /a last_code+=errorlevel
+  call :compile_lib32 || (
+    set /a last_code+=1
+  )
   echo: & echo:
 )
 
 if %BUILD_EXP_LIB32% equ 1 (
-  call :compile_experimental_lib32
-  set /a last_code+=errorlevel
+  call :compile_experimental_lib32 || (
+    set /a last_code+=1
+  )
   echo: & echo:
 )
 
 if %BUILD_EXP_CLIENT32% equ 1 (
-  call :compile_experimental_client32
-  set /a last_code+=errorlevel
+  call :compile_experimental_client32 || (
+    set /a last_code+=1
+  )
   echo: & echo:
 )
 
 if %BUILD_EXPCLIENT32% equ 1 (
-  call :compile_experimentalclient_32
-  set /a last_code+=errorlevel
+  call :compile_experimentalclient_32 || (
+    set /a last_code+=1
+  )
   echo: & echo:
 )
 
 :: steamclient_loader
 if %BUILD_EXPCLIENT_LDR% equ 1 (
-  call :compile_experimentalclient_ldr
-  set /a last_code+=errorlevel
+  call :compile_experimentalclient_ldr || (
+    set /a last_code+=1
+  )
   echo: & echo:
 )
 
 :: tools (x32)
 if %BUILD_TOOL_FIND_ITFS% equ 1 (
-  call :compile_tool_itf
-  set /a last_code+=errorlevel
+  call :compile_tool_itf || (
+    set /a last_code+=1
+  )
   echo: & echo:
 )
 if %BUILD_TOOL_LOBBY% equ 1 (
-  call :compile_tool_lobby
-  set /a last_code+=errorlevel
+  call :compile_tool_lobby || (
+    set /a last_code+=1
+  )
   echo: & echo:
 )
 
@@ -326,31 +334,36 @@ call build_win_set_env.bat 64 || (
 )
 
 echo // invoking protobuf compiler - 64
-"%protoc_exe_64%" -I.\dll\ --cpp_out=.\dll\ .\dll\net.proto
-set /a last_code+=errorlevel
+"%protoc_exe_64%" -I.\dll\ --cpp_out=.\dll\ .\dll\net.proto || (
+  set /a last_code+=1
+)
 echo: & echo:
 
 if %BUILD_LIB64% equ 1 (
-  call :compile_lib64
-  set /a last_code+=errorlevel
+  call :compile_lib64 || (
+    set /a last_code+=1
+  )
   echo: & echo:
 )
 
 if %BUILD_EXP_LIB64% equ 1 (
-  call :compile_experimental_lib64
-  set /a last_code+=errorlevel
+  call :compile_experimental_lib64 || (
+    set /a last_code+=1
+  )
   echo: & echo:
 )
 
 if %BUILD_EXP_CLIENT64% equ 1 (
-  call :compile_experimental_client64
-  set /a last_code+=errorlevel
+  call :compile_experimental_client64 || (
+    set /a last_code+=1
+  )
   echo: & echo:
 )
 
 if %BUILD_EXPCLIENT64% equ 1 (
-  call :compile_experimentalclient_64
-  set /a last_code+=errorlevel
+  call :compile_experimentalclient_64 || (
+    set /a last_code+=1
+  )
   echo: & echo:
 )
 
@@ -358,14 +371,19 @@ endlocal & set /a last_code=%last_code%
 
 
 :: copy configs + examples
-echo // copying readmes + files examples
-xcopy /y /s "files_example\*" "%build_root_dir%\"
-copy /y steamclient_loader\ColdClientLoader.ini "%steamclient_dir%\"
-copy /y Readme_release.txt "%build_root_dir%\Readme.txt"
-copy /y Readme_experimental.txt "%experimental_dir%\Readme.txt"
-copy /y Readme_experimental_steamclient.txt "%steamclient_dir%\Readme.txt"
-copy /y Readme_generate_interfaces.txt "%find_interfaces_dir%\Readme.txt"
-copy /y Readme_lobby_connect.txt "%lobby_connect_dir%\Readme.txt"
+if %last_code% equ 0 (
+  echo // copying readmes + files examples
+  xcopy /y /s "files_example\*" "%build_root_dir%\"
+  copy /y steamclient_loader\ColdClientLoader.ini "%steamclient_dir%\"
+  copy /y Readme_release.txt "%build_root_dir%\Readme.txt"
+  copy /y Readme_experimental.txt "%experimental_dir%\Readme.txt"
+  copy /y Readme_experimental_steamclient.txt "%steamclient_dir%\Readme.txt"
+  copy /y Readme_generate_interfaces.txt "%find_interfaces_dir%\Readme.txt"
+  copy /y Readme_lobby_connect.txt "%lobby_connect_dir%\Readme.txt"
+) else (
+  call :err_msg "Not copying readmes or files examples due to previous errors"
+)
+echo: & echo:
 
 
 :: cleanup
@@ -374,6 +392,7 @@ call build_win_clean.bat
 for %%A in ("ilk" "lib" "exp") do (
   del /f /s /q "%build_root_dir%\*.%%~A" >nul 2>&1
 )
+echo: & echo:
 
 
 goto :end_script

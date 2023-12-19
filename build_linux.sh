@@ -374,6 +374,7 @@ rm -f dll/net.pb.cc
 rm -f dll/net.pb.h
 echo // invoking protobuf compiler - 32
 "$protoc_exe_32" -I./dll/ --cpp_out=./dll/ ./dll/*.proto
+echo ; echo ;
 
 if [[ "$BUILD_LIB32" = "1" ]]; then
   echo // building shared lib libsteam_api.so - 32
@@ -399,8 +400,6 @@ if [[ "$BUILD_TOOL_LOBBY32" = "1" ]]; then
   last_code=$((last_code + $?))
 fi
 
-echo; echo 
-
 
 ### x64 build
 rm -f dll/net.pb.cc
@@ -409,6 +408,7 @@ rm -f -r -d "$build_temp_dir"
 mkdir -p "$build_temp_dir"
 echo // invoking protobuf compiler - 64
 "$protoc_exe_64" -I./dll/ --cpp_out=./dll/ ./dll/*.proto
+echo ; echo ;
 
 if [[ "$BUILD_LIB64" = "1" ]]; then
   echo // building shared lib libsteam_api.so - 64
@@ -433,8 +433,6 @@ if [[ "$BUILD_TOOL_LOBBY64" = "1" ]]; then
   build_for 0 1 "$build_root_tools/lobby_connect_x64" '-DNO_DISK_WRITES -DLOBBY_CONNECT' extra_src_files 
   last_code=$((last_code + $?))
 fi
-
-echo; echo 
 
 
 # cleanup
