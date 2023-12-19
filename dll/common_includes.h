@@ -64,7 +64,9 @@
     #include <bcrypt.h>
 
     #ifndef EMU_RELEASE_BUILD
-        #define PRINT_DEBUG(a, ...) do {FILE *t = fopen("STEAM_LOG.txt", "a"); fprintf(t, "%u " a, GetCurrentThreadId(), __VA_ARGS__); fclose(t); WSASetLastError(0);} while (0)
+        #include <string>
+        extern const std::string dbg_log_file;
+        #define PRINT_DEBUG(a, ...) do {FILE *t = fopen(dbg_log_file.c_str(), "a"); fprintf(t, "%u " a, GetCurrentThreadId(), __VA_ARGS__); fclose(t); WSASetLastError(0);} while (0)
     #endif
 
     EXTERN_C IMAGE_DOS_HEADER __ImageBase;
@@ -127,7 +129,9 @@ inline void reset_LastError()
     #define PATH_MAX_STRING_SIZE 512
 
     #ifndef EMU_RELEASE_BUILD
-        #define PRINT_DEBUG(...) {FILE *t = fopen("STEAM_LOG.txt", "a"); fprintf(t, __VA_ARGS__); fclose(t);}
+        #include <string>
+        extern const std::string dbg_log_file;
+        #define PRINT_DEBUG(...) {FILE *t = fopen(dbg_log_file.c_str(), "a"); fprintf(t, __VA_ARGS__); fclose(t);}
     #endif
     #define PATH_SEPARATOR "/" 
 

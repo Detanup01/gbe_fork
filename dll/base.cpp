@@ -96,6 +96,10 @@ bool set_env_variable(std::string name, std::string value)
 
 std::recursive_mutex global_mutex;
 
+#ifndef EMU_RELEASE_BUILD
+const std::string dbg_log_file = get_full_program_path() + "STEAM_LOG.txt";
+#endif
+
 SteamAPICall_t generate_steam_api_call_id() {
     static SteamAPICall_t a;
     randombytes((char *)&a, sizeof(a));
