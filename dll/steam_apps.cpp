@@ -91,6 +91,7 @@ bool Steam_Apps::BIsDlcInstalled( AppId_t appID )
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (appID == 0) return true;
     if (appID == UINT32_MAX) return false; // check Steam_Apps::BIsAppInstalled()
+    if (appID == settings->get_local_game_id().AppID()) return false; //TODO is this correct?
     return settings->hasDLC(appID);
 }
 
