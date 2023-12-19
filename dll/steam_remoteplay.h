@@ -103,6 +103,9 @@ ESteamDeviceFormFactor GetSessionClientFormFactor( uint32 unSessionID )
 bool BGetSessionClientResolution( uint32 unSessionID, int *pnResolutionX, int *pnResolutionY )
 {
     PRINT_DEBUG("Steam_RemotePlay::BGetSessionClientResolution\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (pnResolutionX) *pnResolutionX = 0;
+    if (pnResolutionY) *pnResolutionY = 0;
     return false;
 }
 
