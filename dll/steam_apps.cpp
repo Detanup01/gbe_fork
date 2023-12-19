@@ -173,6 +173,28 @@ void Steam_Apps::UninstallDLC( AppId_t nAppID )
 }
 
 
+static void FillProofOfPurchaseKey( AppProofOfPurchaseKeyResponse_t& data, AppId_t nAppID, bool ok_result, std::string key = "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd" )
+{
+    data.m_nAppID = nAppID;
+    if (ok_result) {
+        // TODO maybe read this from a config file "purchased_keys.txt":
+        // 480=AAAAA-BBBBB-CCCCC-DDDDD
+        // 218620=XYZFJ-13370-98765
+        size_t min_len = key.size() < k_cubAppProofOfPurchaseKeyMax
+            ? key.size() < k_cubAppProofOfPurchaseKeyMax
+            : k_cubAppProofOfPurchaseKeyMax - 1; // -1 because we need space for null
+        data.m_eResult = EResult::k_EResultOK;
+        data.m_cchKeyLength = min_len;
+        memcpy(data.m_rgchKey, key.c_str(), min_len);
+        data.m_rgchKey[min_len] = 0;
+    } else {
+        data.m_eResult = EResult::k_EResultFail;
+        data.m_cchKeyLength = 0;
+        data.m_rgchKey[0] = 0;
+        data.m_rgchKey[1] = 0;
+    }
+}
+
 // Request legacy cd-key for yourself or owned DLC. If you are interested in this
 // data then make sure you provide us with a list of valid keys to be distributed
 // to users when they purchase the game, before the game ships.
@@ -180,7 +202,23 @@ void Steam_Apps::UninstallDLC( AppId_t nAppID )
 // the key is available (which may be immediately).
 void Steam_Apps::RequestAppProofOfPurchaseKey( AppId_t nAppID )
 {
-    PRINT_DEBUG("RequestAppProofOfPurchaseKey\n");
+    PRINT_DEBUG("TODO RequestAppProofOfPurchaseKey\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    AppProofOfPurchaseKeyResponse_t data{};
+    data.m_nAppID = nAppID;
+    
+    // check Steam_Apps::BIsAppInstalled()
+    if (nAppID == 0 || nAppID == UINT32_MAX) {
+        FillProofOfPurchaseKey(data, nAppID, false);
+    } else if (nAppID == settings->get_local_game_id().AppID() || settings->hasDLC(nAppID)) {
+        FillProofOfPurchaseKey(data, nAppID, true);
+    } else {
+        //TODO what to do here?
+        FillProofOfPurchaseKey(data, nAppID, false);
+    }
+
+    callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
 }
 
 // returns current beta branch name, 'public' is the default branch
@@ -317,7 +355,35 @@ int Steam_Apps::GetAppBuildId()
 // member is k_uAppIdInvalid (zero).
 void Steam_Apps::RequestAllProofOfPurchaseKeys()
 {
-    PRINT_DEBUG("RequestAllProofOfPurchaseKeys\n");
+    PRINT_DEBUG("TODO RequestAllProofOfPurchaseKeys\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    // current app
+    {
+        AppProofOfPurchaseKeyResponse_t data{};
+        FillProofOfPurchaseKey(data, settings->get_local_game_id().AppID(), true);
+        callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    }
+
+    // DLCs
+    const auto count = settings->DLCCount();
+    for (size_t i = 0; i < settings->DLCCount(); i++) {
+        AppId_t app_id;
+        bool available;
+        std::string name;
+        settings->getDLC(i, app_id, available, name);
+
+        AppProofOfPurchaseKeyResponse_t data{};
+        FillProofOfPurchaseKey(data, app_id, true);
+        callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    }
+    
+    // termination entry
+    {
+        AppProofOfPurchaseKeyResponse_t data{};
+        FillProofOfPurchaseKey(data, k_uAppIdInvalid, true, "");
+        callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    }
+
 }
 
 
