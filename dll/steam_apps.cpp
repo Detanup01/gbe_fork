@@ -100,8 +100,19 @@ bool Steam_Apps::BIsDlcInstalled( AppId_t appID )
 uint32 Steam_Apps::GetEarliestPurchaseUnixTime( AppId_t nAppID )
 {
     PRINT_DEBUG("GetEarliestPurchaseUnixTime\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (nAppID == 0) return 0; //TODO is this correct?
+    if (nAppID == UINT32_MAX) return 0; // check Steam_Apps::BIsAppInstalled() TODO is this correct?
+    if (nAppID == settings->get_local_game_id().AppID() || settings->hasDLC(nAppID)) {
+        auto t =
+            std::chrono::system_clock::now()
+            - std::chrono::hours(24 * 4); // 4 days ago
+        auto duration = std::chrono::duration_cast<std::chrono::seconds>(t.time_since_epoch());
+        return (uint32)duration.count();
+    }
+
     //TODO ?
-    return 1;
+    return 0;
 }
 
 
