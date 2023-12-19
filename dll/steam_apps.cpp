@@ -165,11 +165,15 @@ bool Steam_Apps::BGetDLCDataByIndex( int iDLC, AppId_t *pAppID, bool *pbAvailabl
 void Steam_Apps::InstallDLC( AppId_t nAppID )
 {
     PRINT_DEBUG("InstallDLC\n");
+    // we lock here because the API is supposed to modify the DLC list
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 void Steam_Apps::UninstallDLC( AppId_t nAppID )
 {
     PRINT_DEBUG("UninstallDLC\n");
+    // we lock here because the API is supposed to modify the DLC list
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 
@@ -227,7 +231,7 @@ void Steam_Apps::RequestAppProofOfPurchaseKey( AppId_t nAppID )
 bool Steam_Apps::GetCurrentBetaName( char *pchName, int cchNameBufferSize )
 {
     PRINT_DEBUG("GetCurrentBetaName %i\n", cchNameBufferSize);
-
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (pchName && cchNameBufferSize > settings->current_branch_name.size()) {
         memcpy(pchName, settings->current_branch_name.c_str(), settings->current_branch_name.size());
     }
@@ -239,6 +243,7 @@ bool Steam_Apps::GetCurrentBetaName( char *pchName, int cchNameBufferSize )
 bool Steam_Apps::MarkContentCorrupt( bool bMissingFilesOnly )
 {
     PRINT_DEBUG("MarkContentCorrupt\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     //TODO: warn user
     return true;
 }
@@ -248,8 +253,8 @@ uint32 Steam_Apps::GetInstalledDepots( AppId_t appID, DepotId_t *pvecDepots, uin
 {
     PRINT_DEBUG("GetInstalledDepots %u, %u\n", appID, cMaxDepots);
     //TODO not sure about the behavior of this function, I didn't actually test this.
-    if (!pvecDepots) return 0;
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (!pvecDepots) return 0;
     unsigned int count = settings->depots.size();
     if (cMaxDepots < count) count = cMaxDepots;
     std::copy(settings->depots.begin(), settings->depots.begin() + count, pvecDepots);
@@ -319,6 +324,7 @@ bool Steam_Apps::BIsAppInstalled( AppId_t appID )
 CSteamID Steam_Apps::GetAppOwner()
 {
     PRINT_DEBUG("GetAppOwner\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return settings->get_local_steam_id();
 }
 
@@ -337,6 +343,7 @@ const char *Steam_Apps::GetLaunchQueryParam( const char *pchKey )
 bool Steam_Apps::GetDlcDownloadProgress( AppId_t nAppID, uint64 *punBytesDownloaded, uint64 *punBytesTotal )
 {
     PRINT_DEBUG("GetDlcDownloadProgress\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
  
@@ -345,6 +352,7 @@ bool Steam_Apps::GetDlcDownloadProgress( AppId_t nAppID, uint64 *punBytesDownloa
 int Steam_Apps::GetAppBuildId()
 {
     PRINT_DEBUG("GetAppBuildId\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return this->settings->build_id;
 }
 
@@ -427,6 +435,7 @@ int Steam_Apps::GetLaunchCommandLine( char *pszCommandLine, int cubCommandLine )
 bool Steam_Apps::BIsSubscribedFromFamilySharing()
 {
     PRINT_DEBUG("BIsSubscribedFromFamilySharing\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -434,6 +443,7 @@ bool Steam_Apps::BIsSubscribedFromFamilySharing()
 bool Steam_Apps::BIsTimedTrial( uint32* punSecondsAllowed, uint32* punSecondsPlayed )
 {
     PRINT_DEBUG("BIsTimedTrial\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -441,5 +451,6 @@ bool Steam_Apps::BIsTimedTrial( uint32* punSecondsAllowed, uint32* punSecondsPla
 bool Steam_Apps::SetDlcContext( AppId_t nAppID )
 {
     PRINT_DEBUG("SetDlcContext %u\n", nAppID);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return true;
 }

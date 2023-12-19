@@ -177,6 +177,7 @@ bool steamclient_has_ipv6_functions()
 
 static void *create_client_interface(const char *ver)
 {
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (strstr(ver, "SteamClient") == ver) {
         void *steam_client;
 

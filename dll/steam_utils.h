@@ -89,8 +89,9 @@ const char *GetIPCountry()
 bool GetImageSize( int iImage, uint32 *pnWidth, uint32 *pnHeight )
 {
     PRINT_DEBUG("GetImageSize %i\n", iImage);
-    if (!iImage || !pnWidth || !pnHeight) return false;
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    if (!iImage || !pnWidth || !pnHeight) return false;
 
     auto image = settings->images.find(iImage);
     if (image == settings->images.end()) return false;
@@ -106,8 +107,9 @@ bool GetImageSize( int iImage, uint32 *pnWidth, uint32 *pnHeight )
 bool GetImageRGBA( int iImage, uint8 *pubDest, int nDestBufferSize )
 {
     PRINT_DEBUG("GetImageRGBA %i\n", iImage);
-    if (!iImage || !pubDest || !nDestBufferSize) return false;
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    if (!iImage || !pubDest || !nDestBufferSize) return false;
 
     auto image = settings->images.find(iImage);
     if (image == settings->images.end()) return false;
@@ -138,6 +140,7 @@ uint8 GetCurrentBatteryPower()
 uint32 GetAppID()
 {
     PRINT_DEBUG("GetAppID\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return settings->get_local_game_id().AppID();
 }
 
@@ -147,6 +150,7 @@ uint32 GetAppID()
 void SetOverlayNotificationPosition( ENotificationPosition eNotificationPosition )
 {
     PRINT_DEBUG("SetOverlayNotificationPosition\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     overlay->SetNotificationPosition(eNotificationPosition);
 }
 
@@ -156,12 +160,12 @@ void SetOverlayNotificationPosition( ENotificationPosition eNotificationPosition
 bool IsAPICallCompleted( SteamAPICall_t hSteamAPICall, bool *pbFailed )
 {
     PRINT_DEBUG("IsAPICallCompleted: %llu\n", hSteamAPICall);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamAPICall == 1) { //bug ? soul calibur 6 calls this function with the return value 1 of Steam_User_Stats::RequestCurrentStats and expects this function to return true
         if (pbFailed) *pbFailed = true;
         return true;
     }
 
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!callback_results->exists(hSteamAPICall)) return false;
     if (pbFailed) *pbFailed = false;
     return true; //all api calls "complete" right away
@@ -222,6 +226,7 @@ void SetWarningMessageHook( SteamAPIWarningMessageHook_t pFunction )
 bool IsOverlayEnabled()
 {
     PRINT_DEBUG("IsOverlayEnabled\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return overlay->Ready();
 }
 
@@ -238,6 +243,7 @@ bool IsOverlayEnabled()
 bool BOverlayNeedsPresent()
 {
     PRINT_DEBUG("BOverlayNeedsPresent\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return overlay->NeedPresent();
 }
 
@@ -271,6 +277,7 @@ bool ShowGamepadTextInput( EGamepadTextInputMode eInputMode, EGamepadTextInputLi
 bool ShowGamepadTextInput( EGamepadTextInputMode eInputMode, EGamepadTextInputLineMode eLineInputMode, const char *pchDescription, uint32 unCharMax )
 {
 	PRINT_DEBUG("ShowGamepadTextInput old\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 	return ShowGamepadTextInput(eInputMode, eLineInputMode, pchDescription, unCharMax, NULL);
 }
 
@@ -292,6 +299,7 @@ bool GetEnteredGamepadTextInput( char *pchText, uint32 cchText )
 const char *GetSteamUILanguage()
 {
     PRINT_DEBUG("GetSteamUILanguage\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return settings->get_language();
 }
 
@@ -300,6 +308,7 @@ const char *GetSteamUILanguage()
 bool IsSteamRunningInVR()
 {
     PRINT_DEBUG("IsSteamRunningInVR\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -308,6 +317,7 @@ bool IsSteamRunningInVR()
 void SetOverlayNotificationInset( int nHorizontalInset, int nVerticalInset )
 {
     PRINT_DEBUG("SetOverlayNotificationInset\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     overlay->SetNotificationInset(nHorizontalInset, nVerticalInset);
 }
 
@@ -318,6 +328,7 @@ void SetOverlayNotificationInset( int nHorizontalInset, int nVerticalInset )
 bool IsSteamInBigPictureMode()
 {
     PRINT_DEBUG("IsSteamInBigPictureMode\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -333,6 +344,7 @@ void StartVRDashboard()
 bool IsVRHeadsetStreamingEnabled()
 {
     PRINT_DEBUG("IsVRHeadsetStreamingEnabled\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -351,6 +363,7 @@ void SetVRHeadsetStreamingEnabled( bool bEnabled )
 bool IsSteamChinaLauncher()
 {
     PRINT_DEBUG("IsSteamChinaLauncher\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -359,6 +372,7 @@ bool IsSteamChinaLauncher()
 bool InitFilterText()
 {
     PRINT_DEBUG("InitFilterText old\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -368,6 +382,7 @@ bool InitFilterText()
 bool InitFilterText( uint32 unFilterOptions )
 {
     PRINT_DEBUG("InitFilterText\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -380,6 +395,7 @@ bool InitFilterText( uint32 unFilterOptions )
 int FilterText( char* pchOutFilteredText, uint32 nByteSizeOutFilteredText, const char * pchInputMessage, bool bLegalOnly )
 {
     PRINT_DEBUG("FilterText old\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return FilterText(k_ETextFilteringContextUnknown, CSteamID(), pchInputMessage, pchOutFilteredText, nByteSizeOutFilteredText );
 }
 
@@ -393,6 +409,7 @@ int FilterText( char* pchOutFilteredText, uint32 nByteSizeOutFilteredText, const
 int FilterText( ETextFilteringContext eContext, CSteamID sourceSteamID, const char *pchInputMessage, char *pchOutFilteredText, uint32 nByteSizeOutFilteredText )
 {
     PRINT_DEBUG("FilterText\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!nByteSizeOutFilteredText) return 0;
     unsigned len = strlen(pchInputMessage);
     if (!len) return 0;
@@ -411,6 +428,7 @@ int FilterText( ETextFilteringContext eContext, CSteamID sourceSteamID, const ch
 ESteamIPv6ConnectivityState GetIPv6ConnectivityState( ESteamIPv6ConnectivityProtocol eProtocol )
 {
     PRINT_DEBUG("GetIPv6ConnectivityState\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_ESteamIPv6ConnectivityState_Unknown;
 }
 

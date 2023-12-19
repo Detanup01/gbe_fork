@@ -187,7 +187,7 @@ void Steam_GameServer::LogOff()
 // status functions
 bool Steam_GameServer::BLoggedOn()
 {
-    PRINT_DEBUG("BLoggedOn\n");
+    PRINT_DEBUG("Steam_GameServer::BLoggedOn\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return logged_in;
 }
@@ -439,6 +439,7 @@ void Steam_GameServer::SendUserDisconnect( CSteamID steamIDUser )
 bool Steam_GameServer::BUpdateUserData( CSteamID steamIDUser, const char *pchPlayerName, uint32 uScore )
 {
     PRINT_DEBUG("BUpdateUserData %llu %s %u\n", steamIDUser.ConvertToUint64(), pchPlayerName, uScore);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     auto player_it = std::find_if(players.begin(), players.end(), [&steamIDUser](std::pair<CSteamID, Gameserver_Player_Info_t>& player)
     {
@@ -610,6 +611,7 @@ void Steam_GameServer::CancelAuthTicket( HAuthTicket hAuthTicket )
 EUserHasLicenseForAppResult Steam_GameServer::UserHasLicenseForApp( CSteamID steamID, AppId_t appID )
 {
     PRINT_DEBUG("Steam_GameServer::UserHasLicenseForApp\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_EUserHasLicenseResultHasLicense;
 }
 
@@ -630,6 +632,7 @@ bool Steam_GameServer::RequestUserGroupStatus( CSteamID steamIDUser, CSteamID st
 void Steam_GameServer::GetGameplayStats( )
 {
     PRINT_DEBUG("GetGameplayStats\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 STEAM_CALL_RESULT( GSReputation_t )

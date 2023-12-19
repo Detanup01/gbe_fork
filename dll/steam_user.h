@@ -77,7 +77,7 @@ HSteamUser GetHSteamUser()
 // The Steam client will automatically be trying to recreate the connection as often as possible.
 bool BLoggedOn()
 {
-    PRINT_DEBUG("BLoggedOn\n");
+    PRINT_DEBUG("Steam_User::BLoggedOn\n");
     return !settings->is_offline();
 }
 

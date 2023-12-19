@@ -210,6 +210,8 @@ void Steam_Overlay::SetupOverlay()
 
 void Steam_Overlay::UnSetupOverlay()
 {
+    PRINT_DEBUG("%s\n", __FUNCTION__);
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     ingame_overlay::StopRendererDetection();
     if (!Ready() && future_renderer.valid()) {
         if (future_renderer.wait_for(std::chrono::milliseconds{500}) ==  std::future_status::ready) {
@@ -358,10 +360,10 @@ void Steam_Overlay::NotifyUserAchievement()
 
 void Steam_Overlay::SetLobbyInvite(Friend friendId, uint64 lobbyId)
 {
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     if (!Ready())
         return;
 
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     auto i = friends.find(friendId);
     if (i != friends.end())
     {
@@ -377,10 +379,10 @@ void Steam_Overlay::SetLobbyInvite(Friend friendId, uint64 lobbyId)
 
 void Steam_Overlay::SetRichInvite(Friend friendId, const char* connect_str)
 {
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     if (!Ready())
         return;
 
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     auto i = friends.find(friendId);
     if (i != friends.end())
     {
@@ -421,8 +423,8 @@ void Steam_Overlay::FriendDisconnect(Friend _friend)
 
 void Steam_Overlay::AddMessageNotification(std::string const& message)
 {
-    if (settings->disable_overlay_friend_notification) return;
     std::lock_guard<std::recursive_mutex> lock(notifications_mutex);
+    if (settings->disable_overlay_friend_notification) return;
     int id = find_free_notification_id(notifications);
     if (id != 0)
     {
@@ -487,8 +489,8 @@ void Steam_Overlay::AddAchievementNotification(nlohmann::json const& ach)
 
 void Steam_Overlay::AddInviteNotification(std::pair<const Friend, friend_window_state>& wnd_state)
 {
-    if (settings->disable_overlay_friend_notification) return;
     std::lock_guard<std::recursive_mutex> lock(notifications_mutex);
+    if (settings->disable_overlay_friend_notification) return;
     int id = find_free_notification_id(notifications);
     if (id != 0)
     {

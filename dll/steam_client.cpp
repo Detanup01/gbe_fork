@@ -879,7 +879,7 @@ uint32 Steam_Client::GetIPCCallCount()
 // callbacks will occur directly after the API function is called that generated the warning or message.
 void Steam_Client::SetWarningMessageHook( SteamAPIWarningMessageHook_t pFunction )
 {
-    PRINT_DEBUG("Steam_Client::SetWarningMessageHook\n");
+    PRINT_DEBUG("Steam_Client::SetWarningMessageHook, %p\n", pFunction);
 }
 
 // Trigger global shutdown for the DLL
@@ -1103,7 +1103,8 @@ void Steam_Client::DEPRECATED_Remove_SteamAPI_CPostAPIResultInProcess( void (*)(
 
 void Steam_Client::Set_SteamAPI_CCheckCallbackRegisteredInProcess( SteamAPI_CheckCallbackRegistered_t func )
 {
-    PRINT_DEBUG("Set_SteamAPI_CCheckCallbackRegisteredInProcess\n");
+    PRINT_DEBUG("Set_SteamAPI_CCheckCallbackRegisteredInProcess %p\n", func);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 void Steam_Client::Set_SteamAPI_CPostAPIResultInProcess( SteamAPI_PostAPIResultInProcess_t func )

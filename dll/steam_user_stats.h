@@ -296,10 +296,11 @@ bool RequestCurrentStats()
 bool GetStat( const char *pchName, int32 *pData )
 {
     PRINT_DEBUG("GetStat int32 %s\n", pchName);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
     if (!pchName || !pData) return false;
     std::string stat_name = ascii_to_lowercase(pchName);
 
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     auto stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
     if (stats_data != stats_config.end()) {
@@ -332,10 +333,11 @@ bool GetStat( const char *pchName, int32 *pData )
 bool GetStat( const char *pchName, float *pData )
 {
     PRINT_DEBUG("GetStat float %s\n", pchName);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
     if (!pchName || !pData) return false;
     std::string stat_name = ascii_to_lowercase(pchName);
 
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     auto stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
     if (stats_data != stats_config.end()) {
@@ -370,10 +372,11 @@ bool GetStat( const char *pchName, float *pData )
 bool SetStat( const char *pchName, int32 nData )
 {
     PRINT_DEBUG("SetStat int32 %s\n", pchName);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
     if (!pchName) return false;
     std::string stat_name = ascii_to_lowercase(pchName);
 
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     auto cached_stat = stats_cache_int.find(stat_name);
     if (cached_stat != stats_cache_int.end()) {
         if (cached_stat->second == nData) return true;
@@ -399,10 +402,11 @@ bool SetStat( const char *pchName, int32 nData )
 bool SetStat( const char *pchName, float fData )
 {
     PRINT_DEBUG("SetStat float %s\n", pchName);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
     if (!pchName) return false;
     std::string stat_name = ascii_to_lowercase(pchName);
 
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     auto cached_stat = stats_cache_float.find(stat_name);
     if (cached_stat != stats_cache_float.end()) {
         if (cached_stat->second == fData) return true;
@@ -428,10 +432,10 @@ bool SetStat( const char *pchName, float fData )
 bool UpdateAvgRateStat( const char *pchName, float flCountThisSession, double dSessionLength )
 {
     PRINT_DEBUG("UpdateAvgRateStat %s\n", pchName);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
     if (!pchName) return false;
     std::string stat_name = ascii_to_lowercase(pchName);
-
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     char data[sizeof(float) + sizeof(float) + sizeof(double)];
     int read_data = local_storage->get_data(Local_Storage::stats_storage_folder, stat_name, (char* )data, sizeof(*data));
@@ -463,8 +467,9 @@ bool UpdateAvgRateStat( const char *pchName, float flCountThisSession, double dS
 bool GetAchievement( const char *pchName, bool *pbAchieved )
 {
     PRINT_DEBUG("GetAchievement %s\n", pchName);
-    if (pchName == nullptr) return false;
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    if (pchName == nullptr) return false;
 
     try {
         auto it = defined_achievements_find(pchName);
@@ -486,11 +491,11 @@ bool GetAchievement( const char *pchName, bool *pbAchieved )
 bool SetAchievement( const char *pchName )
 {
     PRINT_DEBUG("SetAchievement %s\n", pchName);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
     if (pchName == nullptr) return false;
     
     if (settings->achievement_bypass) return true;
-
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     try {
         auto it = defined_achievements_find(pchName);
@@ -517,8 +522,9 @@ bool SetAchievement( const char *pchName )
 bool ClearAchievement( const char *pchName )
 {
     PRINT_DEBUG("ClearAchievement %s\n", pchName);
-    if (pchName == nullptr) return false;
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    if (pchName == nullptr) return false;
 
     try {
         auto it = defined_achievements_find(pchName);
@@ -543,8 +549,9 @@ bool ClearAchievement( const char *pchName )
 bool GetAchievementAndUnlockTime( const char *pchName, bool *pbAchieved, uint32 *punUnlockTime )
 {
     PRINT_DEBUG("GetAchievementAndUnlockTime\n");
-    if (pchName == nullptr) return false;
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    if (pchName == nullptr) return false;
 
     try {
         auto it = defined_achievements_find(pchName);
@@ -594,16 +601,16 @@ bool StoreStats()
 int GetAchievementIcon( const char *pchName )
 {
     PRINT_DEBUG("GetAchievementIcon\n");
-    if (pchName == nullptr) return 0;
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (pchName == nullptr) return 0;
 
     return 0;
 }
 
 std::string get_achievement_icon_name( const char *pchName, bool pbAchieved )
 {
-    if (pchName == nullptr) return "";
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (pchName == nullptr) return "";
 
     try {
         auto it = defined_achievements_find(pchName);
@@ -623,10 +630,11 @@ std::string get_achievement_icon_name( const char *pchName, bool pbAchieved )
 const char * GetAchievementDisplayAttribute( const char *pchName, const char *pchKey )
 {
     PRINT_DEBUG("GetAchievementDisplayAttribute %s %s\n", pchName, pchKey);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
     if (pchName == nullptr) return "";
     if (pchKey == nullptr) return "";
 
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (strcmp (pchKey, "name") == 0) {
         try {
@@ -664,8 +672,9 @@ const char * GetAchievementDisplayAttribute( const char *pchName, const char *pc
 bool IndicateAchievementProgress( const char *pchName, uint32 nCurProgress, uint32 nMaxProgress )
 {
     PRINT_DEBUG("IndicateAchievementProgress %s\n", pchName);
-    if (pchName == nullptr) return false;
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    if (pchName == nullptr) return false;
 
     try {
         auto it = defined_achievements_find(pchName);
@@ -718,6 +727,7 @@ uint32 GetNumAchievements()
 const char * GetAchievementName( uint32 iAchievement )
 {
     PRINT_DEBUG("GetAchievementName\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (iAchievement >= sorted_achievement_names.size()) {
         return "";
     }
@@ -756,9 +766,9 @@ SteamAPICall_t RequestUserStats( CSteamID steamIDUser )
 bool GetUserStat( CSteamID steamIDUser, const char *pchName, int32 *pData )
 {
     PRINT_DEBUG("GetUserStat %s %llu\n", pchName, steamIDUser.ConvertToUint64());
-    if (pchName == nullptr) return false;
-
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    if (pchName == nullptr) return false;
 
     if (steamIDUser == settings->get_local_steam_id()) {
         GetStat(pchName, pData);
@@ -772,9 +782,9 @@ bool GetUserStat( CSteamID steamIDUser, const char *pchName, int32 *pData )
 bool GetUserStat( CSteamID steamIDUser, const char *pchName, float *pData )
 {
     PRINT_DEBUG("GetUserStat %s %llu\n", pchName, steamIDUser.ConvertToUint64());
-    if (pchName == nullptr) return false;
-
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    if (pchName == nullptr) return false;
 
     if (steamIDUser == settings->get_local_steam_id()) {
         GetStat(pchName, pData);
@@ -788,8 +798,9 @@ bool GetUserStat( CSteamID steamIDUser, const char *pchName, float *pData )
 bool GetUserAchievement( CSteamID steamIDUser, const char *pchName, bool *pbAchieved )
 {
     PRINT_DEBUG("GetUserAchievement %s\n", pchName);
-    if (pchName == nullptr) return false;
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    if (pchName == nullptr) return false;
 
     if (steamIDUser == settings->get_local_steam_id()) {
         return GetAchievement(pchName, pbAchieved);
@@ -802,8 +813,9 @@ bool GetUserAchievement( CSteamID steamIDUser, const char *pchName, bool *pbAchi
 bool GetUserAchievementAndUnlockTime( CSteamID steamIDUser, const char *pchName, bool *pbAchieved, uint32 *punUnlockTime )
 {
     PRINT_DEBUG("GetUserAchievementAndUnlockTime %s\n", pchName);
-    if (pchName == nullptr) return false;
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    if (pchName == nullptr) return false;
 
     if (steamIDUser == settings->get_local_steam_id()) {
         return GetAchievementAndUnlockTime(pchName, pbAchieved, punUnlockTime);
@@ -965,7 +977,7 @@ SteamAPICall_t DownloadLeaderboardEntries( SteamLeaderboard_t hSteamLeaderboard,
 // if a user doesn't have a leaderboard entry, they won't be included in the result
 // a max of 100 users can be downloaded at a time, with only one outstanding call at a time
 STEAM_METHOD_DESC(Downloads leaderboard entries for an arbitrary set of users - ELeaderboardDataRequest is k_ELeaderboardDataRequestUsers)
-    STEAM_CALL_RESULT( LeaderboardScoresDownloaded_t )
+STEAM_CALL_RESULT( LeaderboardScoresDownloaded_t )
 SteamAPICall_t DownloadLeaderboardEntriesForUsers( SteamLeaderboard_t hSteamLeaderboard,
                                                             STEAM_ARRAY_COUNT_D(cUsers, Array of users to retrieve) CSteamID *prgUsers, int cUsers )
 {
