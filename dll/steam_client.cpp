@@ -65,6 +65,7 @@ Steam_Client::Steam_Client()
     if (appid) {
         set_env_variable("SteamAppId", std::to_string(appid));
         set_env_variable("SteamGameId", std::to_string(appid));
+		set_env_variable("SteamOverlayGameId", std::to_string(appid));
     }
 
     steam_overlay = new Steam_Overlay(settings_client, callback_results_client, callbacks_client, run_every_runcb, network);
@@ -220,6 +221,7 @@ void Steam_Client::setAppID(uint32 appid)
         network->setAppID(appid);
         set_env_variable("SteamAppId", std::to_string(appid));
         set_env_variable("SteamGameId", std::to_string(appid));
+        set_env_variable("SteamOverlayGameId", std::to_string(appid));
     }
 
     

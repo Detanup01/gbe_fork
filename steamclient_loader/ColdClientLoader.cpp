@@ -58,6 +58,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	if (AppId[0]) {
 		SetEnvironmentVariableW(L"SteamAppId", AppId);
 		SetEnvironmentVariableW(L"SteamGameId", AppId);
+		SetEnvironmentVariableW(L"SteamOverlayGameId", AppId);
 	} else {
 		MessageBoxA(NULL, "You forgot to set the AppId.", "ColdClientLoader", MB_ICONERROR);
 		return 0;

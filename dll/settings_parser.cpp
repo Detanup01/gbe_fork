@@ -304,9 +304,12 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     if (!appid) {
         std::string str_appid = get_env_variable("SteamAppId");
         std::string str_gameid = get_env_variable("SteamGameId");
-        PRINT_DEBUG("str_appid %s str_gameid: %s\n", str_appid.c_str(), str_gameid.c_str());
+        std::string str_overlay_gameid = get_env_variable("SteamOverlayGameId");
+        
+        PRINT_DEBUG("str_appid %s str_gameid: %s str_overlay_gameid: %s\n", str_appid.c_str(), str_gameid.c_str(), str_overlay_gameid.c_str());
         uint32 appid_env = 0;
         uint32 gameid_env = 0;
+        uint32 overlay_gameid = 0;
 
         if (str_appid.size() > 0) {
             try {
@@ -324,13 +327,25 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
             }
         }
 
-        PRINT_DEBUG("appid_env %u gameid_env: %u\n", appid_env, gameid_env);
+        if (str_overlay_gameid.size() > 0) {
+            try {
+                overlay_gameid = std::stoul(str_overlay_gameid);
+            } catch (...) {
+                overlay_gameid = 0;
+            }
+        }
+
+        PRINT_DEBUG("appid_env %u gameid_env: %u overlay_gameid: %u\n", appid_env, gameid_env, overlay_gameid);
         if (appid_env) {
             appid = appid_env;
         }
 
         if (gameid_env) {
             appid = gameid_env;
+        }
+
+        if (overlay_gameid) {
+            appid = overlay_gameid;
         }
     }
 
