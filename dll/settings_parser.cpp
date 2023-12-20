@@ -271,12 +271,9 @@ static void load_gamecontroller_settings(Settings *settings)
     settings->glyphs_directory = path + (PATH_SEPARATOR "glyphs" PATH_SEPARATOR);
 }
 
-uint32 create_localstorage_settings(Settings **settings_client_out, Settings **settings_server_out, Local_Storage **local_storage_out)
+// steam_appid.txt
+uint32 parse_steam_app_id(std::string &program_path)
 {
-    std::string program_path = Local_Storage::get_program_path(), save_path = Local_Storage::get_user_appdata_path();;
-
-    PRINT_DEBUG("Current Path %s save_path: %s\n", program_path.c_str(), save_path.c_str());
-
     char array[10] = {};
     array[0] = '0';
     Local_Storage::get_file_data(Local_Storage::get_game_settings_path() + "steam_appid.txt", array, sizeof(array) - 1);
@@ -349,21 +346,25 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
         }
     }
 
+    return appid;
+}
+
+// local_save.txt
+bool parse_local_save(std::string &program_path, std::string &save_path)
+{
     bool local_save = false;
 
-    {
-        char array[256] = {};
-        if (Local_Storage::get_file_data(program_path + "local_save.txt", array, sizeof(array) - 1) != -1) {
-            save_path = program_path + Settings::sanitize(array);
-            local_save = true;
-        }
+    char array[256] = {};
+    if (Local_Storage::get_file_data(program_path + "local_save.txt", array, sizeof(array) - 1) != -1) {
+        save_path = program_path + Settings::sanitize(array);
+        local_save = true;
     }
+    return local_save;
+}
 
-    PRINT_DEBUG("Set save_path: %s\n", save_path.c_str());
-    Local_Storage *local_storage = new Local_Storage(save_path);
-    local_storage->setAppId(appid);
-
-    // Listen port
+// listen_port.txt
+uint16 parse_listen_port(class Local_Storage *local_storage)
+{
     char array_port[10] = {};
     array_port[0] = '0';
     local_storage->get_data_settings("listen_port.txt", array_port, sizeof(array_port) - 1);
@@ -373,28 +374,23 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
         snprintf(array_port, sizeof(array_port), "%hu", port);
         local_storage->store_data_settings("listen_port.txt", array_port, strlen(array_port));
     }
+    return port;
+}
 
-
-    // Custom broadcasts
-    std::set<IP_PORT> custom_broadcasts;
-    load_custom_broadcasts(local_storage->get_global_settings_path() + "custom_broadcasts.txt", custom_broadcasts);
-    load_custom_broadcasts(Local_Storage::get_game_settings_path() + "custom_broadcasts.txt", custom_broadcasts);
-
-    // Acount name
-    char name[32] = {};
+// account_name.txt
+std::string parse_account_name(class Local_Storage *local_storage)
+{
+    char name[100] = {};
     if (local_storage->get_data_settings("account_name.txt", name, sizeof(name) - 1) <= 0) {
         strcpy(name, DEFAULT_NAME);
         local_storage->store_data_settings("account_name.txt", name, strlen(name));
     }
+    return std::string(name);
+}
 
-    // Language
-    char language[32] = {};
-    if (local_storage->get_data_settings("language.txt", language, sizeof(language) - 1) <= 0) {
-        strcpy(language, DEFAULT_LANGUAGE);
-        local_storage->store_data_settings("language.txt", language, strlen(language));
-    }
-
-    // Steam ID
+// user_steam_id.txt
+CSteamID parse_user_steam_id(class Local_Storage *local_storage)
+{
     char array_steam_id[32] = {};
     CSteamID user_id;
     uint64 steam_id = 0;
@@ -429,40 +425,560 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
         local_storage->store_data_settings("user_steam_id.txt", temp_text, strlen(temp_text));
     }
 
+    return user_id;
+}
+
+// language.txt
+std::string parse_current_language(class Local_Storage *local_storage)
+{
+    char language[64] = {};
+    if (local_storage->get_data_settings("language.txt", language, sizeof(language) - 1) <= 0) {
+        strcpy(language, DEFAULT_LANGUAGE);
+        local_storage->store_data_settings("language.txt", language, strlen(language));
+    }
+
+    return std::string(language);
+}
+
+// supported_languages.txt
+std::set<std::string> parse_supported_languages(class Local_Storage *local_storage, std::string &language)
+{
     std::set<std::string> supported_languages;
 
-    {
-        std::string lang_config_path = Local_Storage::get_game_settings_path() + "supported_languages.txt";
-        std::ifstream input( utf8_decode(lang_config_path) );
+    std::string lang_config_path = Local_Storage::get_game_settings_path() + "supported_languages.txt";
+    std::ifstream input( utf8_decode(lang_config_path) );
 
-        std::string first_language;
-        if (input.is_open()) {
-            consume_bom(input);
-            for( std::string line; getline( input, line ); ) {
-                if (!line.empty() && line[line.length()-1] == '\n') {
-                    line.pop_back();
+    std::string first_language;
+    if (input.is_open()) {
+        consume_bom(input);
+        for( std::string line; getline( input, line ); ) {
+            if (!line.empty() && line[line.length()-1] == '\n') {
+                line.pop_back();
+            }
+
+            if (!line.empty() && line[line.length()-1] == '\r') {
+                line.pop_back();
+            }
+
+            try {
+                std::string lang = line;
+                if (!first_language.size()) first_language = lang;
+                supported_languages.insert(lang);
+                PRINT_DEBUG("Added supported_language %s\n", lang.c_str());
+            } catch (...) {}
+        }
+    }
+
+    // if the current emu language is not in the supported languages list
+    if (!supported_languages.count(language)) {
+        // and the supported languages list wasn't empty
+        if (first_language.size()) {
+            language = first_language;
+        }
+    }
+
+    return supported_languages;
+}
+
+// DLC.txt
+static void parse_dlc(class Settings *settings_client, Settings *settings_server)
+{
+    std::string dlc_config_path = Local_Storage::get_game_settings_path() + "DLC.txt";
+    std::ifstream input( utf8_decode(dlc_config_path) );
+    if (input.is_open()) {
+        consume_bom(input);
+        settings_client->unlockAllDLC(false);
+        settings_server->unlockAllDLC(false);
+        PRINT_DEBUG("Locking all DLC\n");
+
+        for( std::string line; std::getline( input, line ); ) {
+            if (!line.empty() && line.front() == '#') {
+                continue;
+            }
+            if (!line.empty() && line.back() == '\n') {
+                line.pop_back();
+            }
+
+            if (!line.empty() && line.back() == '\r') {
+                line.pop_back();
+            }
+
+            std::size_t deliminator = line.find("=");
+            if (deliminator != 0 && deliminator != std::string::npos && deliminator != line.size()) {
+                AppId_t appid = stol(line.substr(0, deliminator));
+                std::string name = line.substr(deliminator + 1);
+                bool available = true;
+
+                if (appid) {
+                    PRINT_DEBUG("Adding DLC: %u|%s| %u\n", appid, name.c_str(), available);
+                    settings_client->addDLC(appid, name, available);
+                    settings_server->addDLC(appid, name, available);
                 }
-
-                if (!line.empty() && line[line.length()-1] == '\r') {
-                    line.pop_back();
-                }
-
-                try {
-                    std::string lang = line;
-                    if (!first_language.size()) first_language = lang;
-                    supported_languages.insert(lang);
-                    PRINT_DEBUG("Added supported_language %s\n", lang.c_str());
-                } catch (...) {}
             }
         }
+    } else {
+        //unlock all DLC
+        PRINT_DEBUG("Unlocking all DLC\n");
+        settings_client->unlockAllDLC(true);
+        settings_server->unlockAllDLC(true);
+    }
+}
 
-        if (!supported_languages.count(language)) {
-            if (first_language.size()) {
-                memset(language, 0, sizeof(language));
-                first_language.copy(language, sizeof(language) - 1);
+// app_paths.txt
+static void parse_app_paths(class Settings *settings_client, Settings *settings_server, std::string &program_path)
+{
+    std::string dlc_config_path = Local_Storage::get_game_settings_path() + "app_paths.txt";
+    std::ifstream input( utf8_decode(dlc_config_path) );
+
+    if (input.is_open()) {
+        consume_bom(input);
+        for( std::string line; getline( input, line ); ) {
+            if (!line.empty() && line[line.length()-1] == '\n') {
+                line.pop_back();
+            }
+
+            if (!line.empty() && line[line.length()-1] == '\r') {
+                line.pop_back();
+            }
+
+            std::size_t deliminator = line.find("=");
+            if (deliminator != 0 && deliminator != std::string::npos && deliminator != line.size()) {
+                AppId_t appid = stol(line.substr(0, deliminator));
+                std::string rel_path = line.substr(deliminator + 1);
+                std::string path = canonical_path(program_path + rel_path);
+
+                if (appid) {
+                    if (path.size()) {
+                        PRINT_DEBUG("Adding app path: %u|%s|\n", appid, path.c_str());
+                        settings_client->setAppInstallPath(appid, path);
+                        settings_server->setAppInstallPath(appid, path);
+                    } else {
+                        PRINT_DEBUG("Error adding app path for: %u does this path exist? |%s|\n", appid, rel_path.c_str());
+                    }
+                }
             }
         }
     }
+
+}
+
+// leaderboards.txt
+static void parse_leaderboards(class Settings *settings_client, Settings *settings_server)
+{
+    std::string dlc_config_path = Local_Storage::get_game_settings_path() + "leaderboards.txt";
+    std::ifstream input( utf8_decode(dlc_config_path) );
+    if (input.is_open()) {
+        consume_bom(input);
+        settings_client->setCreateUnknownLeaderboards(false);
+        settings_server->setCreateUnknownLeaderboards(false);
+
+        for( std::string line; getline( input, line ); ) {
+            if (!line.empty() && line[line.length()-1] == '\n') {
+                line.pop_back();
+            }
+
+            if (!line.empty() && line[line.length()-1] == '\r') {
+                line.pop_back();
+            }
+
+            std::string leaderboard;
+            unsigned int sort_method = 0;
+            unsigned int display_type = 0;
+
+            std::size_t deliminator = line.find("=");
+            if (deliminator != 0 && deliminator != std::string::npos && deliminator != line.size()) {
+                leaderboard = line.substr(0, deliminator);
+                std::size_t deliminator2 = line.find("=", deliminator + 1);
+                if (deliminator2 != std::string::npos && deliminator2 != line.size()) {
+                    sort_method = stol(line.substr(deliminator + 1, deliminator2 - (deliminator + 1)));
+                    display_type = stol(line.substr(deliminator2 + 1));
+                }
+            }
+
+            if (leaderboard.size() && sort_method <= k_ELeaderboardSortMethodDescending && display_type <= k_ELeaderboardDisplayTypeTimeMilliSeconds) {
+                PRINT_DEBUG("Adding leaderboard: %s|%u|%u\n", leaderboard.c_str(), sort_method, display_type);
+                settings_client->setLeaderboard(leaderboard, (ELeaderboardSortMethod)sort_method, (ELeaderboardDisplayType)display_type);
+                settings_server->setLeaderboard(leaderboard, (ELeaderboardSortMethod)sort_method, (ELeaderboardDisplayType)display_type);
+            } else {
+                PRINT_DEBUG("Error adding leaderboard for: %s, are sort method %u or display type %u valid?\n", leaderboard.c_str(), sort_method, display_type);
+            }
+        }
+    }
+
+}
+
+// stats.txt
+static void parse_stats(class Settings *settings_client, Settings *settings_server)
+{
+    std::string stats_config_path = Local_Storage::get_game_settings_path() + "stats.txt";
+    std::ifstream input( utf8_decode(stats_config_path) );
+    if (input.is_open()) {
+        consume_bom(input);
+        for( std::string line; getline( input, line ); ) {
+            if (!line.empty() && line[line.length()-1] == '\n') {
+                line.pop_back();
+            }
+
+            if (!line.empty() && line[line.length()-1] == '\r') {
+                line.pop_back();
+            }
+
+            std::string stat_name;
+            std::string stat_type;
+            std::string stat_default_value;
+
+            std::size_t deliminator = line.find("=");
+            if (deliminator != 0 && deliminator != std::string::npos && deliminator != line.size()) {
+                stat_name = line.substr(0, deliminator);
+                std::size_t deliminator2 = line.find("=", deliminator + 1);
+
+                if (deliminator2 != std::string::npos && deliminator2 != line.size()) {
+                    stat_type = line.substr(deliminator + 1, deliminator2 - (deliminator + 1));
+                    stat_default_value = line.substr(deliminator2 + 1);
+                } else {
+                    stat_type = line.substr(deliminator + 1);
+                    stat_default_value = "0";
+                }
+            }
+
+            std::transform(stat_type.begin(), stat_type.end(), stat_type.begin(),[](unsigned char c){ return std::tolower(c); });
+            struct Stat_config config = {};
+
+            try {
+                if (stat_type == "float") {
+                    config.type = Stat_Type::STAT_TYPE_FLOAT;
+                    config.default_value_float = std::stof(stat_default_value);
+                } else if (stat_type == "int") {
+                    config.type = Stat_Type::STAT_TYPE_INT;
+                    config.default_value_int = std::stol(stat_default_value);
+                } else if (stat_type == "avgrate") {
+                    config.type = Stat_Type::STAT_TYPE_AVGRATE;
+                    config.default_value_float = std::stof(stat_default_value);
+                } else {
+                    PRINT_DEBUG("Error adding stat %s, type %s isn't valid\n", stat_name.c_str(), stat_type.c_str());
+                    continue;
+                }
+            } catch (...) {
+                PRINT_DEBUG("Error adding stat %s, default value %s isn't valid\n", stat_name.c_str(), stat_default_value.c_str());
+                continue;
+            }
+
+            if (stat_name.size()) {
+                PRINT_DEBUG("Adding stat type: %s|%u|%f|%u\n", stat_name.c_str(), config.type, config.default_value_float, config.default_value_int);
+                settings_client->setStatDefiniton(stat_name, config);
+                settings_server->setStatDefiniton(stat_name, config);
+            } else {
+                PRINT_DEBUG("Error adding stat for: %s, empty name\n", stat_name.c_str());
+            }
+        }
+    }
+
+}
+
+// depots.txt
+static void parse_depots(class Settings *settings_client, Settings *settings_server)
+{
+    std::string depots_config_path = Local_Storage::get_game_settings_path() + "depots.txt";
+    std::ifstream input( utf8_decode(depots_config_path) );
+    if (input.is_open()) {
+        consume_bom(input);
+        for( std::string line; getline( input, line ); ) {
+            if (!line.empty() && line[line.length()-1] == '\n') {
+                line.pop_back();
+            }
+
+            if (!line.empty() && line[line.length()-1] == '\r') {
+                line.pop_back();
+            }
+
+            try {
+                DepotId_t depot_id = std::stoul(line);
+                settings_client->depots.push_back(depot_id);
+                settings_server->depots.push_back(depot_id);
+                PRINT_DEBUG("Added depot %u\n", depot_id);
+            } catch (...) {}
+        }
+    }
+
+}
+
+// subscribed_groups.txt
+static void parse_subscribed_groups(class Settings *settings_client, Settings *settings_server)
+{
+    std::string depots_config_path = Local_Storage::get_game_settings_path() + "subscribed_groups.txt";
+    std::ifstream input( utf8_decode(depots_config_path) );
+    if (input.is_open()) {
+        consume_bom(input);
+        for( std::string line; getline( input, line ); ) {
+            if (!line.empty() && line[line.length()-1] == '\n') {
+                line.pop_back();
+            }
+
+            if (!line.empty() && line[line.length()-1] == '\r') {
+                line.pop_back();
+            }
+
+            try {
+                uint64 source_id = std::stoull(line);
+                settings_client->subscribed_groups.insert(source_id);
+                settings_server->subscribed_groups.insert(source_id);
+                PRINT_DEBUG("Added source %llu\n", source_id);
+            } catch (...) {}
+        }
+    }
+
+}
+
+// installed_app_ids.txt
+static void parse_installed_app_Ids(class Settings *settings_client, Settings *settings_server)
+{
+    std::string installed_apps_list_path = Local_Storage::get_game_settings_path() + "installed_app_ids.txt";
+    std::ifstream input( utf8_decode(installed_apps_list_path) );
+    if (input.is_open()) {
+        settings_client->assume_any_app_installed = false;
+        settings_server->assume_any_app_installed = false;
+        PRINT_DEBUG("Limiting/Locking installed apps\n");
+        consume_bom(input);
+        for( std::string line; getline( input, line ); ) {
+            if (!line.empty() && line[line.length()-1] == '\n') {
+                line.pop_back();
+            }
+
+            if (!line.empty() && line[line.length()-1] == '\r') {
+                line.pop_back();
+            }
+
+            try {
+                AppId_t app_id = std::stoul(line);
+                settings_client->installed_app_ids.insert(app_id);
+                settings_server->installed_app_ids.insert(app_id);
+                PRINT_DEBUG("Added installed app with ID %u\n", app_id);
+            } catch (...) {}
+        }
+    } else {
+        settings_client->assume_any_app_installed = true;
+        settings_server->assume_any_app_installed = true;
+        PRINT_DEBUG("Assuming any app is installed\n");
+    }
+
+}
+
+// force_branch_name.txt
+static void parse_force_branch_name(class Settings *settings_client, Settings *settings_server)
+{
+    std::string installed_apps_list_path = Local_Storage::get_game_settings_path() + "force_branch_name.txt";
+    std::ifstream input( utf8_decode(installed_apps_list_path) );
+    if (input.is_open()) {
+        consume_bom(input);
+        std::string line;
+        getline( input, line );
+        
+        constexpr const char * const whitespaces = " \t\r\n";
+        size_t start = line.find_first_not_of(whitespaces);
+        size_t end = line.find_last_not_of(whitespaces);
+        line = start == end
+            ? std::string()
+            : line.substr(start, end - start + 1);
+        
+        if (!line.empty()) {
+            settings_client->current_branch_name = line;
+            settings_server->current_branch_name = line;
+            PRINT_DEBUG("Forcing current branch name to '%s'\n", line.c_str());
+        }
+    }
+}
+
+// steam_settings/mods
+static void parse_mods_folder(class Settings *settings_client, Settings *settings_server, class Local_Storage *local_storage)
+{
+    std::string mod_path = Local_Storage::get_game_settings_path() + "mods";
+    nlohmann::json mod_items = nlohmann::json::object();
+    static constexpr auto mods_json_file = "mods.json";
+    std::string mods_json_path = Local_Storage::get_game_settings_path() + mods_json_file;
+    if (local_storage->load_json(mods_json_path, mod_items)) {
+        for (auto mod = mod_items.begin(); mod != mod_items.end(); ++mod) {
+            try {
+                Mod_entry newMod;
+                newMod.id = std::stoull(mod.key());
+                newMod.title = mod.value().value("title", std::string(mod.key()));
+                newMod.path = mod_path + PATH_SEPARATOR + std::string(mod.key());
+                newMod.fileType = k_EWorkshopFileTypeCommunity;
+                newMod.description = mod.value().value("description", std::string(""));
+                newMod.steamIDOwner = mod.value().value("steam_id_owner", (uint64)0);
+                newMod.timeCreated = mod.value().value("time_created", (uint32)1554997000);
+                newMod.timeUpdated = mod.value().value("time_updated", (uint32)1554997000);
+                newMod.timeAddedToUserList = mod.value().value("time_added", (uint32)1554997000);
+                newMod.visibility = k_ERemoteStoragePublishedFileVisibilityPublic;
+                newMod.banned = false;
+                newMod.acceptedForUse = true;
+                newMod.tagsTruncated = false;
+                newMod.tags = mod.value().value("tags", std::string(""));
+                newMod.primaryFileName = mod.value().value("primary_filename", std::string(""));
+                newMod.primaryFileSize = mod.value().value("primary_filesize", (int32)1000000);
+                newMod.previewFileName = mod.value().value("preview_filename", std::string(""));
+                newMod.previewFileSize = mod.value().value("preview_filesize", (int32)1000000);
+                newMod.workshopItemURL = mod.value().value("workshop_item_url", std::string(""));
+                newMod.votesUp = mod.value().value("upvotes", (uint32)1);
+                newMod.votesDown = mod.value().value("downvotes", (uint32)0);
+                newMod.score = 1.0f;
+                newMod.numChildren = mod.value().value("num_children", (uint32)0);
+                newMod.previewURL = "file://" + Local_Storage::get_game_settings_path() + "mod_images/" + newMod.previewFileName;
+                settings_client->addMod(newMod.id, newMod.title, newMod.path);
+                settings_server->addMod(newMod.id, newMod.title, newMod.path);
+                settings_client->addModDetails(newMod.id, newMod);
+                settings_server->addModDetails(newMod.id, newMod);
+            } catch (std::exception& e) {
+                PRINT_DEBUG("MODLOADER ERROR: %s\n", e.what());
+            }
+        }
+    } else {
+        std::vector<std::string> paths = Local_Storage::get_filenames_path(mod_path);
+        for (auto & p: paths) {
+            PRINT_DEBUG("mod directory %s\n", p.c_str());
+            try {
+                Mod_entry newMod;
+                newMod.id = std::stoull(p);
+                newMod.title = p;
+                newMod.path = mod_path + PATH_SEPARATOR + p;
+                newMod.fileType = k_EWorkshopFileTypeCommunity;
+                newMod.description = "";
+                newMod.steamIDOwner = (uint64)0;
+                newMod.timeCreated = (uint32)1554997000;
+                newMod.timeUpdated = (uint32)1554997000;
+                newMod.timeAddedToUserList = (uint32)1554997000;
+                newMod.visibility = k_ERemoteStoragePublishedFileVisibilityPublic;
+                newMod.banned = false;
+                newMod.acceptedForUse = true;
+                newMod.tagsTruncated = false;
+                newMod.tags = "";
+                newMod.primaryFileName = "";
+                newMod.primaryFileSize = (int32)1000000;
+                newMod.previewFileName = "";
+                newMod.previewFileSize = (int32)1000000;
+                newMod.workshopItemURL = "";
+                newMod.votesUp = (uint32)1;
+                newMod.votesDown = (uint32)0;
+                newMod.score = 1.0f;
+                newMod.numChildren = (uint32)0;
+                newMod.previewURL = "";
+                settings_client->addMod(newMod.id, newMod.title, newMod.path);
+                settings_server->addMod(newMod.id, newMod.title, newMod.path);
+                settings_client->addModDetails(newMod.id, newMod);
+                settings_server->addModDetails(newMod.id, newMod);
+            } catch (...) {}
+        }
+    }
+
+}
+
+// force_language.txt
+static bool parse_force_language(std::string &language, std::string &steam_settings_path)
+{
+    bool warn_forced = false;
+
+    char forced_language[64] = {};
+    int len = Local_Storage::get_file_data(steam_settings_path + "force_language.txt", forced_language, sizeof(forced_language) - 1);
+    if (len > 0) {
+        forced_language[len] = 0;
+        warn_forced = true;
+    }
+    language = std::string(forced_language);
+
+    return warn_forced;
+}
+
+// force_steamid.txt
+static bool parse_force_user_steam_id(CSteamID &user_id, std::string &steam_settings_path)
+{
+    bool warn_forced = false;
+
+    char steam_id_text[32] = {};
+    if (Local_Storage::get_file_data(steam_settings_path + "force_steamid.txt", steam_id_text, sizeof(steam_id_text) - 1) > 0) {
+        CSteamID temp_id = CSteamID((uint64)std::atoll(steam_id_text));
+        if (temp_id.IsValid()) {
+            user_id = temp_id;
+            warn_forced = true;
+        }
+    }
+
+    return warn_forced;
+}
+
+// force_account_name.txt
+static bool parse_force_account_name(std::string &name, std::string &steam_settings_path)
+{
+    bool warn_forced = false;
+
+    char forced_name[100] = {};
+    int len = Local_Storage::get_file_data(steam_settings_path + "force_account_name.txt", forced_name, sizeof(forced_name) - 1);
+    if (len > 0) {
+        forced_name[len] = 0;
+        warn_forced = true;
+    }
+    name = std::string(forced_name);
+
+    return warn_forced;
+}
+
+// force_listen_port.txt
+static bool parse_force_listen_port(uint16 &port, std::string &steam_settings_path)
+{
+    bool warn_forced = false;
+
+    char array_port[10] = {};
+    int len = Local_Storage::get_file_data(steam_settings_path + "force_listen_port.txt", array_port, sizeof(array_port) - 1);
+    if (len > 0) {
+        port = std::stoi(array_port);
+        warn_forced = true;
+    }
+
+    return warn_forced;
+}
+
+// build_id.txt
+static void parse_build_id(int &build_id, std::string &steam_settings_path)
+{
+    char array_id[10] = {};
+    int len = Local_Storage::get_file_data(steam_settings_path + "build_id.txt", array_id, sizeof(array_id) - 1);
+    if (len > 0) {
+        build_id = std::stoi(array_id);
+    }
+}
+
+uint32 create_localstorage_settings(Settings **settings_client_out, Settings **settings_server_out, Local_Storage **local_storage_out)
+{
+    std::string program_path = Local_Storage::get_program_path();
+    std::string save_path = Local_Storage::get_user_appdata_path();
+
+    PRINT_DEBUG("Current Path %s save_path: %s\n", program_path.c_str(), save_path.c_str());
+
+    uint32 appid = parse_steam_app_id(program_path);
+
+    bool local_save = parse_local_save(program_path, save_path);
+
+    PRINT_DEBUG("Set save_path: %s\n", save_path.c_str());
+    Local_Storage *local_storage = new Local_Storage(save_path);
+    local_storage->setAppId(appid);
+
+    // Listen port
+    uint16 port = parse_listen_port(local_storage);
+
+    // Custom broadcasts
+    std::set<IP_PORT> custom_broadcasts;
+    load_custom_broadcasts(local_storage->get_global_settings_path() + "custom_broadcasts.txt", custom_broadcasts);
+    load_custom_broadcasts(Local_Storage::get_game_settings_path() + "custom_broadcasts.txt", custom_broadcasts);
+
+    // Acount name
+    std::string name = parse_account_name(local_storage);
+    
+    // Steam ID
+    CSteamID user_id = parse_user_steam_id(local_storage);
+
+    // Language
+    std::string language = parse_current_language(local_storage);
+
+    // Supported languages, this will change the current language if needed
+    std::set<std::string> supported_languages = parse_supported_languages(local_storage, language);
 
     bool steam_offline_mode = false;
     bool steam_deck_mode = false;
@@ -481,6 +997,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
 
     bool warn_forced = false;
 
+    // boolean flags and forced configurations
     {
         std::string steam_settings_path = Local_Storage::get_game_settings_path();
 
@@ -514,37 +1031,15 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
             } else if (p == "is_beta_branch.txt") {
                 is_beta_branch = true;
             } else if (p == "force_language.txt") {
-                int len = Local_Storage::get_file_data(steam_settings_path + "force_language.txt", language, sizeof(language) - 1);
-                if (len > 0) {
-                    language[len] = 0;
-                    warn_forced = true;
-                }
+                warn_forced = parse_force_language(language, steam_settings_path);
             } else if (p == "force_steamid.txt") {
-                char steam_id_text[32] = {};
-                if (Local_Storage::get_file_data(steam_settings_path + "force_steamid.txt", steam_id_text, sizeof(steam_id_text) - 1) > 0) {
-                    CSteamID temp_id = CSteamID((uint64)std::atoll(steam_id_text));
-                    if (temp_id.IsValid()) {
-                        user_id = temp_id;
-                        warn_forced = true;
-                    }
-                }
+                warn_forced = parse_force_user_steam_id(user_id, steam_settings_path);
             } else if (p == "force_account_name.txt") {
-                int len = Local_Storage::get_file_data(steam_settings_path + "force_account_name.txt", name, sizeof(name) - 1);
-                if (len > 0) {
-                    name[len] = 0;
-                    warn_forced = true;
-                }
+                warn_forced = parse_force_account_name(name, steam_settings_path);
             } else if (p == "force_listen_port.txt") {
-                char array_port[10] = {};
-                int len = Local_Storage::get_file_data(steam_settings_path + "force_listen_port.txt", array_port, sizeof(array_port) - 1);
-                if (len > 0) {
-                    port = std::stoi(array_port);
-                    warn_forced = true;
-                }
+                warn_forced = parse_force_listen_port(port, steam_settings_path);
             } else if (p == "build_id.txt") {
-                char array_id[10] = {};
-                int len = Local_Storage::get_file_data(steam_settings_path + "build_id.txt", array_id, sizeof(array_id) - 1);
-                if (len > 0) build_id = std::stoi(array_id);
+                parse_build_id(build_id, steam_settings_path);
             }
         }
     }
@@ -593,291 +1088,21 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
         settings_server->local_save = save_path;
     }
 
-    {
-        std::string dlc_config_path = Local_Storage::get_game_settings_path() + "DLC.txt";
-        std::ifstream input( utf8_decode(dlc_config_path) );
-        if (input.is_open()) {
-            consume_bom(input);
-            settings_client->unlockAllDLC(false);
-            settings_server->unlockAllDLC(false);
-            PRINT_DEBUG("Locking all DLC\n");
+    parse_dlc(settings_client, settings_server);
 
-            for( std::string line; std::getline( input, line ); ) {
-                if (!line.empty() && line.front() == '#') {
-                    continue;
-                }
-                if (!line.empty() && line.back() == '\n') {
-                    line.pop_back();
-                }
+    parse_app_paths(settings_client, settings_server, program_path);
 
-                if (!line.empty() && line.back() == '\r') {
-                    line.pop_back();
-                }
+    parse_leaderboards(settings_client, settings_server);
 
-                std::size_t deliminator = line.find("=");
-                if (deliminator != 0 && deliminator != std::string::npos && deliminator != line.size()) {
-                    AppId_t appid = stol(line.substr(0, deliminator));
-                    std::string name = line.substr(deliminator + 1);
-                    bool available = true;
+    parse_stats(settings_client, settings_server);
 
-                    if (appid) {
-                        PRINT_DEBUG("Adding DLC: %u|%s| %u\n", appid, name.c_str(), available);
-                        settings_client->addDLC(appid, name, available);
-                        settings_server->addDLC(appid, name, available);
-                    }
-                }
-            }
-        } else {
-            //unlock all DLC
-            PRINT_DEBUG("Unlocking all DLC\n");
-            settings_client->unlockAllDLC(true);
-            settings_server->unlockAllDLC(true);
-        }
-    }
+    parse_depots(settings_client, settings_server);
 
-    {
-        std::string dlc_config_path = Local_Storage::get_game_settings_path() + "app_paths.txt";
-        std::ifstream input( utf8_decode(dlc_config_path) );
+    parse_subscribed_groups(settings_client, settings_server);
 
-        if (input.is_open()) {
-            consume_bom(input);
-            for( std::string line; getline( input, line ); ) {
-                if (!line.empty() && line[line.length()-1] == '\n') {
-                    line.pop_back();
-                }
+    parse_installed_app_Ids(settings_client, settings_server);
 
-                if (!line.empty() && line[line.length()-1] == '\r') {
-                    line.pop_back();
-                }
-
-                std::size_t deliminator = line.find("=");
-                if (deliminator != 0 && deliminator != std::string::npos && deliminator != line.size()) {
-                    AppId_t appid = stol(line.substr(0, deliminator));
-                    std::string rel_path = line.substr(deliminator + 1);
-                    std::string path = canonical_path(program_path + rel_path);
-
-                    if (appid) {
-                        if (path.size()) {
-                            PRINT_DEBUG("Adding app path: %u|%s|\n", appid, path.c_str());
-                            settings_client->setAppInstallPath(appid, path);
-                            settings_server->setAppInstallPath(appid, path);
-                        } else {
-                            PRINT_DEBUG("Error adding app path for: %u does this path exist? |%s|\n", appid, rel_path.c_str());
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    {
-        std::string dlc_config_path = Local_Storage::get_game_settings_path() + "leaderboards.txt";
-        std::ifstream input( utf8_decode(dlc_config_path) );
-        if (input.is_open()) {
-            consume_bom(input);
-            settings_client->setCreateUnknownLeaderboards(false);
-            settings_server->setCreateUnknownLeaderboards(false);
-
-            for( std::string line; getline( input, line ); ) {
-                if (!line.empty() && line[line.length()-1] == '\n') {
-                    line.pop_back();
-                }
-
-                if (!line.empty() && line[line.length()-1] == '\r') {
-                    line.pop_back();
-                }
-
-                std::string leaderboard;
-                unsigned int sort_method = 0;
-                unsigned int display_type = 0;
-
-                std::size_t deliminator = line.find("=");
-                if (deliminator != 0 && deliminator != std::string::npos && deliminator != line.size()) {
-                    leaderboard = line.substr(0, deliminator);
-                    std::size_t deliminator2 = line.find("=", deliminator + 1);
-                    if (deliminator2 != std::string::npos && deliminator2 != line.size()) {
-                        sort_method = stol(line.substr(deliminator + 1, deliminator2 - (deliminator + 1)));
-                        display_type = stol(line.substr(deliminator2 + 1));
-                    }
-                }
-
-                if (leaderboard.size() && sort_method <= k_ELeaderboardSortMethodDescending && display_type <= k_ELeaderboardDisplayTypeTimeMilliSeconds) {
-                    PRINT_DEBUG("Adding leaderboard: %s|%u|%u\n", leaderboard.c_str(), sort_method, display_type);
-                    settings_client->setLeaderboard(leaderboard, (ELeaderboardSortMethod)sort_method, (ELeaderboardDisplayType)display_type);
-                    settings_server->setLeaderboard(leaderboard, (ELeaderboardSortMethod)sort_method, (ELeaderboardDisplayType)display_type);
-                } else {
-                    PRINT_DEBUG("Error adding leaderboard for: %s, are sort method %u or display type %u valid?\n", leaderboard.c_str(), sort_method, display_type);
-                }
-            }
-        }
-    }
-
-    {
-        std::string stats_config_path = Local_Storage::get_game_settings_path() + "stats.txt";
-        std::ifstream input( utf8_decode(stats_config_path) );
-        if (input.is_open()) {
-            consume_bom(input);
-            for( std::string line; getline( input, line ); ) {
-                if (!line.empty() && line[line.length()-1] == '\n') {
-                    line.pop_back();
-                }
-
-                if (!line.empty() && line[line.length()-1] == '\r') {
-                    line.pop_back();
-                }
-
-                std::string stat_name;
-                std::string stat_type;
-                std::string stat_default_value;
-
-                std::size_t deliminator = line.find("=");
-                if (deliminator != 0 && deliminator != std::string::npos && deliminator != line.size()) {
-                    stat_name = line.substr(0, deliminator);
-                    std::size_t deliminator2 = line.find("=", deliminator + 1);
-
-                    if (deliminator2 != std::string::npos && deliminator2 != line.size()) {
-                        stat_type = line.substr(deliminator + 1, deliminator2 - (deliminator + 1));
-                        stat_default_value = line.substr(deliminator2 + 1);
-                    } else {
-                        stat_type = line.substr(deliminator + 1);
-                        stat_default_value = "0";
-                    }
-                }
-
-                std::transform(stat_type.begin(), stat_type.end(), stat_type.begin(),[](unsigned char c){ return std::tolower(c); });
-                struct Stat_config config = {};
-
-                try {
-                    if (stat_type == "float") {
-                        config.type = Stat_Type::STAT_TYPE_FLOAT;
-                        config.default_value_float = std::stof(stat_default_value);
-                    } else if (stat_type == "int") {
-                        config.type = Stat_Type::STAT_TYPE_INT;
-                        config.default_value_int = std::stol(stat_default_value);
-                    } else if (stat_type == "avgrate") {
-                        config.type = Stat_Type::STAT_TYPE_AVGRATE;
-                        config.default_value_float = std::stof(stat_default_value);
-                    } else {
-                        PRINT_DEBUG("Error adding stat %s, type %s isn't valid\n", stat_name.c_str(), stat_type.c_str());
-                        continue;
-                    }
-                } catch (...) {
-                    PRINT_DEBUG("Error adding stat %s, default value %s isn't valid\n", stat_name.c_str(), stat_default_value.c_str());
-                    continue;
-                }
-
-                if (stat_name.size()) {
-                    PRINT_DEBUG("Adding stat type: %s|%u|%f|%u\n", stat_name.c_str(), config.type, config.default_value_float, config.default_value_int);
-                    settings_client->setStatDefiniton(stat_name, config);
-                    settings_server->setStatDefiniton(stat_name, config);
-                } else {
-                    PRINT_DEBUG("Error adding stat for: %s, empty name\n", stat_name.c_str());
-                }
-            }
-        }
-    }
-
-    {
-        std::string depots_config_path = Local_Storage::get_game_settings_path() + "depots.txt";
-        std::ifstream input( utf8_decode(depots_config_path) );
-        if (input.is_open()) {
-            consume_bom(input);
-            for( std::string line; getline( input, line ); ) {
-                if (!line.empty() && line[line.length()-1] == '\n') {
-                    line.pop_back();
-                }
-
-                if (!line.empty() && line[line.length()-1] == '\r') {
-                    line.pop_back();
-                }
-
-                try {
-                    DepotId_t depot_id = std::stoul(line);
-                    settings_client->depots.push_back(depot_id);
-                    settings_server->depots.push_back(depot_id);
-                    PRINT_DEBUG("Added depot %u\n", depot_id);
-                } catch (...) {}
-            }
-        }
-    }
-
-    {
-        std::string depots_config_path = Local_Storage::get_game_settings_path() + "subscribed_groups.txt";
-        std::ifstream input( utf8_decode(depots_config_path) );
-        if (input.is_open()) {
-            consume_bom(input);
-            for( std::string line; getline( input, line ); ) {
-                if (!line.empty() && line[line.length()-1] == '\n') {
-                    line.pop_back();
-                }
-
-                if (!line.empty() && line[line.length()-1] == '\r') {
-                    line.pop_back();
-                }
-
-                try {
-                    uint64 source_id = std::stoull(line);
-                    settings_client->subscribed_groups.insert(source_id);
-                    settings_server->subscribed_groups.insert(source_id);
-                    PRINT_DEBUG("Added source %llu\n", source_id);
-                } catch (...) {}
-            }
-        }
-    }
-
-    {
-        std::string installed_apps_list_path = Local_Storage::get_game_settings_path() + "installed_app_ids.txt";
-        std::ifstream input( utf8_decode(installed_apps_list_path) );
-        if (input.is_open()) {
-            settings_client->assume_any_app_installed = false;
-            settings_server->assume_any_app_installed = false;
-            PRINT_DEBUG("Limiting/Locking installed apps\n");
-            consume_bom(input);
-            for( std::string line; getline( input, line ); ) {
-                if (!line.empty() && line[line.length()-1] == '\n') {
-                    line.pop_back();
-                }
-
-                if (!line.empty() && line[line.length()-1] == '\r') {
-                    line.pop_back();
-                }
-
-                try {
-                    AppId_t app_id = std::stoul(line);
-                    settings_client->installed_app_ids.insert(app_id);
-                    settings_server->installed_app_ids.insert(app_id);
-                    PRINT_DEBUG("Added installed app with ID %u\n", app_id);
-                } catch (...) {}
-            }
-        } else {
-            settings_client->assume_any_app_installed = true;
-            settings_server->assume_any_app_installed = true;
-            PRINT_DEBUG("Assuming any app is installed\n");
-        }
-    }
-
-    {
-        std::string installed_apps_list_path = Local_Storage::get_game_settings_path() + "force_branch_name.txt";
-        std::ifstream input( utf8_decode(installed_apps_list_path) );
-        if (input.is_open()) {
-            consume_bom(input);
-            std::string line;
-            getline( input, line );
-            
-            constexpr const char * const whitespaces = " \t\r\n";
-            size_t start = line.find_first_not_of(whitespaces);
-            size_t end = line.find_last_not_of(whitespaces);
-            line = start == end
-                ? std::string()
-                : line.substr(start, end - start + 1);
-            
-            if (!line.empty()) {
-                settings_client->current_branch_name = line;
-                settings_server->current_branch_name = line;
-                PRINT_DEBUG("Forcing current branch name to '%s'\n", line.c_str());
-            }
-        }
-    }
+    parse_force_branch_name(settings_client, settings_server);
 
     load_subscribed_groups_clans(local_storage->get_global_settings_path() + "subscribed_groups_clans.txt", settings_client, settings_server);
     load_subscribed_groups_clans(Local_Storage::get_game_settings_path() + "subscribed_groups_clans.txt", settings_client, settings_server);
@@ -885,85 +1110,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     load_overlay_appearance(local_storage->get_global_settings_path() + "overlay_appearance.txt", settings_client, settings_server);
     load_overlay_appearance(Local_Storage::get_game_settings_path() + "overlay_appearance.txt", settings_client, settings_server);
 
-    {
-        std::string mod_path = Local_Storage::get_game_settings_path() + "mods";
-        nlohmann::json mod_items = nlohmann::json::object();
-        static constexpr auto mods_json_file = "mods.json";
-        std::string mods_json_path = Local_Storage::get_game_settings_path() + mods_json_file;
-        if (local_storage->load_json(mods_json_path, mod_items)) {
-            for (auto mod = mod_items.begin(); mod != mod_items.end(); ++mod) {
-                try {
-                    Mod_entry newMod;
-                    newMod.id = std::stoull(mod.key());
-                    newMod.title = mod.value().value("title", std::string(mod.key()));
-                    newMod.path = mod_path + PATH_SEPARATOR + std::string(mod.key());
-                    newMod.fileType = k_EWorkshopFileTypeCommunity;
-                    newMod.description = mod.value().value("description", std::string(""));
-                    newMod.steamIDOwner = mod.value().value("steam_id_owner", (uint64)0);
-                    newMod.timeCreated = mod.value().value("time_created", (uint32)1554997000);
-                    newMod.timeUpdated = mod.value().value("time_updated", (uint32)1554997000);
-                    newMod.timeAddedToUserList = mod.value().value("time_added", (uint32)1554997000);
-                    newMod.visibility = k_ERemoteStoragePublishedFileVisibilityPublic;
-                    newMod.banned = false;
-                    newMod.acceptedForUse = true;
-                    newMod.tagsTruncated = false;
-                    newMod.tags = mod.value().value("tags", std::string(""));
-                    newMod.primaryFileName = mod.value().value("primary_filename", std::string(""));
-                    newMod.primaryFileSize = mod.value().value("primary_filesize", (int32)1000000);
-                    newMod.previewFileName = mod.value().value("preview_filename", std::string(""));
-                    newMod.previewFileSize = mod.value().value("preview_filesize", (int32)1000000);
-                    newMod.workshopItemURL = mod.value().value("workshop_item_url", std::string(""));
-                    newMod.votesUp = mod.value().value("upvotes", (uint32)1);
-                    newMod.votesDown = mod.value().value("downvotes", (uint32)0);
-                    newMod.score = 1.0f;
-                    newMod.numChildren = mod.value().value("num_children", (uint32)0);
-                    newMod.previewURL = "file://" + Local_Storage::get_game_settings_path() + "mod_images/" + newMod.previewFileName;
-                    settings_client->addMod(newMod.id, newMod.title, newMod.path);
-                    settings_server->addMod(newMod.id, newMod.title, newMod.path);
-                    settings_client->addModDetails(newMod.id, newMod);
-                    settings_server->addModDetails(newMod.id, newMod);
-                } catch (std::exception& e) {
-                    PRINT_DEBUG("MODLOADER ERROR: %s\n", e.what());
-                }
-            }
-        } else {
-            std::vector<std::string> paths = Local_Storage::get_filenames_path(mod_path);
-            for (auto & p: paths) {
-                PRINT_DEBUG("mod directory %s\n", p.c_str());
-                try {
-                    Mod_entry newMod;
-                    newMod.id = std::stoull(p);
-                    newMod.title = p;
-                    newMod.path = mod_path + PATH_SEPARATOR + p;
-                    newMod.fileType = k_EWorkshopFileTypeCommunity;
-                    newMod.description = "";
-                    newMod.steamIDOwner = (uint64)0;
-                    newMod.timeCreated = (uint32)1554997000;
-                    newMod.timeUpdated = (uint32)1554997000;
-                    newMod.timeAddedToUserList = (uint32)1554997000;
-                    newMod.visibility = k_ERemoteStoragePublishedFileVisibilityPublic;
-                    newMod.banned = false;
-                    newMod.acceptedForUse = true;
-                    newMod.tagsTruncated = false;
-                    newMod.tags = "";
-                    newMod.primaryFileName = "";
-                    newMod.primaryFileSize = (int32)1000000;
-                    newMod.previewFileName = "";
-                    newMod.previewFileSize = (int32)1000000;
-                    newMod.workshopItemURL = "";
-                    newMod.votesUp = (uint32)1;
-                    newMod.votesDown = (uint32)0;
-                    newMod.score = 1.0f;
-                    newMod.numChildren = (uint32)0;
-                    newMod.previewURL = "";
-                    settings_client->addMod(newMod.id, newMod.title, newMod.path);
-                    settings_server->addMod(newMod.id, newMod.title, newMod.path);
-                    settings_client->addModDetails(newMod.id, newMod);
-                    settings_server->addModDetails(newMod.id, newMod);
-                } catch (...) {}
-            }
-        }
-    }
+    parse_mods_folder(settings_client, settings_server, local_storage);
 
     load_gamecontroller_settings(settings_client);
 
