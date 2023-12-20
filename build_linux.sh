@@ -297,11 +297,10 @@ function build_for () {
   local linker_pic_pie='-shared'
   [[ $is_exe = 1 ]] && linker_pic_pie='-pie'
 
-  
   local tmp_work_dir="${out_filepath##*/}"
   tmp_work_dir="$build_temp_dir/${tmp_work_dir%.*}"
   echo "  -- Cleaning compilation directory '$tmp_work_dir/'"
-  rm -f -r -d "$tmp_work_dir"
+  rm -f -r "$tmp_work_dir"
   mkdir -p "$tmp_work_dir" || {
     echo [X] "Failed to create compilation directory" >&2;
     return 1;
@@ -404,7 +403,7 @@ fi
 ### x64 build
 rm -f dll/net.pb.cc
 rm -f dll/net.pb.h
-rm -f -r -d "$build_temp_dir"
+rm -f -r "$build_temp_dir"
 mkdir -p "$build_temp_dir"
 echo // invoking protobuf compiler - 64
 "$protoc_exe_64" -I./dll/ --cpp_out=./dll/ ./dll/*.proto
@@ -438,6 +437,13 @@ fi
 # cleanup
 rm -f dll/net.pb.cc
 rm -f dll/net.pb.h
-rm -f -r -d "$build_temp_dir"
+rm -f -r "$build_temp_dir"
+
+echo;
+if [[ $last_code = 0 ]]; then
+  echo "[GG] no failures"
+else
+  echo "[XX] general failure" >&2
+fi
 
 exit $last_code

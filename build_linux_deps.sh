@@ -94,7 +94,7 @@ echo Tools will be installed in: "$deps_dir"
 echo Building with $build_threads threads
 echo ===========================
 echo // Recreating dir...
-rm -r -d -f "$deps_dir"
+rm -r -f "$deps_dir"
 sleep 1
 mkdir -p "$deps_dir" || {
   echo "Couldn't create dir \"$deps_dir\"" >&2;
