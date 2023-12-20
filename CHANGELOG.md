@@ -1,3 +1,32 @@
+## 20/Dec/2023
+
+* fixed the implementation of BIsAppInstalled(), it must lock the global mutex since it is thread-safe, otherwise it will cause starvation and the current thread wion't yield, which triggers some games
+
+* more accurate behavior for BIsAppInstalled(), reject app ID if it was in the DLC list and isUnlockAllDlc was false
+
+* basic implementation for RequestAppProofOfPurchaseKey() and RequestAllProofOfPurchaseKeys()
+
+* a simple implementation for GetEarliestPurchaseUnixTime()
+
+* more accurate implementation for BGetSessionClientResolution, set both x & y to 0
+
+* return false in Steam_Apps::BIsDlcInstalled() when the given app ID is the base game
+
+* check for invalid app ID uint32_max in different places
+
+* more accurate implementation for Steam_Client::BReleaseSteamPipe(), return true if the pipe was released successfully
+
+* lock the global mutex and the overlay mutex in different places just to be on the safe side, without it, some games suffer from thread starvation, might slow things down
+
+* added missing env var "SteamOverlayGameId" to steam_client and client_loader
+
+* added a startup timer + counter for reference, currently used to print timestamp in debug log
+
+* consistent debug log location, for games that change cwd multiple times while running
+
+* fixed error propagation in Windows build script, apparently set /a var+=another_var works only if another_var is a defined env var but NOT one of the "magic" builtins like errorlevel
+
+## 17/Dec/2023
 * More accurate implementation for BIsAppInstalled(), it now rejects uint32_max
 
 * Allow behavior customizization via installed_app_ids.txt config file
@@ -41,6 +70,8 @@
 
 * add fix for glyphs icons for xbox 360 controller by 0x0315 from viewtopic.php?p=2949498#p2949498
 
+
+## 14/Dec/2023
 * bare minimum implementation for SDK 1.58a
   + backup the current version of the interface 'steam ugc'
     -  create new file: isteamugc017.h
