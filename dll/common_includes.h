@@ -49,6 +49,7 @@
 
 #define STEAM_API_EXPORTS
 
+// OS specific includes + definitions
 #if defined(__WINDOWS__)
     #include <winsock2.h>
     #include <windows.h>
@@ -59,22 +60,16 @@
     #include <iphlpapi.h> // Include winsock2 before this, or winsock2 iphlpapi will be unavailable
     #include <shlobj.h>
 
-    #define MSG_NOSIGNAL 0
-
+    // we need this for BCryptGenRandom() in base.cpp
     #include <bcrypt.h>
 
-    #ifndef EMU_RELEASE_BUILD
-        #include <string>
-        extern const std::string dbg_log_file;
-        #define PRINT_DEBUG(a, ...) do {FILE *t = fopen(dbg_log_file.c_str(), "a"); fprintf(t, "%u " a, GetCurrentThreadId(), __VA_ARGS__); fclose(t); WSASetLastError(0);} while (0)
-    #endif
+    #define MSG_NOSIGNAL 0
 
     EXTERN_C IMAGE_DOS_HEADER __ImageBase;
     #define PATH_SEPARATOR "\\"
 
     #ifdef EMU_EXPERIMENTAL_BUILD
         #include <winhttp.h>
-
         #include "../detours/detours.h"
     #endif
 
@@ -105,6 +100,10 @@ inline void reset_LastError()
 }
 
 #elif defined(__LINUX__)
+    #ifndef _GNU_SOURCE
+        #define _GNU_SOURCE
+    #endif // _GNU_SOURCE
+
     #include <arpa/inet.h>
 
     #include <sys/types.h>
@@ -127,20 +126,9 @@ inline void reset_LastError()
     #include <utime.h>
 
     #define PATH_MAX_STRING_SIZE 512
-
-    #ifndef EMU_RELEASE_BUILD
-        #include <string>
-        extern const std::string dbg_log_file;
-        #define PRINT_DEBUG(...) {FILE *t = fopen(dbg_log_file.c_str(), "a"); fprintf(t, __VA_ARGS__); fclose(t);}
-    #endif
     #define PATH_SEPARATOR "/" 
-
     #define utf8_decode(a) a
     #define reset_LastError()
-#endif
-//#define PRINT_DEBUG(...) fprintf(stdout, __VA_ARGS__)
-#ifdef EMU_RELEASE_BUILD
-    #define PRINT_DEBUG(...)
 #endif
 
 // C/C++ includes
@@ -166,6 +154,39 @@ inline void reset_LastError()
 
 #include <string.h>
 #include <stdio.h>
+
+// PRINT_DEBUG definition
+// notice the extra call to WSASetLastError(0) in Windows def
+#ifndef EMU_RELEASE_BUILD
+    //#define PRINT_DEBUG(...) fprintf(stdout, __VA_ARGS__)
+    extern const std::string dbg_log_file;
+    extern const std::chrono::time_point<std::chrono::high_resolution_clock> startup_counter;
+    #if defined(__WINDOWS__)
+        #define PRINT_DEBUG(a, ...) do {                                                                                         \
+            auto ctr = std::chrono::high_resolution_clock::now();                                                                \
+            auto duration = ctr - startup_counter;                                                                               \
+            auto micro = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::micro>>(duration);            \
+            auto ms = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::milli>>(duration);               \
+            FILE *t = fopen(dbg_log_file.c_str(), "a");                                                                          \
+            fprintf(t, "[%llu ms, %llu us] [tid %d] " a, ms.count(), micro.count(), GetCurrentThreadId(), __VA_ARGS__);          \
+            fclose(t);                                                                                                           \
+            WSASetLastError(0);                                                                                                  \
+        } while (0)
+    #elif defined(__LINUX__)
+        #include <sys/syscall.h>
+        #define PRINT_DEBUG(a, ...) do {                                                                                         \
+            auto ctr = std::chrono::high_resolution_clock::now();                                                                \
+            auto duration = ctr - startup_counter;                                                                               \
+            auto micro = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::micro>>(duration);            \
+            auto ms = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::milli>>(duration);               \
+            FILE *t = fopen(dbg_log_file.c_str(), "a");                                                                          \
+            fprintf(t, "[%llu ms, %llu us] [tid %d] " a, ms.count(), micro.count(), syscall(SYS_gettid), ##__VA_ARGS__);         \
+            fclose(t);                                                                                                           \
+        } while (0)
+    #endif
+#else // EMU_RELEASE_BUILD
+    #define PRINT_DEBUG(...)
+#endif // EMU_RELEASE_BUILD
 
 inline std::string ascii_to_lowercase(std::string data) {
     std::transform(data.begin(), data.end(), data.begin(),

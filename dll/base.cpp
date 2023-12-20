@@ -27,7 +27,7 @@ randombytes(char * const buf, const size_t size)
         PRINT_DEBUG("BCryptGenRandom ERROR\n");
         Sleep(100);
     }
-
+    
 }
 
 std::string get_env_variable(std::string name)
@@ -95,6 +95,10 @@ bool set_env_variable(std::string name, std::string value)
 #endif
 
 std::recursive_mutex global_mutex;
+
+// some arbitrary counter/time for reference
+const std::chrono::time_point<std::chrono::high_resolution_clock> startup_counter = std::chrono::high_resolution_clock::now();
+const std::chrono::time_point<std::chrono::system_clock> startup_time = std::chrono::system_clock::now();
 
 #ifndef EMU_RELEASE_BUILD
 const std::string dbg_log_file = get_full_program_path() + "STEAM_LOG.txt";

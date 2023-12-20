@@ -23,6 +23,8 @@
 #define PUSH_BACK_IF_NOT_IN(vector, element) { if(std::find(vector.begin(), vector.end(), element) == vector.end()) vector.push_back(element); }
 
 extern std::recursive_mutex global_mutex;
+extern const std::chrono::time_point<std::chrono::high_resolution_clock> startup_counter;
+extern const std::chrono::time_point<std::chrono::system_clock> startup_time;
 
 std::string get_env_variable(std::string name);
 bool set_env_variable(std::string name, std::string value);
