@@ -11,14 +11,12 @@ on:
   pull_request:
     branches: [ "dev" ]
   workflow_dispatch:
-    # nothing
+    # allows manual trigger
 
 permissions:
   contents: write
 
 env:
-  # Expected format {owner}/{repo}.
-  DEPS_REPO: 'otavepto/gbe_fork'
   THIRD_PARTY_BASE_DIR: 'third-party'
 
   DEPS_CACHE_KEY: emu-deps-linux
@@ -48,19 +46,15 @@ jobs:
       if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
       uses: actions/checkout@v4
       with:
-        repository: "${{env.DEPS_REPO}}"
         ref: 'third-party/deps/linux'
         path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/linux"
-        lfs: true
 
     - name: Clone third-party deps (deps/common)
       if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
       uses: actions/checkout@v4
       with:
-        repository: "${{env.DEPS_REPO}}"
         ref: 'third-party/deps/common'
         path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/common"
-        lfs: true
 
     - name: Build deps
       if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
@@ -92,10 +86,8 @@ jobs:
     - name: Clone third-party build helpers (build/linux)
       uses: actions/checkout@v4
       with:
-        repository: "${{env.DEPS_REPO}}"
         ref: 'third-party/build/linux'
         path: "${{env.THIRD_PARTY_BASE_DIR}}/build/linux"
-        lfs: true
 
 ### build + upload release
     - name: Build release mode
