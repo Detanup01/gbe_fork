@@ -168,7 +168,7 @@ inline void reset_LastError()
             auto micro = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::micro>>(duration);            \
             auto ms = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::milli>>(duration);               \
             FILE *t = fopen(dbg_log_file.c_str(), "a");                                                                          \
-            fprintf(t, "[%llu ms, %llu us] [tid %d] " a, ms.count(), micro.count(), GetCurrentThreadId(), __VA_ARGS__);          \
+            fprintf(t, "[%llu ms, %llu us] [tid %lu] " a, ms.count(), micro.count(), GetCurrentThreadId(), __VA_ARGS__);          \
             fclose(t);                                                                                                           \
             WSASetLastError(0);                                                                                                  \
         } while (0)
@@ -180,7 +180,7 @@ inline void reset_LastError()
             auto micro = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::micro>>(duration);            \
             auto ms = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::milli>>(duration);               \
             FILE *t = fopen(dbg_log_file.c_str(), "a");                                                                          \
-            fprintf(t, "[%llu ms, %llu us] [tid %d] " a, ms.count(), micro.count(), syscall(SYS_gettid), ##__VA_ARGS__);         \
+            fprintf(t, "[%llu ms, %llu us] [tid %ld] " a, ms.count(), micro.count(), syscall(SYS_gettid), ##__VA_ARGS__);         \
             fclose(t);                                                                                                           \
         } while (0)
     #endif
