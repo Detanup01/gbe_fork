@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_COMMON_INCLUDES__
 #define __INCLUDED_COMMON_INCLUDES__
 
+// OS detection
 #if defined(WIN64) || defined(_WIN64) || defined(__MINGW64__)
     #define __WINDOWS_64__
 #elif defined(WIN32) || defined(_WIN32) || defined(__MINGW32__)
@@ -49,6 +50,30 @@
 
 #define STEAM_API_EXPORTS
 
+// C/C++ includes
+#include <cstdint>
+#include <algorithm>
+#include <string>
+#include <chrono>
+#include <cctype>
+#include <iomanip>
+#include <fstream>
+#include <sstream>
+#include <iterator>
+
+#include <vector>
+#include <map>
+#include <set>
+#include <queue>
+#include <list>
+
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+
+#include <string.h>
+#include <stdio.h>
+
 // OS specific includes + definitions
 #if defined(__WINDOWS__)
     #include <winsock2.h>
@@ -73,9 +98,8 @@
         #include "../detours/detours.h"
     #endif
 
-#include <string>
 // Convert a wide Unicode string to an UTF8 string
-inline std::string utf8_encode(const std::wstring &wstr)
+static inline std::string utf8_encode(const std::wstring &wstr)
 {
     if( wstr.empty() ) return std::string();
     int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
@@ -85,7 +109,7 @@ inline std::string utf8_encode(const std::wstring &wstr)
 }
 
 // Convert an UTF8 string to a wide Unicode String
-inline std::wstring utf8_decode(const std::string &str)
+static inline std::wstring utf8_decode(const std::string &str)
 {
     if( str.empty() ) return std::wstring();
     int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
@@ -94,7 +118,7 @@ inline std::wstring utf8_decode(const std::string &str)
     return wstrTo;
 }
 
-inline void reset_LastError()
+static inline void reset_LastError()
 {
     SetLastError(0);
 }
@@ -131,69 +155,6 @@ inline void reset_LastError()
     #define reset_LastError()
 #endif
 
-// C/C++ includes
-#include <cstdint>
-#include <algorithm>
-#include <string>
-#include <chrono>
-#include <cctype>
-#include <iomanip>
-#include <fstream>
-#include <sstream>
-#include <iterator>
-
-#include <vector>
-#include <map>
-#include <set>
-#include <queue>
-#include <list>
-
-#include <thread>
-#include <mutex>
-#include <condition_variable>
-
-#include <string.h>
-#include <stdio.h>
-
-// PRINT_DEBUG definition
-// notice the extra call to WSASetLastError(0) in Windows def
-#ifndef EMU_RELEASE_BUILD
-    //#define PRINT_DEBUG(...) fprintf(stdout, __VA_ARGS__)
-    extern const std::string dbg_log_file;
-    extern const std::chrono::time_point<std::chrono::high_resolution_clock> startup_counter;
-    #if defined(__WINDOWS__)
-        #define PRINT_DEBUG(a, ...) do {                                                                                         \
-            auto ctr = std::chrono::high_resolution_clock::now();                                                                \
-            auto duration = ctr - startup_counter;                                                                               \
-            auto micro = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::micro>>(duration);            \
-            auto ms = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::milli>>(duration);               \
-            FILE *t = fopen(dbg_log_file.c_str(), "a");                                                                          \
-            fprintf(t, "[%llu ms, %llu us] [tid %lu] " a, ms.count(), micro.count(), GetCurrentThreadId(), __VA_ARGS__);          \
-            fclose(t);                                                                                                           \
-            WSASetLastError(0);                                                                                                  \
-        } while (0)
-    #elif defined(__LINUX__)
-        #include <sys/syscall.h>
-        #define PRINT_DEBUG(a, ...) do {                                                                                         \
-            auto ctr = std::chrono::high_resolution_clock::now();                                                                \
-            auto duration = ctr - startup_counter;                                                                               \
-            auto micro = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::micro>>(duration);            \
-            auto ms = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::milli>>(duration);               \
-            FILE *t = fopen(dbg_log_file.c_str(), "a");                                                                          \
-            fprintf(t, "[%llu ms, %llu us] [tid %ld] " a, ms.count(), micro.count(), syscall(SYS_gettid), ##__VA_ARGS__);         \
-            fclose(t);                                                                                                           \
-        } while (0)
-    #endif
-#else // EMU_RELEASE_BUILD
-    #define PRINT_DEBUG(...)
-#endif // EMU_RELEASE_BUILD
-
-inline std::string ascii_to_lowercase(std::string data) {
-    std::transform(data.begin(), data.end(), data.begin(),
-        [](unsigned char c){ return std::tolower(c); });
-    return data;
-}
-
 // Other libs includes
 #include "../json/json.hpp"
 #include "../utfcpp/utf8.h"
@@ -204,7 +165,60 @@ inline std::string ascii_to_lowercase(std::string data) {
 #include "../sdk_includes/steam_gameserver.h"
 #include "../sdk_includes/steamdatagram_tickets.h"
 
+// PRINT_DEBUG definition
+// notice the extra call to WSASetLastError(0) in Windows def
+#ifndef EMU_RELEASE_BUILD
+    //#define PRINT_DEBUG(...) fprintf(stdout, __VA_ARGS__)
+    extern const std::string dbg_log_file;
+    extern const std::chrono::time_point<std::chrono::high_resolution_clock> startup_counter;
+    #if defined(__WINDOWS__)
+        #define PRINT_DEBUG(a, ...) do {                                                                                                          \
+            auto __prnt_dbg_ctr = std::chrono::high_resolution_clock::now();                                                                      \
+            auto __prnt_dbg_duration = __prnt_dbg_ctr - startup_counter;                                                                          \
+            auto __prnt_dbg_micro = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::micro>>(__prnt_dbg_duration);       \
+            auto __prnt_dbg_ms = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::milli>>(__prnt_dbg_duration);          \
+            FILE *t = fopen(dbg_log_file.c_str(), "a");                                                                                           \
+            fprintf(t, "[%llu ms, %llu us] [tid %lu] " a, __prnt_dbg_ms.count(), __prnt_dbg_micro.count(), GetCurrentThreadId(), __VA_ARGS__);    \
+            fclose(t);                                                                                                                            \
+            WSASetLastError(0);                                                                                                                   \
+        } while (0)
+    #elif defined(__LINUX__)
+        #include <sys/syscall.h>
+        #define PRINT_DEBUG(a, ...) do {                                                                                                           \
+            auto __prnt_dbg_ctr = std::chrono::high_resolution_clock::now();                                                                       \
+            auto __prnt_dbg_duration = __prnt_dbg_ctr - startup_counter;                                                                           \
+            auto __prnt_dbg_micro = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::micro>>(__prnt_dbg_duration);        \
+            auto __prnt_dbg_ms = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::milli>>(__prnt_dbg_duration);           \
+            FILE *t = fopen(dbg_log_file.c_str(), "a");                                                                                            \
+            fprintf(t, "[%llu ms, %llu us] [tid %ld] " a, __prnt_dbg_ms.count(), __prnt_dbg_micro.count(), syscall(SYS_gettid), ##__VA_ARGS__);    \
+            fclose(t);                                                                                                                             \
+        } while (0)
+    #endif
+#else // EMU_RELEASE_BUILD
+    #define PRINT_DEBUG(...)
+#endif // EMU_RELEASE_BUILD
+
+static inline std::string ascii_to_lowercase(std::string data) {
+    std::transform(data.begin(), data.end(), data.begin(),
+        [](unsigned char c){ return std::tolower(c); });
+    return data;
+}
+
+static inline void thisThreadYieldFor(std::chrono::microseconds u)
+{
+    PRINT_DEBUG("Thread is waiting for %lld us\n", u.count());
+    const auto start = std::chrono::high_resolution_clock::now();
+    const auto end = start + u;
+    do
+    {
+        std::this_thread::yield();
+    }
+    while (std::chrono::high_resolution_clock::now() < end);
+    PRINT_DEBUG("Thread finished waiting\n");
+}
+
 // Emulator includes
+// add them here after the inline functions definitions
 #include "net.pb.h"
 #include "settings.h"
 #include "local_storage.h"
