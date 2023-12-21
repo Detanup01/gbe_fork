@@ -217,7 +217,7 @@ release_libs_dir64=(
   "$zlib_lib64"
 )
 
-release_ignore_warn="-Wno-switch -Wno-int-to-void-pointer-cast -Wno-null-conversion"
+release_ignore_warn="-Wno-switch"
 common_defs="-DGNUC -DUTF_CPP_CPLUSPLUS=201703L -DCURL_STATICLIB"
 release_defs="$dbg_defs $common_defs"
 release_src=(

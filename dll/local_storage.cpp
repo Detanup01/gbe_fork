@@ -817,12 +817,12 @@ std::string Local_Storage::load_image_resized(std::string const& image_path, std
             unsigned char *img = stbi_load(image_path.c_str(), &width, &height, nullptr, 4);
             PRINT_DEBUG("Local_Storage::load_image_resized: \"%s\" %s\n", image_path.c_str(), (img == nullptr ? stbi_failure_reason() : "loaded"));
             if (img != nullptr) {
-                stbir_resize_uint8(img, width, height, NULL, (unsigned char*)resized_img, resolution, resolution, NULL, 4);
+                stbir_resize_uint8(img, width, height, 0, (unsigned char*)resized_img, resolution, resolution, 0, 4);
                 resized_image = std::string(resized_img, resolution * resolution * 4);
                 stbi_image_free(img);
             }
         } else if (image_data.length() > 0) {
-            stbir_resize_uint8((unsigned char*)image_data.c_str(), 184, 184, NULL, (unsigned char*)resized_img, resolution, resolution, NULL, 4);
+            stbir_resize_uint8((unsigned char*)image_data.c_str(), 184, 184, 0, (unsigned char*)resized_img, resolution, resolution, 0, 4);
             resized_image = std::string(resized_img, resolution * resolution * 4);
         }
         free(resized_img);
