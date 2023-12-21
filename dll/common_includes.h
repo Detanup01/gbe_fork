@@ -209,7 +209,7 @@ static inline std::string ascii_to_lowercase(std::string data) {
 
 static inline void thisThreadYieldFor(std::chrono::microseconds u)
 {
-    PRINT_DEBUG("Thread is waiting for %lld us\n", u.count());
+    PRINT_DEBUG("Thread is waiting for %lld us\n", (long long int)u.count());
     const auto start = std::chrono::high_resolution_clock::now();
     const auto end = start + u;
     do
