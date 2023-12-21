@@ -72,7 +72,7 @@ uint32 GetServerRealTime()
 {
     PRINT_DEBUG("GetServerRealTime\n");
     uint32 server_time = std::chrono::duration_cast<std::chrono::duration<uint32>>(std::chrono::system_clock::now().time_since_epoch()).count();
-    PRINT_DEBUG("Time %lu\n", server_time);
+    PRINT_DEBUG("Time %u\n", server_time);
     return server_time;
 }
 

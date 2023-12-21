@@ -127,7 +127,7 @@ void send_lobby_data()
 
     for(auto & l: lobbies) {
         if (get_lobby_member(&l, settings->get_local_steam_id()) && l.owner() == settings->get_local_steam_id().ConvertToUint64() && !l.deleted()) {
-            PRINT_DEBUG("Sending lobby %llu\n", l.room_id());
+            PRINT_DEBUG("Sending lobby " "%" PRIu64 "\n", l.room_id());
             Common_Message msg = Common_Message();
             msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
             msg.set_allocated_lobby(new Lobby(l));
@@ -264,7 +264,7 @@ void remove_lobbies()
     auto g = std::begin(lobbies);
     while (g != std::end(lobbies)) {
         if (g->members().size() == 0 || (g->deleted() && (g->time_deleted() + LOBBY_DELETED_TIMEOUT < current_time))) {
-            PRINT_DEBUG("REMOVING LOBBY %llu\n", g->room_id());
+            PRINT_DEBUG("REMOVING LOBBY " "%" PRIu64 "\n", g->room_id());
             self_lobby_member_data.erase(g->room_id());
             g = lobbies.erase(g);
         } else {
@@ -372,7 +372,7 @@ bool GetFavoriteGame( int iGame, AppId_t *pnAppID, uint32 *pnIP, uint16 *pnConnP
 // adds the game server to the local list; updates the time played of the server if it already exists in the list
 int AddFavoriteGame( AppId_t nAppID, uint32 nIP, uint16 nConnPort, uint16 nQueryPort, uint32 unFlags, uint32 rTime32LastPlayedOnServer )
 {
-    PRINT_DEBUG("AddFavoriteGame %lu %lu %hu %hu %lu %lu\n", nAppID, nIP, nConnPort, nQueryPort, unFlags, rTime32LastPlayedOnServer);
+    PRINT_DEBUG("AddFavoriteGame %u %u %hu %hu %u %u\n", nAppID, nIP, nConnPort, nQueryPort, unFlags, rTime32LastPlayedOnServer);
 
     std::string file_path;
     unsigned long long file_size;
@@ -1406,7 +1406,7 @@ void RunCallbacks()
                 }
             }
 
-            PRINT_DEBUG("Lobby %llu use %u\n", l.room_id(), use);
+            PRINT_DEBUG("Lobby " "%" PRIu64 " use %u\n", l.room_id(), use);
             if (use) PUSH_BACK_IF_NOT_IN(filtered_lobbies, (uint64)l.room_id());
             if (filtered_lobbies.size() >= filter_max_results_copy) {
                 searching = false;
@@ -1501,7 +1501,7 @@ void RunCallbacks()
 void Callback(Common_Message *msg)
 {
     if (msg->has_lobby()) {
-        PRINT_DEBUG("GOT A LOBBY appid: %lu\n", msg->lobby().appid());
+        PRINT_DEBUG("GOT A LOBBY appid: %u\n", msg->lobby().appid());
         if (msg->lobby().owner() != settings->get_local_steam_id().ConvertToUint64() && msg->lobby().appid() == settings->get_local_game_id().AppID()) {
             Lobby *lobby = get_lobby((uint64)msg->lobby().room_id());
             if (!lobby) {
@@ -1588,7 +1588,7 @@ void Callback(Common_Message *msg)
 
 
     if (msg->has_lobby_messages()) {
-        PRINT_DEBUG("LOBBY MESSAGE %u %llu\n", msg->lobby_messages().type(), msg->lobby_messages().id());
+        PRINT_DEBUG("LOBBY MESSAGE %u " "%" PRIu64 "\n", msg->lobby_messages().type(), msg->lobby_messages().id());
         Lobby *lobby = get_lobby((uint64)msg->lobby_messages().id());
         if (lobby && !lobby->deleted()) {
             bool we_are_in_lobby = !!get_lobby_member(lobby, settings->get_local_steam_id());
@@ -1620,7 +1620,7 @@ void Callback(Common_Message *msg)
             }
 
             if (msg->lobby_messages().type() == Lobby_Messages::LEAVE) {
-                PRINT_DEBUG("LOBBY MESSAGE: LEAVE %llu\n", msg->source_id());
+                PRINT_DEBUG("LOBBY MESSAGE: LEAVE " "%" PRIu64 "\n", msg->source_id());
                 leave_lobby(lobby, (uint64)msg->source_id());
                 if (we_are_in_lobby) trigger_lobby_member_join_leave((uint64)lobby->room_id(), (uint64)msg->source_id(), true, true, 0.2);
             }

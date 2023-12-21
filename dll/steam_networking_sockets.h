@@ -881,7 +881,7 @@ SteamNetworkingMessage_t *get_steam_message_connection(HSteamNetConnection hConn
     pMsg->m_pfnRelease = &delete_steam_message;
     pMsg->m_nChannel = 0;
     connect_socket->second.data.pop();
-    PRINT_DEBUG("get_steam_message_connection %u %lu, %I64\n", hConn, size, pMsg->m_nMessageNumber);
+    PRINT_DEBUG("get_steam_message_connection %u %lu, %llu\n", hConn, size, pMsg->m_nMessageNumber);
     return pMsg;
 }
 
@@ -2054,7 +2054,7 @@ void Callback(Common_Message *msg)
     }
 
     if (msg->has_networking_sockets()) {
-        PRINT_DEBUG("Steam_Networking_Sockets: got network socket msg %u %llu\n", msg->networking_sockets().type(), msg->source_id());
+        PRINT_DEBUG("Steam_Networking_Sockets: got network socket msg %u " "%" PRIu64 "\n", msg->networking_sockets().type(), msg->source_id());
         if (msg->networking_sockets().type() == Networking_Sockets::CONNECTION_REQUEST) {
             int virtual_port = msg->networking_sockets().virtual_port();
             int real_port = msg->networking_sockets().real_port();
@@ -2093,13 +2093,13 @@ void Callback(Common_Message *msg)
             auto connect_socket = s->connect_sockets.find(msg->networking_sockets().connection_id());
             if (connect_socket != s->connect_sockets.end()) {
                 if (connect_socket->second.remote_identity.GetSteamID64() == msg->source_id() && (connect_socket->second.status == CONNECT_SOCKET_CONNECTED)) {
-                    PRINT_DEBUG("Steam_Networking_Sockets: got data len %zu, num %I64u on connection %u\n", msg->networking_sockets().data().size(), msg->networking_sockets().message_number(), connect_socket->first);
+                    PRINT_DEBUG("Steam_Networking_Sockets: got data len %zu, num " "%" PRIu64 " on connection %u\n", msg->networking_sockets().data().size(), msg->networking_sockets().message_number(), connect_socket->first);
                     connect_socket->second.data.push(msg->networking_sockets());
                 }
             } else {
                 connect_socket = std::find_if(s->connect_sockets.begin(), s->connect_sockets.end(), [msg](const auto &in) {return in.second.remote_identity.GetSteamID64() == msg->source_id() && (in.second.status == CONNECT_SOCKET_NOT_ACCEPTED || in.second.status == CONNECT_SOCKET_CONNECTED) && in.second.remote_id == msg->networking_sockets().connection_id_from();});
                 if (connect_socket != s->connect_sockets.end()) {
-                    PRINT_DEBUG("Steam_Networking_Sockets: got data len %zu, num %I64u on not accepted connection %u\n", msg->networking_sockets().data().size(), msg->networking_sockets().message_number(), connect_socket->first);
+                    PRINT_DEBUG("Steam_Networking_Sockets: got data len %zu, num " "%" PRIu64 " on not accepted connection %u\n", msg->networking_sockets().data().size(), msg->networking_sockets().message_number(), connect_socket->first);
                     connect_socket->second.data.push(msg->networking_sockets());
                 }
             }

@@ -6697,7 +6697,8 @@ STEAMAPI_API void *SteamAPI_ISteamGameServer_GetPublicIP( intptr_t instancePtr, 
         get_steam_client()->steam_gameserver->GetPublicIP_fix((SteamIPAddress_t *)instancePtr);
         return (void *)instancePtr;
     } else {
-        return (void *)((ISteamGameServer012 *)instancePtr)->GetPublicIP_old();
+        // (char*)0 will silence the compiler warning
+        return (void *)( (char*)0 + ((ISteamGameServer012 *)instancePtr)->GetPublicIP_old() );
     }
 }
 

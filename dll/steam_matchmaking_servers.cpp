@@ -48,7 +48,7 @@ HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, IS
     request.type = type;
     requests.push_back(request);
     ++server_list_request;
-    requests[requests.size() - 1].id = (void *)server_list_request;
+    requests[requests.size() - 1].id = (char *)0 + server_list_request; // (char *)0 silences the compiler warning
     HServerListRequest id = requests[requests.size() - 1].id;
     PRINT_DEBUG("request id: %p\n", id);
 
@@ -420,7 +420,7 @@ void Steam_Matchmaking_Servers::server_details(Gameserver *g, gameserveritem_t *
     server->m_nServerVersion = g->version();
     server->SetName(g->server_name().c_str());
     server->m_steamID = CSteamID((uint64)g->id());
-    PRINT_DEBUG("server_details %llu\n", g->id());
+    PRINT_DEBUG("server_details " "%" PRIu64 "\n", g->id());
 
     strncpy(server->m_szGameTags, g->tags().c_str(), k_cbMaxGameServerTags - 1);
     server->m_szGameTags[k_cbMaxGameServerTags - 1] = 0;
@@ -457,7 +457,7 @@ void Steam_Matchmaking_Servers::server_details_players(Gameserver *g, Steam_Matc
         if (ssq != NULL) ssq_server_free(ssq);
     }
 
-    PRINT_DEBUG("server_details_players %llu\n", g->id());
+    PRINT_DEBUG("server_details_players " "%" PRIu64 "\n", g->id());
 }
 
 void Steam_Matchmaking_Servers::server_details_rules(Gameserver *g, Steam_Matchmaking_Servers_Direct_IP_Request *r)
@@ -491,7 +491,7 @@ void Steam_Matchmaking_Servers::server_details_rules(Gameserver *g, Steam_Matchm
         if (ssq != NULL) ssq_server_free(ssq);
     }
 
-    PRINT_DEBUG("server_details_rules %llu\n", g->id());
+    PRINT_DEBUG("server_details_rules " "%" PRIu64 "\n", g->id());
 }
 
 // Get details on a given server in the list, you can get the valid range of index
@@ -746,9 +746,9 @@ void Steam_Matchmaking_Servers::RunCallbacks()
     }
 
     for (auto &r : direct_ip_requests_temp) {
-        PRINT_DEBUG("dip request: %lu:%hu\n", r.ip, r.port);
+        PRINT_DEBUG("dip request: %u:%hu\n", r.ip, r.port);
         for (auto &g : gameservers) {
-            PRINT_DEBUG("server: %lu:%hu\n", g.server.ip(), g.server.query_port());
+            PRINT_DEBUG("server: %u:%u\n", g.server.ip(), g.server.query_port());
             uint16 query_port = g.server.query_port();
             if (query_port == 0xFFFF) {
                 query_port = g.server.port();
@@ -785,7 +785,7 @@ void Steam_Matchmaking_Servers::RunCallbacks()
 void Steam_Matchmaking_Servers::Callback(Common_Message *msg)
 {
     if (msg->has_gameserver() && msg->gameserver().type() != eFriendsServer) {
-        PRINT_DEBUG("got SERVER %llu, offline:%u\n", msg->gameserver().id(), msg->gameserver().offline());
+        PRINT_DEBUG("got SERVER " "%" PRIu64 ", offline:%u\n", msg->gameserver().id(), msg->gameserver().offline());
         if (msg->gameserver().offline()) {
             for (auto &g : gameservers) {
                 if (g.server.id() == msg->gameserver().id()) {

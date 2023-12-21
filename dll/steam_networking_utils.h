@@ -358,7 +358,7 @@ bool SetConnectionConfigValueString( HSteamNetConnection hConn, ESteamNetworking
 bool SetConfigValue( ESteamNetworkingConfigValue eValue, ESteamNetworkingConfigScope eScopeType, intptr_t scopeObj,
     ESteamNetworkingConfigDataType eDataType, const void *pArg )
 {
-    PRINT_DEBUG("Steam_Networking_Utils::SetConfigValue %i %i %tf %i %p\n", eValue, eScopeType, scopeObj, eDataType, pArg);
+    PRINT_DEBUG("Steam_Networking_Utils::SetConfigValue %i %i " "%" PRIdPTR " %i %p\n", eValue, eScopeType, scopeObj, eDataType, pArg);
     return true;
 }
 

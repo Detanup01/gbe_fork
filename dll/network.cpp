@@ -459,7 +459,7 @@ static bool unbuffer_tcp(struct TCP_Socket &socket, Common_Message *msg)
         socket.recv_buffer.erase(socket.recv_buffer.begin(), socket.recv_buffer.begin() + sizeof(l) + l);
         return true;
     } else {
-        PRINT_DEBUG("BAD TCP DATA %lu %zu %zu %hhu\n", l, socket.recv_buffer.size(), sizeof(uint32), *((char *)&(socket.recv_buffer[sizeof(uint32)])));
+        PRINT_DEBUG("BAD TCP DATA %u %zu %zu %hhu\n", l, socket.recv_buffer.size(), sizeof(uint32), *((char *)&(socket.recv_buffer[sizeof(uint32)])));
         kill_tcp_socket(socket);
     }
 
@@ -514,7 +514,8 @@ std::set<IP_PORT> Networking::resolve_ip(std::string dns)
 
     if (getaddrinfo(dns.c_str(), NULL, NULL, &result) == 0) {
         for (struct addrinfo *res = result; res != NULL; res = res->ai_next) {
-            PRINT_DEBUG("%zu %u\n", res->ai_addrlen, res->ai_family);
+            // cast to size_t because on Linux 'ai_addrlen' is defined as unsigned int and clang complains
+            PRINT_DEBUG("%zu %u\n", (size_t)res->ai_addrlen, res->ai_family);
             if (res->ai_family == AF_INET) {
                 struct sockaddr_in *ipv4 = (struct sockaddr_in *)res->ai_addr;
                 uint32 ip;
@@ -675,7 +676,7 @@ bool Networking::handle_announce(Common_Message *msg, IP_PORT ip_port)
         PRINT_DEBUG("New Connection Created\n");
     }
 
-    PRINT_DEBUG("Handle Announce: %lu, %llu, %lu, %u\n", conn->appid, msg->source_id(), msg->announce().appid(), msg->announce().type());
+    PRINT_DEBUG("Handle Announce: %u, " "%" PRIu64 ", %u, %u\n", conn->appid, msg->source_id(), msg->announce().appid(), msg->announce().type());
     conn->tcp_ip_port = ip_port;
     conn->tcp_ip_port.port = htons(msg->announce().tcp_port());
     conn->appid = msg->announce().appid();
@@ -692,7 +693,7 @@ bool Networking::handle_announce(Common_Message *msg, IP_PORT ip_port)
         }
 
         Connection *conn = find_connection((uint64)msg->announce().peers(i).id(), msg->announce().peers(i).appid());
-        PRINT_DEBUG("%p %lu %lu %llu\n", conn, conn ? conn->appid : 0, msg->announce().peers(i).appid(), msg->announce().peers(i).id());
+        PRINT_DEBUG("%p %u %u " "%" PRIu64 "\n", conn, conn ? conn->appid : (uint32)0, msg->announce().peers(i).appid(), msg->announce().peers(i).id());
         if (!conn || conn->appid != msg->announce().peers(i).appid()) {
             Common_Message msg_ = create_announce(true);
 
@@ -882,7 +883,7 @@ Common_Message Networking::create_announce(bool request)
     } else {
         announce->set_type(Announce::PONG);
         for (auto &conn: connections) {
-            PRINT_DEBUG("Connection %u %llu %lu\n", conn.udp_pinged, conn.ids[0].ConvertToUint64(), conn.appid);
+            PRINT_DEBUG("Connection %u %llu %u\n", conn.udp_pinged, conn.ids[0].ConvertToUint64(), conn.appid);
             if (conn.udp_pinged) {
                 Announce_Other_Peers *peer = announce->add_peers();
                 peer->set_id(conn.ids[0].ConvertToUint64());

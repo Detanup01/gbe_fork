@@ -168,6 +168,9 @@ static inline void reset_LastError()
 // PRINT_DEBUG definition
 // notice the extra call to WSASetLastError(0) in Windows def
 #ifndef EMU_RELEASE_BUILD
+    // we need this for printf specifiers for intptr_t such as PRIdPTR
+    #include <inttypes.h>
+    
     //#define PRINT_DEBUG(...) fprintf(stdout, __VA_ARGS__)
     extern const std::string dbg_log_file;
     extern const std::chrono::time_point<std::chrono::high_resolution_clock> startup_counter;

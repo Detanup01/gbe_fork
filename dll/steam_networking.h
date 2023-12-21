@@ -317,7 +317,7 @@ bool IsP2PPacketAvailable( uint32 *pcubMsgSize, int nChannel)
         if (connection_exists((uint64)msg.source_id()) && msg.mutable_network()->channel() == nChannel && msg.network().processed()) {
             uint32 size = msg.mutable_network()->data().size();
             if (pcubMsgSize) *pcubMsgSize = size;
-            PRINT_DEBUG("available with size: %lu\n", size);
+            PRINT_DEBUG("available with size: %u\n", size);
             return true;
         }
     }
@@ -362,7 +362,7 @@ bool ReadP2PPacket( void *pubDest, uint32 cubDest, uint32 *pcubMsgSize, CSteamID
             }PRINT_DEBUG("\n");
 #endif
             *psteamIDRemote = CSteamID((uint64)msg->source_id());
-            PRINT_DEBUG("Steam_Networking::ReadP2PPacket len %u channel: %u from: %llu\n", msg_size, nChannel, msg->source_id());
+            PRINT_DEBUG("Steam_Networking::ReadP2PPacket len %u channel: %u from: " "%" PRIu64 "\n", msg_size, nChannel, msg->source_id());
             msg = messages.erase(msg);
             return true;
         }
@@ -907,7 +907,7 @@ void Callback(Common_Message *msg)
 {
     if (msg->has_network()) {
 #ifndef EMU_RELEASE_BUILD
-        PRINT_DEBUG("Steam_Networking: got msg from: %llu to: %llu size %zu type %u | messages %p: %zu\n", msg->source_id(), msg->dest_id(), msg->network().data().size(), msg->network().type(), &messages, messages.size());
+        PRINT_DEBUG("Steam_Networking: got msg from: " "%" PRIu64 " to: " "%" PRIu64 " size %zu type %u | messages %p: %zu\n", msg->source_id(), msg->dest_id(), msg->network().data().size(), msg->network().type(), &messages, messages.size());
         for (int i = 0; i < msg->network().data().size(); ++i) {
             PRINT_DEBUG("%02hhX", msg->network().data().data()[i]);
         }PRINT_DEBUG("\n");

@@ -412,7 +412,7 @@ bool GetFriendGamePlayed( CSteamID steamIDFriend, STEAM_OUT_STRUCT() FriendGameI
                 pFriendGameInfo->m_usGamePort = 0;
                 pFriendGameInfo->m_usQueryPort = 0;
                 pFriendGameInfo->m_steamIDLobby = CSteamID((uint64)f->lobby_id());
-                PRINT_DEBUG("%u %llu\n", f->appid(), f->lobby_id());
+                PRINT_DEBUG("%u " "%" PRIu64 "\n", f->appid(), f->lobby_id());
             }
 
             ret = true;
@@ -1206,7 +1206,7 @@ void Callback(Common_Message *msg)
     }
 
     if (msg->has_friend_()) {
-        PRINT_DEBUG("Steam_Friends Friend %llu %llu\n", msg->friend_().id(), msg->friend_().lobby_id());
+        PRINT_DEBUG("Steam_Friends Friend " "%" PRIu64 " " "%" PRIu64 "\n", msg->friend_().id(), msg->friend_().lobby_id());
         Friend *f = find_friend((uint64)msg->friend_().id());
         if (!f) {
             if (msg->friend_().id() != settings->get_local_steam_id().ConvertToUint64()) {
