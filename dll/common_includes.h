@@ -172,26 +172,26 @@ static inline void reset_LastError()
     extern const std::string dbg_log_file;
     extern const std::chrono::time_point<std::chrono::high_resolution_clock> startup_counter;
     #if defined(__WINDOWS__)
-        #define PRINT_DEBUG(a, ...) do {                                                                                                          \
-            auto __prnt_dbg_ctr = std::chrono::high_resolution_clock::now();                                                                      \
-            auto __prnt_dbg_duration = __prnt_dbg_ctr - startup_counter;                                                                          \
-            auto __prnt_dbg_micro = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::micro>>(__prnt_dbg_duration);       \
-            auto __prnt_dbg_ms = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::milli>>(__prnt_dbg_duration);          \
-            FILE *t = fopen(dbg_log_file.c_str(), "a");                                                                                           \
-            fprintf(t, "[%llu ms, %llu us] [tid %lu] " a, __prnt_dbg_ms.count(), __prnt_dbg_micro.count(), GetCurrentThreadId(), __VA_ARGS__);    \
-            fclose(t);                                                                                                                            \
-            WSASetLastError(0);                                                                                                                   \
+        #define PRINT_DEBUG(a, ...) do {                                                                                                                     \
+            auto __prnt_dbg_ctr = std::chrono::high_resolution_clock::now();                                                                                 \
+            auto __prnt_dbg_duration = __prnt_dbg_ctr - startup_counter;                                                                                     \
+            auto __prnt_dbg_micro = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::micro>>(__prnt_dbg_duration);                  \
+            auto __prnt_dbg_ms = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::milli>>(__prnt_dbg_duration);                     \
+            auto __prnt_dbg_f = fopen(dbg_log_file.c_str(), "a");                                                                                            \
+            fprintf(__prnt_dbg_f, "[%llu ms, %llu us] [tid %lu] " a, __prnt_dbg_ms.count(), __prnt_dbg_micro.count(), GetCurrentThreadId(), __VA_ARGS__);    \
+            fclose(__prnt_dbg_f);                                                                                                                            \
+            WSASetLastError(0);                                                                                                                              \
         } while (0)
     #elif defined(__LINUX__)
         #include <sys/syscall.h>
-        #define PRINT_DEBUG(a, ...) do {                                                                                                           \
-            auto __prnt_dbg_ctr = std::chrono::high_resolution_clock::now();                                                                       \
-            auto __prnt_dbg_duration = __prnt_dbg_ctr - startup_counter;                                                                           \
-            auto __prnt_dbg_micro = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::micro>>(__prnt_dbg_duration);        \
-            auto __prnt_dbg_ms = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::milli>>(__prnt_dbg_duration);           \
-            FILE *t = fopen(dbg_log_file.c_str(), "a");                                                                                            \
-            fprintf(t, "[%llu ms, %llu us] [tid %ld] " a, __prnt_dbg_ms.count(), __prnt_dbg_micro.count(), syscall(SYS_gettid), ##__VA_ARGS__);    \
-            fclose(t);                                                                                                                             \
+        #define PRINT_DEBUG(a, ...) do {                                                                                                                      \
+            auto __prnt_dbg_ctr = std::chrono::high_resolution_clock::now();                                                                                  \
+            auto __prnt_dbg_duration = __prnt_dbg_ctr - startup_counter;                                                                                      \
+            auto __prnt_dbg_micro = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::micro>>(__prnt_dbg_duration);                   \
+            auto __prnt_dbg_ms = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::milli>>(__prnt_dbg_duration);                      \
+            auto __prnt_dbg_f = fopen(dbg_log_file.c_str(), "a");                                                                                             \
+            fprintf(__prnt_dbg_f, "[%llu ms, %llu us] [tid %ld] " a, __prnt_dbg_ms.count(), __prnt_dbg_micro.count(), syscall(SYS_gettid), ##__VA_ARGS__);    \
+            fclose(__prnt_dbg_f);                                                                                                                             \
         } while (0)
     #endif
 #else // EMU_RELEASE_BUILD
