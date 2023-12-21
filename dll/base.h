@@ -94,12 +94,15 @@ struct Steam_Call_Result {
     int iCallback;
 };
 
+uint32 generate_steam_ticket_id();
 int generate_random_int();
 SteamAPICall_t generate_steam_api_call_id();
 CSteamID generate_steam_id_user();
+CSteamID generate_steam_anon_user();
 CSteamID generate_steam_id_server();
 CSteamID generate_steam_id_anonserver();
 CSteamID generate_steam_id_lobby();
+std::string uint8_vector_to_hex_string(std::vector<uint8_t>& v);
 std::string get_full_lib_path();
 std::string get_full_program_path();
 std::string get_current_path();

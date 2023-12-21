@@ -26,12 +26,12 @@ Steam_GameServer::Steam_GameServer(class Settings *settings, class Networking *n
     this->settings = settings;
     server_data.set_id(settings->get_local_steam_id().ConvertToUint64());
     this->callbacks = callbacks;
-    ticket_manager = new Auth_Ticket_Manager(settings, network, callbacks);
+    auth_manager = new Auth_Manager(settings, network, callbacks);
 }
 
 Steam_GameServer::~Steam_GameServer()
 {
-    delete ticket_manager;
+    delete auth_manager;
 }
 
 std::vector<std::pair<CSteamID, Gameserver_Player_Info_t>>* Steam_GameServer::get_players()
@@ -369,7 +369,7 @@ bool Steam_GameServer::SendUserConnectAndAuthenticate( uint32 unIPClient, const 
     PRINT_DEBUG("SendUserConnectAndAuthenticate %u %u\n", unIPClient, cubAuthBlobSize);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    bool res = ticket_manager->SendUserConnectAndAuthenticate(unIPClient, pvAuthBlob, cubAuthBlobSize, pSteamIDUser);
+    bool res = auth_manager->SendUserConnectAndAuthenticate(unIPClient, pvAuthBlob, cubAuthBlobSize, pSteamIDUser);
 
     if (res) {
         std::pair<CSteamID, Gameserver_Player_Info_t> infos;
@@ -397,7 +397,7 @@ CSteamID Steam_GameServer::CreateUnauthenticatedUserConnection()
     PRINT_DEBUG("CreateUnauthenticatedUserConnection\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    CSteamID bot_id = ticket_manager->fakeUser();
+    CSteamID bot_id = auth_manager->fakeUser();
     std::pair<CSteamID, Gameserver_Player_Info_t> infos;
     infos.first = bot_id;
     infos.second.join_time = std::chrono::steady_clock::now();
@@ -427,7 +427,7 @@ void Steam_GameServer::SendUserDisconnect( CSteamID steamIDUser )
         players.erase(player_it);
     }
 
-    ticket_manager->endAuth(steamIDUser);
+    auth_manager->endAuth(steamIDUser);
 }
 
 
@@ -554,7 +554,7 @@ HAuthTicket Steam_GameServer::GetAuthSessionTicket( void *pTicket, int cbMaxTick
     PRINT_DEBUG("Steam_GameServer::GetAuthSessionTicket\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    return ticket_manager->getTicket(pTicket, cbMaxTicket, pcbTicket);
+    return auth_manager->getTicket(pTicket, cbMaxTicket, pcbTicket);
 }
 
 
@@ -572,7 +572,7 @@ EBeginAuthSessionResult Steam_GameServer::BeginAuthSession( const void *pAuthTic
     infos.second.name = "unnamed";
     players.emplace_back(std::move(infos));
 
-    return ticket_manager->beginAuth(pAuthTicket, cbAuthTicket, steamID );
+    return auth_manager->beginAuth(pAuthTicket, cbAuthTicket, steamID );
 }
 
 
@@ -592,7 +592,7 @@ void Steam_GameServer::EndAuthSession( CSteamID steamID )
         players.erase(player_it);
     }
 
-    ticket_manager->endAuth(steamID);
+    auth_manager->endAuth(steamID);
 }
 
 
@@ -602,7 +602,7 @@ void Steam_GameServer::CancelAuthTicket( HAuthTicket hAuthTicket )
     PRINT_DEBUG("Steam_GameServer::CancelAuthTicket\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    ticket_manager->cancelTicket(hAuthTicket);
+    auth_manager->cancelTicket(hAuthTicket);
 }
 
 
@@ -821,7 +821,7 @@ void Steam_GameServer::RunCallbacks()
         msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
         server_data.set_appid(settings->get_local_game_id().AppID());
         msg.set_allocated_gameserver(new Gameserver(server_data));
-        msg.mutable_gameserver()->set_num_players(ticket_manager->countInboundAuth());
+        msg.mutable_gameserver()->set_num_players(auth_manager->countInboundAuth());
         network->sendToAllIndividuals(&msg, true);
         last_sent_server_info = std::chrono::high_resolution_clock::now();
     }

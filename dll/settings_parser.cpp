@@ -264,7 +264,7 @@ static void load_gamecontroller_settings(Settings *settings)
             }
 
             settings->controller_settings.action_sets[action_set_name] = button_pairs;
-            PRINT_DEBUG("Added %u action names to %s\n", button_pairs.size(), action_set_name.c_str());
+            PRINT_DEBUG("Added %zu action names to %s\n", button_pairs.size(), action_set_name.c_str());
         }
     }
 
@@ -993,6 +993,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     bool disable_account_avatar = false;
     bool achievement_bypass = false;
     bool is_beta_branch = false;
+    bool use_gc_token = false;
+    bool enable_new_app_ticket = false;
     int build_id = 10;
 
     bool warn_forced = false;
@@ -1040,6 +1042,10 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
                 warn_forced = parse_force_listen_port(port, steam_settings_path);
             } else if (p == "build_id.txt") {
                 parse_build_id(build_id, steam_settings_path);
+            } else if (p == "new_app_ticket.txt") {
+                enable_new_app_ticket = true;
+            } else if (p == "gc_token.txt") {
+                use_gc_token = true;
             }
         }
     }
@@ -1082,6 +1088,10 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     settings_server->achievement_bypass = achievement_bypass;
     settings_client->is_beta_branch = is_beta_branch;
     settings_server->is_beta_branch = is_beta_branch;
+    settings_client->enable_new_app_ticket = enable_new_app_ticket;
+    settings_server->enable_new_app_ticket = enable_new_app_ticket;
+    settings_client->use_gc_token = use_gc_token;
+    settings_server->use_gc_token = use_gc_token;
 
     if (local_save) {
         settings_client->local_save = save_path;

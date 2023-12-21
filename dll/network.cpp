@@ -514,7 +514,7 @@ std::set<IP_PORT> Networking::resolve_ip(std::string dns)
 
     if (getaddrinfo(dns.c_str(), NULL, NULL, &result) == 0) {
         for (struct addrinfo *res = result; res != NULL; res = res->ai_next) {
-            PRINT_DEBUG("%u %u\n", res->ai_addrlen, res->ai_family);
+            PRINT_DEBUG("%zu %u\n", res->ai_addrlen, res->ai_family);
             if (res->ai_family == AF_INET) {
                 struct sockaddr_in *ipv4 = (struct sockaddr_in *)res->ai_addr;
                 uint32 ip;

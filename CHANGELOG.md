@@ -1,3 +1,10 @@
+## 2023/12/21
+
+* fixed print issues some places
+* added option to auth with new Ticket!
+
+---
+
 * `settings_parser.cpp`:
   - cleanup the settings parser code by split it into functions
   - increase the buffer size for `account_name` to 100 chars

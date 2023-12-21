@@ -254,6 +254,12 @@ public:
 
     //steam deck flag
     bool steam_deck = false;
+    
+    // can use GC token for generation
+    bool use_gc_token = false;
+
+    // use new app_ticket auth instead of old one
+    bool enable_new_app_ticket = false;
 };
 
 #endif

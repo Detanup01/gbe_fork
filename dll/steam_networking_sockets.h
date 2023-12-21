@@ -881,7 +881,7 @@ SteamNetworkingMessage_t *get_steam_message_connection(HSteamNetConnection hConn
     pMsg->m_pfnRelease = &delete_steam_message;
     pMsg->m_nChannel = 0;
     connect_socket->second.data.pop();
-    PRINT_DEBUG("get_steam_message_connection %u %u, %u\n", hConn, size, pMsg->m_nMessageNumber);
+    PRINT_DEBUG("get_steam_message_connection %u %lu, %I64\n", hConn, size, pMsg->m_nMessageNumber);
     return pMsg;
 }
 
@@ -2093,13 +2093,13 @@ void Callback(Common_Message *msg)
             auto connect_socket = s->connect_sockets.find(msg->networking_sockets().connection_id());
             if (connect_socket != s->connect_sockets.end()) {
                 if (connect_socket->second.remote_identity.GetSteamID64() == msg->source_id() && (connect_socket->second.status == CONNECT_SOCKET_CONNECTED)) {
-                    PRINT_DEBUG("Steam_Networking_Sockets: got data len %u, num %u on connection %u\n", msg->networking_sockets().data().size(), msg->networking_sockets().message_number(), connect_socket->first);
+                    PRINT_DEBUG("Steam_Networking_Sockets: got data len %zu, num %I64u on connection %u\n", msg->networking_sockets().data().size(), msg->networking_sockets().message_number(), connect_socket->first);
                     connect_socket->second.data.push(msg->networking_sockets());
                 }
             } else {
                 connect_socket = std::find_if(s->connect_sockets.begin(), s->connect_sockets.end(), [msg](const auto &in) {return in.second.remote_identity.GetSteamID64() == msg->source_id() && (in.second.status == CONNECT_SOCKET_NOT_ACCEPTED || in.second.status == CONNECT_SOCKET_CONNECTED) && in.second.remote_id == msg->networking_sockets().connection_id_from();});
                 if (connect_socket != s->connect_sockets.end()) {
-                    PRINT_DEBUG("Steam_Networking_Sockets: got data len %u, num %u on not accepted connection %u\n", msg->networking_sockets().data().size(), msg->networking_sockets().message_number(), connect_socket->first);
+                    PRINT_DEBUG("Steam_Networking_Sockets: got data len %zu, num %I64u on not accepted connection %u\n", msg->networking_sockets().data().size(), msg->networking_sockets().message_number(), connect_socket->first);
                     connect_socket->second.data.push(msg->networking_sockets());
                 }
             }

@@ -508,7 +508,7 @@ gameserveritem_t *Steam_Matchmaking_Servers::GetServerDetails( HServerListReques
         PRINT_DEBUG("equal? %p %p\n", hRequest, g->id);
         if (g->id == hRequest) {
             gameservers_filtered = g->gameservers_filtered;
-            PRINT_DEBUG("found %u\n", gameservers_filtered.size());
+            PRINT_DEBUG("found %zu\n", gameservers_filtered.size());
             break;
         }
 

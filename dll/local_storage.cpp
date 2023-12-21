@@ -739,7 +739,7 @@ bool Local_Storage::load_json(std::string full_path, nlohmann::json& json)
 
         try {
             json = std::move(nlohmann::json::parse(buffer));
-            PRINT_DEBUG("Loaded json \"%s\". Loaded %u items.\n", full_path.c_str(), json.size());
+            PRINT_DEBUG("Loaded json \"%s\". Loaded %zu items.\n", full_path.c_str(), json.size());
             return true;
         } catch (std::exception& e) {
             PRINT_DEBUG("Error while parsing \"%s\" json: %s\n", full_path.c_str(), e.what());

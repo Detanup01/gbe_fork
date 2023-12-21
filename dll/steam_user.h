@@ -16,7 +16,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "base.h"
-
+#include "auth.h"
 #include "appticket.h"
 
 class Steam_User :
@@ -44,7 +44,7 @@ public ISteamUser
 	bool recording = false;
 	std::chrono::high_resolution_clock::time_point last_get_voice;
 	std::string encrypted_app_ticket;
-	Auth_Ticket_Manager *ticket_manager;
+	Auth_Manager *auth_manager;
 
 public:
 
@@ -56,12 +56,12 @@ Steam_User(Settings *settings, Local_Storage *local_storage, class Networking *n
     this->callbacks = callbacks;
     this->callback_results = callback_results;
     recording = false;
-    ticket_manager = new Auth_Ticket_Manager(settings, network, callbacks);
+    auth_manager = new Auth_Manager(settings, network, callbacks);
 }
 
 ~Steam_User()
 {
-    delete ticket_manager;
+    delete auth_manager;
 }
 
 // returns the HSteamUser this interface represents
@@ -116,7 +116,7 @@ int InitiateGameConnection( void *pAuthBlob, int cbMaxAuthBlob, CSteamID steamID
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (cbMaxAuthBlob < INITIATE_GAME_CONNECTION_TICKET_SIZE) return 0;
     uint32 out_size = INITIATE_GAME_CONNECTION_TICKET_SIZE;
-    ticket_manager->getTicketData(pAuthBlob, INITIATE_GAME_CONNECTION_TICKET_SIZE, &out_size);
+    auth_manager->getTicketData(pAuthBlob, INITIATE_GAME_CONNECTION_TICKET_SIZE, &out_size);
     return out_size;
 }
 
@@ -311,7 +311,7 @@ HAuthTicket GetAuthSessionTicket( void *pTicket, int cbMaxTicket, uint32 *pcbTic
     PRINT_DEBUG("Steam_User::GetAuthSessionTicket %i\n", cbMaxTicket);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    return ticket_manager->getTicket(pTicket, cbMaxTicket, pcbTicket);
+    return auth_manager->getTicket(pTicket, cbMaxTicket, pcbTicket);
 }
 
 // Request a ticket which will be used for webapi "ISteamUserAuth\AuthenticateUserTicket"
@@ -322,7 +322,7 @@ HAuthTicket GetAuthTicketForWebApi( const char *pchIdentity )
     PRINT_DEBUG("Steam_User::GetAuthTicketForWebApi %s\n", pchIdentity);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    return ticket_manager->getWebApiTicket(pchIdentity);
+    return auth_manager->getWebApiTicket(pchIdentity);
 }
 
 // Authenticate ticket from entity steamID to be sure it is valid and isnt reused
@@ -332,7 +332,7 @@ EBeginAuthSessionResult BeginAuthSession( const void *pAuthTicket, int cbAuthTic
     PRINT_DEBUG("Steam_User::BeginAuthSession %i %llu\n", cbAuthTicket, steamID.ConvertToUint64());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    return ticket_manager->beginAuth(pAuthTicket, cbAuthTicket, steamID);
+    return auth_manager->beginAuth(pAuthTicket, cbAuthTicket, steamID);
 }
 
 // Stop tracking started by BeginAuthSession - called when no longer playing game with this entity
@@ -341,7 +341,7 @@ void EndAuthSession( CSteamID steamID )
     PRINT_DEBUG("Steam_User::EndAuthSession\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    ticket_manager->endAuth(steamID);
+    auth_manager->endAuth(steamID);
 }
 
 // Cancel auth ticket from GetAuthSessionTicket, called when no longer playing game with the entity you gave the ticket to
@@ -350,7 +350,7 @@ void CancelAuthTicket( HAuthTicket hAuthTicket )
     PRINT_DEBUG("Steam_User::CancelAuthTicket\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    ticket_manager->cancelTicket(hAuthTicket);
+    auth_manager->cancelTicket(hAuthTicket);
 }
 
 // After receiving a user's authentication data, and passing it to BeginAuthSession, use this function

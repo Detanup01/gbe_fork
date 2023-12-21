@@ -16,7 +16,8 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "base.h"
- 
+#include "auth.h"
+
 //-----------------------------------------------------------------------------
 // Purpose: Functions for authenticating users via Steam to play on a game server
 //-----------------------------------------------------------------------------
@@ -62,7 +63,7 @@ public ISteamGameServer
     bool policy_response_called;
 
     std::chrono::high_resolution_clock::time_point last_sent_server_info;
-    Auth_Ticket_Manager *ticket_manager;
+    Auth_Manager *auth_manager;
 
     std::vector<struct Gameserver_Outgoing_Packet> outgoing_packets;
 public:

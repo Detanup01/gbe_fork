@@ -118,7 +118,7 @@ int generate_random_int() {
     return a;
 }
 
-static uint32 generate_steam_ticket_id() {
+uint32 generate_steam_ticket_id() {
     /* not random starts with 2? */
     static uint32 a = 1;
     ++a;
@@ -140,7 +140,7 @@ CSteamID generate_steam_id_user()
     return CSteamID(generate_account_id(), k_unSteamUserDefaultInstance, k_EUniversePublic, k_EAccountTypeIndividual);
 }
 
-static CSteamID generate_steam_anon_user()
+CSteamID generate_steam_anon_user()
 {
     return CSteamID(generate_account_id(), k_unSteamUserDefaultInstance, k_EUniversePublic, k_EAccountTypeAnonUser);
 }
@@ -158,6 +158,22 @@ CSteamID generate_steam_id_anonserver()
 CSteamID generate_steam_id_lobby()
 {
     return CSteamID(generate_account_id(), k_EChatInstanceFlagLobby | k_EChatInstanceFlagMMSLobby, k_EUniversePublic, k_EAccountTypeChat);
+}
+
+std::string uint8_vector_to_hex_string(std::vector<uint8_t>& v)
+{
+    std::string result;
+    result.reserve(v.size() * 2);   // two digits per character
+
+    static constexpr char hex[] = "0123456789ABCDEF";
+
+    for (uint8_t c : v)
+    {
+        result.push_back(hex[c / 16]);
+        result.push_back(hex[c % 16]);
+    }
+
+    return result;
 }
 
 bool check_timedout(std::chrono::high_resolution_clock::time_point old, double timeout)
