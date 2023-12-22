@@ -321,28 +321,44 @@ struct Auth_Data {
 
     std::vector<uint8_t> Serialize()
     {
-        std::vector<uint8_t> buffer;
-        uint8_t* pBuffer;
-        
+        const uint64_t steam_id = id.ConvertToUint64();
+
+        PRINT_DEBUG(
+            "AUTH::Auth_Data::SER:\n"
+            "  HasGC: %u\n"
+            "  user steam_id: %I64u\n"
+            "  number: %llu\n",
+
+            (int)HasGC,
+            steam_id,
+            number
+        );
+
         std::vector<uint8_t> tickedData = Ticket.Serialize();
-        uint32_t size = tickedData.size() + 4;
-        std::vector<uint8_t> GCData;    
+        size_t size = tickedData.size() + 4;
+        std::vector<uint8_t> GCData;
         if (HasGC)
         {
             GCData = GC.Serialize();
             size += GCData.size() + 4;
         }
-        PRINT_DEBUG("Ticket Ser Size: %u\n", size);
-        buffer.resize(size+STEAM_APPTICKET_SIGLEN);
-        pBuffer = buffer.data();
+        PRINT_DEBUG("AUTH::Auth_Data::SER final size = %zu\n", size);
+        
+        std::vector<uint8_t> buffer;
+        buffer.resize(size + STEAM_APPTICKET_SIGLEN);
+        uint8_t* pBuffer = buffer.data();
+
         if (HasGC)
         {
             memcpy(pBuffer, GCData.data(), GCData.size());
             pBuffer+= GCData.size();
-            *reinterpret_cast<uint32_t*>(pBuffer) = (128+tickedData.size()+4);      pBuffer += 4;
+
+            *reinterpret_cast<uint32_t*>(pBuffer) = (128+tickedData.size()+4);
+            pBuffer += 4;
         }
         
-        *reinterpret_cast<uint32_t*>(pBuffer) = (tickedData.size()+4);      pBuffer += 4;      
+        *reinterpret_cast<uint32_t*>(pBuffer) = (tickedData.size()+4);
+        pBuffer += 4;      
         memcpy(pBuffer, tickedData.data(), tickedData.size());
         
 #ifndef EMU_RELEASE_BUILD
