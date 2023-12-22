@@ -68,13 +68,13 @@ Auth_Data Auth_Manager::getTicketData( void *pTicket, int cbMaxTicket, uint32 *p
 #define IP4_AS_DWORD_LITTLE_ENDIAN(a,b,c,d) (((uint32_t)d)<<24 | ((uint32_t)c)<<16 | ((uint32_t)b)<<8 | (uint32_t)a)
 
     Auth_Data ticket_data;
-    uint64 steam_id = settings->get_local_steam_id().ConvertToUint64();
+    CSteamID steam_id = settings->get_local_steam_id();
     if (settings->enable_new_app_ticket)
     {
-        ticket_data.id = settings->get_local_steam_id();
+        ticket_data.id = steam_id;
         ticket_data.number = generate_steam_ticket_id();
         ticket_data.Ticket.Version = 4;
-        ticket_data.Ticket.id = settings->get_local_steam_id();
+        ticket_data.Ticket.id = steam_id;
         ticket_data.Ticket.AppId = settings->get_local_game_id().AppID();
         ticket_data.Ticket.ExternalIP = IP4_AS_DWORD_LITTLE_ENDIAN(127, 0, 0, 1); //TODO
         ticket_data.Ticket.InternalIP = IP4_AS_DWORD_LITTLE_ENDIAN(127, 0, 0, 1);
@@ -104,7 +104,7 @@ Auth_Data Auth_Manager::getTicketData( void *pTicket, int cbMaxTicket, uint32 *p
         {
             ticket_data.HasGC = true;
             ticket_data.GC.GCToken = generate_random_int();
-            ticket_data.GC.id = settings->get_local_steam_id();
+            ticket_data.GC.id = steam_id;
             ticket_data.GC.ticketGenDate = (uint32_t)GenDate.count();
             ticket_data.GC.ExternalIP = IP4_AS_DWORD_LITTLE_ENDIAN(127, 0, 0, 1);
             ticket_data.GC.InternalIP = IP4_AS_DWORD_LITTLE_ENDIAN(127, 0, 0, 1);
@@ -122,10 +122,11 @@ Auth_Data Auth_Manager::getTicketData( void *pTicket, int cbMaxTicket, uint32 *p
         ((char *)pTicket)[1] = 0;
         ((char *)pTicket)[2] = 0;
         ((char *)pTicket)[3] = 0;
-        memcpy((char *)pTicket + STEAM_ID_OFFSET_TICKET, &steam_id, sizeof(steam_id));
+        uint64 steam_id_buff = steam_id.ConvertToUint64();
+        memcpy((char *)pTicket + STEAM_ID_OFFSET_TICKET, &steam_id_buff, sizeof(steam_id_buff));
         *pcbTicket = cbMaxTicket;
 
-        ticket_data.id = settings->get_local_steam_id();
+        ticket_data.id = steam_id;
         ticket_data.number = generate_steam_ticket_id();
         uint32 ttt = ticket_data.number;
 
