@@ -217,6 +217,22 @@ static inline void thisThreadYieldFor(std::chrono::microseconds u)
     PRINT_DEBUG("Thread finished waiting\n");
 }
 
+static std::string uint8_vector_to_hex_string(std::vector<uint8_t>& v)
+{
+    std::string result;
+    result.reserve(v.size() * 2);   // two digits per character
+
+    static constexpr char hex[] = "0123456789ABCDEF";
+
+    for (uint8_t c : v)
+    {
+        result.push_back(hex[c / 16]);
+        result.push_back(hex[c % 16]);
+    }
+
+    return result;
+}
+
 // Emulator includes
 // add them here after the inline functions definitions
 #include "net.pb.h"

@@ -19,8 +19,7 @@
 
 #ifdef __WINDOWS__
 
-static void
-randombytes(char * const buf, const size_t size)
+void randombytes(char *buf, size_t size)
 {
     // NT_SUCCESS is: return value >= 0, including Ntdef.h causes so many errors
     while (BCryptGenRandom(NULL, (PUCHAR) buf, (ULONG) size, BCRYPT_USE_SYSTEM_PREFERRED_RNG) < 0) {
@@ -51,7 +50,7 @@ bool set_env_variable(std::string name, std::string value)
 
 static int fd = -1;
 
-static void randombytes(char *buf, size_t size)
+void randombytes(char *buf, size_t size)
 {
   int i;
 
@@ -104,29 +103,7 @@ const std::chrono::time_point<std::chrono::system_clock> startup_time = std::chr
 const std::string dbg_log_file = get_full_program_path() + "STEAM_LOG.txt";
 #endif
 
-SteamAPICall_t generate_steam_api_call_id() {
-    static SteamAPICall_t a;
-    randombytes((char *)&a, sizeof(a));
-    ++a;
-    if (a == 0) ++a;
-    return a;
-}
-
-int generate_random_int() {
-    int a;
-    randombytes((char *)&a, sizeof(a));
-    return a;
-}
-
-uint32 generate_steam_ticket_id() {
-    /* not random starts with 2? */
-    static uint32 a = 1;
-    ++a;
-    if (a == 0) ++a;
-    return a;
-}
-
-static unsigned generate_account_id()
+unsigned generate_account_id()
 {
     int a;
     randombytes((char *)&a, sizeof(a));
@@ -135,14 +112,22 @@ static unsigned generate_account_id()
     return a;
 }
 
-CSteamID generate_steam_id_user()
-{
-    return CSteamID(generate_account_id(), k_unSteamUserDefaultInstance, k_EUniversePublic, k_EAccountTypeIndividual);
-}
-
 CSteamID generate_steam_anon_user()
 {
     return CSteamID(generate_account_id(), k_unSteamUserDefaultInstance, k_EUniversePublic, k_EAccountTypeAnonUser);
+}
+
+SteamAPICall_t generate_steam_api_call_id() {
+    static SteamAPICall_t a;
+    randombytes((char *)&a, sizeof(a));
+    ++a;
+    if (a == 0) ++a;
+    return a;
+}
+
+CSteamID generate_steam_id_user()
+{
+    return CSteamID(generate_account_id(), k_unSteamUserDefaultInstance, k_EUniversePublic, k_EAccountTypeIndividual);
 }
 
 CSteamID generate_steam_id_server()
@@ -158,22 +143,6 @@ CSteamID generate_steam_id_anonserver()
 CSteamID generate_steam_id_lobby()
 {
     return CSteamID(generate_account_id(), k_EChatInstanceFlagLobby | k_EChatInstanceFlagMMSLobby, k_EUniversePublic, k_EAccountTypeChat);
-}
-
-std::string uint8_vector_to_hex_string(std::vector<uint8_t>& v)
-{
-    std::string result;
-    result.reserve(v.size() * 2);   // two digits per character
-
-    static constexpr char hex[] = "0123456789ABCDEF";
-
-    for (uint8_t c : v)
-    {
-        result.push_back(hex[c / 16]);
-        result.push_back(hex[c % 16]);
-    }
-
-    return result;
 }
 
 bool check_timedout(std::chrono::high_resolution_clock::time_point old, double timeout)

@@ -1,5 +1,21 @@
 #include "auth.h"
 
+static inline int generate_random_int() {
+    int a;
+    randombytes((char *)&a, sizeof(a));
+    return a;
+}
+
+static uint32 generate_steam_ticket_id() {
+    /* not random starts with 2? */
+    static uint32 a = 1;
+    ++a;
+    // this must never return 0, it is reserved for "k_HAuthTicketInvalid" when the auth APIs fail
+    if (a == 0) ++a;
+    return a;
+}
+
+
 static void steam_auth_manager_ticket_callback(void *object, Common_Message *msg)
 {
     PRINT_DEBUG("steam_auth_manager_ticket_callback\n");

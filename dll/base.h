@@ -26,6 +26,7 @@ extern std::recursive_mutex global_mutex;
 extern const std::chrono::time_point<std::chrono::high_resolution_clock> startup_counter;
 extern const std::chrono::time_point<std::chrono::system_clock> startup_time;
 
+void randombytes(char *buf, size_t size);
 std::string get_env_variable(std::string name);
 bool set_env_variable(std::string name, std::string value);
 bool check_timedout(std::chrono::high_resolution_clock::time_point old, double timeout);
@@ -94,15 +95,13 @@ struct Steam_Call_Result {
     int iCallback;
 };
 
-uint32 generate_steam_ticket_id();
-int generate_random_int();
+unsigned generate_account_id();
+CSteamID generate_steam_anon_user();
 SteamAPICall_t generate_steam_api_call_id();
 CSteamID generate_steam_id_user();
-CSteamID generate_steam_anon_user();
 CSteamID generate_steam_id_server();
 CSteamID generate_steam_id_anonserver();
 CSteamID generate_steam_id_lobby();
-std::string uint8_vector_to_hex_string(std::vector<uint8_t>& v);
 std::string get_full_lib_path();
 std::string get_full_program_path();
 std::string get_current_path();
@@ -305,7 +304,6 @@ public:
         }
     }
 };
-
 
 struct Steam_Call_Back {
     std::vector<class CCallbackBase *> callbacks;
