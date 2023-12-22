@@ -1,3 +1,5 @@
+// source of the data: https://github.com/Detanup01/stmsrv/blob/main/Steam3Server/Others/AppTickets.cs
+
 #ifndef AUTH_INCLUDE
 #define AUTH_INCLUDE
 
@@ -321,6 +323,35 @@ struct Auth_Data {
 
     std::vector<uint8_t> Serialize()
     {
+        /*
+         * layout of Auth_Data with GC:
+         * ------------------------
+         * X bytes: GC data blob (currently 52 bytes)
+         * ------------------------
+         * 4 bytes: remaining Auth_Data blob size (4 + Y + Z)
+         * ------------------------
+         * 4 bytes: size of ticket data layout (not blob!, hence blob + 4)
+         * ------------------------
+         * Y bytes: ticket data blob
+         * ------------------------
+         * Z bytes: App Ticket signature
+         * ------------------------
+         * 
+         * total layout length = X + 4 + 4 + Y + Z
+         */
+        
+        /*
+         * layout of Auth_Data without GC:
+         * ------------------------
+         * 4 bytes: size of ticket data layout (not blob!, hence blob + 4)
+         * ------------------------
+         * Y bytes: ticket data blob
+         * ------------------------
+         * Z bytes: App Ticket signature
+         * ------------------------
+         * 
+         * total layout length = 4 + Y + Z
+         */
         const uint64_t steam_id = id.ConvertToUint64();
 
         PRINT_DEBUG(
@@ -334,31 +365,81 @@ struct Auth_Data {
             number
         );
 
+        /*
+         * layout of ticket data:
+         * ------------------------
+         * 4 bytes: size of ticket data layout (not blob!, hence blob + 4)
+         * ------------------------
+         * Y bytes: ticket data blob
+         * ------------------------
+         * 
+         * total layout length = 4 + Y
+         */
         std::vector<uint8_t> tickedData = Ticket.Serialize();
-        size_t size = tickedData.size() + 4;
+        // we need this variable because we depend on the sizeof, must be 4 bytes
+        const uint32_t ticket_data_layout_length =
+            sizeof(uint32_t) +
+            (uint32_t)tickedData.size();
+
+        size_t total_size_without_siglen = ticket_data_layout_length;
+
         std::vector<uint8_t> GCData;
+        size_t gc_data_layout_length = 0;
         if (HasGC)
         {
+            /*
+             * layout of GC data:
+             * ------------------------
+             * X bytes: GC data blob (currently 52 bytes)
+             * ------------------------
+             * 4 bytes: remaining Auth_Data blob size
+             * ------------------------
+             * 
+             * total layout length = X + 4
+             */
             GCData = GC.Serialize();
-            size += GCData.size() + 4;
+            gc_data_layout_length +=
+                GCData.size() +
+                sizeof(uint32_t);
+            
+            total_size_without_siglen += gc_data_layout_length;
         }
-        PRINT_DEBUG("AUTH::Auth_Data::SER final size = %zu\n", size);
+
+        const size_t final_buffer_size = total_size_without_siglen + STEAM_APPTICKET_SIGLEN;
+        PRINT_DEBUG(
+            "AUTH::Auth_Data::SER size without sig len = %zu, size with sig len (final size) = %zu\n",
+            total_size_without_siglen,
+            final_buffer_size
+        );
         
         std::vector<uint8_t> buffer;
-        buffer.resize(size + STEAM_APPTICKET_SIGLEN);
-        uint8_t* pBuffer = buffer.data();
+        buffer.resize(final_buffer_size);
 
+        uint8_t* pBuffer = buffer.data();
+        
+#define SER_VAR(v) \
+    *reinterpret_cast<std::remove_const<decltype(v)>::type *>(pBuffer) = v; \
+    pBuffer += sizeof(v)
+    
+        // serialize the GC data first
         if (HasGC)
         {
             memcpy(pBuffer, GCData.data(), GCData.size());
-            pBuffer+= GCData.size();
+            pBuffer += GCData.size();
 
-            *reinterpret_cast<uint32_t*>(pBuffer) = (128+tickedData.size()+4);
-            pBuffer += 4;
+            // when GC data is written (HasGC),
+            // the next 4 bytes after the GCData will be the length of the remaining data in the final buffer
+            // i.e. final buffer size - length of GCData layout
+            // i.e. ticket data length + STEAM_APPTICKET_SIGLEN
+            //
+            // notice that we subtract the entire layout length, not just GCData.size(),
+            // otherwise these next 4 bytes will include themselves!
+            uint32_t remaining_length = (uint32_t)(final_buffer_size - gc_data_layout_length);
+            SER_VAR(remaining_length);
         }
         
-        *reinterpret_cast<uint32_t*>(pBuffer) = (tickedData.size()+4);
-        pBuffer += 4;      
+        // serialize the ticket data
+        SER_VAR(ticket_data_layout_length);
         memcpy(pBuffer, tickedData.data(), tickedData.size());
         
 #ifndef EMU_RELEASE_BUILD
@@ -368,6 +449,8 @@ struct Auth_Data {
 #endif
 
         //Todo make a signature
+#undef SER_VAR
+
         return buffer;
     }
 };
