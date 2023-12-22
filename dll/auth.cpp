@@ -61,8 +61,12 @@ void Auth_Manager::launch_callback_gs(CSteamID id, bool approved)
 #define STEAM_ID_OFFSET_TICKET (4 + 8)
 #define STEAM_TICKET_MIN_SIZE  (4 + 8 + 8)
 #define STEAM_TICKET_MIN_SIZE_NEW 170
+
 Auth_Data Auth_Manager::getTicketData( void *pTicket, int cbMaxTicket, uint32 *pcbTicket )
 {
+
+#define IP4_AS_DWORD_LITTLE_ENDIAN(a,b,c,d) (((uint32_t)d)<<24 | ((uint32_t)c)<<16 | ((uint32_t)b)<<8 | (uint32_t)a)
+
     Auth_Data ticket_data;
     uint64 steam_id = settings->get_local_steam_id().ConvertToUint64();
     if (settings->enable_new_app_ticket)
@@ -72,8 +76,8 @@ Auth_Data Auth_Manager::getTicketData( void *pTicket, int cbMaxTicket, uint32 *p
         ticket_data.Ticket.Version = 4;
         ticket_data.Ticket.id = settings->get_local_steam_id();
         ticket_data.Ticket.AppId = settings->get_local_game_id().AppID();
-        ticket_data.Ticket.ExternalIP = 16777343; //127.0.0.1
-        ticket_data.Ticket.InternalIP = 16777343; //127.0.0.1
+        ticket_data.Ticket.ExternalIP = IP4_AS_DWORD_LITTLE_ENDIAN(127, 0, 0, 1); //TODO
+        ticket_data.Ticket.InternalIP = IP4_AS_DWORD_LITTLE_ENDIAN(127, 0, 0, 1);
         ticket_data.Ticket.AlwaysZero = 0;
         const auto curTime = std::chrono::system_clock::now();
         const auto GenDate = std::chrono::duration_cast<std::chrono::seconds>(curTime.time_since_epoch()).count();
@@ -102,9 +106,9 @@ Auth_Data Auth_Manager::getTicketData( void *pTicket, int cbMaxTicket, uint32 *p
             ticket_data.GC.GCToken = generate_random_int();
             ticket_data.GC.id = settings->get_local_steam_id();
             ticket_data.GC.ticketGenDate = GenDate;
-            ticket_data.GC.ExternalIP = 16777343;
-            ticket_data.GC.InternalIP = 16777343;
             ticket_data.GC.TimeSinceStartup = generate_random_int();
+            ticket_data.GC.ExternalIP = IP4_AS_DWORD_LITTLE_ENDIAN(127, 0, 0, 1);
+            ticket_data.GC.InternalIP = IP4_AS_DWORD_LITTLE_ENDIAN(127, 0, 0, 1);
             ticket_data.GC.TicketGeneratedCount = 1;
         }
         std::vector<uint8_t> ser = ticket_data.Serialize();
@@ -127,8 +131,12 @@ Auth_Data Auth_Manager::getTicketData( void *pTicket, int cbMaxTicket, uint32 *p
 
         memcpy(((char *)pTicket) + sizeof(uint64), &ttt, sizeof(ttt));
     }
+
+#undef IP4_AS_DWORD_LITTLE_ENDIAN
+
     return ticket_data;
 }
+
 //Conan Exiles doesn't work with 512 or 128, 256 seems to be the good size
 //Steam returns 234
 #define STEAM_AUTH_TICKET_SIZE 256 //234
