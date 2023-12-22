@@ -85,7 +85,7 @@ Auth_Data Auth_Manager::getTicketData( void *pTicket, int cbMaxTicket, uint32 *p
         uint32_t expTime = (uint32_t)(GenDate + std::chrono::hours(24)).count();
         ticket_data.Ticket.TicketGeneratedExpireDate = expTime;
         ticket_data.Ticket.Licenses.resize(0);
-        ticket_data.Ticket.Licenses.push_back(0);
+        ticket_data.Ticket.Licenses.push_back(0); //TODO
         unsigned int dlcCount = settings->DLCCount();
         ticket_data.Ticket.DLCs.resize(0);  //currently set to 0
         for (int i = 0; i < dlcCount; ++i)
@@ -96,7 +96,7 @@ Auth_Data Auth_Manager::getTicketData( void *pTicket, int cbMaxTicket, uint32 *p
             std::string name;
             if (!settings->getDLC(i, appid, available, name)) break;
             dlc.AppId = (uint32_t)appid;
-            dlc.Licenses.resize(0);
+            dlc.Licenses.resize(0); //TODO
             ticket_data.Ticket.DLCs.push_back(dlc);
         }
         ticket_data.HasGC = false;
