@@ -88,7 +88,7 @@ Auth_Data Auth_Manager::getTicketData( void *pTicket, int cbMaxTicket, uint32 *p
         ticket_data.Ticket.Licenses.push_back(0);
         unsigned int dlcCount = settings->DLCCount();
         ticket_data.Ticket.DLCs.resize(0);  //currently set to 0
-        for (int i = 0; i <= dlcCount; ++i)
+        for (int i = 0; i < dlcCount; ++i)
         {
             DLC dlc;
             AppId_t appid;
