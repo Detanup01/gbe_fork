@@ -59,13 +59,16 @@ struct AppTicketGC {
     uint64_t GCToken;
     CSteamID id;
     uint32_t ticketGenDate; //epoch
-    uint32_t one = 1;
-    uint32_t two = 2;
     uint32_t ExternalIP;
     uint32_t InternalIP;
     uint32_t TimeSinceStartup;
     uint32_t TicketGeneratedCount;
 
+private:
+    uint32_t one = 1;
+    uint32_t two = 2;
+
+public:
     std::vector<uint8_t> Serialize()
     {
         std::vector<uint8_t> buffer;
