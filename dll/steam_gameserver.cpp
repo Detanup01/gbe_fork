@@ -554,6 +554,8 @@ HAuthTicket Steam_GameServer::GetAuthSessionTicket( void *pTicket, int cbMaxTick
     PRINT_DEBUG("Steam_GameServer::GetAuthSessionTicket\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
+    if (!pTicket) return k_HAuthTicketInvalid;
+    
     return auth_manager->getTicket(pTicket, cbMaxTicket, pcbTicket);
 }
 
