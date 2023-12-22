@@ -71,22 +71,70 @@ private:
 public:
     std::vector<uint8_t> Serialize()
     {
+        const uint64_t steam_id = id.ConvertToUint64();
+
+        // must be 52
+        constexpr size_t total_size = 
+            sizeof(STEAM_APPTICKET_GCLen) +
+            sizeof(GCToken) +
+            sizeof(steam_id) +
+            sizeof(ticketGenDate) +
+            sizeof(STEAM_APPTICKET_SESSIONLEN) +
+            sizeof(one) +
+            sizeof(two) +
+            sizeof(ExternalIP) +
+            sizeof(InternalIP) +
+            sizeof(TimeSinceStartup) +
+            sizeof(TicketGeneratedCount);
+
+        // check the size at compile time, we must ensure the correct size
+#ifndef EMU_RELEASE_BUILD
+            static_assert(
+                total_size == 52, 
+                "AUTH::AppTicketGC::SER calculated size of serialized data != 52 bytes, your compiler has some incorrect sizes"
+            );
+#endif
+
+        PRINT_DEBUG(
+            "AUTH::AppTicketGC::SER Token:\n"
+            "  GCToken: %I64u\n"
+            "  user steam_id: %I64u\n"
+            "  ticketGenDate: %u\n"
+            "  ExternalIP: 0x%08X, InternalIP: 0x%08X\n"
+            "  TimeSinceStartup: %u, TicketGeneratedCount: %u\n"
+            "  SER size = %zu\n",
+
+            GCToken,
+            steam_id,
+            ticketGenDate,
+            ExternalIP, InternalIP,
+            TimeSinceStartup, TicketGeneratedCount,
+            total_size
+        );
+        
         std::vector<uint8_t> buffer;
-        uint8_t* pBuffer;
-        buffer.resize(52);
-        pBuffer = buffer.data();
-        PRINT_DEBUG("AppTicketGC: Token: %I64u Startup: %u count: %u", GCToken, TimeSinceStartup, TicketGeneratedCount);
-        *reinterpret_cast<uint32_t*>(pBuffer) = STEAM_APPTICKET_GCLen;      pBuffer += 4;
-        *reinterpret_cast<uint64_t*>(pBuffer) = GCToken;      pBuffer += 8;
-        *reinterpret_cast<uint64_t*>(pBuffer) = id.ConvertToUint64();      pBuffer += 8;
-        *reinterpret_cast<uint32_t*>(pBuffer) = ticketGenDate;      pBuffer += 4;
-        *reinterpret_cast<uint32_t*>(pBuffer) = STEAM_APPTICKET_SESSIONLEN;      pBuffer += 4;
-        *reinterpret_cast<uint32_t*>(pBuffer) = one;      pBuffer += 4;
-        *reinterpret_cast<uint32_t*>(pBuffer) = two;      pBuffer += 4;
-        *reinterpret_cast<uint32_t*>(pBuffer) = ExternalIP;      pBuffer += 4;
-        *reinterpret_cast<uint32_t*>(pBuffer) = InternalIP;      pBuffer += 4;
-        *reinterpret_cast<uint32_t*>(pBuffer) = TimeSinceStartup;      pBuffer += 4;
-        *reinterpret_cast<uint32_t*>(pBuffer) = TicketGeneratedCount;      pBuffer += 4;
+        buffer.resize(total_size);
+        
+        uint8_t* pBuffer = buffer.data();
+
+#define SER_VAR(v) \
+    *reinterpret_cast<std::remove_const<decltype(v)>::type *>(pBuffer) = v; \
+    pBuffer += sizeof(v)
+    
+        SER_VAR(STEAM_APPTICKET_GCLen);
+        SER_VAR(GCToken);
+        SER_VAR(steam_id);
+        SER_VAR(ticketGenDate);
+        SER_VAR(STEAM_APPTICKET_SESSIONLEN);
+        SER_VAR(one);
+        SER_VAR(two);
+        SER_VAR(ExternalIP);
+        SER_VAR(InternalIP);
+        SER_VAR(TimeSinceStartup);
+        SER_VAR(TicketGeneratedCount);
+
+#undef SER_VAR
+
 #ifndef EMU_RELEASE_BUILD
         // we nedd a live object until the printf does its job, hence this special handling
         auto str = uint8_vector_to_hex_string(buffer);
