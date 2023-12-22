@@ -112,9 +112,10 @@ CSteamID GetSteamID()
 
 int InitiateGameConnection( void *pAuthBlob, int cbMaxAuthBlob, CSteamID steamIDGameServer, uint32 unIPServer, uint16 usPortServer, bool bSecure )
 {
-    PRINT_DEBUG("InitiateGameConnection %i %llu %u %u %u\n", cbMaxAuthBlob, steamIDGameServer.ConvertToUint64(), unIPServer, usPortServer, bSecure);
+    PRINT_DEBUG("InitiateGameConnection %i %llu %u %u %u %p\n", cbMaxAuthBlob, steamIDGameServer.ConvertToUint64(), unIPServer, usPortServer, bSecure, pAuthBlob);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (cbMaxAuthBlob < INITIATE_GAME_CONNECTION_TICKET_SIZE) return 0;
+    if (!pAuthBlob) return 0;
     uint32 out_size = INITIATE_GAME_CONNECTION_TICKET_SIZE;
     auth_manager->getTicketData(pAuthBlob, INITIATE_GAME_CONNECTION_TICKET_SIZE, &out_size);
     return out_size;
