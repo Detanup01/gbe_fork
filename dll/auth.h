@@ -159,47 +159,145 @@ struct AppTicket {
 
     std::vector<uint8_t> Serialize()
     {
-        std::vector<uint8_t> buffer;
-        uint8_t* pBuffer;
-        PRINT_DEBUG("AppTicket Licenses Size : %u, DLCs: %u\n",(uint16_t)Licenses.size(), (uint16_t)DLCs.size());
-        uint32_t licSize = Licenses.size() * 4;
-        uint32_t dlcSize = 0;
-        for(DLC dlc_s : DLCs)
-        {
-            dlcSize += 4;
-            dlcSize += 2;
-            dlcSize += (uint32_t)dlc_s.Licenses.size() * 4;
-        }
-        PRINT_DEBUG("AppTicket Size: %i \n" + (42 + licSize + dlcSize));
-        buffer.resize(42 + licSize+ dlcSize);
-        pBuffer = buffer.data();
-        *reinterpret_cast<uint32_t*>(pBuffer) = Version;      pBuffer += 4;
-        *reinterpret_cast<uint64_t*>(pBuffer) = id.ConvertToUint64();      pBuffer += 8;
-        *reinterpret_cast<uint32_t*>(pBuffer) = AppId;      pBuffer += 4;
-        *reinterpret_cast<uint32_t*>(pBuffer) = ExternalIP;      pBuffer += 4;
-        *reinterpret_cast<uint32_t*>(pBuffer) = InternalIP;      pBuffer += 4;
-        *reinterpret_cast<uint32_t*>(pBuffer) = AlwaysZero;      pBuffer += 4;
-        *reinterpret_cast<uint32_t*>(pBuffer) = TicketGeneratedDate;      pBuffer += 4;
-        *reinterpret_cast<uint32_t*>(pBuffer) = TicketGeneratedExpireDate;      pBuffer += 4;
-        PRINT_DEBUG("AppTicket SER (before): %s\n",uint8_vector_to_hex_string(buffer).c_str());
-        *reinterpret_cast<uint16_t*>(pBuffer) = (uint16_t)Licenses.size();      pBuffer += 2;
+        const uint64_t steam_id = id.ConvertToUint64();
 
+        PRINT_DEBUG(
+            "AUTH::AppTicket::SER:\n"
+            "  Version: %u\n"
+            "  user steam_id: %I64u\n"
+            "  AppId: %u\n"
+            "  ExternalIP: 0x%08X, InternalIP: 0x%08X\n"
+            "  TicketGeneratedDate: %u, TicketGeneratedExpireDate: %u\n"
+            "  Licenses count: %zu, DLCs count: %zu\n",
+
+            Version,
+            steam_id,
+            AppId,
+            ExternalIP, InternalIP,
+            TicketGeneratedDate, TicketGeneratedExpireDate,
+            Licenses.size(), DLCs.size()
+        );
+
+        // we need this variable because we depend on the sizeof, must be 2 bytes
+        const uint16_t licenses_count = (uint16_t)Licenses.size();
+        const size_t licenses_total_size =
+            Licenses.size() * sizeof(Licenses[0]); // total count * element size
+
+        // we need this variable because we depend on the sizeof, must be 2 bytes
+        const uint16_t dlcs_count = (uint16_t)DLCs.size();
+        size_t dlcs_total_size = 0;
+        std::vector<std::vector<uint8_t>> serialized_dlcs;
+        for (DLC &dlc : DLCs)
+        {
+            auto dlc_ser = dlc.Serialize();
+            dlcs_total_size += dlc_ser.size();
+            serialized_dlcs.push_back(dlc_ser);
+        }
+
+        //padding
+        constexpr uint16_t padding = (uint16_t)0;
+
+        // must be 42
+        constexpr size_t static_fields_size =
+            sizeof(Version) +
+            sizeof(steam_id) +
+            sizeof(AppId) +
+            sizeof(ExternalIP) +
+            sizeof(InternalIP) +
+            sizeof(AlwaysZero) +
+            sizeof(TicketGeneratedDate) +
+            sizeof(TicketGeneratedExpireDate) +
+
+            sizeof(licenses_count) +
+            sizeof(dlcs_count) +
+
+            sizeof(padding);
+
+        // check the size at compile time, we must ensure the correct size
+#ifndef EMU_RELEASE_BUILD
+            static_assert(
+                static_fields_size == 42, 
+                "AUTH::AppTicket::SER calculated size of serialized data != 42 bytes, your compiler has some incorrect sizes"
+            );
+#endif
+
+        const size_t total_size =
+            static_fields_size +
+            licenses_total_size +
+            dlcs_total_size;
+
+        PRINT_DEBUG("AUTH::AppTicket::SER final size = %zu\n", total_size);
+
+        std::vector<uint8_t> buffer;
+        buffer.resize(total_size);
+        uint8_t* pBuffer = buffer.data();
+
+#define SER_VAR(v) \
+    *reinterpret_cast<std::remove_const<decltype(v)>::type *>(pBuffer) = v; \
+    pBuffer += sizeof(v)
+    
+        SER_VAR(Version);
+        SER_VAR(steam_id);
+        SER_VAR(AppId);
+        SER_VAR(ExternalIP);
+        SER_VAR(InternalIP);
+        SER_VAR(AlwaysZero);
+        SER_VAR(TicketGeneratedDate);
+        SER_VAR(TicketGeneratedExpireDate);
+
+#ifndef EMU_RELEASE_BUILD
+        {
+            // we nedd a live object until the printf does its job, hence this special handling
+            auto str = uint8_vector_to_hex_string(buffer);
+            PRINT_DEBUG("AUTH::AppTicket::SER (before licenses + DLCs): %s\n", str.c_str());
+        }
+#endif
+
+        /*
+         * layout of licenses:
+         * ------------------------
+         * 2 bytes: count of licenses
+         * ------------------------
+         * [
+         *   ------------------------
+         *   | 4 bytes: license element
+         *   ------------------------
+         * ]
+        */
+        SER_VAR(licenses_count);
         for(uint32_t license : Licenses)
         {
-            *reinterpret_cast<uint32_t*>(pBuffer) = license;      pBuffer += 4;
-        }       
+            SER_VAR(license);
+        }        
 
-        *reinterpret_cast<uint16_t*>(pBuffer) = (uint16_t)DLCs.size();      pBuffer += 2;
-
-        for(DLC dlc : DLCs)
+        /*
+         * layout of DLCs:
+         * ------------------------
+         * | 2 bytes: count of DLCs
+         * ------------------------
+         * [
+         *   ------------------------
+         *   | 4 bytes: app id
+         *   ------------------------
+         *   | 2 bytes: DLC licenses count
+         *   ------------------------
+         *   [
+         *     4 bytes: DLC license element
+         *   ]
+         * ]
+         */
+        SER_VAR(dlcs_count);
+        for (std::vector<uint8_t> &dlc_ser : serialized_dlcs)
         {
-            *reinterpret_cast<uint32_t*>(pBuffer) = dlc.AppId;      pBuffer += 4;
-            *reinterpret_cast<uint16_t*>(pBuffer) = (uint16_t)dlc.Licenses.size();      pBuffer += 2;
+            memcpy(pBuffer, dlc_ser.data(), dlc_ser.size());
+            pBuffer += dlc_ser.size();
+        }
 
-            for(uint32_t dlc_license : dlc.Licenses)
-            {
-                *reinterpret_cast<uint32_t*>(pBuffer) = dlc_license;      pBuffer += 4;
-            }     
+        //padding
+        SER_VAR(padding);
+
+#undef SER_VAR
+
 #ifndef EMU_RELEASE_BUILD
         {
             // we nedd a live object until the printf does its job, hence this special handling
@@ -208,10 +306,10 @@ struct AppTicket {
         }
 #endif
 
-        *reinterpret_cast<uint16_t*>(pBuffer) = (uint16_t)0;      pBuffer += 2;   //padding
         return buffer;
     }
 };
+
 struct Auth_Data {
     bool HasGC;
     AppTicketGC GC;
