@@ -87,7 +87,12 @@ public:
         *reinterpret_cast<uint32_t*>(pBuffer) = InternalIP;      pBuffer += 4;
         *reinterpret_cast<uint32_t*>(pBuffer) = TimeSinceStartup;      pBuffer += 4;
         *reinterpret_cast<uint32_t*>(pBuffer) = TicketGeneratedCount;      pBuffer += 4;
-        PRINT_DEBUG("AppTicketGC SER: %s\n",uint8_vector_to_hex_string(buffer).c_str());
+#ifndef EMU_RELEASE_BUILD
+        // we nedd a live object until the printf does its job, hence this special handling
+        auto str = uint8_vector_to_hex_string(buffer);
+        PRINT_DEBUG("AUTH::AppTicketGC::SER final data [%zu bytes]: %s\n", buffer.size(), str.c_str());
+#endif
+
         return buffer;
     }
 };
@@ -147,10 +152,15 @@ struct AppTicket {
             {
                 *reinterpret_cast<uint32_t*>(pBuffer) = dlc_license;      pBuffer += 4;
             }     
+#ifndef EMU_RELEASE_BUILD
+        {
+            // we nedd a live object until the printf does its job, hence this special handling
+            auto str = uint8_vector_to_hex_string(buffer);
+            PRINT_DEBUG("AUTH::AppTicket::SER final data [%zu bytes]: %s\n", buffer.size(), str.c_str());
         }
+#endif
 
         *reinterpret_cast<uint16_t*>(pBuffer) = (uint16_t)0;      pBuffer += 2;   //padding
-        PRINT_DEBUG("AppTicket SER : %s\n",uint8_vector_to_hex_string(buffer).c_str());
         return buffer;
     }
 };
@@ -188,7 +198,13 @@ struct Auth_Data {
         
         *reinterpret_cast<uint32_t*>(pBuffer) = (tickedData.size()+4);      pBuffer += 4;      
         memcpy(pBuffer, tickedData.data(), tickedData.size());
-        PRINT_DEBUG("Auth_Data SER : %s\n",uint8_vector_to_hex_string(buffer).c_str());
+        
+#ifndef EMU_RELEASE_BUILD
+        // we nedd a live object until the printf does its job, hence this special handling
+        auto str = uint8_vector_to_hex_string(buffer);
+        PRINT_DEBUG("AUTH::Auth_Data::SER final data [%zu bytes]: %s\n", buffer.size(), str.c_str());
+#endif
+
         //Todo make a signature
         return buffer;
     }
