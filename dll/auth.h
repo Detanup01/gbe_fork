@@ -16,6 +16,42 @@
 struct DLC {
     uint32_t AppId;
     std::vector<uint32_t> Licenses;
+
+    std::vector<uint8_t> Serialize()
+    {
+        PRINT_DEBUG("AUTH::DLC::SER AppId = %u, Licenses count = %zu\n", AppId, Licenses.size());
+
+        // we need this variable because we depend on the sizeof, must be 2 bytes
+        const uint16_t dlcs_licenses_count = (uint16_t)Licenses.size();
+        const size_t dlcs_licenses_total_size =
+            Licenses.size() * sizeof(Licenses[0]); // count * element size
+
+        const size_t total_size =
+            sizeof(AppId) +
+            sizeof(dlcs_licenses_count) +
+            dlcs_licenses_total_size;
+
+        std::vector<uint8_t> buffer;
+        buffer.resize(total_size);
+        
+        uint8_t* pBuffer = buffer.data();
+
+#define SER_VAR(v) \
+    *reinterpret_cast<std::remove_const<decltype(v)>::type *>(pBuffer) = v; \
+    pBuffer += sizeof(v)
+    
+        SER_VAR(AppId);
+        SER_VAR(dlcs_licenses_count);
+        for(uint32_t dlc_license : Licenses)
+        {
+            SER_VAR(dlc_license);
+        }
+
+#undef SER_VAR
+
+        PRINT_DEBUG("AUTH::DLC::SER final size = %zu\n", buffer.size());
+        return buffer;
+    }
 };
 
 struct AppTicketGC {
