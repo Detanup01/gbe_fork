@@ -9,9 +9,10 @@
 #include <string>
 #include <iostream>
 
-#define STEAM_APPTICKET_SIGLEN 128
-#define STEAM_APPTICKET_GCLen 20
-#define STEAM_APPTICKET_SESSIONLEN 24
+// the data type is important, we depend on sizeof() for each one of them
+constexpr uint32_t STEAM_APPTICKET_SIGLEN = 128;
+constexpr uint32_t STEAM_APPTICKET_GCLen = 20;
+constexpr uint32_t STEAM_APPTICKET_SESSIONLEN = 24;
 
 struct DLC {
     uint32_t AppId;
@@ -55,7 +56,7 @@ struct DLC {
 };
 
 struct AppTicketGC {
-    uint64 GCToken;
+    uint64_t GCToken;
     CSteamID id;
     uint32_t ticketGenDate; //epoch
     uint32_t one = 1;
@@ -156,7 +157,7 @@ struct Auth_Data {
     AppTicket Ticket;
     //old data
     CSteamID id;
-    uint64 number;
+    uint64_t number;
     std::chrono::high_resolution_clock::time_point created;
 
     std::vector<uint8_t> Serialize()
@@ -199,7 +200,8 @@ class Auth_Manager {
 
     void launch_callback(CSteamID id, EAuthSessionResponse resp, double delay=0);
     void launch_callback_gs(CSteamID id, bool approved);
-    std::vector<struct Auth_Data> inbound, outbound;
+    std::vector<struct Auth_Data> inbound;
+    std::vector<struct Auth_Data> outbound;
 public:
     Auth_Manager(class Settings *settings, class Networking *network, class SteamCallBacks *callbacks);
 
@@ -215,4 +217,4 @@ public:
     Auth_Data getTicketData( void *pTicket, int cbMaxTicket, uint32 *pcbTicket );
 };
 
-#endif
+#endif // AUTH_INCLUDE
