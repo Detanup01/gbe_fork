@@ -399,35 +399,6 @@ public:
     }
 };
 
-struct Auth_Ticket_Data {
-    CSteamID id;
-    uint64 number;
-    std::chrono::high_resolution_clock::time_point created;
-};
-
-class Auth_Ticket_Manager {
-    class Settings *settings;
-    class Networking *network;
-    class SteamCallBacks *callbacks;
-
-    void launch_callback(CSteamID id, EAuthSessionResponse resp, double delay=0);
-    void launch_callback_gs(CSteamID id, bool approved);
-    std::vector<struct Auth_Ticket_Data> inbound, outbound;
-public:
-    Auth_Ticket_Manager(class Settings *settings, class Networking *network, class SteamCallBacks *callbacks);
-
-    void Callback(Common_Message *msg);
-    uint32 getTicket( void *pTicket, int cbMaxTicket, uint32 *pcbTicket );
-    uint32 getWebApiTicket( const char *pchIdentity );
-    void cancelTicket(uint32 number);
-    EBeginAuthSessionResult beginAuth(const void *pAuthTicket, int cbAuthTicket, CSteamID steamID);
-    bool endAuth(CSteamID id);
-    uint32 countInboundAuth();
-    bool SendUserConnectAndAuthenticate( uint32 unIPClient, const void *pvAuthBlob, uint32 cubAuthBlobSize, CSteamID *pSteamIDUser );
-    CSteamID fakeUser();
-    Auth_Ticket_Data getTicketData( void *pTicket, int cbMaxTicket, uint32 *pcbTicket );
-};
-
 struct RunCBs {
     void (*function)(void *object);
     void *object;
