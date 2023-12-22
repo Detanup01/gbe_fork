@@ -80,9 +80,9 @@ Auth_Data Auth_Manager::getTicketData( void *pTicket, int cbMaxTicket, uint32 *p
         ticket_data.Ticket.InternalIP = IP4_AS_DWORD_LITTLE_ENDIAN(127, 0, 0, 1);
         ticket_data.Ticket.AlwaysZero = 0;
         const auto curTime = std::chrono::system_clock::now();
-        const auto GenDate = std::chrono::duration_cast<std::chrono::seconds>(curTime.time_since_epoch()).count();
-        ticket_data.Ticket.TicketGeneratedDate = GenDate; 
-        uint32_t expTime = GenDate+100000;
+        const auto GenDate = std::chrono::duration_cast<std::chrono::seconds>(curTime.time_since_epoch());
+        ticket_data.Ticket.TicketGeneratedDate = (uint32_t)GenDate.count();
+        uint32_t expTime = (uint32_t)(GenDate + std::chrono::hours(24)).count();
         ticket_data.Ticket.TicketGeneratedExpireDate = expTime;
         ticket_data.Ticket.Licenses.resize(0);
         ticket_data.Ticket.Licenses.push_back(0);
@@ -105,10 +105,10 @@ Auth_Data Auth_Manager::getTicketData( void *pTicket, int cbMaxTicket, uint32 *p
             ticket_data.HasGC = true;
             ticket_data.GC.GCToken = generate_random_int();
             ticket_data.GC.id = settings->get_local_steam_id();
-            ticket_data.GC.ticketGenDate = GenDate;
-            ticket_data.GC.TimeSinceStartup = generate_random_int();
+            ticket_data.GC.ticketGenDate = (uint32_t)GenDate.count();
             ticket_data.GC.ExternalIP = IP4_AS_DWORD_LITTLE_ENDIAN(127, 0, 0, 1);
             ticket_data.GC.InternalIP = IP4_AS_DWORD_LITTLE_ENDIAN(127, 0, 0, 1);
+            ticket_data.GC.TimeSinceStartup = (uint32_t)std::chrono::duration_cast<std::chrono::seconds>(curTime - startup_time).count();
             ticket_data.GC.TicketGeneratedCount = 1;
         }
         std::vector<uint8_t> ser = ticket_data.Serialize();
