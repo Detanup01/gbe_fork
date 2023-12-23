@@ -14,12 +14,17 @@
 		"workshop_item_url": "https://steamcommunity.com/sharedfiles/filedetails/?id=111111111",
 		"upvotes": 1,
 		"downvotes": 0,
-		"num_children": 0
+		"num_children": 0,
+		"path": "C:\\games\\my_game\\steam_settings\\mods_data\\mod_111111111_data_folder",
+		"preview_url": "file://C:/games/my_game/steam_settings/mod_images/my_preview.jpg",
+		"score": 0.7
 	},
 	
 	"222222222": {
 		"title": "Example Workshop Item",
-		"description": "Example Workshop Item with all Details"
+		"description": "Example Workshop Item with all Details",
+		"preview_url": "https://commons.wikimedia.org/wiki/File:Tree_in_Mississippi.jpg",
+		"score": 1.0
 	},
 	
 	"333333333": {
@@ -27,5 +32,10 @@
 	},
 	
 	"444444444": {
+		"title": "Example Workshop Item",
+		"description": "Example Workshop Item with all Details",
+	},
+	
+	"555555555": {
 	}
 }
