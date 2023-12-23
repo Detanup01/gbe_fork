@@ -15,6 +15,14 @@ static uint32 generate_steam_ticket_id() {
     return a;
 }
 
+static uint32_t get_ticket_count() {
+    static uint32_t a = 0;
+    ++a;
+    // this must never return 0, on overflow just go back to 1 again
+    if (a == 0) a = 1;
+    return a;
+}
+
 
 static void steam_auth_manager_ticket_callback(void *object, Common_Message *msg)
 {
@@ -109,7 +117,7 @@ Auth_Data Auth_Manager::getTicketData( void *pTicket, int cbMaxTicket, uint32 *p
             ticket_data.GC.ExternalIP = IP4_AS_DWORD_LITTLE_ENDIAN(127, 0, 0, 1);
             ticket_data.GC.InternalIP = IP4_AS_DWORD_LITTLE_ENDIAN(127, 0, 0, 1);
             ticket_data.GC.TimeSinceStartup = (uint32_t)std::chrono::duration_cast<std::chrono::seconds>(curTime - startup_time).count();
-            ticket_data.GC.TicketGeneratedCount = 1;
+            ticket_data.GC.TicketGeneratedCount = get_ticket_count();
         }
         std::vector<uint8_t> ser = ticket_data.Serialize();
         *pcbTicket = ser.size();
