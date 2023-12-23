@@ -221,6 +221,7 @@ release_defs="$dbg_defs $common_defs"
 release_src=(
   "dll/*.cpp"
   "dll/*.cc"
+  "mbedtls/*.c"
 )
 # if it's called libMyLib.a, then only type "MyLib"
 # these will be statically linked, make sure to build a PIC static lib
