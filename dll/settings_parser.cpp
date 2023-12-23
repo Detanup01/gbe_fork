@@ -823,7 +823,7 @@ static void parse_mods_folder(class Settings *settings_client, Settings *setting
                 newMod.workshopItemURL = mod.value().value("workshop_item_url", std::string(""));
                 newMod.votesUp = mod.value().value("upvotes", (uint32)1);
                 newMod.votesDown = mod.value().value("downvotes", (uint32)0);
-                newMod.score = 1.0f;
+                newMod.score = mod.value().value("score", 1.0f);
                 newMod.numChildren = mod.value().value("num_children", (uint32)0);
                 newMod.previewURL = mod.value().value("preview_url", std::string(""));
                 if (newMod.previewURL.empty()) {
