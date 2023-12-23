@@ -616,7 +616,7 @@ struct Auth_Data {
         //Todo make a signature
         std::vector<uint8_t> signature = sign_auth_data(app_ticket_key, tickedData, total_size_without_siglen);
         if (signature.size() == STEAM_APPTICKET_SIGLEN) {
-            memcpy(tickedData.data() + total_size_without_siglen, signature.data(), signature.size());
+            memcpy(buffer.data() + total_size_without_siglen, signature.data(), signature.size());
 
 #ifndef EMU_RELEASE_BUILD
         {
