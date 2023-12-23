@@ -187,6 +187,7 @@ release_incs_both=(
   "$ssq_inc"
   "utfcpp"
   "fifo_map"
+  "mbedtls"
 )
 release_incs32=(
   "${release_incs_both[@]}"

@@ -190,7 +190,7 @@ set zlib_inc64=/I"%deps_dir%\zlib\install64\include"
 set zlib_lib32="%deps_dir%\zlib\install32\lib\zlibstatic.lib"
 set zlib_lib64="%deps_dir%\zlib\install64\lib\zlibstatic.lib"
 
-set release_incs_both=%ssq_inc% /Iutfcpp /Ififo_map
+set release_incs_both=%ssq_inc% /Iutfcpp /Ififo_map /Imbedtls
 set release_incs32=%release_incs_both% %curl_inc32% %protob_inc32% %zlib_inc32%
 set release_incs64=%release_incs_both% %curl_inc64% %protob_inc64% %zlib_inc64%
 
