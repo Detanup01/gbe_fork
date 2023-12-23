@@ -1,20 +1,183 @@
-// source of the data: https://github.com/Detanup01/stmsrv/blob/main/Steam3Server/Others/AppTickets.cs
+// source: https://github.com/Detanup01/stmsrv/blob/main/Steam3Server/Others/AppTickets.cs
+// thanks Detanup01
 
 #ifndef AUTH_INCLUDE
 #define AUTH_INCLUDE
 
 #include "base.h"
 //#include "common_includes.h"
-#include "../sha/sha1.hpp"
 #include <ctime>
 #include <sstream>
 #include <string>
 #include <iostream>
+#include "../sha/sha1.hpp"
+#include "../mbedtls/mbedtls/pk.h"
+#include "../mbedtls/mbedtls/x509.h"
+#include "../mbedtls/mbedtls/error.h"
+#include "../mbedtls/mbedtls/sha1.h"
+#include "../mbedtls/mbedtls/entropy.h"
+#include "../mbedtls/mbedtls/ctr_drbg.h"
+
 
 // the data type is important, we depend on sizeof() for each one of them
 constexpr uint32_t STEAM_APPTICKET_SIGLEN = 128;
 constexpr uint32_t STEAM_APPTICKET_GCLen = 20;
 constexpr uint32_t STEAM_APPTICKET_SESSIONLEN = 24;
+
+// source: https://github.com/Detanup01/stmsrv/blob/main/Cert/AppTicket.key
+// thanks Detanup01
+const static std::string app_ticket_key =
+    "-----BEGIN PRIVATE KEY-----\n"
+    "MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAMITHOY6pfsvaGTI\n"
+    "llmilPa1+ev4BsUV0IW3+F/3pQlZ+o57CO1HbepSh2a37cbGUSehOVQ7lREPVXP3\n"
+    "UdyF5tU5IMytJef5N7euM5z2IG9IszeOReO87h2AmtlwGqnRj7qd0MeVxSAuUq7P\n"
+    "C/Ir1VyOg58+wAKxaPL18upylnGJAgMBAAECgYEAnKQQj0KG9VYuTCoaL/6pfPcj\n"
+    "4PEvhaM1yrfSIKMg8YtOT/G+IsWkUZyK7L1HjUhD+FiIjRQKHNrjfdYAnJz20Xom\n"
+    "k6iVt7ugihIne1Q3pGYG8TY9P1DPdN7zEnAVY1Bh2PAlqJWrif3v8v1dUGE/dYr2\n"
+    "U3M0JhvzO7VL1B/chIECQQDqW9G5azGMA/cL4jOg0pbj9GfxjJZeT7M2rBoIaRWP\n"
+    "C3ROndyb+BNahlKk6tbvqillvvMQQiSFGw/PbmCwtLL3AkEA0/79W0q9d3YCXQGW\n"
+    "k3hQvR8HEbxLmRaRF2gU4MOa5C0JqwsmxzdK4mKoJCpVAiu1gmFonLjn2hm8i+vK\n"
+    "b7hffwJAEiMpCACTxRJJfFH1TOz/YIT5xmfq+0GPzRtkqGH5mSh5x9vPxwJb/RWI\n"
+    "L9s85y90JLuyc/+qc+K0Rol0Ujip4QJAGLXVJEn+8ajAt8SSn5fbmV+/fDK9gRef\n"
+    "S+Im5NgH+ubBBL3lBD2Orfqf7K8+f2VG3+6oufPXmpV7Y7fVPdZ40wJALDujJXgi\n"
+    "XiCBSht1YScYjfmJh2/xZWh8/w+vs5ZTtrnW2FQvfvVDG9c1hrChhpvmA0QxdgWB\n"
+    "zSsAno/utcuB9w==\n"
+    "-----END PRIVATE KEY-----\n";
+
+
+static std::vector<uint8_t> sign_auth_data(const std::string &private_key_content, const std::vector<uint8_t> &data, size_t effective_data_len) {
+    std::vector<uint8_t> signature{};
+
+    // Hash the data using SHA-1
+    constexpr static int SHA1_DIGEST_LENGTH = 20;
+    uint8_t hash[SHA1_DIGEST_LENGTH]{};
+    int result = mbedtls_sha1(data.data(), effective_data_len, hash);
+    if (result != 0)
+    {
+#ifndef EMU_RELEASE_BUILD
+        // we nedd a live object until the printf does its job, hence this special handling
+        std::string err_msg(256, 0);
+        mbedtls_strerror(result, &err_msg[0], err_msg.size());
+        PRINT_DEBUG("sign_auth_data failed to hash the data via SHA1: %s\n", err_msg.c_str());
+#endif
+
+        return signature;
+    }
+
+    mbedtls_entropy_context entropy_ctx; // entropy context for random number generation
+    mbedtls_entropy_init(&entropy_ctx);
+
+    mbedtls_ctr_drbg_context ctr_drbg_ctx; // CTR-DRBG context for deterministic random number generation
+    mbedtls_ctr_drbg_init(&ctr_drbg_ctx);
+
+    // seed the CTR-DRBG context with random numbers
+    result = mbedtls_ctr_drbg_seed(&ctr_drbg_ctx, mbedtls_entropy_func, &entropy_ctx, nullptr, 0);
+    if (mbedtls_ctr_drbg_seed(&ctr_drbg_ctx, mbedtls_entropy_func, &entropy_ctx, nullptr, 0) != 0)
+    {
+        mbedtls_ctr_drbg_free(&ctr_drbg_ctx);
+        mbedtls_entropy_free(&entropy_ctx);
+
+#ifndef EMU_RELEASE_BUILD
+        // we nedd a live object until the printf does its job, hence this special handling
+        std::string err_msg(256, 0);
+        mbedtls_strerror(result, &err_msg[0], err_msg.size());
+        PRINT_DEBUG("sign_auth_data failed to seed the CTR-DRBG context: %s\n", err_msg.c_str());
+#endif
+
+        return signature;
+    }
+
+    mbedtls_pk_context private_key_ctx; // holds the parsed private key
+    mbedtls_pk_init(&private_key_ctx);
+
+    result = mbedtls_pk_parse_key(
+        &private_key_ctx,                                      // will hold the parsed private key
+        (const unsigned char *)private_key_content.c_str(),
+        private_key_content.size() + 1,                        // we MUST include the null terminator, otherwise this API returns an error!
+        nullptr, 0,                                            // no password stuff, private key isn't protected
+        mbedtls_ctr_drbg_random, &ctr_drbg_ctx                 // random number generation function + the CTR-DRBG context it requires as an input
+    );
+
+    if (result != 0)
+    {
+        mbedtls_pk_free(&private_key_ctx);
+        mbedtls_ctr_drbg_free(&ctr_drbg_ctx);
+        mbedtls_entropy_free(&entropy_ctx);
+
+#ifndef EMU_RELEASE_BUILD
+        // we nedd a live object until the printf does its job, hence this special handling
+        std::string err_msg(256, 0);
+        mbedtls_strerror(result, &err_msg[0], err_msg.size());
+        PRINT_DEBUG("sign_auth_data failed to parse private key: %s\n", err_msg.c_str());
+#endif
+
+        return signature;
+    }
+
+    // private key must be valid RSA key
+    if (mbedtls_pk_get_type(&private_key_ctx) != MBEDTLS_PK_RSA || // invalid type
+        mbedtls_pk_can_do(&private_key_ctx, MBEDTLS_PK_RSA) == 0)  // or initialized but not properly setup (maybe freed?)
+    {
+        mbedtls_pk_free(&private_key_ctx);
+        mbedtls_ctr_drbg_free(&ctr_drbg_ctx);
+        mbedtls_entropy_free(&entropy_ctx);
+
+        PRINT_DEBUG("sign_auth_data parsed key is not a valid RSA private key\n");
+        return signature;
+    }
+
+    // get the underlying RSA context from the parsed private key
+    mbedtls_rsa_context* rsa_ctx = mbedtls_pk_rsa(private_key_ctx);
+
+    // resize the output buffer to accomodate the size of the private key
+    const size_t private_key_len = mbedtls_pk_get_len(&private_key_ctx);
+    if (private_key_len == 0) // TODO must be 128 siglen
+    {
+        mbedtls_pk_free(&private_key_ctx);
+        mbedtls_ctr_drbg_free(&ctr_drbg_ctx);
+        mbedtls_entropy_free(&entropy_ctx);
+
+        PRINT_DEBUG("sign_auth_data failed to get private key (final buffer) length\n");
+        return signature;
+    }
+
+    PRINT_DEBUG("sign_auth_data computed private key (final buffer) length = %zu\n", private_key_len);
+    signature.resize(private_key_len);
+
+    // finally sign the computed hash using RSA and PKCS#1 padding
+    result = mbedtls_rsa_pkcs1_sign(
+        rsa_ctx,
+        mbedtls_ctr_drbg_random, &ctr_drbg_ctx,
+        MBEDTLS_MD_SHA1, // we used SHA1 to hash the data
+        sizeof(hash), hash,
+        signature.data() // output
+    );
+
+    mbedtls_pk_free(&private_key_ctx);
+    mbedtls_ctr_drbg_free(&ctr_drbg_ctx);
+    mbedtls_entropy_free(&entropy_ctx);
+
+    if (result != 0)
+    {
+        signature.clear();
+
+#ifndef EMU_RELEASE_BUILD
+        // we nedd a live object until the printf does its job, hence this special handling
+        std::string err_msg(256, 0);
+        mbedtls_strerror(result, &err_msg[0], err_msg.size());
+        PRINT_DEBUG("sign_auth_data RSA signing failed: %s\n", err_msg.c_str());
+#endif
+    }
+
+#ifndef EMU_RELEASE_BUILD
+        // we nedd a live object until the printf does its job, hence this special handling
+        auto str = uint8_vector_to_hex_string(signature);
+        PRINT_DEBUG("sign_auth_data final signature [%zu bytes]: %s\n", signature.size(), str.c_str());
+#endif
+
+    return signature;
+}
+
 
 struct DLC {
     uint32_t AppId;
@@ -378,7 +541,7 @@ struct Auth_Data {
         std::vector<uint8_t> tickedData = Ticket.Serialize();
         // we need this variable because we depend on the sizeof, must be 4 bytes
         const uint32_t ticket_data_layout_length =
-            sizeof(uint32_t) +
+            sizeof(uint32_t) + // size of this uint32_t because it is included!
             (uint32_t)tickedData.size();
 
         size_t total_size_without_siglen = ticket_data_layout_length;
@@ -443,12 +606,30 @@ struct Auth_Data {
         memcpy(pBuffer, tickedData.data(), tickedData.size());
         
 #ifndef EMU_RELEASE_BUILD
-        // we nedd a live object until the printf does its job, hence this special handling
-        auto str = uint8_vector_to_hex_string(buffer);
-        PRINT_DEBUG("AUTH::Auth_Data::SER final data [%zu bytes]: %s\n", buffer.size(), str.c_str());
+        {
+            // we nedd a live object until the printf does its job, hence this special handling
+            auto str = uint8_vector_to_hex_string(buffer);
+            PRINT_DEBUG("AUTH::Auth_Data::SER final data (before signature) [%zu bytes]: %s\n", buffer.size(), str.c_str());
+        }
 #endif
 
         //Todo make a signature
+        std::vector<uint8_t> signature = sign_auth_data(app_ticket_key, tickedData, total_size_without_siglen);
+        if (signature.size() == STEAM_APPTICKET_SIGLEN) {
+            memcpy(tickedData.data() + total_size_without_siglen, signature.data(), signature.size());
+
+#ifndef EMU_RELEASE_BUILD
+        {
+            // we nedd a live object until the printf does its job, hence this special handling
+            auto str = uint8_vector_to_hex_string(buffer);
+            PRINT_DEBUG("AUTH::Auth_Data::SER final data (after signature) [%zu bytes]: %s\n", buffer.size(), str.c_str());
+        }
+#endif
+
+        } else {
+            PRINT_DEBUG("AUTH::Auth_Data::SER signature size [%zu] is invalid\n", signature.size());
+        }
+
 #undef SER_VAR
 
         return buffer;
