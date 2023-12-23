@@ -227,8 +227,13 @@ bool GetQueryUGCPreviewURL( UGCQueryHandle_t handle, uint32 index, STEAM_OUT_STR
     //TODO: escape simulator tries downloading this url and unsubscribes if it fails
 
     auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
-    if ((ugc_queries.end() != request) && !(index >= request->results.size())) {
+    if ((ugc_queries.end() != request) && (index < request->results.size())) {
+        // point at the beginning of the results
         auto it = request->results.begin();
+        // then get the target result
+         //this is required for Escape Simulator to show the correct Preview Image, else it will be always the first
+        std::advance(it, index);
+       
         uint32 it2 = (uint32)*it;
         PRINT_DEBUG("Steam_UGC:GetQueryUGCPreviewURL: %u %s\n", it2, settings->getMod(it2).previewURL.c_str());
         snprintf(pchURL, cchURLSize, "%s", settings->getMod(it2).previewURL.c_str());
