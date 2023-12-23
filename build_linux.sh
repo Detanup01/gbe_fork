@@ -186,6 +186,7 @@ zlib_lib64="$deps_dir/zlib/install64/lib"
 release_incs_both=(
   "$ssq_inc"
   "utfcpp"
+  "fifo_map"
 )
 release_incs32=(
   "${release_incs_both[@]}"
