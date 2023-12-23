@@ -801,7 +801,10 @@ static void parse_mods_folder(class Settings *settings_client, Settings *setting
                 Mod_entry newMod;
                 newMod.id = std::stoull(mod.key());
                 newMod.title = mod.value().value("title", std::string(mod.key()));
-                newMod.path = mod_path + PATH_SEPARATOR + std::string(mod.key());
+                newMod.path = mod.value().value("path", std::string(""));
+                if (newMod.path.empty()) {
+                    newMod.path = mod_path + PATH_SEPARATOR + std::string(mod.key());
+                }
                 newMod.fileType = k_EWorkshopFileTypeCommunity;
                 newMod.description = mod.value().value("description", std::string(""));
                 newMod.steamIDOwner = mod.value().value("steam_id_owner", (uint64)0);
@@ -822,7 +825,12 @@ static void parse_mods_folder(class Settings *settings_client, Settings *setting
                 newMod.votesDown = mod.value().value("downvotes", (uint32)0);
                 newMod.score = 1.0f;
                 newMod.numChildren = mod.value().value("num_children", (uint32)0);
-                newMod.previewURL = "file://" + Local_Storage::get_game_settings_path() + "mod_images/" + newMod.previewFileName;
+                newMod.previewURL = mod.value().value("preview_url", std::string(""));
+                if (newMod.previewURL.empty()) {
+                    newMod.previewURL = newMod.previewFileName.empty()
+                        ?  ""
+                        : "file://" + Local_Storage::get_game_settings_path() + "mod_images/" + newMod.previewFileName;
+                }
                 settings_client->addMod(newMod.id, newMod.title, newMod.path);
                 settings_server->addMod(newMod.id, newMod.title, newMod.path);
                 settings_client->addModDetails(newMod.id, newMod);
@@ -831,7 +839,7 @@ static void parse_mods_folder(class Settings *settings_client, Settings *setting
                 PRINT_DEBUG("MODLOADER ERROR: %s\n", e.what());
             }
         }
-    } else {
+    } else { // invalid mods.json or doesn't exist
         std::vector<std::string> paths = Local_Storage::get_filenames_path(mod_path);
         for (auto & p: paths) {
             PRINT_DEBUG("mod directory %s\n", p.c_str());
