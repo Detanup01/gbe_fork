@@ -33,8 +33,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	WCHAR ExeCommandLine[4096] = { 0 };
 	WCHAR AppId[128] = { 0 };
 
-	STARTUPINFOW info = { sizeof(info) };
-	PROCESS_INFORMATION processInfo;
+	STARTUPINFOW info = { 0 };
+	SecureZeroMemory(&info, sizeof(info));
+	info.cb = sizeof(info);
+
+	PROCESS_INFORMATION processInfo = { 0 };
+	SecureZeroMemory(&processInfo, sizeof(processInfo));
 
 	int Length = GetModuleFileNameW(GetModuleHandleW(NULL), CurrentDirectory, sizeof(CurrentDirectory)) + 1;
 	for (int i = Length; i > 0; i--) {
