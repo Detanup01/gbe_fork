@@ -101,8 +101,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		return 0;
 	}
 
-	WCHAR CommandLine[8192];
-	_snwprintf(CommandLine, _countof(CommandLine), L"\"%ls\" %ls", ExeFile, ExeCommandLine);
+	WCHAR CommandLine[16384] = { 0 };
+	_snwprintf(CommandLine, _countof(CommandLine), L"\"%ls\" %ls %ls", ExeFile, ExeCommandLine, lpCmdLine);
 	if (!ExeFile[0] || !CreateProcessW(ExeFile, CommandLine, NULL, NULL, TRUE, CREATE_SUSPENDED, NULL, ExeRunDir, &info, &processInfo))
 	{
 		MessageBoxA(NULL, "Unable to load the requested EXE file.", "ColdClientLoader", MB_ICONERROR);
