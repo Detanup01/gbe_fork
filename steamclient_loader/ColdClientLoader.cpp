@@ -47,9 +47,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			break;
 		}
 	}
+
 	if (GetFileAttributesW(CurrentDirectory) == INVALID_FILE_ATTRIBUTES) {
 		MessageBoxA(NULL, "Couldn't find the configuration file(ColdClientLoader.ini).", "ColdClientLoader", MB_ICONERROR);
-		return 0;
+		return 1;
 	}
 
 	GetPrivateProfileStringW(L"SteamClient", L"SteamClient64Dll", L"", Client64Path, MAX_PATH, CurrentDirectory);
@@ -65,7 +66,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		SetEnvironmentVariableW(L"SteamOverlayGameId", AppId);
 	} else {
 		MessageBoxA(NULL, "You forgot to set the AppId.", "ColdClientLoader", MB_ICONERROR);
-		return 0;
+		return 1;
 	}
 
 	WCHAR TMP[MAX_PATH] = {};
@@ -92,17 +93,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 	if (GetFileAttributesW(Client64Path) == INVALID_FILE_ATTRIBUTES) {
 		MessageBoxA(NULL, "Couldn't find the requested SteamClient64Dll.", "ColdClientLoader", MB_ICONERROR);
-		return 0;
+		return 1;
 	}
 
 	if (GetFileAttributesW(ClientPath) == INVALID_FILE_ATTRIBUTES) {
 		MessageBoxA(NULL, "Couldn't find the requested SteamClientDll.", "ColdClientLoader", MB_ICONERROR);
-		return 0;
+		return 1;
 	}
 
 	if (GetFileAttributesW(ExeFile) == INVALID_FILE_ATTRIBUTES) {
 		MessageBoxA(NULL, "Couldn't find the requested Exe file.", "ColdClientLoader", MB_ICONERROR);
-		return 0;
+		return 1;
 	}
 
 	WCHAR CommandLine[16384] = { 0 };
@@ -110,7 +111,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	if (!ExeFile[0] || !CreateProcessW(ExeFile, CommandLine, NULL, NULL, TRUE, CREATE_SUSPENDED, NULL, ExeRunDir, &info, &processInfo))
 	{
 		MessageBoxA(NULL, "Unable to load the requested EXE file.", "ColdClientLoader", MB_ICONERROR);
-		return 0;
+		return 1;
 	}
 	HKEY Registrykey;
 	// Declare some variables to be used for Steam registry.
@@ -135,7 +136,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		{
 			MessageBoxA(NULL, "Unable to patch Steam process informations on the Windows registry.", "ColdClientLoader", MB_ICONERROR);
 			TerminateProcess(processInfo.hProcess, NULL);
-			return 0;
+			return 1;
 		}
 	}
 
