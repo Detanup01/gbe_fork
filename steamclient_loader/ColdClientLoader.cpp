@@ -71,22 +71,22 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	WCHAR TMP[MAX_PATH] = {};
 	if (!IsNotRelativePathOrRemoveFileName(Client64Path, false)) {
 		lstrcpyW(TMP, Client64Path);
-		ZeroMemory(Client64Path, sizeof(Client64Path));
+		SecureZeroMemory(Client64Path, sizeof(Client64Path));
 		GetFullPathNameW(TMP, MAX_PATH, Client64Path, NULL);
 	}
 	if (!IsNotRelativePathOrRemoveFileName(ClientPath, false)) {
 		lstrcpyW(TMP, ClientPath);
-		ZeroMemory(ClientPath, sizeof(ClientPath));
+		SecureZeroMemory(ClientPath, sizeof(ClientPath));
 		GetFullPathNameW(TMP, MAX_PATH, ClientPath, NULL);
 	}
 	if (!IsNotRelativePathOrRemoveFileName(ExeFile, false)) {
 		lstrcpyW(TMP, ExeFile);
-		ZeroMemory(ExeFile, sizeof(ExeFile));
+		SecureZeroMemory(ExeFile, sizeof(ExeFile));
 		GetFullPathNameW(TMP, MAX_PATH, ExeFile, NULL);
 	}
 	if (!IsNotRelativePathOrRemoveFileName(ExeRunDir, false)) {
 		lstrcpyW(TMP, ExeRunDir);
-		ZeroMemory(ExeRunDir, sizeof(ExeRunDir));
+		SecureZeroMemory(ExeRunDir, sizeof(ExeRunDir));
 		GetFullPathNameW(TMP, MAX_PATH, ExeRunDir, NULL);
 	}
 
