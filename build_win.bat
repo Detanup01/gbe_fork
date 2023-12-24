@@ -247,7 +247,7 @@ mkdir "%lobby_connect_dir%"
 setlocal
 
 echo // cleaning up to build 32
-call build_win_clean.bat
+call :cleanup
 mkdir "%build_temp_dir%"
 
 call build_win_set_env.bat 32 || (
@@ -324,7 +324,7 @@ timeout /nobreak /t 5
 setlocal
 
 echo // cleaning up to build 64
-call build_win_clean.bat
+call :cleanup
 mkdir "%build_temp_dir%"
 
 call build_win_set_env.bat 64 || (
@@ -389,10 +389,7 @@ echo: & echo:
 
 :: cleanup
 echo // cleaning up
-call build_win_clean.bat
-for %%A in ("ilk" "lib" "exp") do (
-  del /f /s /q "%build_root_dir%\*.%%~A" >nul 2>&1
-)
+call :cleanup
 echo: & echo:
 
 
@@ -475,6 +472,22 @@ exit /b
     exit /b 0
   )
 exit /b 1
+
+
+:cleanup
+  del /f /q *.exp >nul 2>&1
+  del /f /q *.lib >nul 2>&1
+  del /f /q *.a >nul 2>&1
+  del /f /q *.obj >nul 2>&1
+  del /f /q *.pdb >nul 2>&1
+  del /f /q *.ilk >nul 2>&1
+  del /f /q dll\net.pb.cc >nul 2>&1
+  del /f /q dll\net.pb.h >nul 2>&1
+  rmdir /s /q "%build_temp_dir%" >nul 2>&1
+  for %%A in ("ilk" "lib" "exp") do (
+    del /f /s /q "%build_root_dir%\*.%%~A" >nul 2>&1
+  )
+exit /b
 
 
 :end_script
