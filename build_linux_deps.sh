@@ -19,7 +19,7 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 # common stuff
-script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+script_dir=$( cd -- "$( dirname -- "${0}" )" &> /dev/null && pwd )
 deps_dir="$script_dir/build-linux-deps"
 third_party_dir="$script_dir/third-party"
 third_party_deps_dir="$third_party_dir/deps/linux"

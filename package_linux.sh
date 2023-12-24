@@ -8,7 +8,7 @@ fi
 
 build_base_dir="build-linux"
 out_dir="build-linux/package"
-script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+script_dir=$( cd -- "$( dirname -- "${0}" )" &> /dev/null && pwd )
 
 [[ "$1" = '' ]] && {
   echo "[X] missing build folder";
