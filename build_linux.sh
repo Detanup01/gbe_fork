@@ -5,7 +5,6 @@ required_files=(
   "dll/dll.cpp"
   "dll/steam_client.cpp"
   "controller/gamepad.c"
-  "scripts/find_interfaces.sh"
   "sdk_includes/isteamclient.h"
   "generate_interfaces_file.cpp"
 )
@@ -24,7 +23,8 @@ BUILD_CLIENT32=1
 BUILD_CLIENT64=1
 BUILD_TOOL_CLIENT_LDR=1
 
-BUILD_TOOL_FIND_ITFS=1
+BUILD_TOOL_FIND_ITFS32=1
+BUILD_TOOL_FIND_ITFS64=1
 BUILD_TOOL_LOBBY32=1
 BUILD_TOOL_LOBBY64=1
 
@@ -56,8 +56,10 @@ for (( i=1; i<=$#; i++ )); do
     BUILD_CLIENT64=0
   elif [[ "$var" = "-tool-clientldr" ]]; then
     BUILD_TOOL_CLIENT_LDR=0
-  elif [[ "$var" = "-tool-itf" ]]; then
-    BUILD_TOOL_FIND_ITFS=0
+  elif [[ "$var" = "-tool-itf-32" ]]; then
+    BUILD_TOOL_FIND_ITFS32=0
+  elif [[ "$var" = "-tool-itf-64" ]]; then
+    BUILD_TOOL_FIND_ITFS64=0
   elif [[ "$var" = "-tool-lobby-32" ]]; then
     BUILD_TOOL_LOBBY32=0
   elif [[ "$var" = "-tool-lobby-64" ]]; then
@@ -145,7 +147,7 @@ if [[ "$BUILD_LOW_PERF" = "1" ]]; then
     'avx10.1-256'
     'avx10.1-512'
   )
-  additional_compiler_args="$additional_compiler_args ${instr_set_to_disable/#/-mno-}"
+  additional_compiler_args="$additional_compiler_args ${instr_set_to_disable[@]/#/-mno-}"
   
   build_folder="$build_folder-low_perf"
 fi
@@ -266,18 +268,6 @@ echo "[?] All build operations will use $build_threads parallel jobs"
 
 last_code=0
 
-### create folders + copy common scripts
-echo // creating dirs + copying tools
-rm -f -r "$build_root_dir"
-mkdir -p "$build_root_32"
-mkdir -p "$build_root_64"
-mkdir -p "$build_root_tools"
-
-[[ "$BUILD_TOOL_FIND_ITFS" = "1" ]] && cp -f scripts/find_interfaces.sh "$build_root_tools/"
-[[ "$BUILD_TOOL_CLIENT_LDR" = "1" ]] && cp -f scripts/steamclient_loader.sh "$build_root_tools/"
-
-echo; echo 
-
 
 function build_for () {
 
@@ -285,7 +275,12 @@ function build_for () {
   local is_exe=$( [[ "$2" != 0 ]] && { echo 1; } || { echo 0; }  )
   local out_filepath="${3:?'missing filepath'}"
   local extra_defs="$4"
-  local -n extra_src=$5
+  local -n all_src=$5
+
+  [[ "${#all_src[@]}" = "0" ]] && {
+    echo [X] "No source files specified" >&2;
+    return 1;
+  }
 
   # https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
   local cpiler_m32=''
@@ -311,7 +306,7 @@ function build_for () {
   
   local build_cmds=()
   local -A objs_dirs=()
-  for src_file in $( echo "${release_src[@]}" "${extra_src[@]}" ); do
+  for src_file in $( echo "${all_src[@]}" ); do
     [[ -f "$src_file" ]] || continue
     
     # https://stackoverflow.com/a/9559024
@@ -326,6 +321,11 @@ function build_for () {
     
     mkdir -p "$obj_dir"
   done
+
+  [[ "${#build_cmds[@]}" = "0" ]] && {
+    echo [X] "No valid source files were found" >&2;
+    return 1;
+  }
 
   local target_incs=()
   local target_libs_dirs=()
@@ -371,34 +371,85 @@ function build_for () {
 }
 
 
+### create folders + copy common scripts
+echo // creating dirs
+rm -f -r "$build_root_dir"
+mkdir -p "$build_root_32"
+mkdir -p "$build_root_64"
+mkdir -p "$build_root_tools/steamclient_loader"
+mkdir -p "$build_root_tools/find_interfaces"
+mkdir -p "$build_root_tools/lobby_connect"
+
+echo; echo;
+
+
+## tools
+if [[ "$BUILD_TOOL_CLIENT_LDR" = "1" ]]; then
+  echo // copying tool steamclient_loader
+  steamclient_files=(
+    "ldr_appid.txt"
+    "ldr_cmdline.txt"
+    "ldr_cwd.txt"
+    "ldr_exe.txt"
+    "ldr_steam_rt.txt"
+    "README.md"
+    "steamclient_loader.sh"
+  )
+  for f in "${steamclient_files[@]}"; do
+    cp -f "tools_linux/steamclient_loader/$f" "$build_root_tools/steamclient_loader/";
+  done
+  
+  echo; echo;
+fi
+
+
 ### x32 build
 rm -f dll/net.pb.cc
 rm -f dll/net.pb.h
 echo // invoking protobuf compiler - 32
 "$protoc_exe_32" -I./dll/ --cpp_out=./dll/ ./dll/*.proto
-echo ; echo ;
+echo; echo;
 
 if [[ "$BUILD_LIB32" = "1" ]]; then
   echo // building shared lib libsteam_api.so - 32
 
-  extra_src_files=("controller/*.c")
-  build_for 1 0 "$build_root_32/libsteam_api.so" '-DCONTROLLER_SUPPORT' extra_src_files 
+  all_src_files=(
+    "${release_src[@]}"
+    "controller/*.c"
+  )
+  build_for 1 0 "$build_root_32/libsteam_api.so" '-DCONTROLLER_SUPPORT' all_src_files 
   last_code=$((last_code + $?))
 fi
 
 if [[ "$BUILD_CLIENT32" = "1" ]]; then
   echo // building shared lib steamclient.so - 32
   
-  extra_src_files=("controller/*.c")
-  build_for 1 0 "$build_root_32/steamclient.so" '-DCONTROLLER_SUPPORT -DSTEAMCLIENT_DLL' extra_src_files 
+  all_src_files=(
+    "${release_src[@]}"
+    "controller/*.c"
+  )
+  build_for 1 0 "$build_root_32/steamclient.so" '-DCONTROLLER_SUPPORT -DSTEAMCLIENT_DLL' all_src_files 
   last_code=$((last_code + $?))
 fi
 
 if [[ "$BUILD_TOOL_LOBBY32" = "1" ]]; then
   echo // building executable lobby_connect_x32 - 32
   
-  extra_src_files=("lobby_connect.cpp")
-  build_for 1 1 "$build_root_tools/lobby_connect_x32" '-DNO_DISK_WRITES -DLOBBY_CONNECT' extra_src_files 
+  all_src_files=(
+    "${release_src[@]}"
+    "lobby_connect.cpp"
+  )
+  build_for 1 1 "$build_root_tools/lobby_connect/lobby_connect_x32" '-DNO_DISK_WRITES -DLOBBY_CONNECT' all_src_files 
+  last_code=$((last_code + $?))
+fi
+
+if [[ "$BUILD_TOOL_FIND_ITFS32" = "1" ]]; then
+  echo // building executable generate_interfaces_file_x32 - 32
+
+  all_src_files=(
+    "generate_interfaces_file.cpp"
+  )
+  build_for 1 1 "$build_root_tools/find_interfaces/generate_interfaces_file_x32" '' all_src_files 
   last_code=$((last_code + $?))
 fi
 
@@ -410,29 +461,48 @@ rm -f -r "$build_temp_dir"
 mkdir -p "$build_temp_dir"
 echo // invoking protobuf compiler - 64
 "$protoc_exe_64" -I./dll/ --cpp_out=./dll/ ./dll/*.proto
-echo ; echo ;
+echo; echo;
 
 if [[ "$BUILD_LIB64" = "1" ]]; then
   echo // building shared lib libsteam_api.so - 64
   
-  extra_src_files=("controller/*.c")
-  build_for 0 0 "$build_root_64/libsteam_api.so" '-DCONTROLLER_SUPPORT' extra_src_files 
+  all_src_files=(
+    "${release_src[@]}"
+    "controller/*.c"
+  )
+  build_for 0 0 "$build_root_64/libsteam_api.so" '-DCONTROLLER_SUPPORT' all_src_files 
   last_code=$((last_code + $?))
 fi
 
 if [[ "$BUILD_CLIENT64" = "1" ]]; then
   echo // building shared lib steamclient.so - 64
   
-  extra_src_files=("controller/*.c")
-  build_for 0 0 "$build_root_64/steamclient.so" '-DCONTROLLER_SUPPORT -DSTEAMCLIENT_DLL' extra_src_files 
+  all_src_files=(
+    "${release_src[@]}"
+    "controller/*.c"
+  )
+  build_for 0 0 "$build_root_64/steamclient.so" '-DCONTROLLER_SUPPORT -DSTEAMCLIENT_DLL' all_src_files 
   last_code=$((last_code + $?))
 fi
 
 if [[ "$BUILD_TOOL_LOBBY64" = "1" ]]; then
   echo // building executable lobby_connect_x64 - 64
   
-  extra_src_files=("lobby_connect.cpp")
-  build_for 0 1 "$build_root_tools/lobby_connect_x64" '-DNO_DISK_WRITES -DLOBBY_CONNECT' extra_src_files 
+  all_src_files=(
+    "${release_src[@]}"
+    "lobby_connect.cpp"
+  )
+  build_for 0 1 "$build_root_tools/lobby_connect/lobby_connect_x64" '-DNO_DISK_WRITES -DLOBBY_CONNECT' all_src_files 
+  last_code=$((last_code + $?))
+fi
+
+if [[ "$BUILD_TOOL_FIND_ITFS64" = "1" ]]; then
+  echo // building executable generate_interfaces_file_x64 - 64
+
+  all_src_files=(
+    "generate_interfaces_file.cpp"
+  )
+  build_for 0 1 "$build_root_tools/find_interfaces/generate_interfaces_file_x64" '' all_src_files 
   last_code=$((last_code + $?))
 fi
 
