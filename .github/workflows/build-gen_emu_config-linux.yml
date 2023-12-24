@@ -18,7 +18,7 @@ permissions:
 
 env:
   ARTIFACT_NAME: "generate_emu_config-linux-${{ github.sha }}"
-  PACKAGE_ROOT_PATH: "scripts/bin/package"
+  PACKAGE_ROOT_PATH: "script_generate_emu_config/bin/package"
 
 jobs:
   build:
@@ -30,17 +30,17 @@ jobs:
     
     - name: Install dependencies
       shell: bash
-      working-directory: ${{ github.workspace }}/scripts
+      working-directory: ${{ github.workspace }}/script_generate_emu_config
       run: sudo chmod 77 recreate_venv_linux.sh && sudo ./recreate_venv_linux.sh
 
     - name: Rebuild
       shell: bash
-      working-directory: ${{ github.workspace }}/scripts
+      working-directory: ${{ github.workspace }}/script_generate_emu_config
       run: sudo chmod 77 rebuild_linux.sh && sudo ./rebuild_linux.sh
 
     - name: Package build
       shell: bash
-      working-directory: ${{ github.workspace }}/scripts
+      working-directory: ${{ github.workspace }}/script_generate_emu_config
       run: sudo chmod 77 package_linux.sh && sudo ./package_linux.sh
 
     - name: Upload build package
