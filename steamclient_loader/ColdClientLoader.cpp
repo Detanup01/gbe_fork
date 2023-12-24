@@ -69,7 +69,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		return 1;
 	}
 
-	WCHAR TMP[MAX_PATH] = {};
+	WCHAR TMP[MAX_PATH] = { 0 };
 	if (!IsNotRelativePathOrRemoveFileName(Client64Path, false)) {
 		lstrcpyW(TMP, Client64Path);
 		SecureZeroMemory(Client64Path, sizeof(Client64Path));
@@ -113,7 +113,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		MessageBoxA(NULL, "Unable to load the requested EXE file.", "ColdClientLoader", MB_ICONERROR);
 		return 1;
 	}
-	HKEY Registrykey;
+	
+	HKEY Registrykey = { 0 };
 	// Declare some variables to be used for Steam registry.
 	DWORD UserId = 0x03100004771F810D & 0xffffffff;
 	DWORD ProcessID = GetCurrentProcessId();
