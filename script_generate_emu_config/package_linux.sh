@@ -9,7 +9,7 @@ fi
 build_dir="bin/linux"
 tool_name="generate_emu_config"
 out_dir="bin/package/linux"
-script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+script_dir=$( cd -- "$( dirname -- "${0}" )" &> /dev/null && pwd )
 
 [[ -d "$script_dir/$build_dir" ]] || {
   echo "[X] build folder wasn't found" >&2

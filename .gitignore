@@ -15,16 +15,16 @@ steamclient.exp
 steamclient.lib
 out/*
 
-scripts/.py*/
-scripts/.venv*/
-scripts/.env*/
-scripts/.vscode/
-scripts/backup/
-scripts/bin/
-scripts/build_tmp*/
-scripts/login_temp/
-scripts/**/__pycache__/
-scripts/generate_emu_config.spec
-scripts/my_login.txt
+script_generate_emu_config/.py*/
+script_generate_emu_config/.venv*/
+script_generate_emu_config/.env*/
+script_generate_emu_config/.vscode/
+script_generate_emu_config/backup/
+script_generate_emu_config/bin/
+script_generate_emu_config/build_tmp*/
+script_generate_emu_config/login_temp/
+script_generate_emu_config/**/__pycache__/
+script_generate_emu_config/generate_emu_config*.spec
+script_generate_emu_config/my_login.txt
 
 third-party/

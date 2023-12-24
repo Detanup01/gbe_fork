@@ -8,7 +8,7 @@ fi
 
 venv=".env-linux"
 reqs_file="requirements.txt"
-script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+script_dir=$( cd -- "$( dirname -- "${0}" )" &> /dev/null && pwd )
 
 apt update || exit 1
 apt install "python3.10" -y || exit 1
