@@ -154,17 +154,49 @@ clean_gen64="[[ -d build64 ]] && rm -f -r build64/"
 
 chmod 777 "$mycmake"
 
+declare -A deps_archives=(
+  ["v3.0.0.tar.gz"]="ssq"
+  ["zlib-1.3.tar.gz"]="zlib"
+  ["curl-8.4.0.tar.gz"]="curl"
+  ["v21.12.tar.gz"]="protobuf"
+  ["mbedtls-3.5.1.tar.gz"]="mbedtls"
+)
+
+
+# the artificial delays "sleep 3" are here because on Windows WSL the
+# explorer or search indexer keeps a handle open and causes an error here
+echo // extracting archives
+dotglob_state="$( shopt -p dotglob )"
+for f in "${!deps_archives[@]}"; do
+  [[ -f "$third_party_common_dir/$f" ]] || {
+    echo "[X] archive '$f' not found";
+    exit 1;
+  }
+
+  target_dir="$deps_dir/${deps_archives["$f"]}"
+  mkdir -p "$target_dir"
+
+  echo   - extracting archive "'$f'" into "'$target_dir'"
+  tar -zxf "$third_party_common_dir/$f" -C "$target_dir"
+  sleep 2
+
+  echo   - flattening dir "'$target_dir'" by moving everything in a subdir outside
+  shopt -s dotglob
+  for i in {1..10}; do
+    mv "$target_dir"/*/** "$target_dir/" && { break; } || { sleep 1; }
+  done
+  eval $dotglob_state
+  sleep 2
+
+  chmod -R 777 "$target_dir"
+  sleep 1
+
+  echo;
+done
+
 
 ############## build ssq ##############
 echo // building ssq lib
-[[ -f "$third_party_common_dir/v3.0.0.tar.gz" ]] || exit 1
-tar -zxf "$third_party_common_dir/v3.0.0.tar.gz" -C "$deps_dir"
-
-for i in {1..10}; do
-  mv "$deps_dir/libssq-3.0.0" "$deps_dir/ssq" && { break; } || { sleep 1; }
-done
-
-chmod -R 777 "$deps_dir/ssq"
 pushd "$deps_dir/ssq"
 
 eval $recreate_32
@@ -185,14 +217,6 @@ echo; echo;
 
 ############## build zlib ##############
 echo // building zlib lib
-[[ -f "$third_party_common_dir/zlib-1.3.tar.gz" ]] || exit 1
-tar -zxf "$third_party_common_dir/zlib-1.3.tar.gz" -C "$deps_dir"
-
-for i in {1..10}; do
-  mv "$deps_dir/zlib-1.3" "$deps_dir/zlib" && { break; } || { sleep 1; }
-done
-
-chmod -R 777 "$deps_dir/zlib"
 pushd "$deps_dir/zlib"
 
 eval $recreate_32
@@ -252,14 +276,6 @@ wild_zlib_64=(
 
 ############## build curl ##############
 echo // building curl lib
-[[ -f "$third_party_common_dir/curl-8.4.0.tar.gz" ]] || exit 1
-tar -zxf "$third_party_common_dir/curl-8.4.0.tar.gz" -C "$deps_dir"
-
-for i in {1..10}; do
-  mv "$deps_dir/curl-8.4.0" "$deps_dir/curl" && { break; } || { sleep 1; }
-done
-
-chmod -R 777 "$deps_dir/curl"
 pushd "$deps_dir/curl"
 
 curl_common_defs="-DBUILD_CURL_EXE=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC_CURL=OFF -DBUILD_STATIC_LIBS=ON -DCURL_USE_OPENSSL=OFF -DCURL_ZLIB=ON"
@@ -284,14 +300,6 @@ echo; echo;
 
 ############## build protobuf ##############
 echo // building protobuf lib
-[[ -f "$third_party_common_dir/v21.12.tar.gz" ]] || exit 1
-tar -zxf "$third_party_common_dir/v21.12.tar.gz" -C "$deps_dir"
-
-for i in {1..10}; do
-  mv "$deps_dir/protobuf-21.12" "$deps_dir/protobuf" && { break; } || { sleep 1; }
-done
-
-chmod -R 777 "$deps_dir/protobuf"
 pushd "$deps_dir/protobuf"
 
 proto_common_defs="-Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_SHARED_LIBS=OFF -Dprotobuf_WITH_ZLIB=ON"
@@ -316,14 +324,6 @@ echo; echo;
 
 ############## build mbedtls ##############
 echo // building mbedtls lib
-[[ -f "$third_party_common_dir/mbedtls-3.5.1.tar.gz" ]] || exit 1
-tar -zxf "$third_party_common_dir/mbedtls-3.5.1.tar.gz" -C "$deps_dir"
-
-for i in {1..10}; do
-  mv "$deps_dir/mbedtls-3.5.1" "$deps_dir/mbedtls" && { break; } || { sleep 1; }
-done
-
-chmod -R 777 "$deps_dir/mbedtls"
 pushd "$deps_dir/mbedtls"
 
 # AES-NI on mbedtls v3.5.x:
