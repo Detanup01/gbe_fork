@@ -29,6 +29,8 @@ set /a PARALLEL_THREADS_OVERRIDE=-1
 :: 0 = release, 1 = debug, otherwise error
 set /a BUILD_TYPE=-1
 
+set /a CLEAN_BUILD=0
+
 :: get args
 :args_loop
   if "%~1"=="" (
@@ -62,6 +64,8 @@ set /a BUILD_TYPE=-1
       goto :end_script
     )
     shift /1
+  ) else if "%~1"=="-clean" (
+    set /a CLEAN_BUILD=1
   ) else if "%~1"=="release" (
     set /a BUILD_TYPE=0
   ) else if "%~1"=="debug" (
@@ -231,20 +235,13 @@ if not exist "%protoc_exe_64%" (
 
 echo [?] All build operations will use %build_threads% parallel jobs
 
-:: prepare folders
-echo // preparing build folders
-rmdir /s /q "%build_root_dir%\" >nul 2>&1
-mkdir "%build_root_dir%\x32"
-mkdir "%build_root_dir%\x64"
-
-mkdir "%experimental_dir%\x32"
-mkdir "%experimental_dir%\x64"
-
-mkdir "%steamclient_dir%"
-
-mkdir "%find_interfaces_dir%"
-mkdir "%lobby_connect_dir%"
-
+if %CLEAN_BUILD% equ 1 (
+  echo // cleaning previous build
+  if exist "%build_root_dir%" (
+    rmdir /s /q "%build_root_dir%"
+  )
+  echo: & echo:
+)
 
 :: x32 build
 setlocal
@@ -267,6 +264,9 @@ echo // invoking protobuf compiler - 32
 echo: & echo:
 
 if %BUILD_LIB32% equ 1 (
+  if not exist "%build_root_dir%\x32" (
+    mkdir "%build_root_dir%\x32"
+  )
   call :compile_lib32 || (
     set /a last_code+=1
   )
@@ -274,6 +274,9 @@ if %BUILD_LIB32% equ 1 (
 )
 
 if %BUILD_EXP_LIB32% equ 1 (
+  if not exist "%experimental_dir%\x32" (
+    mkdir "%experimental_dir%\x32"
+  )
   call :compile_experimental_lib32 || (
     set /a last_code+=1
   )
@@ -281,6 +284,9 @@ if %BUILD_EXP_LIB32% equ 1 (
 )
 
 if %BUILD_EXP_CLIENT32% equ 1 (
+  if not exist "%experimental_dir%\x32" (
+    mkdir "%experimental_dir%\x32"
+  )
   call :compile_experimental_client32 || (
     set /a last_code+=1
   )
@@ -288,6 +294,9 @@ if %BUILD_EXP_CLIENT32% equ 1 (
 )
 
 if %BUILD_EXPCLIENT32% equ 1 (
+  if not exist "%steamclient_dir%" (
+    mkdir "%steamclient_dir%"
+  )
   call :compile_experimentalclient_32 || (
     set /a last_code+=1
   )
@@ -296,6 +305,9 @@ if %BUILD_EXPCLIENT32% equ 1 (
 
 :: steamclient_loader
 if %BUILD_EXPCLIENT_LDR% equ 1 (
+  if not exist "%steamclient_dir%" (
+    mkdir "%steamclient_dir%"
+  )
   call :compile_experimentalclient_ldr || (
     set /a last_code+=1
   )
@@ -304,12 +316,18 @@ if %BUILD_EXPCLIENT_LDR% equ 1 (
 
 :: tools (x32)
 if %BUILD_TOOL_FIND_ITFS% equ 1 (
+  if not exist "%find_interfaces_dir%" (
+    mkdir "%find_interfaces_dir%"
+  )
   call :compile_tool_itf || (
     set /a last_code+=1
   )
   echo: & echo:
 )
 if %BUILD_TOOL_LOBBY% equ 1 (
+  if not exist "%lobby_connect_dir%" (
+    mkdir "%lobby_connect_dir%"
+  )
   call :compile_tool_lobby || (
     set /a last_code+=1
   )
@@ -344,6 +362,9 @@ echo // invoking protobuf compiler - 64
 echo: & echo:
 
 if %BUILD_LIB64% equ 1 (
+  if not exist "%build_root_dir%\x64" (
+    mkdir "%build_root_dir%\x64"
+  )
   call :compile_lib64 || (
     set /a last_code+=1
   )
@@ -351,6 +372,9 @@ if %BUILD_LIB64% equ 1 (
 )
 
 if %BUILD_EXP_LIB64% equ 1 (
+  if not exist "%experimental_dir%\x64" (
+    mkdir "%experimental_dir%\x64"
+  )
   call :compile_experimental_lib64 || (
     set /a last_code+=1
   )
@@ -358,6 +382,9 @@ if %BUILD_EXP_LIB64% equ 1 (
 )
 
 if %BUILD_EXP_CLIENT64% equ 1 (
+  if not exist "%experimental_dir%\x64" (
+    mkdir "%experimental_dir%\x64"
+  )
   call :compile_experimental_client64 || (
     set /a last_code+=1
   )
@@ -365,6 +392,9 @@ if %BUILD_EXP_CLIENT64% equ 1 (
 )
 
 if %BUILD_EXPCLIENT64% equ 1 (
+  if not exist "%steamclient_dir%" (
+    mkdir "%steamclient_dir%"
+  )
   call :compile_experimentalclient_64 || (
     set /a last_code+=1
   )
