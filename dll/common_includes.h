@@ -156,14 +156,14 @@ static inline void reset_LastError()
 #endif
 
 // Other libs includes
-#include "../json/json.hpp"
-#include "../utfcpp/utf8.h"
-#include "../controller/gamepad.h"
+#include "json/json.hpp"
+#include "utfcpp/utf8.h"
+#include "controller/gamepad.h"
 
 // Steamsdk includes
-#include "../sdk_includes/steam_api.h"
-#include "../sdk_includes/steam_gameserver.h"
-#include "../sdk_includes/steamdatagram_tickets.h"
+#include "sdk_includes/steam_api.h"
+#include "sdk_includes/steam_gameserver.h"
+#include "sdk_includes/steamdatagram_tickets.h"
 
 // PRINT_DEBUG definition
 // notice the extra call to WSASetLastError(0) in Windows def
