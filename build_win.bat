@@ -190,20 +190,25 @@ set zlib_inc64=/I"%deps_dir%\zlib\install64\include"
 set zlib_lib32="%deps_dir%\zlib\install32\lib\zlibstatic.lib"
 set zlib_lib64="%deps_dir%\zlib\install64\lib\zlibstatic.lib"
 
-set release_incs_both=%ssq_inc% /Iutfcpp /Ififo_map /Imbedtls
-set release_incs32=%release_incs_both% %curl_inc32% %protob_inc32% %zlib_inc32%
-set release_incs64=%release_incs_both% %curl_inc64% %protob_inc64% %zlib_inc64%
+set mbedtls_inc32=/I"%deps_dir%\mbedtls\install32\include"
+set mbedtls_inc64=/I"%deps_dir%\mbedtls\install64\include"
+set mbedtls_lib32="%deps_dir%\mbedtls\install32\lib\mbedcrypto.lib"
+set mbedtls_lib64="%deps_dir%\mbedtls\install64\lib\mbedcrypto.lib"
+
+set release_incs_both=%ssq_inc% /Iutfcpp
+set release_incs32=%release_incs_both% %curl_inc32% %protob_inc32% %zlib_inc32% %mbedtls_inc32%
+set release_incs64=%release_incs_both% %curl_inc64% %protob_inc64% %zlib_inc64% %mbedtls_inc64%
 
 set "common_defs=/DUTF_CPP_CPLUSPLUS=201703L /DCURL_STATICLIB /D_MT /DUNICODE /D_UNICODE"
 set "release_defs=%dbg_defs% %common_defs%"
-set release_src="dll/*.cpp" "dll/*.cc" "mbedtls/*.c"
+set release_src="dll/*.cpp" "dll/*.cc"
 
 :: copied from Visual Studio 2022
 set "CoreLibraryDependencies=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib"
 set "release_libs_both=%CoreLibraryDependencies% Ws2_32.lib Iphlpapi.lib Wldap32.lib Winmm.lib Bcrypt.lib"
 
-set release_libs32=%release_libs_both% %ssq_lib32% %curl_lib32% %protob_lib32% %zlib_lib32%
-set release_libs64=%release_libs_both% %ssq_lib64% %curl_lib64% %protob_lib64% %zlib_lib64%
+set release_libs32=%release_libs_both% %ssq_lib32% %curl_lib32% %protob_lib32% %zlib_lib32% %mbedtls_lib32%
+set release_libs64=%release_libs_both% %ssq_lib64% %curl_lib64% %protob_lib64% %zlib_lib64% %mbedtls_lib64%
 
 set "protoc_exe_32=%deps_dir%\protobuf\install32\bin\protoc.exe"
 set "protoc_exe_64=%deps_dir%\protobuf\install64\bin\protoc.exe"
