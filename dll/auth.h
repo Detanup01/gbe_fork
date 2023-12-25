@@ -515,7 +515,7 @@ struct Auth_Data {
             "AUTH::Auth_Data::SER:\n"
             "  HasGC: %u\n"
             "  user steam_id: " "%" PRIu64 "\n"
-            "  number: %llu\n",
+            "  number: " "%" PRIu64 "\n",
 
             (int)HasGC,
             steam_id,
