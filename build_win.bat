@@ -155,6 +155,8 @@ if %BUILD_LOW_PERF% equ 1 (
 
 :: common stuff
 set "deps_dir=build\win\deps"
+set "libs_dir=libs"
+set "tools_src_dir=tools"
 set "build_root_dir=build\win\%build_folder%"
 set "build_temp_dir=build\win\tmp"
 set "tools_dir=%build_root_dir%\tools"
@@ -197,7 +199,7 @@ set mbedtls_inc64=/I"%deps_dir%\mbedtls\install64\include"
 set mbedtls_lib32="%deps_dir%\mbedtls\install32\lib\mbedcrypto.lib"
 set mbedtls_lib64="%deps_dir%\mbedtls\install64\lib\mbedcrypto.lib"
 
-set release_incs_both=%ssq_inc% /Iutfcpp
+set release_incs_both=%ssq_inc% /I"%libs_dir%\utfcpp" /I"." /I"%libs_dir%" /I"%libs_dir%\ImGui"
 set release_incs32=%release_incs_both% %curl_inc32% %protob_inc32% %zlib_inc32% %mbedtls_inc32%
 set release_incs64=%release_incs_both% %curl_inc64% %protob_inc64% %zlib_inc64% %mbedtls_inc64%
 
@@ -438,34 +440,34 @@ exit /b %errorlevel%
 
 :compile_experimental_lib32
   echo // building lib experimental steam_api.dll - 32
-  cl %common_compiler_args_32% %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /LD %release_incs32% /IImGui /Ioverlay_experimental %release_src% detours/*.cpp controller/gamepad.c ImGui/*.cpp ImGui/backends/imgui_impl_dx*.cpp ImGui/backends/imgui_impl_win32.cpp ImGui/backends/imgui_impl_vulkan.cpp ImGui/backends/imgui_impl_opengl3.cpp ImGui/backends/imgui_win_shader_blobs.cpp overlay_experimental/*.cpp overlay_experimental/windows/*.cpp overlay_experimental/System/*.cpp %release_libs32% /link %common_win_linker_args_32% /DLL /OUT:"%experimental_dir%\x32\steam_api.dll"
+  cl %common_compiler_args_32% %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /LD %release_incs32% /IImGui /Ioverlay_experimental %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "%libs_dir%\ImGui\*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_dx*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_win32.cpp" "%libs_dir%\ImGui\backends\imgui_impl_vulkan.cpp" "%libs_dir%\ImGui\backends\imgui_impl_opengl3.cpp" "%libs_dir%\ImGui\backends\imgui_win_shader_blobs.cpp" overlay_experimental/*.cpp overlay_experimental/windows/*.cpp overlay_experimental/System/*.cpp %release_libs32% /link %common_win_linker_args_32% /DLL /OUT:"%experimental_dir%\x32\steam_api.dll"
 exit /b %errorlevel%
 
 :compile_experimental_client32
   echo // building lib experimental steamclient.dll - 32
-  cl %common_compiler_args_32% %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /LD %release_incs32% steamclient.cpp %release_libs32% /link %common_win_linker_args_32% /DLL /OUT:"%experimental_dir%\x32\steamclient.dll"
+  cl %common_compiler_args_32% %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /LD %release_incs32% "steamclient\steamclient.cpp" %release_libs32% /link %common_win_linker_args_32% /DLL /OUT:"%experimental_dir%\x32\steamclient.dll"
 exit /b %errorlevel%
 
 :compile_experimentalclient_32
   echo // building lib steamclient.dll - 32
-  cl %common_compiler_args_32% %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /DSTEAMCLIENT_DLL /LD %release_incs32% /IImGui /Ioverlay_experimental %release_src% detours/*.cpp controller/gamepad.c ImGui/*.cpp ImGui/backends/imgui_impl_dx*.cpp ImGui/backends/imgui_impl_win32.cpp ImGui/backends/imgui_impl_vulkan.cpp ImGui/backends/imgui_impl_opengl3.cpp ImGui/backends/imgui_win_shader_blobs.cpp overlay_experimental/*.cpp overlay_experimental/windows/*.cpp overlay_experimental/System/*.cpp %release_libs32% /link %common_win_linker_args_32% /DLL /OUT:"%steamclient_dir%\steamclient.dll"
+  cl %common_compiler_args_32% %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /DSTEAMCLIENT_DLL /LD %release_incs32% /IImGui /Ioverlay_experimental %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "%libs_dir%\ImGui\*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_dx*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_win32.cpp" "%libs_dir%\ImGui\backends\imgui_impl_vulkan.cpp" "%libs_dir%\ImGui\backends\imgui_impl_opengl3.cpp" "%libs_dir%\ImGui\backends\imgui_win_shader_blobs.cpp" overlay_experimental/*.cpp overlay_experimental/windows/*.cpp overlay_experimental/System/*.cpp %release_libs32% /link %common_win_linker_args_32% /DLL /OUT:"%steamclient_dir%\steamclient.dll"
 exit /b %errorlevel%
 
 :compile_experimentalclient_ldr
   echo // building executable steamclient_loader.exe - 32
   :: common_win_linker_args_32 isn't a mistake, the entry is wWinMain
   :: check this table: https://learn.microsoft.com/en-us/cpp/build/reference/entry-entry-point-symbol#remarks
-  cl %common_compiler_args_32% %debug_info% %debug_info_format% %optimization_level% %release_defs% %release_incs32% steamclient_loader/*.cpp %release_libs32% user32.lib /link %common_win_linker_args_32% /OUT:"%steamclient_dir%\steamclient_loader.exe"
+  cl %common_compiler_args_32% %debug_info% %debug_info_format% %optimization_level% %release_defs% %release_incs32% "%tools_src_dir%\steamclient_loader\win\*.cpp" %release_libs32% user32.lib /link %common_win_linker_args_32% /OUT:"%steamclient_dir%\steamclient_loader.exe"
 exit /b %errorlevel%
 
 :compile_tool_itf
   echo // building tool generate_interfaces_file.exe - 32
-  cl %common_compiler_args_32% %debug_info% %debug_info_format% %optimization_level% %release_defs% %release_incs32% generate_interfaces_file.cpp %release_libs32% /link %common_exe_linker_args_32% /OUT:"%find_interfaces_dir%\generate_interfaces_file.exe"
+  cl %common_compiler_args_32% %debug_info% %debug_info_format% %optimization_level% %release_defs% %release_incs32% "%tools_src_dir%\generate_interfaces\generate_interfaces.cpp" %release_libs32% /link %common_exe_linker_args_32% /OUT:"%find_interfaces_dir%\generate_interfaces_file.exe"
 exit /b %errorlevel%
 
 :compile_tool_lobby
   echo // building tool lobby_connect.exe - 32
-  cl %common_compiler_args_32% %debug_info% %debug_info_format% %optimization_level% %release_defs% /DNO_DISK_WRITES /DLOBBY_CONNECT %release_incs32% lobby_connect.cpp %release_src% %release_libs32% Comdlg32.lib /link %common_exe_linker_args_32% /OUT:"%lobby_connect_dir%\lobby_connect.exe"
+  cl %common_compiler_args_32% %debug_info% %debug_info_format% %optimization_level% %release_defs% /DNO_DISK_WRITES /DLOBBY_CONNECT %release_incs32% "%tools_src_dir%\lobby_connect\lobby_connect.cpp" %release_src% %release_libs32% Comdlg32.lib /link %common_exe_linker_args_32% /OUT:"%lobby_connect_dir%\lobby_connect.exe"
 exit /b %errorlevel%
 
 
@@ -478,17 +480,17 @@ exit /b %errorlevel%
 
 :compile_experimental_lib64
   echo // building lib experimental steam_api64.dll - 64
-  cl %common_compiler_args_64% %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /LD %release_incs64% /IImGui /Ioverlay_experimental %release_src% detours/*.cpp controller/gamepad.c ImGui/*.cpp ImGui/backends/imgui_impl_dx*.cpp ImGui/backends/imgui_impl_win32.cpp ImGui/backends/imgui_impl_vulkan.cpp ImGui/backends/imgui_impl_opengl3.cpp ImGui/backends/imgui_win_shader_blobs.cpp overlay_experimental/*.cpp overlay_experimental/windows/*.cpp overlay_experimental/System/*.cpp %release_libs64% opengl32.lib /link %common_win_linker_args_64% /DLL /OUT:"%experimental_dir%\x64\steam_api64.dll"
+  cl %common_compiler_args_64% %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /LD %release_incs64% /IImGui /Ioverlay_experimental %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "%libs_dir%\ImGui\*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_dx*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_win32.cpp" "%libs_dir%\ImGui\backends\imgui_impl_vulkan.cpp" "%libs_dir%\ImGui\backends\imgui_impl_opengl3.cpp" "%libs_dir%\ImGui\backends\imgui_win_shader_blobs.cpp" overlay_experimental/*.cpp overlay_experimental/windows/*.cpp overlay_experimental/System/*.cpp %release_libs64% opengl32.lib /link %common_win_linker_args_64% /DLL /OUT:"%experimental_dir%\x64\steam_api64.dll"
 exit /b %errorlevel%
 
 :compile_experimental_client64
   echo // building lib experimental steamclient64.dll - 64
-  cl %common_compiler_args_64% %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /LD %release_incs64% steamclient.cpp %release_libs64% /link %common_win_linker_args_64% /DLL /OUT:"%experimental_dir%\x64\steamclient64.dll"
+  cl %common_compiler_args_64% %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /LD %release_incs64% "steamclient\steamclient.cpp" %release_libs64% /link %common_win_linker_args_64% /DLL /OUT:"%experimental_dir%\x64\steamclient64.dll"
 exit /b %errorlevel%
 
 :compile_experimentalclient_64
   echo // building lib steamclient64.dll - 64
-  cl %common_compiler_args_64% %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /DSTEAMCLIENT_DLL /LD %release_incs64% /IImGui /Ioverlay_experimental %release_src% detours/*.cpp controller/gamepad.c ImGui/*.cpp ImGui/backends/imgui_impl_dx*.cpp ImGui/backends/imgui_impl_win32.cpp ImGui/backends/imgui_impl_vulkan.cpp ImGui/backends/imgui_impl_opengl3.cpp ImGui/backends/imgui_win_shader_blobs.cpp overlay_experimental/*.cpp overlay_experimental/windows/*.cpp overlay_experimental/System/*.cpp %release_libs64% opengl32.lib /link %common_win_linker_args_64% /DLL /OUT:"%steamclient_dir%\steamclient64.dll"
+  cl %common_compiler_args_64% %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /DSTEAMCLIENT_DLL /LD %release_incs64% /IImGui /Ioverlay_experimental %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "%libs_dir%\ImGui\*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_dx*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_win32.cpp" "%libs_dir%\ImGui\backends\imgui_impl_vulkan.cpp" "%libs_dir%\ImGui\backends\imgui_impl_opengl3.cpp" "%libs_dir%\ImGui\backends\imgui_win_shader_blobs.cpp" overlay_experimental/*.cpp overlay_experimental/windows/*.cpp overlay_experimental/System/*.cpp %release_libs64% opengl32.lib /link %common_win_linker_args_64% /DLL /OUT:"%steamclient_dir%\steamclient64.dll"
 exit /b %errorlevel%
 
 
