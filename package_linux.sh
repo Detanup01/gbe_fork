@@ -6,8 +6,8 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-build_base_dir="build-linux"
-out_dir="build-linux/package"
+build_base_dir="build/linux"
+out_dir="build/linux/package"
 script_dir=$( cd -- "$( dirname -- "${0}" )" &> /dev/null && pwd )
 
 [[ "$1" = '' ]] && {

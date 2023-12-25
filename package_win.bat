@@ -5,8 +5,8 @@ pushd "%~dp0"
 
 set /a last_code=0
 
-set "build_base_dir=build-win"
-set "out_dir=build-win\package"
+set "build_base_dir=build\win"
+set "out_dir=build\win\package"
 
 set /a MEM_PERCENT=90
 set /a DICT_SIZE_MB=384
