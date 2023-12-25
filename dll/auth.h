@@ -262,8 +262,8 @@ public:
 
         PRINT_DEBUG(
             "AUTH::AppTicketGC::SER Token:\n"
-            "  GCToken: %I64u\n"
-            "  user steam_id: %I64u\n"
+            "  GCToken: " "%" PRIu64 "\n"
+            "  user steam_id: " "%" PRIu64 "\n"
             "  ticketGenDate: %u\n"
             "  ExternalIP: 0x%08X, InternalIP: 0x%08X\n"
             "  TimeSinceStartup: %u, TicketGeneratedCount: %u\n"
@@ -329,7 +329,7 @@ struct AppTicket {
         PRINT_DEBUG(
             "AUTH::AppTicket::SER:\n"
             "  Version: %u\n"
-            "  user steam_id: %I64u\n"
+            "  user steam_id: " "%" PRIu64 "\n"
             "  AppId: %u\n"
             "  ExternalIP: 0x%08X, InternalIP: 0x%08X\n"
             "  TicketGeneratedDate: %u, TicketGeneratedExpireDate: %u\n"
@@ -520,7 +520,7 @@ struct Auth_Data {
         PRINT_DEBUG(
             "AUTH::Auth_Data::SER:\n"
             "  HasGC: %u\n"
-            "  user steam_id: %I64u\n"
+            "  user steam_id: " "%" PRIu64 "\n"
             "  number: %llu\n",
 
             (int)HasGC,
