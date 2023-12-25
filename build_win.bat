@@ -410,12 +410,12 @@ endlocal & set /a last_code=%last_code%
 if %last_code% equ 0 (
   echo // copying readmes + files examples
   xcopy /y /s "files_example\*" "%build_root_dir%\"
-  copy /y steamclient_loader\ColdClientLoader.ini "%steamclient_dir%\"
   copy /y Readme_release.txt "%build_root_dir%\Readme.txt"
   copy /y Readme_experimental.txt "%experimental_dir%\Readme.txt"
   copy /y Readme_experimental_steamclient.txt "%steamclient_dir%\Readme.txt"
   copy /y Readme_generate_interfaces.txt "%find_interfaces_dir%\Readme.txt"
   copy /y Readme_lobby_connect.txt "%lobby_connect_dir%\Readme.txt"
+  copy /y "%tools_src_dir%\steamclient_loader\win\ColdClientLoader.ini" "%steamclient_dir%\"
 ) else (
   call :err_msg "Not copying readmes or files examples due to previous errors"
 )
