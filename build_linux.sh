@@ -155,9 +155,11 @@ fi
 
 
 # common stuff
-deps_dir="build-linux-deps"
-build_root_dir="build-linux/$build_folder"
-build_temp_dir="build-linux-temp"
+deps_dir="build/linux/deps"
+libs_dir="libs"
+tools_dir='tools'
+build_root_dir="build/linux/$build_folder"
+build_temp_dir="build/linux/temp"
 third_party_dir="third-party"
 third_party_build_dir="$third_party_dir/build/linux"
 build_root_32="$build_root_dir/x32"
@@ -193,7 +195,9 @@ mbedtls_lib64="$deps_dir/mbedtls/install64/lib"
 
 release_incs_both=(
   "$ssq_inc"
-  "utfcpp"
+  "$libs_dir/utfcpp"
+  "."
+  "$libs_dir"
 )
 release_incs32=(
   "${release_incs_both[@]}"
@@ -403,7 +407,7 @@ if [[ "$BUILD_TOOL_CLIENT_LDR" = "1" ]]; then
     "steamclient_loader.sh"
   )
   for f in "${steamclient_files[@]}"; do
-    cp -f "tools_linux/steamclient_loader/$f" "$build_root_tools/steamclient_loader/";
+    cp -f "$tools_dir/steamclient_loader/linux/$f" "$build_root_tools/steamclient_loader/";
   done
   
   echo; echo;
@@ -447,7 +451,7 @@ if [[ "$BUILD_TOOL_LOBBY32" = "1" ]]; then
   
   all_src_files=(
     "${release_src[@]}"
-    "lobby_connect.cpp"
+    "$tools_dir/lobby_connect/lobby_connect.cpp"
   )
   build_for 1 1 "$build_root_tools/lobby_connect/lobby_connect_x32" '-DNO_DISK_WRITES -DLOBBY_CONNECT' all_src_files 
   last_code=$((last_code + $?))
@@ -458,7 +462,7 @@ if [[ "$BUILD_TOOL_FIND_ITFS32" = "1" ]]; then
   [[ -d "$build_root_tools/find_interfaces" ]] || mkdir -p "$build_root_tools/find_interfaces"
 
   all_src_files=(
-    "generate_interfaces_file.cpp"
+    "$tools_dir/generate_interfaces/generate_interfaces.cpp"
   )
   build_for 1 1 "$build_root_tools/find_interfaces/generate_interfaces_file_x32" '' all_src_files 
   last_code=$((last_code + $?))
@@ -504,7 +508,7 @@ if [[ "$BUILD_TOOL_LOBBY64" = "1" ]]; then
   
   all_src_files=(
     "${release_src[@]}"
-    "lobby_connect.cpp"
+    "$tools_dir/lobby_connect/lobby_connect.cpp"
   )
   build_for 0 1 "$build_root_tools/lobby_connect/lobby_connect_x64" '-DNO_DISK_WRITES -DLOBBY_CONNECT' all_src_files 
   last_code=$((last_code + $?))
@@ -515,7 +519,7 @@ if [[ "$BUILD_TOOL_FIND_ITFS64" = "1" ]]; then
   [[ -d "$build_root_tools/find_interfaces" ]] || mkdir -p "$build_root_tools/find_interfaces"
 
   all_src_files=(
-    "generate_interfaces_file.cpp"
+    "$tools_dir/generate_interfaces/generate_interfaces.cpp"
   )
   build_for 0 1 "$build_root_tools/find_interfaces/generate_interfaces_file_x64" '' all_src_files 
   last_code=$((last_code + $?))
