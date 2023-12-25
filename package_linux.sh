@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 
 
-if [ "$(id -u)" -ne 0 ]; then
-  echo "Please run as root" >&2
-  exit 1
-fi
-
 build_base_dir="build/linux"
 out_dir="build/linux/package"
 script_dir=$( cd -- "$( dirname -- "${0}" )" &> /dev/null && pwd )
@@ -14,6 +9,11 @@ script_dir=$( cd -- "$( dirname -- "${0}" )" &> /dev/null && pwd )
   echo "[X] missing build folder";
   exit 1;
 }
+
+if [ "$(id -u)" -ne 0 ]; then
+  echo "Please run as root" >&2
+  exit 1
+fi
 
 [[ -d "$script_dir/$build_base_dir/$1" ]] || {
   echo "[X] build folder wasn't found";
