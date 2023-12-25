@@ -291,6 +291,48 @@ popd
 echo: & echo:
 
 
+:: ############## build mbedtls ##############
+echo // building mbedtls lib
+pushd "%deps_dir%\mbedtls"
+
+set "mbedtls_common_defs=-DUSE_STATIC_MBEDTLS_LIBRARY=ON -DUSE_SHARED_MBEDTLS_LIBRARY=OFF -DMSVC_STATIC_RUNTIME=ON -DENABLE_TESTING=OFF -DENABLE_PROGRAMS=OFF"
+
+setlocal
+call "%~dp0build_win_set_env.bat" 32 || (
+    endlocal
+    popd
+    call :err_msg "Couldn't find Visual Studio or build tools - 32"
+    set /a last_code=1
+    goto :end_script
+)
+%recreate_32%
+%cmake_gen32% %mbedtls_common_defs%
+set /a _exit=errorlevel
+%cmake_build32% --target install
+set /a _exit+=errorlevel
+%clean_gen32%
+endlocal & set /a last_code+=%_exit%
+
+setlocal
+call "%~dp0build_win_set_env.bat" 64 || (
+    endlocal
+    popd
+    call :err_msg "Couldn't find Visual Studio or build tools - 64"
+    set /a last_code=1
+    goto :end_script
+)
+%recreate_64%
+%cmake_gen64% %mbedtls_common_defs%
+set /a _exit=errorlevel
+%cmake_build64% --target install
+set /a _exit+=errorlevel
+%clean_gen64%
+endlocal & set /a last_code+=%_exit%
+
+popd
+echo: & echo:
+
+
 goto :end_script
 
 
@@ -372,4 +414,5 @@ v3.0.0.tar.gz|ssq
 zlib-1.3.tar.gz|zlib
 curl-8.4.0.tar.gz|curl
 v21.12.tar.gz|protobuf
+mbedtls-3.5.1.tar.gz|mbedtls
 ]
