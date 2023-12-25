@@ -316,7 +316,10 @@ function build_for () {
   local build_cmds=()
   local -A objs_dirs=()
   for src_file in $( echo "${all_src[@]}" ); do
-    [[ -f "$src_file" ]] || continue
+    [[ -f "$src_file" ]] || {
+      echo "[X] file "$src_file" wasn't found" >&2;
+      return 1;
+    }
     
     # https://stackoverflow.com/a/9559024
     local obj_dir=$( [[ -d "${src_file%/*}" ]] && echo "${src_file%/*}" || echo '.' )
