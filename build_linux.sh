@@ -185,23 +185,28 @@ zlib_inc64="$deps_dir/zlib/install64/include"
 zlib_lib32="$deps_dir/zlib/install32/lib"
 zlib_lib64="$deps_dir/zlib/install64/lib"
 
+mbedtls_inc32="$deps_dir/mbedtls/install32/include"
+mbedtls_inc64="$deps_dir/mbedtls/install64/include"
+mbedtls_lib32="$deps_dir/mbedtls/install32/lib"
+mbedtls_lib64="$deps_dir/mbedtls/install64/lib"
+
 release_incs_both=(
   "$ssq_inc"
   "utfcpp"
-  "fifo_map"
-  "mbedtls"
 )
 release_incs32=(
   "${release_incs_both[@]}"
   "$curl_inc32"
   "$protob_inc32"
   "$zlib_inc32"
+  "$mbedtls_inc32"
 )
 release_incs64=(
   "${release_incs_both[@]}"
   "$curl_inc64"
   "$protob_inc64"
   "$zlib_inc64"
+  "$mbedtls_inc64"
 )
 
 release_libs_dir32=(
@@ -209,12 +214,14 @@ release_libs_dir32=(
   "$curl_lib32"
   "$protob_lib32"
   "$zlib_lib32"
+  "$mbedtls_lib32"
 )
 release_libs_dir64=(
   "$ssq_lib64"
   "$curl_lib64"
   "$protob_lib64"
   "$zlib_lib64"
+  "$mbedtls_lib64"
 )
 
 release_ignore_warn="-Wno-switch"
@@ -223,18 +230,18 @@ release_defs="$dbg_defs $common_defs"
 release_src=(
   "dll/*.cpp"
   "dll/*.cc"
-  "mbedtls/*.c"
 )
-# if it's called libMyLib.a, then only type "MyLib"
+# if it's called libXYZ.a, then only type "XYZ"
 # these will be statically linked, make sure to build a PIC static lib
 # each will be prefixed with -l, ex: -lpthread
 release_libs=(
-  "ssq"
-  "curl"
-  "protobuf-lite"
-  "z" # libz library
   "pthread"
   "dl"
+  "ssq"
+  "z" # libz library
+  "curl"
+  "protobuf-lite"
+  "mbedcrypto"
 )
 
 protoc_exe_32="$deps_dir/protobuf/install32/bin/protoc"
