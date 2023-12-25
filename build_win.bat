@@ -154,9 +154,9 @@ if %BUILD_LOW_PERF% equ 1 (
 
 
 :: common stuff
-set "deps_dir=build-win-deps"
-set "build_root_dir=build-win\%build_folder%"
-set "build_temp_dir=build-win-temp"
+set "deps_dir=build\win\deps"
+set "build_root_dir=build\win\%build_folder%"
+set "build_temp_dir=build\win\tmp"
 set "tools_dir=%build_root_dir%\tools"
 set "steamclient_dir=%build_root_dir%\experimental_steamclient"
 set "experimental_dir=%build_root_dir%\experimental"
