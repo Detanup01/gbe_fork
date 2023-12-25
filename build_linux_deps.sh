@@ -157,6 +157,7 @@ chmod 777 "$mycmake"
 
 ############## build ssq ##############
 echo // building ssq lib
+[[ -f "$third_party_common_dir/v3.0.0.tar.gz" ]] || exit 1
 tar -zxf "$third_party_common_dir/v3.0.0.tar.gz" -C "$deps_dir"
 
 for i in {1..10}; do
@@ -184,6 +185,7 @@ echo; echo;
 
 ############## build zlib ##############
 echo // building zlib lib
+[[ -f "$third_party_common_dir/zlib-1.3.tar.gz" ]] || exit 1
 tar -zxf "$third_party_common_dir/zlib-1.3.tar.gz" -C "$deps_dir"
 
 for i in {1..10}; do
@@ -250,6 +252,7 @@ wild_zlib_64=(
 
 ############## build curl ##############
 echo // building curl lib
+[[ -f "$third_party_common_dir/curl-8.4.0.tar.gz" ]] || exit 1
 tar -zxf "$third_party_common_dir/curl-8.4.0.tar.gz" -C "$deps_dir"
 
 for i in {1..10}; do
@@ -281,6 +284,7 @@ echo; echo;
 
 ############## build protobuf ##############
 echo // building protobuf lib
+[[ -f "$third_party_common_dir/v21.12.tar.gz" ]] || exit 1
 tar -zxf "$third_party_common_dir/v21.12.tar.gz" -C "$deps_dir"
 
 for i in {1..10}; do
@@ -312,6 +316,7 @@ echo; echo;
 
 ############## build mbedtls ##############
 echo // building mbedtls lib
+[[ -f "$third_party_common_dir/mbedtls-3.5.1.tar.gz" ]] || exit 1
 tar -zxf "$third_party_common_dir/mbedtls-3.5.1.tar.gz" -C "$deps_dir"
 
 for i in {1..10}; do
