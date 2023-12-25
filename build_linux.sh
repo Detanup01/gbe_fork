@@ -30,11 +30,13 @@ BUILD_TOOL_LOBBY64=1
 
 BUILD_LOW_PERF=0
 
+# < 0: deduce, > 1: force
+PARALLEL_THREADS_OVERRIDE=-1
+
 # 0 = release, 1 = debug, otherwise error
 BUILD_TYPE=-1
 
-# < 0: deduce, > 1: force
-PARALLEL_THREADS_OVERRIDE=-1
+CLEAN_BUILD=0
 
 for (( i=1; i<=$#; i++ )); do
   var="${!i}"
@@ -64,6 +66,8 @@ for (( i=1; i<=$#; i++ )); do
     BUILD_TOOL_LOBBY32=0
   elif [[ "$var" = "-tool-lobby-64" ]]; then
     BUILD_TOOL_LOBBY64=0
+  elif [[ "$var" = "-clean" ]]; then
+    CLEAN_BUILD=1
   elif [[ "$var" = "release" ]]; then
     BUILD_TYPE=0
   elif [[ "$var" = "debug" ]]; then
@@ -376,21 +380,17 @@ function build_for () {
 }
 
 
-### create folders + copy common scripts
-echo // creating dirs
-rm -f -r "$build_root_dir"
-mkdir -p "$build_root_32"
-mkdir -p "$build_root_64"
-mkdir -p "$build_root_tools/steamclient_loader"
-mkdir -p "$build_root_tools/find_interfaces"
-mkdir -p "$build_root_tools/lobby_connect"
-
-echo; echo;
+if [[ "$CLEAN_BUILD" = "1" ]]; then
+  echo // cleaning previous build
+  [[ -d "$build_root_dir" ]] && rm -f -r "$build_root_dir"
+  echo; echo;
+fi
 
 
 ## tools
 if [[ "$BUILD_TOOL_CLIENT_LDR" = "1" ]]; then
   echo // copying tool steamclient_loader
+  [[ -d "$build_root_tools/steamclient_loader/" ]] || mkdir -p "$build_root_tools/steamclient_loader/"
   steamclient_files=(
     "ldr_appid.txt"
     "ldr_cmdline.txt"
@@ -417,6 +417,7 @@ echo; echo;
 
 if [[ "$BUILD_LIB32" = "1" ]]; then
   echo // building shared lib libsteam_api.so - 32
+  [[ -d "$build_root_32" ]] || mkdir -p "$build_root_32"
 
   all_src_files=(
     "${release_src[@]}"
@@ -428,6 +429,7 @@ fi
 
 if [[ "$BUILD_CLIENT32" = "1" ]]; then
   echo // building shared lib steamclient.so - 32
+  [[ -d "$build_root_32" ]] || mkdir -p "$build_root_32"
   
   all_src_files=(
     "${release_src[@]}"
@@ -439,6 +441,7 @@ fi
 
 if [[ "$BUILD_TOOL_LOBBY32" = "1" ]]; then
   echo // building executable lobby_connect_x32 - 32
+  [[ -d "$build_root_tools/lobby_connect" ]] || mkdir -p "$build_root_tools/lobby_connect"
   
   all_src_files=(
     "${release_src[@]}"
@@ -450,6 +453,7 @@ fi
 
 if [[ "$BUILD_TOOL_FIND_ITFS32" = "1" ]]; then
   echo // building executable generate_interfaces_file_x32 - 32
+  [[ -d "$build_root_tools/find_interfaces" ]] || mkdir -p "$build_root_tools/find_interfaces"
 
   all_src_files=(
     "generate_interfaces_file.cpp"
@@ -470,6 +474,7 @@ echo; echo;
 
 if [[ "$BUILD_LIB64" = "1" ]]; then
   echo // building shared lib libsteam_api.so - 64
+  [[ -d "$build_root_64" ]] || mkdir -p "$build_root_64"
   
   all_src_files=(
     "${release_src[@]}"
@@ -481,6 +486,7 @@ fi
 
 if [[ "$BUILD_CLIENT64" = "1" ]]; then
   echo // building shared lib steamclient.so - 64
+  [[ -d "$build_root_64" ]] || mkdir -p "$build_root_64"
   
   all_src_files=(
     "${release_src[@]}"
@@ -492,6 +498,7 @@ fi
 
 if [[ "$BUILD_TOOL_LOBBY64" = "1" ]]; then
   echo // building executable lobby_connect_x64 - 64
+  [[ -d "$build_root_tools/lobby_connect" ]] || mkdir -p "$build_root_tools/lobby_connect"
   
   all_src_files=(
     "${release_src[@]}"
@@ -503,6 +510,7 @@ fi
 
 if [[ "$BUILD_TOOL_FIND_ITFS64" = "1" ]]; then
   echo // building executable generate_interfaces_file_x64 - 64
+  [[ -d "$build_root_tools/find_interfaces" ]] || mkdir -p "$build_root_tools/find_interfaces"
 
   all_src_files=(
     "generate_interfaces_file.cpp"
