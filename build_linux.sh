@@ -64,8 +64,6 @@ for (( i=1; i<=$#; i++ )); do
     BUILD_TOOL_LOBBY32=0
   elif [[ "$var" = "-tool-lobby-64" ]]; then
     BUILD_TOOL_LOBBY64=0
-  elif [[ "$var" = "+lowperf" ]]; then
-    BUILD_LOW_PERF=1
   elif [[ "$var" = "release" ]]; then
     BUILD_TYPE=0
   elif [[ "$var" = "debug" ]]; then

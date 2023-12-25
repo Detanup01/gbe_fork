@@ -55,8 +55,6 @@ set /a BUILD_TYPE=-1
     set /a BUILD_TOOL_FIND_ITFS=0
   ) else if "%~1"=="-tool-lobby" (
     set /a BUILD_TOOL_LOBBY=0
-  ) else if "%~1"=="+lowperf" (
-    set /a BUILD_LOW_PERF=1
   ) else if "%~1"=="-j" (
     call :get_parallel_threads_count %~2 || (
       call :err_msg "Invalid arg after -j, expected a number"
