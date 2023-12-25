@@ -309,4 +309,46 @@ eval $clean_gen64
 popd
 echo ; echo
 
+
+############## build mbedtls ##############
+echo // building mbedtls lib
+tar -zxf "$third_party_common_dir/mbedtls-3.5.1.tar.gz" -C "$deps_dir"
+
+for i in {1..10}; do
+  mv "$deps_dir/mbedtls-3.5.1" "$deps_dir/mbedtls" && { break; } || { sleep 1; }
+done
+
+chmod -R 777 "$deps_dir/mbedtls"
+pushd "$deps_dir/mbedtls"
+
+# AES-NI on mbedtls v3.5.x:
+# https://github.com/Mbed-TLS/mbedtls/issues/8400
+# https://github.com/Mbed-TLS/mbedtls/issues/8334
+# clang/gcc compiler flags ref:
+# https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html#index-mmmx
+# instruction set details
+# https://en.wikipedia.org/wiki/CLMUL_instruction_set
+# https://en.wikipedia.org/wiki/AES_instruction_set
+# https://en.wikipedia.org/wiki/SSE2
+
+mbedtls_common_defs="-DUSE_STATIC_MBEDTLS_LIBRARY=ON -DUSE_SHARED_MBEDTLS_LIBRARY=OFF -DENABLE_TESTING=OFF -DENABLE_PROGRAMS=OFF -DLINK_WITH_PTHREAD=ON"
+
+eval $recreate_32
+CFLAGS='-mpclmul -msse2 -maes' eval $cmake_gen32 $mbedtls_common_defs
+last_code=$((last_code + $?))
+eval $cmake_build32 --target install
+last_code=$((last_code + $?))
+eval $clean_gen32
+
+eval $recreate_64
+eval $cmake_gen64 $mbedtls_common_defs
+last_code=$((last_code + $?))
+eval $cmake_build64 --target install
+last_code=$((last_code + $?))
+eval $clean_gen64
+
+popd
+echo; echo;
+
+
 exit $last_code
