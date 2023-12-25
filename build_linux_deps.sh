@@ -76,7 +76,7 @@ last_code=$((last_code + $?))
 # exit early if we should install packages only, used by CI mainly
 [[ "$INSTALL_PACKAGES_ONLY" -ne 0 ]] && exit $last_code
 
-echo ; echo
+echo; echo;
 
 
 [[ -f "$mycmake" ]] || {
@@ -137,7 +137,7 @@ set(CMAKE_CXX_COMPILER clang++)
 
 EOL
 
-echo ; echo
+echo; echo;
 
 ############## common CMAKE args ##############
 # https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS_CONFIG.html#variable:CMAKE_%3CLANG%3E_FLAGS_%3CCONFIG%3E
@@ -179,7 +179,7 @@ eval $cmake_build64
 last_code=$((last_code + $?))
 
 popd
-echo ; echo
+echo; echo;
 
 
 ############## build zlib ##############
@@ -208,7 +208,7 @@ last_code=$((last_code + $?))
 eval $clean_gen64
 
 popd
-echo ; echo
+echo; echo;
 
 
 ############## zlib is painful ##############
@@ -276,7 +276,7 @@ last_code=$((last_code + $?))
 eval $clean_gen64
 
 popd
-echo ; echo
+echo; echo;
 
 
 ############## build protobuf ##############
@@ -307,7 +307,7 @@ last_code=$((last_code + $?))
 eval $clean_gen64
 
 popd
-echo ; echo
+echo; echo;
 
 
 ############## build mbedtls ##############
