@@ -6,12 +6,11 @@ required_files=(
   "dll/steam_client.cpp"
   "controller/gamepad.c"
   "sdk_includes/isteamclient.h"
-  "generate_interfaces_file.cpp"
 )
 
 for emu_file in "${required_files[@]}"; do
   if [ ! -f "$emu_file" ]; then
-    echo "[X] Invalid emu directory, change directory to emu's src dir" >&2
+    echo "[X] Invalid emu directory, change directory to emu's src dir (missing file '$emu_file')" >&2
     exit 1
   fi
 done
