@@ -67,7 +67,10 @@ if %jobs_count% lss 2 (
     set /a jobs_count=2
 )
 
-call :extract_all_deps
+call :extract_all_deps || (
+    set /a last_code=1
+    goto :end_script
+)
 
 :: ############## common CMAKE args ##############
 :: https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS_CONFIG.html#variable:CMAKE_%3CLANG%3E_FLAGS_%3CCONFIG%3E
@@ -343,8 +346,7 @@ goto :end_script
     )
     if "%list%"=="-1" (
         call :err_msg "Couldn't find list of tools to extract inside thif batch script"
-        set /a last_code=1
-        goto :end_script
+        exit /b 1
     )
 
     rmdir /s /q "%deps_dir%"
@@ -355,18 +357,20 @@ goto :end_script
         )
 
         echo // Extracting archive "%third_party_common_dir%\%%~A" to "%deps_dir%\%%~B"
+        if not exist "%third_party_common_dir%\%%~A" (
+            call :err_msg "File not found"
+            exit /b 1
+        )
         for /f "usebackq tokens=* delims=" %%Z in ('"%%~nA"') do (
             if /i "%%~xZ%%~xA"==".tar.gz" (
                 "%extractor%" x "%third_party_common_dir%\%%~A" -so | "%extractor%" x -si -ttar -y -aoa -o"%deps_dir%\%%~B" || (
                     call :err_msg "Extraction failed"
-                    set /a last_code=1
-                    goto :end_script
+                    exit /b 1
                 )
             ) else (
                 "%extractor%" x "%third_party_common_dir%\%%~A" -y -aoa -o"%deps_dir%\%%~B" || (
                     call :err_msg "Extraction failed"
-                    set /a last_code=1
-                    goto :end_script
+                    exit /b 1
                 )
             )
         )
@@ -376,8 +380,7 @@ goto :end_script
             robocopy /E /MOVE /MT4 /NS /NC /NFL /NDL /NP /NJH /NJS "%deps_dir%\%%~B\%%~C" "%deps_dir%\%%~B"
             if ERRORLEVEL 8 (
                 call :err_msg "Failed to flatten dir of dep"
-                set /a last_code=1
-                goto :end_script
+                exit /b 1
             )
             
             if exist "%deps_dir%\%%~B\%%~C" (
@@ -388,7 +391,7 @@ goto :end_script
         
     )
 :extract_all_deps_end
-exit /b
+exit /b 0
 
 :err_msg
     1>&2 echo [X] %~1
