@@ -5,7 +5,7 @@
 net.pb.*
 *steam_api*
 release/*
-/build*/
+/build/
 *.obj
 /dll/net.pb.cc
 /dll/net.pb.h
