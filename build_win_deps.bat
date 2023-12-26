@@ -3,7 +3,7 @@
 setlocal
 pushd "%~dp0"
 
-set "deps_dir=build\win\deps"
+set "deps_dir=build\deps\win"
 set "third_party_dir=third-party"
 set "third_party_deps_dir=%third_party_dir%\deps\win"
 set "third_party_common_dir=%third_party_dir%\deps\common"

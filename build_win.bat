@@ -134,7 +134,7 @@ set "find_interfaces_dir=%tools_dir%\find_interfaces"
 set "lobby_connect_dir=%tools_dir%\lobby_connect"
 
 :: common stuff
-set "deps_dir=build\win\deps"
+set "deps_dir=build\deps\win"
 set "libs_dir=libs"
 set "tools_src_dir=tools"
 set "build_temp_dir=build\tmp\win"

@@ -20,7 +20,7 @@ fi
 
 # common stuff
 script_dir=$( cd -- "$( dirname -- "${0}" )" &> /dev/null && pwd )
-deps_dir="$script_dir/build/linux/deps"
+deps_dir="$script_dir/build/deps/linux"
 third_party_dir="$script_dir/third-party"
 third_party_deps_dir="$third_party_dir/deps/linux"
 third_party_common_dir="$third_party_dir/deps/common"

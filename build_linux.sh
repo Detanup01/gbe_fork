@@ -109,7 +109,7 @@ build_root_64="$build_root_dir/x64"
 build_root_tools="$build_root_dir/tools"
 
 # common stuff
-deps_dir="build/linux/deps"
+deps_dir="build/deps/linux"
 libs_dir="libs"
 tools_dir='tools'
 build_temp_dir="build/tmp/linux"

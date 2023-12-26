@@ -19,7 +19,7 @@ permissions:
 env:
 
   DEPS_CACHE_KEY: emu-deps-linux
-  DEPS_CACHE_DIR: build/linux/deps
+  DEPS_CACHE_DIR: build/deps/linux
 
   PACKAGE_BASE_DIR: "build/linux/package"
   THIRD_PARTY_BASE_DIR: 'third-party'
