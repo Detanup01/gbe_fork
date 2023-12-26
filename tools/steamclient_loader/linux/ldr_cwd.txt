@@ -1,1 +1,0 @@
-./my_game/base_folder/
