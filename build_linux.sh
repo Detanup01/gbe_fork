@@ -366,19 +366,7 @@ fi
 ## tools
 if [[ "$BUILD_TOOL_CLIENT_LDR" = "1" ]]; then
   [[ -d "$build_root_tools/steamclient_loader/" ]] || mkdir -p "$build_root_tools/steamclient_loader/"
-  steamclient_files=(
-    "ldr_appid.txt"
-    "ldr_cmdline.txt"
-    "ldr_cwd.txt"
-    "ldr_exe.txt"
-    "ldr_steam_rt.txt"
-    "README.md"
-    "steamclient_loader.sh"
-  )
-  for f in "${steamclient_files[@]}"; do
-    cp -f "$tools_dir/steamclient_loader/linux/$f" "$build_root_tools/steamclient_loader/";
-  done
-  
+  cp -f "$tools_dir"/steamclient_loader/linux/* "$build_root_tools/steamclient_loader/"
   echo; echo;
 fi
 
