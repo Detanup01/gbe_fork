@@ -18,7 +18,8 @@ permissions:
 
 env:
   ARTIFACT_NAME: "generate_emu_config-linux-${{ github.sha }}"
-  PACKAGE_ROOT_PATH: "script_generate_emu_config/bin/package"
+  SCRIPT_BASE_DIR: "${{ github.workspace }}/tools/generate_emu_config"
+  PACKAGE_BASE_DIR: "${{ github.workspace }}/tools/generate_emu_confi/bin/package"
 
 jobs:
   build:
@@ -30,24 +31,24 @@ jobs:
     
     - name: Install dependencies
       shell: bash
-      working-directory: ${{ github.workspace }}/script_generate_emu_config
+      working-directory: "${{ env.SCRIPT_BASE_DIR }}"
       run: sudo chmod 77 recreate_venv_linux.sh && sudo ./recreate_venv_linux.sh
 
     - name: Rebuild
       shell: bash
-      working-directory: ${{ github.workspace }}/script_generate_emu_config
+      working-directory: "${{ env.SCRIPT_BASE_DIR }}"
       run: sudo chmod 77 rebuild_linux.sh && sudo ./rebuild_linux.sh
 
     - name: Package build
       shell: bash
-      working-directory: ${{ github.workspace }}/script_generate_emu_config
+      working-directory: "${{ env.SCRIPT_BASE_DIR }}"
       run: sudo chmod 77 package_linux.sh && sudo ./package_linux.sh
 
     - name: Upload build package
       uses: actions/upload-artifact@v4
       with:
         name: "${{ env.ARTIFACT_NAME }}"
-        path: "${{ env.PACKAGE_ROOT_PATH }}/linux/"
+        path: "${{ env.PACKAGE_BASE_DIR }}/linux/"
         if-no-files-found: 'error'
         compression-level: 9
         retention-days: 1
@@ -56,5 +57,5 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
       with:
-        files: "${{ env.PACKAGE_ROOT_PATH }}/**/*"
+        files: "${{ env.PACKAGE_BASE_DIR }}/**/*"
     

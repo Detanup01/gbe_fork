@@ -18,9 +18,11 @@ permissions:
 
 env:
   ARTIFACT_NAME: "generate_emu_config-win-${{ github.sha }}"
-  PACKAGE_ROOT_PATH: "script_generate_emu_config/bin/package"
+  SCRIPT_BASE_DIR: "${{ github.workspace }}/tools/generate_emu_config"
+  PACKAGE_BASE_DIR: "${{ github.workspace }}/tools/generate_emu_confi/bin/package"
   
   THIRD_PARTY_BASE_DIR: 'third-party'
+  
 
 jobs:
   build:
@@ -43,24 +45,24 @@ jobs:
 
     - name: Install dependencies
       shell: cmd
-      working-directory: ${{ github.workspace }}/script_generate_emu_config
+      working-directory: "${{ env.SCRIPT_BASE_DIR }}"
       run: recreate_venv_win.bat
 
     - name: Rebuild
       shell: cmd
-      working-directory: ${{ github.workspace }}/script_generate_emu_config
+      working-directory: "${{ env.SCRIPT_BASE_DIR }}"
       run: rebuild_win.bat
 
     - name: Package build
       shell: cmd
-      working-directory: ${{ github.workspace }}/script_generate_emu_config
+      working-directory: "${{ env.SCRIPT_BASE_DIR }}"
       run: package_win.bat
 
     - name: Upload build package
       uses: actions/upload-artifact@v4
       with:
         name: "${{ env.ARTIFACT_NAME }}"
-        path: "${{ env.PACKAGE_ROOT_PATH }}/win/"
+        path: "${{ env.PACKAGE_BASE_DIR }}/win/"
         if-no-files-found: 'error'
         compression-level: 9
         retention-days: 1
@@ -69,5 +71,5 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
       with:
-        files: "${{ env.PACKAGE_ROOT_PATH }}/**/*"
+        files: "${{ env.PACKAGE_BASE_DIR }}/**/*"
     
