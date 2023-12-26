@@ -121,6 +121,12 @@ jobs:
         ref: 'third-party/build/linux'
         path: "${{env.THIRD_PARTY_BASE_DIR}}/build/linux"
 
+### fix folder permissions! not sure why this fails
+    - name: Give all permissions for repo folder
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run:  sudo chmod -R 777 "${{ github.workspace }}"
+
 ### build (release mode)
     - name: Build release mode
       shell: bash

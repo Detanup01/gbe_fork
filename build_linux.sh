@@ -365,12 +365,6 @@ fi
 
 ## tools
 if [[ "$BUILD_TOOL_CLIENT_LDR" = "1" ]]; then
-  echo // copying tool steamclient_loader
-  echo -----------------
-  pwd
-  echo -----------------
-  echo ffff = "$build_root_tools/steamclient_loader/"
-  echo -----------------
   [[ -d "$build_root_tools/steamclient_loader/" ]] || mkdir -p "$build_root_tools/steamclient_loader/"
   steamclient_files=(
     "ldr_appid.txt"
