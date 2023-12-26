@@ -3,7 +3,7 @@
 
 venv=".env-linux"
 out_dir="bin/linux"
-build_temp_dir="build/linux/tmp"
+build_temp_dir="build/tmp/linux"
 tool_name="generate_emu_config"
 main_file="generate_emu_config.py"
 

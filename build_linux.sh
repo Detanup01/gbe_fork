@@ -112,7 +112,7 @@ build_root_tools="$build_root_dir/tools"
 deps_dir="build/linux/deps"
 libs_dir="libs"
 tools_dir='tools'
-build_temp_dir="build/linux/tmp"
+build_temp_dir="build/tmp/linux"
 third_party_dir="third-party"
 third_party_build_dir="$third_party_dir/build/linux"
 

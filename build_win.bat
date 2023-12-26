@@ -137,7 +137,7 @@ set "lobby_connect_dir=%tools_dir%\lobby_connect"
 set "deps_dir=build\win\deps"
 set "libs_dir=libs"
 set "tools_src_dir=tools"
-set "build_temp_dir=build\win\tmp"
+set "build_temp_dir=build\tmp\win"
 
 set "protoc_exe_32=%deps_dir%\protobuf\install32\bin\protoc.exe"
 set "protoc_exe_64=%deps_dir%\protobuf\install64\bin\protoc.exe"

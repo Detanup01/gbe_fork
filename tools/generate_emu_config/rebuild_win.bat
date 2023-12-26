@@ -5,7 +5,7 @@ pushd "%~dp0"
 
 set "venv=.env-win"
 set "out_dir=bin\win"
-set "build_temp_dir=build\win\tmp"
+set "build_temp_dir=build\tmp\win"
 set "tool_name=generate_emu_config"
 set "icon_file=icon\Froyoshark-Enkel-Steam.ico"
 set "main_file=generate_emu_config.py"
