@@ -23,8 +23,16 @@ script_dir=$( cd -- "$( dirname -- "${0}" )" &> /dev/null && pwd )
 deps_dir="$script_dir/build/linux/deps"
 third_party_dir="$script_dir/third-party"
 third_party_deps_dir="$third_party_dir/deps/linux"
-third_party_common_dir="$third_party_dir/deps/common/src"
-mycmake="$third_party_deps_dir/cmake-3.27.7-linux-x86_64/bin/cmake"
+third_party_common_dir="$third_party_dir/deps/common"
+mycmake="$third_party_deps_dir/cmake/bin/cmake"
+
+deps_archives=(
+  "libssq/libssq.tar.gz"
+  "zlib/zlib.tar.gz"
+  "curl/curl.tar.gz"
+  "protobuf/protobuf.tar.gz"
+  "mbedtls/mbedtls.tar.gz"
+)
 
 # < 0: deduce, > 1: force
 PARALLEL_THREADS_OVERRIDE=-1
@@ -154,30 +162,23 @@ clean_gen64="[[ -d build64 ]] && rm -f -r build64/"
 
 chmod 777 "$mycmake"
 
-declare -A deps_archives=(
-  ["v3.0.0.tar.gz"]="ssq"
-  ["zlib-1.3.tar.gz"]="zlib"
-  ["curl-8.4.0.tar.gz"]="curl"
-  ["v21.12.tar.gz"]="protobuf"
-  ["mbedtls-3.5.1.tar.gz"]="mbedtls"
-)
-
 
 # the artificial delays "sleep 3" are here because on Windows WSL the
 # explorer or search indexer keeps a handle open and causes an error here
 echo // extracting archives
 dotglob_state="$( shopt -p dotglob )"
-for f in "${!deps_archives[@]}"; do
-  [[ -f "$third_party_common_dir/$f" ]] || {
-    echo "[X] archive '$f' not found";
+for f in "${deps_archives[@]}"; do
+  src_arch="$third_party_common_dir/$f"
+  [[ -f "$src_arch" ]] || {
+    echo "[X] archive '"$src_arch"' not found";
     exit 1;
   }
 
-  target_dir="$deps_dir/${deps_archives["$f"]}"
+  target_dir="$deps_dir/$( dirname "$f" )"
   mkdir -p "$target_dir"
 
   echo   - extracting archive "'$f'" into "'$target_dir'"
-  tar -zxf "$third_party_common_dir/$f" -C "$target_dir"
+  tar -zxf "$src_arch" -C "$target_dir"
   sleep 2
 
   echo   - flattening dir "'$target_dir'" by moving everything in a subdir outside
@@ -197,7 +198,7 @@ done
 
 ############## build ssq ##############
 echo // building ssq lib
-pushd "$deps_dir/ssq"
+pushd "$deps_dir/libssq"
 
 eval $recreate_32
 eval $cmake_gen32

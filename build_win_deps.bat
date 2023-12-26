@@ -6,9 +6,9 @@ pushd "%~dp0"
 set "deps_dir=build\win\deps"
 set "third_party_dir=third-party"
 set "third_party_deps_dir=%third_party_dir%\deps\win"
-set "third_party_common_dir=%third_party_dir%\deps\common\src"
-set "extractor=%third_party_deps_dir%\7za-win\7za.exe"
-set "mycmake=%~dp0%third_party_deps_dir%\cmake-3.27.7-windows-x86_64\bin\cmake.exe"
+set "third_party_common_dir=%third_party_dir%\deps\common"
+set "extractor=%third_party_deps_dir%\7za\7za.exe"
+set "mycmake=%~dp0%third_party_deps_dir%\cmake\bin\cmake.exe"
 
 set /a last_code=0
 
@@ -72,6 +72,7 @@ call :extract_all_deps || (
     goto :end_script
 )
 
+
 :: ############## common CMAKE args ##############
 :: https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS_CONFIG.html#variable:CMAKE_%3CLANG%3E_FLAGS_%3CCONFIG%3E
 set cmake_common_args=-G "Visual Studio 17 2022" -S .
@@ -106,7 +107,7 @@ echo // [?] All CMAKE builds will use %jobs_count% parallel jobs
 
 :: ############## build ssq ##############
 echo // building ssq lib
-pushd "%deps_dir%\ssq"
+pushd "%deps_dir%\libssq"
 
 setlocal
 call "%~dp0build_win_set_env.bat" 32 || (
@@ -348,44 +349,45 @@ goto :end_script
         call :err_msg "Couldn't find list of tools to extract inside thif batch script"
         exit /b 1
     )
-
+    
+    echo // Recreating dir...
     rmdir /s /q "%deps_dir%"
     mkdir "%deps_dir%"
-    for /f "usebackq eol=; skip=%list% tokens=1,2 delims=|" %%A in ("%~f0") do (
+    for /f "usebackq eol=; skip=%list% tokens=1,* delims=\" %%A in ("%~f0") do (
         if "%%~A"=="]" (
             goto :extract_all_deps_end
         )
 
-        echo // Extracting archive "%third_party_common_dir%\%%~A" to "%deps_dir%\%%~B"
-        if not exist "%third_party_common_dir%\%%~A" (
+        echo // Extracting archive "%%~B" to "%deps_dir%\%%~A"
+        if not exist "%third_party_common_dir%\%%~A\%%~B" (
             call :err_msg "File not found"
             exit /b 1
         )
-        for /f "usebackq tokens=* delims=" %%Z in ('"%%~nA"') do (
-            if /i "%%~xZ%%~xA"==".tar.gz" (
-                "%extractor%" x "%third_party_common_dir%\%%~A" -so | "%extractor%" x -si -ttar -y -aoa -o"%deps_dir%\%%~B" || (
+        for /f "usebackq tokens=* delims=" %%Z in ('"%%~nB"') do (
+            if /i "%%~xZ%%~xB"==".tar.gz" (
+                "%extractor%" x "%third_party_common_dir%\%%~A\%%~B" -so | "%extractor%" x -si -ttar -y -aoa -o"%deps_dir%\%%~A" || (
                     call :err_msg "Extraction failed"
                     exit /b 1
                 )
             ) else (
-                "%extractor%" x "%third_party_common_dir%\%%~A" -y -aoa -o"%deps_dir%\%%~B" || (
+                "%extractor%" x "%third_party_common_dir%\%%~A\%%~B" -y -aoa -o"%deps_dir%\%%~A" || (
                     call :err_msg "Extraction failed"
                     exit /b 1
                 )
             )
         )
 
-        for /f "tokens=* delims=" %%C in ('dir /b /a:d "%deps_dir%\%%~B\" 2^>nul') do (
-            echo // Flattening dir "%deps_dir%\%%~B\%%~C" by moving everything inside it to "%deps_dir%\%%~B"
-            robocopy /E /MOVE /MT4 /NS /NC /NFL /NDL /NP /NJH /NJS "%deps_dir%\%%~B\%%~C" "%deps_dir%\%%~B"
+        for /f "tokens=* delims=" %%C in ('dir /b /a:d "%deps_dir%\%%~A\" 2^>nul') do (
+            echo // Flattening dir "%deps_dir%\%%~A\%%~C" by moving everything inside it to "%deps_dir%\%%~A"
+            robocopy /E /MOVE /MT4 /NS /NC /NFL /NDL /NP /NJH /NJS "%deps_dir%\%%~A\%%~C" "%deps_dir%\%%~A"
             if ERRORLEVEL 8 (
                 call :err_msg "Failed to flatten dir of dep"
                 exit /b 1
             )
             
-            if exist "%deps_dir%\%%~B\%%~C" (
-                echo // Removing nested dir "%deps_dir%\%%~B\%%~C"
-                rmdir /s /q "%deps_dir%\%%~B\%%~C"
+            if exist "%deps_dir%\%%~A\%%~C" (
+                echo // Removing nested dir "%deps_dir%\%%~A\%%~C"
+                rmdir /s /q "%deps_dir%\%%~A\%%~C"
             )
         )
         
@@ -413,9 +415,9 @@ endlocal & (
 
 
 deps_to_extract=[
-v3.0.0.tar.gz|ssq
-zlib-1.3.tar.gz|zlib
-curl-8.4.0.tar.gz|curl
-v21.12.tar.gz|protobuf
-mbedtls-3.5.1.tar.gz|mbedtls
+libssq\libssq.tar.gz
+zlib\zlib.tar.gz
+curl\curl.tar.gz
+protobuf\protobuf.tar.gz
+mbedtls\mbedtls.tar.gz
 ]
