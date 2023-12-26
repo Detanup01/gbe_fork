@@ -60,6 +60,7 @@ fi
 
  # no args = help page
 if [[ $# = 0 ]]; then
+  echo "[?] No arguments provided"
   help_page
   exit 0
 fi
@@ -123,26 +124,33 @@ done
 # prepending the script dir helps sudo users when for example EXE=./mygame
 [[ -f "$EXE" ]] || EXE="$script_dir/$EXE"
 if [[ ! -f "$EXE" ]]; then
-  echo "[X] executable was not set or not found" >&2
+  echo "[X] executable '$EXE' is invalid" >&2
   help_page
   exit 1
 fi
-if [[ "$APP_ID" =~ ^[0-9]+$ ]]; then
-  echo "[X] app ID was not set or not a valid number" >&2
+# change to absolute path
+EXE="$( cd -- "$( dirname "$EXE" )" 2> /dev/null && pwd )/$( basename "$EXE" )"
+
+if [[ ! "$APP_ID" =~ ^[0-9]+$ ]]; then
+  echo "[X] app ID '$APP_ID' is invalid" >&2
   help_page
   exit 1
 fi
 # use the exe's dir if non-specified
 [[ -z "$EXE_RUN_DIR" ]] && EXE_RUN_DIR="$(dirname "$EXE")"
 if [[ ! -d "$EXE_RUN_DIR" ]]; then
-  echo "[X] executable working directory is invalid" >&2
+  echo "[X] executable working directory '$EXE_RUN_DIR' is invalid" >&2
   help_page
   exit 1
 fi
-if [[ ! -z "$STEAM_RUNTIME" ]] && [[ ! -f "$STEAM_RUNTIME" ]]; then
-  echo "[X] Steam runtime script was set but the file was not found" >&2
-  help_page
-  exit 1
+if [[ ! -z "$STEAM_RUNTIME" ]]; then
+  if [[ ! -f "$STEAM_RUNTIME" ]]; then
+    echo "[X] Steam runtime script was set '$STEAM_RUNTIME', but the file was not found" >&2
+    help_page
+    exit 1
+  fi
+  # change to absolute path
+  STEAM_RUNTIME="$( cd -- "$( dirname "$STEAM_RUNTIME" )" 2> /dev/null && pwd )/$( basename "$STEAM_RUNTIME" )"
 fi
 
 # print everything
@@ -197,11 +205,16 @@ echo ${$} > "$steam_base_dir/steam.pid"
 # set variables and run the app
 pushd "${EXE_RUN_DIR}"
 
-if [ -z "${STEAM_RUNTIME}" ]; then
-  SteamAppPath="${EXE_RUN_DIR}" SteamAppId=$APP_ID SteamGameId=$APP_ID SteamOverlayGameId=$APP_ID "$EXE" "${EXE_COMMAND_LINE[@]}"
-else
-  SteamAppPath="${EXE_RUN_DIR}" SteamAppId=$APP_ID SteamGameId=$APP_ID SteamOverlayGameId=$APP_ID "$STEAM_RUNTIME" "$EXE" "${EXE_COMMAND_LINE[@]}"
+TARGET_EXE="$EXE"
+if [ ! -z "${STEAM_RUNTIME}" ]; then
+  TARGET_EXE="$STEAM_RUNTIME"
+  EXE_COMMAND_LINE=(
+    "$EXE"
+    "${EXE_COMMAND_LINE[@]}"
+  )
 fi
+
+SteamAppPath="${EXE_RUN_DIR}" SteamAppId=$APP_ID SteamGameId=$APP_ID SteamOverlayGameId=$APP_ID "$TARGET_EXE" "${EXE_COMMAND_LINE[@]}"
 
 popd
 
