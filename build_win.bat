@@ -5,6 +5,18 @@ pushd "%~dp0"
 
 set /a last_code=0
 
+for %%A in (
+  "dll/dll.cpp"
+  "dll/steam_client.cpp"
+  "controller/gamepad.c"
+  "sdk_includes/isteamclient.h" ) do (
+    if not exist "%%~A" (
+      call :err_msg "Invalid emu directory, change directory to emu's src dir (missing file %%~A)"
+      set /a last_code=1
+      goto :end_script
+    )
+)
+
 set /a BUILD_LIB32=1
 set /a BUILD_LIB64=1
 
@@ -19,9 +31,6 @@ set /a BUILD_EXPCLIENT_LDR=1
 
 set /a BUILD_TOOL_FIND_ITFS=1
 set /a BUILD_TOOL_LOBBY=1
-
-set /a BUILD_WINXP=0
-set /a BUILD_LOW_PERF=0
 
 :: < 0: deduce, > 1: force
 set /a PARALLEL_THREADS_OVERRIDE=-1
@@ -64,7 +73,7 @@ set /a CLEAN_BUILD=0
       goto :end_script
     )
     shift /1
-  ) else if "%~1"=="-clean" (
+  ) else if "%~1"=="clean" (
     set /a CLEAN_BUILD=1
   ) else if "%~1"=="release" (
     set /a BUILD_TYPE=0
@@ -86,11 +95,9 @@ if defined NUMBER_OF_PROCESSORS (
 ) else (
   set /a build_threads=2
 )
-
 if %PARALLEL_THREADS_OVERRIDE% gtr 0 (
   set /a build_threads=PARALLEL_THREADS_OVERRIDE
 )
-
 if %build_threads% lss 2 (
   set /a build_threads=2
 )
@@ -119,65 +126,38 @@ if %BUILD_TYPE% equ 0 (
   goto :end_script
 )
 
-set "additional_compiler_args_32="
-set "additional_compiler_args_64="
-
-set "additional_win_linker_args_32="
-set "additional_win_linker_args_64="
-
-set "additional_exe_linker_args_32="
-set "additional_exe_linker_args_64="
-:: win xp stuff
-:: https://stackoverflow.com/a/29804473
-:: https://learn.microsoft.com/en-us/cpp/porting/modifying-winver-and-win32-winnt
-:: XXXX THIS DOESN"T WORK XXXX
-:: XXXX emu code (networking) uses some win APIs available only starting from win Vista XXXX
-if %BUILD_WINXP% equ 1 (
-  set "additional_compiler_args_32=%additional_compiler_args_32% /D_USING_V110_SDK71_ /DNTDDI_VERSION=0x05010000 /D_WIN32_WINNT=0x0501 /DWINVER=0x0501"
-  set "additional_compiler_args_64=%additional_compiler_args_64% /D_USING_V110_SDK71_ /DNTDDI_VERSION=0x05010000 /D_WIN32_WINNT=0x0501 /DWINVER=0x0501"
-
-  set "additional_win_linker_args_32=%additional_win_linker_args_32% /SUBSYSTEM:WINDOWS,5.01"
-  set "additional_win_linker_args_64=%additional_win_linker_args_64% /SUBSYSTEM:WINDOWS,5.02"
-
-  set "additional_exe_linker_args_32=%additional_exe_linker_args_32% /SUBSYSTEM:CONSOLE,5.01"
-  set "additional_exe_linker_args_64=%additional_exe_linker_args_64% /SUBSYSTEM:CONSOLE,5.02"
-  
-  set "build_folder=%build_folder%-win_xp"
-)
-
-if %BUILD_LOW_PERF% equ 1 (
-  echo [?] Adding low perf flags
-  set "additional_compiler_args_32=%additional_compiler_args_32% /arch:IA32"
-  
-  set "build_folder=%build_folder%-low_perf"
-)
-
+set "build_root_dir=build\win\%build_folder%"
+set "steamclient_dir=%build_root_dir%\experimental_steamclient"
+set "experimental_dir=%build_root_dir%\experimental"
+set "tools_dir=%build_root_dir%\tools"
+set "find_interfaces_dir=%tools_dir%\find_interfaces"
+set "lobby_connect_dir=%tools_dir%\lobby_connect"
 
 :: common stuff
 set "deps_dir=build\win\deps"
 set "libs_dir=libs"
 set "tools_src_dir=tools"
-set "build_root_dir=build\win\%build_folder%"
 set "build_temp_dir=build\win\tmp"
-set "tools_dir=%build_root_dir%\tools"
-set "steamclient_dir=%build_root_dir%\experimental_steamclient"
-set "experimental_dir=%build_root_dir%\experimental"
-set "find_interfaces_dir=%tools_dir%\find_interfaces"
-set "lobby_connect_dir=%tools_dir%\lobby_connect"
+
+set "protoc_exe_32=%deps_dir%\protobuf\install32\bin\protoc.exe"
+set "protoc_exe_64=%deps_dir%\protobuf\install64\bin\protoc.exe"
 
 set "common_compiler_args=/std:c++17 /MP%build_threads% /DYNAMICBASE /errorReport:none /nologo /utf-8 /EHsc /GF /GL- /GS /Fo%build_temp_dir%\ /Fe%build_temp_dir%\"
-set "common_compiler_args_32=%common_compiler_args% %additional_compiler_args_32%"
-set "common_compiler_args_64=%common_compiler_args% %additional_compiler_args_64%"
+set "common_compiler_args_32=%common_compiler_args%"
+set "common_compiler_args_64=%common_compiler_args%"
 
+:: "win" variables are used to build .dll and /SUBSYTEM:WINDOWS applications,
+:: "exe" variables are used to build pure console applications
 set "common_linker_args=/DYNAMICBASE /ERRORREPORT:NONE /NOLOGO"
-set "common_win_linker_args_32=%common_linker_args% %additional_win_linker_args_32%"
-set "common_win_linker_args_64=%common_linker_args% %additional_win_linker_args_64%"
-set "common_exe_linker_args_32=%common_linker_args% %additional_exe_linker_args_32%"
-set "common_exe_linker_args_64=%common_linker_args% %additional_exe_linker_args_64%"
+set "common_win_linker_args_32=%common_linker_args%"
+set "common_win_linker_args_64=%common_linker_args%"
+set "common_exe_linker_args_32=%common_linker_args%"
+set "common_exe_linker_args_64=%common_linker_args%"
 
-set ssq_inc=/I"%deps_dir%\ssq\include"
-set ssq_lib32="%deps_dir%\ssq\build32\Release\ssq.lib"
-set ssq_lib64="%deps_dir%\ssq\build64\Release\ssq.lib"
+:: third party dependencies (include folder + exact .lib file location)
+set ssq_inc=/I"%deps_dir%\libssq\include"
+set ssq_lib32="%deps_dir%\libssq\build32\Release\ssq.lib"
+set ssq_lib64="%deps_dir%\libssq\build64\Release\ssq.lib"
 
 set curl_inc32=/I"%deps_dir%\curl\install32\include"
 set curl_inc64=/I"%deps_dir%\curl\install64\include"
@@ -199,23 +179,25 @@ set mbedtls_inc64=/I"%deps_dir%\mbedtls\install64\include"
 set mbedtls_lib32="%deps_dir%\mbedtls\install32\lib\mbedcrypto.lib"
 set mbedtls_lib64="%deps_dir%\mbedtls\install64\lib\mbedcrypto.lib"
 
+:: directories to use for #include
 set release_incs_both=%ssq_inc% /I"%libs_dir%\utfcpp" /I"." /I"%libs_dir%" /I"%libs_dir%\ImGui"
 set release_incs32=%release_incs_both% %curl_inc32% %protob_inc32% %zlib_inc32% %mbedtls_inc32%
 set release_incs64=%release_incs_both% %curl_inc64% %protob_inc64% %zlib_inc64% %mbedtls_inc64%
 
-set "common_defs=/DUTF_CPP_CPLUSPLUS=201703L /DCURL_STATICLIB /D_MT /DUNICODE /D_UNICODE"
-set "release_defs=%dbg_defs% %common_defs%"
-set release_src="dll/*.cpp" "dll/*.cc"
-
+:: libraries to link with
 :: copied from Visual Studio 2022
 set "CoreLibraryDependencies=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib"
 set "release_libs_both=%CoreLibraryDependencies% Ws2_32.lib Iphlpapi.lib Wldap32.lib Winmm.lib Bcrypt.lib"
-
 set release_libs32=%release_libs_both% %ssq_lib32% %curl_lib32% %protob_lib32% %zlib_lib32% %mbedtls_lib32%
 set release_libs64=%release_libs_both% %ssq_lib64% %curl_lib64% %protob_lib64% %zlib_lib64% %mbedtls_lib64%
 
-set "protoc_exe_32=%deps_dir%\protobuf\install32\bin\protoc.exe"
-set "protoc_exe_64=%deps_dir%\protobuf\install64\bin\protoc.exe"
+:: common source files used everywhere, just for convinience, you still have to provide a complete list later
+set release_src="dll/*.cpp" "dll/*.cc"
+
+:: additional #defines
+set "common_defs=/DUTF_CPP_CPLUSPLUS=201703L /DCURL_STATICLIB /D_MT /DUNICODE /D_UNICODE"
+set "release_defs=%dbg_defs% %common_defs%"
+
 
 if not exist "%deps_dir%\" (
   call :err_msg "Dependencies dir was not found"
