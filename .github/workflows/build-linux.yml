@@ -25,8 +25,52 @@ env:
   THIRD_PARTY_BASE_DIR: 'third-party'
   
 jobs:
+  # this helps in manual runs, if build fails, then deps are saved
+  dependencies:
+    runs-on: ubuntu-22.04
+    # cache but not for tags or PRs
+    # !tag && !pull_request
+    # also you could use this: github.event_name != 'pull_request'
+    if: |
+      !startsWith(github.ref, 'refs/tags/') &&
+      !startsWith(github.ref, 'refs/pull/')
+
+    steps:
+    # we need branch because it has build scripts
+    - name: Checkout branch
+      uses: actions/checkout@v4
+
+    - name: Lookup cache for deps
+      id: emu-deps-cache-step
+      uses: actions/cache@v3
+      with:
+        key: ${{ env.DEPS_CACHE_KEY }}
+        path: ${{ env.DEPS_CACHE_DIR }}
+        lookup-only: true # don't restore cache if found
+
+    - name: Clone third-party deps (deps/linux)
+      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+      uses: actions/checkout@v4
+      with:
+        ref: 'third-party/deps/linux'
+        path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/linux"
+
+    - name: Clone third-party deps (deps/common)
+      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+      uses: actions/checkout@v4
+      with:
+        ref: 'third-party/deps/common'
+        path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/common"
+
+    - name: Build deps
+      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+      shell: bash
+      run: sudo chmod 777 build_linux_deps.sh && sudo ./build_linux_deps.sh
+
+
   build:
     runs-on: ubuntu-22.04
+    needs: [ dependencies ]
 
     steps:
     - name: Checkout branch
@@ -40,13 +84,12 @@ jobs:
       if: |
         !startsWith(github.ref, 'refs/tags/') &&
         !startsWith(github.ref, 'refs/pull/')
-        
       uses: actions/cache@v3
       with:
         key: ${{ env.DEPS_CACHE_KEY }}
         path: ${{ env.DEPS_CACHE_DIR }}
-        lookup-only: true
 
+    # attempt to download again because in tags/PRs no cache is created
     - name: Clone third-party deps (deps/linux)
       if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
       uses: actions/checkout@v4
