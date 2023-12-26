@@ -5,7 +5,7 @@ pushd "%~dp0"
 
 set "venv=.env-win"
 set "out_dir=bin\win"
-set "build_temp_dir=build_tmp-win"
+set "build_temp_dir=build\win\tmp"
 set "tool_name=generate_emu_config"
 set "icon_file=icon\Froyoshark-Enkel-Steam.ico"
 set "main_file=generate_emu_config.py"
@@ -36,6 +36,10 @@ copy /y "steam_default_icon_unlocked.jpg" "%out_dir%\%tool_name%\"
 echo:
 echo =============
 echo Built inside: "%out_dir%\"
+
+if exist "%build_temp_dir%" (
+    rmdir /s /q "%build_temp_dir%"
+)
 
 :script_end
 popd

@@ -3,7 +3,7 @@
 
 venv=".env-linux"
 out_dir="bin/linux"
-build_temp_dir="build_tmp-linux"
+build_temp_dir="build/linux/tmp"
 tool_name="generate_emu_config"
 main_file="generate_emu_config.py"
 
@@ -25,5 +25,7 @@ cp -f "steam_default_icon_unlocked.jpg" "$out_dir/$tool_name"
 echo;
 echo =============
 echo Built inside: "$out_dir/"
+
+[[ -d "$build_temp_dir" ]] && rm -r -f "$build_temp_dir"
 
 deactivate
