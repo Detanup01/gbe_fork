@@ -17,11 +17,11 @@ permissions:
   contents: write
 
 env:
-  THIRD_PARTY_BASE_DIR: 'third-party'
   DEPS_CACHE_KEY: emu-deps-win
-  DEPS_CACHE_DIR: build-win-deps
+  DEPS_CACHE_DIR: build/win/deps
   
-  PACKAGE_ROOT_PATH: "build-win/package"
+  PACKAGE_BASE_DIR: "build/win/package"
+  THIRD_PARTY_BASE_DIR: 'third-party'
 
 jobs:
   build:
@@ -101,7 +101,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: "build-win-release-${{ github.sha }}"
-        path: "${{ env.PACKAGE_ROOT_PATH }}/release/"
+        path: "${{ env.PACKAGE_BASE_DIR }}/release/"
         if-no-files-found: 'error'
         compression-level: 9
         retention-days: 1
@@ -123,7 +123,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: "build-win-debug-${{ github.sha }}"
-        path: "${{ env.PACKAGE_ROOT_PATH }}/debug/"
+        path: "${{ env.PACKAGE_BASE_DIR }}/debug/"
         if-no-files-found: 'error'
         compression-level: 9
         retention-days: 1
@@ -133,5 +133,5 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
       with:
-        files: "${{ env.PACKAGE_ROOT_PATH }}/**/*"
+        files: "${{ env.PACKAGE_BASE_DIR }}/**/*"
     
