@@ -19,7 +19,7 @@ permissions:
 env:
   ARTIFACT_NAME: "generate_emu_config-win-${{ github.sha }}"
   SCRIPT_BASE_DIR: "${{ github.workspace }}/tools/generate_emu_config"
-  PACKAGE_BASE_DIR: "${{ github.workspace }}/tools/generate_emu_confi/bin/package"
+  PACKAGE_BASE_DIR: "${{ github.workspace }}/tools/generate_emu_config/bin/package"
   
   THIRD_PARTY_BASE_DIR: 'third-party'
   
