@@ -9,11 +9,10 @@ pushd "%~dp0"
 ::set "vs_static_path=C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
 set "vs_static_path="
 
-set "third_party_dir=third-party"
-set "third_party_common_dir=%third_party_dir%\common\win"
+set "vswhere_exe=third-party\common\win\vswhere\vswhere.exe"
 
-if not exist "%third_party_common_dir%\vswhere\vswhere.exe" (
-  call :err_msg "vswhere.exe wasn't found in third-party folder"
+if not exist "%vswhere_exe%" (
+  call :err_msg "vswhere.exe wasn't found"
   goto :end_script_with_err
 )
 
@@ -30,7 +29,7 @@ if "%~1"=="32" (
 
 set "my_vs_path=%vs_static_path%"
 if "%my_vs_path%"=="" (
-  for /f "tokens=* delims=" %%A in ('"%third_party_common_dir%\vswhere\vswhere.exe" -prerelease -latest -nocolor -nologo -property installationPath 2^>nul') do (
+  for /f "tokens=* delims=" %%A in ('"%vswhere_exe%" -prerelease -latest -nocolor -nologo -property installationPath 2^>nul') do (
     set "my_vs_path=%%~A\VC\Auxiliary\Build"
   )
 )
