@@ -494,9 +494,7 @@ fi
 
 
 # cleanup
-rm -f dll/net.pb.cc
-rm -f dll/net.pb.h
-rm -f -r "$build_temp_dir"
+cleanup
 
 echo;
 if [[ $last_code = 0 ]]; then
