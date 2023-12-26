@@ -1,5 +1,5 @@
 >## How to use it:
-Copy both file  
+Copy both files  
 - `steamclient.so`  
 - `steamclient64.so`  
 
