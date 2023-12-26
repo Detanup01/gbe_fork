@@ -27,8 +27,6 @@ BUILD_TOOL_FIND_ITFS64=1
 BUILD_TOOL_LOBBY32=1
 BUILD_TOOL_LOBBY64=1
 
-BUILD_LOW_PERF=0
-
 # < 0: deduce, > 1: force
 PARALLEL_THREADS_OVERRIDE=-1
 
@@ -65,7 +63,7 @@ for (( i=1; i<=$#; i++ )); do
     BUILD_TOOL_LOBBY32=0
   elif [[ "$var" = "-tool-lobby-64" ]]; then
     BUILD_TOOL_LOBBY64=0
-  elif [[ "$var" = "-clean" ]]; then
+  elif [[ "$var" = "clean" ]]; then
     CLEAN_BUILD=1
   elif [[ "$var" = "release" ]]; then
     BUILD_TYPE=0
@@ -82,6 +80,7 @@ build_threads="$(( $(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 0) * 70 / 100
 [[ $PARALLEL_THREADS_OVERRIDE -gt 0 ]] && build_threads="$PARALLEL_THREADS_OVERRIDE"
 [[ $build_threads -lt 2 ]] && build_threads=2
 
+# build type
 optimize_level=""
 dbg_level=""
 dbg_defs=""
@@ -104,74 +103,31 @@ else
   exit 1
 fi
 
-additional_compiler_args=''
-if [[ "$BUILD_LOW_PERF" = "1" ]]; then
-  echo "[?] Adding low perf flags"
-  # https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html#index-mmmx
-  instr_set_to_disable=(
-    'popcnt'
-    
-    'sse4'
-    'sse4a'
-    'sse4.1'
-    'sse4.2'
-
-    'avx'
-    'avx2'
-    'avx512f'
-    'avx512pf'
-    'avx512er'
-    'avx512cd'
-    'avx512vl'
-    'avx512bw'
-    'avx512dq'
-    'avx512ifma'
-    'avx512vbmi'
-
-    'avx512vbmi2'
-    'avx512bf16'
-    'avx512fp16'
-    'avx512bitalg'
-    'avx5124vnniw'
-    'avx512vpopcntdq'
-    'avx512vp2intersect'
-    'avx5124fmaps'
-    'avx512vnni'
-
-    'avxifma'
-    'avxvnniint8'
-    'avxneconvert'
-    'avxvnni'
-    'avxvnniint16'
-
-    'avx10.1'
-    'avx10.1-256'
-    'avx10.1-512'
-  )
-  additional_compiler_args="$additional_compiler_args ${instr_set_to_disable[@]/#/-mno-}"
-  
-  build_folder="$build_folder-low_perf"
-fi
-
+build_root_dir="build/linux/$build_folder"
+build_root_32="$build_root_dir/x32"
+build_root_64="$build_root_dir/x64"
+build_root_tools="$build_root_dir/tools"
 
 # common stuff
 deps_dir="build/linux/deps"
 libs_dir="libs"
 tools_dir='tools'
-build_root_dir="build/linux/$build_folder"
 build_temp_dir="build/linux/tmp"
 third_party_dir="third-party"
 third_party_build_dir="$third_party_dir/build/linux"
-build_root_32="$build_root_dir/x32"
-build_root_64="$build_root_dir/x64"
-build_root_tools="$build_root_dir/tools"
+
+protoc_exe_32="$deps_dir/protobuf/install32/bin/protoc"
+protoc_exe_64="$deps_dir/protobuf/install64/bin/protoc"
+
+parallel_exe="$third_party_build_dir/rush/rush"
 
 # https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html
-common_compiler_args="$additional_compiler_args -std=c++17 -fvisibility=hidden -fexceptions -fno-jump-tables"
+common_compiler_args="-std=c++17 -fvisibility=hidden -fexceptions -fno-jump-tables"
 
-ssq_inc="$deps_dir/ssq/include"
-ssq_lib32="$deps_dir/ssq/build32"
-ssq_lib64="$deps_dir/ssq/build64"
+# third party dependencies (include folder + folder containing .a file)
+ssq_inc="$deps_dir/libssq/include"
+ssq_lib32="$deps_dir/libssq/build32"
+ssq_lib64="$deps_dir/libssq/build64"
 
 curl_inc32="$deps_dir/curl/install32/include"
 curl_inc64="$deps_dir/curl/install64/include"
@@ -193,6 +149,7 @@ mbedtls_inc64="$deps_dir/mbedtls/install64/include"
 mbedtls_lib32="$deps_dir/mbedtls/install32/lib"
 mbedtls_lib64="$deps_dir/mbedtls/install64/lib"
 
+# directories to use for #include
 release_incs_both=(
   "$ssq_inc"
   "$libs_dir/utfcpp"
@@ -214,6 +171,7 @@ release_incs64=(
   "$mbedtls_inc64"
 )
 
+# directories where libraries (.a or .so) will be looked up
 release_libs_dir32=(
   "$ssq_lib32"
   "$curl_lib32"
@@ -229,15 +187,9 @@ release_libs_dir64=(
   "$mbedtls_lib64"
 )
 
-release_ignore_warn="-Wno-switch"
-common_defs="-DGNUC -DUTF_CPP_CPLUSPLUS=201703L -DCURL_STATICLIB"
-release_defs="$dbg_defs $common_defs"
-release_src=(
-  "dll/*.cpp"
-  "dll/*.cc"
-)
-# if it's called libXYZ.a, then only type "XYZ"
-# these will be statically linked, make sure to build a PIC static lib
+# libraries to link with, either static ".a" or dynamic ".so" (name only)
+# if it's called libXYZ.a, then only write "XYZ"
+# for static libs make sure to build a PIC lib
 # each will be prefixed with -l, ex: -lpthread
 release_libs=(
   "pthread"
@@ -249,10 +201,18 @@ release_libs=(
   "mbedcrypto"
 )
 
-protoc_exe_32="$deps_dir/protobuf/install32/bin/protoc"
-protoc_exe_64="$deps_dir/protobuf/install64/bin/protoc"
+# common source files used everywhere, just for convinience, you still have to provide a complete list later
+release_src=(
+  "dll/*.cpp"
+  "dll/*.cc"
+)
 
-parallel_exe="$third_party_build_dir/rush-v0.5.4-linux/rush"
+# additional #defines
+common_defs="-DGNUC -DUTF_CPP_CPLUSPLUS=201703L -DCURL_STATICLIB"
+release_defs="$dbg_defs $common_defs"
+
+# errors to ignore during build
+release_ignore_warn="-Wno-switch"
 
 [ ! -d "$deps_dir" ] && {
   echo "[X] Dependencies dir \"$deps_dir\" was not found" >&2;
@@ -320,7 +280,7 @@ function build_for () {
   local -A objs_dirs=()
   for src_file in $( echo "${all_src[@]}" ); do
     [[ -f "$src_file" ]] || {
-      echo "[X] file "$src_file" wasn't found" >&2;
+      echo "[X] source file "$src_file" wasn't found" >&2;
       return 1;
     }
     
@@ -362,7 +322,11 @@ function build_for () {
   echo "  -- Exit code = $exit_code"
   echo ; echo ;
   sleep 1
-  [[ $exit_code = 0 ]] || return $exit_code
+  [[ $exit_code = 0 ]] || {
+    rm -f -r "$tmp_work_dir";
+    sleep 1
+    return $exit_code;
+  }
 
   echo "  -- Linking all object files from '$tmp_work_dir/' to produce '$out_filepath'"
   local obj_files=()
@@ -380,11 +344,17 @@ function build_for () {
   exit_code=$?
   echo "  -- Exit code = $exit_code"
   echo ; echo ;
+  rm -f -r "$tmp_work_dir"
   sleep 1
   return $exit_code
 
 }
 
+function cleanup () {
+  rm -f dll/net.pb.cc
+  rm -f dll/net.pb.h
+  rm -f -r "$build_temp_dir"
+}
 
 if [[ "$CLEAN_BUILD" = "1" ]]; then
   echo // cleaning previous build
@@ -415,8 +385,8 @@ fi
 
 
 ### x32 build
-rm -f dll/net.pb.cc
-rm -f dll/net.pb.h
+cleanup
+
 echo // invoking protobuf compiler - 32
 "$protoc_exe_32" -I./dll/ --cpp_out=./dll/ ./dll/*.proto
 echo; echo;
@@ -470,10 +440,8 @@ fi
 
 
 ### x64 build
-rm -f dll/net.pb.cc
-rm -f dll/net.pb.h
-rm -f -r "$build_temp_dir"
-mkdir -p "$build_temp_dir"
+cleanup
+
 echo // invoking protobuf compiler - 64
 "$protoc_exe_64" -I./dll/ --cpp_out=./dll/ ./dll/*.proto
 echo; echo;
