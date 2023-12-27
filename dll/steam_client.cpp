@@ -15,8 +15,8 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "steam_client.h"
-#include "settings_parser.h"
+#include "dll/steam_client.h"
+#include "dll/settings_parser.h"
 
 static std::mutex kill_background_thread_mutex;
 static std::condition_variable kill_background_thread_cv;

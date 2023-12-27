@@ -1,7 +1,7 @@
 #include <stdio.h>
 #define NETWORKSOCKETS_DLL
 #define STEAM_API_EXPORTS
-#include "sdk_includes/steam_gameserver.h"
+#include "steam/steam_gameserver.h"
 
 #if defined(WIN32) || defined(_WIN32)
 #include <Windows.h>

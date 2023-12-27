@@ -15,7 +15,7 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "base.h"
+#include "dll/base.h"
 
 #ifdef __WINDOWS__
 
@@ -481,7 +481,7 @@ static void load_dll()
     }
 }
 
-#include "local_storage.h"
+#include "dll/local_storage.h"
 static void load_dlls()
 {
     std::string path = Local_Storage::get_game_settings_path();

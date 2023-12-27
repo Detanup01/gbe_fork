@@ -1,11 +1,11 @@
-#include "Base_Hook.h"
+#include "overlay/Base_Hook.h"
 
 #include <algorithm>
 
 #ifdef EMU_OVERLAY
 #ifdef STEAM_WIN32
 
-#include "../detours/detours.h"
+#include "detours/detours.h"
 
 Base_Hook::Base_Hook():
     _library(nullptr)

@@ -1,5 +1,5 @@
-#include "steam_overlay.h"
-#include "steam_overlay_translations.h"
+#include "overlay/steam_overlay.h"
+#include "overlay/steam_overlay_translations.h"
 
 #ifdef EMU_OVERLAY
 
@@ -9,10 +9,10 @@
 #include <cctype>
 #include <imgui.h>
 
-#include "../dll/dll.h"
-#include "../dll/settings_parser.h"
+#include "dll/dll.h"
+#include "dll/settings_parser.h"
 
-#include "Renderer_Detector.h"
+#include "overlay/Renderer_Detector.h"
 
 static constexpr int max_window_id = 10000;
 static constexpr int base_notif_window_id  = 0 * max_window_id;
@@ -100,7 +100,7 @@ int find_free_notification_id(std::vector<Notification> const& notifications)
 #include "windows/Windows_Hook.h"
 #endif
 
-#include "notification.h"
+#include "overlay/notification.h"
 char *notif_achievement_wav_custom;
 char *notif_invite_wav_custom;
 bool notif_achievement_wav_custom_inuse = false;

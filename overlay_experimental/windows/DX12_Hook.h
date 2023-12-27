@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "../internal_includes.h"
+#include "overlay/internal_includes.h"
 
 #include <d3d12.h>
 #include <dxgi1_4.h>

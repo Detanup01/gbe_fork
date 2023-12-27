@@ -16,7 +16,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #define STEAM_API_FUNCTIONS_IMPL
-#include "dll.h"
+#include "dll/dll.h"
 
 
 static char old_client[128] = STEAMCLIENT_INTERFACE_VERSION; //"SteamClient017";

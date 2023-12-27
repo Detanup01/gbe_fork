@@ -15,8 +15,8 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "network.h"
-#include "dll.h"
+#include "dll/network.h"
+#include "dll/dll.h"
 
 #define MAX_BROADCASTS 16
 static int number_broadcasts = -1;

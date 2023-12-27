@@ -15,7 +15,7 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "steam_matchmaking_servers.h"
+#include "dll/steam_matchmaking_servers.h"
 
 
 static void network_callback(void *object, Common_Message *msg)

@@ -18,7 +18,7 @@
 /*
 */
 
-#include "sdk_includes/steam_api.h"
+#include "steam/steam_api.h"
 #include "dll/common_includes.h"
 
 #include <iostream>

@@ -15,7 +15,7 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "steam_parental.h"
+#include "dll/steam_parental.h"
 
 bool Steam_Parental::BIsParentalLockEnabled()
 {

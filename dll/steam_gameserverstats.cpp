@@ -15,7 +15,7 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "steam_gameserverstats.h"
+#include "dll/steam_gameserverstats.h"
 
 Steam_GameServerStats::Steam_GameServerStats(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks)
 {

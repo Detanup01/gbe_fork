@@ -19,7 +19,7 @@
 #define __INCLUDED_STEAM_FRIENDS_H__
 
 #include "base.h"
-#include "overlay_experimental/steam_overlay.h"
+#include "overlay/steam_overlay.h"
 
 #define SEND_FRIEND_RATE 4.0
 

@@ -15,7 +15,7 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "steam_applist.h"
+#include "dll/steam_applist.h"
 
 uint32 Steam_Applist::GetNumInstalledApps()
 {

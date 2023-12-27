@@ -1,4 +1,4 @@
-#include "auth.h"
+#include "dll/auth.h"
 
 static inline int generate_random_int() {
     int a;

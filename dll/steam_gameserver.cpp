@@ -15,8 +15,8 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "steam_gameserver.h"
-#include "source_query.h"
+#include "dll/steam_gameserver.h"
+#include "dll/source_query.h"
 
 #define SEND_SERVER_RATE 5.0
 

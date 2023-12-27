@@ -15,8 +15,8 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "steam_apps.h"
-#include "../sha/sha1.hpp"
+#include "dll/steam_apps.h"
+#include "sha/sha1.hpp"
 
 Steam_Apps::Steam_Apps(Settings *settings, class SteamCallResults *callback_results)
 {

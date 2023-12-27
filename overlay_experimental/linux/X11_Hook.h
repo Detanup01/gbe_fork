@@ -21,7 +21,7 @@
 
 #include <ingame_overlay/Renderer_Hook.h>
 
-#include "../internal_includes.h"
+#include "overlay/internal_includes.h"
 
 #include <X11/X.h> // XEvent types
 #include <X11/Xlib.h> // XEvent structure

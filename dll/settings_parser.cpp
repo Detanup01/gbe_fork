@@ -15,7 +15,7 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "settings_parser.h"
+#include "dll/settings_parser.h"
 
 static void consume_bom(std::ifstream &input)
 {

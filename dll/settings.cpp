@@ -15,7 +15,7 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "settings.h"
+#include "dll/settings.h"
 
 
 std::string Settings::sanitize(std::string name)

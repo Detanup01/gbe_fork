@@ -15,7 +15,7 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "steam_video.h" 
+#include "dll/steam_video.h" 
 
 // Get a URL suitable for streaming the given Video app ID's video
 void Steam_Video::GetVideoURL( AppId_t unVideoAppID )

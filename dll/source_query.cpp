@@ -15,8 +15,8 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "source_query.h"
-#include "dll.h"
+#include "dll/source_query.h"
+#include "dll/dll.h"
 
 using lock_t = std::lock_guard<std::mutex>;
 

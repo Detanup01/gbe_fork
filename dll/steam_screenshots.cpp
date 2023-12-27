@@ -15,7 +15,7 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "steam_screenshots.h" 
+#include "dll/steam_screenshots.h" 
 
 Steam_Screenshots::Steam_Screenshots(class Local_Storage* local_storage, class SteamCallBacks* callbacks) :
     local_storage(local_storage),

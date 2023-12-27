@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "../internal_includes.h"
+#include "overlay/internal_includes.h"
 
 class OpenGL_Hook :
     public ingame_overlay::Renderer_Hook,

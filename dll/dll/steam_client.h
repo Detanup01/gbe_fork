@@ -51,7 +51,7 @@
 #include "steam_gameserverstats.h"
 #include "steam_masterserver_updater.h"
 
-#include "overlay_experimental/steam_overlay.h"
+#include "overlay/steam_overlay.h"
 
 enum Steam_Pipe {
     NO_USER,

@@ -15,7 +15,7 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "steam_musicremote.h" 
+#include "dll/steam_musicremote.h" 
 
 // Service Definition
 bool Steam_MusicRemote::RegisterSteamMusicRemote( const char *pchName )

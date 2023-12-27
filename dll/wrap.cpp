@@ -26,8 +26,8 @@
 #else
 #define STEAM_API_FUNCTIONS_IMPL
 
-#include "base.h"
-#include "dll.h"
+#include "dll/base.h"
+#include "dll/dll.h"
 
 #define PATH_SEPARATOR_CHAR '/'
 #define STEAM_PATH_CACHE_SIZE 4096

@@ -15,7 +15,7 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "steam_music.h" 
+#include "dll/steam_music.h" 
 
 Steam_Music::Steam_Music(class SteamCallBacks *callbacks)
 {

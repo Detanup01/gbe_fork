@@ -19,7 +19,7 @@
 
 #include <cassert>
 
-#include "Renderer_Detector.h"
+#include "overlay/Renderer_Detector.h"
 
 #include "System/Encoding.hpp"
 #include "System/String.hpp"

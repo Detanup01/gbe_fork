@@ -1,5 +1,5 @@
 #include "Vulkan_Hook.h"
-#include "../vulkan/vulkan.h"
+#include "vulkan/vulkan.h"
 #define VULKAN_DLL (Vulkan_Hook::DLL_NAME)
 
 void VKAPI_CALL vkGetPhysicalDeviceMemoryProperties(
