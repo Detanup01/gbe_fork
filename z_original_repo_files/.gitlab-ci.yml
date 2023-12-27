@@ -1,0 +1,185 @@
+stages:
+  - dependencies
+  - build
+  - deploy
+  - page_deploy
+
+protobuf_static_steamos:
+  stage: dependencies
+  image: tianon/steamos
+
+  script:
+      # don't rebuild every time
+      - test -e ./protobuf/prefix && exit 0
+      - apt update && apt -y install gcc-4.9 g++-4.9 git autotools-dev automake libtool g++-4.9-multilib gcc-4.9-multilib build-essential
+      - export BASE_PREFIX_PATH=$(pwd)
+      - echo $BASE_PREFIX_PATH
+      - mkdir deps
+      - cd deps
+      - git clone --branch 21.x https://github.com/protocolbuffers/protobuf.git
+      - cd protobuf
+      - sh autogen.sh
+      - ./configure "CC=gcc-4.9 -m32" "CXX=g++-4.9 -m32"  CPPFLAGS="-fPIC -Ofast" CXXFLAGS="-fPIC -Ofast" --prefix=$BASE_PREFIX_PATH/protobuf/prefix_x86/ --disable-shared --enable-static
+      - make -j8 install
+      - make clean
+      - ./configure "CC=gcc-4.9" "CXX=g++-4.9" "CPPFLAGS=-fPIC -Ofast" "CXXFLAGS=-fPIC -Ofast" --prefix=$BASE_PREFIX_PATH/protobuf/prefix/ --disable-shared --enable-static
+      - make -j8 install
+  cache:
+    key: protobuf-static-steamos-cache
+#    policy: push
+    paths:
+      - protobuf/
+  artifacts:
+    paths:
+      - protobuf/
+    expire_in: 1 day
+
+build_steamos:
+  stage: build
+  image: tianon/steamos
+  dependencies:
+    - protobuf_static_steamos
+
+  before_script:
+      - apt update && apt -y install gcc-4.9 g++-4.9 git libtool g++-4.9-multilib gcc-4.9-multilib
+  script:
+    - ls -lah
+    - uname -a
+    - sed -i 's/^g++ /g++-4.9 /g' build_steamos.sh
+    - sed -i 's/..\/protobuf\/prefix/.\/protobuf\/prefix/g' build_steamos.sh
+    - sh build_steamos.sh
+
+  artifacts:
+    paths:
+      - linux/
+    expire_in: 1 day
+
+build_windows:
+  stage: build
+  image: fedora:35
+
+  script:
+      - dnf -y install wine wget p7zip sed dos2unix python
+      - unix2dos *.txt
+      - unix2dos files_example/*.txt files_example/*/*.txt
+      - sed -i 's/..\\vcpkg\\installed\\/.\\protobuf_/g' build_set_protobuf_directories.bat
+      - wget 'https://gitlab.com/Mr_Goldberg/goldberg_emulator/uploads/48db8f434a193aae872279dc4f5dde6a/sdk_standalone.7z'
+      - wget 'https://gitlab.com/Mr_Goldberg/goldberg_emulator/uploads/0119304e030098b4821d73170fe52084/protobuf_x64-windows-static.7z'
+      - wget 'https://gitlab.com/Mr_Goldberg/goldberg_emulator/uploads/4185a97ab363ddc1859127e59ec68581/protobuf_x86-windows-static.7z'
+      - 7za x protobuf_x86-windows-static.7z -oprotobuf_x86-windows-static
+      - 7za x protobuf_x64-windows-static.7z -oprotobuf_x64-windows-static
+      - 7za x sdk_standalone.7z -osdk_standalone
+      - DLL_FILES="$(ls dll/*.cpp | tr "\n" " ")"; sed "s|dll/\*.cpp|$DLL_FILES|g" -i *.bat
+      - DLL_FILES="$(ls dll/*.proto | tr "\n" " " | sed "s/.proto/.pb.cc/g")"; sed "s|dll/\*.cc|$DLL_FILES|g" -i *.bat
+      - sed "s| /MP12 | /MP4 |g" -i *.bat
+      - python generate_build_win_bat.py
+      - export WINEDEBUG=-all
+      - wine cmd /c build_win_release_test.bat
+  artifacts:
+    paths:
+      - release/
+    expire_in: 1 day
+
+build_cmake_linux:
+  stage: build
+  image: ubuntu
+  when: manual
+
+  before_script:
+    - export DEBIAN_FRONTEND=noninteractive
+    - apt update -y
+    - apt install build-essential cmake libprotobuf-dev protobuf-compiler ninja-build -y
+
+  script:
+    - mkdir cmake-builds && cd cmake-builds
+    - mkdir x64-release && cd x64-release
+    - cmake ../../ -G "Ninja" -DCMAKE_BUILD_TYPE:STRING="RelWithDebInfo" && ninja
+    - cd ..
+#    - mkdir x64-experimental-release && cd x64-experimental-release
+#    - cmake ../../ -G "Ninja" -DCMAKE_BUILD_TYPE:STRING="RelWithDebInfo" -DEMU_EXPERIMENTAL_BUILD:BOOL=ON && ninja
+#    - cd ..
+
+  artifacts:
+    paths:
+      - cmake-builds/
+    expire_in: 1 day
+
+build_cmake_windows:
+  stage: build
+  image: fedora:29
+  when: manual
+
+  before_script:
+    - dnf -y install wine wget p7zip sed dos2unix unzip
+    - wget 'https://gitlab.com/Mr_Goldberg/goldberg_emulator/uploads/48db8f434a193aae872279dc4f5dde6a/sdk_standalone.7z'
+    - 7za x sdk_standalone.7z -osdk_standalone
+    - wget 'https://github.com/Kitware/CMake/releases/download/v3.15.0-rc1/cmake-3.15.0-rc1-win64-x64.zip'
+    - 7za x cmake-3.15.0-rc1-win64-x64.zip
+    - wget 'https://gitlab.com/Mr_Goldberg/goldberg_emulator/uploads/0119304e030098b4821d73170fe52084/protobuf_x64-windows-static.7z'
+    - 7za x protobuf_x64-windows-static.7z -oprotobuf_x64-windows-static
+
+  script:
+    - export WINEDEBUG=-all
+    - wine cmd /c
+    - mkdir cmake-builds && cd cmake-builds
+    - mkdir x64-release && cd x64-release
+    - echo call .\\..\\..\\sdk_standalone\\set_vars64.bat >> cmake-build.bat
+    - echo .\\..\\..\\cmake-3.15.0-rc1-win64-x64\\bin\\cmake.exe ..\\.. -G \"NMake Makefiles\" -DCMAKE_BUILD_TYPE:STRING="RelWithDebInfo" -DCMAKE_PREFIX_PATH="protobuf_x64-windows-static" -DProtobuf_PROTOC_EXECUTABLE:STRING="./../../protobuf_x64-windows-static/tools/protobuf/protoc.exe" >> cmake-build.bat
+    - echo nmake.exe >> cmake-build.bat
+    - wine cmd /c cmake-build.bat
+    - cd ..
+    - mkdir x64-experimental-release && cd x64-experimental-release
+    - echo call .\\..\\..\\sdk_standalone\\set_vars64.bat >> cmake-build.bat
+    - echo .\\..\\..\\cmake-3.15.0-rc1-win64-x64\\bin\\cmake.exe ..\\.. -G \"NMake Makefiles\" -DCMAKE_BUILD_TYPE:STRING="RelWithDebInfo" -DEMU_EXPERIMENTAL_BUILD=ON -DEMU_OVERLAY=ON -DCMAKE_PREFIX_PATH="protobuf_x64-windows-static" -DProtobuf_PROTOC_EXECUTABLE:STRING="./../../protobuf_x64-windows-static/tools/protobuf/protoc.exe" >> cmake-build.bat
+    - echo nmake.exe >> cmake-build.bat
+    - wine cmd /c cmake-build.bat
+    - cd ..
+
+  artifacts:
+    paths:
+      - cmake-builds/
+    expire_in: 1 day
+
+deploy_all:
+  stage: deploy
+  image: fedora
+  dependencies:
+      - build_windows
+      - build_steamos
+
+  script:
+    - ls -lah
+    - dnf -y install git tree
+    - mkdir -p release/source_code
+    - git bundle create release/source_code/source_code.bundle --all
+    - "echo \"This is a git bundle of the full repo, to use: git clone source_code.bundle --branch master\" > release/source_code/Readme.txt"
+    - mv linux release/
+    - shopt -s extglob
+    - rm -rf .g*
+    - rm -rf !(release)
+    - mv release/* ./
+    - rm -rf release
+    - echo $CI_JOB_ID > job_id
+    - tree
+  artifacts:
+    name: "Goldberg_Lan_Steam_Emu_$CI_COMMIT_REF_NAME-$CI_COMMIT_TAG-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - ./
+    expire_in: never
+
+pages:
+  image: fedora
+  stage: page_deploy
+  dependencies:
+    - deploy_all
+  script:
+    - DEPLOY_ALL_JOBID=$(cat job_id)
+    - mkdir public
+    - cat website/template.html | sed 's|X_LATEST_BUILD_URL_X|https://gitlab.com/Mr_Goldberg/goldberg_emulator/-/jobs/'$DEPLOY_ALL_JOBID'/artifacts/download|g' > public/index.html
+    - sed -i 's|X_LATEST_BUILD_COMMIT_HASH_X|'$CI_COMMIT_SHA'|g' public/index.html
+
+  artifacts:
+    paths:
+      - public/
+  only:
+    - master

@@ -1,0 +1,520 @@
+﻿{
+  "configurations": [
+    {
+      "name": "Windows-x64-Release",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "variables": [
+        {
+          "name": "VCPKG_TARGET_TRIPLET",
+          "value": "x64-windows-static",
+          "type": "STRING"
+        }
+      ],
+      "cmakeToolchain": "../vcpkg/scripts/buildsystems/vcpkg.cmake"
+    },
+    {
+      "name": "Windows-x64-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "variables": [
+        {
+          "name": "VCPKG_TARGET_TRIPLET",
+          "value": "x64-windows-static",
+          "type": "STRING"
+        }
+      ],
+      "cmakeToolchain": "../vcpkg/scripts/buildsystems/vcpkg.cmake"
+    },
+    {
+      "name": "Windows-x86-Release",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x86" ],
+      "variables": [
+        {
+          "name": "VCPKG_TARGET_TRIPLET",
+          "value": "x86-windows-static",
+          "type": "STRING"
+        }
+      ],
+      "cmakeToolchain": "../vcpkg/scripts/buildsystems/vcpkg.cmake"
+    },
+    {
+      "name": "Windows-x86-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x86" ],
+      "variables": [
+        {
+          "name": "VCPKG_TARGET_TRIPLET",
+          "value": "x86-windows-static",
+          "type": "STRING"
+        }
+      ],
+      "cmakeToolchain": "../vcpkg/scripts/buildsystems/vcpkg.cmake"
+    },
+    {
+      "name": "Linux-x64-Release",
+      "generator": "Unix Makefiles",
+      "configurationType": "RelWithDebInfo",
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "/usr/local/bin/cmake",
+      "remoteCopySourcesExclusionList": [ ".vs", ".git" ],
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x64" ],
+      "remoteMachineName": "${defaultRemoteMachineName}",
+      "remoteCMakeListsRoot": "/var/tmp/src/${workspaceHash}/${name}",
+      "remoteBuildRoot": "/var/tmp/build/${workspaceHash}/build/${name}",
+      "remoteInstallRoot": "/var/tmp/build/${workspaceHash}/install/${name}",
+      "remoteCopySources": true,
+      "rsyncCommandArgs": "-t --delete --delete-excluded",
+      "remoteCopyBuildOutput": true,
+      "remoteCopySourcesMethod": "rsync",
+      "variables": []
+    },
+    {
+      "name": "Linux-x64-Debug",
+      "generator": "Unix Makefiles",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "/usr/local/bin/cmake",
+      "remoteCopySourcesExclusionList": [ ".vs", ".git" ],
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x64" ],
+      "remoteMachineName": "${defaultRemoteMachineName}",
+      "remoteCMakeListsRoot": "/var/tmp/src/${workspaceHash}/${name}",
+      "remoteBuildRoot": "/var/tmp/build/${workspaceHash}/build/${name}",
+      "remoteInstallRoot": "/var/tmp/build/${workspaceHash}/install/${name}",
+      "remoteCopySources": true,
+      "rsyncCommandArgs": "-t --delete --delete-excluded",
+      "remoteCopyBuildOutput": true,
+      "remoteCopySourcesMethod": "rsync",
+      "variables": []
+    },
+    {
+      "name": "Linux-x86-Release",
+      "generator": "Unix Makefiles",
+      "configurationType": "RelWithDebInfo",
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "/usr/local/bin/cmake",
+      "remoteCopySourcesExclusionList": [ ".vs", ".git" ],
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x86" ],
+      "remoteMachineName": "${defaultRemoteMachineName}",
+      "remoteCMakeListsRoot": "/var/tmp/src/${workspaceHash}/${name}",
+      "remoteBuildRoot": "/var/tmp/build/${workspaceHash}/build/${name}",
+      "remoteInstallRoot": "/var/tmp/build/${workspaceHash}/install/${name}",
+      "remoteCopySources": true,
+      "rsyncCommandArgs": "-t --delete --delete-excluded",
+      "remoteCopyBuildOutput": true,
+      "remoteCopySourcesMethod": "rsync",
+      "variables": []
+    },
+    {
+      "name": "Linux-x86-Debug",
+      "generator": "Unix Makefiles",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "/usr/local/bin/cmake",
+      "remoteCopySourcesExclusionList": [ ".vs", ".git" ],
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x86" ],
+      "remoteMachineName": "${defaultRemoteMachineName}",
+      "remoteCMakeListsRoot": "/var/tmp/src/${workspaceHash}/${name}",
+      "remoteBuildRoot": "/var/tmp/build/${workspaceHash}/build/${name}",
+      "remoteInstallRoot": "/var/tmp/build/${workspaceHash}/install/${name}",
+      "remoteCopySources": true,
+      "rsyncCommandArgs": "-t --delete --delete-excluded",
+      "remoteCopyBuildOutput": true,
+      "remoteCopySourcesMethod": "rsync",
+      "variables": []
+    },
+    {
+      "name": "Windows-x64-ExperimentalRelease",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "variables": [
+        {
+          "name": "VCPKG_TARGET_TRIPLET",
+          "value": "x64-windows-static",
+          "type": "STRING"
+        },
+        {
+          "name": "EMU_EXPERIMENTAL_BUILD",
+          "value": "true",
+          "type": "STRING"
+        }
+      ],
+      "cmakeToolchain": "../vcpkg/scripts/buildsystems/vcpkg.cmake"
+    },
+    {
+      "name": "Windows-x64-ExperimentalDebug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "cmakeToolchain": "../vcpkg/scripts/buildsystems/vcpkg.cmake",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "variables": [
+        {
+          "name": "VCPKG_TARGET_TRIPLET",
+          "value": "x64-windows-static",
+          "type": "STRING"
+        },
+        {
+          "name": "EMU_EXPERIMENTAL_BUILD",
+          "value": "true",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "Windows-x86-ExperimentalRelease",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "cmakeToolchain": "../vcpkg/scripts/buildsystems/vcpkg.cmake",
+      "inheritEnvironments": [ "msvc_x86" ],
+      "variables": [
+        {
+          "name": "VCPKG_TARGET_TRIPLET",
+          "value": "x86-windows-static",
+          "type": "STRING"
+        },
+        {
+          "name": "EMU_EXPERIMENTAL_BUILD",
+          "value": "true",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "Windows-x86-ExperimentalDebug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "cmakeToolchain": "../vcpkg/scripts/buildsystems/vcpkg.cmake",
+      "inheritEnvironments": [ "msvc_x86" ],
+      "variables": [
+        {
+          "name": "VCPKG_TARGET_TRIPLET",
+          "value": "x86-windows-static",
+          "type": "STRING"
+        },
+        {
+          "name": "EMU_EXPERIMENTAL_BUILD",
+          "value": "true",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "Linux-x64-ExperimentalRelease",
+      "generator": "Unix Makefiles",
+      "configurationType": "RelWithDebInfo",
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "/usr/local/bin/cmake",
+      "remoteCopySourcesExclusionList": [ ".vs", ".git" ],
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x64" ],
+      "variables": [
+        {
+          "name": "EMU_EXPERIMENTAL_BUILD",
+          "value": "true",
+          "type": "STRING"
+        }
+      ],
+      "remoteMachineName": "${defaultRemoteMachineName}",
+      "remoteCMakeListsRoot": "/var/tmp/src/${workspaceHash}/${name}",
+      "remoteBuildRoot": "/var/tmp/build/${workspaceHash}/build/${name}",
+      "remoteInstallRoot": "/var/tmp/build/${workspaceHash}/install/${name}",
+      "remoteCopySources": true,
+      "rsyncCommandArgs": "-t --delete --delete-excluded",
+      "remoteCopyBuildOutput": true,
+      "remoteCopySourcesMethod": "rsync"
+    },
+    {
+      "name": "Linux-x64-ExperimentalDebug",
+      "generator": "Unix Makefiles",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "/usr/local/bin/cmake",
+      "remoteCopySourcesExclusionList": [ ".vs", ".git" ],
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x64" ],
+      "variables": [
+        {
+          "name": "EMU_EXPERIMENTAL_BUILD",
+          "value": "true",
+          "type": "STRING"
+        }
+      ],
+      "remoteMachineName": "${defaultRemoteMachineName}",
+      "remoteCMakeListsRoot": "/var/tmp/src/${workspaceHash}/${name}",
+      "remoteBuildRoot": "/var/tmp/build/${workspaceHash}/build/${name}",
+      "remoteInstallRoot": "/var/tmp/build/${workspaceHash}/install/${name}",
+      "remoteCopySources": true,
+      "rsyncCommandArgs": "-t --delete --delete-excluded",
+      "remoteCopyBuildOutput": true,
+      "remoteCopySourcesMethod": "rsync"
+    },
+    {
+      "name": "Linux-x86-ExperimentalRelease",
+      "generator": "Unix Makefiles",
+      "configurationType": "RelWithDebInfo",
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "/usr/local/bin/cmake",
+      "remoteCopySourcesExclusionList": [ ".vs", ".git" ],
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x86" ],
+      "variables": [
+        {
+          "name": "EMU_EXPERIMENTAL_BUILD",
+          "value": "true",
+          "type": "STRING"
+        }
+      ],
+      "remoteMachineName": "${defaultRemoteMachineName}",
+      "remoteCMakeListsRoot": "/var/tmp/src/${workspaceHash}/${name}",
+      "remoteBuildRoot": "/var/tmp/build/${workspaceHash}/build/${name}",
+      "remoteInstallRoot": "/var/tmp/build/${workspaceHash}/install/${name}",
+      "remoteCopySources": true,
+      "rsyncCommandArgs": "-t --delete --delete-excluded",
+      "remoteCopyBuildOutput": true,
+      "remoteCopySourcesMethod": "rsync"
+    },
+    {
+      "name": "Linux-x86-ExperimentalDebug",
+      "generator": "Unix Makefiles",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "/usr/local/bin/cmake",
+      "remoteCopySourcesExclusionList": [ ".vs", ".git" ],
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x86" ],
+      "variables": [
+        {
+          "name": "EMU_EXPERIMENTAL_BUILD",
+          "value": "true",
+          "type": "STRING"
+        }
+      ],
+      "remoteMachineName": "${defaultRemoteMachineName}",
+      "remoteCMakeListsRoot": "/var/tmp/src/${workspaceHash}/${name}",
+      "remoteBuildRoot": "/var/tmp/build/${workspaceHash}/build/${name}",
+      "remoteInstallRoot": "/var/tmp/build/${workspaceHash}/install/${name}",
+      "remoteCopySources": true,
+      "rsyncCommandArgs": "-t --delete --delete-excluded",
+      "remoteCopyBuildOutput": true,
+      "remoteCopySourcesMethod": "rsync"
+    },
+    {
+      "name": "WSL-x64-Release",
+      "generator": "Unix Makefiles",
+      "configurationType": "RelWithDebInfo",
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "/usr/bin/cmake",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x64" ],
+      "wslPath": "${defaultWSLPath}",
+      "addressSanitizerRuntimeFlags": "detect_leaks=0",
+      "variables": []
+    },
+    {
+      "name": "WSL-x64-Debug",
+      "generator": "Unix Makefiles",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "/usr/bin/cmake",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x64" ],
+      "wslPath": "${defaultWSLPath}",
+      "addressSanitizerRuntimeFlags": "detect_leaks=0",
+      "variables": []
+    },
+    {
+      "name": "WSL-x86-Release",
+      "generator": "Unix Makefiles",
+      "configurationType": "RelWithDebInfo",
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "/usr/bin/cmake",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x86" ],
+      "wslPath": "${defaultWSLPath}",
+      "addressSanitizerRuntimeFlags": "detect_leaks=0",
+      "variables": []
+    },
+    {
+      "name": "WSL-x86-Debug",
+      "generator": "Unix Makefiles",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "/usr/bin/cmake",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x86" ],
+      "wslPath": "${defaultWSLPath}",
+      "addressSanitizerRuntimeFlags": "detect_leaks=0",
+      "variables": []
+    },
+    {
+      "name": "WSL-x64-ExperimentalRelease",
+      "generator": "Unix Makefiles",
+      "configurationType": "RelWithDebInfo",
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "/usr/bin/cmake",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x64" ],
+      "wslPath": "${defaultWSLPath}",
+      "addressSanitizerRuntimeFlags": "detect_leaks=0",
+      "variables": [
+        {
+          "name": "EMU_EXPERIMENTAL_BUILD",
+          "value": "True",
+          "type": "BOOL"
+        }
+      ]
+    },
+    {
+      "name": "WSL-x64-ExperimentalDebug",
+      "generator": "Unix Makefiles",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "/usr/bin/cmake",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x64" ],
+      "wslPath": "${defaultWSLPath}",
+      "addressSanitizerRuntimeFlags": "detect_leaks=0",
+      "variables": [
+        {
+          "name": "EMU_EXPERIMENTAL_BUILD",
+          "value": "True",
+          "type": "BOOL"
+        }
+      ]
+    },
+    {
+      "name": "WSL-x86-ExperimentalRelease",
+      "generator": "Unix Makefiles",
+      "configurationType": "RelWithDebInfo",
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "/usr/bin/cmake",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x86" ],
+      "wslPath": "${defaultWSLPath}",
+      "addressSanitizerRuntimeFlags": "detect_leaks=0",
+      "variables": [
+        {
+          "name": "EMU_EXPERIMENTAL_BUILD",
+          "value": "True",
+          "type": "BOOL"
+        }
+      ]
+    },
+    {
+      "name": "WSL-x86-ExperimentalDebug",
+      "generator": "Unix Makefiles",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\out\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "/usr/bin/cmake",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x86" ],
+      "wslPath": "${defaultWSLPath}",
+      "addressSanitizerRuntimeFlags": "detect_leaks=0",
+      "variables": [
+        {
+          "name": "EMU_EXPERIMENTAL_BUILD",
+          "value": "True",
+          "type": "BOOL"
+        }
+      ]
+    }
+  ]
+}
