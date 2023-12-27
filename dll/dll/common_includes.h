@@ -95,7 +95,7 @@
 
     #ifdef EMU_EXPERIMENTAL_BUILD
         #include <winhttp.h>
-        #include "../detours/detours.h"
+        #include "detours/detours.h"
     #endif
 
 // Convert a wide Unicode string to an UTF8 string
@@ -161,9 +161,9 @@ static inline void reset_LastError()
 #include "controller/gamepad.h"
 
 // Steamsdk includes
-#include "sdk_includes/steam_api.h"
-#include "sdk_includes/steam_gameserver.h"
-#include "sdk_includes/steamdatagram_tickets.h"
+#include "steam/steam_api.h"
+#include "steam/steam_gameserver.h"
+#include "steam/steamdatagram_tickets.h"
 
 // PRINT_DEBUG definition
 // notice the extra call to WSASetLastError(0) in Windows def

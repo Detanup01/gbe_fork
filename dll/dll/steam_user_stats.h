@@ -20,7 +20,7 @@
 
 #include <limits>
 #include "base.h"
-#include "../overlay_experimental/steam_overlay.h"
+#include "overlay_experimental/steam_overlay.h"
 
 struct Steam_Leaderboard_Score {
     CSteamID steam_id;

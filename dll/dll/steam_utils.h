@@ -17,7 +17,7 @@
 
 #include "base.h"
 #include "local_storage.h"
-#include "../overlay_experimental/steam_overlay.h"
+#include "overlay_experimental/steam_overlay.h"
 
 static std::chrono::time_point<std::chrono::steady_clock> app_initialized_time = std::chrono::steady_clock::now();
 
