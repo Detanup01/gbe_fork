@@ -34,13 +34,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	WCHAR ExeCommandLine[4096] = { 0 };
 	WCHAR AppId[128] = { 0 };
 
-	STARTUPINFOW info = { 0 };
-	SecureZeroMemory(&info, sizeof(info));
-	info.cb = sizeof(info);
-
-	PROCESS_INFORMATION processInfo = { 0 };
-	SecureZeroMemory(&processInfo, sizeof(processInfo));
-
 	int Length = GetModuleFileNameW(GetModuleHandleW(NULL), CurrentDirectory, sizeof(CurrentDirectory)) + 1;
 	for (int i = Length; i > 0; i--) {
 		if (CurrentDirectory[i] == '\\') {
@@ -107,14 +100,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		return 1;
 	}
 
-	WCHAR CommandLine[16384] = { 0 };
-	_snwprintf(CommandLine, _countof(CommandLine), L"\"%ls\" %ls %ls", ExeFile, ExeCommandLine, lpCmdLine);
-	if (!ExeFile[0] || !CreateProcessW(ExeFile, CommandLine, NULL, NULL, TRUE, CREATE_SUSPENDED, NULL, ExeRunDir, &info, &processInfo))
-	{
-		MessageBoxA(NULL, "Unable to load the requested EXE file.", "ColdClientLoader", MB_ICONERROR);
-		return 1;
-	}
-	
 	HKEY Registrykey = { 0 };
 	// Declare some variables to be used for Steam registry.
 	DWORD UserId = 0x03100004771F810D & 0xffffffff;
@@ -136,7 +121,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		if (RegCreateKeyExW(HKEY_CURRENT_USER, L"Software\\Valve\\Steam\\ActiveProcess", 0, 0, REG_OPTION_NON_VOLATILE,
 			KEY_ALL_ACCESS, NULL, &Registrykey, NULL) != ERROR_SUCCESS)
 		{
-			TerminateProcess(processInfo.hProcess, NULL);
 			MessageBoxA(NULL, "Unable to patch Steam process informations on the Windows registry.", "ColdClientLoader", MB_ICONERROR);
 			return 1;
 		}
@@ -166,10 +150,28 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	// Close the HKEY Handle.
 	RegCloseKey(Registrykey);
 
+	// spawn the exe
+	STARTUPINFOW info = { 0 };
+	SecureZeroMemory(&info, sizeof(info));
+	info.cb = sizeof(info);
+
+	PROCESS_INFORMATION processInfo = { 0 };
+	SecureZeroMemory(&processInfo, sizeof(processInfo));
+
+	WCHAR CommandLine[16384] = { 0 };
+	_snwprintf(CommandLine, _countof(CommandLine), L"\"%ls\" %ls %ls", ExeFile, ExeCommandLine, lpCmdLine);
+	if (!ExeFile[0] || !CreateProcessW(ExeFile, CommandLine, NULL, NULL, TRUE, CREATE_SUSPENDED, NULL, ExeRunDir, &info, &processInfo))
+	{
+		MessageBoxA(NULL, "Unable to load the requested EXE file.", "ColdClientLoader", MB_ICONERROR);
+		return 1;
+	}
+	
+	// run and wait
 	ResumeThread(processInfo.hThread);
 	WaitForSingleObject(processInfo.hThread, INFINITE);
-	CloseHandle(processInfo.hProcess);
+
 	CloseHandle(processInfo.hThread);
+	CloseHandle(processInfo.hProcess);
 
 	if (orig_steam) {
 		if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Valve\\Steam\\ActiveProcess", 0, KEY_ALL_ACCESS, &Registrykey) == ERROR_SUCCESS)
