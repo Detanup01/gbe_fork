@@ -1,29 +1,69 @@
-## 2023/12/21
+## 2023/12/21 - 2023/12/27
 
-* fixed print issues some places
-* added option to auth with new Ticket!
+* **[Detanup01]** added option to send auth token with new Ticket! + an option to include the GC token  
+  by default the emu will send the old token format for various APIs, like:  
+  * `Steam_GameServer::GetAuthSessionTicket()`
+  * `Steam_User::GetAuthSessionTicket()`
+  * `Steam_User::GetAuthTicketForWebApi()`  
 
----
+  this allows the emu to generate new ticket data, and additionally the GC token.  
+  check the new config files `new_app_ticket.txt` and `gc_token.txt` in the `steam_settings` folder
+* **[Detanup01]** fixed print issues in some places
+* **[remelt]** use the `index` argument to grab the preview URL from UGC query result, fixed by: https://cs.rin.ru/forum/viewtopic.php?p=2964432#p2964432
+* **[remelt]** allow overriding mod `path` & mod `preview_url` in the `mods.json` file, suggested by: https://cs.rin.ru/forum/viewtopic.php?p=2964432#p2964432
+* allow setting the mod `score` in the `mods.json`
+* when the mod `preview_url` is not overridden, don't set it automatically if `preview_filename` was empty, otherwise the `preview_url` will be pointing to the entire `mod_images` folder, like: `file://C:/my_game/steam_settings/mod_images/`  
+  instead set it to an empty string
+* updated `mods.EXAMPLE.json`
+* added 2 new config files `is_beta_branch.txt` and `force_branch_name.txt`  
+  by default the emu will report a `non-beta` branch with the name `public` when the game calls `Steam_Apps::GetCurrentBetaName()`  
+  these new config files allow changing that behavior, check the `steam_settings` folder
+* refactored the `steamclient_loader` script for Linux + new options and enhancements to make it similar to the Windows version, check its new README!
+* for steamclient loader (Windows + Linux): pass loader arguments to the target exe, allowing it to be used from external callers, example by the `lobby_connect` tool
+* deprecated the `find_interface` scripts, now the executable is built for Windows & Linux!
+* included the `steam_settings.EXAMPLE` for Linux build
+* updated release READMEs!
+* added a README for the repo with detailed build steps
+>>>>>>>>> ---
+
+* check for invalid data pointer in `GetAuthSessionTicket()`
+* additional sanity check in `InitiateGameConnection()` + print input data address in debug build
+* moved the example `app id` and `interfaces` files inside `steam_settings` folder, to avoid encouraging putting files outside
+
+>>>>>>>>> ---
+
+* fixed all debug build warnings for Linux & Windows (no more scary messages!)
+* updated Linux & Windows build scripts to avoid removing the entire build folder before building + introduced `clean` flag
+* added licenses & sources of all extrnal libraries + added a new cryptography library `Mbed TLS`  
+  you have to rebuilt the deps
+* deprecated the separate/dedicated cleanup script for Windows, it's now inlined in the main build script
+* For Windows build script: deprecated `low perf` & `win xp` options
+* For Linux build script: deprecated `low perf` option
+* restored all original but unused repo files into their separate folder
+* lots of refactoring and relocation in the source repo:
+  - all build stuff will be inside `build` folder
+  - restructured the entire repo
+  - generate proto source files in the `build\tmp` folder insead of the actual source folder
+
+>>>>>>>>> ---
 
 * `settings_parser.cpp`:
   - cleanup the settings parser code by split it into functions
   - increase the buffer size for `account_name` to 100 chars
   - increase the buffer size for `language` to 64 chars
-
 * `common_includes.h`:
   - refactor includes order
   - added new helper function to keep yielding the thread for a given amount of time (currently unused)
 * build scripts:
   - in Linux build scripts don't use `-d` flag with `rm`
   - added global build stat message
-
+  - use an obnoxious name for the file handle variable used if the PRINT_DEBUG macro to avoid collisions, in the caller has a variable with same name
 * don't cache deps build when pushing tag or opening pull requests
-
 * remove hardcoded repo path + remove Git LFS flag since it's no longer needed
 
 ---
 
-## 20/Dec/2023
+## 2023/12/20
 
 * fixed the implementation of `BIsAppInstalled()`, it must lock the global mutex since it is thread-safe, otherwise it will cause starvation and the current thread wion't yield, which triggers some games
 
@@ -53,7 +93,7 @@
 
 ---
 
-## 17/Dec/2023
+## 2023/12/17
 * More accurate implementation for BIsAppInstalled(), it now rejects uint32_max
 
 * Allow behavior customizization via installed_app_ids.txt config file
@@ -90,7 +130,7 @@
 
 ---
 
-## 14/Dec/2023
+## 2023/12/14
 * based on cvsR4U1 by ce20fdf2 from viewtopic.php?p=2936697#p2936697
 
 * apply the fix for the Linux build (due to newer glibc) from this pull request by Randy Li: https://gitlab.com/Mr_Goldberg/goldberg_emulator/-/merge_requests/42/
