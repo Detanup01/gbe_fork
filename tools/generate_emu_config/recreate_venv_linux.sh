@@ -6,17 +6,19 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
+python_package="python3.10"
 venv=".env-linux"
 reqs_file="requirements.txt"
 script_dir=$( cd -- "$( dirname -- "${0}" )" &> /dev/null && pwd )
 
-apt update || exit 1
-apt install "python3.10" -y || exit 1
-apt install "python3.10-venv" -y || exit 1
+add-apt-repository ppa:deadsnakes/ppa -y
+apt update -y || exit 1
+apt install "$python_package" -y || exit 1
+apt install "$python_package-venv" -y || exit 1
 
 [[ -d "$script_dir/$venv" ]] && rm -r -f "$script_dir/$venv"
 
-python3.10 -m venv "$script_dir/$venv" || exit 1
+$python_package -m venv "$script_dir/$venv" || exit 1
 sleep 1
 
 chmod 777 "$script_dir/$venv/bin/activate"
