@@ -1,19 +1,9 @@
-.vs/*
-.vscode/*
-*.bin
-*.o
-net.pb.*
-*steam_api*
-release/*
-/build/
-*.obj
-/dll/net.pb.cc
-/dll/net.pb.h
-base.exp
-base.lib
-steamclient.exp
-steamclient.lib
-out/*
+.vs/
+.vscode/
+dll/net.pb.cc
+dll/net.pb.h
+
+build/
 
 tools/generate_emu_config/.py*/
 tools/generate_emu_config/.venv*/
@@ -21,7 +11,7 @@ tools/generate_emu_config/.env*/
 tools/generate_emu_config/.vscode/
 tools/generate_emu_config/backup/
 tools/generate_emu_config/bin/
-tools/generate_emu_config/build_tmp*/
+tools/generate_emu_config/build/
 tools/generate_emu_config/login_temp/
 tools/generate_emu_config/**/__pycache__/
 tools/generate_emu_config/generate_emu_config*.spec
