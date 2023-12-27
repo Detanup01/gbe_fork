@@ -2,7 +2,7 @@
 
 
 build_base_dir="build/linux"
-out_dir="build/linux/package"
+out_dir="build/package/linux"
 script_dir=$( cd -- "$( dirname -- "${0}" )" &> /dev/null && pwd )
 
 [[ "$1" = '' ]] && {

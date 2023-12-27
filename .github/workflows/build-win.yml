@@ -20,7 +20,7 @@ env:
   DEPS_CACHE_KEY: emu-deps-win
   DEPS_CACHE_DIR: build/deps/win
   
-  PACKAGE_BASE_DIR: "build/win/package"
+  PACKAGE_BASE_DIR: "build/package/win"
   THIRD_PARTY_BASE_DIR: 'third-party'
 
 jobs:
