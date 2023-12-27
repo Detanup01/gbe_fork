@@ -357,4 +357,11 @@ popd
 echo; echo;
 
 
+echo;
+if [[ $last_code = 0 ]]; then
+  echo "[GG] no failures"
+else
+  echo "[XX] general failure" >&2
+fi
+
 exit $last_code

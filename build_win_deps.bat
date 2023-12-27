@@ -408,6 +408,12 @@ exit /b
 exit /b 1
 
 :end_script
+echo:
+if %last_code% equ 0 (
+  echo [GG] no failures
+) else (
+  1>&2 echo [XX] general failure
+)
 popd
 endlocal & (
     exit /b %last_code%
