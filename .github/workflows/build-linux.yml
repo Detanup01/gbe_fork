@@ -84,13 +84,6 @@ jobs:
     - name: Checkout branch
       uses: actions/checkout@v4
 
-### fix folder permissions! not sure why this fails
-    # nested subdirs "build/linux/release" cause permission problems
-    - name: Give all permissions for repo folder
-      shell: bash
-      working-directory: ${{ github.workspace }}
-      run:  sudo chmod -R 777 "${{ github.workspace }}"
-
 ### deps
     - name: Lookup cache for deps
       id: emu-deps-cache-step
@@ -119,6 +112,13 @@ jobs:
         ref: 'third-party/deps/common'
         path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/common"
 
+### fix folder permissions! not sure why this fails
+    # nested subdirs "build/linux/release" cause permission problems
+    - name: Give all permissions for repo folder
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run:  sudo chmod -R 777 "${{ github.workspace }}"
+
     - name: Build deps
       if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
       shell: bash
@@ -135,6 +135,13 @@ jobs:
       with:
         ref: 'third-party/build/linux'
         path: "${{env.THIRD_PARTY_BASE_DIR}}/build/linux"
+
+### fix folder permissions! not sure why this fails
+    # nested subdirs "build/linux/release" cause permission problems
+    - name: Give all permissions for repo folder
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run:  sudo chmod -R 777 "${{ github.workspace }}"
 
 ### build (release mode)
     - name: Build release mode
