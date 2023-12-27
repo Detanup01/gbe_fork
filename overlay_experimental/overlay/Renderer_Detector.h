@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "../dll/base.h"
+#include "dll/base.h"
 
 #include <future>
 #include <chrono>

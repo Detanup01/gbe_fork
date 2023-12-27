@@ -1,7 +1,7 @@
 #ifndef __INCLUDED_STEAM_OVERLAY_H__
 #define __INCLUDED_STEAM_OVERLAY_H__
 
-#include "../dll/base.h"
+#include "dll/base.h"
 #include <map>
 #include <queue>
 

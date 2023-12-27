@@ -1,7 +1,7 @@
 #ifndef __INCLUDED_BASE_HOOK_H__
 #define __INCLUDED_BASE_HOOK_H__
 
-#include "../dll/base.h"
+#include "dll/base.h"
 
 #ifdef EMU_OVERLAY
 
