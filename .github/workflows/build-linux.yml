@@ -78,7 +78,7 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     needs: [ dependencies ]
-    if: always()
+    if: ${{ !cancelled() }}
 
     steps:
     - name: Checkout branch

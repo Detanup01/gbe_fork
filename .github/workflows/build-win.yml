@@ -78,7 +78,7 @@ jobs:
   build:
     runs-on: windows-2022
     needs: [ dependencies ]
-    if: always()
+    if: ${{ !cancelled() }}
 
     steps:
     - name: Checkout branch
