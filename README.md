@@ -20,8 +20,14 @@ This is a fork of https://gitlab.com/Mr_Goldberg/goldberg_emulator
 You can find the original README here: [README.md](./z_original_repo_files/README.md)
 
 ---
+
+## How to use the emu
+You can find instructions here: [README.release.md](./post_build/README.release.md)
+
 ---
 ---
+
+<br/>
 
 >> # One time setup
 ## On Windows:
