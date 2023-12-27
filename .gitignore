@@ -1,7 +1,5 @@
 .vs/
 .vscode/
-dll/net.pb.cc
-dll/net.pb.h
 
 build/
 
