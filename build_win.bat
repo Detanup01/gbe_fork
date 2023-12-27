@@ -6,10 +6,10 @@ pushd "%~dp0"
 set /a last_code=0
 
 for %%A in (
-  "dll/dll.cpp"
-  "dll/steam_client.cpp"
-  "controller/gamepad.c"
-  "sdk_includes/isteamclient.h" ) do (
+  "dll\dll.cpp"
+  "dll\steam_client.cpp"
+  "controller\gamepad.c"
+  "sdk\steam\isteamclient.h" ) do (
     if not exist "%%~A" (
       call :err_msg "Invalid emu directory, change directory to emu's src dir (missing file %%~A)"
       set /a last_code=1
@@ -138,11 +138,12 @@ set "deps_dir=build\deps\win"
 set "libs_dir=libs"
 set "tools_src_dir=tools"
 set "build_temp_dir=build\tmp\win"
+set "protoc_out_dir=%build_temp_dir%\proto_gen"
 
 set "protoc_exe_32=%deps_dir%\protobuf\install32\bin\protoc.exe"
 set "protoc_exe_64=%deps_dir%\protobuf\install64\bin\protoc.exe"
 
-set "common_compiler_args=/std:c++17 /MP%build_threads% /DYNAMICBASE /errorReport:none /nologo /utf-8 /EHsc /GF /GL- /GS /Fo%build_temp_dir%\ /Fe%build_temp_dir%\"
+set "common_compiler_args=/std:c++17 /MP%build_threads% /DYNAMICBASE /errorReport:none /nologo /utf-8 /EHsc /GF /GL- /GS
 set "common_compiler_args_32=%common_compiler_args%"
 set "common_compiler_args_64=%common_compiler_args%"
 
@@ -180,7 +181,7 @@ set mbedtls_lib32="%deps_dir%\mbedtls\install32\lib\mbedcrypto.lib"
 set mbedtls_lib64="%deps_dir%\mbedtls\install64\lib\mbedcrypto.lib"
 
 :: directories to use for #include
-set release_incs_both=%ssq_inc% /I"%libs_dir%\utfcpp" /I"." /I"%libs_dir%" /I"%libs_dir%\ImGui"
+set release_incs_both=%ssq_inc% /I"%libs_dir%" /I"%protoc_out_dir%" /I"%libs_dir%\utfcpp" /I"controller" /I"dll" /I"sdk" /I"overlay_experimental" /I"%libs_dir%\ImGui"
 set release_incs32=%release_incs_both% %curl_inc32% %protob_inc32% %zlib_inc32% %mbedtls_inc32%
 set release_incs64=%release_incs_both% %curl_inc64% %protob_inc64% %zlib_inc64% %mbedtls_inc64%
 
@@ -192,7 +193,7 @@ set release_libs32=%release_libs_both% %ssq_lib32% %curl_lib32% %protob_lib32% %
 set release_libs64=%release_libs_both% %ssq_lib64% %curl_lib64% %protob_lib64% %zlib_lib64% %mbedtls_lib64%
 
 :: common source files used everywhere, just for convinience, you still have to provide a complete list later
-set release_src="dll/*.cpp" "dll/*.cc"
+set release_src="dll/*.cpp" "%protoc_out_dir%/*.cc"
 
 :: additional #defines
 set "common_defs=/DUTF_CPP_CPLUSPLUS=201703L /DCURL_STATICLIB /D_MT /DUNICODE /D_UNICODE"
@@ -232,7 +233,7 @@ setlocal
 
 echo // cleaning up to build 32
 call :cleanup
-mkdir "%build_temp_dir%"
+mkdir "%protoc_out_dir%"
 
 call build_win_set_env.bat 32 || (
   endlocal
@@ -242,7 +243,7 @@ call build_win_set_env.bat 32 || (
 )
 
 echo // invoking protobuf compiler - 32
-"%protoc_exe_32%" -I.\dll\ --cpp_out=.\dll\ .\dll\net.proto || (
+"%protoc_exe_32%" .\dll\net.proto -I.\dll\ --cpp_out="%protoc_out_dir%\\" || (
   set /a last_code+=1
 )
 echo: & echo:
@@ -330,7 +331,7 @@ setlocal
 
 echo // cleaning up to build 64
 call :cleanup
-mkdir "%build_temp_dir%"
+mkdir "%protoc_out_dir%"
 
 call build_win_set_env.bat 64 || (
   endlocal
@@ -340,7 +341,7 @@ call build_win_set_env.bat 64 || (
 )
 
 echo // invoking protobuf compiler - 64
-"%protoc_exe_64%" -I.\dll\ --cpp_out=.\dll\ .\dll\net.proto || (
+"%protoc_exe_64%" .\dll\net.proto -I.\dll\ --cpp_out="%protoc_out_dir%\\" || (
   set /a last_code+=1
 )
 echo: & echo:
@@ -388,26 +389,37 @@ if %BUILD_EXPCLIENT64% equ 1 (
 endlocal & set /a last_code=%last_code%
 
 
-:: copy configs + examples
-if %last_code% equ 0 (
-  echo // copying readmes + files examples
-  xcopy /y /s "files_example\*" "%build_root_dir%\"
-  copy /y "%tools_src_dir%\steamclient_loader\win\ColdClientLoader.ini" "%steamclient_dir%\"
-  REM :: TODO
-  REM copy /y Readme_release.txt "%build_root_dir%\Readme.txt"
-  REM copy /y Readme_experimental.txt "%experimental_dir%\Readme.txt"
-  REM copy /y Readme_experimental_steamclient.txt "%steamclient_dir%\Readme.txt"
-  REM copy /y Readme_generate_interfaces.txt "%find_interfaces_dir%\Readme.txt"
-  REM copy /y Readme_lobby_connect.txt "%lobby_connect_dir%\Readme.txt"
-) else (
-  call :err_msg "Not copying readmes or files examples due to previous errors"
-)
-echo: & echo:
-
-
 :: cleanup
 echo // cleaning up
 call :cleanup
+echo: & echo:
+
+
+:: copy configs + examples
+if %last_code% equ 0 (
+  echo // copying readmes + files examples
+  xcopy /y /s "post_build\steam_settings.EXAMPLE\" "%build_root_dir%\steam_settings.EXAMPLE\"
+  copy /y "%tools_src_dir%\steamclient_loader\win\ColdClientLoader.ini" "%steamclient_dir%\"
+  copy /y "post_build\README.release.md" "%build_root_dir%\"
+  copy /y "CHANGELOG.md" "%build_root_dir%\"
+  if %BUILD_TYPE%==1 (
+    copy /y "post_build\README.debug.md" "%build_root_dir%\"
+  )
+  if exist "%experimental_dir%" (
+    copy /y "post_build\README.experimental.md" "%experimental_dir%\"
+  )
+  if exist "%steamclient_dir%" (
+    copy /y "post_build\README.experimental_steamclient.md" "%steamclient_dir%\"
+  )
+  if exist "%find_interfaces_dir%" (
+    copy /y "post_build\README.find_interfaces.md" "%find_interfaces_dir%\"
+  )
+  if exist "%lobby_connect_dir%" (
+    copy /y "post_build\README.lobby_connect.md" "%lobby_connect_dir%\"
+  )
+) else (
+  call :err_msg "Not copying readmes or files examples due to previous errors"
+)
 echo: & echo:
 
 
@@ -417,64 +429,119 @@ goto :end_script
 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: x32 + tools
 :compile_lib32
+  setlocal
   echo // building lib steam_api.dll - 32
-  cl %common_compiler_args_32% %debug_info% %debug_info_format% %optimization_level% %release_defs% /LD %release_incs32% %release_src% %release_libs32% /link %common_win_linker_args_32% /DLL /OUT:"%build_root_dir%\x32\steam_api.dll"
-exit /b %errorlevel%
+  set "_build_tmp=%build_temp_dir%\steam_api32"
+  mkdir "%_build_tmp%"
+  cl %common_compiler_args_32% /Fo%_build_tmp%\ /Fe%_build_tmp%\ %debug_info% %debug_info_format% %optimization_level% %release_defs% /LD %release_incs32% %release_src% %release_libs32% /link %common_win_linker_args_32% /DLL /OUT:"%build_root_dir%\x32\steam_api.dll"
+  set /a _exit=%errorlevel%
+  rmdir /s /q "%_build_tmp%"
+endlocal & exit /b %_exit%
 
 :compile_experimental_lib32
+  setlocal
   echo // building lib experimental steam_api.dll - 32
-  cl %common_compiler_args_32% %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /LD %release_incs32% /IImGui /Ioverlay_experimental %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "%libs_dir%\ImGui\*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_dx*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_win32.cpp" "%libs_dir%\ImGui\backends\imgui_impl_vulkan.cpp" "%libs_dir%\ImGui\backends\imgui_impl_opengl3.cpp" "%libs_dir%\ImGui\backends\imgui_win_shader_blobs.cpp" overlay_experimental/*.cpp overlay_experimental/windows/*.cpp overlay_experimental/System/*.cpp %release_libs32% /link %common_win_linker_args_32% /DLL /OUT:"%experimental_dir%\x32\steam_api.dll"
-exit /b %errorlevel%
+  set "_build_tmp=%build_temp_dir%\ex_steam_api32"
+  mkdir "%_build_tmp%"
+  cl %common_compiler_args_32% /Fo%_build_tmp%\ /Fe%_build_tmp%\ %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /LD %release_incs32% /IImGui /Ioverlay_experimental %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "%libs_dir%\ImGui\*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_dx*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_win32.cpp" "%libs_dir%\ImGui\backends\imgui_impl_vulkan.cpp" "%libs_dir%\ImGui\backends\imgui_impl_opengl3.cpp" "%libs_dir%\ImGui\backends\imgui_win_shader_blobs.cpp" overlay_experimental/*.cpp overlay_experimental/windows/*.cpp overlay_experimental/System/*.cpp %release_libs32% /link %common_win_linker_args_32% /DLL /OUT:"%experimental_dir%\x32\steam_api.dll"
+  set /a _exit=%errorlevel%
+  rmdir /s /q "%_build_tmp%"
+endlocal & exit /b %_exit%
 
 :compile_experimental_client32
+  setlocal
   echo // building lib experimental steamclient.dll - 32
-  cl %common_compiler_args_32% %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /LD %release_incs32% "steamclient\steamclient.cpp" %release_libs32% /link %common_win_linker_args_32% /DLL /OUT:"%experimental_dir%\x32\steamclient.dll"
-exit /b %errorlevel%
+  set "_build_tmp=%build_temp_dir%\ex_steamclient32"
+  mkdir "%_build_tmp%"
+  cl %common_compiler_args_32% /Fo%_build_tmp%\ /Fe%_build_tmp%\ %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /LD %release_incs32% "steamclient\steamclient.cpp" %release_libs32% /link %common_win_linker_args_32% /DLL /OUT:"%experimental_dir%\x32\steamclient.dll"
+  set /a _exit=%errorlevel%
+  rmdir /s /q "%_build_tmp%"
+endlocal & exit /b %_exit%
 
 :compile_experimentalclient_32
+  setlocal
   echo // building lib steamclient.dll - 32
-  cl %common_compiler_args_32% %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /DSTEAMCLIENT_DLL /LD %release_incs32% /IImGui /Ioverlay_experimental %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "%libs_dir%\ImGui\*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_dx*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_win32.cpp" "%libs_dir%\ImGui\backends\imgui_impl_vulkan.cpp" "%libs_dir%\ImGui\backends\imgui_impl_opengl3.cpp" "%libs_dir%\ImGui\backends\imgui_win_shader_blobs.cpp" overlay_experimental/*.cpp overlay_experimental/windows/*.cpp overlay_experimental/System/*.cpp %release_libs32% /link %common_win_linker_args_32% /DLL /OUT:"%steamclient_dir%\steamclient.dll"
-exit /b %errorlevel%
+  set "_build_tmp=%build_temp_dir%\steamclient32"
+  mkdir "%_build_tmp%"
+  cl %common_compiler_args_32% /Fo%_build_tmp%\ /Fe%_build_tmp%\ %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /DSTEAMCLIENT_DLL /LD %release_incs32% /IImGui /Ioverlay_experimental %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "%libs_dir%\ImGui\*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_dx*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_win32.cpp" "%libs_dir%\ImGui\backends\imgui_impl_vulkan.cpp" "%libs_dir%\ImGui\backends\imgui_impl_opengl3.cpp" "%libs_dir%\ImGui\backends\imgui_win_shader_blobs.cpp" overlay_experimental/*.cpp overlay_experimental/windows/*.cpp overlay_experimental/System/*.cpp %release_libs32% /link %common_win_linker_args_32% /DLL /OUT:"%steamclient_dir%\steamclient.dll"
+  set /a _exit=%errorlevel%
+  rmdir /s /q "%_build_tmp%"
+endlocal & exit /b %_exit%
 
 :compile_experimentalclient_ldr
+  setlocal
   echo // building executable steamclient_loader.exe - 32
   :: common_win_linker_args_32 isn't a mistake, the entry is wWinMain
   :: check this table: https://learn.microsoft.com/en-us/cpp/build/reference/entry-entry-point-symbol#remarks
-  cl %common_compiler_args_32% %debug_info% %debug_info_format% %optimization_level% %release_defs% %release_incs32% "%tools_src_dir%\steamclient_loader\win\*.cpp" %release_libs32% user32.lib /link %common_win_linker_args_32% /OUT:"%steamclient_dir%\steamclient_loader.exe"
-exit /b %errorlevel%
+  set "_build_tmp=%build_temp_dir%\client_loader32"
+  mkdir "%_build_tmp%"
+  cl %common_compiler_args_32% /Fo%_build_tmp%\ /Fe%_build_tmp%\ %debug_info% %debug_info_format% %optimization_level% %release_defs% %release_incs32% "%tools_src_dir%\steamclient_loader\win\*.cpp" %release_libs32% user32.lib /link %common_win_linker_args_32% /OUT:"%steamclient_dir%\steamclient_loader.exe"
+  set /a _exit=%errorlevel%
+  rmdir /s /q "%_build_tmp%"
+endlocal & exit /b %_exit%
 
 :compile_tool_itf
+  setlocal
   echo // building tool generate_interfaces_file.exe - 32
-  cl %common_compiler_args_32% %debug_info% %debug_info_format% %optimization_level% %release_defs% %release_incs32% "%tools_src_dir%\generate_interfaces\generate_interfaces.cpp" %release_libs32% /link %common_exe_linker_args_32% /OUT:"%find_interfaces_dir%\generate_interfaces_file.exe"
-exit /b %errorlevel%
+  set "_build_tmp=%build_temp_dir%\generate_interfaces32"
+  mkdir "%_build_tmp%"
+  cl %common_compiler_args_32% /Fo%_build_tmp%\ /Fe%_build_tmp%\ %debug_info% %debug_info_format% %optimization_level% %release_defs% %release_incs32% "%tools_src_dir%\generate_interfaces\generate_interfaces.cpp" %release_libs32% /link %common_exe_linker_args_32% /OUT:"%find_interfaces_dir%\generate_interfaces_file.exe"
+  set /a _exit=%errorlevel%
+  rmdir /s /q "%_build_tmp%"
+endlocal & exit /b %_exit%
 
 :compile_tool_lobby
+  setlocal
   echo // building tool lobby_connect.exe - 32
-  cl %common_compiler_args_32% %debug_info% %debug_info_format% %optimization_level% %release_defs% /DNO_DISK_WRITES /DLOBBY_CONNECT %release_incs32% "%tools_src_dir%\lobby_connect\lobby_connect.cpp" %release_src% %release_libs32% Comdlg32.lib /link %common_exe_linker_args_32% /OUT:"%lobby_connect_dir%\lobby_connect.exe"
-exit /b %errorlevel%
+  set "_build_tmp=%build_temp_dir%\lobby_connect32"
+  mkdir "%_build_tmp%"
+  cl %common_compiler_args_32% /Fo%_build_tmp%\ /Fe%_build_tmp%\ %debug_info% %debug_info_format% %optimization_level% %release_defs% /DNO_DISK_WRITES /DLOBBY_CONNECT %release_incs32% "%tools_src_dir%\lobby_connect\lobby_connect.cpp" %release_src% %release_libs32% Comdlg32.lib /link %common_exe_linker_args_32% /OUT:"%lobby_connect_dir%\lobby_connect.exe"
+  set /a _exit=%errorlevel%
+  rmdir /s /q "%_build_tmp%"
+endlocal & exit /b %_exit%
 
 
 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: x64
 :compile_lib64
+  setlocal
   echo // building lib steam_api64.dll - 64
-  cl %common_compiler_args_64% %debug_info% %debug_info_format% %optimization_level% %release_defs% /LD %release_incs64% %release_src% %release_libs64% /link %common_win_linker_args_64% /DLL /OUT:"%build_root_dir%\x64\steam_api64.dll"
-exit /b %errorlevel%
+  set "_build_tmp=%build_temp_dir%\steam_api64"
+  mkdir "%_build_tmp%"
+  cl %common_compiler_args_64% /Fo%_build_tmp%\ /Fe%_build_tmp%\ %debug_info% %debug_info_format% %optimization_level% %release_defs% /LD %release_incs64% %release_src% %release_libs64% /link %common_win_linker_args_64% /DLL /OUT:"%build_root_dir%\x64\steam_api64.dll"
+  set /a _exit=%errorlevel%
+  rmdir /s /q "%_build_tmp%"
+endlocal & exit /b %_exit%
 
 :compile_experimental_lib64
+  setlocal
   echo // building lib experimental steam_api64.dll - 64
-  cl %common_compiler_args_64% %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /LD %release_incs64% /IImGui /Ioverlay_experimental %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "%libs_dir%\ImGui\*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_dx*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_win32.cpp" "%libs_dir%\ImGui\backends\imgui_impl_vulkan.cpp" "%libs_dir%\ImGui\backends\imgui_impl_opengl3.cpp" "%libs_dir%\ImGui\backends\imgui_win_shader_blobs.cpp" overlay_experimental/*.cpp overlay_experimental/windows/*.cpp overlay_experimental/System/*.cpp %release_libs64% opengl32.lib /link %common_win_linker_args_64% /DLL /OUT:"%experimental_dir%\x64\steam_api64.dll"
-exit /b %errorlevel%
+  set "_build_tmp=%build_temp_dir%\ex_steam_api64"
+  mkdir "%_build_tmp%"
+  cl %common_compiler_args_64% /Fo%_build_tmp%\ /Fe%_build_tmp%\ %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /LD %release_incs64% /IImGui /Ioverlay_experimental %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "%libs_dir%\ImGui\*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_dx*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_win32.cpp" "%libs_dir%\ImGui\backends\imgui_impl_vulkan.cpp" "%libs_dir%\ImGui\backends\imgui_impl_opengl3.cpp" "%libs_dir%\ImGui\backends\imgui_win_shader_blobs.cpp" overlay_experimental/*.cpp overlay_experimental/windows/*.cpp overlay_experimental/System/*.cpp %release_libs64% opengl32.lib /link %common_win_linker_args_64% /DLL /OUT:"%experimental_dir%\x64\steam_api64.dll"
+  set /a _exit=%errorlevel%
+  rmdir /s /q "%_build_tmp%"
+endlocal & exit /b %_exit%
 
 :compile_experimental_client64
+  setlocal
   echo // building lib experimental steamclient64.dll - 64
-  cl %common_compiler_args_64% %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /LD %release_incs64% "steamclient\steamclient.cpp" %release_libs64% /link %common_win_linker_args_64% /DLL /OUT:"%experimental_dir%\x64\steamclient64.dll"
-exit /b %errorlevel%
+  set "_build_tmp=%build_temp_dir%\ex_steamclient64"
+  mkdir "%_build_tmp%"
+  cl %common_compiler_args_64% /Fo%_build_tmp%\ /Fe%_build_tmp%\ %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /LD %release_incs64% "steamclient\steamclient.cpp" %release_libs64% /link %common_win_linker_args_64% /DLL /OUT:"%experimental_dir%\x64\steamclient64.dll"
+  set /a _exit=%errorlevel%
+  rmdir /s /q "%_build_tmp%"
+endlocal & exit /b %_exit%
 
 :compile_experimentalclient_64
+  setlocal
   echo // building lib steamclient64.dll - 64
-  cl %common_compiler_args_64% %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /DSTEAMCLIENT_DLL /LD %release_incs64% /IImGui /Ioverlay_experimental %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "%libs_dir%\ImGui\*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_dx*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_win32.cpp" "%libs_dir%\ImGui\backends\imgui_impl_vulkan.cpp" "%libs_dir%\ImGui\backends\imgui_impl_opengl3.cpp" "%libs_dir%\ImGui\backends\imgui_win_shader_blobs.cpp" overlay_experimental/*.cpp overlay_experimental/windows/*.cpp overlay_experimental/System/*.cpp %release_libs64% opengl32.lib /link %common_win_linker_args_64% /DLL /OUT:"%steamclient_dir%\steamclient64.dll"
-exit /b %errorlevel%
+  set "_build_tmp=%build_temp_dir%\steamclient64"
+  mkdir "%_build_tmp%"
+  cl %common_compiler_args_64% /Fo%_build_tmp%\ /Fe%_build_tmp%\ %debug_info% %debug_info_format% %optimization_level% %release_defs% /DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /DSTEAMCLIENT_DLL /LD %release_incs64% /IImGui /Ioverlay_experimental %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "%libs_dir%\ImGui\*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_dx*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_win32.cpp" "%libs_dir%\ImGui\backends\imgui_impl_vulkan.cpp" "%libs_dir%\ImGui\backends\imgui_impl_opengl3.cpp" "%libs_dir%\ImGui\backends\imgui_win_shader_blobs.cpp" overlay_experimental/*.cpp overlay_experimental/windows/*.cpp overlay_experimental/System/*.cpp %release_libs64% opengl32.lib /link %common_win_linker_args_64% /DLL /OUT:"%steamclient_dir%\steamclient64.dll"
+  set /a _exit=%errorlevel%
+  rmdir /s /q "%_build_tmp%"
+endlocal & exit /b %_exit%
 
 
 
@@ -502,6 +569,7 @@ exit /b 1
   del /f /q dll\net.pb.cc >nul 2>&1
   del /f /q dll\net.pb.h >nul 2>&1
   rmdir /s /q "%build_temp_dir%" >nul 2>&1
+  rmdir /s /q "%protoc_out_dir%" >nul 2>&1
   for %%A in ("ilk" "lib" "exp") do (
     del /f /s /q "%build_root_dir%\*.%%~A" >nul 2>&1
   )

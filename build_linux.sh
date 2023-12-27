@@ -5,7 +5,7 @@ required_files=(
   "dll/dll.cpp"
   "dll/steam_client.cpp"
   "controller/gamepad.c"
-  "sdk_includes/isteamclient.h"
+  "sdk/steam/isteamclient.h"
 )
 
 for emu_file in "${required_files[@]}"; do
@@ -113,6 +113,7 @@ deps_dir="build/deps/linux"
 libs_dir="libs"
 tools_dir='tools'
 build_temp_dir="build/tmp/linux"
+protoc_out_dir="$build_temp_dir/proto_gen"
 third_party_dir="third-party"
 third_party_build_dir="$third_party_dir/build/linux"
 
@@ -152,9 +153,13 @@ mbedtls_lib64="$deps_dir/mbedtls/install64/lib"
 # directories to use for #include
 release_incs_both=(
   "$ssq_inc"
-  "$libs_dir/utfcpp"
-  "."
   "$libs_dir"
+  "$protoc_out_dir"
+  "$libs_dir/utfcpp"
+  "controller"
+  "dll"
+  "sdk"
+  "overlay_experimental"
 )
 release_incs32=(
   "${release_incs_both[@]}"
@@ -204,7 +209,7 @@ release_libs=(
 # common source files used everywhere, just for convinience, you still have to provide a complete list later
 release_src=(
   "dll/*.cpp"
-  "dll/*.cc"
+  "$protoc_out_dir/*.cc"
 )
 
 # additional #defines
@@ -267,7 +272,7 @@ function build_for () {
   local linker_pic_pie='-shared'
   [[ $is_exe = 1 ]] && linker_pic_pie='-pie'
 
-  local tmp_work_dir="${out_filepath##*/}"
+  local tmp_work_dir="${out_filepath##*/}_$is_32_build"
   tmp_work_dir="$build_temp_dir/${tmp_work_dir%.*}"
   echo "  -- Cleaning compilation directory '$tmp_work_dir/'"
   rm -f -r "$tmp_work_dir"
@@ -354,6 +359,7 @@ function cleanup () {
   rm -f dll/net.pb.cc
   rm -f dll/net.pb.h
   rm -f -r "$build_temp_dir"
+  rm -f -r "$protoc_out_dir"
 }
 
 if [[ "$CLEAN_BUILD" = "1" ]]; then
@@ -373,9 +379,11 @@ fi
 
 ### x32 build
 cleanup
+mkdir -p "$protoc_out_dir"
 
 echo // invoking protobuf compiler - 32
-"$protoc_exe_32" -I./dll/ --cpp_out=./dll/ ./dll/*.proto
+"$protoc_exe_32" ./dll/*.proto -I./dll/ --cpp_out="$protoc_out_dir/"
+last_code=$((last_code + $?))
 echo; echo;
 
 if [[ "$BUILD_LIB32" = "1" ]]; then
@@ -428,9 +436,11 @@ fi
 
 ### x64 build
 cleanup
+mkdir -p "$protoc_out_dir"
 
 echo // invoking protobuf compiler - 64
-"$protoc_exe_64" -I./dll/ --cpp_out=./dll/ ./dll/*.proto
+"$protoc_exe_64" ./dll/*.proto -I./dll/ --cpp_out="$protoc_out_dir/"
+last_code=$((last_code + $?))
 echo; echo;
 
 if [[ "$BUILD_LIB64" = "1" ]]; then
@@ -483,6 +493,28 @@ fi
 
 # cleanup
 cleanup
+
+
+# copy configs + examples
+if [[ $last_code = 0 ]]; then
+  echo "// copying readmes + files examples"
+  cp -f -r "post_build/steam_settings.EXAMPLE/" "$build_root_dir/"
+  cp -f "post_build/README.release.md" "$build_root_dir/"
+  cp -f "CHANGELOG.md" "$build_root_dir/"
+  if [[ $BUILD_TYPE = 1 ]]; then
+    cp -f "post_build/README.debug.md" "$build_root_dir/"
+  fi
+  if [[ -d "$build_root_tools/find_interfaces" ]]; then
+    cp -f "post_build/README.find_interfaces.md" "$build_root_tools/find_interfaces/"
+  fi
+  if [[ -d "$build_root_tools/lobby_connect" ]]; then
+    cp -f "post_build/README.lobby_connect.md" "$build_root_tools/lobby_connect/"
+  fi
+else
+  echo "[X] Not copying readmes or files examples due to previous errors" >&2
+fi
+echo; echo;
+
 
 echo;
 if [[ $last_code = 0 ]]; then
