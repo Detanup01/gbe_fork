@@ -1,0 +1,1 @@
+Rename this to: disable_overlay_warning_forced_setting.txt to disable the "WARNING Some steam_settings/force_*.txt files have been detected" warning in the overlay.

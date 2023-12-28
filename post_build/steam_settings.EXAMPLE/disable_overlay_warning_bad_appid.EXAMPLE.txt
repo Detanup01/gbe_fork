@@ -1,0 +1,1 @@
+Rename this to: disable_overlay_warning_bad_appid.txt to disable the bad app ID warning in the overlay.
