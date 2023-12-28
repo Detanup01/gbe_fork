@@ -29,7 +29,7 @@ You can find instructions here: [README.release.md](./post_build/README.release.
 
 <br/>
 
->> # One time setup
+# **One time setup**
 ## On Windows:
 * You need Windows 10 or 8.1
 * Install `Visual Studio 2022 Community`: https://visualstudio.microsoft.com/vs/community/
@@ -55,7 +55,7 @@ You can find instructions here: [README.release.md](./post_build/README.release.
 
 ---
 
->> # Cloning the repo
+# **Cloning the repo**
 
  Clone the repo and its submodules **recursively**
  ```bash
@@ -64,7 +64,7 @@ You can find instructions here: [README.release.md](./post_build/README.release.
 
 ---
 
->> # Building dependencies
+# **Building dependencies**
 
 These are third party libraries needed to build the emu later, they are linked with the emu during its build process.  
 You don't need to build these dependencies every time, they rarely get updated.  
@@ -102,7 +102,7 @@ Additional arguments you can pass to this script:
 
 ---
 
->> # Building the emu
+# **Building the emu**
 ## On Windows:
 Open CMD in the repo folder, then run the batch script
 ```batch
@@ -113,11 +113,15 @@ This will build a release build of the emu in the folder `build\win\release`
 <br/>
 
 Arguments you can pass to this script:
-* `-j <n>`: build with `<n>` parallel jobs, by default 70% of the available threads
 * `release`: build the emu in release mode
 * `debug`: build the emu in debug mode, which writes events to a log file, and includes `.pdb` files,  
   check the debug build readme: [README.debug.md](./post_build/README.debug.md)
 * `clean`: clean the build folder before building again, otherwise the script will retain everything from previous builds
+
+>>>>>>>>>  ___
+
+* `-j <n>`: build with `<n>` parallel jobs, by default 70% of the available threads
+* `-verbose`: output compiler/linker commands
 
 >>>>>>>>>  ___
 
@@ -157,11 +161,15 @@ This will build a release build of the emu in the folder `build/linux/release`
 <br/>
 
 Arguments you can pass to this script:
-* `-j <n>`: build with `<n>` parallel jobs, by default 70% of the available threads
 * `release`: build the emu in release mode
 * `debug`: build the emu in debug mode, which writes events to a log file, and includes `.pdb` files,  
   check the debug build readme: [README.debug.md](./post_build/README.debug.md)
 * `clean`: clean the build folder before building again, otherwise the script will retain everything from previous builds
+
+>>>>>>>>>  ___
+
+* `-j <n>`: build with `<n>` parallel jobs, by default 70% of the available threads
+* `-verbose`: output compiler/linker commands
 
 >>>>>>>>>  ___
 
@@ -186,7 +194,7 @@ Arguments you can pass to this script:
 
 ---
 
->> # Building the tool `generate_emu_config`
+# **Building the tool `generate_emu_config`**
 Navigate to the folder `tools/generate_emu_config/` then  
 
 ## On Windows:
@@ -222,7 +230,7 @@ This will build the tool inside `bin/linux`
 
 ---
 
->> # Using Github CI as a builder
+# **Using Github CI as a builder**
 
 This is really slow and mainly intended for the CI Workflow scripts, but you can use it as another outlet if you can't build locally.  
 **You have to fork the repo first**.
@@ -288,7 +296,7 @@ The following are special branches, pushing any code to them will trigger the bu
 
 ---
 
->> # *(Optional)* Packaging
+# ***(Optional)* Packaging**
 This step is intended for Github CI/Workflow, but you can create a package locally.
 
 ## On Windows:
