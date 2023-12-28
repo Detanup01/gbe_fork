@@ -242,7 +242,18 @@ public:
     bool disable_overlay = false;
     bool disable_overlay_achievement_notification = false;
     bool disable_overlay_friend_notification = false;
-    bool disable_overlay_warning = false;
+    //warn people who use force_ settings
+    bool overlay_warn_forced_setting = false;
+    //warn people who use local save
+    bool overlay_warn_local_save = false;
+    //disable overlay warning for force_ settings
+    bool disable_overlay_warning_forced_setting = false;
+    //disable overlay warning for local save
+    bool disable_overlay_warning_local_save = false;
+    //disable overlay warning for bad app ID (= 0)
+    bool disable_overlay_warning_bad_appid = false;
+    // disable all overlay warnings
+    bool disable_overlay_warning_any = false;
     Overlay_Appearance overlay_appearance;
 
     //app build id
@@ -254,11 +265,7 @@ public:
     //make lobby creation fail in the matchmaking interface
     bool disable_lobby_creation = false;
 
-    //warn people who use force_ settings
-    bool warn_forced = false;
-
-    //warn people who use local save
-    bool warn_local_save = false;
+    // path to local save
     std::string local_save;
 
     //steamhttp external download support
@@ -267,11 +274,10 @@ public:
     //steam deck flag
     bool steam_deck = false;
     
-    // can use GC token for generation
-    bool use_gc_token = false;
-
     // use new app_ticket auth instead of old one
     bool enable_new_app_ticket = false;
+    // can use GC token for generation
+    bool use_gc_token = false;
 };
 
 #endif
