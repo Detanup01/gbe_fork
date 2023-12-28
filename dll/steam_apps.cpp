@@ -105,8 +105,9 @@ uint32 Steam_Apps::GetEarliestPurchaseUnixTime( AppId_t nAppID )
     if (nAppID == UINT32_MAX) return 0; // check Steam_Apps::BIsAppInstalled() TODO is this correct?
     if (nAppID == settings->get_local_game_id().AppID() || settings->hasDLC(nAppID)) {
         auto t =
-            std::chrono::system_clock::now()
-            - std::chrono::hours(24 * 4); // 4 days ago
+            // 4 days ago
+            startup_time
+            - std::chrono::hours(24 * 4);
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(t.time_since_epoch());
         return (uint32)duration.count();
     }
