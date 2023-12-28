@@ -3,6 +3,8 @@
 
 build/
 
+dll/proto_gen/
+
 tools/generate_emu_config/.py*/
 tools/generate_emu_config/.venv*/
 tools/generate_emu_config/.env*/

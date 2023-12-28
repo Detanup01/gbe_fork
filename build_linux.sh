@@ -113,7 +113,7 @@ deps_dir="build/deps/linux"
 libs_dir="libs"
 tools_dir='tools'
 build_temp_dir="build/tmp/linux"
-protoc_out_dir="$build_temp_dir/proto_gen"
+protoc_out_dir="dll/proto_gen/linux"
 third_party_dir="third-party"
 third_party_build_dir="$third_party_dir/build/linux"
 
@@ -325,7 +325,7 @@ function build_for () {
   printf '%s\n' "${build_cmds[@]}" | "$parallel_exe" -j$build_threads -d '<>' -k "$build_cmd"
   exit_code=$?
   echo "  -- Exit code = $exit_code"
-  echo ; echo ;
+  echo; echo;
   sleep 1
   [[ $exit_code = 0 ]] || {
     rm -f -r "$tmp_work_dir";
@@ -348,7 +348,7 @@ function build_for () {
   clang++ $common_compiler_args $cpiler_pic_pie $cpiler_m32 $optimize_level $dbg_level $linker_pic_pie $linker_strip_dbg_symbols -o "$out_filepath" "${obj_files[@]}" "${target_libs_dirs[@]/#/-L}" -Wl,--whole-archive -Wl,-Bstatic "${release_libs[@]/#/-l}" -Wl,-Bdynamic -Wl,--no-whole-archive -Wl,--exclude-libs,ALL
   exit_code=$?
   echo "  -- Exit code = $exit_code"
-  echo ; echo ;
+  echo; echo;
   rm -f -r "$tmp_work_dir"
   sleep 1
   return $exit_code
@@ -356,8 +356,6 @@ function build_for () {
 }
 
 function cleanup () {
-  rm -f dll/net.pb.cc
-  rm -f dll/net.pb.h
   rm -f -r "$build_temp_dir"
   rm -f -r "$protoc_out_dir"
 }

@@ -138,7 +138,7 @@ set "deps_dir=build\deps\win"
 set "libs_dir=libs"
 set "tools_src_dir=tools"
 set "build_temp_dir=build\tmp\win"
-set "protoc_out_dir=%build_temp_dir%\proto_gen"
+set "protoc_out_dir=dll\proto_gen\win"
 
 set "protoc_exe_32=%deps_dir%\protobuf\install32\bin\protoc.exe"
 set "protoc_exe_64=%deps_dir%\protobuf\install64\bin\protoc.exe"
@@ -566,8 +566,6 @@ exit /b 1
   del /f /q *.obj >nul 2>&1
   del /f /q *.pdb >nul 2>&1
   del /f /q *.ilk >nul 2>&1
-  del /f /q dll\net.pb.cc >nul 2>&1
-  del /f /q dll\net.pb.h >nul 2>&1
   rmdir /s /q "%build_temp_dir%" >nul 2>&1
   rmdir /s /q "%protoc_out_dir%" >nul 2>&1
   for %%A in ("ilk" "lib" "exp") do (
