@@ -62,6 +62,11 @@ You can find instructions here: [README.release.md](./post_build/README.release.
  git clone --recurse-submodules https://github.com/otavepto/gbe_fork.git
  ```
 
+ It is adviseable to always checkout submodules every now and then, to make sure they're up to date
+ ```bash
+ git submodule update --recursive --remote
+ ```
+
 ---
 
 # **Building dependencies**
