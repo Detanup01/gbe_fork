@@ -35,6 +35,8 @@ BUILD_TYPE=-1
 
 CLEAN_BUILD=0
 
+VERBOSE=0
+
 for (( i=1; i<=$#; i++ )); do
   var="${!i}"
   if [[ "$var" = "-j" ]]; then
@@ -63,6 +65,8 @@ for (( i=1; i<=$#; i++ )); do
     BUILD_TOOL_LOBBY32=0
   elif [[ "$var" = "-tool-lobby-64" ]]; then
     BUILD_TOOL_LOBBY64=0
+  elif [[ "$var" = "-verbose" ]]; then
+    VERBOSE=1
   elif [[ "$var" = "clean" ]]; then
     CLEAN_BUILD=1
   elif [[ "$var" = "release" ]]; then
@@ -322,6 +326,12 @@ function build_for () {
   
   echo "  -- Compiling object files with $build_threads parallel jobs inside directory '$tmp_work_dir/'"
   local build_cmd="clang++ -c -x c++ $common_compiler_args $cpiler_pic_pie $cpiler_m32 $optimize_level $dbg_level $release_ignore_warn $release_defs $extra_defs ${target_incs[@]} '{1}' '-o{2}'"
+
+  if [[ $VERBOSE = 1 ]]; then
+    printf '%s\n' "${build_cmds[@]}" | "$parallel_exe" --dry-run -j$build_threads -d '<>' -k "$build_cmd"
+    echo;
+  fi
+
   printf '%s\n' "${build_cmds[@]}" | "$parallel_exe" -j$build_threads -d '<>' -k "$build_cmd"
   exit_code=$?
   echo "  -- Exit code = $exit_code"
@@ -343,8 +353,14 @@ function build_for () {
     echo "[X] No files to link" >&2;
     return 1;
   }
+  
   # https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/developer_guide/gcc-using-libraries#gcc-using-libraries_using-both-static-dynamic-library-gcc
   # https://linux.die.net/man/1/ld
+  if [[ $VERBOSE = 1 ]]; then
+    echo "clang++ $common_compiler_args $cpiler_pic_pie $cpiler_m32 $optimize_level $dbg_level $linker_pic_pie $linker_strip_dbg_symbols -o" "$out_filepath" "${obj_files[@]}" "${target_libs_dirs[@]/#/-L}" "-Wl,--whole-archive -Wl,-Bstatic" "${release_libs[@]/#/-l}" "-Wl,-Bdynamic -Wl,--no-whole-archive -Wl,--exclude-libs,ALL"
+    echo;
+  fi
+
   clang++ $common_compiler_args $cpiler_pic_pie $cpiler_m32 $optimize_level $dbg_level $linker_pic_pie $linker_strip_dbg_symbols -o "$out_filepath" "${obj_files[@]}" "${target_libs_dirs[@]/#/-L}" -Wl,--whole-archive -Wl,-Bstatic "${release_libs[@]/#/-l}" -Wl,-Bdynamic -Wl,--no-whole-archive -Wl,--exclude-libs,ALL
   exit_code=$?
   echo "  -- Exit code = $exit_code"
