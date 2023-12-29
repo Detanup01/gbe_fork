@@ -105,8 +105,14 @@ class Steam_Overlay
     bool show_achievements, show_settings;
     void *fonts_atlas;
 
-    bool disable_forced, local_save, warning_forced;
-    uint32_t appid;
+    // disable input when force_*.txt file is used
+    bool disable_user_input;
+    // warn when force_*.txt file is used
+    bool warn_forced_setting;
+    // warn when using local save
+    bool warn_local_save;
+    // warn when app ID = 0
+    bool warn_bad_appid;
 
     char username_text[256];
     std::atomic_bool save_settings;
