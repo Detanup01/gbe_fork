@@ -1,0 +1,77 @@
+// ===================================================================================== 0
+LANGUAGE 0, 0
+
+SOURCE_CONTROL_ID SCID "../SOURCE_CONTROL_ID.txt"
+
+1 VERSIONINFO
+FILEVERSION    8,56,38,63
+PRODUCTVERSION 3,0,0,1
+FILEFLAGSMASK  0x17
+FILEFLAGS      0x0
+FILEOS         0x00000004L // VOS__WINDOWS32
+FILETYPE       0x2L // VFT_DLL
+FILESUBTYPE    0x0L // VFT2_UNKNOWN
+{
+    BLOCK "StringFileInfo"
+    {
+        BLOCK "040904b0" // language code = U.S. English, character-set identifier = Unicode
+        {
+            VALUE "LegalCopyright", "Copyright (C) 2005 Goldberg Emulator"
+            VALUE "InternalName", "Steamclient.dll (win64)"
+            VALUE "FileVersion", "08.56.38.63"
+            VALUE "CompanyName", "Goldberg Emulator"
+            VALUE "ProductVersion", "03.00.00.01"
+            VALUE "FileDescription", "Steamclient.dll"
+            VALUE "Source Control ID", "8563863"
+            VALUE "OriginalFilename", "Steamclient.dll"
+            VALUE "ProductName", "Goldberg Emulator"
+        }
+    }
+
+    BLOCK "VarFileInfo"
+    {
+        VALUE "Translation", 0x0409 0x04B0 // English language (0x409) in the Windows ANSI codepage (1252)
+    }
+}
+
+
+
+// ===================================================================================== 1033
+LANGUAGE 0x09, 0x01
+
+1 VERSIONINFO
+FILEVERSION    3,0,0,1
+PRODUCTVERSION 3,0,0,1
+FILEFLAGSMASK  0x17
+FILEFLAGS      0x0
+FILEOS         0x00000004L // VOS__WINDOWS32
+FILETYPE       0x2L // VFT_DLL
+FILESUBTYPE    0x0L // VFT2_UNKNOWN
+{
+    BLOCK "StringFileInfo"
+    {
+        BLOCK "040904b0" // language code = U.S. English, character-set identifier = Unicode
+        {
+            VALUE "CompanyName", "Goldberg Emulator"
+            VALUE "FileDescription", "Steamclient.dll"
+            VALUE "FileVersion", "3, 0, 0, 1"
+            VALUE "InternalName", "Steamclient.dll"
+            VALUE "LegalCopyright", "Copyright (C) 2005 Goldberg Emulator"
+            VALUE "OriginalFilename", "Steamclient.dll"
+            VALUE "ProductName", "Goldberg Emulator"
+            VALUE "ProductVersion", "3, 0, 0, 1"
+        }
+    }
+
+    BLOCK "VarFileInfo"
+    {
+        VALUE "Translation", 0x0409 0x04B0 // English language (0x409) in the Windows ANSI codepage (1252)
+    }
+}
+
+
+
+// ===================================================================================== 4147
+LANGUAGE 0x33, 0x04
+
+1 WEVT_TEMPLATE "../WEVT_TEMPLATE1_1.bin"

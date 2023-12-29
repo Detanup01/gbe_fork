@@ -1,0 +1,83 @@
+// https://learn.microsoft.com/en-us/windows/win32/menurc/versioninfo-resource
+// https://learn.microsoft.com/en-us/windows/win32/api/verrsrc/ns-verrsrc-vs_fixedfileinfo
+
+// ===================================================================================== 0
+LANGUAGE 0, 0 // language = Neutral, sublanguage = Neutral
+
+SOURCE_CONTROL_ID SCID "../SOURCE_CONTROL_ID.txt"
+
+1 VERSIONINFO
+FILEVERSION    8,33,9,23
+PRODUCTVERSION 1,0,0,1
+FILEFLAGSMASK  0x17
+FILEFLAGS      0x0
+FILEOS         0x00000004L // VOS__WINDOWS32
+FILETYPE       0x2L // VFT_DLL
+FILESUBTYPE    0x0L // VFT2_UNKNOWN
+{
+    BLOCK "StringFileInfo"
+    {
+        BLOCK "040904b0" // language code = U.S. English, character-set identifier = Unicode
+        {
+            VALUE "LegalCopyright", "Copyright (C) 2007"
+            VALUE "InternalName", "Goldberg Emulator Client API (win32)"
+            VALUE "FileVersion", "08.33.09.23"
+            VALUE "CompanyName", "Goldberg Emulator"
+            VALUE "ProductVersion", "01.00.00.01"
+            VALUE "FileDescription", "Goldberg Emulator Client API"
+            VALUE "Source Control ID", "8330923"
+            VALUE "OriginalFilename", "steam_api.dll"
+            VALUE "ProductName", "Goldberg Emulator Client API"
+        }
+    }
+
+    BLOCK "VarFileInfo"
+    {
+        VALUE "Translation", 0x0409 0x04B0 // English language (0x409) in the Windows ANSI codepage (1252)
+    }
+}
+
+
+
+// ===================================================================================== 1033
+/*
+ * +-------------------------+-------------------------+
+ * |     SubLanguage ID      |   Primary Language ID   |
+ * +-------------------------+-------------------------+
+ * 15                    10  9                         0   
+ */
+// 1033 = English - United States 
+// = 0x0409
+// = 0000 0100 0000 1001
+// = 
+LANGUAGE 0x09, 0x01 // language = English, sublanguage = US
+
+1 VERSIONINFO
+FILEVERSION    1,0,0,1
+PRODUCTVERSION 1,0,0,1
+FILEFLAGSMASK  0x17
+FILEFLAGS      0x0
+FILEOS         0x00000004L // VOS__WINDOWS32
+FILETYPE       0x2L // VFT_DLL
+FILESUBTYPE    0x0L // VFT2_UNKNOWN
+{
+    BLOCK "StringFileInfo"
+    {
+        BLOCK "040904b0" // language code = U.S. English, character-set identifier = Unicode
+        {
+            VALUE "CompanyName", "Goldberg Emulator"
+            VALUE "FileDescription", "Goldberg Emulator Client API"
+            VALUE "FileVersion", "1, 0, 0, 1"
+            VALUE "InternalName", "Goldberg Emulator Client API"
+            VALUE "LegalCopyright", "Copyright (C) 2007"
+            VALUE "OriginalFilename", "steam_api.dll"
+            VALUE "ProductName", "Goldberg Emulator Client API"
+            VALUE "ProductVersion", "1, 0, 0, 1"
+        }
+    }
+
+    BLOCK "VarFileInfo"
+    {
+        VALUE "Translation", 0x0409 0x04B0 // English language (0x409) in the Windows ANSI codepage (1252)
+    }
+}

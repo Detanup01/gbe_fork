@@ -34,6 +34,8 @@ You can find instructions here: [README.release.md](./post_build/README.release.
 * You need Windows 10 or 8.1
 * Install `Visual Studio 2022 Community`: https://visualstudio.microsoft.com/vs/community/
    * Select the Workload `Desktop development with C++`
+   * In the `Individual componenets` scroll to the buttom and select the **latest** version of `Windows XX SDK (XX.X...)`  
+     For example `Windows 11 SDK (10.0.22621.0)`
 * *(Optional)* Install a GUI for Git like [GitHub Desktop](https://desktop.github.com/), or [Sourcetree](https://www.sourcetreeapp.com/)
 * Python 3.10 or above: https://www.python.org/downloads/windows/  
    After installation, make sure it works
