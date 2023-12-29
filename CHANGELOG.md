@@ -1,3 +1,15 @@
+* fixed the condition of `warn_forced_setting`, previously it may be reset back to `false` accidentally
+* deprecated `disable_overlay_warning.txt` in `steam_settings` folder in favor of new options/files
+* new `disable_overlay_warning_*.txt` settings to disable certain or all warnings in the overlay
+  * `disable_overlay_warning_forced_setting.txt`:  
+    - disable the warning for the usage of any file `force_*.txt` in the overlay
+    - unlocks the settigs menu, this may result in an undesirable output
+  * `disable_overlay_warning_bad_appid.txt`: disable the warning for bad app ID (when app ID = 0) in the overlay
+  * `disable_overlay_warning_local_save.txt`: disable the warning for using local save in the overlay
+  * `disable_overlay_warning_any.txt`: all the above
+
+---
+
 ## 2024/1/20
 
 * **[Detanup01]** added implementation for `Steam_Remote_Storage::EnumerateUserSubscribedFiles()` +   
