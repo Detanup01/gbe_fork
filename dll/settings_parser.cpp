@@ -1066,6 +1066,33 @@ static void parse_crash_printer_location()
     }
 }
 
+// auto_accept_invite.txt
+static void parse_auto_accept_invite(class Settings *settings_client, Settings *settings_server)
+{
+    std::string auto_accept_list_path = Local_Storage::get_game_settings_path() + "auto_accept_invite.txt";
+    std::ifstream input( utf8_decode(auto_accept_list_path) );
+    if (input.is_open()) {
+        consume_bom(input);
+        for( std::string line; getline( input, line ); ) {
+                
+            size_t start = line.find_first_not_of(whitespaces);
+            size_t end = line.find_last_not_of(whitespaces);
+            line = start == end
+                ? std::string()
+                : line.substr(start, end - start + 1);
+            
+            if (!line.empty()) {
+                try {
+                    auto friend_id = std::stoull(line);
+                    settings_client->auto_accept_invites.insert((uint64_t)friend_id);
+                    settings_server->auto_accept_invites.insert((uint64_t)friend_id);
+                    PRINT_DEBUG("Auto accepting invitations from user with ID (SteamID64) = " "%" PRIu64 "\n", friend_id);
+                } catch (...) {}
+            }
+        }
+    }
+}
+
 uint32 create_localstorage_settings(Settings **settings_client_out, Settings **settings_server_out, Local_Storage **local_storage_out)
 {
     std::string program_path = Local_Storage::get_program_path();
@@ -1267,6 +1294,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     parse_mods_folder(settings_client, settings_server, local_storage);
 
     load_gamecontroller_settings(settings_client);
+
+    parse_auto_accept_invite(settings_client, settings_server);
 
     *settings_client_out = settings_client;
     *settings_server_out = settings_server;

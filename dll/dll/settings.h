@@ -278,6 +278,9 @@ public:
     bool enable_new_app_ticket = false;
     // can use GC token for generation
     bool use_gc_token = false;
+
+    // list of user steam IDs to auto-accept invites from
+    std::unordered_set<uint64_t> auto_accept_invites{};
 };
 
 #endif
