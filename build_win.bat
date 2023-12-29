@@ -243,7 +243,6 @@ setlocal
 
 echo // cleaning up to build 32
 call :cleanup
-mkdir "%protoc_out_dir%"
 
 call build_win_set_env.bat 32 || (
   endlocal
@@ -253,6 +252,8 @@ call build_win_set_env.bat 32 || (
 )
 
 echo // invoking protobuf compiler - 32
+rmdir /s /q "%protoc_out_dir%" >nul 2>&1
+mkdir "%protoc_out_dir%"
 "%protoc_exe_32%" .\dll\net.proto -I.\dll\ --cpp_out="%protoc_out_dir%\\" || (
   endlocal
   call :err_msg "Protobuf compiler failed - 32"
@@ -365,7 +366,6 @@ setlocal
 
 echo // cleaning up to build 64
 call :cleanup
-mkdir "%protoc_out_dir%"
 
 call build_win_set_env.bat 64 || (
   endlocal
@@ -375,6 +375,8 @@ call build_win_set_env.bat 64 || (
 )
 
 echo // invoking protobuf compiler - 64
+rmdir /s /q "%protoc_out_dir%" >nul 2>&1
+mkdir "%protoc_out_dir%"
 "%protoc_exe_64%" .\dll\net.proto -I.\dll\ --cpp_out="%protoc_out_dir%\\" || (
   endlocal
   call :err_msg "Protobuf compiler failed - 64"
@@ -734,7 +736,6 @@ endlocal & exit /b %_exit%
   del /f /q *.pdb >nul 2>&1
   del /f /q *.ilk >nul 2>&1
   rmdir /s /q "%build_temp_dir%" >nul 2>&1
-  rmdir /s /q "%protoc_out_dir%" >nul 2>&1
   rmdir /s /q "%win_resources_out_dir%" >nul 2>&1
   for %%A in ("ilk" "lib" "exp") do (
     del /f /s /q "%build_root_dir%\*.%%~A" >nul 2>&1

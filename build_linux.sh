@@ -373,7 +373,6 @@ function build_for () {
 
 function cleanup () {
   rm -f -r "$build_temp_dir"
-  rm -f -r "$protoc_out_dir"
 }
 
 if [[ "$CLEAN_BUILD" = "1" ]]; then
@@ -393,9 +392,10 @@ fi
 
 ### x32 build
 cleanup
-mkdir -p "$protoc_out_dir"
 
 echo // invoking protobuf compiler - 32
+rm -f -r "$protoc_out_dir"
+mkdir -p "$protoc_out_dir"
 "$protoc_exe_32" ./dll/*.proto -I./dll/ --cpp_out="$protoc_out_dir/"
 last_code=$((last_code + $?))
 echo; echo;
@@ -450,9 +450,10 @@ fi
 
 ### x64 build
 cleanup
-mkdir -p "$protoc_out_dir"
 
 echo // invoking protobuf compiler - 64
+rm -f -r "$protoc_out_dir"
+mkdir -p "$protoc_out_dir"
 "$protoc_exe_64" ./dll/*.proto -I./dll/ --cpp_out="$protoc_out_dir/"
 last_code=$((last_code + $?))
 echo; echo;
