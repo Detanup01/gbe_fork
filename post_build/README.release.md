@@ -421,6 +421,29 @@ Second, the project is not a malware, if your antivirus software complains, be s
 
 ---
 
+## Overlay warnings:
+
+These configuration files allow disabling various overlay warnings:  
+* `disable_overlay_warning_forced_setting.txt`:  
+   - disable the warning for the usage of any file `force_*.txt` in the overlay
+   - unlocks the settigs menu, this may result in an undesirable output
+* `disable_overlay_warning_bad_appid.txt`: disable the warning for bad app ID (when app ID = 0) in the overlay
+* `disable_overlay_warning_local_save.txt`: disable the warning for using local save in the overlay
+* `disable_overlay_warning_any.txt`: all the above  
+
+Check the exaxmple files in the `steam_settings` folder
+
+---
+
+## Auto accept game/lobby invites:
+
+When the overlay is enabled and working, you can bypass it and auto-accept invites (lobby or game) from a list of Steam IDs (SteamID64 format).  
+The configuration file `auto_accept_invite.txt` allows you to do that, add each SteamID64 on a separate line.  
+
+Check the exaxmple file in the `steam_settings` folder  
+
+---
+
 ## More configurations:
 Due to the various changes and additions, it became tedious to document everything,  
 so it is recommended to check each example file in the `steam_settings` folder.
