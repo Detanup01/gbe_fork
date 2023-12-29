@@ -21,6 +21,7 @@ pyinstaller "$main_file" --distpath "$out_dir" -y --clean --onedir --name "$tool
 
 cp -f "steam_default_icon_locked.jpg" "$out_dir/$tool_name"
 cp -f "steam_default_icon_unlocked.jpg" "$out_dir/$tool_name"
+cp -f "README.md" "$out_dir/$tool_name"
 
 echo;
 echo =============

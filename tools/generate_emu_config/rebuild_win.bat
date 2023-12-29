@@ -32,6 +32,7 @@ pyinstaller "%main_file%" --distpath "%out_dir%" -y --clean --onedir --name "%to
 
 copy /y "steam_default_icon_locked.jpg" "%out_dir%\%tool_name%\"
 copy /y "steam_default_icon_unlocked.jpg" "%out_dir%\%tool_name%\"
+copy /y "README.md" "%out_dir%\%tool_name%\"
 
 echo:
 echo =============
