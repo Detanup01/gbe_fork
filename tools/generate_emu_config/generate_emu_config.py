@@ -504,6 +504,7 @@ def help():
     print(" -cdx:    generate .ini file for CODEX Steam emu for each app")
     print(" -aw:     generate schemas of all possible languages for Achievement Watcher")
     print(" -clean:  delete any folder/file with the same name as the output before generating any data")
+    print(" -anon:   login as with an anonymous account, these have very limited access and cannot get all app details")
     print("\nAll switches are optional except app id, at least 1 app id must be provided\n")
 
 
@@ -519,6 +520,7 @@ def main():
     GENERATE_CODEX_INI = False
     GENERATE_ACHIEVEMENT_WATCHER_SCHEMAS = False
     CLEANUP_BEFORE_GENERATING = False
+    ANON_LOGIN = False
 
     prompt_for_unavailable = True
 
@@ -546,6 +548,8 @@ def main():
             GENERATE_ACHIEVEMENT_WATCHER_SCHEMAS = True
         elif f'{appid}'.lower() == '-clean':
             CLEANUP_BEFORE_GENERATING = True
+        elif f'{appid}'.lower() == '-anon':
+            ANON_LOGIN = True
         else:
             print(f'[X] invalid switch: {appid}')
             help()
@@ -561,7 +565,7 @@ def main():
         os.makedirs("login_temp")
     client.set_credential_location("login_temp")
 
-    if os.path.isfile("my_login.txt"):
+    if not ANON_LOGIN and os.path.isfile("my_login.txt"):
         filedata = ['']
         with open("my_login.txt", "r") as f:
             filedata = f.readlines()
@@ -571,7 +575,14 @@ def main():
             USERNAME = filedata[0]
             PASSWORD = filedata[1]
 
-    if (len(USERNAME) == 0 or len(PASSWORD) == 0):
+    if ANON_LOGIN:
+        result = client.anonymous_login()
+        trials = 5
+        while result != EResult.OK and trials > 0:
+            time.sleep(1000)
+            result = client.anonymous_login()
+            trials -= 1
+    elif (len(USERNAME) == 0 or len(PASSWORD) == 0):
         client.cli_login()
     else:
         result = client.login(USERNAME, password=PASSWORD)
