@@ -263,6 +263,12 @@ call :build_rsrc "%win_resources_src_dir%\api\32\resources.rc" "%win_resources_o
 set /a last_code+=%errorlevel%
 call :build_rsrc "%win_resources_src_dir%\client\32\resources.rc" "%win_resources_out_dir%\rsrc-client-32.res"
 set /a last_code+=%errorlevel%
+call :build_rsrc "%win_resources_src_dir%\launcher\32\resources.rc" "%win_resources_out_dir%\rsrc-launcher-32.res" || (
+  endlocal
+  call :err_msg "Resource compiler failed - 32"
+  set /a last_code=1
+  goto :end_script
+)
 echo: & echo:
 
 if %BUILD_LIB32% equ 1 (
@@ -485,7 +491,7 @@ endlocal & exit /b %errorlevel%
 :compile_experimentalclient_ldr
   setlocal
   echo // building executable steamclient_loader.exe - 32
-  set src_files="%win_resources_out_dir%\rsrc-client-32.res" "%tools_src_dir%\steamclient_loader\win\*.cpp"
+  set src_files="%win_resources_out_dir%\rsrc-launcher-32.res" "%tools_src_dir%\steamclient_loader\win\*.cpp"
   set "extra_libs=user32.lib"
   call :build_for 1 2 "%steamclient_dir%\steamclient_loader.exe" src_files "" "" "%extra_libs%"
 endlocal & exit /b %errorlevel%
@@ -500,7 +506,7 @@ endlocal & exit /b %errorlevel%
 :compile_tool_lobby
   setlocal
   echo // building tool lobby_connect.exe - 32
-  set src_files="%win_resources_out_dir%\rsrc-client-32.res" "%tools_src_dir%\lobby_connect\lobby_connect.cpp" %release_src%
+  set src_files="%win_resources_out_dir%\rsrc-launcher-32.res" "%tools_src_dir%\lobby_connect\lobby_connect.cpp" %release_src%
   call :build_for 1 1 "%lobby_connect_dir%\lobby_connect.exe" src_files "" "/DNO_DISK_WRITES /DLOBBY_CONNECT" "Comdlg32.lib"
 endlocal & exit /b %errorlevel%
 

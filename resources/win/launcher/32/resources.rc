@@ -1,0 +1,70 @@
+// ===================================================================================== 0
+LANGUAGE 0, 0 // language = Neutral, sublanguage = Neutral
+
+SOURCE_CONTROL_ID SCID "../SOURCE_CONTROL_ID.txt"
+
+1 VERSIONINFO
+FILEVERSION    8,56,38,63
+PRODUCTVERSION 1,0,0,2
+FILEFLAGSMASK  0x17
+FILEFLAGS      0x0
+FILEOS         0x00000004L // VOS__WINDOWS32
+FILETYPE       0x00000001L // VFT_APP
+FILESUBTYPE    0x0L // VFT2_UNKNOWN
+{
+    BLOCK "StringFileInfo"
+    {
+        BLOCK "040904b0" // language code = U.S. English, character-set identifier = Unicode
+        {
+            VALUE "LegalCopyright",    "Copyright (C) 2021 Goldberg Emulator"
+            VALUE "InternalName",      "Goldberg Emulator (win32)"
+            VALUE "FileVersion",       "08.56.38.63"
+            VALUE "CompanyName",       "Goldberg Emulator"
+            VALUE "ProductVersion",    "01.00.00.02"
+            VALUE "FileDescription",   "Goldberg Emulator"
+            VALUE "Source Control ID", "8563863"
+            VALUE "OriginalFilename",  "steam.exe"
+            VALUE "ProductName",       "Goldberg Emulator"
+        }
+    }
+
+    BLOCK "VarFileInfo"
+    {
+        VALUE "Translation", 0x0409 0x04B0 // English language (0x409) in the Windows ANSI codepage (1252)
+    }
+}
+
+
+
+// ===================================================================================== 1033
+LANGUAGE 0x09, 0x01 // language = English, sublanguage = US
+
+1 VERSIONINFO
+FILEVERSION    1,0,0,2
+PRODUCTVERSION 1,0,0,2
+FILEFLAGSMASK  0x17
+FILEFLAGS      0x0
+FILEOS         0x00000004L // VOS__WINDOWS32
+FILETYPE       0x00000001L // VFT_APP
+FILESUBTYPE    0x0L // VFT2_UNKNOWN
+{
+    BLOCK "StringFileInfo"
+    {
+        BLOCK "040904b0" // language code = U.S. English, character-set identifier = Unicode
+        {
+            VALUE "CompanyName",       "Goldberg Emulator"
+            VALUE "FileDescription",   "Goldberg Emulator"
+            VALUE "FileVersion",       "1, 0, 0, 2"
+            VALUE "InternalName",      "Goldberg Emulator"
+            VALUE "LegalCopyright",    "Copyright (C) 2021 Goldberg Emulator"
+            VALUE "OriginalFilename",  "steam.exe"
+            VALUE "ProductName",       "Goldberg Emulator"
+            VALUE "ProductVersion",    "1, 0, 0, 2"
+        }
+    }
+
+    BLOCK "VarFileInfo"
+    {
+        VALUE "Translation", 0x0409 0x04B0 // English language (0x409) in the Windows ANSI codepage (1252)
+    }
+}
