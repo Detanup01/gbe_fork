@@ -254,15 +254,26 @@ call build_win_set_env.bat 32 || (
 
 echo // invoking protobuf compiler - 32
 "%protoc_exe_32%" .\dll\net.proto -I.\dll\ --cpp_out="%protoc_out_dir%\\" || (
-  set /a last_code+=1
+  endlocal
+  call :err_msg "Protobuf compiler failed - 32"
+  set /a last_code=1
+  goto :end_script
 )
 echo: & echo:
 
 echo // building resources 32
-call :build_rsrc "%win_resources_src_dir%\api\32\resources.rc" "%win_resources_out_dir%\rsrc-api-32.res"
-set /a last_code+=%errorlevel%
-call :build_rsrc "%win_resources_src_dir%\client\32\resources.rc" "%win_resources_out_dir%\rsrc-client-32.res"
-set /a last_code+=%errorlevel%
+call :build_rsrc "%win_resources_src_dir%\api\32\resources.rc" "%win_resources_out_dir%\rsrc-api-32.res" || (
+  endlocal
+  call :err_msg "Resource compiler failed - 32"
+  set /a last_code=1
+  goto :end_script
+)
+call :build_rsrc "%win_resources_src_dir%\client\32\resources.rc" "%win_resources_out_dir%\rsrc-client-32.res" || (
+  endlocal
+  call :err_msg "Resource compiler failed - 32"
+  set /a last_code=1
+  goto :end_script
+)
 call :build_rsrc "%win_resources_src_dir%\launcher\32\resources.rc" "%win_resources_out_dir%\rsrc-launcher-32.res" || (
   endlocal
   call :err_msg "Resource compiler failed - 32"
@@ -365,15 +376,26 @@ call build_win_set_env.bat 64 || (
 
 echo // invoking protobuf compiler - 64
 "%protoc_exe_64%" .\dll\net.proto -I.\dll\ --cpp_out="%protoc_out_dir%\\" || (
-  set /a last_code+=1
+  endlocal
+  call :err_msg "Protobuf compiler failed - 64"
+  set /a last_code=1
+  goto :end_script
 )
 echo: & echo:
 
 echo // building resources 64
-call :build_rsrc "%win_resources_src_dir%\api\64\resources.rc" "%win_resources_out_dir%\rsrc-api-64.res"
-set /a last_code+=%errorlevel%
-call :build_rsrc "%win_resources_src_dir%\client\64\resources.rc" "%win_resources_out_dir%\rsrc-client-64.res"
-set /a last_code+=%errorlevel%
+call :build_rsrc "%win_resources_src_dir%\api\64\resources.rc" "%win_resources_out_dir%\rsrc-api-64.res" || (
+  endlocal
+  call :err_msg "Resource compiler failed - 64"
+  set /a last_code=1
+  goto :end_script
+)
+call :build_rsrc "%win_resources_src_dir%\client\64\resources.rc" "%win_resources_out_dir%\rsrc-client-64.res" || (
+  endlocal
+  call :err_msg "Resource compiler failed - 64"
+  set /a last_code=1
+  goto :end_script
+)
 echo: & echo:
 
 if %BUILD_LIB64% equ 1 (
