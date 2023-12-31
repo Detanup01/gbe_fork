@@ -9,8 +9,15 @@ set "build_temp_dir=build\tmp\win"
 set "tool_name=generate_emu_config"
 set "icon_file=icon\Froyoshark-Enkel-Steam.ico"
 set "main_file=generate_emu_config.py"
+set "signer_tool=..\..\third-party\build\win\cert\sign_helper.bat"
 
 set /a last_code=0
+
+if not exist "%signer_tool%" (
+    1>&2 echo "[X] signing tool wasn't found"
+    set /a last_code=1
+    goto :script_end
+)
 
 if exist "%out_dir%" (
     rmdir /s /q "%out_dir%"
@@ -28,6 +35,9 @@ call "%venv%\Scripts\activate.bat"
 pyinstaller "%main_file%" --distpath "%out_dir%" -y --clean --onedir --name "%tool_name%" --noupx --console -i "%icon_file%" --workpath "%build_temp_dir%" --collect-submodules "steam" || (
     set /a last_code=1
     goto :script_end
+)
+for /f "usebackq tokens=* delims=" %%A in ('"%main_file%"') do (
+    call "%signer_tool%" "%out_dir%\%tool_name%\%%~nA.exe"
 )
 
 copy /y "steam_default_icon_locked.jpg" "%out_dir%\%tool_name%\"
