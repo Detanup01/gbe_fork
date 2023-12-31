@@ -18,3 +18,7 @@ url=git@github.com:otavepto/gbe_fork.git
 	path = third-party/deps/win
 url=git@github.com:otavepto/gbe_fork.git
 	branch = third-party/deps/win
+[submodule "third-party/build/win"]
+	path = third-party/build/win
+	url = git@github.com:otavepto/gbe_fork.git
+	branch = third-party/build/win
