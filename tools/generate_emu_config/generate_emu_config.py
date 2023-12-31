@@ -740,8 +740,10 @@ def main():
                 
                 dlc_config_list.append((dlc, dlc_name))
 
-        if dlc_config_list:
-            with open(os.path.join(emu_settings_dir, "DLC.txt"), 'wt', encoding="utf-8") as f:
+        # we create the DLC fle nonetheless, empty file makes the emu lock DLCs, otherwise everything is allowed
+        # some games use that as a detection mechanism
+        with open(os.path.join(emu_settings_dir, "DLC.txt"), 'wt', encoding="utf-8") as f:
+            if dlc_config_list:
                 for x in dlc_config_list:
                     f.write(f"{x[0]}={x[1]}\n")
         
