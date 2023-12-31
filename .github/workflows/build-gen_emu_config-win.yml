@@ -37,27 +37,32 @@ jobs:
     - name: Checkout branch
       uses: actions/checkout@v4
     
+## extra helpers/tools, these are not built inside the deps build dir
     - name: Clone third-party deps (deps/win)
       uses: actions/checkout@v4
       with:
         ref: 'third-party/deps/win'
         path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/win"
 
+# deps
     - name: Install dependencies
       shell: cmd
       working-directory: "${{ env.SCRIPT_BASE_DIR }}"
       run: recreate_venv_win.bat
 
+# build
     - name: Rebuild
       shell: cmd
       working-directory: "${{ env.SCRIPT_BASE_DIR }}"
       run: rebuild_win.bat
 
+# package
     - name: Package build
       shell: cmd
       working-directory: "${{ env.SCRIPT_BASE_DIR }}"
       run: package_win.bat
 
+# upload artifact
     - name: Upload build package
       uses: actions/upload-artifact@v4
       with:
@@ -67,6 +72,7 @@ jobs:
         compression-level: 9
         retention-days: 1
 
+# release tag
     - name: Release
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
