@@ -218,6 +218,12 @@ if not exist "%deps_dir%\" (
   goto :end_script
 )
 
+if not exist "%signer_tool%" (
+  call :err_msg "signing tool wasn't found"
+  set /a last_code=1
+  goto :end_script
+)
+
 if not exist "%protoc_exe_32%" (
   call :err_msg "protobuff compiler wasn't found - 32"
   set /a last_code=1
