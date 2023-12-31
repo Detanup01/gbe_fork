@@ -1,3 +1,16 @@
+* make the script `generate_emu_config` generate an empty `DLC.txt` if the app has no DLCs
+* windows build: sign each file after build with a self-signed generated certificate + note in the release readme regarding false-positives
+* windows build: note in readme about Windows SDK
+* windows build: added vesion resource (.rc file)
+* gen emu config: readme + icon attribution
+* added anonymous login to gen emu script, these accounts have very limited access
+* linux + win build scripts: introduce -verbose flag
+* windows build script: ensure /MT when compiling
+* output protoc generated in a subfolder in dll/ for easier code reference +  
+  don't cleanup protoc generated files, because VScode gets confused and cannot find files/types
+
+---
+
 ## 2023/12/21 - 2023/12/27
 
 * **[Detanup01]** added option to send auth token with new Ticket! + an option to include the GC token  
