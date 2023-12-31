@@ -149,6 +149,8 @@ set "build_temp_dir=build\tmp\win"
 set "protoc_out_dir=dll\proto_gen\win"
 set "win_resources_src_dir=resources\win"
 set "win_resources_out_dir=%build_temp_dir%\rsrc"
+set "third_party_build_win_dir=third-party\build\win"
+set "signer_tool=%third_party_build_win_dir%\cert\sign_helper.bat"
 
 set "protoc_exe_32=%deps_dir%\protobuf\install32\bin\protoc.exe"
 set "protoc_exe_64=%deps_dir%\protobuf\install64\bin\protoc.exe"
@@ -487,7 +489,11 @@ goto :end_script
   echo // building lib steam_api.dll - 32
   set src_files="%win_resources_out_dir%\rsrc-api-32.res" %release_src%
   call :build_for 1 0 "%build_root_dir%\x32\steam_api.dll" src_files
-endlocal & exit /b =%errorlevel%
+  set /a _exit=%errorlevel%
+  if %_exit% equ 0 (
+    call "%signer_tool%" "%build_root_dir%\x32\steam_api.dll"
+  )
+endlocal & exit /b %_exit%
 
 :compile_experimental_lib32
   setlocal
@@ -495,14 +501,22 @@ endlocal & exit /b =%errorlevel%
   set src_files="%win_resources_out_dir%\rsrc-api-32.res" %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "%libs_dir%\ImGui\*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_dx*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_win32.cpp" "%libs_dir%\ImGui\backends\imgui_impl_vulkan.cpp" "%libs_dir%\ImGui\backends\imgui_impl_opengl3.cpp" "%libs_dir%\ImGui\backends\imgui_win_shader_blobs.cpp" "overlay_experimental\*.cpp" "overlay_experimental\windows\*.cpp" "overlay_experimental\System\*.cpp"
   set extra_inc_dirs=/I"%libs_dir%\ImGui"
   call :build_for 1 0 "%experimental_dir%\x32\steam_api.dll" src_files extra_inc_dirs "/DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY"
-endlocal & exit /b %errorlevel%
+  set /a _exit=%errorlevel%
+  if %_exit% equ 0 (
+    call "%signer_tool%" "%experimental_dir%\x32\steam_api.dll"
+  )
+endlocal & exit /b %_exit%
 
 :compile_experimental_client32
   setlocal
   echo // building lib experimental steamclient.dll - 32
   set src_files="%win_resources_out_dir%\rsrc-client-32.res" "steamclient\steamclient.cpp"
   call :build_for 1 0 "%experimental_dir%\x32\steamclient.dll" src_files "" "/DEMU_EXPERIMENTAL_BUILD"
-endlocal & exit /b %errorlevel%
+  set /a _exit=%errorlevel%
+  if %_exit% equ 0 (
+    call "%signer_tool%" "%experimental_dir%\x32\steamclient.dll"
+  )
+endlocal & exit /b %_exit%
 
 :compile_experimentalclient_32
   setlocal
@@ -510,7 +524,11 @@ endlocal & exit /b %errorlevel%
   set src_files="%win_resources_out_dir%\rsrc-client-32.res" %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "%libs_dir%\ImGui\*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_dx*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_win32.cpp" "%libs_dir%\ImGui\backends\imgui_impl_vulkan.cpp" "%libs_dir%\ImGui\backends\imgui_impl_opengl3.cpp" "%libs_dir%\ImGui\backends\imgui_win_shader_blobs.cpp" "overlay_experimental\*.cpp" "overlay_experimental\windows\*.cpp" "overlay_experimental\System\*.cpp"
   set extra_inc_dirs=/I"%libs_dir%\ImGui"
   call :build_for 1 0 "%steamclient_dir%\steamclient.dll" src_files extra_inc_dirs "/DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /DSTEAMCLIENT_DLL"
-endlocal & exit /b %errorlevel%
+  set /a _exit=%errorlevel%
+  if %_exit% equ 0 (
+    call "%signer_tool%" "%steamclient_dir%\steamclient.dll"
+  )
+endlocal & exit /b %_exit%
 
 :compile_experimentalclient_ldr
   setlocal
@@ -518,21 +536,33 @@ endlocal & exit /b %errorlevel%
   set src_files="%win_resources_out_dir%\rsrc-launcher-32.res" "%tools_src_dir%\steamclient_loader\win\*.cpp"
   set "extra_libs=user32.lib"
   call :build_for 1 2 "%steamclient_dir%\steamclient_loader.exe" src_files "" "" "%extra_libs%"
-endlocal & exit /b %errorlevel%
+  set /a _exit=%errorlevel%
+  if %_exit% equ 0 (
+    call "%signer_tool%" "%steamclient_dir%\steamclient_loader.exe"
+  )
+endlocal & exit /b %_exit%
 
 :compile_tool_itf
   setlocal
   echo // building tool generate_interfaces_file.exe - 32
   set src_files="%tools_src_dir%\generate_interfaces\generate_interfaces.cpp"
   call :build_for 1 1 "%find_interfaces_dir%\generate_interfaces_file.exe" src_files
-endlocal & exit /b %errorlevel%
+  set /a _exit=%errorlevel%
+  if %_exit% equ 0 (
+    call "%signer_tool%" "%find_interfaces_dir%\generate_interfaces_file.exe"
+  )
+endlocal & exit /b %_exit%
 
 :compile_tool_lobby
   setlocal
   echo // building tool lobby_connect.exe - 32
   set src_files="%win_resources_out_dir%\rsrc-launcher-32.res" "%tools_src_dir%\lobby_connect\lobby_connect.cpp" %release_src%
   call :build_for 1 1 "%lobby_connect_dir%\lobby_connect.exe" src_files "" "/DNO_DISK_WRITES /DLOBBY_CONNECT" "Comdlg32.lib"
-endlocal & exit /b %errorlevel%
+  set /a _exit=%errorlevel%
+  if %_exit% equ 0 (
+    call "%signer_tool%" "%lobby_connect_dir%\lobby_connect.exe"
+  )
+endlocal & exit /b %_exit%
 
 
 
@@ -542,7 +572,11 @@ endlocal & exit /b %errorlevel%
   echo // building lib steam_api64.dll - 64
   set src_files="%win_resources_out_dir%\rsrc-api-64.res" %release_src%
   call :build_for 0 0 "%build_root_dir%\x64\steam_api64.dll" src_files
-endlocal & exit /b %errorlevel%
+  set /a _exit=%errorlevel%
+  if %_exit% equ 0 (
+    call "%signer_tool%" "%build_root_dir%\x64\steam_api64.dll"
+  )
+endlocal & exit /b %_exit%
 
 :compile_experimental_lib64
   setlocal
@@ -550,14 +584,22 @@ endlocal & exit /b %errorlevel%
   set src_files="%win_resources_out_dir%\rsrc-api-64.res" %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "%libs_dir%\ImGui\*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_dx*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_win32.cpp" "%libs_dir%\ImGui\backends\imgui_impl_vulkan.cpp" "%libs_dir%\ImGui\backends\imgui_impl_opengl3.cpp" "%libs_dir%\ImGui\backends\imgui_win_shader_blobs.cpp" "overlay_experimental\*.cpp" "overlay_experimental\windows\*.cpp" "overlay_experimental\System\*.cpp"
   set extra_inc_dirs=/I"%libs_dir%\ImGui"
   call :build_for 0 0 "%experimental_dir%\x64\steam_api64.dll" src_files extra_inc_dirs "/DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY"
-endlocal & exit /b %errorlevel%
+  set /a _exit=%errorlevel%
+  if %_exit% equ 0 (
+    call "%signer_tool%" "%experimental_dir%\x64\steam_api64.dll"
+  )
+endlocal & exit /b %_exit%
 
 :compile_experimental_client64
   setlocal
   echo // building lib experimental steamclient64.dll - 64
   set src_files="%win_resources_out_dir%\rsrc-client-64.res" "steamclient\steamclient.cpp"
   call :build_for 0 0 "%experimental_dir%\x64\steamclient64.dll" src_files "" "/DEMU_EXPERIMENTAL_BUILD"
-endlocal & exit /b %errorlevel%
+  set /a _exit=%errorlevel%
+  if %_exit% equ 0 (
+    call "%signer_tool%" "%experimental_dir%\x64\steamclient64.dll"
+  )
+endlocal & exit /b %_exit%
 
 :compile_experimentalclient_64
   setlocal
@@ -565,7 +607,11 @@ endlocal & exit /b %errorlevel%
   set src_files="%win_resources_out_dir%\rsrc-client-64.res" %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "%libs_dir%\ImGui\*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_dx*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_win32.cpp" "%libs_dir%\ImGui\backends\imgui_impl_vulkan.cpp" "%libs_dir%\ImGui\backends\imgui_impl_opengl3.cpp" "%libs_dir%\ImGui\backends\imgui_win_shader_blobs.cpp" "overlay_experimental\*.cpp" "overlay_experimental\windows\*.cpp" "overlay_experimental\System\*.cpp"
   set extra_inc_dirs=/I"%libs_dir%\ImGui"
   call :build_for 0 0 "%steamclient_dir%\steamclient64.dll" src_files extra_inc_dirs "/DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /DSTEAMCLIENT_DLL"
-endlocal & exit /b %errorlevel%
+  set /a _exit=%errorlevel%
+  if %_exit% equ 0 (
+    call "%signer_tool%" "%steamclient_dir%\steamclient64.dll"
+  )
+endlocal & exit /b %_exit%
 
 
 
