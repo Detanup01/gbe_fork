@@ -364,6 +364,16 @@ Check the relevant files `is_beta_branch.txt` and `force_branch_name.txt` in the
 
 ---
 
+## Fake Windows dll/exe certificate and antivirus software:
+
+The Windows build is signed with a fake self-signed certificate, this helps in bypassing some basic checks by apps,  
+but it also triggers some antivirus software.  
+
+First of all, **never** install these certificates to your certificate store, they are randomly generated.  
+Second, the project is not a malware, if your antivirus software complains, be sure it's a false-positive.  
+
+---
+
 ## List of valid steam languages:
 * arabic
 * bulgarian
