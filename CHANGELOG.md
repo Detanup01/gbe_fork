@@ -1,3 +1,6 @@
+* added a new option to the Windows version of the client loader to aid in debugging.  
+the option is called `ResumeByDebugger`, and setting it to `1` will prevent the loader from  
+auto resuming the main app thread, giving you a chance to attach your debugger.  
 * make the script `generate_emu_config` generate an empty `DLC.txt` if the app has no DLCs
 * windows build: sign each file after build with a self-signed generated certificate + note in the release readme regarding false-positives
 * windows build: note in readme about Windows SDK

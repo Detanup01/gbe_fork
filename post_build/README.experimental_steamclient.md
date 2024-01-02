@@ -24,7 +24,11 @@ You do not need to create a `steam_interfaces.txt` file for the `steamclient` ve
    * `ExeCommandLine` additional args to pass to the exe, example: `-dx11 -windowed`  
    Optionally you can specify a different location for `steamclient(64).dll`:  
    * `SteamClientDll`: path to `steamclient.dll`, either full path or relative to this `.ini` file
-   * `SteamClientDll`: path to `steamclient(64).dll`, either full path or relative to this `.ini` file
+   * `SteamClientDll`: path to `steamclient(64).dll`, either full path or relative to this `.ini` file  
+   * For debug **build** only:
+     * `ResumeByDebugger`: setting this to `1` or 'y' or `true` will prevent the loader from calling `ResumeThread` on the main thread after spawning the .exe, and it will display a mesage with the process ID (PID) so you attach your debugger on it.  
+     Note that you have to resume the main thread from the debugger after attaching, also the entry breakpoint may not be set automatically, but you can do that manually.  
+
 
 **Note** that any arguments passed to `steamclient_loader.exe` via command line will be passed to the target `.exe`.  
 Example: `steamclient_loader.exe` `-dx11`  

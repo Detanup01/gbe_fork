@@ -10,6 +10,7 @@
 #include <memory.h>
 #include <tchar.h>
 #include <stdio.h>
+#include <string>
 
 bool IsNotRelativePathOrRemoveFileName(WCHAR* output, bool Remove)
 {
@@ -166,8 +167,32 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		return 1;
 	}
 	
-	// run and wait
-	ResumeThread(processInfo.hThread);
+	bool run_exe = true;
+#ifndef EMU_RELEASE_BUILD
+	{
+		std::wstring dbg_file(50, L'\0');
+		auto res_dbg_len = GetPrivateProfileStringW(L"Debug", L"ResumeByDebugger", L"", &dbg_file[0], dbg_file.size(), CurrentDirectory);
+		if (dbg_file[0]) {
+			dbg_file = dbg_file.substr(0, res_dbg_len);
+		} else {
+			dbg_file.clear();
+		}
+		for (auto &c : dbg_file) {
+			c = (wchar_t)std::tolower((int)c);
+		}
+		if (dbg_file == L"1" || dbg_file == L"y" || dbg_file == L"yes" || dbg_file == L"true") {
+			run_exe = false;
+			std::string msg = "Attach a debugger now to PID " + std::to_string(processInfo.dwProcessId) + " and resume its main thread";
+			MessageBoxA(NULL, msg.c_str(), "ColdClientLoader", MB_OK);
+		}
+	}
+#endif
+
+	// run
+	if (run_exe) {
+		ResumeThread(processInfo.hThread);
+	}
+	// wait
 	WaitForSingleObject(processInfo.hThread, INFINITE);
 
 	CloseHandle(processInfo.hThread);
