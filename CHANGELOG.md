@@ -1,3 +1,5 @@
+## 2024/1/3  
+
 * added a new option to the Windows version of the client loader to aid in debugging.  
 the option is called `ResumeByDebugger`, and setting it to `1` will prevent the loader from  
 auto resuming the main app thread, giving you a chance to attach your debugger.  
