@@ -1,3 +1,10 @@
+## 2024/1/5
+
+* **[Detanup01]** Fixed parsing of old Steam interfaces, reported by **[LuKeStorm]**: https://cs.rin.ru/forum/viewtopic.php?p=2971639#p2971639  
+* refactored the tool `find_intrfaces` to search accurately for old interfaces  
+
+---
+
 ## 2024/1/3  
 
 * added a new option to the Windows version of the client loader to aid in debugging.  
