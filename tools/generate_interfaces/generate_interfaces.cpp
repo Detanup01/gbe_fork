@@ -7,7 +7,7 @@
 // these are defined in dll.cpp at the top like this:
 // static char old_xxx[128] = ...
 
-const static std::vector<const std::string> interface_patterns = {
+const static std::vector<std::string> interface_patterns = {
     R"(SteamClient\d+)",
     
     R"(SteamGameServerStats\d+)",
@@ -90,7 +90,7 @@ int main (int argc, char *argv[])
         return 1;
     }
 
-    for (auto &patt : interface_patterns) {
+    for (const auto &patt : interface_patterns) {
         total_matches += findinterface(out_file, steam_api_contents, patt);
     }
     out_file.close();
