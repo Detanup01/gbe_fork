@@ -4,10 +4,48 @@
 #include <streambuf>
 #include <iostream>
 
+// these are defined in dll.cpp at the top like this:
+// static char old_xxx[128] = ...
 
-unsigned int findinterface(std::ofstream &out_file, std::string &file_contents, std::string interface)
+const static std::vector<const std::string> interface_patterns = {
+    R"(SteamClient\d+)",
+    
+    R"(SteamGameServerStats\d+)",
+    R"(SteamGameServer\d+)",
+
+    R"(SteamMatchMakingServers\d+)",
+    R"(SteamMatchMaking\d+)",
+
+    R"(SteamUser\d+)",
+    R"(SteamFriends\d+)",
+    R"(SteamUtils\d+)",
+    R"(STEAMUSERSTATS_INTERFACE_VERSION\d+)",
+    R"(STEAMAPPS_INTERFACE_VERSION\d+)",
+    R"(SteamNetworking\d+)",
+    R"(STEAMREMOTESTORAGE_INTERFACE_VERSION\d+)",
+    R"(STEAMSCREENSHOTS_INTERFACE_VERSION\d+)",
+    R"(STEAMHTTP_INTERFACE_VERSION\d+)",
+    R"(STEAMUNIFIEDMESSAGES_INTERFACE_VERSION\d+)",
+    
+    R"(STEAMCONTROLLER_INTERFACE_VERSION\d+)",
+    R"(SteamController\d+)",
+    
+    R"(STEAMUGC_INTERFACE_VERSION\d+)",
+    R"(STEAMAPPLIST_INTERFACE_VERSION\d+)",
+    R"(STEAMMUSIC_INTERFACE_VERSION\d+)",
+    R"(STEAMMUSICREMOTE_INTERFACE_VERSION\d+)",
+    R"(STEAMHTMLSURFACE_INTERFACE_VERSION_\d+)",
+    R"(STEAMINVENTORY_INTERFACE_V\d+)",
+    R"(STEAMVIDEO_INTERFACE_V\d+)",
+    R"(SteamMasterServerUpdater\d+)",
+};
+
+unsigned int findinterface(
+    std::ofstream &out_file,
+    const std::string &file_contents,
+    const std::string &interface_patt)
 {
-    std::regex interface_regex(interface);
+    std::regex interface_regex(interface_patt);
     auto begin = std::sregex_iterator(file_contents.begin(), file_contents.end(), interface_regex);
     auto end = std::sregex_iterator();
 
@@ -25,63 +63,42 @@ unsigned int findinterface(std::ofstream &out_file, std::string &file_contents, 
 int main (int argc, char *argv[])
 {
     if (argc < 2) {
-        std::cout << "usage: " << argv[0] << " <path to steam_api .dll or .so>" << std::endl;
+        std::cerr << "usage: " << argv[0] << " <path to steam_api .dll or .so>" << std::endl;
         return 1;
     }
 
     std::ifstream steam_api_file(argv[1], std::ios::binary);
-    std::string steam_api_contents((std::istreambuf_iterator<char>(steam_api_file)),
-                    std::istreambuf_iterator<char>());
-    steam_api_file.close();
-
-    if (steam_api_contents.size() == 0) {
-        std::cout << "Error opening file" << std::endl;
+    if (!steam_api_file.is_open()) {
+        std::cerr << "Error opening file" << std::endl;
         return 1;
     }
 
+    std::string steam_api_contents(
+        (std::istreambuf_iterator<char>(steam_api_file)),
+        std::istreambuf_iterator<char>());
+    steam_api_file.close();
+
+    if (steam_api_contents.size() == 0) {
+        std::cerr << "Error loading data" << std::endl;
+        return 1;
+    }
+
+    unsigned int total_matches = 0;
     std::ofstream out_file("steam_interfaces.txt");
-    std::vector<std::string> interface_names = {
-        "SteamClient",
-        "SteamGameServer",
-        "SteamGameServerStats",
-        "SteamUser",
-        "SteamFriends",
-        "SteamUtils",
-        "SteamMatchMaking",
-        "SteamMatchMakingServers",
-        "STEAMUSERSTATS_INTERFACE_VERSION",
-        "STEAMAPPS_INTERFACE_VERSION",
-        "SteamNetworking",
-        "STEAMREMOTESTORAGE_INTERFACE_VERSION",
-        "STEAMSCREENSHOTS_INTERFACE_VERSION",
-        "STEAMHTTP_INTERFACE_VERSION",
-        "STEAMUNIFIEDMESSAGES_INTERFACE_VERSION",
-        "SteamController",
-        "STEAMUGC_INTERFACE_VERSION",
-        "STEAMAPPLIST_INTERFACE_VERSION",
-        "STEAMMUSIC_INTERFACE_VERSION",
-        "STEAMMUSICREMOTE_INTERFACE_VERSION",
-        "STEAMHTMLSURFACE_INTERFACE_VERSION_",
-        "STEAMINVENTORY_INTERFACE_V",
-        "STEAMVIDEO_INTERFACE_V",
-        "SteamMasterServerUpdater",
-        "STEAMPARENTALSETTINGS_INTERFACE_VERSION",
-        "STEAMREMOTEPLAY_INTERFACE_VERSION",
-        "STEAMTV_INTERFACE_V",
-        "SteamInput",
-        "SteamMatchGameSearch",
-        "SteamNetworkingSockets",
-        "SteamNetworkingUtils",
-        "SteamParties",
-    };
-
-    for (auto name : interface_names) {
-        findinterface(out_file, steam_api_contents, name + "\\d{3}");
+    if (!out_file.is_open()) {
+        std::cerr << "Error opening output file" << std::endl;
+        return 1;
     }
 
-    if (!findinterface(out_file, steam_api_contents, "STEAMCONTROLLER_INTERFACE_VERSION\\d{3}")) {
-        findinterface(out_file, steam_api_contents, "STEAMCONTROLLER_INTERFACE_VERSION");
+    for (auto &patt : interface_patterns) {
+        total_matches += findinterface(out_file, steam_api_contents, patt);
     }
-
     out_file.close();
+
+    if (total_matches == 0) {
+        std::cerr << "No interfaces were found" << std::endl;
+        return 1;
+    }
+
+    return 0;
 }
