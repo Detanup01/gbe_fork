@@ -20,13 +20,13 @@
 
 
 static char old_client[128] = STEAMCLIENT_INTERFACE_VERSION; //"SteamClient017";
-static char old_gameserver[128] = STEAMGAMESERVER_INTERFACE_VERSION; //"SteamGameServer012";
 static char old_gameserver_stats[128] = STEAMGAMESERVERSTATS_INTERFACE_VERSION; //"SteamGameServerStats001";
+static char old_gameserver[128] = STEAMGAMESERVER_INTERFACE_VERSION; //"SteamGameServer012";
+static char old_matchmaking_servers[128] = STEAMMATCHMAKINGSERVERS_INTERFACE_VERSION; //"SteamMatchMakingServers002";
+static char old_matchmaking[128] = STEAMMATCHMAKING_INTERFACE_VERSION; //"SteamMatchMaking009";
 static char old_user[128] = STEAMUSER_INTERFACE_VERSION; //"SteamUser018";
 static char old_friends[128] = STEAMFRIENDS_INTERFACE_VERSION; //"SteamFriends015";
 static char old_utils[128] = STEAMUTILS_INTERFACE_VERSION; //"SteamUtils007";
-static char old_matchmaking[128] = STEAMMATCHMAKING_INTERFACE_VERSION; //"SteamMatchMaking009";
-static char old_matchmaking_servers[128] = STEAMMATCHMAKINGSERVERS_INTERFACE_VERSION; //"SteamMatchMakingServers002";
 static char old_userstats[128] = STEAMUSERSTATS_INTERFACE_VERSION; //"STEAMUSERSTATS_INTERFACE_VERSION011";
 static char old_apps[128] = STEAMAPPS_INTERFACE_VERSION; //"STEAMAPPS_INTERFACE_VERSION007";
 static char old_networking[128] = STEAMNETWORKING_INTERFACE_VERSION; //"SteamNetworking005";
@@ -51,8 +51,7 @@ static bool try_load_steam_interfaces(std::string interfaces_path)
         return false;
     }
 
-    PRINT_DEBUG("load from: %s\n", interfaces_path.c_str());
-
+    PRINT_DEBUG("Trying to parse steam interfaces from file: %s\n", interfaces_path.c_str());
     for( std::string line; getline( input, line ); )
     {
         PRINT_DEBUG("line: %s\n", line.c_str());
@@ -60,15 +59,22 @@ static bool try_load_steam_interfaces(std::string interfaces_path)
         line.erase(std::remove(line.begin(), line.end(), '\n'), line.end());
         line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
         line.erase(std::remove(line.begin(), line.end(), '\t'), line.end());
+
 #define REPLACE_WITH_FILE(s, f) {if (line.find(s) != std::string::npos) {strncpy(f, line.c_str(), sizeof(f) - 1); continue;}}
+
         REPLACE_WITH_FILE("SteamClient", old_client);
+
+        // NOTE: you must try to read the one with the most characters first
         REPLACE_WITH_FILE("SteamGameServerStats", old_gameserver_stats);
         REPLACE_WITH_FILE("SteamGameServer", old_gameserver);
+
+        // NOTE: you must try to read the one with the most characters first
+        REPLACE_WITH_FILE("SteamMatchMakingServers", old_matchmaking_servers);
+        REPLACE_WITH_FILE("SteamMatchMaking", old_matchmaking);
+
         REPLACE_WITH_FILE("SteamUser", old_user);
         REPLACE_WITH_FILE("SteamFriends", old_friends);
         REPLACE_WITH_FILE("SteamUtils", old_utils);
-        REPLACE_WITH_FILE("SteamMatchMakingServers", old_matchmaking_servers);
-        REPLACE_WITH_FILE("SteamMatchMaking", old_matchmaking);
         REPLACE_WITH_FILE("STEAMUSERSTATS_INTERFACE_VERSION", old_userstats);
         REPLACE_WITH_FILE("STEAMAPPS_INTERFACE_VERSION", old_apps);
         REPLACE_WITH_FILE("SteamNetworking", old_networking);
@@ -76,19 +82,22 @@ static bool try_load_steam_interfaces(std::string interfaces_path)
         REPLACE_WITH_FILE("STEAMSCREENSHOTS_INTERFACE_VERSION", old_screenshots);
         REPLACE_WITH_FILE("STEAMHTTP_INTERFACE_VERSION", old_http);
         REPLACE_WITH_FILE("STEAMUNIFIEDMESSAGES_INTERFACE_VERSION", old_unified_messages);
+
         REPLACE_WITH_FILE("STEAMCONTROLLER_INTERFACE_VERSION", old_controller);
         REPLACE_WITH_FILE("SteamController", old_controller);
+
         REPLACE_WITH_FILE("STEAMUGC_INTERFACE_VERSION", old_ugc_interface);
         REPLACE_WITH_FILE("STEAMAPPLIST_INTERFACE_VERSION", old_applist);
         REPLACE_WITH_FILE("STEAMMUSIC_INTERFACE_VERSION", old_music);
         REPLACE_WITH_FILE("STEAMMUSICREMOTE_INTERFACE_VERSION", old_music_remote);
         REPLACE_WITH_FILE("STEAMHTMLSURFACE_INTERFACE_VERSION", old_html_surface);
-        REPLACE_WITH_FILE("STEAMVIDEO_INTERFACE", old_video);
         REPLACE_WITH_FILE("STEAMINVENTORY_INTERFACE", old_inventory);
+        REPLACE_WITH_FILE("STEAMVIDEO_INTERFACE", old_video);
         REPLACE_WITH_FILE("SteamMasterServerUpdater", old_masterserver_updater);
 
-        PRINT_DEBUG("NOT REPLACED %s\n", line.c_str());
 #undef REPLACE_WITH_FILE
+
+        PRINT_DEBUG("NOT REPLACED %s\n", line.c_str());
     }
 
     return true;
@@ -99,26 +108,37 @@ static void load_old_interface_versions()
     static bool loaded = false;
     if (loaded) return;
 
-    if (!try_load_steam_interfaces(Local_Storage::get_game_settings_path() + "steam_interfaces.txt"))
-        try_load_steam_interfaces(Local_Storage::get_program_path() + "steam_interfaces.txt");
+    if (!try_load_steam_interfaces(Local_Storage::get_game_settings_path() + "steam_interfaces.txt") &&
+        !try_load_steam_interfaces(Local_Storage::get_program_path() + "steam_interfaces.txt")) {
+        PRINT_DEBUG("Couldn't load steam_interfaces.txt\n");
+    }
 
-    PRINT_DEBUG("client: %s\n", old_client);
-    PRINT_DEBUG("gameserver: %s\n", old_gameserver);
-    PRINT_DEBUG("gameserver stats: %s\n", old_gameserver_stats);
-    PRINT_DEBUG("user: %s\n", old_user);
-    PRINT_DEBUG("friends: %s\n", old_friends);
-    PRINT_DEBUG("matchmaking: %s\n", old_matchmaking);
-    PRINT_DEBUG("remote: %s\n", old_remote_storage_interface);
-    PRINT_DEBUG("screenshots: %s\n", old_screenshots);
-    PRINT_DEBUG("http: %s\n", old_http);
-    PRINT_DEBUG("controller %s\n", old_controller);
-    PRINT_DEBUG("ugc: %s\n", old_ugc_interface);
-    PRINT_DEBUG("inventory: %s\n", old_inventory);
-    PRINT_DEBUG("userstats: %s\n", old_userstats);
-    PRINT_DEBUG("apps: %s\n", old_apps);
-    PRINT_DEBUG("networking: %s\n", old_networking);
-    PRINT_DEBUG("html surface: %s\n", old_html_surface);
-    PRINT_DEBUG("utils: %s\n", old_utils);
+    PRINT_DEBUG("Old interfaces:\n");
+    PRINT_DEBUG("  client: %s\n", old_client);
+    PRINT_DEBUG("  gameserver stats: %s\n", old_gameserver_stats);
+    PRINT_DEBUG("  gameserver: %s\n", old_gameserver);
+    PRINT_DEBUG("  matchmaking servers: %s\n", old_matchmaking_servers);
+    PRINT_DEBUG("  matchmaking: %s\n", old_matchmaking);
+    PRINT_DEBUG("  user: %s\n", old_user);
+    PRINT_DEBUG("  friends: %s\n", old_friends);
+    PRINT_DEBUG("  utils: %s\n", old_utils);
+    PRINT_DEBUG("  userstats: %s\n", old_userstats);
+    PRINT_DEBUG("  apps: %s\n", old_apps);
+    PRINT_DEBUG("  networking: %s\n", old_networking);
+    PRINT_DEBUG("  remote storage: %s\n", old_remote_storage_interface);
+    PRINT_DEBUG("  screenshots: %s\n", old_screenshots);
+    PRINT_DEBUG("  http: %s\n", old_http);
+    PRINT_DEBUG("  unified messages: %s\n", old_unified_messages);
+    PRINT_DEBUG("  controller %s\n", old_controller);
+    PRINT_DEBUG("  ugc: %s\n", old_ugc_interface);
+    PRINT_DEBUG("  applist: %s\n", old_applist);
+    PRINT_DEBUG("  music: %s\n", old_music);
+    PRINT_DEBUG("  music remote: %s\n", old_music_remote);
+    PRINT_DEBUG("  html surface: %s\n", old_html_surface);
+    PRINT_DEBUG("  inventory: %s\n", old_inventory);
+    PRINT_DEBUG("  video: %s\n", old_video);
+    PRINT_DEBUG("  masterserver updater: %s\n", old_masterserver_updater);
+    
     reset_LastError();
     loaded = true;
 }
