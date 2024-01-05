@@ -655,12 +655,24 @@ SteamAPICall_t	EnumerateUserSubscribedFiles( uint32 unStartIndex )
 {
     PRINT_DEBUG("Steam_Remote_Storage::EnumerateUserSubscribedFiles\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    // Get ready for a working but bad implementation - Detanup01
     RemoteStorageEnumerateUserSubscribedFilesResult_t data;
     data.m_eResult = k_EResultOK;
-    data.m_nResultsReturned = 0;
-    data.m_nTotalResultCount = 0;
-    //data.m_rgPublishedFileId;
-    //data.m_rgRTimeSubscribed;
+    auto mods = settings->modSet();
+    uint32_t modCount = mods.size();
+    data.m_nResultsReturned = modCount;
+    data.m_nTotalResultCount = modCount;
+    data.m_rgPublishedFileId;
+    data.m_rgRTimeSubscribed;
+    uint32_t iterated = 0;
+    for (std::set<PublishedFileId_t>::iterator i = mods.begin(); i != mods.end(); i++) {
+        PublishedFileId_t modId = *i;
+        auto mod = settings->getMod(modId);
+        uint32 time = mod.timeAddedToUserList;	//this can be changed, default is 1554997000
+        data.m_rgPublishedFileId[iterated] = modId;
+        data.m_rgRTimeSubscribed[iterated] = time;
+        iterated++;
+    }
     return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
 }
 
