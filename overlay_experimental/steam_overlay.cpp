@@ -499,9 +499,13 @@ void Steam_Overlay::AddInviteNotification(std::pair<const Friend, friend_window_
         notif.type = notification_type_invite;
         notif.frd = &wnd_state;
 
-        char tmp[TRANSLATION_BUFFER_SIZE];
-        snprintf(tmp, sizeof(tmp), translationInvitedYouToJoinTheGame[current_language], wnd_state.first.name(), wnd_state.first.id());
-        notif.message = tmp;
+        {
+            char tmp[TRANSLATION_BUFFER_SIZE]{};
+            auto first_friend = wnd_state.first;
+            auto name = first_friend.name();
+            snprintf(tmp, sizeof(tmp), translationInvitedYouToJoinTheGame[current_language], name.c_str(), (int32_t)first_friend.id());
+            notif.message = tmp;
+        }
 
         notif.start_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
         notifications.emplace_back(notif);
@@ -954,7 +958,7 @@ void Steam_Overlay::OverlayProc()
 
         bool show = true;
 
-        char tmp[TRANSLATION_BUFFER_SIZE];
+        char tmp[TRANSLATION_BUFFER_SIZE]{};
         snprintf(tmp, sizeof(tmp), translationRenderer[current_language], (_renderer == nullptr ? "Unknown" : _renderer->GetLibraryName().c_str()));
         std::string windowTitle;
         windowTitle.append(translationSteamOverlay[current_language]);
