@@ -242,7 +242,12 @@ void Steam_Overlay::OpenOverlayInvite(CSteamID lobbyId)
 void Steam_Overlay::OpenOverlay(const char* pchDialog)
 {
     // TODO: Show pages depending on pchDialog
-    ShowOverlay(true);
+    if ((strcmp(pchDialog, "Friends") == 0) && (settings->auto_accept_invites.size() > 0)) {
+        PRINT_DEBUG("Not opening overlay's friends list because some friends are defined in the auto accept list\n");
+        AddAutoAcceptInviteNotification();
+    } else {
+        ShowOverlay(true);
+    }
 }
 
 void Steam_Overlay::OpenOverlayWebpage(const char* pchURL)
