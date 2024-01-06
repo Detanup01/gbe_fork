@@ -355,6 +355,17 @@ void Steam_Overlay::NotifyUserAchievement()
     }
 }
 
+void Steam_Overlay::NotifySoundAutoAcceptFriendInvite()
+{
+#ifdef __WINDOWS__
+    if (notif_achievement_wav_custom_inuse) {
+        PlaySoundA((LPCSTR)notif_achievement_wav_custom, NULL, SND_ASYNC | SND_MEMORY);
+    } else {
+        PlaySoundA((LPCSTR)notif_invite_wav, NULL, SND_ASYNC | SND_MEMORY);
+    }
+#endif
+}
+
 void Steam_Overlay::SetLobbyInvite(Friend friendId, uint64 lobbyId)
 {
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
@@ -510,6 +521,31 @@ void Steam_Overlay::AddInviteNotification(std::pair<const Friend, friend_window_
     }
     else
         PRINT_DEBUG("No more free id to create a notification window\n");
+}
+
+void Steam_Overlay::AddAutoAcceptInviteNotification()
+{
+    std::lock_guard<std::recursive_mutex> lock(notifications_mutex);
+    int id = find_free_notification_id(notifications);
+    if (id != 0)
+    {
+        Notification notif{};
+        notif.id = id;
+        notif.type = notification_type_auto_accept_invite;
+        
+        {
+            char tmp[TRANSLATION_BUFFER_SIZE]{};
+            snprintf(tmp, sizeof(tmp), "%s", translationAutoAcceptFriendInvite[current_language]);
+            notif.message = tmp;
+        }
+
+        notif.start_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
+        notifications.emplace_back(notif);
+        NotifySoundAutoAcceptFriendInvite();
+        have_notifications = true;
+    } else {
+        PRINT_DEBUG("No free id to create an auto-accept notification window\n");
+    }
 }
 
 bool Steam_Overlay::FriendJoinable(std::pair<const Friend, friend_window_state> &f)
@@ -760,6 +796,8 @@ void Steam_Overlay::BuildNotifications(int width, int height)
                     }
                     break;
                 case notification_type_message:
+                    ImGui::TextWrapped("%s", it->message.c_str()); break;
+                case notification_type_auto_accept_invite:
                     ImGui::TextWrapped("%s", it->message.c_str()); break;
             }
 

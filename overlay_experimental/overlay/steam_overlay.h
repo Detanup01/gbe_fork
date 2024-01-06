@@ -48,6 +48,7 @@ enum notification_type
     notification_type_message = 0,
     notification_type_invite,
     notification_type_achievement,
+    notification_type_auto_accept_invite,
 };
 
 struct Notification
@@ -150,6 +151,7 @@ class Steam_Overlay
 
     void NotifyUser(friend_window_state& friend_state);
     void NotifyUserAchievement();
+    void NotifySoundAutoAcceptFriendInvite();
 
     // Right click on friend
     void BuildContextMenu(Friend const& frd, friend_window_state &state);
@@ -195,6 +197,7 @@ public:
     void AddMessageNotification(std::string const& message);
     void AddAchievementNotification(nlohmann::json const& ach);
     void AddInviteNotification(std::pair<const Friend, friend_window_state> &wnd_state);
+    void AddAutoAcceptInviteNotification();
 };
 
 #else
@@ -237,6 +240,7 @@ public:
     void AddMessageNotification(std::string const& message) {}
     void AddAchievementNotification(nlohmann::json const& ach) {}
     void AddInviteNotification(std::pair<const Friend, friend_window_state> &wnd_state) {}
+    void AddAutoAcceptInviteNotification() {}
 };
 
 #endif
