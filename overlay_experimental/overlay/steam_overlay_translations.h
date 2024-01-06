@@ -3244,3 +3244,95 @@ const char translationPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
 	// 29 - Croatian
 	" igra "
 };
+
+const char translationAutoAcceptFriendInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 1 - Arabic
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 2 - Bulgarian
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 3 - Simplified Chinese
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 4 - Traditional Chinese
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 5 - Czech
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 6 - Danish
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 7 - Dutch
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 8 - Finnish
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 9 - French
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 10 - German
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 11 - Greek
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 12 - Hungarian
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 13 - Italian
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 14 - Japanese
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 15 - Korean
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 16 - Norwegian
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 17 - Polish
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 18 - Portuguese
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 19 - Brazilian Portuguese
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 20 - Romanian
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 21 - Russian
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 22 - Spanish
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 23 - Latin American
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 24 - Swedish
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 25 - Thai
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 26 - Turkish
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 27 - Ukrainian
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 28 - Vietnamese
+	"Invitations are controlled by auto_accept_invite.txt!",
+
+	// 29 - Croatian
+	"Invitations are controlled by auto_accept_invite.txt!",
+};
