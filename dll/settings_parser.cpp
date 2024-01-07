@@ -17,17 +17,6 @@
 
 #include "dll/settings_parser.h"
 
-static void consume_bom(std::ifstream &input)
-{
-    int bom[3];
-    bom[0] = input.get();
-    bom[1] = input.get();
-    bom[2] = input.get();
-    if (bom[0] != 0xEF || bom[1] != 0xBB || bom[2] != 0xBF) {
-        input.seekg(0);
-    }
-}
-
 static void load_custom_broadcasts(std::string broadcasts_filepath, std::set<IP_PORT> &custom_broadcasts)
 {
     PRINT_DEBUG("Broadcasts file path: %s\n", broadcasts_filepath.c_str());
@@ -773,7 +762,6 @@ static void parse_force_branch_name(class Settings *settings_client, Settings *s
         std::string line;
         getline( input, line );
         
-        constexpr const char * const whitespaces = " \t\r\n";
         size_t start = line.find_first_not_of(whitespaces);
         size_t end = line.find_last_not_of(whitespaces);
         line = start == end
@@ -953,12 +941,41 @@ static void parse_build_id(int &build_id, std::string &steam_settings_path)
     }
 }
 
+// crash_printer_location.txt
+static void parse_crash_printer_location()
+{
+    std::string installed_apps_list_path = Local_Storage::get_game_settings_path() + "crash_printer_location.txt";
+    std::ifstream input( utf8_decode(installed_apps_list_path) );
+    if (input.is_open()) {
+        consume_bom(input);
+        std::string line;
+        std::getline( input, line );
+        
+        size_t start = line.find_first_not_of(whitespaces);
+        size_t end = line.find_last_not_of(whitespaces);
+        line = start == end
+            ? std::string()
+            : line.substr(start, end - start + 1);
+        
+        if (!line.empty()) {
+            auto crash_path = utf8_decode(get_full_program_path() + line);
+            if (crash_printer::init(crash_path)) {
+                PRINT_DEBUG("Unhandled crashes will be saved to '%s'\n", line.c_str());
+            } else {
+                PRINT_DEBUG("Failed to setup unhandled crash printer with path: '%s'\n", line.c_str());
+            }
+        }
+    }
+}
+
 uint32 create_localstorage_settings(Settings **settings_client_out, Settings **settings_server_out, Local_Storage **local_storage_out)
 {
     std::string program_path = Local_Storage::get_program_path();
     std::string save_path = Local_Storage::get_user_appdata_path();
 
     PRINT_DEBUG("Current Path %s save_path: %s\n", program_path.c_str(), save_path.c_str());
+
+    parse_crash_printer_location();
 
     uint32 appid = parse_steam_app_id(program_path);
 

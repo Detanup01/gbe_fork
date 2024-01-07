@@ -1,3 +1,8 @@
+* added a very basic crashes logger/printer, enabled by creating a file called `crash_printer_location.txt` inside the `steam_settings` folder,  
+  check README.realease.md for more details  
+
+---
+
 ## 2024/1/5
 
 * **[Detanup01]** Fixed parsing of old Steam interfaces, reported by **[LuKeStorm]**: https://cs.rin.ru/forum/viewtopic.php?p=2971639#p2971639  

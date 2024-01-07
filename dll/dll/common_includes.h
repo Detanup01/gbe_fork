@@ -98,6 +98,8 @@
         #include "detours/detours.h"
     #endif
 
+    #include "crash_printer/win.hpp"
+
 // Convert a wide Unicode string to an UTF8 string
 static inline std::string utf8_encode(const std::wstring &wstr)
 {
@@ -148,6 +150,8 @@ static inline void reset_LastError()
     #include <netdb.h>
     #include <dlfcn.h>
     #include <utime.h>
+
+    #include "crash_printer/linux.hpp"
 
     #define PATH_MAX_STRING_SIZE 512
     #define PATH_SEPARATOR "/" 
@@ -236,6 +240,17 @@ static std::string uint8_vector_to_hex_string(std::vector<uint8_t>& v)
     return result;
 }
 
+static inline void consume_bom(std::ifstream &input)
+{
+    int bom[3];
+    bom[0] = input.get();
+    bom[1] = input.get();
+    bom[2] = input.get();
+    if (bom[0] != 0xEF || bom[1] != 0xBB || bom[2] != 0xBF) {
+        input.seekg(-3, std::ios::cur);
+    }
+}
+
 // Emulator includes
 // add them here after the inline functions definitions
 #include "net.pb.h"
@@ -260,5 +275,7 @@ static std::string uint8_vector_to_hex_string(std::vector<uint8_t>& v)
 #define DEFAULT_LANGUAGE "english"
 
 #define LOBBY_CONNECT_APPID ((uint32)-2)
+
+constexpr const char * const whitespaces = " \t\r\n";
 
 #endif//__INCLUDED_COMMON_INCLUDES__

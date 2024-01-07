@@ -364,6 +364,20 @@ Check the relevant files `is_beta_branch.txt` and `force_branch_name.txt` in the
 
 ---
 
+## Crash log/printer:
+
+The emu can setup a very basic crash logger/printer.  
+This is intended to debug some annoying scenarios, and best used with the debug build of the emu.  
+
+To enable this feature create a file called `crash_printer_location.txt` inside your `steam_settings` folder,  
+and set the path to the crash log file on a single line.  
+
+Note that forward slashes `/` are encouraged for both Windows & Linux.  
+
+Check the example file `crash_printer_location.EXAMPLE.txt`  
+
+---
+
 ## Fake Windows dll/exe certificate and antivirus software:
 
 The Windows build is signed with a fake self-signed certificate, this helps in bypassing some basic checks by apps,  
