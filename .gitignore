@@ -5,6 +5,8 @@ build/
 
 dll/proto_gen/
 
+crash_printer/tests/crash_test/
+
 tools/generate_emu_config/.py*/
 tools/generate_emu_config/.venv*/
 tools/generate_emu_config/.env*/
