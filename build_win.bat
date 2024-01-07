@@ -193,19 +193,19 @@ set mbedtls_lib32="%deps_dir%\mbedtls\install32\lib\mbedcrypto.lib"
 set mbedtls_lib64="%deps_dir%\mbedtls\install64\lib\mbedcrypto.lib"
 
 :: directories to use for #include
-set release_incs_both=%ssq_inc% /I"%libs_dir%" /I"%protoc_out_dir%" /I"%libs_dir%\utfcpp" /I"controller" /I"dll" /I"sdk" /I"overlay_experimental"
+set release_incs_both=%ssq_inc% /I"%libs_dir%" /I"%protoc_out_dir%" /I"%libs_dir%\utfcpp" /I"controller" /I"dll" /I"sdk" /I"overlay_experimental" /I"crash_printer"
 set release_incs32=%release_incs_both% %curl_inc32% %protob_inc32% %zlib_inc32% %mbedtls_inc32%
 set release_incs64=%release_incs_both% %curl_inc64% %protob_inc64% %zlib_inc64% %mbedtls_inc64%
 
 :: libraries to link with
 :: copied from Visual Studio 2022
 set "CoreLibraryDependencies=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib"
-set "release_libs_both=%CoreLibraryDependencies% Ws2_32.lib Iphlpapi.lib Wldap32.lib Winmm.lib Bcrypt.lib"
+set "release_libs_both=%CoreLibraryDependencies% Ws2_32.lib Iphlpapi.lib Wldap32.lib Winmm.lib Bcrypt.lib Dbghelp.lib"
 set release_libs32=%release_libs_both% %ssq_lib32% %curl_lib32% %protob_lib32% %zlib_lib32% %mbedtls_lib32%
 set release_libs64=%release_libs_both% %ssq_lib64% %curl_lib64% %protob_lib64% %zlib_lib64% %mbedtls_lib64%
 
 :: common source files used everywhere, just for convinience, you still have to provide a complete list later
-set release_src="dll/*.cpp" "%protoc_out_dir%/*.cc"
+set release_src="dll/*.cpp" "%protoc_out_dir%/*.cc" "crash_printer/win.cpp" "crash_printer/common.cpp"
 
 :: additional #defines
 set "common_defs=/DUTF_CPP_CPLUSPLUS=201703L /DCURL_STATICLIB /DUNICODE /D_UNICODE"
