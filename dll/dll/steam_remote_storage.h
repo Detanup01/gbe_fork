@@ -379,7 +379,7 @@ bool SetCloudEnabledThisApp( bool bEnabled )
 STEAM_CALL_RESULT( RemoteStorageDownloadUGCResult_t )
 SteamAPICall_t UGCDownload( UGCHandle_t hContent, uint32 unPriority )
 {
-    PRINT_DEBUG("Steam_Remote_Storage::UGCDownload\n");
+     PRINT_DEBUG("Steam_Remote_Storage::UGCDownload %u\n", hContent);
     RemoteStorageDownloadUGCResult_t data = {};
     if (shared_files.count(hContent)) {
         data.m_eResult = k_EResultOK;
@@ -770,8 +770,29 @@ SteamAPICall_t	EnumeratePublishedWorkshopFiles( EWorkshopEnumerationType eEnumer
 STEAM_CALL_RESULT( RemoteStorageDownloadUGCResult_t )
 SteamAPICall_t UGCDownloadToLocation( UGCHandle_t hContent, const char *pchLocation, uint32 unPriority )
 {
-    PRINT_DEBUG("Steam_Remote_Storage::UGCDownloadToLocation\n");
-    return 0;
+    PRINT_DEBUG("Steam_Remote_Storage::UGCDownloadToLocation %u %s\n", hContent, pchLocation);
+    // TODO is this implementation correct?
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    RemoteStorageDownloadUGCResult_t data{};
+    data.m_hFile = hContent;
+    data.m_nAppID = settings->get_local_game_id().AppID();
+    data.m_ulSteamIDOwner = settings->get_local_steam_id().ConvertToUint64();
+
+    if (!pchLocation || !pchLocation[0]) {
+        data.m_eResult = EResult::k_EResultInvalidParam; //TODO: not sure if this is the right result
+        data.m_nSizeInBytes = 0;
+        data.m_pchFileName[0] = '\0';
+    } else if (shared_files.count(hContent)) {
+        data.m_eResult = k_EResultOK;
+        data.m_nSizeInBytes = local_storage->file_size(Local_Storage::remote_storage_folder, shared_files[hContent]);
+        shared_files[hContent].copy(data.m_pchFileName, sizeof(data.m_pchFileName) - 1);
+        downloaded_files[hContent].file = shared_files[hContent];
+        downloaded_files[hContent].total_size = data.m_nSizeInBytes;
+    } else {
+        data.m_eResult = k_EResultFileNotFound; //TODO: not sure if this is the right result
+    }
+
+    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
 }
 
 // Cloud dynamic state change notification
