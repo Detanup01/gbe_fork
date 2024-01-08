@@ -98,7 +98,7 @@ void set_details(PublishedFileId_t id, SteamUGCDetails_t *pDetails)
             pDetails->m_flScore = settings->getMod(id).score;
             // implement something like:
             pDetails->m_hFile = ugc_file_handle;
-            pDetails->m_hPreviewFile = ugc_prev_handle:
+            pDetails->m_hPreviewFile = ugc_prev_handle;
             //pDetails->m_unNumChildren = settings->getMod(id).numChildren;
         } else {
             pDetails->m_nPublishedFileId = id;
