@@ -117,6 +117,9 @@ Steam_Client::Steam_Client()
     steam_gameserver_game_coordinator = new Steam_Game_Coordinator(settings_server, network, callback_results_server, callbacks_server, run_every_runcb);
     steam_masterserver_updater = new Steam_Masterserver_Updater(settings_server, network, callback_results_server, callbacks_server, run_every_runcb);
 
+    PRINT_DEBUG("client init AppTicket\n");
+    steam_app_ticket = new Steam_AppTicket(settings_client);
+
     gameserver_has_ipv6_functions = false;
 
     last_cb_run = 0;
@@ -705,6 +708,8 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
         return GetISteamRemotePlay(hSteamUser, hSteamPipe, pchVersion);
     } else if (strstr(pchVersion, "STEAMPARENTALSETTINGS_INTERFACE_VERSION") == pchVersion) {
         return GetISteamParentalSettings(hSteamUser, hSteamPipe, pchVersion);
+    } else if (strstr(pchVersion, "STEAMAPPTICKET_INTERFACE_VERSION") == pchVersion) {
+        return GetAppTicket(hSteamUser, hSteamPipe, pchVersion);
     } else {
         PRINT_DEBUG("No interface: %s\n", pchVersion);
         //TODO: all the interfaces
@@ -1385,6 +1390,22 @@ ISteamRemotePlay *Steam_Client::GetISteamRemotePlay( HSteamUser hSteamUser, HSte
     // we can get here if one of the if-statements didn't return in all paths
     PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
     return (ISteamRemotePlay *)(void *)(ISteamRemotePlay *)steam_remoteplay;
+}
+
+ISteamAppTicket *Steam_Client::GetAppTicket( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
+{
+    PRINT_DEBUG("GetAppTicket %s\n", pchVersion);
+    if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
+
+    if (strcmp(pchVersion, STEAMAPPTICKET_INTERFACE_VERSION) == 0) {
+        return (ISteamAppTicket *)(void *)(ISteamAppTicket *)steam_app_ticket;
+    } else {
+        return (ISteamAppTicket *)(void *)(ISteamAppTicket *)steam_app_ticket;
+    }
+
+    // we can get here if one of the if-statements didn't return in all paths
+    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    return (ISteamAppTicket *)(void *)(ISteamAppTicket *)steam_app_ticket;
 }
 
 void Steam_Client::RegisterCallback( class CCallbackBase *pCallback, int iCallback)

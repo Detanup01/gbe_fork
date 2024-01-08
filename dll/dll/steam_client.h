@@ -16,6 +16,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "base.h"
+#include "appticket.h"
 #include "steam_user.h"
 #include "steam_friends.h"
 #include "steam_utils.h"
@@ -127,6 +128,7 @@ public:
     Steam_Networking_Messages *steam_gameserver_networking_messages;
     Steam_Game_Coordinator *steam_gameserver_game_coordinator;
     Steam_Masterserver_Updater *steam_masterserver_updater;
+    Steam_AppTicket *steam_app_ticket;
 
     Steam_Overlay* steam_overlay;
 
@@ -284,6 +286,8 @@ public:
 
     // Steam Remote Play interface
     ISteamRemotePlay *GetISteamRemotePlay( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion );
+    
+    ISteamAppTicket *GetAppTicket( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion );
 
     void RegisterCallback( class CCallbackBase *pCallback, int iCallback);
     void UnregisterCallback( class CCallbackBase *pCallback);
