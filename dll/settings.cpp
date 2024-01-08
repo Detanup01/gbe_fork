@@ -180,8 +180,10 @@ void Settings::addModDetails(PublishedFileId_t id, Mod_entry details)
         f->acceptedForUse = details.acceptedForUse;
         f->tagsTruncated = details.tagsTruncated;
         f->tags = details.tags;
+        // - should we set the handles here instead of Invalid?
         f->handleFile = details.handleFile;
         f->handlePreviewFile = details.handlePreviewFile;
+        //  -
         f->primaryFileName = details.primaryFileName;
         f->primaryFileSize = details.primaryFileSize;
         f->previewFileName = details.previewFileName;
