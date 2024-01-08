@@ -379,7 +379,7 @@ bool SetCloudEnabledThisApp( bool bEnabled )
 STEAM_CALL_RESULT( RemoteStorageDownloadUGCResult_t )
 SteamAPICall_t UGCDownload( UGCHandle_t hContent, uint32 unPriority )
 {
-     PRINT_DEBUG("Steam_Remote_Storage::UGCDownload %u\n", hContent);
+    PRINT_DEBUG("Steam_Remote_Storage::UGCDownload %llu\n", hContent);
     RemoteStorageDownloadUGCResult_t data = {};
     if (shared_files.count(hContent)) {
         data.m_eResult = k_EResultOK;
@@ -770,7 +770,7 @@ SteamAPICall_t	EnumeratePublishedWorkshopFiles( EWorkshopEnumerationType eEnumer
 STEAM_CALL_RESULT( RemoteStorageDownloadUGCResult_t )
 SteamAPICall_t UGCDownloadToLocation( UGCHandle_t hContent, const char *pchLocation, uint32 unPriority )
 {
-    PRINT_DEBUG("Steam_Remote_Storage::UGCDownloadToLocation %u %s\n", hContent, pchLocation);
+    PRINT_DEBUG("Steam_Remote_Storage::UGCDownloadToLocation %llu %s\n", hContent, pchLocation);
     // TODO is this implementation correct?
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     RemoteStorageDownloadUGCResult_t data{};
