@@ -50,6 +50,9 @@ public ISteamUGC
 
     std::set<PublishedFileId_t> subscribed;
     UGCQueryHandle_t handle = 0;
+    //temporary (or forever) thing
+    UGCHandle_t ugc_file_handle = 0; //file
+    UGCHandle_t ugc_prev_handle = 0; //Preview
     std::vector<struct UGC_query> ugc_queries;
 
 UGCQueryHandle_t new_ugc_query(bool return_all_subscribed = false, std::set<PublishedFileId_t> return_only = std::set<PublishedFileId_t>())
@@ -68,6 +71,8 @@ void set_details(PublishedFileId_t id, SteamUGCDetails_t *pDetails)
 {
     if (pDetails) {
         if (settings->isModInstalled(id)) {
+            ++ugc_file_handle;
+            ugc_prev_handle += ugc_file_handle + 1;
             pDetails->m_eResult = k_EResultOK;
             pDetails->m_nPublishedFileId = id;
             pDetails->m_nCreatorAppID = settings->get_local_game_id().AppID();
@@ -92,8 +97,8 @@ void set_details(PublishedFileId_t id, SteamUGCDetails_t *pDetails)
             pDetails->m_unVotesDown = settings->getMod(id).votesDown;
             pDetails->m_flScore = settings->getMod(id).score;
             // implement something like:
-            //pDetails->m_hFile = ugc_file_handle;
-            //pDetails->m_hPreviewFile = ugc_prev_handle:
+            pDetails->m_hFile = ugc_file_handle;
+            pDetails->m_hPreviewFile = ugc_prev_handle:
             //pDetails->m_unNumChildren = settings->getMod(id).numChildren;
         } else {
             pDetails->m_nPublishedFileId = id;
@@ -182,7 +187,7 @@ SteamAPICall_t SendQueryUGCRequest( UGCQueryHandle_t handle )
 // Retrieve an individual result after receiving the callback for querying UGC
 bool GetQueryUGCResult( UGCQueryHandle_t handle, uint32 index, SteamUGCDetails_t *pDetails )
 {
-    PRINT_DEBUG("Steam_UGC::GetQueryUGCResult %u\n", index);
+    PRINT_DEBUG("Steam_UGC::GetQueryUGCResult %llu %u\n", handle, index);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (pDetails) {
         memset(pDetails, 0, sizeof(SteamUGCDetails_t));
@@ -798,8 +803,10 @@ bool GetItemInstallInfo( PublishedFileId_t nPublishedFileID, uint64 *punSizeOnDi
 // get info about pending update for items that have k_EItemStateNeedsUpdate set. punBytesTotal will be valid after download started once
 bool GetItemDownloadInfo( PublishedFileId_t nPublishedFileID, uint64 *punBytesDownloaded, uint64 *punBytesTotal )
 {
-    PRINT_DEBUG("Steam_UGC::GetItemDownloadInfo\n");
-    return false;
+    PRINT_DEBUG("Steam_UGC::GetItemDownloadInfo %llu\n", nPublishedFileID);
+    if (punBytesDownloaded) *punBytesDownloaded = settings->getMod(nPublishedFileID).primaryFileSize;
+    if (punBytesTotal) *punBytesTotal = settings->getMod(nPublishedFileID).primaryFileSize;
+    return true;
 }
 
 bool GetItemInstallInfo( PublishedFileId_t nPublishedFileID, uint64 *punSizeOnDisk, STEAM_OUT_STRING_COUNT( cchFolderSize ) char *pchFolder, uint32 cchFolderSize, bool *pbLegacyItem ) // returns true if item is installed
