@@ -805,7 +805,20 @@ static void parse_mods_folder(class Settings *settings_client, Settings *setting
                 newMod.tagsTruncated = false;
                 newMod.tags = mod.value().value("tags", std::string(""));
                 newMod.primaryFileName = mod.value().value("primary_filename", std::string(""));
-                newMod.primaryFileSize = mod.value().value("primary_filesize", (int32)1000000);
+                if(newMod.primaryFileName!=""){
+                   long begin = 0, end = 0;
+                   const char* name = primaryFileName;
+                   std::fstream file(name);
+                   begin = file.tellg();
+                   file.seekg(0, std::ios::end);
+                   end = file.tellg();
+                   file.close();
+                   newMod.primaryFileSize = mod.value().value("primary_filesize", (end-begin));
+                }
+                else
+                {
+                   newMod.primaryFileSize = mod.value().value("primary_filesize", (int32)1000000); 
+                }
                 newMod.previewFileName = mod.value().value("preview_filename", std::string(""));
                 newMod.previewFileSize = mod.value().value("preview_filesize", (int32)1000000);
                 newMod.workshopItemURL = mod.value().value("workshop_item_url", std::string(""));
