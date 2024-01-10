@@ -807,7 +807,7 @@ static void parse_mods_folder(class Settings *settings_client, Settings *setting
                 newMod.primaryFileName = mod.value().value("primary_filename", std::string(""));
                 if(newMod.primaryFileName!=""){
                    long begin = 0, end = 0;
-                   const char* name = newMod.primaryFileName;
+                   const char* name = newMod.primaryFileName.c_str();
                    std::fstream file(name);
                    begin = file.tellg();
                    file.seekg(0, std::ios::end);
