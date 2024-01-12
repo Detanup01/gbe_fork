@@ -729,12 +729,12 @@ exit /b 1
     exit /b 1
   )
 
-  if %VERBOSE% equ 1 (
+  if "%VERBOSE%" equ "1" (
     echo cl.exe %_target_args% /Fo%_build_tmp%\ /Fe%_build_tmp%\ %debug_info% %debug_info_format% %optimization_level% %release_defs% %_extra_defs% %_runtime_type% %_target_inc_dirs% %_extra_inc_dirs% %_all_src% %_target_libs% %_extra_libs% /link %_target_linker_args% /OUT:"%_out_filepath%"
     echo:
   )
 
-  cl.exe %_target_args% /Fo%_build_tmp%\ /Fe%_build_tmp%\ %debug_info% %debug_info_format% %optimization_level% %release_defs% %_extra_defs% %_runtime_type% %_target_inc_dirs% %_extra_inc_dirs% %_all_src% %_target_libs% %_extra_libs% /link %_target_linker_args% /OUT:"%_out_filepath%"
+  call cl.exe %_target_args% /Fo%_build_tmp%\ /Fe%_build_tmp%\ %debug_info% %debug_info_format% %optimization_level% %release_defs% %_extra_defs% %_runtime_type% %_target_inc_dirs% %_extra_inc_dirs% %_all_src% %_target_libs% %_extra_libs% /link %_target_linker_args% /OUT:"%_out_filepath%"
   set /a _exit=%errorlevel%
   rmdir /s /q "%_build_tmp%"
 endlocal & exit /b %_exit%
@@ -766,15 +766,15 @@ endlocal & exit /b %_exit%
   
   echo --- compiling resource file "%_file%" to "%_out_file%"
   set "_verbose="
-  if %VERBOSE% equ 1 (
+  if "%VERBOSE%" equ "1" (
     set "_verbose=/v"
   )
-  if %VERBOSE% equ 1 (
-    rc.exe %_verbose% /l 0 /g 0 /nologo /n /fo "%_out_file%" "%_file%"
+  if "%VERBOSE%" equ "1" (
+    echo rc.exe %_verbose% /l 0 /g 0 /nologo /n /fo "%_out_file%" "%_file%"
     echo:
   )
 
-  rc.exe %_verbose% /l 0 /g 0 /nologo /n /fo "%_out_file%" "%_file%"
+  call rc.exe %_verbose% /l 0 /g 0 /nologo /n /fo "%_out_file%" "%_file%"
   set /a _exit=%errorlevel%
   echo:
 endlocal & exit /b %_exit%
