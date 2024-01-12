@@ -585,7 +585,7 @@ endlocal & exit /b %_exit%
 :compile_experimentalclient_ldr_32
   setlocal
   echo // building executable steamclient_loader_32.exe - 32
-  set src_files="%win_resources_out_dir%\rsrc-launcher-32.res" "%tools_src_dir%\steamclient_loader\win\*.cpp" "helpers\pe_helpers.cpp" "helpers\common_helpers.cpp"
+  set src_files="%win_resources_out_dir%\rsrc-launcher-32.res" "%tools_src_dir%\steamclient_loader\win\*.cpp" "helpers\pe_helpers.cpp" "helpers\common_helpers.cpp" "helpers\dbg_log.cpp"
   set extra_inc_dirs=/I"%tools_src_dir%\steamclient_loader\win\extra_protection" /I"pe_helpers"
   set "extra_libs=user32.lib"
   call :build_for 1 2 "%steamclient_dir%\steamclient_loader_32.exe" src_files extra_inc_dirs "" "%extra_libs%"
@@ -678,7 +678,7 @@ endlocal & exit /b %_exit%
 :compile_experimentalclient_ldr_64
   setlocal
   echo // building executable steamclient_loader_64.exe - 64
-  set src_files="%win_resources_out_dir%\rsrc-launcher-64.res" "%tools_src_dir%\steamclient_loader\win\*.cpp" "helpers\pe_helpers.cpp" "helpers\common_helpers.cpp"
+  set src_files="%win_resources_out_dir%\rsrc-launcher-64.res" "%tools_src_dir%\steamclient_loader\win\*.cpp" "helpers\pe_helpers.cpp" "helpers\common_helpers.cpp" "helpers\dbg_log.cpp"
   set extra_inc_dirs=/I"%tools_src_dir%\steamclient_loader\win\extra_protection" /I"pe_helpers"
   set "extra_libs=user32.lib"
   call :build_for 0 2 "%steamclient_dir%\steamclient_loader_64.exe" src_files extra_inc_dirs "" "%extra_libs%"
