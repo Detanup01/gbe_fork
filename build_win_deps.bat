@@ -119,9 +119,9 @@ call "%~dp0build_win_set_env.bat" 32 || (
 )
 %recreate_32%
 %cmake_gen32%
-set /a _exit=errorlevel
+set /a _exit=%errorlevel%
 %cmake_build32%
-set /a _exit+=errorlevel
+set /a _exit+=%errorlevel%
 endlocal & set /a last_code+=%_exit%
 
 setlocal
@@ -134,9 +134,9 @@ call "%~dp0build_win_set_env.bat" 64 || (
 )
 %recreate_64%
 %cmake_gen64%
-set /a _exit=errorlevel
+set /a _exit=%errorlevel%
 %cmake_build64%
-set /a _exit+=errorlevel
+set /a _exit+=%errorlevel%
 endlocal & set /a last_code+=%_exit%
 
 popd
@@ -157,9 +157,9 @@ call "%~dp0build_win_set_env.bat" 32 || (
 )
 %recreate_32%
 %cmake_gen32%
-set /a _exit=errorlevel
+set /a _exit=%errorlevel%
 %cmake_build32% --target install
-set /a _exit+=errorlevel
+set /a _exit+=%errorlevel%
 %clean_gen32%
 endlocal & set /a last_code+=%_exit%
 
@@ -173,9 +173,9 @@ call "%~dp0build_win_set_env.bat" 64 || (
 )
 %recreate_64%
 %cmake_gen64%
-set /a _exit=errorlevel
+set /a _exit=%errorlevel%
 %cmake_build64% --target install
-set /a _exit+=errorlevel
+set /a _exit+=%errorlevel%
 %clean_gen64%
 endlocal & set /a last_code+=%_exit%
 
@@ -227,9 +227,9 @@ call "%~dp0build_win_set_env.bat" 32 || (
 )
 %recreate_32%
 %cmake_gen32% %curl_common_defs% %wild_zlib_32% "-DCMAKE_SHARED_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install32\lib\zlibstatic.lib" "-DCMAKE_MODULE_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install32\lib\zlibstatic.lib" "-DCMAKE_EXE_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install32\lib\zlibstatic.lib"
-set /a _exit=errorlevel
+set /a _exit=%errorlevel%
 %cmake_build32% --target install
-set /a _exit+=errorlevel
+set /a _exit+=%errorlevel%
 %clean_gen32%
 endlocal & set /a last_code+=%_exit%
 
@@ -243,9 +243,9 @@ call "%~dp0build_win_set_env.bat" 64 || (
 )
 %recreate_64%
 %cmake_gen64% %curl_common_defs% %wild_zlib_64% "-DCMAKE_SHARED_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install64\lib\zlibstatic.lib" "-DCMAKE_MODULE_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install64\lib\zlibstatic.lib" "-DCMAKE_EXE_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install64\lib\zlibstatic.lib"
-set /a _exit=errorlevel
+set /a _exit=%errorlevel%
 %cmake_build64% --target install
-set /a _exit+=errorlevel
+set /a _exit+=%errorlevel%
 %clean_gen64%
 endlocal & set /a last_code+=%_exit%
 
@@ -269,9 +269,9 @@ call "%~dp0build_win_set_env.bat" 32 || (
 )
 %recreate_32%
 %cmake_gen32% %proto_common_defs% %wild_zlib_32% "-DCMAKE_SHARED_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install32\lib\zlibstatic.lib" "-DCMAKE_MODULE_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install32\lib\zlibstatic.lib" "-DCMAKE_EXE_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install32\lib\zlibstatic.lib"
-set /a _exit=errorlevel
+set /a _exit=%errorlevel%
 %cmake_build32% --target install
-set /a _exit+=errorlevel
+set /a _exit+=%errorlevel%
 %clean_gen32%
 endlocal & set /a last_code+=%_exit%
 
@@ -285,9 +285,9 @@ call "%~dp0build_win_set_env.bat" 64 || (
 )
 %recreate_64%
 %cmake_gen64% %proto_common_defs% %wild_zlib_64% "-DCMAKE_SHARED_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install64\lib\zlibstatic.lib" "-DCMAKE_MODULE_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install64\lib\zlibstatic.lib" "-DCMAKE_EXE_LINKER_FLAGS_INIT=%~dp0%deps_dir%\zlib\install64\lib\zlibstatic.lib"
-set /a _exit=errorlevel
+set /a _exit=%errorlevel%
 %cmake_build64% --target install
-set /a _exit+=errorlevel
+set /a _exit+=%errorlevel%
 %clean_gen64%
 endlocal & set /a last_code+=%_exit%
 
@@ -311,9 +311,9 @@ call "%~dp0build_win_set_env.bat" 32 || (
 )
 %recreate_32%
 %cmake_gen32% %mbedtls_common_defs%
-set /a _exit=errorlevel
+set /a _exit=%errorlevel%
 %cmake_build32% --target install
-set /a _exit+=errorlevel
+set /a _exit+=%errorlevel%
 %clean_gen32%
 endlocal & set /a last_code+=%_exit%
 
@@ -327,9 +327,9 @@ call "%~dp0build_win_set_env.bat" 64 || (
 )
 %recreate_64%
 %cmake_gen64% %mbedtls_common_defs%
-set /a _exit=errorlevel
+set /a _exit=%errorlevel%
 %cmake_build64% --target install
-set /a _exit+=errorlevel
+set /a _exit+=%errorlevel%
 %clean_gen64%
 endlocal & set /a last_code+=%_exit%
 
