@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <string>
 
+#include "pe_helpers/pe_helpers.hpp"
+
 bool IsNotRelativePathOrRemoveFileName(WCHAR* output, bool Remove)
 {
 	int LG = lstrlenW(output);
@@ -151,6 +153,46 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	// Close the HKEY Handle.
 	RegCloseKey(Registrykey);
 
+	// dll to inject
+	bool inject_extra_dll = false;
+	std::wstring extra_dll(8192, L'\0');
+	{
+		auto read_chars = GetPrivateProfileStringW(L"Extra", L"InjectDll", L"", &extra_dll[0], extra_dll.size(), CurrentDirectory);
+		if (extra_dll[0]) {
+			extra_dll = extra_dll.substr(0, read_chars);
+		} else {
+			extra_dll.clear();
+		}
+		
+		if (extra_dll.size()) {
+			if (!IsNotRelativePathOrRemoveFileName(&extra_dll[0], false)) {
+				std::wstring tmp = extra_dll;
+				read_chars = GetFullPathNameW(tmp.c_str(), extra_dll.size(), &extra_dll[0], NULL);
+				if (!read_chars) {
+					MessageBoxA(NULL, "Unable to get full path of dll to inject.", "ColdClientLoader", MB_ICONERROR);
+					return 1;
+				}
+
+				if (read_chars >= extra_dll.size()) {
+					extra_dll.resize(read_chars);
+					read_chars = GetFullPathNameW(tmp.c_str(), extra_dll.size(), &extra_dll[0], NULL);
+					if (!read_chars) {
+						MessageBoxA(NULL, "Unable to get full path of dll to inject after resizing buffer.", "ColdClientLoader", MB_ICONERROR);
+						return 1;
+					}
+				}
+
+				extra_dll = extra_dll.substr(0, read_chars);
+			}
+			
+			if (GetFileAttributesW(extra_dll.c_str()) == INVALID_FILE_ATTRIBUTES) {
+				MessageBoxA(NULL, "Couldn't find the requested dll to inject.", "ColdClientLoader", MB_ICONERROR);
+				return 1;
+			}
+			inject_extra_dll = true;
+		}
+	}
+
 	// spawn the exe
 	STARTUPINFOW info = { 0 };
 	SecureZeroMemory(&info, sizeof(info));
@@ -167,13 +209,28 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		return 1;
 	}
 	
+	if (inject_extra_dll) {
+		const char *err_inject = nullptr;
+		DWORD code = pe_helpers::loadlib_remote(processInfo.hProcess, extra_dll, &err_inject);
+		if (code != ERROR_SUCCESS) {
+			TerminateProcess(processInfo.hProcess, 1);
+			std::string err_full =
+				"Failed to inject the requested dll:\n" +
+				std::string(err_inject) + "\n" +
+				pe_helpers::get_err_string(code) + "\n" +
+				"Error code = " + std::to_string(code) + "\n";
+			MessageBoxA(NULL, err_full.c_str(), "ColdClientLoader", MB_ICONERROR);
+			return 1;
+		}
+	}
+
 	bool run_exe = true;
 #ifndef EMU_RELEASE_BUILD
 	{
 		std::wstring dbg_file(50, L'\0');
-		auto res_dbg_len = GetPrivateProfileStringW(L"Debug", L"ResumeByDebugger", L"", &dbg_file[0], dbg_file.size(), CurrentDirectory);
+		auto read_chars = GetPrivateProfileStringW(L"Debug", L"ResumeByDebugger", L"", &dbg_file[0], dbg_file.size(), CurrentDirectory);
 		if (dbg_file[0]) {
-			dbg_file = dbg_file.substr(0, res_dbg_len);
+			dbg_file = dbg_file.substr(0, read_chars);
 		} else {
 			dbg_file.clear();
 		}
