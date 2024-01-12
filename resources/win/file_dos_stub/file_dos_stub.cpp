@@ -21,14 +21,15 @@ static size_t get_file_size(std::fstream &file)
     
 }
 
-static std::vector<uint8_t> load_file(std::fstream &file, size_t size)
+static std::vector<uint8_t> load_file_partial(std::fstream &file)
 {
     try
     {
         auto org_pos = file.tellg();
         file.seekg(0, std::ios::beg);
 
-        std::vector<uint8_t> data(size, 0);
+        // 2MB is enough
+        std::vector<uint8_t> data(2 * 1024 * 1024, 0);
         file.read((char *)&data[0], data.size());
 
         file.seekg(org_pos, std::ios::beg);
@@ -67,7 +68,7 @@ int main(int argc, char* *argv)
             std::cerr << "Failed get file size for file: '" << arg << "'" << std::endl;
             return 1;
         }
-        auto data = load_file(file, file_size);
+        auto data = load_file_partial(file);
         if (data.empty()) {
             std::cerr << "Failed get file data for file: '" << arg << "'" << std::endl;
             return 1;

@@ -1,4 +1,4 @@
-#include "crash_printer/common.hpp"
+#include "common_helpers/common_helpers.hpp"
 #include "crash_printer/win.hpp"
 
 #include <sstream>
@@ -45,7 +45,7 @@ static void print_stacktrace(std::ofstream &file, CONTEXT* context) {
     stack_frame.AddrFrame.Mode = ADDRESS_MODE::AddrModeFlat;
     stack_frame.AddrStack.Mode = ADDRESS_MODE::AddrModeFlat;
     
-    crash_printer::write(file, "*********** Stack trace ***********");
+    common_helpers::write(file, "*********** Stack trace ***********");
     std::vector<std::string> symbols{};
     while (true) {
         BOOL res = StackWalk(
@@ -92,14 +92,14 @@ static void print_stacktrace(std::ofstream &file, CONTEXT* context) {
         std::stringstream ss{};
         ss << "[frame " << std::dec << (idx - 1) << "]: "
            << s;
-        crash_printer::write(file, ss.str());
+        common_helpers::write(file, ss.str());
         idx--;
     }
 }
 
 static void log_exception(LPEXCEPTION_POINTERS ex_pointers)
 {
-    if (!crash_printer::create_dir(logs_filepath)) {
+    if (!common_helpers::create_dir(logs_filepath)) {
         return;
     }
     
@@ -110,17 +110,17 @@ static void log_exception(LPEXCEPTION_POINTERS ex_pointers)
     auto gm_time = std::gmtime(&t_now);
     auto time = std::string(std::asctime(gm_time));
     time.pop_back(); // remove the trailing '\n' added by asctime
-    crash_printer::write(file, "[" + time + "]");
+    common_helpers::write(file, "[" + time + "]");
     {
         std::stringstream ss{};
         ss << "Unhandled exception:" << std::endl
            << "  code: 0x" << std::hex << ex_pointers->ExceptionRecord->ExceptionCode << std::endl
            << "  @address = 0x" << std::hex << ex_pointers->ExceptionRecord->ExceptionAddress;
-        crash_printer::write(file, ss.str());
+        common_helpers::write(file, ss.str());
     }
 
     print_stacktrace(file, ex_pointers->ContextRecord);
-    crash_printer::write(file, "**********************************\n");
+    common_helpers::write(file, "**********************************\n");
     file.close();
 }
 
@@ -139,13 +139,13 @@ static LONG WINAPI exception_handler(LPEXCEPTION_POINTERS ex_pointers)
 bool crash_printer::init(const std::wstring &log_file)
 {
     logs_filepath = log_file;
-    
     originalExceptionFilter = SetUnhandledExceptionFilter(exception_handler);
-
     return true;
 }
 
 void crash_printer::deinit()
 {
-    
+    if (originalExceptionFilter) {
+        SetUnhandledExceptionFilter(originalExceptionFilter);
+    }
 }

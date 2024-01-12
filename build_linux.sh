@@ -165,6 +165,7 @@ release_incs_both=(
   "sdk"
   "overlay_experimental"
   "crash_printer"
+  "helpers"
 )
 release_incs32=(
   "${release_incs_both[@]}"
@@ -216,7 +217,7 @@ release_src=(
   "dll/*.cpp"
   "$protoc_out_dir/*.cc"
   "crash_printer/linux.cpp"
-  "crash_printer/common.cpp"
+  "helpers/common_helpers.cpp"
 )
 
 # additional #defines

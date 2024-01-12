@@ -1,6 +1,6 @@
 // https://stackoverflow.com/a/1925461
 
-#include "crash_printer/common.hpp"
+#include "common_helpers/common_helpers.hpp"
 #include "crash_printer/linux.hpp"
 
 #include <sstream>
@@ -46,7 +46,7 @@ static void restore_handlers()
 
 static void exception_handler(int signal, siginfo_t *info, void *context, struct sigaction *oldact)
 {
-    if (!crash_printer::create_dir(logs_filepath)) {
+    if (!common_helpers::create_dir(logs_filepath)) {
         return;
     }
     
@@ -57,12 +57,12 @@ static void exception_handler(int signal, siginfo_t *info, void *context, struct
     auto gm_time = std::gmtime(&t_now);
     auto time = std::string(std::asctime(gm_time));
     time.pop_back(); // remove the trailing '\n' added by asctime
-    crash_printer::write(file, "[" + time + "]");
+    common_helpers::write(file, "[" + time + "]");
     {
         std::stringstream ss{};
         ss << "Unhandled exception:" << std::endl
            << "  code: " << std::dec << signal << " (" << strsignal(signal) << ")" << std::endl;
-        crash_printer::write(file, ss.str());
+        common_helpers::write(file, ss.str());
     }
     void* stack_frames[max_stack_frames];
     int stack_size = backtrace(stack_frames, max_stack_frames);
@@ -70,20 +70,20 @@ static void exception_handler(int signal, siginfo_t *info, void *context, struct
 
     if (stack_symbols != nullptr) {
         // fprintf(stderr, "Stack trace:\n");
-        crash_printer::write(file, "*********** Stack trace ***********");
+        common_helpers::write(file, "*********** Stack trace ***********");
         for (int i = 1; i < stack_size; ++i) {
             char *symbol = stack_symbols[i];
             std::stringstream ss{};
             ss << "[frame " << std::dec << (stack_size - i - 1) << "]: "
                 << std::hex << stack_frames[i] << " | "
                 << symbol;
-            crash_printer::write(file, ss.str());
+            common_helpers::write(file, ss.str());
         }
 
         free(stack_symbols);
     }
 
-    crash_printer::write(file, "**********************************\n");
+    common_helpers::write(file, "**********************************\n");
 
     file.close();
 }

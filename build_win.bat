@@ -199,7 +199,7 @@ set mbedtls_lib32="%deps_dir%\mbedtls\install32\lib\mbedcrypto.lib"
 set mbedtls_lib64="%deps_dir%\mbedtls\install64\lib\mbedcrypto.lib"
 
 :: directories to use for #include
-set release_incs_both=%ssq_inc% /I"%libs_dir%" /I"%protoc_out_dir%" /I"%libs_dir%\utfcpp" /I"controller" /I"dll" /I"sdk" /I"overlay_experimental" /I"crash_printer"
+set release_incs_both=%ssq_inc% /I"%libs_dir%" /I"%protoc_out_dir%" /I"%libs_dir%\utfcpp" /I"controller" /I"dll" /I"sdk" /I"overlay_experimental" /I"crash_printer" /I"helpers"
 set release_incs32=%release_incs_both% %curl_inc32% %protob_inc32% %zlib_inc32% %mbedtls_inc32%
 set release_incs64=%release_incs_both% %curl_inc64% %protob_inc64% %zlib_inc64% %mbedtls_inc64%
 
@@ -211,7 +211,7 @@ set release_libs32=%release_libs_both% %ssq_lib32% %curl_lib32% %protob_lib32% %
 set release_libs64=%release_libs_both% %ssq_lib64% %curl_lib64% %protob_lib64% %zlib_lib64% %mbedtls_lib64%
 
 :: common source files used everywhere, just for convinience, you still have to provide a complete list later
-set release_src="dll/*.cpp" "%protoc_out_dir%/*.cc" "crash_printer/win.cpp" "crash_printer/common.cpp"
+set release_src="dll/*.cpp" "%protoc_out_dir%/*.cc" "crash_printer/win.cpp" "helpers/common_helpers.cpp"
 
 :: additional #defines
 set "common_defs=/DUTF_CPP_CPLUSPLUS=201703L /DCURL_STATICLIB /DUNICODE /D_UNICODE"
@@ -585,7 +585,7 @@ endlocal & exit /b %_exit%
 :compile_experimentalclient_ldr_32
   setlocal
   echo // building executable steamclient_loader_32.exe - 32
-  set src_files="%win_resources_out_dir%\rsrc-launcher-32.res" "%tools_src_dir%\steamclient_loader\win\*.cpp" "pe_helpers\pe_helpers.cpp"
+  set src_files="%win_resources_out_dir%\rsrc-launcher-32.res" "%tools_src_dir%\steamclient_loader\win\*.cpp" "helpers\pe_helpers.cpp" "helpers\common_helpers.cpp"
   set extra_inc_dirs=/I"%tools_src_dir%\steamclient_loader\win\extra_protection" /I"pe_helpers"
   set "extra_libs=user32.lib"
   call :build_for 1 2 "%steamclient_dir%\steamclient_loader_32.exe" src_files extra_inc_dirs "" "%extra_libs%"
@@ -678,7 +678,7 @@ endlocal & exit /b %_exit%
 :compile_experimentalclient_ldr_64
   setlocal
   echo // building executable steamclient_loader_64.exe - 64
-  set src_files="%win_resources_out_dir%\rsrc-launcher-64.res" "%tools_src_dir%\steamclient_loader\win\*.cpp" "pe_helpers\pe_helpers.cpp"
+  set src_files="%win_resources_out_dir%\rsrc-launcher-64.res" "%tools_src_dir%\steamclient_loader\win\*.cpp" "helpers\pe_helpers.cpp" "helpers\common_helpers.cpp"
   set extra_inc_dirs=/I"%tools_src_dir%\steamclient_loader\win\extra_protection" /I"pe_helpers"
   set "extra_libs=user32.lib"
   call :build_for 0 2 "%steamclient_dir%\steamclient_loader_64.exe" src_files extra_inc_dirs "" "%extra_libs%"

@@ -29,7 +29,7 @@ set "common_exe_linker_args_32=%common_linker_args%"
 set "common_exe_linker_args_64=%common_linker_args%"
 
 :: directories to use for #include
-set release_incs_both=%ssq_inc% /I"../../../pe_helpers"
+set release_incs_both=%ssq_inc% /I"../../../helpers"
 set release_incs32=%release_incs_both%
 set release_incs64=%release_incs_both%
 
@@ -41,7 +41,7 @@ set release_libs32=%release_libs_both%
 set release_libs64=%release_libs_both%
 
 :: common source files used everywhere, just for convinience, you still have to provide a complete list later
-set release_src="file_dos_stub.cpp" "../../../pe_helpers/pe_helpers.cpp"
+set release_src="file_dos_stub.cpp" "../../../helpers/pe_helpers.cpp" "../../../helpers/common_helpers.cpp"
 
 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: x32
