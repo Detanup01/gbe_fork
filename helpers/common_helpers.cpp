@@ -1,6 +1,5 @@
 #include "common_helpers/common_helpers.hpp"
 #include <fstream>
-#include <filesystem>
 #include <cwchar>
 #include <algorithm>
 
@@ -41,6 +40,7 @@ void common_helpers::write(std::ofstream &file, const std::string &data)
 
 std::wstring common_helpers::str_to_w(const std::string &str)
 {
+    if (str.empty()) return std::wstring();
     auto cvt_state = std::mbstate_t();
     const char* src = &str[0];
     size_t conversion_bytes = std::mbsrtowcs(nullptr, &src, 0, &cvt_state);
@@ -51,6 +51,7 @@ std::wstring common_helpers::str_to_w(const std::string &str)
 
 std::string common_helpers::wstr_to_a(const std::wstring &wstr)
 {
+    if (wstr.empty()) return std::string();
     auto cvt_state = std::mbstate_t();
     const wchar_t* src = &wstr[0];
     size_t conversion_bytes = std::wcsrtombs(nullptr, &src, 0, &cvt_state);
@@ -103,4 +104,81 @@ bool common_helpers::ends_with_i(const std::wstring &target, const std::wstring 
 
     return _target.compare(_target.length() - _query.length(), _query.length(), _query) == 0;
 
+}
+
+std::filesystem::path to_absolute_impl(std::filesystem::path &path, std::filesystem::path &base)
+{
+    if (path.is_absolute()) {
+        return path;
+    }
+
+    return std::filesystem::absolute(base / path);
+}
+
+std::string common_helpers::to_absolute(const std::string &path, const std::string &base)
+{
+    if (path.empty()) return path;
+    auto path_abs = to_absolute_impl(
+        std::filesystem::path(path),
+        base.empty() ? std::filesystem::current_path() : std::filesystem::path(base)
+    );
+    return path_abs.string();
+}
+
+std::wstring common_helpers::to_absolute(const std::wstring &path, const std::wstring &base)
+{
+    if (path.empty()) return path;
+    auto path_abs = to_absolute_impl(
+        std::filesystem::path(path),
+        base.empty() ? std::filesystem::current_path() : std::filesystem::path(base)
+    );
+    return path_abs.wstring();
+}
+
+bool common_helpers::file_exist(std::filesystem::path &filepath)
+{
+    if (std::filesystem::is_directory(filepath)) {
+        return false;
+    } else if (std::filesystem::exists(filepath)) {
+        return true;
+    }
+    
+    return false;
+}
+
+bool common_helpers::file_exist(const std::string &filepath)
+{
+    if (filepath.empty()) return false;
+    std::filesystem::path path(filepath);
+    return file_exist(path);
+}
+
+bool common_helpers::file_exist(const std::wstring &filepath)
+{
+    if (filepath.empty()) return false;
+    std::filesystem::path path(filepath);
+    return file_exist(path);
+}
+
+bool common_helpers::dir_exist(std::filesystem::path &dirpath)
+{
+    if (std::filesystem::is_directory(dirpath)) {
+        return true;
+    }
+    
+    return false;
+}
+
+bool common_helpers::dir_exist(const std::string &dirpath)
+{
+    if (dirpath.empty()) return false;
+    std::filesystem::path path(dirpath);
+    return dir_exist(path);
+}
+
+bool common_helpers::dir_exist(const std::wstring &dirpath)
+{
+    if (dirpath.empty()) return false;
+    std::filesystem::path path(dirpath);
+    return dir_exist(path);
 }

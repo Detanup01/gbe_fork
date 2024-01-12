@@ -2,6 +2,7 @@
 
 #include <string>
 #include <fstream>
+#include <filesystem>
 
 namespace common_helpers {
 
@@ -22,5 +23,21 @@ bool starts_with_i(const std::wstring &target, const std::wstring &query);
 bool ends_with_i(const std::string &target, const std::string &query);
 
 bool ends_with_i(const std::wstring &target, const std::wstring &query);
+
+std::string to_absolute(const std::string &path, const std::string &base = std::string());
+
+std::wstring to_absolute(const std::wstring &path, const std::wstring &base = std::wstring());
+
+bool file_exist(std::filesystem::path &filepath);
+
+bool file_exist(const std::string &filepath);
+
+bool file_exist(const std::wstring &filepath);
+
+bool dir_exist(std::filesystem::path &dirpath);
+
+bool dir_exist(const std::string &dirpath);
+
+bool dir_exist(const std::wstring &dirpath);
 
 }

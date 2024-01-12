@@ -1,4 +1,5 @@
 #include "dbg_log/dbg_log.hpp"
+#include "common_helpers/common_helpers.hpp"
 
 #include <cstdarg>
 #include <cstdio>
@@ -32,6 +33,24 @@ bool dbg_log::init(const char *path)
 #endif
 
 	return true;
+}
+
+void dbg_log::write(const std::wstring &str)
+{
+
+#ifndef EMU_RELEASE_BUILD
+	write(common_helpers::wstr_to_a(str));
+#endif
+
+}
+
+void dbg_log::write(const std::string &str)
+{
+
+#ifndef EMU_RELEASE_BUILD
+	write(str.c_str());
+#endif
+
 }
 
 void dbg_log::write(const char *fmt, ...)
