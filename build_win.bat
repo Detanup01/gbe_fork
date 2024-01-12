@@ -164,7 +164,7 @@ set "common_compiler_args_64=%common_compiler_args%"
 
 :: "win" variables are used to build .dll and /SUBSYTEM:WINDOWS applications,
 :: "exe" variables are used to build pure console applications
-set "common_linker_args=/DYNAMICBASE /ERRORREPORT:NONE /NOLOGO"
+set "common_linker_args=/DYNAMICBASE /ERRORREPORT:NONE /NOLOGO /emittoolversioninfo:no"
 set "common_win_linker_args_32=%common_linker_args%"
 set "common_win_linker_args_64=%common_linker_args%"
 set "common_exe_linker_args_32=%common_linker_args%"
