@@ -155,6 +155,9 @@ set "win_resources_out_dir=%build_temp_dir%\rsrc"
 set "third_party_build_win_dir=third-party\build\win"
 set "signer_tool=%third_party_build_win_dir%\cert\sign_helper.bat"
 
+set "dos_stub_exe_32=%win_resources_src_dir%\file_dos_stub\file_dos_stub_32.exe"
+set "dos_stub_exe_64=%win_resources_src_dir%\file_dos_stub\file_dos_stub_64.exe"
+
 set "protoc_exe_32=%deps_dir%\protobuf\install32\bin\protoc.exe"
 set "protoc_exe_64=%deps_dir%\protobuf\install64\bin\protoc.exe"
 
@@ -234,6 +237,17 @@ if not exist "%protoc_exe_32%" (
 )
 if not exist "%protoc_exe_64%" (
   call :err_msg "protobuff compiler wasn't found - 64"
+  set /a last_code=1
+  goto :end_script
+)
+
+if not exist "%dos_stub_exe_32%" (
+  call :err_msg "dos stub program wasn't found - 32"
+  set /a last_code=1
+  goto :end_script
+)
+if not exist "%dos_stub_exe_64%" (
+  call :err_msg "dos stub program wasn't found - 64"
   set /a last_code=1
   goto :end_script
 )
@@ -525,6 +539,7 @@ goto :end_script
   call :build_for 1 0 "%build_root_dir%\x32\steam_api.dll" src_files
   set /a _exit=%errorlevel%
   if %_exit% equ 0 (
+    call :change_dos_stub 1 "%build_root_dir%\x32\steam_api.dll"
     call "%signer_tool%" "%build_root_dir%\x32\steam_api.dll"
   )
 endlocal & exit /b %_exit%
@@ -537,6 +552,7 @@ endlocal & exit /b %_exit%
   call :build_for 1 0 "%experimental_dir%\x32\steam_api.dll" src_files extra_inc_dirs "/DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY"
   set /a _exit=%errorlevel%
   if %_exit% equ 0 (
+    call :change_dos_stub 1 "%experimental_dir%\x32\steam_api.dll"
     call "%signer_tool%" "%experimental_dir%\x32\steam_api.dll"
   )
 endlocal & exit /b %_exit%
@@ -548,6 +564,7 @@ endlocal & exit /b %_exit%
   call :build_for 1 0 "%experimental_dir%\x32\steamclient.dll" src_files "" "/DEMU_EXPERIMENTAL_BUILD"
   set /a _exit=%errorlevel%
   if %_exit% equ 0 (
+    call :change_dos_stub 1 "%experimental_dir%\x32\steamclient.dll"
     call "%signer_tool%" "%experimental_dir%\x32\steamclient.dll"
   )
 endlocal & exit /b %_exit%
@@ -560,6 +577,7 @@ endlocal & exit /b %_exit%
   call :build_for 1 0 "%steamclient_dir%\steamclient.dll" src_files extra_inc_dirs "/DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /DSTEAMCLIENT_DLL"
   set /a _exit=%errorlevel%
   if %_exit% equ 0 (
+    call :change_dos_stub 1 "%steamclient_dir%\steamclient.dll"
     call "%signer_tool%" "%steamclient_dir%\steamclient.dll"
   )
 endlocal & exit /b %_exit%
@@ -573,6 +591,7 @@ endlocal & exit /b %_exit%
   call :build_for 1 2 "%steamclient_dir%\steamclient_loader_32.exe" src_files extra_inc_dirs "" "%extra_libs%"
   set /a _exit=%errorlevel%
   if %_exit% equ 0 (
+    call :change_dos_stub 1 "%steamclient_dir%\steamclient_loader_32.exe"
     call "%signer_tool%" "%steamclient_dir%\steamclient_loader_32.exe"
   )
 endlocal & exit /b %_exit%
@@ -598,6 +617,7 @@ endlocal & exit /b %_exit%
   call :build_for 1 1 "%lobby_connect_dir%\lobby_connect.exe" src_files "" "/DNO_DISK_WRITES /DLOBBY_CONNECT" "Comdlg32.lib"
   set /a _exit=%errorlevel%
   if %_exit% equ 0 (
+    call :change_dos_stub 1 "%lobby_connect_dir%\lobby_connect.exe"
     call "%signer_tool%" "%lobby_connect_dir%\lobby_connect.exe"
   )
 endlocal & exit /b %_exit%
@@ -612,6 +632,7 @@ endlocal & exit /b %_exit%
   call :build_for 0 0 "%build_root_dir%\x64\steam_api64.dll" src_files
   set /a _exit=%errorlevel%
   if %_exit% equ 0 (
+    call :change_dos_stub 0 "%build_root_dir%\x64\steam_api64.dll"
     call "%signer_tool%" "%build_root_dir%\x64\steam_api64.dll"
   )
 endlocal & exit /b %_exit%
@@ -624,6 +645,7 @@ endlocal & exit /b %_exit%
   call :build_for 0 0 "%experimental_dir%\x64\steam_api64.dll" src_files extra_inc_dirs "/DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY"
   set /a _exit=%errorlevel%
   if %_exit% equ 0 (
+    call :change_dos_stub 0 "%experimental_dir%\x64\steam_api64.dll"
     call "%signer_tool%" "%experimental_dir%\x64\steam_api64.dll"
   )
 endlocal & exit /b %_exit%
@@ -635,6 +657,7 @@ endlocal & exit /b %_exit%
   call :build_for 0 0 "%experimental_dir%\x64\steamclient64.dll" src_files "" "/DEMU_EXPERIMENTAL_BUILD"
   set /a _exit=%errorlevel%
   if %_exit% equ 0 (
+    call :change_dos_stub 0 "%experimental_dir%\x64\steamclient64.dll"
     call "%signer_tool%" "%experimental_dir%\x64\steamclient64.dll"
   )
 endlocal & exit /b %_exit%
@@ -647,6 +670,7 @@ endlocal & exit /b %_exit%
   call :build_for 0 0 "%steamclient_dir%\steamclient64.dll" src_files extra_inc_dirs "/DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /DSTEAMCLIENT_DLL"
   set /a _exit=%errorlevel%
   if %_exit% equ 0 (
+    call :change_dos_stub 0 "%steamclient_dir%\steamclient64.dll"
     call "%signer_tool%" "%steamclient_dir%\steamclient64.dll"
   )
 endlocal & exit /b %_exit%
@@ -660,6 +684,7 @@ endlocal & exit /b %_exit%
   call :build_for 0 2 "%steamclient_dir%\steamclient_loader_64.exe" src_files extra_inc_dirs "" "%extra_libs%"
   set /a _exit=%errorlevel%
   if %_exit% equ 0 (
+    call :change_dos_stub 0 "%steamclient_dir%\steamclient_loader_64.exe"
     call "%signer_tool%" "%steamclient_dir%\steamclient_loader_64.exe"
   )
 endlocal & exit /b %_exit%
@@ -823,6 +848,39 @@ endlocal & exit /b %_exit%
   set /a _exit=%errorlevel%
   echo:
 endlocal & exit /b %_exit%
+
+
+:: 1: is 32 bit build
+:: 2: input filepath
+:change_dos_stub
+  setlocal
+  set /a _is_32_bit_build=%~1 2>nul || (
+    endlocal
+    call :err_msg "Missing build arch"
+    exit /b 1
+  )
+  set "_file=%~2"
+  if not exist "%_file%" (
+    endlocal
+    call :err_msg "File not found"
+    exit /b 1
+  )
+
+  if "%_is_32_bit_build%" equ "1" (
+    set "_dos_stub_exe=%dos_stub_exe_32%"
+  ) else (
+    set "_dos_stub_exe=%dos_stub_exe_64%"
+  )
+  
+  echo --- changing DOS stub of "%_file%"
+  if "%VERBOSE%" equ "1" (
+    echo "%_dos_stub_exe%" "%_file%"
+    echo:
+  )
+
+  call "%_dos_stub_exe%" "%_file%"
+
+endlocal & exit /b %errorlevel%
 
 
 :cleanup
