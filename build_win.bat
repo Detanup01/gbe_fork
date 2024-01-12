@@ -27,7 +27,8 @@ set /a BUILD_EXP_CLIENT64=1
 
 set /a BUILD_EXPCLIENT32=1
 set /a BUILD_EXPCLIENT64=1
-set /a BUILD_EXPCLIENT_LDR=1
+set /a BUILD_EXPCLIENT_LDR_32=1
+set /a BUILD_EXPCLIENT_LDR_64=1
 
 set /a BUILD_TOOL_FIND_ITFS=1
 set /a BUILD_TOOL_LOBBY=1
@@ -62,8 +63,10 @@ set /a VERBOSE=0
     set /a BUILD_EXPCLIENT32=0
   ) else if "%~1"=="-exclient-64" (
     set /a BUILD_EXPCLIENT64=0
-  ) else if "%~1"=="-exclient-ldr" (
-    set /a BUILD_EXPCLIENT_LDR=0
+  ) else if "%~1"=="-exclient-ldr-32" (
+    set /a BUILD_EXPCLIENT_LDR_32=0
+  ) else if "%~1"=="-exclient-ldr-64" (
+    set /a BUILD_EXPCLIENT_LDR_64=0
   ) else if "%~1"=="-tool-itf" (
     set /a BUILD_TOOL_FIND_ITFS=0
   ) else if "%~1"=="-tool-lobby" (
@@ -229,7 +232,6 @@ if not exist "%protoc_exe_32%" (
   set /a last_code=1
   goto :end_script
 )
-
 if not exist "%protoc_exe_64%" (
   call :err_msg "protobuff compiler wasn't found - 64"
   set /a last_code=1
@@ -332,7 +334,16 @@ if %BUILD_EXPCLIENT32% equ 1 (
 )
 
 :: steamclient_loader
-if %BUILD_EXPCLIENT_LDR% equ 1 (
+if %BUILD_EXPCLIENT_LDR_32% equ 1 (
+  if not exist "%steamclient_dir%" (
+    mkdir "%steamclient_dir%"
+  )
+  call :compile_experimentalclient_ldr_32 || (
+    set /a last_code+=1
+  )
+  echo: & echo:
+)
+
   if not exist "%steamclient_dir%" (
     mkdir "%steamclient_dir%"
   )
@@ -406,6 +417,12 @@ call :build_rsrc "%win_resources_src_dir%\client\64\resources.rc" "%win_resource
   set /a last_code=1
   goto :end_script
 )
+call :build_rsrc "%win_resources_src_dir%\launcher\64\resources.rc" "%win_resources_out_dir%\rsrc-launcher-64.res" || (
+  endlocal
+  call :err_msg "Resource compiler failed - 64"
+  set /a last_code=1
+  goto :end_script
+)
 echo: & echo:
 
 if %BUILD_LIB64% equ 1 (
@@ -443,6 +460,17 @@ if %BUILD_EXPCLIENT64% equ 1 (
     mkdir "%steamclient_dir%"
   )
   call :compile_experimentalclient_64 || (
+    set /a last_code+=1
+  )
+  echo: & echo:
+)
+
+:: steamclient_loader
+if %BUILD_EXPCLIENT_LDR_64% equ 1 (
+  if not exist "%steamclient_dir%" (
+    mkdir "%steamclient_dir%"
+  )
+  call :compile_experimentalclient_ldr_64 || (
     set /a last_code+=1
   )
   echo: & echo:
@@ -536,15 +564,19 @@ endlocal & exit /b %_exit%
   )
 endlocal & exit /b %_exit%
 
-:compile_experimentalclient_ldr
+:compile_experimentalclient_ldr_32
   setlocal
-  echo // building executable steamclient_loader.exe - 32
-  set src_files="%win_resources_out_dir%\rsrc-launcher-32.res" "%tools_src_dir%\steamclient_loader\win\*.cpp"
+  echo // building executable steamclient_loader_32.exe - 32
+  set src_files="%win_resources_out_dir%\rsrc-launcher-32.res" "%tools_src_dir%\steamclient_loader\win\*.cpp" "pe_helpers\pe_helpers.cpp"
+  set extra_inc_dirs=/I"%tools_src_dir%\steamclient_loader\win\extra_protection" /I"pe_helpers"
   set "extra_libs=user32.lib"
-  call :build_for 1 2 "%steamclient_dir%\steamclient_loader.exe" src_files "" "" "%extra_libs%"
+  call :build_for 1 2 "%steamclient_dir%\steamclient_loader_32.exe" src_files extra_inc_dirs "" "%extra_libs%"
   set /a _exit=%errorlevel%
   if %_exit% equ 0 (
-    call "%signer_tool%" "%steamclient_dir%\steamclient_loader.exe"
+    call "%signer_tool%" "%steamclient_dir%\steamclient_loader_32.exe"
+  )
+endlocal & exit /b %_exit%
+
   )
 endlocal & exit /b %_exit%
 
@@ -616,6 +648,19 @@ endlocal & exit /b %_exit%
   set /a _exit=%errorlevel%
   if %_exit% equ 0 (
     call "%signer_tool%" "%steamclient_dir%\steamclient64.dll"
+  )
+endlocal & exit /b %_exit%
+
+:compile_experimentalclient_ldr_64
+  setlocal
+  echo // building executable steamclient_loader_64.exe - 64
+  set src_files="%win_resources_out_dir%\rsrc-launcher-64.res" "%tools_src_dir%\steamclient_loader\win\*.cpp" "pe_helpers\pe_helpers.cpp"
+  set extra_inc_dirs=/I"%tools_src_dir%\steamclient_loader\win\extra_protection" /I"pe_helpers"
+  set "extra_libs=user32.lib"
+  call :build_for 0 2 "%steamclient_dir%\steamclient_loader_64.exe" src_files extra_inc_dirs "" "%extra_libs%"
+  set /a _exit=%errorlevel%
+  if %_exit% equ 0 (
+    call "%signer_tool%" "%steamclient_dir%\steamclient_loader_64.exe"
   )
 endlocal & exit /b %_exit%
 
