@@ -30,6 +30,7 @@
 #include "steam_http.h"
 #include "steam_controller.h"
 #include "steam_ugc.h"
+#include "ugc_remote_storage_bridge.h"
 #include "steam_applist.h"
 #include "steam_music.h"
 #include "steam_musicremote.h"
@@ -84,6 +85,8 @@ public:
     Local_Storage *local_storage;
     RunEveryRunCB *run_every_runcb;
 
+    Ugc_Remote_Storage_Bridge *ugc_bridge;
+    
     Steam_User *steam_user;
     Steam_Friends *steam_friends;
     Steam_Utils *steam_utils;

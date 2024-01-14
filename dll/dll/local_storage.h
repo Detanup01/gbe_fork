@@ -43,14 +43,14 @@ struct image_t
 
 class Local_Storage {
 public:
-    static constexpr auto inventory_storage_folder = "inventory";
-    static constexpr auto settings_storage_folder  = "settings";
-    static constexpr auto remote_storage_folder    = "remote";
-    static constexpr auto stats_storage_folder     = "stats";
+    static constexpr auto inventory_storage_folder   = "inventory";
+    static constexpr auto settings_storage_folder    = "settings";
+    static constexpr auto remote_storage_folder      = "remote";
+    static constexpr auto stats_storage_folder       = "stats";
     static constexpr auto leaderboard_storage_folder = "leaderboard";
-    static constexpr auto user_data_storage        = "local";
-    static constexpr auto screenshots_folder       = "screenshots";
-    static constexpr auto game_settings_folder     = "steam_settings";
+    static constexpr auto user_data_storage          = "local";
+    static constexpr auto screenshots_folder         = "screenshots";
+    static constexpr auto game_settings_folder       = "steam_settings";
 
 private:
     std::string save_directory;

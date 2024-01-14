@@ -36,13 +36,19 @@ std::string to_absolute(const std::string &path, const std::string &base = std::
 
 std::wstring to_absolute(const std::wstring &path, const std::wstring &base = std::wstring());
 
-bool file_exist(std::filesystem::path &filepath);
+bool file_exist(const std::filesystem::path &filepath);
 
 bool file_exist(const std::string &filepath);
 
 bool file_exist(const std::wstring &filepath);
 
-bool dir_exist(std::filesystem::path &dirpath);
+bool file_size(const std::filesystem::path &filepath, size_t &size);
+
+bool file_size(const std::string &filepath, size_t &size);
+
+bool file_size(const std::wstring &filepath, size_t &size);
+
+bool dir_exist(const std::filesystem::path &dirpath);
 
 bool dir_exist(const std::string &dirpath);
 

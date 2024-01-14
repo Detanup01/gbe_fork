@@ -45,72 +45,81 @@ public ISteamUGC017,
 public ISteamUGC
 {
     class Settings *settings;
+    Ugc_Remote_Storage_Bridge *ugc_bridge;
     class SteamCallResults *callback_results;
     class SteamCallBacks *callbacks;
 
     std::set<PublishedFileId_t> subscribed;
-    UGCQueryHandle_t handle = 0;
-    //temporary (or forever) thing
-    UGCHandle_t ugc_file_handle = 0; //file
-    UGCHandle_t ugc_prev_handle = 0; //Preview
+    UGCQueryHandle_t handle = 50; // just makes debugging easier, any initial val is fine, even 1
     std::vector<struct UGC_query> ugc_queries;
 
-UGCQueryHandle_t new_ugc_query(bool return_all_subscribed = false, std::set<PublishedFileId_t> return_only = std::set<PublishedFileId_t>())
+UGCQueryHandle_t new_ugc_query(
+    bool return_all_subscribed = false,
+    std::set<PublishedFileId_t> return_only = std::set<PublishedFileId_t>())
 {
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    struct UGC_query query;
+    
     ++handle;
+    if ((handle == 0) || (handle == k_UGCQueryHandleInvalid)) handle = 50;
+
+    struct UGC_query query{};
     query.handle = handle;
     query.return_all_subscribed = return_all_subscribed;
     query.return_only = return_only;
     ugc_queries.push_back(query);
+    PRINT_DEBUG("Steam_UGC::new_ugc_query handle = %llu\n", query.handle);
     return query.handle;
 }
 
 void set_details(PublishedFileId_t id, SteamUGCDetails_t *pDetails)
 {
     if (pDetails) {
+        pDetails->m_nPublishedFileId = id;
+
         if (settings->isModInstalled(id)) {
-            ++ugc_file_handle;
-            ugc_prev_handle += ugc_file_handle + 1;
+            PRINT_DEBUG("  mod is installed, setting details\n");
+            auto mod = settings->getMod(id);
             pDetails->m_eResult = k_EResultOK;
-            pDetails->m_nPublishedFileId = id;
-            pDetails->m_nCreatorAppID = settings->get_local_game_id().AppID();
+            pDetails->m_bAcceptedForUse = mod.acceptedForUse;
+            pDetails->m_bBanned = mod.banned;
+            pDetails->m_bTagsTruncated = mod.tagsTruncated;
+            pDetails->m_eFileType = mod.fileType;
+            pDetails->m_eVisibility = mod.visibility;
+            pDetails->m_hFile = mod.handleFile;
+            pDetails->m_hPreviewFile = mod.handlePreviewFile;
             pDetails->m_nConsumerAppID = settings->get_local_game_id().AppID();
-            snprintf(pDetails->m_rgchTitle, k_cchPublishedDocumentTitleMax, "%s", settings->getMod(id).title.c_str());
-            pDetails->m_eFileType = settings->getMod(id).fileType;
-            snprintf(pDetails->m_rgchDescription, k_cchPublishedDocumentDescriptionMax, "%s", settings->getMod(id).description.c_str());
+            pDetails->m_nCreatorAppID = settings->get_local_game_id().AppID();
+            pDetails->m_nFileSize = mod.primaryFileSize;
+            pDetails->m_nPreviewFileSize = mod.previewFileSize;
+            pDetails->m_rtimeCreated = mod.timeCreated;
+            pDetails->m_rtimeUpdated = mod.timeUpdated;
             pDetails->m_ulSteamIDOwner = settings->get_local_steam_id().ConvertToUint64();
-            pDetails->m_rtimeCreated = settings->getMod(id).timeCreated;
-            pDetails->m_rtimeUpdated = settings->getMod(id).timeUpdated;
-            pDetails->m_rtimeAddedToUserList = settings->getMod(id).timeAddedToUserList;
-            pDetails->m_eVisibility = settings->getMod(id).visibility;
-            pDetails->m_bBanned = settings->getMod(id).banned;
-            pDetails->m_bAcceptedForUse = settings->getMod(id).acceptedForUse;
-            pDetails->m_bTagsTruncated = settings->getMod(id).tagsTruncated;
-            snprintf(pDetails->m_rgchTags, k_cchTagListMax, "%s", settings->getMod(id).tags.c_str());
-            snprintf(pDetails->m_pchFileName, k_cchFilenameMax, "%s", settings->getMod(id).primaryFileName.c_str());
-            pDetails->m_nFileSize = settings->getMod(id).primaryFileSize;
-            pDetails->m_nPreviewFileSize = settings->getMod(id).previewFileSize;
-            snprintf(pDetails->m_rgchURL, k_cchPublishedFileURLMax, "%s", settings->getMod(id).workshopItemURL.c_str());
-            pDetails->m_unVotesUp = settings->getMod(id).votesUp;
-            pDetails->m_unVotesDown = settings->getMod(id).votesDown;
-            pDetails->m_flScore = settings->getMod(id).score;
-            // implement something like:
-            pDetails->m_hFile = ugc_file_handle;
-            pDetails->m_hPreviewFile = ugc_prev_handle;
-            //pDetails->m_unNumChildren = settings->getMod(id).numChildren;
+
+            pDetails->m_rtimeAddedToUserList = mod.timeAddedToUserList;
+            pDetails->m_unVotesUp = mod.votesUp;
+            pDetails->m_unVotesDown = mod.votesDown;
+            pDetails->m_flScore = mod.score;
+
+            mod.primaryFileName.copy(pDetails->m_pchFileName, sizeof(pDetails->m_pchFileName) - 1);
+            mod.description.copy(pDetails->m_rgchDescription, sizeof(pDetails->m_rgchDescription) - 1);
+            mod.tags.copy(pDetails->m_rgchTags, sizeof(pDetails->m_rgchTags) - 1);
+            mod.title.copy(pDetails->m_rgchTitle, sizeof(pDetails->m_rgchTitle) - 1);
+            mod.workshopItemURL.copy(pDetails->m_rgchURL, sizeof(pDetails->m_rgchURL) - 1);
+
+            // TODO should we enable this?
+            // pDetails->m_unNumChildren = mod.numChildren;
         } else {
-            pDetails->m_nPublishedFileId = id;
+            PRINT_DEBUG("  mod isn't installed, returning failure\n");
             pDetails->m_eResult = k_EResultFail;
         }
     }
 }
 
 public:
-Steam_UGC(class Settings *settings, class SteamCallResults *callback_results, class SteamCallBacks *callbacks)
+Steam_UGC(class Settings *settings, class Ugc_Remote_Storage_Bridge *ugc_bridge, class SteamCallResults *callback_results, class SteamCallBacks *callbacks)
 {
     this->settings = settings;
+    this->ugc_bridge = ugc_bridge;
     this->callbacks = callbacks;
     this->callback_results = callback_results;
 
@@ -156,11 +165,13 @@ UGCQueryHandle_t CreateQueryUGCDetailsRequest( PublishedFileId_t *pvecPublishedF
 STEAM_CALL_RESULT( SteamUGCQueryCompleted_t )
 SteamAPICall_t SendQueryUGCRequest( UGCQueryHandle_t handle )
 {
-    PRINT_DEBUG("Steam_UGC::SendQueryUGCRequest\n");
+    PRINT_DEBUG("Steam_UGC::SendQueryUGCRequest %llu\n", handle);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return k_uAPICallInvalid;
+
     auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
     if (ugc_queries.end() == request)
-        return 0;
+        return k_uAPICallInvalid;
 
     if (request->return_all_subscribed) {
         request->results = subscribed;
@@ -172,6 +183,14 @@ SteamAPICall_t SendQueryUGCRequest( UGCQueryHandle_t handle )
                 request->results.insert(s);
             }
         }
+    }
+
+    // send these handles to stea_remote_storage since the game will later
+    // call Steam_Remote_Storage::UGCDownload() with these files handles (primary + preview)
+    for (auto fileid : request->results) {
+        auto mod = settings->getMod(fileid);
+        ugc_bridge->add_ugc_query_result(mod.handleFile, fileid, true);
+        ugc_bridge->add_ugc_query_result(mod.handlePreviewFile, fileid, false);
     }
 
     SteamUGCQueryCompleted_t data = {};
@@ -187,7 +206,7 @@ SteamAPICall_t SendQueryUGCRequest( UGCQueryHandle_t handle )
 // Retrieve an individual result after receiving the callback for querying UGC
 bool GetQueryUGCResult( UGCQueryHandle_t handle, uint32 index, SteamUGCDetails_t *pDetails )
 {
-    PRINT_DEBUG("Steam_UGC::GetQueryUGCResult %llu %u\n", handle, index);
+    PRINT_DEBUG("Steam_UGC::GetQueryUGCResult %llu %u %p\n", handle, index, pDetails);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (pDetails) {
         memset(pDetails, 0, sizeof(SteamUGCDetails_t));
@@ -205,27 +224,91 @@ bool GetQueryUGCResult( UGCQueryHandle_t handle, uint32 index, SteamUGCDetails_t
 
     auto it = request->results.begin();
     std::advance(it, index);
-    set_details(*it, pDetails);
-
+    PublishedFileId_t file_id = *it;
+    set_details(file_id, pDetails);
     return true;
+}
+
+std::optional<Mod_entry> get_query_ugc(UGCQueryHandle_t handle, uint32 index) {
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return std::nullopt;
+    if (index >= request->results.size()) return std::nullopt;
+
+    auto it = request->results.begin();
+    std::advance(it, index);
+    
+    PublishedFileId_t file_id = *it;
+    if (!settings->isModInstalled(file_id)) return std::nullopt;
+
+    return settings->getMod(file_id);
+}
+
+std::optional<std::vector<std::string>> get_query_ugc_tags(UGCQueryHandle_t handle, uint32 index) {
+    auto res = get_query_ugc(handle, index);
+    if (!res.has_value()) return std::nullopt;
+
+    auto tags_tokens = std::vector<std::string>{};
+    std::stringstream ss(res.value().tags);
+    std::string tmp{};
+    while(ss >> tmp) {
+        if (tmp.back() == ',') tmp = tmp.substr(0, tmp.size() - 1);
+        tags_tokens.push_back(tmp);
+    }
+
+    return tags_tokens;
+
+}
+
+std::optional<std::string> get_query_ugc_tag(UGCQueryHandle_t handle, uint32 index, uint32 indexTag) {
+    auto res = get_query_ugc_tags(handle, index);
+    if (!res.has_value()) return std::nullopt;
+    if (indexTag >= res.value().size()) return std::nullopt;
+
+    std::string tmp = res.value()[indexTag];
+    if (tmp.back() == ',') {
+        tmp = tmp.substr(0, tmp.size() - 1);
+    }
+    return tmp;
 }
 
 uint32 GetQueryUGCNumTags( UGCQueryHandle_t handle, uint32 index )
 {
-    PRINT_DEBUG("Steam_UGC::GetQueryUGCNumTags\n");
-    return 0;
+    PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCNumTags\n");
+    // TODO is this correct?
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    auto res = get_query_ugc_tags(handle, index);
+    return res.has_value() ? res.value().size() : 0;
 }
 
 bool GetQueryUGCTag( UGCQueryHandle_t handle, uint32 index, uint32 indexTag, STEAM_OUT_STRING_COUNT( cchValueSize ) char* pchValue, uint32 cchValueSize )
 {
-    PRINT_DEBUG("Steam_UGC::GetQueryUGCTag\n");
-    return false;
+    PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCTag\n");
+    // TODO is this correct?
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (!pchValue || !cchValueSize) return false;
+
+    auto res = get_query_ugc_tag(handle, index, indexTag);
+    if (!res.has_value()) return false;
+
+    memset(pchValue, 0, cchValueSize);
+    res.value().copy(pchValue, cchValueSize - 1);
+    return true;
 }
 
 bool GetQueryUGCTagDisplayName( UGCQueryHandle_t handle, uint32 index, uint32 indexTag, STEAM_OUT_STRING_COUNT( cchValueSize ) char* pchValue, uint32 cchValueSize )
 {
-    PRINT_DEBUG("Steam_UGC::GetQueryUGCTagDisplayName\n");
-    return false;
+    PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCTagDisplayName\n");
+    // TODO is this correct?
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (!pchValue || !cchValueSize) return false;
+
+    auto res = get_query_ugc_tag(handle, index, indexTag);
+    if (!res.has_value()) return false;
+
+    memset(pchValue, 0, cchValueSize);
+    res.value().copy(pchValue, cchValueSize - 1);
+    return true;
 }
 
 bool GetQueryUGCPreviewURL( UGCQueryHandle_t handle, uint32 index, STEAM_OUT_STRING_COUNT(cchURLSize) char *pchURL, uint32 cchURLSize )
@@ -234,98 +317,114 @@ bool GetQueryUGCPreviewURL( UGCQueryHandle_t handle, uint32 index, STEAM_OUT_STR
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     //TODO: escape simulator tries downloading this url and unsubscribes if it fails
 
-    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
-    if ((ugc_queries.end() != request) && (index < request->results.size())) {
-        // point at the beginning of the results
-        auto it = request->results.begin();
-        // then get the target result
-         //this is required for Escape Simulator to show the correct Preview Image, else it will be always the first
-        std::advance(it, index);
-       
-        uint32 it2 = (uint32)*it;
-        PRINT_DEBUG("Steam_UGC:GetQueryUGCPreviewURL: %u %s\n", it2, settings->getMod(it2).previewURL.c_str());
-        snprintf(pchURL, cchURLSize, "%s", settings->getMod(it2).previewURL.c_str());
-        return true;
-    }
+    if (!pchURL || !cchURLSize) return false;
 
-    return false;
+    auto res = get_query_ugc(handle, index);
+    if (!res.has_value()) return false;
+
+    auto mod = res.value();
+    PRINT_DEBUG("Steam_UGC:GetQueryUGCPreviewURL: %s\n", mod.previewURL.c_str());
+    mod.previewURL.copy(pchURL, cchURLSize - 1);
+    return true;
 }
 
 
 bool GetQueryUGCMetadata( UGCQueryHandle_t handle, uint32 index, STEAM_OUT_STRING_COUNT(cchMetadatasize) char *pchMetadata, uint32 cchMetadatasize )
 {
-    PRINT_DEBUG("Steam_UGC::GetQueryUGCMetadata\n");
+    PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCMetadata\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
     return false;
 }
 
 
 bool GetQueryUGCChildren( UGCQueryHandle_t handle, uint32 index, PublishedFileId_t* pvecPublishedFileID, uint32 cMaxEntries )
 {
-    PRINT_DEBUG("Steam_UGC::GetQueryUGCChildren\n");
+    PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCChildren\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
 
 
 bool GetQueryUGCStatistic( UGCQueryHandle_t handle, uint32 index, EItemStatistic eStatType, uint64 *pStatValue )
 {
-    PRINT_DEBUG("Steam_UGC::GetQueryUGCStatistic\n");
+    PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCStatistic\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
 
 bool GetQueryUGCStatistic( UGCQueryHandle_t handle, uint32 index, EItemStatistic eStatType, uint32 *pStatValue )
 {
-    PRINT_DEBUG("Steam_UGC::GetQueryUGCStatistic old\n");
+    PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCStatistic old\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
 
 uint32 GetQueryUGCNumAdditionalPreviews( UGCQueryHandle_t handle, uint32 index )
 {
-    PRINT_DEBUG("Steam_UGC::GetQueryUGCNumAdditionalPreviews\n");
+    PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCNumAdditionalPreviews\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return 0;
 }
 
 
 bool GetQueryUGCAdditionalPreview( UGCQueryHandle_t handle, uint32 index, uint32 previewIndex, STEAM_OUT_STRING_COUNT(cchURLSize) char *pchURLOrVideoID, uint32 cchURLSize, STEAM_OUT_STRING_COUNT(cchURLSize) char *pchOriginalFileName, uint32 cchOriginalFileNameSize, EItemPreviewType *pPreviewType )
 {
-    PRINT_DEBUG("Steam_UGC::GetQueryUGCAdditionalPreview\n");
+    PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCAdditionalPreview\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
 
 bool GetQueryUGCAdditionalPreview( UGCQueryHandle_t handle, uint32 index, uint32 previewIndex, char *pchURLOrVideoID, uint32 cchURLSize, bool *hz )
 {
-    PRINT_DEBUG("Steam_UGC::GetQueryUGCAdditionalPreview old\n");
+    PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCAdditionalPreview old\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
 
 uint32 GetQueryUGCNumKeyValueTags( UGCQueryHandle_t handle, uint32 index )
 {
-    PRINT_DEBUG("Steam_UGC::GetQueryUGCNumKeyValueTags\n");
+    PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCNumKeyValueTags\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return 0;
 }
 
 
 bool GetQueryUGCKeyValueTag( UGCQueryHandle_t handle, uint32 index, uint32 keyValueTagIndex, STEAM_OUT_STRING_COUNT(cchKeySize) char *pchKey, uint32 cchKeySize, STEAM_OUT_STRING_COUNT(cchValueSize) char *pchValue, uint32 cchValueSize )
 {
-    PRINT_DEBUG("Steam_UGC::GetQueryUGCKeyValueTag\n");
+    PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCKeyValueTag\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
 
 bool GetQueryUGCKeyValueTag( UGCQueryHandle_t handle, uint32 index, const char *pchKey, STEAM_OUT_STRING_COUNT(cchValueSize) char *pchValue, uint32 cchValueSize )
 {
-    PRINT_DEBUG("Steam_UGC::GetQueryUGCKeyValueTag2\n");
+    PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCKeyValueTag2\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
 
 uint32 GetQueryUGCContentDescriptors( UGCQueryHandle_t handle, uint32 index, EUGCContentDescriptorID *pvecDescriptors, uint32 cMaxEntries )
 {
-    PRINT_DEBUG("Steam_UGC::GetQueryUGCContentDescriptors\n");
+    PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCContentDescriptors\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return 0;
 }
 
 // Release the request to free up memory, after retrieving results
 bool ReleaseQueryUGCRequest( UGCQueryHandle_t handle )
 {
-    PRINT_DEBUG("Steam_UGC::ReleaseQueryUGCRequest\n");
+    PRINT_DEBUG("Steam_UGC::ReleaseQueryUGCRequest %llu\n", handle);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
     if (ugc_queries.end() == request)
@@ -339,89 +438,115 @@ bool ReleaseQueryUGCRequest( UGCQueryHandle_t handle )
 // Options to set for querying UGC
 bool AddRequiredTag( UGCQueryHandle_t handle, const char *pTagName )
 {
-    PRINT_DEBUG("Steam_UGC::AddRequiredTag\n");
+    PRINT_DEBUG("TODO Steam_UGC::AddRequiredTag\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return true;
 }
 
 bool AddRequiredTagGroup( UGCQueryHandle_t handle, const SteamParamStringArray_t *pTagGroups )
 {
-    PRINT_DEBUG("Steam_UGC::AddRequiredTagGroup\n");
+    PRINT_DEBUG("TODO Steam_UGC::AddRequiredTagGroup\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return true;
 }
 
 bool AddExcludedTag( UGCQueryHandle_t handle, const char *pTagName )
 {
-    PRINT_DEBUG("Steam_UGC::AddExcludedTag\n");
+    PRINT_DEBUG("TODO Steam_UGC::AddExcludedTag\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return true;
 }
 
 
 bool SetReturnOnlyIDs( UGCQueryHandle_t handle, bool bReturnOnlyIDs )
 {
-    PRINT_DEBUG("Steam_UGC::SetReturnOnlyIDs\n");
+    PRINT_DEBUG("TODO Steam_UGC::SetReturnOnlyIDs\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return true;
 }
 
 
 bool SetReturnKeyValueTags( UGCQueryHandle_t handle, bool bReturnKeyValueTags )
 {
-    PRINT_DEBUG("Steam_UGC::SetReturnKeyValueTags\n");
+    PRINT_DEBUG("TODO Steam_UGC::SetReturnKeyValueTags\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return true;
 }
 
 
 bool SetReturnLongDescription( UGCQueryHandle_t handle, bool bReturnLongDescription )
 {
-    PRINT_DEBUG("Steam_UGC::SetReturnLongDescription\n");
+    PRINT_DEBUG("TODO Steam_UGC::SetReturnLongDescription\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return true;
 }
 
 
 bool SetReturnMetadata( UGCQueryHandle_t handle, bool bReturnMetadata )
 {
-    PRINT_DEBUG("Steam_UGC::SetReturnMetadata\n");
+    PRINT_DEBUG("TODO Steam_UGC::SetReturnMetadata\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return true;
 }
 
 
 bool SetReturnChildren( UGCQueryHandle_t handle, bool bReturnChildren )
 {
-    PRINT_DEBUG("Steam_UGC::SetReturnChildren\n");
+    PRINT_DEBUG("TODO Steam_UGC::SetReturnChildren\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return true;
 }
 
 
 bool SetReturnAdditionalPreviews( UGCQueryHandle_t handle, bool bReturnAdditionalPreviews )
 {
-    PRINT_DEBUG("Steam_UGC::SetReturnAdditionalPreviews\n");
+    PRINT_DEBUG("TODO Steam_UGC::SetReturnAdditionalPreviews\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return true;
 }
 
 
 bool SetReturnTotalOnly( UGCQueryHandle_t handle, bool bReturnTotalOnly )
 {
-    PRINT_DEBUG("Steam_UGC::SetReturnTotalOnly\n");
+    PRINT_DEBUG("TODO Steam_UGC::SetReturnTotalOnly\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return true;
 }
 
 
 bool SetReturnPlaytimeStats( UGCQueryHandle_t handle, uint32 unDays )
 {
-    PRINT_DEBUG("Steam_UGC::SetReturnPlaytimeStats\n");
+    PRINT_DEBUG("TODO Steam_UGC::SetReturnPlaytimeStats\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return true;
 }
 
 
 bool SetLanguage( UGCQueryHandle_t handle, const char *pchLanguage )
 {
-    PRINT_DEBUG("Steam_UGC::SetLanguage\n");
+    PRINT_DEBUG("TODO Steam_UGC::SetLanguage\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return true;
 }
 
 
 bool SetAllowCachedResponse( UGCQueryHandle_t handle, uint32 unMaxAgeSeconds )
 {
-    PRINT_DEBUG("Steam_UGC::SetAllowCachedResponse\n");
+    PRINT_DEBUG("TODO Steam_UGC::SetAllowCachedResponse\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return true;
 }
 
@@ -429,7 +554,9 @@ bool SetAllowCachedResponse( UGCQueryHandle_t handle, uint32 unMaxAgeSeconds )
 // Options only for querying user UGC
 bool SetCloudFileNameFilter( UGCQueryHandle_t handle, const char *pMatchCloudFileName )
 {
-    PRINT_DEBUG("Steam_UGC::SetCloudFileNameFilter\n");
+    PRINT_DEBUG("TODO Steam_UGC::SetCloudFileNameFilter\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return true;
 }
 
@@ -437,47 +564,61 @@ bool SetCloudFileNameFilter( UGCQueryHandle_t handle, const char *pMatchCloudFil
 // Options only for querying all UGC
 bool SetMatchAnyTag( UGCQueryHandle_t handle, bool bMatchAnyTag )
 {
-    PRINT_DEBUG("Steam_UGC::SetMatchAnyTag\n");
+    PRINT_DEBUG("TODO Steam_UGC::SetMatchAnyTag\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return true;
 }
 
 
 bool SetSearchText( UGCQueryHandle_t handle, const char *pSearchText )
 {
-    PRINT_DEBUG("Steam_UGC::SetSearchText\n");
+    PRINT_DEBUG("TODO Steam_UGC::SetSearchText\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return true;
 }
 
 
 bool SetRankedByTrendDays( UGCQueryHandle_t handle, uint32 unDays )
 {
-    PRINT_DEBUG("Steam_UGC::SetRankedByTrendDays\n");
+    PRINT_DEBUG("TODO Steam_UGC::SetRankedByTrendDays\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return true;
 }
 
 
 bool AddRequiredKeyValueTag( UGCQueryHandle_t handle, const char *pKey, const char *pValue )
 {
-    PRINT_DEBUG("Steam_UGC::AddRequiredKeyValueTag\n");
+    PRINT_DEBUG("TODO Steam_UGC::AddRequiredKeyValueTag\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return true;
 }
 
 bool SetTimeCreatedDateRange( UGCQueryHandle_t handle, RTime32 rtStart, RTime32 rtEnd )
 {
-    PRINT_DEBUG("Steam_UGC::SetTimeCreatedDateRange\n");
+    PRINT_DEBUG("TODO Steam_UGC::SetTimeCreatedDateRange\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return true;
 }
 
 bool SetTimeUpdatedDateRange( UGCQueryHandle_t handle, RTime32 rtStart, RTime32 rtEnd )
 {
-    PRINT_DEBUG("Steam_UGC::SetTimeUpdatedDateRange\n");
+    PRINT_DEBUG("TODO Steam_UGC::SetTimeUpdatedDateRange\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return true;
 }
 
 // DEPRECATED - Use CreateQueryUGCDetailsRequest call above instead!
 SteamAPICall_t RequestUGCDetails( PublishedFileId_t nPublishedFileID, uint32 unMaxAgeSeconds )
 {
-    PRINT_DEBUG("Steam_UGC::RequestUGCDetails\n");
+    PRINT_DEBUG("Steam_UGC::RequestUGCDetails %llu\n", nPublishedFileID);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     SteamUGCRequestUGCDetailsResult_t data = {};
     data.m_bCachedData = false;
     set_details(nPublishedFileID, &(data.m_details));
@@ -496,6 +637,8 @@ STEAM_CALL_RESULT( CreateItemResult_t )
 SteamAPICall_t CreateItem( AppId_t nConsumerAppId, EWorkshopFileType eFileType )
 {
     PRINT_DEBUG("Steam_UGC::CreateItem\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return 0;
 }
  // create new item for this app with no content attached yet
@@ -504,6 +647,8 @@ SteamAPICall_t CreateItem( AppId_t nConsumerAppId, EWorkshopFileType eFileType )
 UGCUpdateHandle_t StartItemUpdate( AppId_t nConsumerAppId, PublishedFileId_t nPublishedFileID )
 {
     PRINT_DEBUG("Steam_UGC::StartItemUpdate\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return 0;
 }
  // start an UGC item update. Set changed properties before commiting update with CommitItemUpdate()
@@ -512,6 +657,8 @@ UGCUpdateHandle_t StartItemUpdate( AppId_t nConsumerAppId, PublishedFileId_t nPu
 bool SetItemTitle( UGCUpdateHandle_t handle, const char *pchTitle )
 {
     PRINT_DEBUG("Steam_UGC::SetItemTitle\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
  // change the title of an UGC item
@@ -520,6 +667,8 @@ bool SetItemTitle( UGCUpdateHandle_t handle, const char *pchTitle )
 bool SetItemDescription( UGCUpdateHandle_t handle, const char *pchDescription )
 {
     PRINT_DEBUG("Steam_UGC::SetItemDescription\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
  // change the description of an UGC item
@@ -528,6 +677,8 @@ bool SetItemDescription( UGCUpdateHandle_t handle, const char *pchDescription )
 bool SetItemUpdateLanguage( UGCUpdateHandle_t handle, const char *pchLanguage )
 {
     PRINT_DEBUG("Steam_UGC::SetItemUpdateLanguage\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
  // specify the language of the title or description that will be set
@@ -536,6 +687,8 @@ bool SetItemUpdateLanguage( UGCUpdateHandle_t handle, const char *pchLanguage )
 bool SetItemMetadata( UGCUpdateHandle_t handle, const char *pchMetaData )
 {
     PRINT_DEBUG("Steam_UGC::SetItemMetadata\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
  // change the metadata of an UGC item (max = k_cchDeveloperMetadataMax)
@@ -544,6 +697,8 @@ bool SetItemMetadata( UGCUpdateHandle_t handle, const char *pchMetaData )
 bool SetItemVisibility( UGCUpdateHandle_t handle, ERemoteStoragePublishedFileVisibility eVisibility )
 {
     PRINT_DEBUG("Steam_UGC::SetItemVisibility\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
  // change the visibility of an UGC item
@@ -552,12 +707,16 @@ bool SetItemVisibility( UGCUpdateHandle_t handle, ERemoteStoragePublishedFileVis
 bool SetItemTags( UGCUpdateHandle_t updateHandle, const SteamParamStringArray_t *pTags )
 {
     PRINT_DEBUG("Steam_UGC::SetItemTags old\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
 
 bool SetItemTags( UGCUpdateHandle_t updateHandle, const SteamParamStringArray_t *pTags, bool bAllowAdminTags )
 {
     PRINT_DEBUG("Steam_UGC::SetItemTags\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
  // change the tags of an UGC item
@@ -565,6 +724,8 @@ bool SetItemTags( UGCUpdateHandle_t updateHandle, const SteamParamStringArray_t 
 bool SetItemContent( UGCUpdateHandle_t handle, const char *pszContentFolder )
 {
     PRINT_DEBUG("Steam_UGC::SetItemContent\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
  // update item content from this local folder
@@ -573,6 +734,8 @@ bool SetItemContent( UGCUpdateHandle_t handle, const char *pszContentFolder )
 bool SetItemPreview( UGCUpdateHandle_t handle, const char *pszPreviewFile )
 {
     PRINT_DEBUG("Steam_UGC::SetItemPreview\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
  //  change preview image file for this item. pszPreviewFile points to local image file, which must be under 1MB in size
@@ -580,12 +743,16 @@ bool SetItemPreview( UGCUpdateHandle_t handle, const char *pszPreviewFile )
 bool SetAllowLegacyUpload( UGCUpdateHandle_t handle, bool bAllowLegacyUpload )
 {
     PRINT_DEBUG("Steam_UGC::SetAllowLegacyUpload\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
 
 bool RemoveAllItemKeyValueTags( UGCUpdateHandle_t handle )
 {
     PRINT_DEBUG("Steam_UGC::RemoveAllItemKeyValueTags\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
  // remove all existing key-value tags (you can add new ones via the AddItemKeyValueTag function)
@@ -593,6 +760,8 @@ bool RemoveAllItemKeyValueTags( UGCUpdateHandle_t handle )
 bool RemoveItemKeyValueTags( UGCUpdateHandle_t handle, const char *pchKey )
 {
     PRINT_DEBUG("Steam_UGC::RemoveItemKeyValueTags\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
  // remove any existing key-value tags with the specified key
@@ -601,6 +770,8 @@ bool RemoveItemKeyValueTags( UGCUpdateHandle_t handle, const char *pchKey )
 bool AddItemKeyValueTag( UGCUpdateHandle_t handle, const char *pchKey, const char *pchValue )
 {
     PRINT_DEBUG("Steam_UGC::AddItemKeyValueTag\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
  // add new key-value tags for the item. Note that there can be multiple values for a tag.
@@ -609,6 +780,8 @@ bool AddItemKeyValueTag( UGCUpdateHandle_t handle, const char *pchKey, const cha
 bool AddItemPreviewFile( UGCUpdateHandle_t handle, const char *pszPreviewFile, EItemPreviewType type )
 {
     PRINT_DEBUG("Steam_UGC::AddItemPreviewFile\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
  //  add preview file for this item. pszPreviewFile points to local file, which must be under 1MB in size
@@ -617,6 +790,8 @@ bool AddItemPreviewFile( UGCUpdateHandle_t handle, const char *pszPreviewFile, E
 bool AddItemPreviewVideo( UGCUpdateHandle_t handle, const char *pszVideoID )
 {
     PRINT_DEBUG("Steam_UGC::AddItemPreviewVideo\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
  //  add preview video for this item
@@ -625,6 +800,8 @@ bool AddItemPreviewVideo( UGCUpdateHandle_t handle, const char *pszVideoID )
 bool UpdateItemPreviewFile( UGCUpdateHandle_t handle, uint32 index, const char *pszPreviewFile )
 {
     PRINT_DEBUG("Steam_UGC::UpdateItemPreviewFile\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
  //  updates an existing preview file for this item. pszPreviewFile points to local file, which must be under 1MB in size
@@ -633,6 +810,8 @@ bool UpdateItemPreviewFile( UGCUpdateHandle_t handle, uint32 index, const char *
 bool UpdateItemPreviewVideo( UGCUpdateHandle_t handle, uint32 index, const char *pszVideoID )
 {
     PRINT_DEBUG("Steam_UGC::UpdateItemPreviewVideo\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
  //  updates an existing preview video for this item
@@ -641,6 +820,8 @@ bool UpdateItemPreviewVideo( UGCUpdateHandle_t handle, uint32 index, const char 
 bool RemoveItemPreview( UGCUpdateHandle_t handle, uint32 index )
 {
     PRINT_DEBUG("Steam_UGC::RemoveItemPreview %llu %u\n", handle, index);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
  // remove a preview by index starting at 0 (previews are sorted)
@@ -648,12 +829,16 @@ bool RemoveItemPreview( UGCUpdateHandle_t handle, uint32 index )
 bool AddContentDescriptor( UGCUpdateHandle_t handle, EUGCContentDescriptorID descid )
 {
     PRINT_DEBUG("Steam_UGC::AddContentDescriptor %llu %u\n", handle, descid);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
 
 bool RemoveContentDescriptor( UGCUpdateHandle_t handle, EUGCContentDescriptorID descid )
 {
     PRINT_DEBUG("Steam_UGC::RemoveContentDescriptor %llu %u\n", handle, descid);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
 
@@ -661,6 +846,8 @@ STEAM_CALL_RESULT( SubmitItemUpdateResult_t )
 SteamAPICall_t SubmitItemUpdate( UGCUpdateHandle_t handle, const char *pchChangeNote )
 {
     PRINT_DEBUG("Steam_UGC::SubmitItemUpdate\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return 0;
 }
  // commit update process started with StartItemUpdate()
@@ -669,6 +856,8 @@ SteamAPICall_t SubmitItemUpdate( UGCUpdateHandle_t handle, const char *pchChange
 EItemUpdateStatus GetItemUpdateProgress( UGCUpdateHandle_t handle, uint64 *punBytesProcessed, uint64* punBytesTotal )
 {
     PRINT_DEBUG("Steam_UGC::GetItemUpdateProgress\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return k_EItemUpdateStatusInvalid;
 }
 
@@ -679,6 +868,8 @@ STEAM_CALL_RESULT( SetUserItemVoteResult_t )
 SteamAPICall_t SetUserItemVote( PublishedFileId_t nPublishedFileID, bool bVoteUp )
 {
     PRINT_DEBUG("Steam_UGC::SetUserItemVote\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return 0;
 }
 
@@ -687,6 +878,8 @@ STEAM_CALL_RESULT( GetUserItemVoteResult_t )
 SteamAPICall_t GetUserItemVote( PublishedFileId_t nPublishedFileID )
 {
     PRINT_DEBUG("Steam_UGC::GetUserItemVote\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return 0;
 }
 
@@ -695,6 +888,8 @@ STEAM_CALL_RESULT( UserFavoriteItemsListChanged_t )
 SteamAPICall_t AddItemToFavorites( AppId_t nAppId, PublishedFileId_t nPublishedFileID )
 {
     PRINT_DEBUG("Steam_UGC::AddItemToFavorites\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return 0;
 }
 
@@ -703,6 +898,8 @@ STEAM_CALL_RESULT( UserFavoriteItemsListChanged_t )
 SteamAPICall_t RemoveItemFromFavorites( AppId_t nAppId, PublishedFileId_t nPublishedFileID )
 {
     PRINT_DEBUG("Steam_UGC::RemoveItemFromFavorites\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return 0;
 }
 
@@ -712,15 +909,15 @@ SteamAPICall_t SubscribeItem( PublishedFileId_t nPublishedFileID )
 {
     PRINT_DEBUG("Steam_UGC::SubscribeItem %llu\n", nPublishedFileID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    subscribed.insert(nPublishedFileID);
 
     RemoteStorageSubscribePublishedFileResult_t data;
+    data.m_nPublishedFileId = nPublishedFileID;
     if (settings->isModInstalled(nPublishedFileID)) {
         data.m_eResult = k_EResultOK;
+        subscribed.insert(nPublishedFileID);
     } else {
         data.m_eResult = k_EResultFail;
     }
-    data.m_nPublishedFileId = nPublishedFileID;
     return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
 }
  // subscribe to this item, will be installed ASAP
@@ -731,13 +928,14 @@ SteamAPICall_t UnsubscribeItem( PublishedFileId_t nPublishedFileID )
     PRINT_DEBUG("Steam_UGC::UnsubscribeItem %llu\n", nPublishedFileID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     RemoteStorageUnsubscribePublishedFileResult_t data;
-    data.m_eResult = k_EResultOK;
+    data.m_nPublishedFileId = nPublishedFileID;
     if (subscribed.count(nPublishedFileID) == 0) {
         data.m_eResult = k_EResultFail; //TODO: check if this is accurate
+    } else {
+        data.m_eResult = k_EResultOK;
+        subscribed.erase(nPublishedFileID);
     }
 
-    subscribed.erase(nPublishedFileID);
-    data.m_nPublishedFileId = nPublishedFileID;
     return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
 }
  // unsubscribe from this item, will be uninstalled after game quits
@@ -746,13 +944,15 @@ uint32 GetNumSubscribedItems()
 {
     PRINT_DEBUG("Steam_UGC::GetNumSubscribedItems\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    PRINT_DEBUG("  Steam_UGC::GetNumSubscribedItems = %zu\n", subscribed.size());
     return subscribed.size();
 }
  // number of subscribed items 
 
 uint32 GetSubscribedItems( PublishedFileId_t* pvecPublishedFileID, uint32 cMaxEntries )
 {
-    PRINT_DEBUG("Steam_UGC::GetSubscribedItems\n");
+    PRINT_DEBUG("Steam_UGC::GetSubscribedItems %p %u\n", pvecPublishedFileID, cMaxEntries);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (cMaxEntries > subscribed.size()) {
         cMaxEntries = subscribed.size();
@@ -784,16 +984,17 @@ uint32 GetItemState( PublishedFileId_t nPublishedFileID )
 // if k_EItemStateLegacyItem is set, pchFolder contains the path to the legacy file itself (not a folder)
 bool GetItemInstallInfo( PublishedFileId_t nPublishedFileID, uint64 *punSizeOnDisk, STEAM_OUT_STRING_COUNT( cchFolderSize ) char *pchFolder, uint32 cchFolderSize, uint32 *punTimeStamp )
 {
-    PRINT_DEBUG("Steam_UGC::GetItemInstallInfo\n");
+    PRINT_DEBUG("Steam_UGC::GetItemInstallInfo %llu\n", nPublishedFileID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!settings->isModInstalled(nPublishedFileID)) {
         return false;
     }
 
-    if (punSizeOnDisk) *punSizeOnDisk = settings->getMod(nPublishedFileID).primaryFileSize;
-    if (punTimeStamp) *punTimeStamp = settings->getMod(nPublishedFileID).timeCreated;
+    auto mod = settings->getMod(nPublishedFileID);
+    if (punSizeOnDisk) *punSizeOnDisk = mod.primaryFileSize;
+    if (punTimeStamp) *punTimeStamp = mod.timeCreated;
     if (pchFolder && cchFolderSize) {
-        snprintf(pchFolder, cchFolderSize, "%s", settings->getMod(nPublishedFileID).path.c_str());
+        mod.path.copy(pchFolder, cchFolderSize - 1);
     }
 
     return true;
@@ -804,8 +1005,12 @@ bool GetItemInstallInfo( PublishedFileId_t nPublishedFileID, uint64 *punSizeOnDi
 bool GetItemDownloadInfo( PublishedFileId_t nPublishedFileID, uint64 *punBytesDownloaded, uint64 *punBytesTotal )
 {
     PRINT_DEBUG("Steam_UGC::GetItemDownloadInfo %llu\n", nPublishedFileID);
-    if (punBytesDownloaded) *punBytesDownloaded = settings->getMod(nPublishedFileID).primaryFileSize;
-    if (punBytesTotal) *punBytesTotal = settings->getMod(nPublishedFileID).primaryFileSize;
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (!settings->isModInstalled(nPublishedFileID)) return false;
+
+    auto mod = settings->getMod(nPublishedFileID);
+    if (punBytesDownloaded) *punBytesDownloaded = mod.primaryFileSize;
+    if (punBytesTotal) *punBytesTotal = mod.primaryFileSize;
     return true;
 }
 
@@ -818,7 +1023,13 @@ bool GetItemInstallInfo( PublishedFileId_t nPublishedFileID, uint64 *punSizeOnDi
 bool GetItemUpdateInfo( PublishedFileId_t nPublishedFileID, bool *pbNeedsUpdate, bool *pbIsDownloading, uint64 *punBytesDownloaded, uint64 *punBytesTotal )
 {
     PRINT_DEBUG("Steam_UGC::GetItemDownloadInfo old\n");
-    return false;
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    bool res = GetItemDownloadInfo(nPublishedFileID, punBytesDownloaded, punBytesTotal);
+    if (res) {
+        if (pbNeedsUpdate) *pbNeedsUpdate = false;
+        if (pbIsDownloading) *pbIsDownloading = false;
+    }
+    return res;
 }
 
 bool GetItemInstallInfo( PublishedFileId_t nPublishedFileID, uint64 *punSizeOnDisk, char *pchFolder, uint32 cchFolderSize ) // returns true if item is installed
@@ -834,6 +1045,8 @@ bool GetItemInstallInfo( PublishedFileId_t nPublishedFileID, uint64 *punSizeOnDi
 bool DownloadItem( PublishedFileId_t nPublishedFileID, bool bHighPriority )
 {
     PRINT_DEBUG("Steam_UGC::DownloadItem\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
     return false;
 }
 
@@ -843,6 +1056,8 @@ bool DownloadItem( PublishedFileId_t nPublishedFileID, bool bHighPriority )
 bool BInitWorkshopForGameServer( DepotId_t unWorkshopDepotID, const char *pszFolder )
 {
     PRINT_DEBUG("Steam_UGC::BInitWorkshopForGameServer\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
 
@@ -851,6 +1066,8 @@ bool BInitWorkshopForGameServer( DepotId_t unWorkshopDepotID, const char *pszFol
 void SuspendDownloads( bool bSuspend )
 {
     PRINT_DEBUG("Steam_UGC::SuspendDownloads\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
 }
 
 
@@ -891,6 +1108,8 @@ STEAM_CALL_RESULT( AddUGCDependencyResult_t )
 SteamAPICall_t AddDependency( PublishedFileId_t nParentPublishedFileID, PublishedFileId_t nChildPublishedFileID )
 {
     PRINT_DEBUG("Steam_UGC::AddDependency\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return 0;
 }
 
@@ -898,6 +1117,8 @@ STEAM_CALL_RESULT( RemoveUGCDependencyResult_t )
 SteamAPICall_t RemoveDependency( PublishedFileId_t nParentPublishedFileID, PublishedFileId_t nChildPublishedFileID )
 {
     PRINT_DEBUG("Steam_UGC::RemoveDependency\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return 0;
 }
 
@@ -907,6 +1128,8 @@ STEAM_CALL_RESULT( AddAppDependencyResult_t )
 SteamAPICall_t AddAppDependency( PublishedFileId_t nPublishedFileID, AppId_t nAppID )
 {
     PRINT_DEBUG("Steam_UGC::AddAppDependency\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return 0;
 }
 
@@ -914,6 +1137,8 @@ STEAM_CALL_RESULT( RemoveAppDependencyResult_t )
 SteamAPICall_t RemoveAppDependency( PublishedFileId_t nPublishedFileID, AppId_t nAppID )
 {
     PRINT_DEBUG("Steam_UGC::RemoveAppDependency\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return 0;
 }
 
@@ -923,6 +1148,8 @@ STEAM_CALL_RESULT( GetAppDependenciesResult_t )
 SteamAPICall_t GetAppDependencies( PublishedFileId_t nPublishedFileID )
 {
     PRINT_DEBUG("Steam_UGC::GetAppDependencies\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return 0;
 }
 
@@ -932,13 +1159,17 @@ STEAM_CALL_RESULT( DeleteItemResult_t )
 SteamAPICall_t DeleteItem( PublishedFileId_t nPublishedFileID )
 {
     PRINT_DEBUG("Steam_UGC::DeleteItem\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return 0;
 }
 
 // Show the app's latest Workshop EULA to the user in an overlay window, where they can accept it or not
 bool ShowWorkshopEULA()
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("ShowWorkshopEULA\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return false;
 }
 
@@ -946,14 +1177,18 @@ bool ShowWorkshopEULA()
 STEAM_CALL_RESULT( WorkshopEULAStatus_t )
 SteamAPICall_t GetWorkshopEULAStatus()
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("GetWorkshopEULAStatus\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return 0;
 }
 
 // Return the user's community content descriptor preferences
 uint32 GetUserContentDescriptorPreferences( EUGCContentDescriptorID *pvecDescriptors, uint32 cMaxEntries )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("GetWorkshopEULAStatus\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return 0;
 }
 

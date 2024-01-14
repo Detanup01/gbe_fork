@@ -73,6 +73,8 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <filesystem>
+#include <optional>
 
 // OS specific includes + definitions
 #if defined(__WINDOWS__)
@@ -163,6 +165,9 @@ static inline void reset_LastError()
 #include "json/json.hpp"
 #include "utfcpp/utf8.h"
 #include "controller/gamepad.h"
+
+// common includes
+#include "common_helpers/common_helpers.hpp"
 
 // Steamsdk includes
 #include "steam/steam_api.h"

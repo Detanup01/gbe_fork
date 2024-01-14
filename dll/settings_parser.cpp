@@ -779,6 +779,8 @@ static void parse_force_branch_name(class Settings *settings_client, Settings *s
 // steam_settings/mods
 static void parse_mods_folder(class Settings *settings_client, Settings *settings_server, class Local_Storage *local_storage)
 {
+    std::chrono::system_clock::time_point one_week_ago = std::chrono::system_clock::now() - std::chrono::hours(24 * 7);
+    auto one_week_ago_epoch = std::chrono::duration_cast<std::chrono::seconds>(one_week_ago.time_since_epoch()).count();
     std::string mod_path = Local_Storage::get_game_settings_path() + "mods";
     nlohmann::json mod_items = nlohmann::json::object();
     static constexpr auto mods_json_file = "mods.json";
@@ -786,6 +788,7 @@ static void parse_mods_folder(class Settings *settings_client, Settings *setting
     if (local_storage->load_json(mods_json_path, mod_items)) {
         for (auto mod = mod_items.begin(); mod != mod_items.end(); ++mod) {
             try {
+                std::string mod_images_folder = Local_Storage::get_game_settings_path() + "mod_images" + PATH_SEPARATOR + std::string(mod.key());
                 Mod_entry newMod;
                 newMod.id = std::stoull(mod.key());
                 newMod.title = mod.value().value("title", std::string(mod.key()));
@@ -795,47 +798,90 @@ static void parse_mods_folder(class Settings *settings_client, Settings *setting
                 }
                 newMod.fileType = k_EWorkshopFileTypeCommunity;
                 newMod.description = mod.value().value("description", std::string(""));
-                newMod.steamIDOwner = mod.value().value("steam_id_owner", (uint64)0);
-                newMod.timeCreated = mod.value().value("time_created", (uint32)1554997000);
-                newMod.timeUpdated = mod.value().value("time_updated", (uint32)1554997000);
-                newMod.timeAddedToUserList = mod.value().value("time_added", (uint32)1554997000);
+                newMod.steamIDOwner = mod.value().value("steam_id_owner", settings_client->get_local_steam_id().ConvertToUint64());
+                newMod.timeCreated = mod.value().value("time_created", (uint32)std::chrono::system_clock::now().time_since_epoch().count());
+                newMod.timeUpdated = mod.value().value("time_updated", (uint32)one_week_ago.time_since_epoch().count());
+                newMod.timeAddedToUserList = mod.value().value("time_added", (uint32)one_week_ago_epoch);
                 newMod.visibility = k_ERemoteStoragePublishedFileVisibilityPublic;
                 newMod.banned = false;
                 newMod.acceptedForUse = true;
                 newMod.tagsTruncated = false;
                 newMod.tags = mod.value().value("tags", std::string(""));
+
+                constexpr static auto get_file_size = [](
+                    const std::string &filepath,
+                    const std::string &basepath,
+                    int32 default_val = 0) -> size_t {
+                    try
+                    {
+                        const auto file_p = common_helpers::to_absolute(filepath, basepath);
+                        if (file_p.empty()) return default_val;
+
+                        size_t size = 0;
+                        if (common_helpers::file_size(file_p, size)) {
+                            return size;
+                        }
+                    } catch(...) {}
+                    return default_val;
+                };
+
                 newMod.primaryFileName = mod.value().value("primary_filename", std::string(""));
-                if(newMod.primaryFileName!=""){
-                   long begin = 0, end = 0;
-                   const char* name = newMod.primaryFileName.c_str();
-                   std::fstream file(name);
-                   begin = file.tellg();
-                   file.seekg(0, std::ios::end);
-                   end = file.tellg();
-                   file.close();
-                   newMod.primaryFileSize = mod.value().value("primary_filesize", (end-begin));
+                int32 primary_filesize = 0;
+                if (!newMod.primaryFileName.empty()) {
+                    primary_filesize = (int32)get_file_size(newMod.primaryFileName, newMod.path, primary_filesize);
                 }
-                else
-                {
-                   newMod.primaryFileSize = mod.value().value("primary_filesize", (int32)1000000); 
-                }
+                newMod.primaryFileSize = mod.value().value("primary_filesize", primary_filesize);
+                
                 newMod.previewFileName = mod.value().value("preview_filename", std::string(""));
-                newMod.previewFileSize = mod.value().value("preview_filesize", (int32)1000000);
-                newMod.workshopItemURL = mod.value().value("workshop_item_url", std::string(""));
+                int32 preview_filesize = 0;
+                if (!newMod.previewFileName.empty()) {
+                    preview_filesize = (int32)get_file_size(
+                        newMod.previewFileName,
+                        mod_images_folder,
+                        preview_filesize);
+                }
+                newMod.previewFileSize = mod.value().value("preview_filesize", preview_filesize);
+
+                newMod.workshopItemURL = mod.value().value("workshop_item_url", "https://steamcommunity.com/sharedfiles/filedetails/?id=" + std::string(mod.key()));
                 newMod.votesUp = mod.value().value("upvotes", (uint32)1);
                 newMod.votesDown = mod.value().value("downvotes", (uint32)0);
-                newMod.score = mod.value().value("score", 1.0f);
+
+                float score = 1.0f;
+                try
+                {
+                    score = newMod.votesUp / (float)(newMod.votesUp + newMod.votesDown);
+                } catch(...) {}
+                newMod.score = mod.value().value("score", score);
+                
                 newMod.numChildren = mod.value().value("num_children", (uint32)0);
+
                 newMod.previewURL = mod.value().value("preview_url", std::string(""));
                 if (newMod.previewURL.empty()) {
-                    newMod.previewURL = newMod.previewFileName.empty()
-                        ?  ""
-                        : "file://" + Local_Storage::get_game_settings_path() + "mod_images/" + newMod.previewFileName;
+                    if (newMod.previewFileName.empty()) {
+                        newMod.previewURL = std::string();
+                    } else {
+                        auto settings_folder = std::string(Local_Storage::get_game_settings_path());
+                        std::replace(settings_folder.begin(), settings_folder.end(), '\\', '/');
+                        newMod.previewURL = "file://" + settings_folder + "mod_images/" + std::string(mod.key()) + "/" + newMod.previewFileName;
+                    }
                 }
+                
                 settings_client->addMod(newMod.id, newMod.title, newMod.path);
                 settings_server->addMod(newMod.id, newMod.title, newMod.path);
                 settings_client->addModDetails(newMod.id, newMod);
                 settings_server->addModDetails(newMod.id, newMod);
+                
+                PRINT_DEBUG("  parsed mod '%s':\n", std::string(mod.key()).c_str());
+                PRINT_DEBUG("    path (will be used for primary file): '%s'\n", newMod.path.c_str());
+                PRINT_DEBUG("    images path (will be used for preview file): '%s'\n", mod_images_folder.c_str());
+                PRINT_DEBUG("    primary_filename: '%s'\n", newMod.primaryFileName.c_str());
+                PRINT_DEBUG("    primary_filesize: %i bytes\n", newMod.primaryFileSize);
+                PRINT_DEBUG("    primary file handle: %llu\n", settings_client->getMod(newMod.id).handleFile);
+                PRINT_DEBUG("    preview_filename: '%s'\n", newMod.previewFileName.c_str());
+                PRINT_DEBUG("    preview_filesize: %i bytes\n", newMod.previewFileSize);
+                PRINT_DEBUG("    preview file handle: %llu\n", settings_client->getMod(newMod.id).handlePreviewFile);
+                PRINT_DEBUG("    workshop_item_url: '%s'\n", newMod.workshopItemURL.c_str());
+                PRINT_DEBUG("    preview_url: '%s'\n", newMod.previewURL.c_str());
             } catch (std::exception& e) {
                 PRINT_DEBUG("MODLOADER ERROR: %s\n", e.what());
             }
@@ -852,18 +898,18 @@ static void parse_mods_folder(class Settings *settings_client, Settings *setting
                 newMod.fileType = k_EWorkshopFileTypeCommunity;
                 newMod.description = "";
                 newMod.steamIDOwner = (uint64)0;
-                newMod.timeCreated = (uint32)1554997000;
-                newMod.timeUpdated = (uint32)1554997000;
-                newMod.timeAddedToUserList = (uint32)1554997000;
+                newMod.timeCreated = (uint32)one_week_ago_epoch;
+                newMod.timeUpdated = (uint32)one_week_ago_epoch;
+                newMod.timeAddedToUserList = (uint32)one_week_ago_epoch;
                 newMod.visibility = k_ERemoteStoragePublishedFileVisibilityPublic;
                 newMod.banned = false;
                 newMod.acceptedForUse = true;
                 newMod.tagsTruncated = false;
                 newMod.tags = "";
                 newMod.primaryFileName = "";
-                newMod.primaryFileSize = (int32)1000000;
+                newMod.primaryFileSize = (int32)0;
                 newMod.previewFileName = "";
-                newMod.previewFileSize = (int32)1000000;
+                newMod.previewFileSize = (int32)0;
                 newMod.workshopItemURL = "";
                 newMod.votesUp = (uint32)1;
                 newMod.votesDown = (uint32)0;

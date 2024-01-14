@@ -157,7 +157,7 @@ void Settings::addMod(PublishedFileId_t id, std::string title, std::string path)
         return;
     }
 
-    Mod_entry new_entry;
+    Mod_entry new_entry{};
     new_entry.id = id;
     new_entry.title = title;
     new_entry.path = path;
@@ -168,7 +168,8 @@ void Settings::addModDetails(PublishedFileId_t id, Mod_entry details)
 {
     auto f = std::find_if(mods.begin(), mods.end(), [&id](Mod_entry const& item) { return item.id == id; });
     if (f != mods.end()) {
-        f->previewURL = details.previewURL;
+        // don't copy files handles, they're auto generated
+        
         f->fileType = details.fileType;
         f->description = details.description;
         f->steamIDOwner = details.steamIDOwner;
@@ -180,10 +181,6 @@ void Settings::addModDetails(PublishedFileId_t id, Mod_entry details)
         f->acceptedForUse = details.acceptedForUse;
         f->tagsTruncated = details.tagsTruncated;
         f->tags = details.tags;
-        // - should we set the handles here instead of Invalid?
-        f->handleFile = details.handleFile;
-        f->handlePreviewFile = details.handlePreviewFile;
-        //  -
         f->primaryFileName = details.primaryFileName;
         f->primaryFileSize = details.primaryFileSize;
         f->previewFileName = details.previewFileName;
@@ -193,6 +190,7 @@ void Settings::addModDetails(PublishedFileId_t id, Mod_entry details)
         f->votesDown = details.votesDown;
         f->score = details.score;
         f->numChildren = details.numChildren;
+        f->previewURL = details.previewURL;
     }
 }
 

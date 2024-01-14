@@ -46,8 +46,8 @@ struct Mod_entry {
     bool tagsTruncated;
     std::string tags; 
     // file/url information
-    UGCHandle_t handleFile = k_UGCHandleInvalid;
-    UGCHandle_t handlePreviewFile = k_UGCHandleInvalid;
+    UGCHandle_t handleFile = generate_file_handle();
+    UGCHandle_t handlePreviewFile = generate_file_handle();
     std::string primaryFileName;
     int32 primaryFileSize;
     std::string previewFileName;
@@ -59,6 +59,18 @@ struct Mod_entry {
     float score;
     // collection details
     uint32 numChildren;
+    
+private:
+    UGCHandle_t generate_file_handle()
+    {
+        static UGCHandle_t val = 0;
+
+        ++val;
+        if (val == 0 || val == k_UGCHandleInvalid) val = 1;
+        
+        return val;
+    }
+
 };
 
 struct Leaderboard_config {

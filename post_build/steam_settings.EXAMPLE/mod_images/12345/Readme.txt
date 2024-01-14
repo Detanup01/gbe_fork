@@ -1,0 +1,1 @@
+Put here the files whose names are specified by the JSON key "preview_filename" inside mods.json

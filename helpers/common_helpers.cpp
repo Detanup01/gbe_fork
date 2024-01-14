@@ -163,7 +163,7 @@ std::wstring common_helpers::to_absolute(const std::wstring &path, const std::ws
     return path_abs.wstring();
 }
 
-bool common_helpers::file_exist(std::filesystem::path &filepath)
+bool common_helpers::file_exist(const std::filesystem::path &filepath)
 {
     if (std::filesystem::is_directory(filepath)) {
         return false;
@@ -188,7 +188,28 @@ bool common_helpers::file_exist(const std::wstring &filepath)
     return file_exist(path);
 }
 
-bool common_helpers::dir_exist(std::filesystem::path &dirpath)
+bool common_helpers::file_size(const std::filesystem::path &filepath, size_t &size)
+{
+    if (common_helpers::file_exist(filepath)) {
+        size = std::filesystem::file_size(filepath);
+        return true;
+    }
+    return false;
+}
+
+bool common_helpers::file_size(const std::string &filepath, size_t &size)
+{
+    const auto file_p = std::filesystem::path(filepath);
+    return file_size(file_p, size);
+}
+
+bool common_helpers::file_size(const std::wstring &filepath, size_t &size)
+{
+    const auto file_p = std::filesystem::path(filepath);
+    return file_size(file_p, size);
+}
+
+bool common_helpers::dir_exist(const std::filesystem::path &dirpath)
 {
     if (std::filesystem::is_directory(dirpath)) {
         return true;
