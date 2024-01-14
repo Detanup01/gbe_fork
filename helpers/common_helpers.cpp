@@ -106,7 +106,7 @@ bool common_helpers::ends_with_i(const std::wstring &target, const std::wstring 
 
 }
 
-std::filesystem::path to_absolute_impl(std::filesystem::path &path, std::filesystem::path &base)
+std::filesystem::path to_absolute_impl(const std::filesystem::path &path, const std::filesystem::path &base)
 {
     if (path.is_absolute()) {
         return path;

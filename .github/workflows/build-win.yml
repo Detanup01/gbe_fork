@@ -148,7 +148,7 @@ jobs:
     - name: Build release mode
       shell: cmd
       working-directory: ${{ github.workspace }}
-      run: build_win.bat release
+      run: build_win.bat +exclient-extra-32 +exclient-extra-64 release
 
 ### package (release mode)
     - name: Package build (release)
@@ -170,7 +170,7 @@ jobs:
     - name: Build debug mode
       shell: cmd
       working-directory: ${{ github.workspace }}
-      run: build_win.bat debug
+      run: build_win.bat +exclient-extra-32 +exclient-extra-64 debug
 
 ### package (debug mode)
     - name: Package build (debug)

@@ -20,7 +20,7 @@ static inline uint8_t char_to_byte(const char c)
     return (uint8_t)c;
 }
 
-static inline PIMAGE_NT_HEADERS get_nt_header(HMODULE hModule)
+PIMAGE_NT_HEADERS pe_helpers::get_nt_header(HMODULE hModule)
 {
     // https://dev.to/wireless90/validating-the-pe-signature-my-av-flagged-me-windows-pe-internals-2m5o/
     PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)(char*)hModule;
@@ -29,12 +29,12 @@ static inline PIMAGE_NT_HEADERS get_nt_header(HMODULE hModule)
     return (PIMAGE_NT_HEADERS)((char*)hModule + newExeHeaderOffset);
 }
 
-static inline PIMAGE_FILE_HEADER get_file_header(HMODULE hModule)
+PIMAGE_FILE_HEADER pe_helpers::get_file_header(HMODULE hModule)
 {
     return &get_nt_header(hModule)->FileHeader;
 }
 
-static inline PIMAGE_OPTIONAL_HEADER get_optional_header(HMODULE hModule)
+PIMAGE_OPTIONAL_HEADER pe_helpers::get_optional_header(HMODULE hModule)
 {
     return &get_nt_header(hModule)->OptionalHeader;
 }
@@ -190,7 +190,10 @@ bool pe_helpers::replace_memory(uint8_t *mem, size_t size, const std::string &re
     }
 
     for (auto &rp : replace_bytes) {
-        if (rp.first == 0x00) continue;
+        if (rp.first == 0x00) {
+            ++mem;
+            continue;
+        }
 
         const uint8_t b_mem = (uint8_t)(*mem & (uint8_t)~rp.first);
         const uint8_t b_replace = (uint8_t)(rp.second & rp.first);
@@ -231,12 +234,12 @@ std::string pe_helpers::get_err_string(DWORD code)
 
 bool pe_helpers::is_module_64(HMODULE hModule)
 {
-    return !!(get_file_header(hModule)->Machine == IMAGE_FILE_MACHINE_AMD64);
+    return (get_file_header(hModule)->Machine == IMAGE_FILE_MACHINE_AMD64);
 }
 
 bool pe_helpers::is_module_32(HMODULE hModule)
 {
-    return !!(get_file_header(hModule)->Machine == IMAGE_FILE_MACHINE_I386);
+    return (get_file_header(hModule)->Machine == IMAGE_FILE_MACHINE_I386);
 }
 
 pe_helpers::SectionHeadersResult pe_helpers::get_section_headers(HMODULE hModule)
@@ -339,6 +342,7 @@ DWORD pe_helpers::loadlib_remote(HANDLE hProcess, const std::wstring &lib_fullpa
   }
 
   WaitForSingleObject(remote_thread, INFINITE);
+  CloseHandle(remote_thread);
 
   // cleanup allcoated page
   VirtualFreeEx(
@@ -418,4 +422,44 @@ bool pe_helpers::ends_with_i(PUNICODE_STRING target, const std::wstring &query)
         std::wstring(target->Buffer, (PWSTR)((char*)target->Buffer + target->Length)),
         query
     );
+}
+
+MEMORY_BASIC_INFORMATION pe_helpers::get_mem_page_details(const void* mem)
+{
+    MEMORY_BASIC_INFORMATION mbi{};
+    if (VirtualQuery(mem, &mbi, sizeof(mbi))) {
+        return mbi;
+    } else {
+        return {};
+    }
+}
+
+size_t pe_helpers::get_current_exe_mem_size()
+{
+    auto hmod = GetModuleHandleW(NULL);
+    size_t size = 0;
+
+    {
+        MEMORY_BASIC_INFORMATION mbi{};
+        if (!VirtualQuery((LPVOID)hmod, &mbi, sizeof(mbi))) {
+            return 0;
+        }
+        size = mbi.RegionSize; // PE header
+    }
+
+    auto sections = get_section_headers(hmod);
+    if (!sections.count) {
+        return 0;
+    }
+
+    for (size_t i = 0; i < sections.count; ++i) {
+        auto section = sections.ptr[i];
+        MEMORY_BASIC_INFORMATION mbi{};
+        if (!VirtualQuery((LPVOID)((uint8_t *)hmod + section.VirtualAddress), &mbi, sizeof(mbi))) {
+            return 0;
+        }
+        size = mbi.RegionSize; // actual section size in mem
+    }
+
+    return size;
 }

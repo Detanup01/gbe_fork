@@ -149,7 +149,13 @@ Arguments you can pass to this script:
 
 * `-exclient-32`: prevent building steamclient `steamclient.dll`
 * `-exclient-64`: prevent building steamclient `steamclient64.dll`
-* `-exclient-ldr`: prevent building steamclient `steamclient_loader.exe`
+* `-exclient-ldr-32`: prevent building steamclient loader (32) `steamclient_loader_32.exe`
+* `-exclient-ldr-64`: prevent building steamclient loader (64) `steamclient_loader_64.exe`
+
+>>>>>>>>>  ___
+
+* `+exclient-extra-32`: build the 32 bit version of the additional dll `steamclient_extra.dll` which is injected by the client loader
+* `+exclient-extra-64`: build the 64 bit version of the additional dll `steamclient_extra64.dll` which is injected by the client loader
 
 >>>>>>>>>  ___
 

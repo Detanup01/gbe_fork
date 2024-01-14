@@ -13,4 +13,5 @@ This directory contains additional resources used during build.
     * [api](./win/api/): contains an immitation of the resources found in `steam_api(64).dll`
     * [client](./win/client/): contains an immitation of the resources found in `steamclient(64).dll`
     * [launcher](./win/launcher/): contains an immitation of the resources found in `steam.exe`
+    * [file_dos_stub](./win/file_dos_stub/): contains an immitation of how the DOS stub is manipulated after build
 

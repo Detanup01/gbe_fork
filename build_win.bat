@@ -30,6 +30,9 @@ set /a BUILD_EXPCLIENT64=1
 set /a BUILD_EXPCLIENT_LDR_32=1
 set /a BUILD_EXPCLIENT_LDR_64=1
 
+set /a BUILD_EXPCLIENT_EXTRA_32=0
+set /a BUILD_EXPCLIENT_EXTRA_64=0
+
 set /a BUILD_TOOL_FIND_ITFS=1
 set /a BUILD_TOOL_LOBBY=1
 
@@ -67,6 +70,10 @@ set /a VERBOSE=0
     set /a BUILD_EXPCLIENT_LDR_32=0
   ) else if "%~1"=="-exclient-ldr-64" (
     set /a BUILD_EXPCLIENT_LDR_64=0
+  ) else if "%~1"=="+exclient-extra-32" (
+    set /a BUILD_EXPCLIENT_EXTRA_32=1
+  ) else if "%~1"=="+exclient-extra-64" (
+    set /a BUILD_EXPCLIENT_EXTRA_64=1
   ) else if "%~1"=="-tool-itf" (
     set /a BUILD_TOOL_FIND_ITFS=0
   ) else if "%~1"=="-tool-lobby" (
@@ -308,9 +315,6 @@ call :build_rsrc "%win_resources_src_dir%\launcher\32\resources.rc" "%win_resour
 echo: & echo:
 
 if %BUILD_LIB32% equ 1 (
-  if not exist "%build_root_dir%\x32" (
-    mkdir "%build_root_dir%\x32"
-  )
   call :compile_lib32 || (
     set /a last_code+=1
   )
@@ -318,9 +322,6 @@ if %BUILD_LIB32% equ 1 (
 )
 
 if %BUILD_EXP_LIB32% equ 1 (
-  if not exist "%experimental_dir%\x32" (
-    mkdir "%experimental_dir%\x32"
-  )
   call :compile_experimental_lib32 || (
     set /a last_code+=1
   )
@@ -328,9 +329,6 @@ if %BUILD_EXP_LIB32% equ 1 (
 )
 
 if %BUILD_EXP_CLIENT32% equ 1 (
-  if not exist "%experimental_dir%\x32" (
-    mkdir "%experimental_dir%\x32"
-  )
   call :compile_experimental_client32 || (
     set /a last_code+=1
   )
@@ -338,9 +336,6 @@ if %BUILD_EXP_CLIENT32% equ 1 (
 )
 
 if %BUILD_EXPCLIENT32% equ 1 (
-  if not exist "%steamclient_dir%" (
-    mkdir "%steamclient_dir%"
-  )
   call :compile_experimentalclient_32 || (
     set /a last_code+=1
   )
@@ -349,19 +344,14 @@ if %BUILD_EXPCLIENT32% equ 1 (
 
 :: steamclient_loader
 if %BUILD_EXPCLIENT_LDR_32% equ 1 (
-  if not exist "%steamclient_dir%" (
-    mkdir "%steamclient_dir%"
-  )
   call :compile_experimentalclient_ldr_32 || (
     set /a last_code+=1
   )
   echo: & echo:
 )
 
-  if not exist "%steamclient_dir%" (
-    mkdir "%steamclient_dir%"
-  )
-  call :compile_experimentalclient_ldr || (
+if %BUILD_EXPCLIENT_EXTRA_32% equ 1 (
+  call :compile_experimentalclient_extra_32 || (
     set /a last_code+=1
   )
   echo: & echo:
@@ -369,18 +359,12 @@ if %BUILD_EXPCLIENT_LDR_32% equ 1 (
 
 :: tools (x32)
 if %BUILD_TOOL_FIND_ITFS% equ 1 (
-  if not exist "%find_interfaces_dir%" (
-    mkdir "%find_interfaces_dir%"
-  )
   call :compile_tool_itf || (
     set /a last_code+=1
   )
   echo: & echo:
 )
 if %BUILD_TOOL_LOBBY% equ 1 (
-  if not exist "%lobby_connect_dir%" (
-    mkdir "%lobby_connect_dir%"
-  )
   call :compile_tool_lobby || (
     set /a last_code+=1
   )
@@ -440,9 +424,6 @@ call :build_rsrc "%win_resources_src_dir%\launcher\64\resources.rc" "%win_resour
 echo: & echo:
 
 if %BUILD_LIB64% equ 1 (
-  if not exist "%build_root_dir%\x64" (
-    mkdir "%build_root_dir%\x64"
-  )
   call :compile_lib64 || (
     set /a last_code+=1
   )
@@ -450,9 +431,6 @@ if %BUILD_LIB64% equ 1 (
 )
 
 if %BUILD_EXP_LIB64% equ 1 (
-  if not exist "%experimental_dir%\x64" (
-    mkdir "%experimental_dir%\x64"
-  )
   call :compile_experimental_lib64 || (
     set /a last_code+=1
   )
@@ -460,9 +438,6 @@ if %BUILD_EXP_LIB64% equ 1 (
 )
 
 if %BUILD_EXP_CLIENT64% equ 1 (
-  if not exist "%experimental_dir%\x64" (
-    mkdir "%experimental_dir%\x64"
-  )
   call :compile_experimental_client64 || (
     set /a last_code+=1
   )
@@ -470,9 +445,6 @@ if %BUILD_EXP_CLIENT64% equ 1 (
 )
 
 if %BUILD_EXPCLIENT64% equ 1 (
-  if not exist "%steamclient_dir%" (
-    mkdir "%steamclient_dir%"
-  )
   call :compile_experimentalclient_64 || (
     set /a last_code+=1
   )
@@ -481,10 +453,14 @@ if %BUILD_EXPCLIENT64% equ 1 (
 
 :: steamclient_loader
 if %BUILD_EXPCLIENT_LDR_64% equ 1 (
-  if not exist "%steamclient_dir%" (
-    mkdir "%steamclient_dir%"
-  )
   call :compile_experimentalclient_ldr_64 || (
+    set /a last_code+=1
+  )
+  echo: & echo:
+)
+
+if %BUILD_EXPCLIENT_EXTRA_64% equ 1 (
+  call :compile_experimentalclient_extra_64 || (
     set /a last_code+=1
   )
   echo: & echo:
@@ -596,6 +572,16 @@ endlocal & exit /b %_exit%
   )
 endlocal & exit /b %_exit%
 
+:compile_experimentalclient_extra_32
+  setlocal
+  echo // building library steamclient_extra.dll - 32
+  set src_files="%win_resources_out_dir%\rsrc-client-32.res" "%tools_src_dir%\steamclient_loader\win\extra_protection\*.cpp" "helpers\pe_helpers.cpp" "helpers\common_helpers.cpp" "%libs_dir%\detours\*.cpp"
+  set extra_inc_dirs=/I"%tools_src_dir%\steamclient_loader\win\extra_protection" /I"pe_helpers"
+  call :build_for 1 0 "%steamclient_dir%\extra_dlls\steamclient_extra.dll" src_files extra_inc_dirs
+  set /a _exit=%errorlevel%
+  if %_exit% equ 0 (
+    call :change_dos_stub 1 "%steamclient_dir%\extra_dlls\steamclient_extra.dll"
+    call "%signer_tool%" "%steamclient_dir%\extra_dlls\steamclient_extra.dll"
   )
 endlocal & exit /b %_exit%
 
@@ -686,6 +672,19 @@ endlocal & exit /b %_exit%
   if %_exit% equ 0 (
     call :change_dos_stub 0 "%steamclient_dir%\steamclient_loader_64.exe"
     call "%signer_tool%" "%steamclient_dir%\steamclient_loader_64.exe"
+  )
+endlocal & exit /b %_exit%
+
+:compile_experimentalclient_extra_64
+  setlocal
+  echo // building library steamclient_extra64.dll - 64
+  set src_files="%win_resources_out_dir%\rsrc-client-64.res" "%tools_src_dir%\steamclient_loader\win\extra_protection\*.cpp" "helpers\pe_helpers.cpp" "helpers\common_helpers.cpp" "%libs_dir%\detours\*.cpp"
+  set extra_inc_dirs=/I"%tools_src_dir%\steamclient_loader\win\extra_protection" /I"pe_helpers"
+  call :build_for 0 0 "%steamclient_dir%\extra_dlls\steamclient_extra64.dll" src_files extra_inc_dirs
+  set /a _exit=%errorlevel%
+  if %_exit% equ 0 (
+    call :change_dos_stub 0 "%steamclient_dir%\extra_dlls\steamclient_extra64.dll"
+    call "%signer_tool%" "%steamclient_dir%\extra_dlls\steamclient_extra64.dll"
   )
 endlocal & exit /b %_exit%
 
@@ -797,6 +796,12 @@ exit /b 1
     endlocal
     call :err_msg "Unknown subsystem type"
     exit /b 1
+  )
+
+  for /f "usebackq tokens=* delims=" %%A in ('"%_out_filepath%"') do (
+    if not exist "%%~dpA" (
+      mkdir "%%~dpA"
+    )
   )
 
   if "%VERBOSE%" equ "1" (

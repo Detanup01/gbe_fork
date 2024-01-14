@@ -28,8 +28,8 @@ static std::vector<uint8_t> load_file_partial(std::fstream &file)
         auto org_pos = file.tellg();
         file.seekg(0, std::ios::beg);
 
-        // 2MB is enough
-        std::vector<uint8_t> data(2 * 1024 * 1024, 0);
+        // 1MB is enough
+        std::vector<uint8_t> data(1 * 1024 * 1024, 0);
         file.read((char *)&data[0], data.size());
 
         file.seekg(org_pos, std::ios::beg);
