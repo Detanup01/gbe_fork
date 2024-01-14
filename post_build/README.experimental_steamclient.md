@@ -37,3 +37,8 @@ You do not need to create a `steam_interfaces.txt` file for the `steamclient` ve
 Example: `steamclient_loader.exe` `-dx11`  
 If the additional exe arguments were both: passed via command line and set in the `.ini` file, then both will be cocatenated and passed to the exe.  
 This allows the loader to be used/called from other external apps which set additional args.  
+
+---
+
+## `extra_dlls`  
+This folder contains an experimental dll which, when injected, will attempt to patch the Stub drm in meory, only for v3.1  
