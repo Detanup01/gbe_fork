@@ -86,27 +86,22 @@ public ISteamRemoteStorage
 private:
     class Settings *settings;
     class Ugc_Remote_Storage_Bridge *ugc_bridge;
-    Local_Storage *local_storage;
+    class Local_Storage *local_storage;
     class SteamCallResults *callback_results;
     bool steam_cloud_enabled;
     std::vector<struct Async_Read> async_reads;
     std::vector<struct Stream_Write> stream_writes;
     std::map<UGCHandle_t, std::string> shared_files;
     std::map<UGCHandle_t, struct Downloaded_File> downloaded_files;
-    std::set<PublishedFileId_t> subscribed; // just to keep the running state of subscription
 
     public:
-Steam_Remote_Storage(class Settings *settings, class Ugc_Remote_Storage_Bridge *ugc_bridge, Local_Storage *local_storage, class SteamCallResults *callback_results)
+Steam_Remote_Storage(class Settings *settings, class Ugc_Remote_Storage_Bridge *ugc_bridge, class Local_Storage *local_storage, class SteamCallResults *callback_results)
 {
     this->settings = settings;
     this->ugc_bridge = ugc_bridge;
     this->local_storage = local_storage;
     this->callback_results = callback_results;
     steam_cloud_enabled = true;
-    local_storage->update_save_filenames(Local_Storage::remote_storage_folder);
-    
-    // subscribe to all mods initially
-    subscribed = settings->modSet();
 }
 
 // NOTE
@@ -919,7 +914,7 @@ SteamAPICall_t SubscribePublishedFile( PublishedFileId_t unPublishedFileId )
 
     if (settings->isModInstalled(unPublishedFileId)) {
         data.m_eResult = EResult::k_EResultOK;
-        subscribed.insert(unPublishedFileId);
+        ugc_bridge->add_subbed_mod(unPublishedFileId);
     } else {
         data.m_eResult = EResult::k_EResultFail; // TODO is this correct?
     }
@@ -935,16 +930,16 @@ SteamAPICall_t EnumerateUserSubscribedFiles( uint32 unStartIndex )
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     // Get ready for a working but bad implementation - Detanup01
     RemoteStorageEnumerateUserSubscribedFilesResult_t data{};
-    uint32_t modCount = (uint32_t)subscribed.size();
+    uint32_t modCount = (uint32_t)ugc_bridge->subbed_mods_count();
     if (unStartIndex >= modCount) {
         data.m_eResult = EResult::k_EResultInvalidParam; // is this correct?
     } else {
         data.m_eResult = k_EResultOK;
         data.m_nTotalResultCount = modCount - unStartIndex; // total amount starting from given index
-        std::set<PublishedFileId_t>::iterator i = subscribed.begin();
+        std::set<PublishedFileId_t>::iterator i = ugc_bridge->subbed_mods_itr_begin();
         std::advance(i, unStartIndex);
         uint32_t iterated = 0;
-        for (; i != subscribed.end() && iterated < k_unEnumeratePublishedFilesMaxResults; i++) {
+        for (; i != ugc_bridge->subbed_mods_itr_end() && iterated < k_unEnumeratePublishedFilesMaxResults; i++) {
             PublishedFileId_t modId = *i;
             auto mod = settings->getMod(modId);
             uint32 time = mod.timeAddedToUserList; //this can be changed, default is 1554997000
@@ -968,9 +963,9 @@ SteamAPICall_t UnsubscribePublishedFile( PublishedFileId_t unPublishedFileId )
     RemoteStorageUnsubscribePublishedFileResult_t data{};
     data.m_nPublishedFileId = unPublishedFileId;
     // TODO is this correct?
-    if (subscribed.count(unPublishedFileId)) {
+    if (ugc_bridge->has_subbed_mod(unPublishedFileId)) {
         data.m_eResult = k_EResultOK;
-        subscribed.erase(unPublishedFileId);
+        ugc_bridge->remove_subbed_mod(unPublishedFileId);
     } else {
         data.m_eResult = k_EResultFail;
     }

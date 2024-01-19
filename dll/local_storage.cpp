@@ -571,7 +571,7 @@ std::vector<std::string> Local_Storage::get_filenames_path(std::string path)
 
 int Local_Storage::store_data(std::string folder, std::string file, char *data, unsigned int length)
 {
-    if (folder.back() != *PATH_SEPARATOR) {
+    if (folder.size() && folder.back() != *PATH_SEPARATOR) {
         folder.append(PATH_SEPARATOR);
     }
 
@@ -599,7 +599,7 @@ int Local_Storage::get_file_data(std::string full_path, char *data, unsigned int
 int Local_Storage::get_data(std::string folder, std::string file, char *data, unsigned int max_length, unsigned int offset)
 {
     file = sanitize_file_name(file);
-    if (folder.back() != *PATH_SEPARATOR) {
+    if (folder.size() && folder.back() != *PATH_SEPARATOR) {
         folder.append(PATH_SEPARATOR);
     }
 
@@ -616,7 +616,7 @@ int Local_Storage::get_data_settings(std::string file, char *data, unsigned int 
 
 int Local_Storage::count_files(std::string folder)
 {
-    if (folder.back() != *PATH_SEPARATOR) {
+    if (folder.size() && folder.back() != *PATH_SEPARATOR) {
         folder.append(PATH_SEPARATOR);
     }
 
@@ -626,7 +626,7 @@ int Local_Storage::count_files(std::string folder)
 bool Local_Storage::file_exists(std::string folder, std::string file)
 {
     file = sanitize_file_name(file);
-    if (folder.back() != *PATH_SEPARATOR) {
+    if (folder.size() && folder.back() != *PATH_SEPARATOR) {
         folder.append(PATH_SEPARATOR);
     }
 
@@ -637,7 +637,7 @@ bool Local_Storage::file_exists(std::string folder, std::string file)
 unsigned int Local_Storage::file_size(std::string folder, std::string file)
 {
     file = sanitize_file_name(file);
-    if (folder.back() != *PATH_SEPARATOR) {
+    if (folder.size() && folder.back() != *PATH_SEPARATOR) {
         folder.append(PATH_SEPARATOR);
     }
 
@@ -648,7 +648,7 @@ unsigned int Local_Storage::file_size(std::string folder, std::string file)
 bool Local_Storage::file_delete(std::string folder, std::string file)
 {
     file = sanitize_file_name(file);
-    if (folder.back() != *PATH_SEPARATOR) {
+    if (folder.size() && folder.back() != *PATH_SEPARATOR) {
         folder.append(PATH_SEPARATOR);
     }
 
@@ -663,7 +663,7 @@ bool Local_Storage::file_delete(std::string folder, std::string file)
 uint64_t Local_Storage::file_timestamp(std::string folder, std::string file)
 {
     file = sanitize_file_name(file);
-    if (folder.back() != *PATH_SEPARATOR) {
+    if (folder.size() && folder.back() != *PATH_SEPARATOR) {
         folder.append(PATH_SEPARATOR);
     }
 
@@ -681,7 +681,7 @@ uint64_t Local_Storage::file_timestamp(std::string folder, std::string file)
 
 bool Local_Storage::iterate_file(std::string folder, int index, char *output_filename, int32 *output_size)
 {
-    if (folder.back() != *PATH_SEPARATOR) {
+    if (folder.size() && folder.back() != *PATH_SEPARATOR) {
         folder.append(PATH_SEPARATOR);
     }
 

@@ -44,14 +44,17 @@ public ISteamUGC016,
 public ISteamUGC017,
 public ISteamUGC
 {
+    constexpr static const char ugc_favorits_file[] = "favorites.txt";
+
     class Settings *settings;
-    Ugc_Remote_Storage_Bridge *ugc_bridge;
+    class Ugc_Remote_Storage_Bridge *ugc_bridge;
+    class Local_Storage *local_storage;
     class SteamCallResults *callback_results;
     class SteamCallBacks *callbacks;
 
-    std::set<PublishedFileId_t> subscribed;
     UGCQueryHandle_t handle = 50; // just makes debugging easier, any initial val is fine, even 1
-    std::vector<struct UGC_query> ugc_queries;
+    std::vector<struct UGC_query> ugc_queries{};
+    std::set<PublishedFileId_t> favorites{};
 
 UGCQueryHandle_t new_ugc_query(
     bool return_all_subscribed = false,
@@ -115,15 +118,52 @@ void set_details(PublishedFileId_t id, SteamUGCDetails_t *pDetails)
     }
 }
 
+void read_ugc_favorites()
+{
+    if (!local_storage->file_exists("", ugc_favorits_file)) return;
+
+    unsigned int size = local_storage->file_size("", ugc_favorits_file);
+    if (!size) return;
+
+    std::string data(size, '\0');
+    int read = local_storage->get_data("", ugc_favorits_file, &data[0], (unsigned int)data.size());
+    if ((size_t)read != data.size()) return;
+
+    std::stringstream ss(data);
+    std::string line{};
+    while (std::getline(ss, line)) {
+        try
+        {
+            unsigned long long fav_id = std::stoull(line);
+            favorites.insert(fav_id);
+            PRINT_DEBUG("Steam_UGC added item to favorites %llu\n", fav_id);
+        } catch(...) { }
+    }
+    
+}
+
+bool write_ugc_favorites()
+{
+    std::stringstream ss{};
+    for (auto id : favorites) {
+        ss << id << "\n";
+        ss.flush();
+    }
+    auto file_data = ss.str();
+    int stored = local_storage->store_data("", ugc_favorits_file, &file_data[0], file_data.size());
+    return (size_t)stored == file_data.size();
+}
+
 public:
-Steam_UGC(class Settings *settings, class Ugc_Remote_Storage_Bridge *ugc_bridge, class SteamCallResults *callback_results, class SteamCallBacks *callbacks)
+Steam_UGC(class Settings *settings, class Ugc_Remote_Storage_Bridge *ugc_bridge, class Local_Storage *local_storage, class SteamCallResults *callback_results, class SteamCallBacks *callbacks)
 {
     this->settings = settings;
     this->ugc_bridge = ugc_bridge;
+    this->local_storage = local_storage;
     this->callbacks = callbacks;
     this->callback_results = callback_results;
 
-    subscribed = settings->modSet();
+    read_ugc_favorites();
 }
 
 
@@ -174,12 +214,12 @@ SteamAPICall_t SendQueryUGCRequest( UGCQueryHandle_t handle )
         return k_uAPICallInvalid;
 
     if (request->return_all_subscribed) {
-        request->results = subscribed;
+        request->results = std::set<PublishedFileId_t>(ugc_bridge->subbed_mods_itr_begin(), ugc_bridge->subbed_mods_itr_end());
     }
 
     if (request->return_only.size()) {
         for (auto & s : request->return_only) {
-            if (subscribed.count(s)) {
+            if (ugc_bridge->has_subbed_mod(s)) {
                 request->results.insert(s);
             }
         }
@@ -639,7 +679,7 @@ SteamAPICall_t CreateItem( AppId_t nConsumerAppId, EWorkshopFileType eFileType )
     PRINT_DEBUG("Steam_UGC::CreateItem\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    return 0;
+    return k_uAPICallInvalid;
 }
  // create new item for this app with no content attached yet
 
@@ -649,7 +689,7 @@ UGCUpdateHandle_t StartItemUpdate( AppId_t nConsumerAppId, PublishedFileId_t nPu
     PRINT_DEBUG("Steam_UGC::StartItemUpdate\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    return 0;
+    return k_UGCUpdateHandleInvalid;
 }
  // start an UGC item update. Set changed properties before commiting update with CommitItemUpdate()
 
@@ -848,7 +888,7 @@ SteamAPICall_t SubmitItemUpdate( UGCUpdateHandle_t handle, const char *pchChange
     PRINT_DEBUG("Steam_UGC::SubmitItemUpdate\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    return 0;
+    return k_uAPICallInvalid;
 }
  // commit update process started with StartItemUpdate()
 
@@ -869,8 +909,19 @@ SteamAPICall_t SetUserItemVote( PublishedFileId_t nPublishedFileID, bool bVoteUp
 {
     PRINT_DEBUG("Steam_UGC::SetUserItemVote\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (!settings->isModInstalled(nPublishedFileID)) return k_uAPICallInvalid; // TODO is this correct
     
-    return 0;
+    auto mod  = settings->getMod(nPublishedFileID);
+    SetUserItemVoteResult_t data{};
+    data.m_eResult = EResult::k_EResultOK;
+    data.m_nPublishedFileId = nPublishedFileID;
+    if (bVoteUp) {
+        ++mod.votesUp;
+    } else {
+        ++mod.votesDown;
+    }
+    settings->addModDetails(nPublishedFileID, mod);
+    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
 }
 
 
@@ -879,18 +930,41 @@ SteamAPICall_t GetUserItemVote( PublishedFileId_t nPublishedFileID )
 {
     PRINT_DEBUG("Steam_UGC::GetUserItemVote\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    
-    return 0;
+    if (nPublishedFileID == k_PublishedFileIdInvalid || !settings->isModInstalled(nPublishedFileID)) return k_uAPICallInvalid; // TODO is this correct
+
+    auto mod  = settings->getMod(nPublishedFileID);
+    GetUserItemVoteResult_t data{};
+    data.m_eResult = EResult::k_EResultOK;
+    data.m_nPublishedFileId = nPublishedFileID;
+    data.m_bVotedDown = mod.votesDown;
+    data.m_bVotedUp = mod.votesUp;
+    data.m_bVoteSkipped = true;
+    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
 }
 
 
 STEAM_CALL_RESULT( UserFavoriteItemsListChanged_t )
 SteamAPICall_t AddItemToFavorites( AppId_t nAppId, PublishedFileId_t nPublishedFileID )
 {
-    PRINT_DEBUG("Steam_UGC::AddItemToFavorites\n");
+    PRINT_DEBUG("Steam_UGC::AddItemToFavorites %u %llu\n", nAppId, nPublishedFileID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (nAppId == k_uAppIdInvalid || nAppId != settings->get_local_game_id().AppID()) return k_uAPICallInvalid; // TODO is this correct
+    if (nPublishedFileID == k_PublishedFileIdInvalid || !settings->isModInstalled(nPublishedFileID)) return k_uAPICallInvalid; // TODO is this correct
+
+    UserFavoriteItemsListChanged_t data{};
+    data.m_nPublishedFileId = nPublishedFileID;
+    data.m_bWasAddRequest = true;
+
+    auto add = favorites.insert(nPublishedFileID);
+    if (add.second) { // if new insertion
+        PRINT_DEBUG(" adding new item to favorites");
+        bool ok = write_ugc_favorites();
+        data.m_eResult = ok ? EResult::k_EResultOK : EResult::k_EResultFail;
+    } else { // nPublishedFileID already exists
+        data.m_eResult = EResult::k_EResultOK;
+    }
     
-    return 0;
+    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
 }
 
 
@@ -899,8 +973,23 @@ SteamAPICall_t RemoveItemFromFavorites( AppId_t nAppId, PublishedFileId_t nPubli
 {
     PRINT_DEBUG("Steam_UGC::RemoveItemFromFavorites\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (nAppId == k_uAppIdInvalid || nAppId != settings->get_local_game_id().AppID()) return k_uAPICallInvalid; // TODO is this correct
+    if (nPublishedFileID == k_PublishedFileIdInvalid || !settings->isModInstalled(nPublishedFileID)) return k_uAPICallInvalid; // TODO is this correct
+
+    UserFavoriteItemsListChanged_t data{};
+    data.m_nPublishedFileId = nPublishedFileID;
+    data.m_bWasAddRequest = false;
+
+    auto removed = favorites.erase(nPublishedFileID);
+    if (removed) {
+        PRINT_DEBUG(" removing item from favorites");
+        bool ok = write_ugc_favorites();
+        data.m_eResult = ok ? EResult::k_EResultOK : EResult::k_EResultFail;
+    } else { // nPublishedFileID didn't exist
+        data.m_eResult = EResult::k_EResultOK;
+    }
     
-    return 0;
+    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
 }
 
 
@@ -914,7 +1003,7 @@ SteamAPICall_t SubscribeItem( PublishedFileId_t nPublishedFileID )
     data.m_nPublishedFileId = nPublishedFileID;
     if (settings->isModInstalled(nPublishedFileID)) {
         data.m_eResult = k_EResultOK;
-        subscribed.insert(nPublishedFileID);
+        ugc_bridge->add_subbed_mod(nPublishedFileID);
     } else {
         data.m_eResult = k_EResultFail;
     }
@@ -929,11 +1018,11 @@ SteamAPICall_t UnsubscribeItem( PublishedFileId_t nPublishedFileID )
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     RemoteStorageUnsubscribePublishedFileResult_t data;
     data.m_nPublishedFileId = nPublishedFileID;
-    if (subscribed.count(nPublishedFileID) == 0) {
+    if (!ugc_bridge->has_subbed_mod(nPublishedFileID)) {
         data.m_eResult = k_EResultFail; //TODO: check if this is accurate
     } else {
         data.m_eResult = k_EResultOK;
-        subscribed.erase(nPublishedFileID);
+        ugc_bridge->remove_subbed_mod(nPublishedFileID);
     }
 
     return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
@@ -945,8 +1034,8 @@ uint32 GetNumSubscribedItems()
     PRINT_DEBUG("Steam_UGC::GetNumSubscribedItems\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    PRINT_DEBUG("  Steam_UGC::GetNumSubscribedItems = %zu\n", subscribed.size());
-    return subscribed.size();
+    PRINT_DEBUG("  Steam_UGC::GetNumSubscribedItems = %zu\n", ugc_bridge->subbed_mods_count());
+    return (uint32)ugc_bridge->subbed_mods_count();
 }
  // number of subscribed items 
 
@@ -954,11 +1043,11 @@ uint32 GetSubscribedItems( PublishedFileId_t* pvecPublishedFileID, uint32 cMaxEn
 {
     PRINT_DEBUG("Steam_UGC::GetSubscribedItems %p %u\n", pvecPublishedFileID, cMaxEntries);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (cMaxEntries > subscribed.size()) {
-        cMaxEntries = subscribed.size();
+    if ((size_t)cMaxEntries > ugc_bridge->subbed_mods_count()) {
+        cMaxEntries = (uint32)ugc_bridge->subbed_mods_count();
     }
 
-    std::copy_n(subscribed.begin(), cMaxEntries, pvecPublishedFileID);
+    std::copy_n(ugc_bridge->subbed_mods_itr_begin(), cMaxEntries, pvecPublishedFileID);
     return cMaxEntries;
 }
  // all subscribed item PublishFileIDs
@@ -968,14 +1057,17 @@ uint32 GetItemState( PublishedFileId_t nPublishedFileID )
 {
     PRINT_DEBUG("Steam_UGC::GetItemState %llu\n", nPublishedFileID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (subscribed.count(nPublishedFileID)) {
+    if (ugc_bridge->has_subbed_mod(nPublishedFileID)) {
         if (settings->isModInstalled(nPublishedFileID)) {
-            return k_EItemStateInstalled | k_EItemStateSubscribed;
+            PRINT_DEBUG("  mod is subscribed and installed\n");
+            return k_EItemStateInstalled | k_EItemStateSubscribed | k_EItemStateLegacyItem;
         }
 
+        PRINT_DEBUG("  mod is subscribed\n");
         return k_EItemStateSubscribed;
     }
 
+    PRINT_DEBUG("  mod isn't found\n");
     return k_EItemStateNone;
 }
 
@@ -984,16 +1076,17 @@ uint32 GetItemState( PublishedFileId_t nPublishedFileID )
 // if k_EItemStateLegacyItem is set, pchFolder contains the path to the legacy file itself (not a folder)
 bool GetItemInstallInfo( PublishedFileId_t nPublishedFileID, uint64 *punSizeOnDisk, STEAM_OUT_STRING_COUNT( cchFolderSize ) char *pchFolder, uint32 cchFolderSize, uint32 *punTimeStamp )
 {
-    PRINT_DEBUG("Steam_UGC::GetItemInstallInfo %llu\n", nPublishedFileID);
+    PRINT_DEBUG("Steam_UGC::GetItemInstallInfo %llu %p %p %u %p\n", nPublishedFileID, punSizeOnDisk, pchFolder, cchFolderSize, punTimeStamp);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (!settings->isModInstalled(nPublishedFileID)) {
-        return false;
-    }
+    if (!cchFolderSize) return false;
+    if (!settings->isModInstalled(nPublishedFileID)) return false;
 
     auto mod = settings->getMod(nPublishedFileID);
     if (punSizeOnDisk) *punSizeOnDisk = mod.primaryFileSize;
-    if (punTimeStamp) *punTimeStamp = mod.timeCreated;
+    if (punTimeStamp) *punTimeStamp = mod.timeUpdated;
     if (pchFolder && cchFolderSize) {
+        PRINT_DEBUG("  mod path: '%s'\n", mod.path.c_str());
+        memset(pchFolder, cchFolderSize, 0);
         mod.path.copy(pchFolder, cchFolderSize - 1);
     }
 
