@@ -24,6 +24,14 @@ bool ends_with_i(const std::string &target, const std::string &query);
 
 bool ends_with_i(const std::wstring &target, const std::wstring &query);
 
+std::string to_lower(std::string str);
+
+std::wstring to_lower(std::wstring wstr);
+
+std::string to_upper(std::string str);
+
+std::wstring to_upper(std::wstring wstr);
+
 std::string to_absolute(const std::string &path, const std::string &base = std::string());
 
 std::wstring to_absolute(const std::wstring &path, const std::wstring &base = std::wstring());

@@ -1,8 +1,11 @@
 * a new experimental library to patch Stub drm v3.1 in memory, check the readme of the cold client loader
 * cold client loader can now inject dlls, also it can force inject the `steamclient(64).dll` library
+* cold client loader can inject the dlls according to a user sepcified order, check the readme and the provided example
 * cold client loader will now treat relative paths as relative to its own path
 * cold client loader now doesn't need an explicit setting for the `ExeRunDir`, by default it would be the folder of the exe
 * in cold client loader, the option `ResumeByDebugger` is now available in the release build
+* cold client loader will display a nag about architecture difference if for example the app was 32-bit and the loader was 64-bit,  
+  this could be disabled via the setting `IgnoreLoaderArchDifference=1`
 * the cold client loader will output useful debug info when the debug build is used
 * fixed a problem in the overlay which would cause a crash for the guest player when an invitation was sent
 * imitate how the DOS Stub is manipulated during/after the build

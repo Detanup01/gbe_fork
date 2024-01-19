@@ -106,6 +106,34 @@ bool common_helpers::ends_with_i(const std::wstring &target, const std::wstring 
 
 }
 
+std::string common_helpers::to_lower(std::string str)
+{
+    std::string _str(str.size(), '\0');
+    std::transform(str.begin(), str.end(), _str.begin(), [](char c) { return std::tolower(c); });
+    return _str;
+}
+
+std::wstring common_helpers::to_lower(std::wstring wstr)
+{
+    std::wstring _wstr(wstr.size(), '\0');
+    std::transform(wstr.begin(), wstr.end(), _wstr.begin(), [](wchar_t c) { return std::tolower(c); });
+    return _wstr;
+}
+
+std::string common_helpers::to_upper(std::string str)
+{
+    std::string _str(str.size(), '\0');
+    std::transform(str.begin(), str.end(), _str.begin(), [](char c) { return std::toupper(c); });
+    return _str;
+}
+
+std::wstring common_helpers::to_upper(std::wstring wstr)
+{
+    std::wstring _wstr(wstr.size(), '\0');
+    std::transform(wstr.begin(), wstr.end(), _wstr.begin(), [](wchar_t c) { return std::toupper(c); });
+    return _wstr;
+}
+
 std::filesystem::path to_absolute_impl(const std::filesystem::path &path, const std::filesystem::path &base)
 {
     if (path.is_absolute()) {

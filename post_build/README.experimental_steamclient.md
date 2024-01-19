@@ -30,13 +30,24 @@ You do not need to create a `steam_interfaces.txt` file for the `steamclient` ve
    Note that you have to resume the main thread from the debugger after attaching, also the entry breakpoint may not be set automatically, but you can do that manually.  
    * `DllsToInjectFolder`: path to a folder containing dlls to force inject into the app upon start,  
      the loader will attempt to detect the dll architecture (32 or 64 bit), if it didn't match the architecture of the exe, then it will ignored  
-   * `IgnoreInjectionError`: setting this to `1` or `y` or `true` will prevent the loader from displaying an error message when a dll injection fails
+   * `IgnoreInjectionError`: setting this to `1` or `y` or `true` will prevent the loader from displaying an error message when a dll injection fails  
+   * `IgnoreLoaderArchDifference`: don't display an error message if the architecture of the loader is different from the app.  
+   this will result in a silent failure if a dll injection didn't succeed.  
+   both the loader and the app must have the same arch for the injection to work  
 
 
 **Note** that any arguments passed to `steamclient_loader.exe` via command line will be passed to the target `.exe`.  
 Example: `steamclient_loader.exe` `-dx11`  
 If the additional exe arguments were both: passed via command line and set in the `.ini` file, then both will be cocatenated and passed to the exe.  
 This allows the loader to be used/called from other external apps which set additional args.  
+
+### `DllsToInjectFolder`  
+The folder specified by this identifier should contain the .dll files you'd like to inject in the app earlier during its creation.  
+All the subfolders inside this folder will be traversed recursively, and the .dll files inside these subfolders will be loaded/injected.  
+
+Additionaly, you can create a file called `load_order.txt` inside your folder (root level, not inside any subdir), mentioning on each line the .dll files to inject, the order of the lines will instruct the loader which .dll to inject first, the .dll mentioned on the first line will be injected first and so on.  
+Each line inside this file has to be the relative path to the target .dll, and it should be relative to your folder. Check the example.  
+Any .dll file not mentioned in this file will be loaded later, but in random order.  
 
 ---
 

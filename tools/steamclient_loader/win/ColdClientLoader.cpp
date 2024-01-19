@@ -12,6 +12,7 @@
 #include <tchar.h>
 #include <stdio.h>
 #include <string>
+#include <set>
 
 
 static const std::wstring IniFile = pe_helpers::get_current_exe_path_w() + L"ColdClientLoader.ini";
@@ -59,6 +60,90 @@ static std::vector<uint8_t> get_pe_header(const std::wstring &filepath)
     }
 }
 
+static std::vector<std::wstring> collect_dlls_to_inject(
+    const std::wstring &extra_dlls_folder,
+    bool is_exe_32,
+    std::wstring &failed_dlls = std::wstring{})
+{
+    const auto load_order_file = std::filesystem::path(extra_dlls_folder) / "load_order.txt";
+    std::vector<std::wstring> dlls_to_inject{};
+    for (auto const& dir_entry :
+        std::filesystem::recursive_directory_iterator(extra_dlls_folder, std::filesystem::directory_options::follow_directory_symlink)) {
+        if (std::filesystem::is_directory(dir_entry.path())) continue;
+
+        auto dll_path = dir_entry.path().wstring();
+        // ignore this file if it is the load order file
+        if (common_helpers::to_upper(dll_path) == common_helpers::to_upper(load_order_file.wstring())) continue;
+        
+        auto dll_header = get_pe_header(dll_path);
+        if (dll_header.empty()) {
+            dbg_log::write(L"Failed to get PE header of dll: " + dll_path);
+            failed_dlls += dll_path + L"\n";
+            continue;
+        }
+        
+        bool is_dll_32 = pe_helpers::is_module_32((HMODULE)&dll_header[0]);
+        bool is_dll_64 = pe_helpers::is_module_64((HMODULE)&dll_header[0]);
+        if ((!is_dll_32 && !is_dll_64) || (is_dll_32 && is_dll_64)) { // ARM, or just a regular file
+            dbg_log::write(L"Dll " + dll_path + L" is neither 32 nor 64 bit and will be ignored");
+            failed_dlls += dll_path + L"\n";
+            continue;
+        }
+
+        if (is_dll_32 == is_exe_32) { // same arch
+            dlls_to_inject.push_back(dll_path);
+            dbg_log::write(L"Dll " + dll_path + L" will be injected");
+        } else {
+            dbg_log::write(L"Dll " + dll_path + L" has a different arch than the exe and will be ignored");
+            failed_dlls += dll_path + L"\n";
+        }
+    }
+
+    std::vector<std::wstring> ordered_dlls_to_inject{};
+    {
+        dbg_log::write(L"Searching for load order file: " + load_order_file.wstring());
+        auto f_order = std::wifstream(load_order_file, std::ios::in);
+        if (f_order.is_open()) {
+            dbg_log::write(L"Reading load order file: " + load_order_file.wstring());
+            std::wstring line{};
+            while (std::getline(f_order, line)) {
+                auto abs = common_helpers::to_absolute(line, extra_dlls_folder);
+                auto abs_upper = common_helpers::to_upper(abs);
+                dbg_log::write(L"Load order line: " + abs_upper);
+                auto it = std::find_if(dlls_to_inject.begin(), dlls_to_inject.end(), [&abs_upper](const std::wstring &dll_to_inject) {
+                    return  common_helpers::to_upper(dll_to_inject) == abs_upper;
+                });
+                if (it != dlls_to_inject.end()) {
+                    dbg_log::write("Found the dll specified by the load order line");
+                    ordered_dlls_to_inject.push_back(*it);
+                    // mark for deletion
+                    it->clear();
+                }
+            }
+            f_order.close();
+        }
+    }
+
+    // add the remaining dlls
+    for (auto &dll : dlls_to_inject) {
+        if (dll.size()) {
+            ordered_dlls_to_inject.push_back(dll);
+        }
+    }
+
+    return ordered_dlls_to_inject;
+}
+
+static void to_bool_ini_val(std::wstring &val)
+{
+    for (auto &c : val) {
+        c = (wchar_t)std::tolower((int)c);
+    }
+    if (val != L"1" && val != L"y" && val != L"yes" && val != L"true") {
+        val.clear();
+    }
+}
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
     dbg_log::init(dbg_file.c_str());
@@ -89,16 +174,22 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     );
     std::wstring ExeCommandLine = get_ini_value(L"SteamClient", L"ExeCommandLine");
     std::wstring AppId = get_ini_value(L"SteamClient", L"AppId");
-    std::wstring InjectClient = get_ini_value(L"SteamClient", L"ForceInjectSteamClient");
+    std::wstring ForceInjectSteamClient = get_ini_value(L"SteamClient", L"ForceInjectSteamClient");
     
-    std::wstring resume_by_dbg = get_ini_value(L"Debug", L"ResumeByDebugger");
+    std::wstring ResumeByDebugger = get_ini_value(L"Debug", L"ResumeByDebugger");
 
     // dlls to inject
-    std::wstring extra_dlls_folder = common_helpers::to_absolute(
+    std::wstring DllsToInjectFolder = common_helpers::to_absolute(
         get_ini_value(L"Extra", L"DllsToInjectFolder"),
         pe_helpers::get_current_exe_path_w()
     );
     std::wstring IgnoreInjectionError = get_ini_value(L"Extra", L"IgnoreInjectionError", L"1");
+    std::wstring IgnoreLoaderArchDifference = get_ini_value(L"Extra", L"IgnoreLoaderArchDifference", L"0");
+
+    to_bool_ini_val(ResumeByDebugger);
+    to_bool_ini_val(ForceInjectSteamClient);
+    to_bool_ini_val(IgnoreInjectionError);
+    to_bool_ini_val(IgnoreLoaderArchDifference);
 
     // log everything
     dbg_log::write(L"SteamClient::Exe: " + ExeFile);
@@ -107,10 +198,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     dbg_log::write(L"SteamClient::AppId: " + AppId);
     dbg_log::write(L"SteamClient::SteamClient: " + ClientPath);
     dbg_log::write(L"SteamClient::SteamClient64Dll: " + Client64Path);
-    dbg_log::write(L"SteamClient::ForceInjectSteamClient: " + InjectClient);
-    dbg_log::write(L"Debug::ResumeByDebugger: " + resume_by_dbg);
-    dbg_log::write(L"Extra::DllsToInjectFolder: " + extra_dlls_folder);
+    dbg_log::write(L"SteamClient::ForceInjectSteamClient: " + ForceInjectSteamClient);
+    dbg_log::write(L"Debug::ResumeByDebugger: " + ResumeByDebugger);
+    dbg_log::write(L"Extra::DllsToInjectFolder: " + DllsToInjectFolder);
     dbg_log::write(L"Extra::IgnoreInjectionError: " + IgnoreInjectionError);
+    dbg_log::write(L"Extra::IgnoreLoaderArchDifference: " + IgnoreLoaderArchDifference);
 
     if (AppId.size() && AppId[0]) {
         SetEnvironmentVariableW(L"SteamAppId", AppId.c_str());
@@ -131,7 +223,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
     if (ExeRunDir.empty()) {
         ExeRunDir = std::filesystem::path(ExeFile).parent_path().wstring();
-        dbg_log::write(L"Setting exe run dir to: " + ExeRunDir);
+        dbg_log::write(L"Setting ExeRunDir to: " + ExeRunDir);
     }
     if (!common_helpers::dir_exist(ExeRunDir)) {
         dbg_log::write("Couldn't find the requested Exe run dir");
@@ -154,29 +246,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         return 1;
     }
 
-    for (auto &c : resume_by_dbg) {
-        c = (wchar_t)std::tolower((int)c);
-    }
-    if (resume_by_dbg != L"1" && resume_by_dbg != L"y" && resume_by_dbg != L"yes" && resume_by_dbg != L"true") {
-        resume_by_dbg.clear();
-    }
-
-    for (auto &c : IgnoreInjectionError) {
-        c = (wchar_t)std::tolower((int)c);
-    }
-    if (IgnoreInjectionError != L"1" && IgnoreInjectionError != L"y" && IgnoreInjectionError != L"yes" && IgnoreInjectionError != L"true") {
-        IgnoreInjectionError.clear();
-    }
-
-    for (auto &c : InjectClient) {
-        c = (wchar_t)std::tolower((int)c);
-    }
-    if (InjectClient != L"1" && InjectClient != L"y" && InjectClient != L"yes" && InjectClient != L"true") {
-        InjectClient.clear();
-    }
-
-    if (extra_dlls_folder.size()) {
-        if (!common_helpers::dir_exist(extra_dlls_folder)) {
+    if (DllsToInjectFolder.size()) {
+        if (!common_helpers::dir_exist(DllsToInjectFolder)) {
             dbg_log::write("Couldn't find the requested folder of dlls to inject");
             MessageBoxA(NULL, "Couldn't find the requested folder of dlls to inject.", "ColdClientLoader", MB_ICONERROR);
             dbg_log::close();
@@ -215,42 +286,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
     if (loader_is_32 != is_exe_32) {
         dbg_log::write("Arch of loader and requested exe are different, it is advised to use the appropriate one");
-        MessageBoxA(NULL, "Arch of loader and requested exe are different,\nit is advised to use the appropriate one.", "ColdClientLoader", MB_OK);
+        if (IgnoreLoaderArchDifference.empty()) {
+            MessageBoxA(NULL, "Arch of loader and requested exe are different,\nit is advised to use the appropriate one.", "ColdClientLoader", MB_OK);
+        }
     }
 
     std::vector<std::wstring> dlls_to_inject{};
-    if (extra_dlls_folder.size()) {
-        std::wstring failed_dlls = std::wstring{};
-
-        for (auto const& dir_entry :
-             std::filesystem::recursive_directory_iterator(extra_dlls_folder, std::filesystem::directory_options::follow_directory_symlink)) {
-                if (std::filesystem::is_directory(dir_entry.path())) continue;
-
-                auto dll_path = dir_entry.path().wstring();
-                auto dll_header = get_pe_header(dll_path);
-                if (dll_header.empty()) {
-                    dbg_log::write(L"Failed to get PE header of dll: " + dll_path);
-                    failed_dlls += dll_path + L"\n";
-                    continue;
-                }
-                
-                bool is_dll_32 = pe_helpers::is_module_32((HMODULE)&dll_header[0]);
-                bool is_dll_64 = pe_helpers::is_module_64((HMODULE)&dll_header[0]);
-                if ((!is_dll_32 && !is_dll_64) || (is_dll_32 && is_dll_64)) { // ARM, or just a regular file
-                    dbg_log::write(L"Dll " + dll_path + L" is neither 32 nor 64 bit and will be ignored");
-                    failed_dlls += dll_path + L"\n";
-                    continue;
-                }
-
-                if ((is_dll_32 && is_exe_32) || (is_dll_64 && is_exe_64)) {
-                    dlls_to_inject.push_back(dll_path);
-                    dbg_log::write(L"Dll " + dll_path + L" will be injected");
-                } else {
-                    dbg_log::write(L"Dll " + dll_path + L" has a different arch than the exe and will be ignored");
-                    failed_dlls += dll_path + L"\n";
-                }
-        }
-
+    if (DllsToInjectFolder.size()) {
+        std::wstring failed_dlls{};
+        dlls_to_inject = collect_dlls_to_inject(DllsToInjectFolder, is_exe_32, failed_dlls);
         if (failed_dlls.size() && IgnoreInjectionError.empty()) {
             int choice = MessageBoxW(
                 NULL,
@@ -320,19 +364,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         return 1;
     }
     
-    if (InjectClient.size()) {
+    if (ForceInjectSteamClient.size()) {
         if (is_exe_32) {
             dlls_to_inject.insert(dlls_to_inject.begin(), ClientPath);
         } else {
             dlls_to_inject.insert(dlls_to_inject.begin(), Client64Path);
         }
     }
-    for (const auto &dll_path : dlls_to_inject) {
+    for (const auto &dll : dlls_to_inject) {
+        dbg_log::write(L"Injecting dll: '" + dll + L"' ...");
         const char *err_inject = nullptr;
-        DWORD code = pe_helpers::loadlib_remote(processInfo.hProcess, dll_path, &err_inject);
+        DWORD code = pe_helpers::loadlib_remote(processInfo.hProcess, dll, &err_inject);
         if (code != ERROR_SUCCESS) {
             std::wstring err_full =
-                L"Failed to inject the dll: " + dll_path + L"\n" +
+                L"Failed to inject the dll: " + dll + L"\n" +
                 common_helpers::str_to_w(err_inject) + L"\n" +
                 common_helpers::str_to_w(pe_helpers::get_err_string(code)) + L"\n" +
                 L"Error code = " + std::to_wstring(code) + L"\n";
@@ -346,12 +391,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                 return 1;
             }
         } else {
-
+            dbg_log::write("Injected!");
         }
     }
 
     // run
-    if (resume_by_dbg.empty()) {
+    if (ResumeByDebugger.empty()) {
         ResumeThread(processInfo.hThread);
     } else {
         std::string msg = "Attach a debugger now to PID " + std::to_string(processInfo.dwProcessId) + " and resume its main thread";
