@@ -134,7 +134,7 @@ std::wstring common_helpers::to_upper(std::wstring wstr)
     return _wstr;
 }
 
-std::filesystem::path to_absolute_impl(const std::filesystem::path &path, const std::filesystem::path &base)
+static std::filesystem::path to_absolute_impl(const std::filesystem::path &path, const std::filesystem::path &base)
 {
     if (path.is_absolute()) {
         return path;

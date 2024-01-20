@@ -64,6 +64,7 @@ public:
     void setAppId(uint32 appid);
     static int store_file_data(std::string folder, std::string file, char *data, unsigned int length);
     static std::vector<std::string> get_filenames_path(std::string path);
+    static std::vector<std::string> get_folders_path(std::string path);
 
     int store_data(std::string folder, std::string file, char *data, unsigned int length);
     int store_data_settings(std::string file, char *data, unsigned int length);

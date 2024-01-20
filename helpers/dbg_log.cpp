@@ -15,7 +15,7 @@ static std::recursive_mutex f_mtx{};
 
 bool dbg_log::init(const wchar_t *path)
 {
-	auto p = std::filesystem::path(path).string();
+	auto p = std::filesystem::path(path).u8string();
 	return init(p.c_str());
 }
 

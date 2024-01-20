@@ -171,7 +171,14 @@ Steam_UGC(class Settings *settings, class Ugc_Remote_Storage_Bridge *ugc_bridge,
 UGCQueryHandle_t CreateQueryUserUGCRequest( AccountID_t unAccountID, EUserUGCList eListType, EUGCMatchingUGCType eMatchingUGCType, EUserUGCListSortOrder eSortOrder, AppId_t nCreatorAppID, AppId_t nConsumerAppID, uint32 unPage )
 {
     PRINT_DEBUG("Steam_UGC::CreateQueryUserUGCRequest %u %i %i %i %u %u %u\n", unAccountID, eListType, eMatchingUGCType, eSortOrder, nCreatorAppID, nConsumerAppID, unPage);
-    //TODO
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    if (nCreatorAppID != settings->get_local_game_id().AppID() || nConsumerAppID != settings->get_local_game_id().AppID()) return k_UGCQueryHandleInvalid;
+    if (unPage < 1) return k_UGCQueryHandleInvalid;
+    if (eListType < 0) return k_UGCQueryHandleInvalid;
+    if (unAccountID != settings->get_local_steam_id().GetAccountID()) return k_UGCQueryHandleInvalid;
+    
+    // TODO
     return new_ugc_query(eListType == k_EUserUGCList_Subscribed || eListType == k_EUserUGCList_Published);
 }
 
@@ -180,7 +187,13 @@ UGCQueryHandle_t CreateQueryUserUGCRequest( AccountID_t unAccountID, EUserUGCLis
 UGCQueryHandle_t CreateQueryAllUGCRequest( EUGCQuery eQueryType, EUGCMatchingUGCType eMatchingeMatchingUGCTypeFileType, AppId_t nCreatorAppID, AppId_t nConsumerAppID, uint32 unPage )
 {
     PRINT_DEBUG("Steam_UGC::CreateQueryAllUGCRequest\n");
-    //TODO
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    if (nCreatorAppID != settings->get_local_game_id().AppID() || nConsumerAppID != settings->get_local_game_id().AppID()) return k_UGCQueryHandleInvalid;
+    if (unPage < 1) return k_UGCQueryHandleInvalid;
+    if (eQueryType < 0) return k_UGCQueryHandleInvalid;
+    
+    // TODO
     return new_ugc_query();
 }
 
@@ -188,7 +201,12 @@ UGCQueryHandle_t CreateQueryAllUGCRequest( EUGCQuery eQueryType, EUGCMatchingUGC
 UGCQueryHandle_t CreateQueryAllUGCRequest( EUGCQuery eQueryType, EUGCMatchingUGCType eMatchingeMatchingUGCTypeFileType, AppId_t nCreatorAppID, AppId_t nConsumerAppID, const char *pchCursor = NULL )
 {
     PRINT_DEBUG("Steam_UGC::CreateQueryAllUGCRequest other\n");
-    //TODO
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    if (nCreatorAppID != settings->get_local_game_id().AppID() || nConsumerAppID != settings->get_local_game_id().AppID()) return k_UGCQueryHandleInvalid;
+    if (eQueryType < 0) return k_UGCQueryHandleInvalid;
+    
+    // TODO
     return new_ugc_query();
 }
 
@@ -196,6 +214,12 @@ UGCQueryHandle_t CreateQueryAllUGCRequest( EUGCQuery eQueryType, EUGCMatchingUGC
 UGCQueryHandle_t CreateQueryUGCDetailsRequest( PublishedFileId_t *pvecPublishedFileID, uint32 unNumPublishedFileIDs )
 {
     PRINT_DEBUG("Steam_UGC::CreateQueryUGCDetailsRequest\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    if (!pvecPublishedFileID) return k_UGCQueryHandleInvalid;
+    if (unNumPublishedFileIDs < 1) return k_UGCQueryHandleInvalid;
+    
+    // TODO
     std::set<PublishedFileId_t> only(pvecPublishedFileID, pvecPublishedFileID + unNumPublishedFileIDs);
     return new_ugc_query(false, only);
 }
@@ -248,10 +272,7 @@ bool GetQueryUGCResult( UGCQueryHandle_t handle, uint32 index, SteamUGCDetails_t
 {
     PRINT_DEBUG("Steam_UGC::GetQueryUGCResult %llu %u %p\n", handle, index, pDetails);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (pDetails) {
-        memset(pDetails, 0, sizeof(SteamUGCDetails_t));
-        pDetails->m_eResult = k_EResultFail;
-    }
+    if (handle == k_UGCQueryHandleInvalid) return false;
 
     auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
     if (ugc_queries.end() == request) {
@@ -260,6 +281,11 @@ bool GetQueryUGCResult( UGCQueryHandle_t handle, uint32 index, SteamUGCDetails_t
 
     if (index >= request->results.size()) {
         return false;
+    }
+
+    if (pDetails) {
+        memset(pDetails, 0, sizeof(SteamUGCDetails_t));
+        pDetails->m_eResult = k_EResultFail;
     }
 
     auto it = request->results.begin();
@@ -530,8 +556,10 @@ bool SetReturnLongDescription( UGCQueryHandle_t handle, bool bReturnLongDescript
 
 bool SetReturnMetadata( UGCQueryHandle_t handle, bool bReturnMetadata )
 {
-    PRINT_DEBUG("TODO Steam_UGC::SetReturnMetadata\n");
+    PRINT_DEBUG("TODO Steam_UGC::SetReturnMetadata %i\n", (int)bReturnMetadata);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    if (handle == k_UGCQueryHandleInvalid) return false;
     
     return true;
 }
@@ -1086,7 +1114,7 @@ bool GetItemInstallInfo( PublishedFileId_t nPublishedFileID, uint64 *punSizeOnDi
     if (punTimeStamp) *punTimeStamp = mod.timeUpdated;
     if (pchFolder && cchFolderSize) {
         PRINT_DEBUG("  mod path: '%s'\n", mod.path.c_str());
-        memset(pchFolder, cchFolderSize, 0);
+        memset(pchFolder, 0, cchFolderSize);
         mod.path.copy(pchFolder, cchFolderSize - 1);
     }
 

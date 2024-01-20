@@ -479,7 +479,7 @@ echo: & echo:
 if %last_code% equ 0 (
   echo // copying readmes + files examples
   xcopy /y /s /e /r "post_build\steam_settings.EXAMPLE\" "%build_root_dir%\steam_settings.EXAMPLE\"
-  xcopy /y /s /e /r "post_build\win\ColdClientLoader.EXAMPLE\" "%steamclient_dir%\EXAMPLE\"
+  xcopy /y /s /e /r "post_build\win\ColdClientLoader.EXAMPLE\" "%steamclient_dir%\dll_injection.EXAMPLE\"
   copy /y "%tools_src_dir%\steamclient_loader\win\ColdClientLoader.ini" "%steamclient_dir%\"
   copy /y "post_build\README.release.md" "%build_root_dir%\"
   copy /y "CHANGELOG.md" "%build_root_dir%\"

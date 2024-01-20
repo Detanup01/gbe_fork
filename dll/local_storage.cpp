@@ -159,6 +159,11 @@ std::vector<std::string> Local_Storage::get_filenames_path(std::string path)
     return std::vector<std::string>();
 }
 
+std::vector<std::string> Local_Storage::get_folders_path(std::string path)
+{
+    return std::vector<std::string>();
+}
+
 std::vector<image_pixel_t> Local_Storage::load_image(std::string const& image_path)
 {
     return std::vector<image_pixel_t>();
@@ -185,6 +190,7 @@ std::string Local_Storage::desanitize_string(std::string name)
 }
 
 #else
+
 #if defined(__WINDOWS__)
 
 static BOOL DirectoryExists(LPCWSTR szPath)
@@ -559,6 +565,7 @@ std::string Local_Storage::get_global_settings_path()
 
 std::vector<std::string> Local_Storage::get_filenames_path(std::string path)
 {
+    if (path.empty()) return {};
     if (path.back() != *PATH_SEPARATOR) {
         path.append(PATH_SEPARATOR);
     }
@@ -566,6 +573,30 @@ std::vector<std::string> Local_Storage::get_filenames_path(std::string path)
     std::vector<struct File_Data> filenames = get_filenames(path);
     std::vector<std::string> output;
     std::transform(filenames.begin(), filenames.end(), std::back_inserter(output), [](struct File_Data d) { return d.name;});
+    return output;
+}
+
+std::vector<std::string> Local_Storage::get_folders_path(std::string path)
+{
+    if (path.empty()) return {};
+    if (path.back() != *PATH_SEPARATOR) {
+        path.append(PATH_SEPARATOR);
+    }
+
+    std::vector<std::string> output{};
+    try
+    {
+        const auto path_p = std::filesystem::path(path);
+        if (!std::filesystem::is_directory(path_p)) return output;
+
+        for (const auto &dir_entry :
+            std::filesystem::directory_iterator(path_p, std::filesystem::directory_options::follow_directory_symlink)) {
+            if (std::filesystem::is_directory(dir_entry)) {
+                output.push_back(dir_entry.path().filename().u8string());
+            }
+        }
+    } catch(...) { }
+    
     return output;
 }
 
