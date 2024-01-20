@@ -1,17 +1,36 @@
-* a new experimental library to patch Stub drm v3.1 in memory, check the readme of the cold client loader
-* cold client loader can now inject dlls, also it can force inject the `steamclient(64).dll` library
-* cold client loader can inject the dlls according to a user sepcified order, check the readme and the provided example
-* cold client loader will now treat relative paths as relative to its own path
-* cold client loader now doesn't need an explicit setting for the `ExeRunDir`, by default it would be the folder of the exe
-* in cold client loader, the option `ResumeByDebugger` is now available in the release build
-* cold client loader will display a nag about architecture difference if for example the app was 32-bit and the loader was 64-bit,  
-  this could be disabled via the setting `IgnoreLoaderArchDifference=1`
+## 2024/1/20
+
+* **[Detanup01]** added implementation for `Steam_Remote_Storage::EnumerateUserSubscribedFiles()` +   
+  mods files handles in `Steam_Remote_Storage::UGCDownload()` + `Steam_Remote_Storage::UGCDownloadToLocation()`  
+  which makes mods now work for many games
+* **[Kola124]** enhanced the settings parser to detect primary and preview mod files sizes automatically +  
+  use the base Steam URL by default for workshop URL + auto calculate the mod `score` from up/down votes  
+  also thanks to **[BTFighter]** for providing logs
+* **Breaking change** mod preview image file must exist in `steam_settings\mod_images\<MOD_ID>`
+* an enhancement to the settings parser to attempt to auto detect mods when `mods.json` is not present, with the same behavior as when the json file was created.  
+  this works for mods with only 1 primary file and only 1 preview file
+* fixed the generated path of mod `preview_url`, previously it would contain back slashes `\` on Windows
+* use last week epoch as the default time for mods dates (created, added, etc...)
+* make sure the mod path is always normalized and absolute, required by some APIs
+* `Steam UGC`: implement `SetUserItemVote()`, `GetUserItemVote()`, `AddItemToFavorites()`, `RemoveItemFromFavorites()`,  
+  favorite mods list are now saved in `favorites.txt` in the user save data folder
+* cold client loader can now inject user dlls, and force inject the `steamclient(64).dll` library,  
+  also you can control the injection order via a file `load_order.txt`, check its readme and the provided example
+* a new experimental dll (which must be injected first) to patch Stub drm v3.1 in memory, check the injection example of the cold client loader
+* cold client loader will now treat relative paths as relative to its own path, previously it used the current active directory
+* cold client loader no longer needs an explicit setting for the `ExeRunDir`, by default it would be the folder of the exe
+* in cold client loader, the option `ResumeByDebugger` is now available for the release build
+* cold client loader is now built for 32-bit and 64-bit separately, and will display a nag about architecture difference if for example the app was 32-bit and the loader was 64-bit, this could be disabled via the setting `IgnoreLoaderArchDifference=1`
 * the cold client loader will output useful debug info when the debug build is used
+* added a very basic crashes logger/printer, enabled by creating a file called `crash_printer_location.txt` inside the `steam_settings` folder, check README.realease.md for more details  
 * fixed a problem in the overlay which would cause a crash for the guest player when an invitation was sent
+* `Steam UGC`: make sure returned mod folder from `GetItemInstallInfo()` is null terminated, previously some apps would get a bad malformed string because of this
+* `Steam_RemoteStorage`: very basic implementation for `GetQueryUGCNumTags()`, `GetQueryUGCTag()`, `GetQueryUGCTagDisplayName()`
+* new function in local storage to get list of folders at root level, given some path
 * imitate how the DOS Stub is manipulated during/after the build
 * some fixes to the win build script + use the undocumented linker flag `/emittoolversioninfo:no` to prevent adding the MSVC Rich Header
-* added a very basic crashes logger/printer, enabled by creating a file called `crash_printer_location.txt` inside the `steam_settings` folder,  
-  check README.realease.md for more details  
+* debug messages are now mostly scoped, ex: `Steam_Ugc::XXX`
+* added a bunch of helper functions, `common_helpers::XXX` + `pe_helpers::XXX`
 
 ---
 

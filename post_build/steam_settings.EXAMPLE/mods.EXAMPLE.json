@@ -1,4 +1,11 @@
 {
+	"9422": {
+		"title": "Some Workshop Item",
+		"description": "This is the prefered way of specifying mod details, primary file must exist in steam_settings/mods/9422 (along with any other mod files), and preview file must exist in steam_settings/mod_images/9422",
+		"primary_filename": "metadata.json",
+		"preview_filename": "thumbnail.png"
+	},
+
 	"111111111": {
 		"title": "Example Workshop Item",
 		"description": "Example Workshop Item with all Details",
@@ -22,7 +29,7 @@
 	
 	"222222222": {
 		"title": "Example Workshop Item",
-		"description": "Example Workshop Item with all Details",
+		"description": "Example Workshop Item with some Details",
 		"preview_url": "https://commons.wikimedia.org/wiki/File:Tree_in_Mississippi.jpg",
 		"score": 1.0
 	},
@@ -33,7 +40,7 @@
 	
 	"444444444": {
 		"title": "Example Workshop Item",
-		"description": "Example Workshop Item with all Details",
+		"description": "Example Workshop Item"
 	},
 	
 	"555555555": {
