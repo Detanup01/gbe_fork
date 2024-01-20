@@ -822,6 +822,9 @@ static void try_parse_mods_file(class Settings *settings_client, Settings *setti
             newMod.path = mod.value().value("path", std::string(""));
             if (newMod.path.empty()) {
                 newMod.path = mods_folder + PATH_SEPARATOR + std::string(mod.key());
+            } else {
+                // make sure the path is normalized for current OS, and absolute
+                newMod.path = std::filesystem::absolute(newMod.path).u8string();
             }
 
             newMod.fileType = k_EWorkshopFileTypeCommunity;
