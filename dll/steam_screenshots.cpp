@@ -33,7 +33,7 @@ ScreenshotHandle Steam_Screenshots::create_screenshot_handle()
 // The return value is a handle that is valid for the duration of the game process and can be used to apply tags.
 ScreenshotHandle Steam_Screenshots::WriteScreenshot( void *pubRGB, uint32 cubRGB, int nWidth, int nHeight )
 {
-    PRINT_DEBUG("WriteScreenshot\n");
+    PRINT_DEBUG("Steam_Screenshots::WriteScreenshot\n");
     
     char buff[128];
     auto now = std::chrono::system_clock::now();
@@ -60,7 +60,7 @@ ScreenshotHandle Steam_Screenshots::WriteScreenshot( void *pubRGB, uint32 cubRGB
 // JPEG, TGA, and PNG formats are supported.
 ScreenshotHandle Steam_Screenshots::AddScreenshotToLibrary( const char *pchFilename, const char *pchThumbnailFilename, int nWidth, int nHeight )
 {
-    PRINT_DEBUG("AddScreenshotToLibrary\n");
+    PRINT_DEBUG("Steam_Screenshots::AddScreenshotToLibrary\n");
     
     if (pchFilename == nullptr)
         return INVALID_SCREENSHOT_HANDLE;
@@ -91,7 +91,7 @@ ScreenshotHandle Steam_Screenshots::AddScreenshotToLibrary( const char *pchFilen
 // Causes the Steam overlay to take a screenshot.  If screenshots are being hooked by the game then a ScreenshotRequested_t callback is sent back to the game instead. 
 void Steam_Screenshots::TriggerScreenshot()
 {
-    PRINT_DEBUG("TriggerScreenshot\n");
+    PRINT_DEBUG("Steam_Screenshots::TriggerScreenshot\n");
 
     if (hooked)
     {
@@ -100,7 +100,7 @@ void Steam_Screenshots::TriggerScreenshot()
     }
     else
     {
-        PRINT_DEBUG("TODO: Make the overlay take a screenshot");
+        PRINT_DEBUG("  TODO: Make the overlay take a screenshot");
     }
 }
 
@@ -110,7 +110,7 @@ void Steam_Screenshots::TriggerScreenshot()
 // in response.
 void Steam_Screenshots::HookScreenshots( bool bHook )
 {
-    PRINT_DEBUG("HookScreenshots\n");
+    PRINT_DEBUG("Steam_Screenshots::HookScreenshots\n");
     hooked = bHook;
 }
 
@@ -118,7 +118,7 @@ void Steam_Screenshots::HookScreenshots( bool bHook )
 // Sets metadata about a screenshot's location (for example, the name of the map)
 bool Steam_Screenshots::SetLocation( ScreenshotHandle hScreenshot, const char *pchLocation )
 {
-    PRINT_DEBUG("SetLocation\n");
+    PRINT_DEBUG("Steam_Screenshots::SetLocation\n");
     
     auto it = _screenshots.find(hScreenshot);
     if (it == _screenshots.end())
@@ -134,7 +134,7 @@ bool Steam_Screenshots::SetLocation( ScreenshotHandle hScreenshot, const char *p
 // Tags a user as being visible in the screenshot
 bool Steam_Screenshots::TagUser( ScreenshotHandle hScreenshot, CSteamID steamID )
 {
-    PRINT_DEBUG("TagUser\n");
+    PRINT_DEBUG("Steam_Screenshots::TagUser\n");
     
     auto it = _screenshots.find(hScreenshot);
     if (it == _screenshots.end())
@@ -150,7 +150,7 @@ bool Steam_Screenshots::TagUser( ScreenshotHandle hScreenshot, CSteamID steamID 
 // Tags a published file as being visible in the screenshot
 bool Steam_Screenshots::TagPublishedFile( ScreenshotHandle hScreenshot, PublishedFileId_t unPublishedFileID )
 {
-    PRINT_DEBUG("TagPublishedFile\n");
+    PRINT_DEBUG("Steam_Screenshots::TagPublishedFile\n");
     
     auto it = _screenshots.find(hScreenshot);
     if (it == _screenshots.end())
@@ -166,7 +166,7 @@ bool Steam_Screenshots::TagPublishedFile( ScreenshotHandle hScreenshot, Publishe
 // Returns true if the app has hooked the screenshot
 bool Steam_Screenshots::IsScreenshotsHooked()
 {
-    PRINT_DEBUG("IsScreenshotsHooked\n");
+    PRINT_DEBUG("Steam_Screenshots::IsScreenshotsHooked\n");
     return hooked;
 }
 
@@ -178,7 +178,7 @@ bool Steam_Screenshots::IsScreenshotsHooked()
 // JPEG, TGA, and PNG formats are supported.
 ScreenshotHandle Steam_Screenshots::AddVRScreenshotToLibrary( EVRScreenshotType eType, const char *pchFilename, const char *pchVRFilename )
 {
-    PRINT_DEBUG("AddVRScreenshotToLibrary\n");
+    PRINT_DEBUG("Steam_Screenshots::AddVRScreenshotToLibrary\n");
     return INVALID_SCREENSHOT_HANDLE;
 }
 

@@ -368,14 +368,14 @@ void SetOverrideMode( const char *pchMode )
 // configurations inside of the game depot instead of using the Steam Workshop
 bool SetInputActionManifestFilePath( const char *pchInputActionManifestAbsolutePath )
 {
-    PRINT_DEBUG("TODO %s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO Steam_Controller::%s\n", __FUNCTION__);
     //TODO SteamInput005
     return false;
 }
 
 bool BWaitForData( bool bWaitForever, uint32 unTimeout )
 {
-    PRINT_DEBUG("TODO %s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO Steam_Controller::%s\n", __FUNCTION__);
     //TODO SteamInput005
     return false;
 }
@@ -385,7 +385,7 @@ bool BWaitForData( bool bWaitForever, uint32 unTimeout )
 // SteamInput()->RunFrame() or SteamAPI_RunCallbacks() before this to update the data stream
 bool BNewDataAvailable()
 {
-    PRINT_DEBUG("TODO %s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO Steam_Controller::%s\n", __FUNCTION__);
     //TODO SteamInput005
     return false;
 }
@@ -395,7 +395,7 @@ bool BNewDataAvailable()
 // callback when you enable them
 void EnableDeviceCallbacks()
 {
-    PRINT_DEBUG("TODO %s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO Steam_Controller::%s\n", __FUNCTION__);
     //TODO SteamInput005
     return;
 }
@@ -405,7 +405,7 @@ void EnableDeviceCallbacks()
 // Note: this is called within either SteamInput()->RunFrame or by SteamAPI_RunCallbacks
 void EnableActionEventCallbacks( SteamInputActionEventCallbackPointer pCallback )
 {
-    PRINT_DEBUG("TODO %s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO Steam_Controller::%s\n", __FUNCTION__);
     //TODO SteamInput005
     return;
 }
@@ -749,7 +749,7 @@ int GetDigitalActionOrigins( InputHandle_t inputHandle, InputActionSetHandle_t a
 // Returns a localized string (from Steam's language setting) for the user-facing action name corresponding to the specified handle
 const char *GetStringForDigitalActionName( InputDigitalActionHandle_t eActionHandle )
 {
-    PRINT_DEBUG("TODO %s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO Steam_Controller::%s\n", __FUNCTION__);
     //TODO SteamInput005
     return "Button String";
 }
@@ -922,7 +922,7 @@ void Legacy_TriggerRepeatedHapticPulse( InputHandle_t inputHandle, ESteamControl
 // Send a haptic pulse, works on Steam Deck and Steam Controller devices
 void TriggerSimpleHapticEvent( InputHandle_t inputHandle, EControllerHapticLocation eHapticLocation, uint8 nIntensity, char nGainDB, uint8 nOtherIntensity, char nOtherGainDB )
 {
-    PRINT_DEBUG("TODO %s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO Steam_Controller::%s\n", __FUNCTION__);
 }
 
 // Tigger a vibration event on supported controllers.  
@@ -952,7 +952,7 @@ void TriggerVibration( ControllerHandle_t controllerHandle, unsigned short usLef
 // Trigger a vibration event on supported controllers including Xbox trigger impulse rumble - Steam will translate these commands into haptic pulses for Steam Controllers
 void TriggerVibrationExtended( InputHandle_t inputHandle, unsigned short usLeftSpeed, unsigned short usRightSpeed, unsigned short usLeftTriggerSpeed, unsigned short usRightTriggerSpeed )
 {
-    PRINT_DEBUG("TODO %s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO Steam_Controller::%s\n", __FUNCTION__);
     TriggerVibration(inputHandle, usLeftSpeed, usRightSpeed);
     //TODO trigger impulse rumbles
 }
@@ -1026,7 +1026,7 @@ const char *GetStringForActionOrigin( EInputActionOrigin eOrigin )
 // Returns a localized string (from Steam's language setting) for the user-facing action name corresponding to the specified handle
 const char *GetStringForAnalogActionName( InputAnalogActionHandle_t eActionHandle )
 {
-    PRINT_DEBUG("TODO %s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO Steam_Controller::%s\n", __FUNCTION__);
     //TODO SteamInput005
     return "Button String";
 }
@@ -1119,7 +1119,7 @@ const char *GetGlyphForActionOrigin( EInputActionOrigin eOrigin )
 // Get a local path to a PNG file for the provided origin's glyph. 
 const char *GetGlyphPNGForActionOrigin( EInputActionOrigin eOrigin, ESteamInputGlyphSize eSize, uint32 unFlags )
 {
-    PRINT_DEBUG("TODO %s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO Steam_Controller::%s\n", __FUNCTION__);
     //TODO SteamInput005
     return GetGlyphForActionOrigin(eOrigin);
 }
@@ -1127,7 +1127,7 @@ const char *GetGlyphPNGForActionOrigin( EInputActionOrigin eOrigin, ESteamInputG
 // Get a local path to a SVG file for the provided origin's glyph. 
 const char *GetGlyphSVGForActionOrigin( EInputActionOrigin eOrigin, uint32 unFlags )
 {
-    PRINT_DEBUG("TODO %s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO Steam_Controller::%s\n", __FUNCTION__);
     //TODO SteamInput005
     return "";
 }
@@ -1210,14 +1210,14 @@ uint32 GetRemotePlaySessionID( InputHandle_t inputHandle )
 // Note: user can override the settings from the Steamworks Partner site so the returned values may not exactly match your default configuration
 uint16 GetSessionInputConfigurationSettings()
 {
-    PRINT_DEBUG("TODO %s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO Steam_Controller::%s\n", __FUNCTION__);
     return 0;
 }
 
 // Set the trigger effect for a DualSense controller
 void SetDualSenseTriggerEffect( InputHandle_t inputHandle, const ScePadTriggerEffectParam *pParam )
 {
-    PRINT_DEBUG("TODO %s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO Steam_Controller::%s\n", __FUNCTION__);
 }
 
 void RunCallbacks()

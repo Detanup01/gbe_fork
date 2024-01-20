@@ -176,7 +176,7 @@ std::vector<Steam_Leaderboard_Score> load_leaderboard_scores(std::string name)
             i += 1;
         }
 
-        PRINT_DEBUG("loaded leaderboard score %llu %u\n", score.steam_id.ConvertToUint64(), score.score);
+        PRINT_DEBUG("Steam_User_Stats::loaded leaderboard score %llu %u\n", score.steam_id.ConvertToUint64(), score.score);
         out.push_back(score);
     }
 
@@ -295,7 +295,7 @@ bool RequestCurrentStats()
 // Data accessors
 bool GetStat( const char *pchName, int32 *pData )
 {
-    PRINT_DEBUG("GetStat int32 %s\n", pchName);
+    PRINT_DEBUG("Steam_User_Stats::GetStat int32 %s\n", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName || !pData) return false;
@@ -332,7 +332,7 @@ bool GetStat( const char *pchName, int32 *pData )
 
 bool GetStat( const char *pchName, float *pData )
 {
-    PRINT_DEBUG("GetStat float %s\n", pchName);
+    PRINT_DEBUG("Steam_User_Stats::GetStat float %s\n", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName || !pData) return false;
@@ -371,7 +371,7 @@ bool GetStat( const char *pchName, float *pData )
 // Set / update data
 bool SetStat( const char *pchName, int32 nData )
 {
-    PRINT_DEBUG("SetStat int32 %s\n", pchName);
+    PRINT_DEBUG("Steam_User_Stats::SetStat int32 %s\n", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName) return false;
@@ -401,7 +401,7 @@ bool SetStat( const char *pchName, int32 nData )
 
 bool SetStat( const char *pchName, float fData )
 {
-    PRINT_DEBUG("SetStat float %s\n", pchName);
+    PRINT_DEBUG("Steam_User_Stats::SetStat float %s\n", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName) return false;
@@ -431,7 +431,7 @@ bool SetStat( const char *pchName, float fData )
 
 bool UpdateAvgRateStat( const char *pchName, float flCountThisSession, double dSessionLength )
 {
-    PRINT_DEBUG("UpdateAvgRateStat %s\n", pchName);
+    PRINT_DEBUG("Steam_User_Stats::UpdateAvgRateStat %s\n", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName) return false;
@@ -466,7 +466,7 @@ bool UpdateAvgRateStat( const char *pchName, float flCountThisSession, double dS
 // Achievement flag accessors
 bool GetAchievement( const char *pchName, bool *pbAchieved )
 {
-    PRINT_DEBUG("GetAchievement %s\n", pchName);
+    PRINT_DEBUG("Steam_User_Stats::GetAchievement %s\n", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (pchName == nullptr) return false;
@@ -490,7 +490,7 @@ bool GetAchievement( const char *pchName, bool *pbAchieved )
 
 bool SetAchievement( const char *pchName )
 {
-    PRINT_DEBUG("SetAchievement %s\n", pchName);
+    PRINT_DEBUG("Steam_User_Stats::SetAchievement %s\n", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (pchName == nullptr) return false;
@@ -521,7 +521,7 @@ bool SetAchievement( const char *pchName )
 
 bool ClearAchievement( const char *pchName )
 {
-    PRINT_DEBUG("ClearAchievement %s\n", pchName);
+    PRINT_DEBUG("Steam_User_Stats::ClearAchievement %s\n", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (pchName == nullptr) return false;
@@ -548,7 +548,7 @@ bool ClearAchievement( const char *pchName )
 // began tracking achievement unlock times (December 2009). Time is seconds since January 1, 1970.
 bool GetAchievementAndUnlockTime( const char *pchName, bool *pbAchieved, uint32 *punUnlockTime )
 {
-    PRINT_DEBUG("GetAchievementAndUnlockTime\n");
+    PRINT_DEBUG("Steam_User_Stats::GetAchievementAndUnlockTime\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (pchName == nullptr) return false;
@@ -581,7 +581,7 @@ bool GetAchievementAndUnlockTime( const char *pchName, bool *pbAchieved, uint32 
 // The stats should be re-iterated to keep in sync.
 bool StoreStats()
 {
-    PRINT_DEBUG("StoreStats\n");
+    PRINT_DEBUG("Steam_User_Stats::StoreStats\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     UserStatsStored_t data;
@@ -600,7 +600,7 @@ bool StoreStats()
 // specified achievement.
 int GetAchievementIcon( const char *pchName )
 {
-    PRINT_DEBUG("GetAchievementIcon\n");
+    PRINT_DEBUG("Steam_User_Stats::GetAchievementIcon\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (pchName == nullptr) return 0;
 
@@ -629,7 +629,7 @@ std::string get_achievement_icon_name( const char *pchName, bool pbAchieved )
 // - "hidden" for retrieving if an achievement is hidden (returns "0" when not hidden, "1" when hidden)
 const char * GetAchievementDisplayAttribute( const char *pchName, const char *pchKey )
 {
-    PRINT_DEBUG("GetAchievementDisplayAttribute %s %s\n", pchName, pchKey);
+    PRINT_DEBUG("Steam_User_Stats::GetAchievementDisplayAttribute %s %s\n", pchName, pchKey);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (pchName == nullptr) return "";
@@ -671,7 +671,7 @@ const char * GetAchievementDisplayAttribute( const char *pchName, const char *pc
 // Calling this w/ N out of N progress will NOT set the achievement, the game must still do that.
 bool IndicateAchievementProgress( const char *pchName, uint32 nCurProgress, uint32 nMaxProgress )
 {
-    PRINT_DEBUG("IndicateAchievementProgress %s\n", pchName);
+    PRINT_DEBUG("Steam_User_Stats::IndicateAchievementProgress %s\n", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (pchName == nullptr) return false;
@@ -718,7 +718,7 @@ bool IndicateAchievementProgress( const char *pchName, uint32 nCurProgress, uint
 // list of existing achievements compiled into them
 uint32 GetNumAchievements()
 {
-    PRINT_DEBUG("GetNumAchievements\n");
+    PRINT_DEBUG("Steam_User_Stats::GetNumAchievements\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return defined_achievements.size();
 }
@@ -726,7 +726,7 @@ uint32 GetNumAchievements()
 // Get achievement name iAchievement in [0,GetNumAchievements)
 const char * GetAchievementName( uint32 iAchievement )
 {
-    PRINT_DEBUG("GetAchievementName\n");
+    PRINT_DEBUG("Steam_User_Stats::GetAchievementName\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (iAchievement >= sorted_achievement_names.size()) {
         return "";
@@ -765,7 +765,7 @@ SteamAPICall_t RequestUserStats( CSteamID steamIDUser )
 // requests stat information for a user, usable after a successful call to RequestUserStats()
 bool GetUserStat( CSteamID steamIDUser, const char *pchName, int32 *pData )
 {
-    PRINT_DEBUG("GetUserStat %s %llu\n", pchName, steamIDUser.ConvertToUint64());
+    PRINT_DEBUG("Steam_User_Stats::GetUserStat %s %llu\n", pchName, steamIDUser.ConvertToUint64());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (pchName == nullptr) return false;
@@ -781,7 +781,7 @@ bool GetUserStat( CSteamID steamIDUser, const char *pchName, int32 *pData )
 
 bool GetUserStat( CSteamID steamIDUser, const char *pchName, float *pData )
 {
-    PRINT_DEBUG("GetUserStat %s %llu\n", pchName, steamIDUser.ConvertToUint64());
+    PRINT_DEBUG("Steam_User_Stats::GetUserStat %s %llu\n", pchName, steamIDUser.ConvertToUint64());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (pchName == nullptr) return false;
@@ -797,7 +797,7 @@ bool GetUserStat( CSteamID steamIDUser, const char *pchName, float *pData )
 
 bool GetUserAchievement( CSteamID steamIDUser, const char *pchName, bool *pbAchieved )
 {
-    PRINT_DEBUG("GetUserAchievement %s\n", pchName);
+    PRINT_DEBUG("Steam_User_Stats::GetUserAchievement %s\n", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     if (pchName == nullptr) return false;
@@ -812,7 +812,7 @@ bool GetUserAchievement( CSteamID steamIDUser, const char *pchName, bool *pbAchi
 // See notes for GetAchievementAndUnlockTime above
 bool GetUserAchievementAndUnlockTime( CSteamID steamIDUser, const char *pchName, bool *pbAchieved, uint32 *punUnlockTime )
 {
-    PRINT_DEBUG("GetUserAchievementAndUnlockTime %s\n", pchName);
+    PRINT_DEBUG("Steam_User_Stats::GetUserAchievementAndUnlockTime %s\n", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (pchName == nullptr) return false;
@@ -827,7 +827,7 @@ bool GetUserAchievementAndUnlockTime( CSteamID steamIDUser, const char *pchName,
 // Reset stats 
 bool ResetAllStats( bool bAchievementsToo )
 {
-    PRINT_DEBUG("ResetAllStats\n");
+    PRINT_DEBUG("Steam_User_Stats::ResetAllStats\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     //TODO
     if (bAchievementsToo) {
@@ -848,7 +848,7 @@ bool ResetAllStats( bool bAchievementsToo )
 STEAM_CALL_RESULT(LeaderboardFindResult_t)
 SteamAPICall_t FindOrCreateLeaderboard( const char *pchLeaderboardName, ELeaderboardSortMethod eLeaderboardSortMethod, ELeaderboardDisplayType eLeaderboardDisplayType )
 {
-    PRINT_DEBUG("FindOrCreateLeaderboard %s\n", pchLeaderboardName);
+    PRINT_DEBUG("Steam_User_Stats::FindOrCreateLeaderboard %s\n", pchLeaderboardName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!pchLeaderboardName) {
         LeaderboardFindResult_t data;
@@ -888,7 +888,7 @@ SteamAPICall_t FindOrCreateLeaderboard( const char *pchLeaderboardName, ELeaderb
 STEAM_CALL_RESULT( LeaderboardFindResult_t )
 SteamAPICall_t FindLeaderboard( const char *pchLeaderboardName )
 {
-    PRINT_DEBUG("FindLeaderboard %s\n", pchLeaderboardName);
+    PRINT_DEBUG("Steam_User_Stats::FindLeaderboard %s\n", pchLeaderboardName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!pchLeaderboardName) {
         LeaderboardFindResult_t data;
@@ -915,7 +915,7 @@ SteamAPICall_t FindLeaderboard( const char *pchLeaderboardName )
 // returns the name of a leaderboard
 const char * GetLeaderboardName( SteamLeaderboard_t hSteamLeaderboard )
 {
-    PRINT_DEBUG("GetLeaderboardName\n");
+    PRINT_DEBUG("Steam_User_Stats::GetLeaderboardName\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (hSteamLeaderboard > leaderboards.size() || hSteamLeaderboard <= 0) return "";
@@ -926,7 +926,7 @@ const char * GetLeaderboardName( SteamLeaderboard_t hSteamLeaderboard )
 // returns the total number of entries in a leaderboard, as of the last request
 int GetLeaderboardEntryCount( SteamLeaderboard_t hSteamLeaderboard )
 {
-    PRINT_DEBUG("GetLeaderboardEntryCount\n");
+    PRINT_DEBUG("Steam_User_Stats::GetLeaderboardEntryCount\n");
     return 0;
 }
 
@@ -934,7 +934,7 @@ int GetLeaderboardEntryCount( SteamLeaderboard_t hSteamLeaderboard )
 // returns the sort method of the leaderboard
 ELeaderboardSortMethod GetLeaderboardSortMethod( SteamLeaderboard_t hSteamLeaderboard )
 {
-    PRINT_DEBUG("GetLeaderboardSortMethod\n");
+    PRINT_DEBUG("Steam_User_Stats::GetLeaderboardSortMethod\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboard > leaderboards.size() || hSteamLeaderboard <= 0) return k_ELeaderboardSortMethodNone;
     return leaderboards[hSteamLeaderboard - 1].sort_method; 
@@ -944,7 +944,7 @@ ELeaderboardSortMethod GetLeaderboardSortMethod( SteamLeaderboard_t hSteamLeader
 // returns the display type of the leaderboard
 ELeaderboardDisplayType GetLeaderboardDisplayType( SteamLeaderboard_t hSteamLeaderboard )
 {
-    PRINT_DEBUG("GetLeaderboardDisplayType\n");
+    PRINT_DEBUG("Steam_User_Stats::GetLeaderboardDisplayType\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboard > leaderboards.size() || hSteamLeaderboard <= 0) return k_ELeaderboardDisplayTypeNone;
     return leaderboards[hSteamLeaderboard - 1].display_type; 
@@ -962,7 +962,7 @@ ELeaderboardDisplayType GetLeaderboardDisplayType( SteamLeaderboard_t hSteamLead
 STEAM_CALL_RESULT( LeaderboardScoresDownloaded_t )
 SteamAPICall_t DownloadLeaderboardEntries( SteamLeaderboard_t hSteamLeaderboard, ELeaderboardDataRequest eLeaderboardDataRequest, int nRangeStart, int nRangeEnd )
 {
-    PRINT_DEBUG("DownloadLeaderboardEntries %llu %i %i %i\n", hSteamLeaderboard, eLeaderboardDataRequest, nRangeStart, nRangeEnd);
+    PRINT_DEBUG("Steam_User_Stats::DownloadLeaderboardEntries %llu %i %i %i\n", hSteamLeaderboard, eLeaderboardDataRequest, nRangeStart, nRangeEnd);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboard > leaderboards.size() || hSteamLeaderboard <= 0) return k_uAPICallInvalid; //might return callresult even if hSteamLeaderboard is invalid
 
@@ -981,7 +981,7 @@ STEAM_CALL_RESULT( LeaderboardScoresDownloaded_t )
 SteamAPICall_t DownloadLeaderboardEntriesForUsers( SteamLeaderboard_t hSteamLeaderboard,
                                                             STEAM_ARRAY_COUNT_D(cUsers, Array of users to retrieve) CSteamID *prgUsers, int cUsers )
 {
-    PRINT_DEBUG("DownloadLeaderboardEntriesForUsers %i %llu\n", cUsers, cUsers > 0 ? prgUsers[0].ConvertToUint64() : 0);
+    PRINT_DEBUG("Steam_User_Stats::DownloadLeaderboardEntriesForUsers %i %llu\n", cUsers, cUsers > 0 ? prgUsers[0].ConvertToUint64() : 0);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboard > leaderboards.size() || hSteamLeaderboard <= 0) return k_uAPICallInvalid; //might return callresult even if hSteamLeaderboard is invalid
 
@@ -1016,7 +1016,7 @@ SteamAPICall_t DownloadLeaderboardEntriesForUsers( SteamLeaderboard_t hSteamLead
 // once you've accessed all the entries, the data will be free'd, and the SteamLeaderboardEntries_t handle will become invalid
 bool GetDownloadedLeaderboardEntry( SteamLeaderboardEntries_t hSteamLeaderboardEntries, int index, LeaderboardEntry_t *pLeaderboardEntry, int32 *pDetails, int cDetailsMax )
 {
-    PRINT_DEBUG("GetDownloadedLeaderboardEntry\n");
+    PRINT_DEBUG("Steam_User_Stats::GetDownloadedLeaderboardEntry\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboardEntries > leaderboards.size() || hSteamLeaderboardEntries <= 0) return false;
     if (index > 0) return false;
@@ -1041,7 +1041,7 @@ bool GetDownloadedLeaderboardEntry( SteamLeaderboardEntries_t hSteamLeaderboardE
 STEAM_CALL_RESULT( LeaderboardScoreUploaded_t )
 SteamAPICall_t UploadLeaderboardScore( SteamLeaderboard_t hSteamLeaderboard, ELeaderboardUploadScoreMethod eLeaderboardUploadScoreMethod, int32 nScore, const int32 *pScoreDetails, int cScoreDetailsCount )
 {
-    PRINT_DEBUG("UploadLeaderboardScore %i\n", nScore);
+    PRINT_DEBUG("Steam_User_Stats::UploadLeaderboardScore %i\n", nScore);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboard > leaderboards.size() || hSteamLeaderboard <= 0) return k_uAPICallInvalid; //TODO: might return callresult even if hSteamLeaderboard is invalid
 
@@ -1093,7 +1093,7 @@ SteamAPICall_t UploadLeaderboardScore( SteamLeaderboard_t hSteamLeaderboard, int
 STEAM_CALL_RESULT( LeaderboardUGCSet_t )
 SteamAPICall_t AttachLeaderboardUGC( SteamLeaderboard_t hSteamLeaderboard, UGCHandle_t hUGC )
 {
-    PRINT_DEBUG("AttachLeaderboardUGC\n");
+    PRINT_DEBUG("Steam_User_Stats::AttachLeaderboardUGC\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     LeaderboardUGCSet_t data = {};
     if (hSteamLeaderboard > leaderboards.size() || hSteamLeaderboard <= 0) {
@@ -1112,7 +1112,7 @@ SteamAPICall_t AttachLeaderboardUGC( SteamLeaderboard_t hSteamLeaderboard, UGCHa
 STEAM_CALL_RESULT( NumberOfCurrentPlayers_t )
 SteamAPICall_t GetNumberOfCurrentPlayers()
 {
-    PRINT_DEBUG("GetNumberOfCurrentPlayers\n");
+    PRINT_DEBUG("Steam_User_Stats::GetNumberOfCurrentPlayers\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     NumberOfCurrentPlayers_t data;
     data.m_bSuccess = 1;
@@ -1127,7 +1127,7 @@ SteamAPICall_t GetNumberOfCurrentPlayers()
 STEAM_CALL_RESULT( GlobalAchievementPercentagesReady_t )
 SteamAPICall_t RequestGlobalAchievementPercentages()
 {
-    PRINT_DEBUG("RequestGlobalAchievementPercentages\n");
+    PRINT_DEBUG("Steam_User_Stats::RequestGlobalAchievementPercentages\n");
     return 0;
 }
 
@@ -1137,7 +1137,7 @@ SteamAPICall_t RequestGlobalAchievementPercentages()
 // percentages (ie, you haven't called RequestGlobalAchievementPercentages and waited on the callback).
 int GetMostAchievedAchievementInfo( char *pchName, uint32 unNameBufLen, float *pflPercent, bool *pbAchieved )
 {
-    PRINT_DEBUG("GetMostAchievedAchievementInfo\n");
+    PRINT_DEBUG("Steam_User_Stats::GetMostAchievedAchievementInfo\n");
     return -1;
 }
 
@@ -1147,7 +1147,7 @@ int GetMostAchievedAchievementInfo( char *pchName, uint32 unNameBufLen, float *p
 // achievement has been iterated.
 int GetNextMostAchievedAchievementInfo( int iIteratorPrevious, char *pchName, uint32 unNameBufLen, float *pflPercent, bool *pbAchieved )
 {
-    PRINT_DEBUG("GetNextMostAchievedAchievementInfo\n");
+    PRINT_DEBUG("Steam_User_Stats::GetNextMostAchievedAchievementInfo\n");
     return -1;
 }
 
@@ -1155,7 +1155,7 @@ int GetNextMostAchievedAchievementInfo( int iIteratorPrevious, char *pchName, ui
 // Returns the percentage of users who have achieved the specified achievement.
 bool GetAchievementAchievedPercent( const char *pchName, float *pflPercent )
 {
-    PRINT_DEBUG("GetAchievementAchievedPercent\n");
+    PRINT_DEBUG("Steam_User_Stats::GetAchievementAchievedPercent\n");
     return false;
 }
 
@@ -1167,7 +1167,7 @@ bool GetAchievementAchievedPercent( const char *pchName, float *pflPercent )
 STEAM_CALL_RESULT( GlobalStatsReceived_t )
 SteamAPICall_t RequestGlobalStats( int nHistoryDays )
 {
-    PRINT_DEBUG("RequestGlobalStats %i\n", nHistoryDays);
+    PRINT_DEBUG("Steam_User_Stats::RequestGlobalStats %i\n", nHistoryDays);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     GlobalStatsReceived_t data;
     data.m_nGameID = settings->get_local_game_id().ToUint64();
@@ -1179,13 +1179,13 @@ SteamAPICall_t RequestGlobalStats( int nHistoryDays )
 // Gets the lifetime totals for an aggregated stat
 bool GetGlobalStat( const char *pchStatName, int64 *pData )
 {
-    PRINT_DEBUG("GetGlobalStat %s\n", pchStatName);
+    PRINT_DEBUG("Steam_User_Stats::GetGlobalStat %s\n", pchStatName);
     return false;
 }
 
 bool GetGlobalStat( const char *pchStatName, double *pData )
 {
-    PRINT_DEBUG("GetGlobalStat %s\n", pchStatName);
+    PRINT_DEBUG("Steam_User_Stats::GetGlobalStat %s\n", pchStatName);
     return false;
 }
 
@@ -1196,13 +1196,13 @@ bool GetGlobalStat( const char *pchStatName, double *pData )
 // elements actually set.
 int32 GetGlobalStatHistory( const char *pchStatName, STEAM_ARRAY_COUNT(cubData) int64 *pData, uint32 cubData )
 {
-    PRINT_DEBUG("GetGlobalStatHistory int64 %s\n", pchStatName);
+    PRINT_DEBUG("Steam_User_Stats::GetGlobalStatHistory int64 %s\n", pchStatName);
     return 0;
 }
 
 int32 GetGlobalStatHistory( const char *pchStatName, STEAM_ARRAY_COUNT(cubData) double *pData, uint32 cubData )
 {
-    PRINT_DEBUG("GetGlobalStatHistory double %s\n", pchStatName);
+    PRINT_DEBUG("Steam_User_Stats::GetGlobalStatHistory double %s\n", pchStatName);
     return 0;
 }
 
@@ -1211,13 +1211,13 @@ int32 GetGlobalStatHistory( const char *pchStatName, STEAM_ARRAY_COUNT(cubData) 
 // have been made, to show a progress notification to the user.
 bool GetAchievementProgressLimits( const char *pchName, int32 *pnMinProgress, int32 *pnMaxProgress )
 {
-    PRINT_DEBUG("GetAchievementProgressLimits int\n");
+    PRINT_DEBUG("Steam_User_Stats::GetAchievementProgressLimits int\n");
     return false;
 }
 
 bool GetAchievementProgressLimits( const char *pchName, float *pfMinProgress, float *pfMaxProgress )
 {
-    PRINT_DEBUG("GetAchievementProgressLimits float\n");
+    PRINT_DEBUG("Steam_User_Stats::GetAchievementProgressLimits float\n");
     return false;
 }
 

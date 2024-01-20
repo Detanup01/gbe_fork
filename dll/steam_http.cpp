@@ -38,7 +38,7 @@ Steam_Http_Request *Steam_HTTP::get_request(HTTPRequestHandle hRequest)
 // or such.
 HTTPRequestHandle Steam_HTTP::CreateHTTPRequest( EHTTPMethod eHTTPRequestMethod, const char *pchAbsoluteURL )
 {
-    PRINT_DEBUG("CreateHTTPRequest %i %s\n", eHTTPRequestMethod, pchAbsoluteURL);
+    PRINT_DEBUG("Steam_HTTP::CreateHTTPRequest %i %s\n", eHTTPRequestMethod, pchAbsoluteURL);
     if (!pchAbsoluteURL) return INVALID_HTTPREQUEST_HANDLE;
     std::string url = pchAbsoluteURL;
     unsigned url_index = 0;
@@ -111,7 +111,7 @@ HTTPRequestHandle Steam_HTTP::CreateHTTPRequest( EHTTPMethod eHTTPRequestMethod,
 // sending the request.  This is just so the caller can easily keep track of which callbacks go with which request data.
 bool Steam_HTTP::SetHTTPRequestContextValue( HTTPRequestHandle hRequest, uint64 ulContextValue )
 {
-    PRINT_DEBUG("SetHTTPRequestContextValue\n");
+    PRINT_DEBUG("Steam_HTTP::SetHTTPRequestContextValue\n");
     Steam_Http_Request *request = get_request(hRequest);
     if (!request) {
         return false;
@@ -127,7 +127,7 @@ bool Steam_HTTP::SetHTTPRequestContextValue( HTTPRequestHandle hRequest, uint64 
 // has already been sent.
 bool Steam_HTTP::SetHTTPRequestNetworkActivityTimeout( HTTPRequestHandle hRequest, uint32 unTimeoutSeconds )
 {
-    PRINT_DEBUG("SetHTTPRequestNetworkActivityTimeout\n");
+    PRINT_DEBUG("Steam_HTTP::SetHTTPRequestNetworkActivityTimeout\n");
     Steam_Http_Request *request = get_request(hRequest);
     if (!request) {
         return false;
@@ -141,7 +141,7 @@ bool Steam_HTTP::SetHTTPRequestNetworkActivityTimeout( HTTPRequestHandle hReques
 // return false if the handle is invalid or the request is already sent.
 bool Steam_HTTP::SetHTTPRequestHeaderValue( HTTPRequestHandle hRequest, const char *pchHeaderName, const char *pchHeaderValue )
 {
-    PRINT_DEBUG("SetHTTPRequestHeaderValue %s %s\n", pchHeaderName, pchHeaderValue);
+    PRINT_DEBUG("Steam_HTTP::SetHTTPRequestHeaderValue %s %s\n", pchHeaderName, pchHeaderValue);
     Steam_Http_Request *request = get_request(hRequest);
     if (!request) {
         return false;
@@ -156,7 +156,7 @@ bool Steam_HTTP::SetHTTPRequestHeaderValue( HTTPRequestHandle hRequest, const ch
 // handle is invalid or the request is already sent.
 bool Steam_HTTP::SetHTTPRequestGetOrPostParameter( HTTPRequestHandle hRequest, const char *pchParamName, const char *pchParamValue )
 {
-    PRINT_DEBUG("SetHTTPRequestGetOrPostParameter\n");
+    PRINT_DEBUG("Steam_HTTP::SetHTTPRequestGetOrPostParameter\n");
     Steam_Http_Request *request = get_request(hRequest);
     if (!request) {
         return false;
@@ -173,7 +173,7 @@ bool Steam_HTTP::SetHTTPRequestGetOrPostParameter( HTTPRequestHandle hRequest, c
 // header and only do a local cache lookup rather than sending any actual remote request.
 bool Steam_HTTP::SendHTTPRequest( HTTPRequestHandle hRequest, SteamAPICall_t *pCallHandle )
 {
-    PRINT_DEBUG("SendHTTPRequest %u %p\n", hRequest, pCallHandle);
+    PRINT_DEBUG("Steam_HTTP::SendHTTPRequest %u %p\n", hRequest, pCallHandle);
     Steam_Http_Request *request = get_request(hRequest);
     if (!request) {
         return false;
@@ -205,7 +205,7 @@ bool Steam_HTTP::SendHTTPRequest( HTTPRequestHandle hRequest, SteamAPICall_t *pC
 // HTTPRequestDataReceived_t callbacks while streaming.
 bool Steam_HTTP::SendHTTPRequestAndStreamResponse( HTTPRequestHandle hRequest, SteamAPICall_t *pCallHandle )
 {
-    PRINT_DEBUG("SendHTTPRequestAndStreamResponse\n");
+    PRINT_DEBUG("Steam_HTTP::SendHTTPRequestAndStreamResponse\n");
     return false;
 }
 
@@ -214,7 +214,7 @@ bool Steam_HTTP::SendHTTPRequestAndStreamResponse( HTTPRequestHandle hRequest, S
 // the specified request to the tail of the queue.  Returns false on invalid handle, or if the request is not yet sent.
 bool Steam_HTTP::DeferHTTPRequest( HTTPRequestHandle hRequest )
 {
-    PRINT_DEBUG("DeferHTTPRequest\n");
+    PRINT_DEBUG("Steam_HTTP::DeferHTTPRequest\n");
     Steam_Http_Request *request = get_request(hRequest);
     if (!request) {
         return false;
@@ -228,7 +228,7 @@ bool Steam_HTTP::DeferHTTPRequest( HTTPRequestHandle hRequest )
 // the specified request to the head of the queue.  Returns false on invalid handle, or if the request is not yet sent.
 bool Steam_HTTP::PrioritizeHTTPRequest( HTTPRequestHandle hRequest )
 {
-    PRINT_DEBUG("PrioritizeHTTPRequest\n");
+    PRINT_DEBUG("Steam_HTTP::PrioritizeHTTPRequest\n");
     Steam_Http_Request *request = get_request(hRequest);
     if (!request) {
         return false;
@@ -243,7 +243,7 @@ bool Steam_HTTP::PrioritizeHTTPRequest( HTTPRequestHandle hRequest )
 // GetHTTPResponseHeaderValue.
 bool Steam_HTTP::GetHTTPResponseHeaderSize( HTTPRequestHandle hRequest, const char *pchHeaderName, uint32 *unResponseHeaderSize )
 {
-    PRINT_DEBUG("GetHTTPResponseHeaderSize\n");
+    PRINT_DEBUG("Steam_HTTP::GetHTTPResponseHeaderSize\n");
     return false;
 }
 
@@ -253,7 +253,7 @@ bool Steam_HTTP::GetHTTPResponseHeaderSize( HTTPRequestHandle hRequest, const ch
 // BGetHTTPResponseHeaderSize to check for the presence of the header and to find out the size buffer needed.
 bool Steam_HTTP::GetHTTPResponseHeaderValue( HTTPRequestHandle hRequest, const char *pchHeaderName, uint8 *pHeaderValueBuffer, uint32 unBufferSize )
 {
-    PRINT_DEBUG("GetHTTPResponseHeaderValue\n");
+    PRINT_DEBUG("Steam_HTTP::GetHTTPResponseHeaderValue\n");
     return false;
 }
 
@@ -262,7 +262,7 @@ bool Steam_HTTP::GetHTTPResponseHeaderValue( HTTPRequestHandle hRequest, const c
 // handle is invalid.
 bool Steam_HTTP::GetHTTPResponseBodySize( HTTPRequestHandle hRequest, uint32 *unBodySize )
 {
-    PRINT_DEBUG("GetHTTPResponseBodySize\n");
+    PRINT_DEBUG("Steam_HTTP::GetHTTPResponseBodySize\n");
     Steam_Http_Request *request = get_request(hRequest);
     if (!request) {
         return false;
@@ -278,7 +278,7 @@ bool Steam_HTTP::GetHTTPResponseBodySize( HTTPRequestHandle hRequest, uint32 *un
 // the correct buffer size to use.
 bool Steam_HTTP::GetHTTPResponseBodyData( HTTPRequestHandle hRequest, uint8 *pBodyDataBuffer, uint32 unBufferSize )
 {
-    PRINT_DEBUG("GetHTTPResponseBodyData\n");
+    PRINT_DEBUG("Steam_HTTP::GetHTTPResponseBodyData\n");
     Steam_Http_Request *request = get_request(hRequest);
     if (!request) {
         return false;
@@ -298,7 +298,7 @@ bool Steam_HTTP::GetHTTPResponseBodyData( HTTPRequestHandle hRequest, uint8 *pBo
 // do not match the size and offset sent in HTTPRequestDataReceived_t.
 bool Steam_HTTP::GetHTTPStreamingResponseBodyData( HTTPRequestHandle hRequest, uint32 cOffset, uint8 *pBodyDataBuffer, uint32 unBufferSize )
 {
-    PRINT_DEBUG("GetHTTPStreamingResponseBodyData\n");
+    PRINT_DEBUG("Steam_HTTP::GetHTTPStreamingResponseBodyData\n");
     return false;
 }
 
@@ -307,7 +307,7 @@ bool Steam_HTTP::GetHTTPStreamingResponseBodyData( HTTPRequestHandle hRequest, u
 // callback and finishing using the response.
 bool Steam_HTTP::ReleaseHTTPRequest( HTTPRequestHandle hRequest )
 {
-    PRINT_DEBUG("ReleaseHTTPRequest\n");
+    PRINT_DEBUG("Steam_HTTP::ReleaseHTTPRequest\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     auto c = std::begin(requests);
@@ -329,7 +329,7 @@ bool Steam_HTTP::ReleaseHTTPRequest( HTTPRequestHandle hRequest )
 // zero for the duration of the request as the size is unknown until the connection closes.
 bool Steam_HTTP::GetHTTPDownloadProgressPct( HTTPRequestHandle hRequest, float *pflPercentOut )
 {
-    PRINT_DEBUG("GetHTTPDownloadProgressPct\n");
+    PRINT_DEBUG("Steam_HTTP::GetHTTPDownloadProgressPct\n");
     return false;
 }
 
@@ -339,7 +339,7 @@ bool Steam_HTTP::GetHTTPDownloadProgressPct( HTTPRequestHandle hRequest, float *
 // parameter will set the content-type header for the request so the server may know how to interpret the body.
 bool Steam_HTTP::SetHTTPRequestRawPostBody( HTTPRequestHandle hRequest, const char *pchContentType, uint8 *pubBody, uint32 unBodyLen )
 {
-    PRINT_DEBUG("SetHTTPRequestRawPostBody %s\n", pchContentType);
+    PRINT_DEBUG("Steam_HTTP::SetHTTPRequestRawPostBody %s\n", pchContentType);
     Steam_Http_Request *request = get_request(hRequest);
     if (!request) {
         return false;
@@ -356,7 +356,7 @@ bool Steam_HTTP::SetHTTPRequestRawPostBody( HTTPRequestHandle hRequest, const ch
 // repeat executions of your process.
 HTTPCookieContainerHandle Steam_HTTP::CreateCookieContainer( bool bAllowResponsesToModify )
 {
-    PRINT_DEBUG("CreateCookieContainer\n");
+    PRINT_DEBUG("Steam_HTTP::CreateCookieContainer\n");
     return false;
 }
 
@@ -364,7 +364,7 @@ HTTPCookieContainerHandle Steam_HTTP::CreateCookieContainer( bool bAllowResponse
 // Release a cookie container you are finished using, freeing it's memory
 bool Steam_HTTP::ReleaseCookieContainer( HTTPCookieContainerHandle hCookieContainer )
 {
-    PRINT_DEBUG("ReleaseCookieContainer\n");
+    PRINT_DEBUG("Steam_HTTP::ReleaseCookieContainer\n");
     return false;
 }
 
@@ -372,7 +372,7 @@ bool Steam_HTTP::ReleaseCookieContainer( HTTPCookieContainerHandle hCookieContai
 // Adds a cookie to the specified cookie container that will be used with future requests.
 bool Steam_HTTP::SetCookie( HTTPCookieContainerHandle hCookieContainer, const char *pchHost, const char *pchUrl, const char *pchCookie )
 {
-    PRINT_DEBUG("SetCookie\n");
+    PRINT_DEBUG("Steam_HTTP::SetCookie\n");
     return false;
 }
 
@@ -380,7 +380,7 @@ bool Steam_HTTP::SetCookie( HTTPCookieContainerHandle hCookieContainer, const ch
 // Set the cookie container to use for a HTTP request
 bool Steam_HTTP::SetHTTPRequestCookieContainer( HTTPRequestHandle hRequest, HTTPCookieContainerHandle hCookieContainer )
 {
-    PRINT_DEBUG("SetHTTPRequestCookieContainer\n");
+    PRINT_DEBUG("Steam_HTTP::SetHTTPRequestCookieContainer\n");
     return false;
 }
 
@@ -388,7 +388,7 @@ bool Steam_HTTP::SetHTTPRequestCookieContainer( HTTPRequestHandle hRequest, HTTP
 // Set the extra user agent info for a request, this doesn't clobber the normal user agent, it just adds the extra info on the end
 bool Steam_HTTP::SetHTTPRequestUserAgentInfo( HTTPRequestHandle hRequest, const char *pchUserAgentInfo )
 {
-    PRINT_DEBUG("SetHTTPRequestUserAgentInfo\n");
+    PRINT_DEBUG("Steam_HTTP::SetHTTPRequestUserAgentInfo\n");
     Steam_Http_Request *request = get_request(hRequest);
     if (!request) {
         return false;
@@ -401,7 +401,7 @@ bool Steam_HTTP::SetHTTPRequestUserAgentInfo( HTTPRequestHandle hRequest, const 
 // Set that https request should require verified SSL certificate via machines certificate trust store
 bool Steam_HTTP::SetHTTPRequestRequiresVerifiedCertificate( HTTPRequestHandle hRequest, bool bRequireVerifiedCertificate )
 {
-    PRINT_DEBUG("SetHTTPRequestRequiresVerifiedCertificate\n");
+    PRINT_DEBUG("Steam_HTTP::SetHTTPRequestRequiresVerifiedCertificate\n");
     Steam_Http_Request *request = get_request(hRequest);
     if (!request) {
         return false;
@@ -415,7 +415,7 @@ bool Steam_HTTP::SetHTTPRequestRequiresVerifiedCertificate( HTTPRequestHandle hR
 // which can bump everytime we get more data
 bool Steam_HTTP::SetHTTPRequestAbsoluteTimeoutMS( HTTPRequestHandle hRequest, uint32 unMilliseconds )
 {
-    PRINT_DEBUG("SetHTTPRequestAbsoluteTimeoutMS\n");
+    PRINT_DEBUG("Steam_HTTP::SetHTTPRequestAbsoluteTimeoutMS\n");
     Steam_Http_Request *request = get_request(hRequest);
     if (!request) {
         return false;
@@ -428,7 +428,7 @@ bool Steam_HTTP::SetHTTPRequestAbsoluteTimeoutMS( HTTPRequestHandle hRequest, ui
 // Check if the reason the request failed was because we timed it out (rather than some harder failure)
 bool Steam_HTTP::GetHTTPRequestWasTimedOut( HTTPRequestHandle hRequest, bool *pbWasTimedOut )
 {
-    PRINT_DEBUG("GetHTTPRequestWasTimedOut\n");
+    PRINT_DEBUG("Steam_HTTP::GetHTTPRequestWasTimedOut\n");
     Steam_Http_Request *request = get_request(hRequest);
     if (!request) {
         return false;

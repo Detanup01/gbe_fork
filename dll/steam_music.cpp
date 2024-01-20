@@ -36,20 +36,20 @@ void Steam_Music::change_playstate(int new_playing)
 
 bool Steam_Music::BIsEnabled()
 {
-    PRINT_DEBUG("Steam_Music::BIsEnabled\n");
+    PRINT_DEBUG("TODO Steam_Music::BIsEnabled\n");
     return true;
 }
 
 bool Steam_Music::BIsPlaying()
 {
-    PRINT_DEBUG("Steam_Music::BIsPlaying\n");
+    PRINT_DEBUG("TODO Steam_Music::BIsPlaying\n");
     return playing > 0;
 }
 
 
 AudioPlayback_Status Steam_Music::GetPlaybackStatus()
 {
-    PRINT_DEBUG("Steam_Music::GetPlaybackStatus\n");
+    PRINT_DEBUG("TODO Steam_Music::GetPlaybackStatus\n");
     if (playing == 0) {
         return AudioPlayback_Idle;
     }
@@ -67,25 +67,25 @@ AudioPlayback_Status Steam_Music::GetPlaybackStatus()
 
 void Steam_Music::Play()
 {
-    PRINT_DEBUG("Steam_Music::Play\n");
+    PRINT_DEBUG("TODO Steam_Music::Play\n");
     change_playstate(2);
 }
 
 void Steam_Music::Pause()
 {
-    PRINT_DEBUG("Steam_Music::Pause\n");
+    PRINT_DEBUG("TODO Steam_Music::Pause\n");
     change_playstate(1);
 }
 
 void Steam_Music::PlayPrevious()
 {
-    PRINT_DEBUG("Steam_Music::PlayPrevious\n");
+    PRINT_DEBUG("TODO Steam_Music::PlayPrevious\n");
     change_playstate(2);
 }
 
 void Steam_Music::PlayNext()
 {
-    PRINT_DEBUG("Steam_Music::PlayNext\n");
+    PRINT_DEBUG("TODO Steam_Music::PlayNext\n");
     change_playstate(2);
 }
 
@@ -93,7 +93,7 @@ void Steam_Music::PlayNext()
 // volume is between 0.0 and 1.0
 void Steam_Music::SetVolume( float flVolume )
 {
-    PRINT_DEBUG("Steam_Music::SetVolume\n");
+    PRINT_DEBUG("TODO Steam_Music::SetVolume\n");
 
     if (flVolume > 1.0)
         flVolume = 1.0;
@@ -111,6 +111,6 @@ void Steam_Music::SetVolume( float flVolume )
 
 float Steam_Music::GetVolume()
 {
-    PRINT_DEBUG("Steam_Music::GetVolume\n");
+    PRINT_DEBUG("TODO Steam_Music::GetVolume\n");
     return volume;
 }

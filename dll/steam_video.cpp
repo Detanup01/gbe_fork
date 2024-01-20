@@ -20,14 +20,14 @@
 // Get a URL suitable for streaming the given Video app ID's video
 void Steam_Video::GetVideoURL( AppId_t unVideoAppID )
 {
-    PRINT_DEBUG("GetVideoURL\n");
+    PRINT_DEBUG("TODO Steam_Video::GetVideoURL\n");
 }
 
 
 // returns true if user is uploading a live broadcast
 bool Steam_Video::IsBroadcasting( int *pnNumViewers )
 {
-    PRINT_DEBUG("IsBroadcasting\n");
+    PRINT_DEBUG("TODO Steam_Video::IsBroadcasting\n");
     return false;
 }
 
@@ -36,11 +36,11 @@ bool Steam_Video::IsBroadcasting( int *pnNumViewers )
 STEAM_CALL_BACK( GetOPFSettingsResult_t )
 void Steam_Video::GetOPFSettings( AppId_t unVideoAppID )
 {
-    PRINT_DEBUG("GetOPFSettings\n");
+    PRINT_DEBUG("TODO Steam_Video::GetOPFSettings\n");
 }
 
 bool Steam_Video::GetOPFStringForApp( AppId_t unVideoAppID, char *pchBuffer, int32 *pnBufferSize )
 {
-    PRINT_DEBUG("GetOPFStringForApp\n");
+    PRINT_DEBUG("TODO Steam_Video::GetOPFStringForApp\n");
     return false;
 }

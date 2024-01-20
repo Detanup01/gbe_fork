@@ -31,7 +31,7 @@ public ISteamTV
 public:
 static void steam_callback(void *object, Common_Message *msg)
 {
-    PRINT_DEBUG("steam_tv_callback\n");
+    PRINT_DEBUG("TODO Steam_TV::steam_tv_callback\n");
 
     Steam_TV *steam_parties = (Steam_TV *)object;
     steam_parties->Callback(msg);
@@ -65,39 +65,39 @@ Steam_TV(class Settings *settings, class Networking *network, class SteamCallRes
 
 bool IsBroadcasting(int *pnNumViewers)
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO Steam_TV::%s\n", __FUNCTION__);
     return false;
 }
 
 void AddBroadcastGameData(const char * pchKey, const char * pchValue)
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO Steam_TV::%s\n", __FUNCTION__);
 }
 
 void RemoveBroadcastGameData(const char * pchKey)
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO Steam_TV::%s\n", __FUNCTION__);
 }
 
 void AddTimelineMarker(const char * pchTemplateName, bool bPersistent, uint8 nColorR, uint8 nColorG, uint8 nColorB)
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO Steam_TV::%s\n", __FUNCTION__);
 }
 
 void RemoveTimelineMarker()
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO Steam_TV::%s\n", __FUNCTION__);
 }
 
 uint32 AddRegion(const char * pchElementName, const char * pchTimelineDataSection, const SteamTVRegion_t * pSteamTVRegion, ESteamTVRegionBehavior eSteamTVRegionBehavior)
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO Steam_TV::%s\n", __FUNCTION__);
     return 0;
 }
 
 void RemoveRegion(uint32 unRegionHandle)
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO Steam_TV::%s\n", __FUNCTION__);
 }
 
 void RunCallbacks()

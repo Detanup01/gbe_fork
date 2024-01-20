@@ -30,43 +30,43 @@ Steam_Apps::Steam_Apps(Settings *settings, class SteamCallResults *callback_resu
 int Steam_Apps::GetAppData( AppId_t nAppID, const char *pchKey, char *pchValue, int cchValueMax )
 {
     //TODO
-    PRINT_DEBUG("GetAppData %u %s\n", nAppID, pchKey);
+    PRINT_DEBUG("Steam_Apps::GetAppData %u %s\n", nAppID, pchKey);
     return 0;
 }
 
 bool Steam_Apps::BIsSubscribed()
 {
-    PRINT_DEBUG("BIsSubscribed\n");
+    PRINT_DEBUG("Steam_Apps::BIsSubscribed\n");
     return true;
 }
 
 bool Steam_Apps::BIsLowViolence()
 {
-    PRINT_DEBUG("BIsLowViolence\n");
+    PRINT_DEBUG("Steam_Apps::BIsLowViolence\n");
     return false;
 }
 
 bool Steam_Apps::BIsCybercafe()
 {
-    PRINT_DEBUG("BIsCybercafe\n");
+    PRINT_DEBUG("Steam_Apps::BIsCybercafe\n");
     return false;
 }
 
 bool Steam_Apps::BIsVACBanned()
 {
-    PRINT_DEBUG("BIsVACBanned\n");
+    PRINT_DEBUG("Steam_Apps::BIsVACBanned\n");
     return false;
 }
 
 const char *Steam_Apps::GetCurrentGameLanguage()
 {
-    PRINT_DEBUG("GetCurrentGameLanguage\n");
+    PRINT_DEBUG("Steam_Apps::GetCurrentGameLanguage\n");
     return settings->get_language();
 }
 
 const char *Steam_Apps::GetAvailableGameLanguages()
 {
-    PRINT_DEBUG("GetAvailableGameLanguages\n");
+    PRINT_DEBUG("Steam_Apps::GetAvailableGameLanguages\n");
     //TODO?
     return settings->get_language();
 }
@@ -75,7 +75,7 @@ const char *Steam_Apps::GetAvailableGameLanguages()
 // only use this member if you need to check ownership of another game related to yours, a demo for example
 bool Steam_Apps::BIsSubscribedApp( AppId_t appID )
 {
-    PRINT_DEBUG("BIsSubscribedApp %u\n", appID);
+    PRINT_DEBUG("Steam_Apps::BIsSubscribedApp %u\n", appID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (appID == 0) return true; //I think appid 0 is always owned
     if (appID == UINT32_MAX) return false; // check Steam_Apps::BIsAppInstalled()
@@ -87,7 +87,7 @@ bool Steam_Apps::BIsSubscribedApp( AppId_t appID )
 // Takes AppID of DLC and checks if the user owns the DLC & if the DLC is installed
 bool Steam_Apps::BIsDlcInstalled( AppId_t appID )
 {
-    PRINT_DEBUG("BIsDlcInstalled %u\n", appID);
+    PRINT_DEBUG("Steam_Apps::BIsDlcInstalled %u\n", appID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (appID == 0) return true;
     if (appID == UINT32_MAX) return false; // check Steam_Apps::BIsAppInstalled()
@@ -99,7 +99,7 @@ bool Steam_Apps::BIsDlcInstalled( AppId_t appID )
 // returns the Unix time of the purchase of the app
 uint32 Steam_Apps::GetEarliestPurchaseUnixTime( AppId_t nAppID )
 {
-    PRINT_DEBUG("GetEarliestPurchaseUnixTime\n");
+    PRINT_DEBUG("Steam_Apps::GetEarliestPurchaseUnixTime\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (nAppID == 0) return 0; //TODO is this correct?
     if (nAppID == UINT32_MAX) return 0; // check Steam_Apps::BIsAppInstalled() TODO is this correct?
@@ -122,7 +122,7 @@ uint32 Steam_Apps::GetEarliestPurchaseUnixTime( AppId_t nAppID )
 // Before using, please ask your Valve technical contact how to package and secure your free weekened
 bool Steam_Apps::BIsSubscribedFromFreeWeekend()
 {
-    PRINT_DEBUG("BIsSubscribedFromFreeWeekend\n");
+    PRINT_DEBUG("Steam_Apps::BIsSubscribedFromFreeWeekend\n");
     return false;
 }
 
@@ -130,7 +130,7 @@ bool Steam_Apps::BIsSubscribedFromFreeWeekend()
 // Returns the number of DLC pieces for the running app
 int Steam_Apps::GetDLCCount()
 {
-    PRINT_DEBUG("GetDLCCount\n");
+    PRINT_DEBUG("Steam_Apps::GetDLCCount\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return settings->DLCCount();
 }
@@ -139,7 +139,7 @@ int Steam_Apps::GetDLCCount()
 // Returns metadata for DLC by index, of range [0, GetDLCCount()]
 bool Steam_Apps::BGetDLCDataByIndex( int iDLC, AppId_t *pAppID, bool *pbAvailable, char *pchName, int cchNameBufferSize )
 {
-    PRINT_DEBUG("BGetDLCDataByIndex\n");
+    PRINT_DEBUG("Steam_Apps::BGetDLCDataByIndex\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     AppId_t appid;
     bool available;
@@ -165,14 +165,14 @@ bool Steam_Apps::BGetDLCDataByIndex( int iDLC, AppId_t *pAppID, bool *pbAvailabl
 // Install/Uninstall control for optional DLC
 void Steam_Apps::InstallDLC( AppId_t nAppID )
 {
-    PRINT_DEBUG("InstallDLC\n");
+    PRINT_DEBUG("Steam_Apps::InstallDLC\n");
     // we lock here because the API is supposed to modify the DLC list
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 void Steam_Apps::UninstallDLC( AppId_t nAppID )
 {
-    PRINT_DEBUG("UninstallDLC\n");
+    PRINT_DEBUG("Steam_Apps::UninstallDLC\n");
     // we lock here because the API is supposed to modify the DLC list
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
@@ -207,7 +207,7 @@ static void FillProofOfPurchaseKey( AppProofOfPurchaseKeyResponse_t& data, AppId
 // the key is available (which may be immediately).
 void Steam_Apps::RequestAppProofOfPurchaseKey( AppId_t nAppID )
 {
-    PRINT_DEBUG("TODO RequestAppProofOfPurchaseKey\n");
+    PRINT_DEBUG("Steam_Apps::TODO RequestAppProofOfPurchaseKey\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     AppProofOfPurchaseKeyResponse_t data{};
@@ -231,7 +231,7 @@ void Steam_Apps::RequestAppProofOfPurchaseKey( AppId_t nAppID )
 // https://partner.steamgames.com/doc/api/ISteamApps
 bool Steam_Apps::GetCurrentBetaName( char *pchName, int cchNameBufferSize )
 {
-    PRINT_DEBUG("GetCurrentBetaName %i\n", cchNameBufferSize);
+    PRINT_DEBUG("Steam_Apps::GetCurrentBetaName %i\n", cchNameBufferSize);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (pchName && cchNameBufferSize > settings->current_branch_name.size()) {
         memcpy(pchName, settings->current_branch_name.c_str(), settings->current_branch_name.size());
@@ -243,7 +243,7 @@ bool Steam_Apps::GetCurrentBetaName( char *pchName, int cchNameBufferSize )
 // signal Steam that game files seems corrupt or missing
 bool Steam_Apps::MarkContentCorrupt( bool bMissingFilesOnly )
 {
-    PRINT_DEBUG("MarkContentCorrupt\n");
+    PRINT_DEBUG("Steam_Apps::MarkContentCorrupt\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     //TODO: warn user
     return true;
@@ -252,7 +252,7 @@ bool Steam_Apps::MarkContentCorrupt( bool bMissingFilesOnly )
 // return installed depots in mount order
 uint32 Steam_Apps::GetInstalledDepots( AppId_t appID, DepotId_t *pvecDepots, uint32 cMaxDepots )
 {
-    PRINT_DEBUG("GetInstalledDepots %u, %u\n", appID, cMaxDepots);
+    PRINT_DEBUG("Steam_Apps::GetInstalledDepots %u, %u\n", appID, cMaxDepots);
     //TODO not sure about the behavior of this function, I didn't actually test this.
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!pvecDepots) return 0;
@@ -264,14 +264,14 @@ uint32 Steam_Apps::GetInstalledDepots( AppId_t appID, DepotId_t *pvecDepots, uin
 
 uint32 Steam_Apps::GetInstalledDepots( DepotId_t *pvecDepots, uint32 cMaxDepots )
 {
-    PRINT_DEBUG("GetInstalledDepots old\n");
+    PRINT_DEBUG("Steam_Apps::GetInstalledDepots old\n");
     return GetInstalledDepots( settings->get_local_game_id().AppID(), pvecDepots, cMaxDepots );
 }
 
 // returns current app install folder for AppID, returns folder name length
 uint32 Steam_Apps::GetAppInstallDir( AppId_t appID, char *pchFolder, uint32 cchFolderBufferSize )
 {
-    PRINT_DEBUG("GetAppInstallDir %u %p %u\n", appID, pchFolder, cchFolderBufferSize);
+    PRINT_DEBUG("Steam_Apps::GetAppInstallDir %u %p %u\n", appID, pchFolder, cchFolderBufferSize);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     //TODO return real path instead of dll path
     std::string installed_path = settings->getAppInstallPath(appID);
@@ -279,7 +279,7 @@ uint32 Steam_Apps::GetAppInstallDir( AppId_t appID, char *pchFolder, uint32 cchF
     if (installed_path.size() == 0) {
         std::string dll_path = get_full_program_path();
         std::string current_path = get_current_path();
-        PRINT_DEBUG("paths %s %s\n", dll_path.c_str(), current_path.c_str());
+        PRINT_DEBUG("Steam_Apps::paths %s %s\n", dll_path.c_str(), current_path.c_str());
 
         //Just pick the smallest path, it has the most chances of being the good one
         if (dll_path.size() > current_path.size() && current_path.size()) {
@@ -289,7 +289,7 @@ uint32 Steam_Apps::GetAppInstallDir( AppId_t appID, char *pchFolder, uint32 cchF
         }
     }
 
-    PRINT_DEBUG("path %s\n", installed_path.c_str());
+    PRINT_DEBUG("Steam_Apps::path %s\n", installed_path.c_str());
     if (cchFolderBufferSize && pchFolder) {
         snprintf(pchFolder, cchFolderBufferSize, "%s", installed_path.c_str());
     }
@@ -302,7 +302,7 @@ uint32 Steam_Apps::GetAppInstallDir( AppId_t appID, char *pchFolder, uint32 cchF
 // https://partner.steamgames.com/doc/api/ISteamApps
 bool Steam_Apps::BIsAppInstalled( AppId_t appID )
 {
-    PRINT_DEBUG("BIsAppInstalled %u\n", appID);
+    PRINT_DEBUG("Steam_Apps::BIsAppInstalled %u\n", appID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     // "0 Base Goldsource Shared Binaries"
@@ -324,7 +324,7 @@ bool Steam_Apps::BIsAppInstalled( AppId_t appID )
 // returns the SteamID of the original owner. If different from current user, it's borrowed
 CSteamID Steam_Apps::GetAppOwner()
 {
-    PRINT_DEBUG("GetAppOwner\n");
+    PRINT_DEBUG("Steam_Apps::GetAppOwner\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return settings->get_local_steam_id();
 }
@@ -335,7 +335,7 @@ CSteamID Steam_Apps::GetAppOwner()
 // but it is advised that you not param names beginning with an underscore for your own features.
 const char *Steam_Apps::GetLaunchQueryParam( const char *pchKey )
 {
-    PRINT_DEBUG("GetLaunchQueryParam\n");
+    PRINT_DEBUG("Steam_Apps::GetLaunchQueryParam\n");
     return "";
 }
 
@@ -343,7 +343,7 @@ const char *Steam_Apps::GetLaunchQueryParam( const char *pchKey )
 // get download progress for optional DLC
 bool Steam_Apps::GetDlcDownloadProgress( AppId_t nAppID, uint64 *punBytesDownloaded, uint64 *punBytesTotal )
 {
-    PRINT_DEBUG("GetDlcDownloadProgress\n");
+    PRINT_DEBUG("Steam_Apps::GetDlcDownloadProgress\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
@@ -352,7 +352,7 @@ bool Steam_Apps::GetDlcDownloadProgress( AppId_t nAppID, uint64 *punBytesDownloa
 // return the buildid of this app, may change at any time based on backend updates to the game
 int Steam_Apps::GetAppBuildId()
 {
-    PRINT_DEBUG("GetAppBuildId\n");
+    PRINT_DEBUG("Steam_Apps::GetAppBuildId\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return this->settings->build_id;
 }
@@ -364,7 +364,7 @@ int Steam_Apps::GetAppBuildId()
 // member is k_uAppIdInvalid (zero).
 void Steam_Apps::RequestAllProofOfPurchaseKeys()
 {
-    PRINT_DEBUG("TODO RequestAllProofOfPurchaseKeys\n");
+    PRINT_DEBUG("Steam_Apps::TODO RequestAllProofOfPurchaseKeys\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     // current app
     {
@@ -399,7 +399,7 @@ void Steam_Apps::RequestAllProofOfPurchaseKeys()
 STEAM_CALL_RESULT( FileDetailsResult_t )
 SteamAPICall_t Steam_Apps::GetFileDetails( const char* pszFileName )
 {
-    PRINT_DEBUG("GetFileDetails %s\n", pszFileName);
+    PRINT_DEBUG("Steam_Apps::GetFileDetails %s\n", pszFileName);
     FileDetailsResult_t data = {};
     //TODO? this function should only return found if file is actually part of the steam depots
     if (file_exists_(pszFileName)) {
@@ -428,14 +428,14 @@ SteamAPICall_t Steam_Apps::GetFileDetails( const char* pszFileName )
 // If game was already running and launched again, the NewUrlLaunchParameters_t will be fired.
 int Steam_Apps::GetLaunchCommandLine( char *pszCommandLine, int cubCommandLine )
 {
-    PRINT_DEBUG("TODO GetLaunchCommandLine\n");
+    PRINT_DEBUG("Steam_Apps::TODO GetLaunchCommandLine\n");
     return 0;
 }
 
 // Check if user borrowed this game via Family Sharing, If true, call GetAppOwner() to get the lender SteamID
 bool Steam_Apps::BIsSubscribedFromFamilySharing()
 {
-    PRINT_DEBUG("BIsSubscribedFromFamilySharing\n");
+    PRINT_DEBUG("Steam_Apps::BIsSubscribedFromFamilySharing\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
@@ -443,7 +443,7 @@ bool Steam_Apps::BIsSubscribedFromFamilySharing()
 // check if game is a timed trial with limited playtime
 bool Steam_Apps::BIsTimedTrial( uint32* punSecondsAllowed, uint32* punSecondsPlayed )
 {
-    PRINT_DEBUG("BIsTimedTrial\n");
+    PRINT_DEBUG("Steam_Apps::BIsTimedTrial\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
@@ -451,7 +451,7 @@ bool Steam_Apps::BIsTimedTrial( uint32* punSecondsAllowed, uint32* punSecondsPla
 // set current DLC AppID being played (or 0 if none). Allows Steam to track usage of major DLC extensions
 bool Steam_Apps::SetDlcContext( AppId_t nAppID )
 {
-    PRINT_DEBUG("SetDlcContext %u\n", nAppID);
+    PRINT_DEBUG("Steam_Apps::SetDlcContext %u\n", nAppID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return true;
 }

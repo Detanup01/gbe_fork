@@ -19,8 +19,6 @@
 #include "local_storage.h"
 #include "overlay/steam_overlay.h"
 
-static std::chrono::time_point<std::chrono::steady_clock> app_initialized_time = std::chrono::steady_clock::now();
-
 
 class Steam_Utils : 
 public ISteamUtils002,
@@ -48,13 +46,15 @@ Steam_Utils(Settings *settings, class SteamCallResults *callback_results, Steam_
 // return the number of seconds since the user 
 uint32 GetSecondsSinceAppActive()
 {
-    PRINT_DEBUG("GetSecondsSinceAppActive\n");
-    return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - app_initialized_time).count();
+    PRINT_DEBUG("Steam_Utils::GetSecondsSinceAppActive\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - startup_time).count();
 }
 
 uint32 GetSecondsSinceComputerActive()
 {
-    PRINT_DEBUG("GetSecondsSinceComputerActive\n");
+    PRINT_DEBUG("Steam_Utils::GetSecondsSinceComputerActive\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return GetSecondsSinceAppActive() + 2000;
 }
 
@@ -62,7 +62,8 @@ uint32 GetSecondsSinceComputerActive()
 // the universe this client is connecting to
 EUniverse GetConnectedUniverse()
 {
-    PRINT_DEBUG("GetConnectedUniverse\n");
+    PRINT_DEBUG("Steam_Utils::GetConnectedUniverse\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_EUniversePublic;
 }
 
@@ -70,9 +71,9 @@ EUniverse GetConnectedUniverse()
 // Steam server time.  Number of seconds since January 1, 1970, GMT (i.e unix time)
 uint32 GetServerRealTime()
 {
-    PRINT_DEBUG("GetServerRealTime\n");
+    PRINT_DEBUG("Steam_Utils::GetServerRealTime\n");
     uint32 server_time = std::chrono::duration_cast<std::chrono::duration<uint32>>(std::chrono::system_clock::now().time_since_epoch()).count();
-    PRINT_DEBUG("Time %u\n", server_time);
+    PRINT_DEBUG("Steam_Utils::GetServerRealTime Time %u\n", server_time);
     return server_time;
 }
 
@@ -81,14 +82,15 @@ uint32 GetServerRealTime()
 // e.g "US" or "UK".
 const char *GetIPCountry()
 {
-    PRINT_DEBUG("GetIPCountry\n");
+    PRINT_DEBUG("Steam_Utils::GetIPCountry\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return "US";
 }
 
 // returns true if the image exists, and valid sizes were filled out
 bool GetImageSize( int iImage, uint32 *pnWidth, uint32 *pnHeight )
 {
-    PRINT_DEBUG("GetImageSize %i\n", iImage);
+    PRINT_DEBUG("Steam_Utils::GetImageSize %i\n", iImage);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!iImage || !pnWidth || !pnHeight) return false;
@@ -106,7 +108,7 @@ bool GetImageSize( int iImage, uint32 *pnWidth, uint32 *pnHeight )
 // the destination buffer size should be 4 * height * width * sizeof(char)
 bool GetImageRGBA( int iImage, uint8 *pubDest, int nDestBufferSize )
 {
-    PRINT_DEBUG("GetImageRGBA %i\n", iImage);
+    PRINT_DEBUG("Steam_Utils::GetImageRGBA %i\n", iImage);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!iImage || !pubDest || !nDestBufferSize) return false;
@@ -123,7 +125,8 @@ bool GetImageRGBA( int iImage, uint8 *pubDest, int nDestBufferSize )
 // returns the IP of the reporting server for valve - currently only used in Source engine games
 bool GetCSERIPPort( uint32 *unIP, uint16 *usPort )
 {
-    PRINT_DEBUG("GetCSERIPPort\n");
+    PRINT_DEBUG("Steam_Utils::GetCSERIPPort\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -131,7 +134,8 @@ bool GetCSERIPPort( uint32 *unIP, uint16 *usPort )
 // return the amount of battery power left in the current system in % [0..100], 255 for being on AC power
 uint8 GetCurrentBatteryPower()
 {
-    PRINT_DEBUG("GetCurrentBatteryPower\n");
+    PRINT_DEBUG("Steam_Utils::GetCurrentBatteryPower\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 255;
 }
 
@@ -139,7 +143,7 @@ uint8 GetCurrentBatteryPower()
 // returns the appID of the current process
 uint32 GetAppID()
 {
-    PRINT_DEBUG("GetAppID\n");
+    PRINT_DEBUG("Steam_Utils::GetAppID\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return settings->get_local_game_id().AppID();
 }
@@ -149,7 +153,7 @@ uint32 GetAppID()
 // This position is per-game and if this function is called from outside of a game context it will do nothing.
 void SetOverlayNotificationPosition( ENotificationPosition eNotificationPosition )
 {
-    PRINT_DEBUG("SetOverlayNotificationPosition\n");
+    PRINT_DEBUG("Steam_Utils::SetOverlayNotificationPosition\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     overlay->SetNotificationPosition(eNotificationPosition);
 }
@@ -159,7 +163,7 @@ void SetOverlayNotificationPosition( ENotificationPosition eNotificationPosition
 // can be used directly, but more commonly used via the callback dispatch API (see steam_api.h)
 bool IsAPICallCompleted( SteamAPICall_t hSteamAPICall, bool *pbFailed )
 {
-    PRINT_DEBUG("IsAPICallCompleted: %llu\n", hSteamAPICall);
+    PRINT_DEBUG("Steam_Utils::IsAPICallCompleted: %llu\n", hSteamAPICall);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamAPICall == 1) { //bug ? soul calibur 6 calls this function with the return value 1 of Steam_User_Stats::RequestCurrentStats and expects this function to return true
         if (pbFailed) *pbFailed = true;
@@ -173,17 +177,18 @@ bool IsAPICallCompleted( SteamAPICall_t hSteamAPICall, bool *pbFailed )
 
 ESteamAPICallFailure GetAPICallFailureReason( SteamAPICall_t hSteamAPICall )
 {
-    PRINT_DEBUG("GetAPICallFailureReason\n");
+    PRINT_DEBUG("Steam_Utils::GetAPICallFailureReason\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_ESteamAPICallFailureNone;
 }
 
 bool GetAPICallResult( SteamAPICall_t hSteamAPICall, void *pCallback, int cubCallback, int iCallbackExpected, bool *pbFailed )
 {
-    PRINT_DEBUG("GetAPICallResult %llu %i %i %p\n", hSteamAPICall, cubCallback, iCallbackExpected, pbFailed);
+    PRINT_DEBUG("Steam_Utils::GetAPICallResult %llu %i %i %p\n", hSteamAPICall, cubCallback, iCallbackExpected, pbFailed);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (callback_results->callback_result(hSteamAPICall, pCallback, cubCallback)) {
         if (pbFailed) *pbFailed = false;
-        PRINT_DEBUG("GetAPICallResult Succeeded\n");
+        PRINT_DEBUG("Steam_Utils::GetAPICallResult Succeeded\n");
         return true;
     } else {
         return false;
@@ -204,7 +209,8 @@ STEAM_PRIVATE_API( void RunFrame()
 // control how often you do them.
 uint32 GetIPCCallCount()
 {
-    PRINT_DEBUG("GetIPCCallCount\n");
+    PRINT_DEBUG("Steam_Utils::GetIPCCallCount\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     static int i = 0;
     i += 123;
     return i; //TODO
@@ -225,7 +231,7 @@ void SetWarningMessageHook( SteamAPIWarningMessageHook_t pFunction )
 // start & hook the game process, so this function will initially return false while the overlay is loading.
 bool IsOverlayEnabled()
 {
-    PRINT_DEBUG("IsOverlayEnabled\n");
+    PRINT_DEBUG("Steam_Utils::IsOverlayEnabled\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return overlay->Ready();
 }
@@ -242,7 +248,7 @@ bool IsOverlayEnabled()
 // refresh the screen with Present or SwapBuffers to allow the overlay to do it's work.
 bool BOverlayNeedsPresent()
 {
-    PRINT_DEBUG("BOverlayNeedsPresent\n");
+    PRINT_DEBUG("Steam_Utils::BOverlayNeedsPresent\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return overlay->NeedPresent();
 }
@@ -259,7 +265,7 @@ bool BOverlayNeedsPresent()
 STEAM_CALL_RESULT( CheckFileSignature_t )
 SteamAPICall_t CheckFileSignature( const char *szFileName )
 {
-    PRINT_DEBUG("CheckFileSignature\n");
+    PRINT_DEBUG("Steam_Utils::CheckFileSignature\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     CheckFileSignature_t data;
     data.m_eCheckFileSignature = k_ECheckFileSignatureValidSignature;
@@ -270,7 +276,8 @@ SteamAPICall_t CheckFileSignature( const char *szFileName )
 // Activates the Big Picture text input dialog which only supports gamepad input
 bool ShowGamepadTextInput( EGamepadTextInputMode eInputMode, EGamepadTextInputLineMode eLineInputMode, const char *pchDescription, uint32 unCharMax, const char *pchExistingText )
 {
-    PRINT_DEBUG("ShowGamepadTextInput\n");
+    PRINT_DEBUG("Steam_Utils::ShowGamepadTextInput\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -284,13 +291,15 @@ bool ShowGamepadTextInput( EGamepadTextInputMode eInputMode, EGamepadTextInputLi
 // Returns previously entered text & length
 uint32 GetEnteredGamepadTextLength()
 {
-    PRINT_DEBUG("GetEnteredGamepadTextLength\n");
+    PRINT_DEBUG("Steam_Utils::GetEnteredGamepadTextLength\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 bool GetEnteredGamepadTextInput( char *pchText, uint32 cchText )
 {
-    PRINT_DEBUG("GetEnteredGamepadTextInput\n");
+    PRINT_DEBUG("Steam_Utils::GetEnteredGamepadTextInput\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -298,7 +307,7 @@ bool GetEnteredGamepadTextInput( char *pchText, uint32 cchText )
 // returns the language the steam client is running in, you probably want ISteamApps::GetCurrentGameLanguage instead, this is for very special usage cases
 const char *GetSteamUILanguage()
 {
-    PRINT_DEBUG("GetSteamUILanguage\n");
+    PRINT_DEBUG("Steam_Utils::GetSteamUILanguage\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return settings->get_language();
 }
@@ -307,7 +316,7 @@ const char *GetSteamUILanguage()
 // returns true if Steam itself is running in VR mode
 bool IsSteamRunningInVR()
 {
-    PRINT_DEBUG("IsSteamRunningInVR\n");
+    PRINT_DEBUG("Steam_Utils::IsSteamRunningInVR\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
@@ -316,7 +325,7 @@ bool IsSteamRunningInVR()
 // Sets the inset of the overlay notification from the corner specified by SetOverlayNotificationPosition.
 void SetOverlayNotificationInset( int nHorizontalInset, int nVerticalInset )
 {
-    PRINT_DEBUG("SetOverlayNotificationInset\n");
+    PRINT_DEBUG("Steam_Utils::SetOverlayNotificationInset\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     overlay->SetNotificationInset(nHorizontalInset, nVerticalInset);
 }
@@ -327,7 +336,7 @@ void SetOverlayNotificationInset( int nHorizontalInset, int nVerticalInset )
 // a game can be added as a non-steam game to the developers library to test this feature
 bool IsSteamInBigPictureMode()
 {
-    PRINT_DEBUG("IsSteamInBigPictureMode\n");
+    PRINT_DEBUG("Steam_Utils::IsSteamInBigPictureMode\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
@@ -336,14 +345,15 @@ bool IsSteamInBigPictureMode()
 // ask SteamUI to create and render its OpenVR dashboard
 void StartVRDashboard()
 {
-    PRINT_DEBUG("StartVRDashboard\n");
+    PRINT_DEBUG("Steam_Utils::StartVRDashboard\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 
 // Returns true if the HMD content will be streamed via Steam In-Home Streaming
 bool IsVRHeadsetStreamingEnabled()
 {
-    PRINT_DEBUG("IsVRHeadsetStreamingEnabled\n");
+    PRINT_DEBUG("Steam_Utils::IsVRHeadsetStreamingEnabled\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
@@ -356,13 +366,14 @@ bool IsVRHeadsetStreamingEnabled()
 // (this is useful for games that have asymmetric multiplayer gameplay)
 void SetVRHeadsetStreamingEnabled( bool bEnabled )
 {
-    PRINT_DEBUG("SetVRHeadsetStreamingEnabled\n");
+    PRINT_DEBUG("Steam_Utils::SetVRHeadsetStreamingEnabled\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 // Returns whether this steam client is a Steam China specific client, vs the global client.
 bool IsSteamChinaLauncher()
 {
-    PRINT_DEBUG("IsSteamChinaLauncher\n");
+    PRINT_DEBUG("Steam_Utils::IsSteamChinaLauncher\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
@@ -371,7 +382,7 @@ bool IsSteamChinaLauncher()
 //   Returns false if filtering is unavailable for the language the user is currently running in.
 bool InitFilterText()
 {
-    PRINT_DEBUG("InitFilterText old\n");
+    PRINT_DEBUG("Steam_Utils::InitFilterText old\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
@@ -381,7 +392,7 @@ bool InitFilterText()
 // Returns false if filtering is unavailable for the language the user is currently running in.
 bool InitFilterText( uint32 unFilterOptions )
 {
-    PRINT_DEBUG("InitFilterText\n");
+    PRINT_DEBUG("Steam_Utils::InitFilterText\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
@@ -394,7 +405,7 @@ bool InitFilterText( uint32 unFilterOptions )
 //   Returns the number of characters (not bytes) filtered.
 int FilterText( char* pchOutFilteredText, uint32 nByteSizeOutFilteredText, const char * pchInputMessage, bool bLegalOnly )
 {
-    PRINT_DEBUG("FilterText old\n");
+    PRINT_DEBUG("Steam_Utils::FilterText old\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return FilterText(k_ETextFilteringContextUnknown, CSteamID(), pchInputMessage, pchOutFilteredText, nByteSizeOutFilteredText );
 }
@@ -408,7 +419,7 @@ int FilterText( char* pchOutFilteredText, uint32 nByteSizeOutFilteredText, const
 // Returns the number of characters (not bytes) filtered
 int FilterText( ETextFilteringContext eContext, CSteamID sourceSteamID, const char *pchInputMessage, char *pchOutFilteredText, uint32 nByteSizeOutFilteredText )
 {
-    PRINT_DEBUG("FilterText\n");
+    PRINT_DEBUG("Steam_Utils::FilterText\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!nByteSizeOutFilteredText) return 0;
     unsigned len = strlen(pchInputMessage);
@@ -427,7 +438,7 @@ int FilterText( ETextFilteringContext eContext, CSteamID sourceSteamID, const ch
 // This does NOT tell you if the Steam client is currently connected to Steam via ipv6.
 ESteamIPv6ConnectivityState GetIPv6ConnectivityState( ESteamIPv6ConnectivityProtocol eProtocol )
 {
-    PRINT_DEBUG("GetIPv6ConnectivityState\n");
+    PRINT_DEBUG("Steam_Utils::GetIPv6ConnectivityState\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_ESteamIPv6ConnectivityState_Unknown;
 }
@@ -435,7 +446,8 @@ ESteamIPv6ConnectivityState GetIPv6ConnectivityState( ESteamIPv6ConnectivityProt
 // returns true if currently running on the Steam Deck device
 bool IsSteamRunningOnSteamDeck()
 {
-    PRINT_DEBUG("%s %i\n", __FUNCTION__, (int)settings->steam_deck);
+    PRINT_DEBUG("Steam_Utils::%s %i\n", __FUNCTION__, (int)settings->steam_deck);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return settings->steam_deck;
 }
 
@@ -443,19 +455,22 @@ bool IsSteamRunningOnSteamDeck()
 // The text field position is specified in pixels relative the origin of the game window and is used to position the floating keyboard in a way that doesn't cover the text field
 bool ShowFloatingGamepadTextInput( EFloatingGamepadTextInputMode eKeyboardMode, int nTextFieldXPosition, int nTextFieldYPosition, int nTextFieldWidth, int nTextFieldHeight )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("Steam_Utils::%s\n", __FUNCTION__);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
 // In game launchers that don't have controller support you can call this to have Steam Input translate the controller input into mouse/kb to navigate the launcher
 void SetGameLauncherMode( bool bLauncherMode )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("Steam_Utils::%s\n", __FUNCTION__);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 bool DismissFloatingGamepadTextInput()
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("Steam_Utils::%s\n", __FUNCTION__);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return true;
 }
 

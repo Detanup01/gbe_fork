@@ -68,7 +68,7 @@ Steam_User(Settings *settings, Local_Storage *local_storage, class Networking *n
 // this is only used internally by the API, and by a few select interfaces that support multi-user
 HSteamUser GetHSteamUser()
 {
-    PRINT_DEBUG("GetHSteamUser\n");
+    PRINT_DEBUG("Steam_User::GetHSteamUser\n");
     return CLIENT_HSTEAMUSER;
 }
 
@@ -112,7 +112,7 @@ CSteamID GetSteamID()
 
 int InitiateGameConnection( void *pAuthBlob, int cbMaxAuthBlob, CSteamID steamIDGameServer, uint32 unIPServer, uint16 usPortServer, bool bSecure )
 {
-    PRINT_DEBUG("InitiateGameConnection %i %llu %u %u %u %p\n", cbMaxAuthBlob, steamIDGameServer.ConvertToUint64(), unIPServer, usPortServer, bSecure, pAuthBlob);
+    PRINT_DEBUG("Steam_User::InitiateGameConnection %i %llu %u %u %u %p\n", cbMaxAuthBlob, steamIDGameServer.ConvertToUint64(), unIPServer, usPortServer, bSecure, pAuthBlob);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (cbMaxAuthBlob < INITIATE_GAME_CONNECTION_TICKET_SIZE) return 0;
     if (!pAuthBlob) return 0;
@@ -131,7 +131,7 @@ int InitiateGameConnection( void *pAuthBlob, int cbMaxAuthBlob, CSteamID steamID
 // needs to occur when the game client leaves the specified game server, needs to match with the InitiateGameConnection() call
 void TerminateGameConnection( uint32 unIPServer, uint16 usPortServer )
 {
-    PRINT_DEBUG("TerminateGameConnection\n");
+    PRINT_DEBUG("Steam_User::TerminateGameConnection\n");
 }
 
 // Legacy functions
@@ -139,7 +139,7 @@ void TerminateGameConnection( uint32 unIPServer, uint16 usPortServer )
 // used by only a few games to track usage events
 void TrackAppUsageEvent( CGameID gameID, int eAppUsageEvent, const char *pchExtraInfo)
 {
-    PRINT_DEBUG("TrackAppUsageEvent\n");
+    PRINT_DEBUG("Steam_User::TrackAppUsageEvent\n");
 }
 
 void RefreshSteam2Login()
@@ -151,7 +151,7 @@ void RefreshSteam2Login()
 // this will usually be something like "C:\Progam Files\Steam\userdata\<SteamID>\<AppID>\local"
 bool GetUserDataFolder( char *pchBuffer, int cubBuffer )
 {
-    PRINT_DEBUG("GetUserDataFolder\n");
+    PRINT_DEBUG("Steam_User::GetUserDataFolder\n");
     if (!cubBuffer) return false;
 
     std::string user_data = local_storage->get_path(Local_Storage::user_data_storage);
@@ -163,7 +163,7 @@ bool GetUserDataFolder( char *pchBuffer, int cubBuffer )
 // Starts voice recording. Once started, use GetVoice() to get the data
 void StartVoiceRecording( )
 {
-    PRINT_DEBUG("StartVoiceRecording\n");
+    PRINT_DEBUG("Steam_User::StartVoiceRecording\n");
     last_get_voice = std::chrono::high_resolution_clock::now();
     recording = true;
     //TODO:fix
@@ -175,7 +175,7 @@ void StartVoiceRecording( )
 // k_eVoiceResultNotRecording
 void StopVoiceRecording( )
 {
-    PRINT_DEBUG("StopVoiceRecording\n");
+    PRINT_DEBUG("Steam_User::StopVoiceRecording\n");
     recording = false;
 }
 
@@ -185,7 +185,7 @@ void StopVoiceRecording( )
 // below for further explanation of "uncompressed" data.
 EVoiceResult GetAvailableVoice( uint32 *pcbCompressed, uint32 *pcbUncompressed_Deprecated, uint32 nUncompressedVoiceDesiredSampleRate_Deprecated  )
 {
-    PRINT_DEBUG("GetAvailableVoice\n");
+    PRINT_DEBUG("Steam_User::GetAvailableVoice\n");
     if (pcbCompressed) *pcbCompressed = 0;
     if (pcbUncompressed_Deprecated) *pcbUncompressed_Deprecated = 0;
     if (!recording) return k_EVoiceResultNotRecording;
@@ -225,7 +225,7 @@ EVoiceResult GetAvailableVoice(uint32 *pcbCompressed, uint32 *pcbUncompressed)
 // using the DecompressVoice function below.
 EVoiceResult GetVoice( bool bWantCompressed, void *pDestBuffer, uint32 cbDestBufferSize, uint32 *nBytesWritten, bool bWantUncompressed_Deprecated, void *pUncompressedDestBuffer_Deprecated , uint32 cbUncompressedDestBufferSize_Deprecated , uint32 *nUncompressBytesWritten_Deprecated , uint32 nUncompressedVoiceDesiredSampleRate_Deprecated  )
 {
-    PRINT_DEBUG("GetVoice\n");
+    PRINT_DEBUG("Steam_User::GetVoice\n");
     if (!recording) return k_EVoiceResultNotRecording;
     double seconds = std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - last_get_voice).count();
     if (bWantCompressed) {
@@ -236,7 +236,7 @@ EVoiceResult GetVoice( bool bWantCompressed, void *pDestBuffer, uint32 cbDestBuf
     }
 
     if (bWantUncompressed_Deprecated) {
-        PRINT_DEBUG("Wanted Uncompressed\n");
+        PRINT_DEBUG("Steam_User::GetVoice Wanted Uncompressed\n");
     }
 
     last_get_voice = std::chrono::high_resolution_clock::now();
@@ -263,7 +263,7 @@ EVoiceResult GetCompressedVoice( void *pDestBuffer, uint32 cbDestBufferSize, uin
 // It is suggested to start with a 20kb buffer and reallocate as necessary.
 EVoiceResult DecompressVoice( const void *pCompressed, uint32 cbCompressed, void *pDestBuffer, uint32 cbDestBufferSize, uint32 *nBytesWritten, uint32 nDesiredSampleRate )
 {
-    PRINT_DEBUG("DecompressVoice\n");
+    PRINT_DEBUG("Steam_User::DecompressVoice\n");
     if (!recording) return k_EVoiceResultNotRecording;
     uint32 uncompressed = (double)cbCompressed * ((double)nDesiredSampleRate / 8192.0);
     if(nBytesWritten) *nBytesWritten = uncompressed;
@@ -294,7 +294,7 @@ EVoiceResult DecompressVoice( void *pCompressed, uint32 cbCompressed, void *pDes
 // which is usually 48000 or 44100.
 uint32 GetVoiceOptimalSampleRate()
 {
-    PRINT_DEBUG("GetVoiceOptimalSampleRate\n");
+    PRINT_DEBUG("Steam_User::GetVoiceOptimalSampleRate\n");
     return 48000;
 }
 
@@ -368,7 +368,7 @@ EUserHasLicenseForAppResult UserHasLicenseForApp( CSteamID steamID, AppId_t appI
 // (i.e a SteamServersConnected_t has been issued) and may not catch all forms of NAT.
 bool BIsBehindNAT()
 {
-    PRINT_DEBUG("BIsBehindNAT\n");
+    PRINT_DEBUG("Steam_User::BIsBehindNAT\n");
     return false;
 }
 
@@ -377,7 +377,7 @@ bool BIsBehindNAT()
 // uint32 unIPServer, uint16 usPortServer - the IP address of the game server
 void AdvertiseGame( CSteamID steamIDGameServer, uint32 unIPServer, uint16 usPortServer )
 {
-    PRINT_DEBUG("AdvertiseGame\n");
+    PRINT_DEBUG("Steam_User::AdvertiseGame\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     Gameserver *server = new Gameserver();
     server->set_id(steamIDGameServer.ConvertToUint64());
@@ -468,14 +468,14 @@ bool GetEncryptedAppTicket( void *pTicket, int cbMaxTicket, uint32 *pcbTicket )
 // the user has can have two different badges for a series; the regular (max level 5) and the foil (max level 1)
 int GetGameBadgeLevel( int nSeries, bool bFoil )
 {
-    PRINT_DEBUG("GetGameBadgeLevel\n");
+    PRINT_DEBUG("Steam_User::GetGameBadgeLevel\n");
     return 0;
 }
 
 // gets the Steam Level of the user, as shown on their profile
 int GetPlayerSteamLevel()
 {
-    PRINT_DEBUG("GetPlayerSteamLevel\n");
+    PRINT_DEBUG("Steam_User::GetPlayerSteamLevel\n");
     return 100;
 }
 
@@ -492,42 +492,42 @@ int GetPlayerSteamLevel()
 STEAM_CALL_RESULT( StoreAuthURLResponse_t )
 SteamAPICall_t RequestStoreAuthURL( const char *pchRedirectURL )
 {
-    PRINT_DEBUG("RequestStoreAuthURL\n");
+    PRINT_DEBUG("Steam_User::RequestStoreAuthURL\n");
     return 0;
 }
 
 // gets whether the users phone number is verified 
 bool BIsPhoneVerified()
 {
-    PRINT_DEBUG("BIsPhoneVerified\n");
+    PRINT_DEBUG("Steam_User::BIsPhoneVerified\n");
     return true;
 }
 
 // gets whether the user has two factor enabled on their account
 bool BIsTwoFactorEnabled()
 {
-    PRINT_DEBUG("BIsTwoFactorEnabled\n");
+    PRINT_DEBUG("Steam_User::BIsTwoFactorEnabled\n");
     return true;
 }
 
 // gets whether the users phone number is identifying
 bool BIsPhoneIdentifying()
 {
-    PRINT_DEBUG("BIsPhoneIdentifying\n");
+    PRINT_DEBUG("Steam_User::BIsPhoneIdentifying\n");
     return false;
 }
 
 // gets whether the users phone number is awaiting (re)verification
 bool BIsPhoneRequiringVerification()
 {
-    PRINT_DEBUG("BIsPhoneRequiringVerification\n");
+    PRINT_DEBUG("Steam_User::BIsPhoneRequiringVerification\n");
     return false;
 }
 
 STEAM_CALL_RESULT( MarketEligibilityResponse_t )
 SteamAPICall_t GetMarketEligibility()
 {
-    PRINT_DEBUG("GetMarketEligibility\n");
+    PRINT_DEBUG("Steam_User::GetMarketEligibility\n");
     return 0;
 }
 
@@ -535,7 +535,7 @@ SteamAPICall_t GetMarketEligibility()
 STEAM_CALL_RESULT( DurationControl_t )
 SteamAPICall_t GetDurationControl()
 {
-    PRINT_DEBUG("GetDurationControl\n");
+    PRINT_DEBUG("Steam_User::GetDurationControl\n");
     return 0;
 }
 
@@ -544,7 +544,7 @@ SteamAPICall_t GetDurationControl()
 // playtime limits.
 bool BSetDurationControlOnlineState( EDurationControlOnlineState eNewState )
 {
-    PRINT_DEBUG("BSetDurationControlOnlineState\n");
+    PRINT_DEBUG("Steam_User::BSetDurationControlOnlineState\n");
     return false;
 }
 

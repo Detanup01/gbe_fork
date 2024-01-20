@@ -33,7 +33,7 @@ Steam_GameServerStats::Steam_GameServerStats(class Settings *settings, class Net
 STEAM_CALL_RESULT( GSStatsReceived_t )
 SteamAPICall_t Steam_GameServerStats::RequestUserStats( CSteamID steamIDUser )
 {
-    PRINT_DEBUG("RequestUserStats\n");
+    PRINT_DEBUG("Steam_GameServerStats::RequestUserStats\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     GSStatsReceived_t data;
@@ -46,19 +46,19 @@ SteamAPICall_t Steam_GameServerStats::RequestUserStats( CSteamID steamIDUser )
 // requests stat information for a user, usable after a successful call to RequestUserStats()
 bool Steam_GameServerStats::GetUserStat( CSteamID steamIDUser, const char *pchName, int32 *pData )
 {
-    PRINT_DEBUG("GetUserStat\n");
+    PRINT_DEBUG("Steam_GameServerStats::GetUserStat\n");
     return false;
 }
 
 bool Steam_GameServerStats::GetUserStat( CSteamID steamIDUser, const char *pchName, float *pData )
 {
-    PRINT_DEBUG("GetUserStat\n");
+    PRINT_DEBUG("Steam_GameServerStats::GetUserStat\n");
     return false;
 }
 
 bool Steam_GameServerStats::GetUserAchievement( CSteamID steamIDUser, const char *pchName, bool *pbAchieved )
 {
-    PRINT_DEBUG("GetUserAchievement\n");
+    PRINT_DEBUG("Steam_GameServerStats::GetUserAchievement\n");
     return false;
 }
 
@@ -69,32 +69,32 @@ bool Steam_GameServerStats::GetUserAchievement( CSteamID steamIDUser, const char
 // Set the IP range of your official servers on the Steamworks page
 bool Steam_GameServerStats::SetUserStat( CSteamID steamIDUser, const char *pchName, int32 nData )
 {
-    PRINT_DEBUG("SetUserStat\n");
+    PRINT_DEBUG("Steam_GameServerStats::SetUserStat\n");
     return false;
 }
 
 bool Steam_GameServerStats::SetUserStat( CSteamID steamIDUser, const char *pchName, float fData )
 {
-    PRINT_DEBUG("SetUserStat\n");
+    PRINT_DEBUG("Steam_GameServerStats::SetUserStat\n");
     return false;
 }
 
 bool Steam_GameServerStats::UpdateUserAvgRateStat( CSteamID steamIDUser, const char *pchName, float flCountThisSession, double dSessionLength )
 {
-    PRINT_DEBUG("UpdateUserAvgRateStat\n");
+    PRINT_DEBUG("Steam_GameServerStats::UpdateUserAvgRateStat\n");
     return false;
 }
 
 
 bool Steam_GameServerStats::SetUserAchievement( CSteamID steamIDUser, const char *pchName )
 {
-    PRINT_DEBUG("SetUserAchievement\n");
+    PRINT_DEBUG("Steam_GameServerStats::SetUserAchievement\n");
     return false;
 }
 
 bool Steam_GameServerStats::ClearUserAchievement( CSteamID steamIDUser, const char *pchName )
 {
-    PRINT_DEBUG("ClearUserAchievement\n");
+    PRINT_DEBUG("Steam_GameServerStats::ClearUserAchievement\n");
     return false;
 }
 
@@ -108,7 +108,7 @@ bool Steam_GameServerStats::ClearUserAchievement( CSteamID steamIDUser, const ch
 STEAM_CALL_RESULT( GSStatsStored_t )
 SteamAPICall_t Steam_GameServerStats::StoreUserStats( CSteamID steamIDUser )
 {
-    PRINT_DEBUG("StoreUserStats\n");
+    PRINT_DEBUG("Steam_GameServerStats::StoreUserStats\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     GSStatsStored_t data;

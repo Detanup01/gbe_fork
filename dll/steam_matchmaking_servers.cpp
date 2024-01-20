@@ -37,8 +37,11 @@ static int server_list_request;
 
 HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, ISteamMatchmakingServerListResponse *pRequestServersResponse, EMatchMakingType type)
 {
-    PRINT_DEBUG("RequestServerList %u\n", iApp);
+    PRINT_DEBUG("Steam_Matchmaking_Servers::RequestServerList %u %p, %i\n", iApp, pRequestServersResponse, (int)type);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    ++server_list_request;
+    HServerListRequest id = (char *)0 + server_list_request; // (char *)0 silences the compiler warning
+
     struct Steam_Matchmaking_Request request;
     request.appid = iApp;
     request.callbacks = pRequestServersResponse;
@@ -46,11 +49,9 @@ HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, IS
     request.cancelled = false;
     request.completed = false;
     request.type = type;
+    request.id = id;
     requests.push_back(request);
-    ++server_list_request;
-    requests[requests.size() - 1].id = (char *)0 + server_list_request; // (char *)0 silences the compiler warning
-    HServerListRequest id = requests[requests.size() - 1].id;
-    PRINT_DEBUG("request id: %p\n", id);
+    PRINT_DEBUG("Steam_Matchmaking_Servers::request id: %p\n", id);
 
     if (type == eLANServer) return id;
 
@@ -68,7 +69,7 @@ HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, IS
                 g2.server = server;
                 g2.type = type;
                 gameservers.push_back(g2);
-                PRINT_DEBUG("SERVER ADDED\n");
+                PRINT_DEBUG("  eFriendsServer SERVER ADDED\n");
             }
         }
         return id;
@@ -87,6 +88,7 @@ HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, IS
         file_size = file_size_(file_path);
     }
 
+    PRINT_DEBUG("Steam_Matchmaking_Servers::Server list file '%s' [%llu bytes]\n", file_path.c_str(), file_size);
     std::string list;
     if (file_size) {
         list.resize(file_size);
@@ -129,7 +131,7 @@ HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, IS
         g.server = server;
         g.type = type;
         gameservers.push_back(g);
-        PRINT_DEBUG("SERVER ADDED\n");
+        PRINT_DEBUG("  SERVER ADDED\n");
 
         list_ip = "";
     }
@@ -142,43 +144,43 @@ HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, IS
 // Request object must be released by calling ReleaseRequest( hServerListRequest )
 HServerListRequest Steam_Matchmaking_Servers::RequestInternetServerList( AppId_t iApp, STEAM_ARRAY_COUNT(nFilters) MatchMakingKeyValuePair_t **ppchFilters, uint32 nFilters, ISteamMatchmakingServerListResponse *pRequestServersResponse )
 {
-    PRINT_DEBUG("RequestInternetServerList\n");
+    PRINT_DEBUG("Steam_Matchmaking_Servers::RequestInternetServerList\n");
     return RequestServerList(iApp, pRequestServersResponse, eInternetServer);
 }
 
 HServerListRequest Steam_Matchmaking_Servers::RequestLANServerList( AppId_t iApp, ISteamMatchmakingServerListResponse *pRequestServersResponse )
 {
-    PRINT_DEBUG("RequestLANServerList\n");
+    PRINT_DEBUG("Steam_Matchmaking_Servers::RequestLANServerList\n");
     return RequestServerList(iApp, pRequestServersResponse, eLANServer);
 }
 
 HServerListRequest Steam_Matchmaking_Servers::RequestFriendsServerList( AppId_t iApp, STEAM_ARRAY_COUNT(nFilters) MatchMakingKeyValuePair_t **ppchFilters, uint32 nFilters, ISteamMatchmakingServerListResponse *pRequestServersResponse )
 {
-    PRINT_DEBUG("RequestFriendsServerList\n");
+    PRINT_DEBUG("Steam_Matchmaking_Servers::RequestFriendsServerList\n");
     return RequestServerList(iApp, pRequestServersResponse, eFriendsServer);
 }
 
 HServerListRequest Steam_Matchmaking_Servers::RequestFavoritesServerList( AppId_t iApp, STEAM_ARRAY_COUNT(nFilters) MatchMakingKeyValuePair_t **ppchFilters, uint32 nFilters, ISteamMatchmakingServerListResponse *pRequestServersResponse )
 {
-    PRINT_DEBUG("RequestFavoritesServerList\n");
+    PRINT_DEBUG("Steam_Matchmaking_Servers::RequestFavoritesServerList\n");
     return RequestServerList(iApp, pRequestServersResponse, eFavoritesServer);
 }
 
 HServerListRequest Steam_Matchmaking_Servers::RequestHistoryServerList( AppId_t iApp, STEAM_ARRAY_COUNT(nFilters) MatchMakingKeyValuePair_t **ppchFilters, uint32 nFilters, ISteamMatchmakingServerListResponse *pRequestServersResponse )
 {
-    PRINT_DEBUG("RequestHistoryServerList\n");
+    PRINT_DEBUG("Steam_Matchmaking_Servers::RequestHistoryServerList\n");
     return RequestServerList(iApp, pRequestServersResponse, eHistoryServer);
 }
 
 HServerListRequest Steam_Matchmaking_Servers::RequestSpectatorServerList( AppId_t iApp, STEAM_ARRAY_COUNT(nFilters) MatchMakingKeyValuePair_t **ppchFilters, uint32 nFilters, ISteamMatchmakingServerListResponse *pRequestServersResponse )
 {
-    PRINT_DEBUG("RequestSpectatorServerList\n");
+    PRINT_DEBUG("Steam_Matchmaking_Servers::RequestSpectatorServerList\n");
     return RequestServerList(iApp, pRequestServersResponse, eSpectatorServer);
 }
 
 void Steam_Matchmaking_Servers::RequestOldServerList(AppId_t iApp, ISteamMatchmakingServerListResponse001 *pRequestServersResponse, EMatchMakingType type)
 {
-    PRINT_DEBUG("RequestOldServerList %u\n", iApp);
+    PRINT_DEBUG("Steam_Matchmaking_Servers::RequestOldServerList %u\n", iApp);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     auto g = std::begin(requests);
     while (g != std::end(requests)) {
@@ -202,42 +204,42 @@ void Steam_Matchmaking_Servers::RequestOldServerList(AppId_t iApp, ISteamMatchma
 
 void Steam_Matchmaking_Servers::RequestInternetServerList( AppId_t iApp, MatchMakingKeyValuePair_t **ppchFilters, uint32 nFilters, ISteamMatchmakingServerListResponse001 *pRequestServersResponse )
 {
-    PRINT_DEBUG("%s old\n", __FUNCTION__);
+    PRINT_DEBUG("Steam_Matchmaking_Servers::%s old\n", __FUNCTION__);
     //TODO
     RequestOldServerList(iApp, pRequestServersResponse, eInternetServer);
 }
 
 void Steam_Matchmaking_Servers::RequestLANServerList( AppId_t iApp, ISteamMatchmakingServerListResponse001 *pRequestServersResponse )
 {
-    PRINT_DEBUG("%s old\n", __FUNCTION__);
+    PRINT_DEBUG("Steam_Matchmaking_Servers::%s old\n", __FUNCTION__);
     //TODO
     RequestOldServerList(iApp, pRequestServersResponse, eLANServer);
 }
 
 void Steam_Matchmaking_Servers::RequestFriendsServerList( AppId_t iApp, MatchMakingKeyValuePair_t **ppchFilters, uint32 nFilters, ISteamMatchmakingServerListResponse001 *pRequestServersResponse )
 {
-    PRINT_DEBUG("%s old\n", __FUNCTION__);
+    PRINT_DEBUG("Steam_Matchmaking_Servers::%s old\n", __FUNCTION__);
     //TODO
     RequestOldServerList(iApp, pRequestServersResponse, eFriendsServer);
 }
 
 void Steam_Matchmaking_Servers::RequestFavoritesServerList( AppId_t iApp, MatchMakingKeyValuePair_t **ppchFilters, uint32 nFilters, ISteamMatchmakingServerListResponse001 *pRequestServersResponse )
 {
-    PRINT_DEBUG("%s old\n", __FUNCTION__);
+    PRINT_DEBUG("Steam_Matchmaking_Servers::%s old\n", __FUNCTION__);
     //TODO
     RequestOldServerList(iApp, pRequestServersResponse, eFavoritesServer);
 }
 
 void Steam_Matchmaking_Servers::RequestHistoryServerList( AppId_t iApp, MatchMakingKeyValuePair_t **ppchFilters, uint32 nFilters, ISteamMatchmakingServerListResponse001 *pRequestServersResponse )
 {
-    PRINT_DEBUG("%s old\n", __FUNCTION__);
+    PRINT_DEBUG("Steam_Matchmaking_Servers::%s old\n", __FUNCTION__);
     //TODO
     RequestOldServerList(iApp, pRequestServersResponse, eHistoryServer);
 }
 
 void Steam_Matchmaking_Servers::RequestSpectatorServerList( AppId_t iApp, MatchMakingKeyValuePair_t **ppchFilters, uint32 nFilters, ISteamMatchmakingServerListResponse001 *pRequestServersResponse )
 {
-    PRINT_DEBUG("%s old\n", __FUNCTION__);
+    PRINT_DEBUG("Steam_Matchmaking_Servers::%s old\n", __FUNCTION__);
     //TODO
     RequestOldServerList(iApp, pRequestServersResponse, eSpectatorServer);
 }
@@ -247,7 +249,7 @@ void Steam_Matchmaking_Servers::RequestSpectatorServerList( AppId_t iApp, MatchM
 // RefreshComplete callback is not posted when request is released.
 void Steam_Matchmaking_Servers::ReleaseRequest( HServerListRequest hServerListRequest )
 {
-    PRINT_DEBUG("ReleaseRequest %p\n", hServerListRequest);
+    PRINT_DEBUG("Steam_Matchmaking_Servers::ReleaseRequest %p\n", hServerListRequest);
     auto g = std::begin(requests);
     while (g != std::end(requests)) {
         if (g->id == hServerListRequest) {
@@ -420,7 +422,7 @@ void Steam_Matchmaking_Servers::server_details(Gameserver *g, gameserveritem_t *
     server->m_nServerVersion = g->version();
     server->SetName(g->server_name().c_str());
     server->m_steamID = CSteamID((uint64)g->id());
-    PRINT_DEBUG("server_details " "%" PRIu64 "\n", g->id());
+    PRINT_DEBUG("Steam_Matchmaking_Servers::server_details " "%" PRIu64 "\n", g->id());
 
     strncpy(server->m_szGameTags, g->tags().c_str(), k_cbMaxGameServerTags - 1);
     server->m_szGameTags[k_cbMaxGameServerTags - 1] = 0;
@@ -457,7 +459,7 @@ void Steam_Matchmaking_Servers::server_details_players(Gameserver *g, Steam_Matc
         if (ssq != NULL) ssq_server_free(ssq);
     }
 
-    PRINT_DEBUG("server_details_players " "%" PRIu64 "\n", g->id());
+    PRINT_DEBUG("Steam_Matchmaking_Servers::server_details_players " "%" PRIu64 "\n", g->id());
 }
 
 void Steam_Matchmaking_Servers::server_details_rules(Gameserver *g, Steam_Matchmaking_Servers_Direct_IP_Request *r)
@@ -491,7 +493,7 @@ void Steam_Matchmaking_Servers::server_details_rules(Gameserver *g, Steam_Matchm
         if (ssq != NULL) ssq_server_free(ssq);
     }
 
-    PRINT_DEBUG("server_details_rules " "%" PRIu64 "\n", g->id());
+    PRINT_DEBUG("Steam_Matchmaking_Servers::server_details_rules " "%" PRIu64 "\n", g->id());
 }
 
 // Get details on a given server in the list, you can get the valid range of index
@@ -499,16 +501,16 @@ void Steam_Matchmaking_Servers::server_details_rules(Gameserver *g, Steam_Matchm
 // ISteamMatchmakingServerListResponse::ServerResponded() callbacks
 gameserveritem_t *Steam_Matchmaking_Servers::GetServerDetails( HServerListRequest hRequest, int iServer )
 {
-    PRINT_DEBUG("GetServerDetails %p %i\n", hRequest, iServer);
+    PRINT_DEBUG("Steam_Matchmaking_Servers::GetServerDetails %p %i\n", hRequest, iServer);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     std::vector <struct Steam_Matchmaking_Servers_Gameserver> gameservers_filtered;
     auto g = std::begin(requests);
     while (g != std::end(requests)) {
-        PRINT_DEBUG("equal? %p %p\n", hRequest, g->id);
+        PRINT_DEBUG("  equal? %p %p\n", hRequest, g->id);
         if (g->id == hRequest) {
             gameservers_filtered = g->gameservers_filtered;
-            PRINT_DEBUG("found %zu\n", gameservers_filtered.size());
+            PRINT_DEBUG("  found %zu\n", gameservers_filtered.size());
             break;
         }
 
@@ -522,7 +524,7 @@ gameserveritem_t *Steam_Matchmaking_Servers::GetServerDetails( HServerListReques
     Gameserver *gs = &gameservers_filtered[iServer].server;
     gameserveritem_t *server = new gameserveritem_t(); //TODO: is the new here ok?
     server_details(gs, server);
-    PRINT_DEBUG("Returned server details\n");
+    PRINT_DEBUG("  Returned server details\n");
     return server;
 }
 
@@ -535,7 +537,7 @@ gameserveritem_t *Steam_Matchmaking_Servers::GetServerDetails( HServerListReques
 // The request handle must be released using ReleaseRequest( hRequest )
 void Steam_Matchmaking_Servers::CancelQuery( HServerListRequest hRequest )
 {
-    PRINT_DEBUG("CancelQuery %p\n", hRequest);
+    PRINT_DEBUG("Steam_Matchmaking_Servers::CancelQuery %p\n", hRequest);
     auto g = std::begin(requests);
     while (g != std::end(requests)) {
         if (g->id == hRequest) {
@@ -554,14 +556,14 @@ void Steam_Matchmaking_Servers::CancelQuery( HServerListRequest hRequest )
 // is released with ReleaseRequest( hRequest )
 void Steam_Matchmaking_Servers::RefreshQuery( HServerListRequest hRequest )
 {
-    PRINT_DEBUG("RefreshQuery %p\n", hRequest);
+    PRINT_DEBUG("Steam_Matchmaking_Servers::RefreshQuery %p\n", hRequest);
 }
  
 
 // Returns true if the list is currently refreshing its server list
 bool Steam_Matchmaking_Servers::IsRefreshing( HServerListRequest hRequest )
 {
-    PRINT_DEBUG("IsRefreshing %p\n", hRequest);
+    PRINT_DEBUG("Steam_Matchmaking_Servers::IsRefreshing %p\n", hRequest);
     return false;
 }
  
@@ -569,7 +571,7 @@ bool Steam_Matchmaking_Servers::IsRefreshing( HServerListRequest hRequest )
 // How many servers in the given list, GetServerDetails above takes 0... GetServerCount() - 1
 int Steam_Matchmaking_Servers::GetServerCount( HServerListRequest hRequest )
 {
-    PRINT_DEBUG("GetServerCount %p\n", hRequest);
+    PRINT_DEBUG("Steam_Matchmaking_Servers::GetServerCount %p\n", hRequest);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     int size = 0;
     auto g = std::begin(requests);
@@ -589,7 +591,7 @@ int Steam_Matchmaking_Servers::GetServerCount( HServerListRequest hRequest )
 // Refresh a single server inside of a query (rather than all the servers )
 void Steam_Matchmaking_Servers::RefreshServer( HServerListRequest hRequest, int iServer )
 {
-    PRINT_DEBUG("RefreshServer %p\n", hRequest);
+    PRINT_DEBUG("Steam_Matchmaking_Servers::RefreshServer %p\n", hRequest);
     //TODO
 }
  
@@ -608,7 +610,7 @@ static HServerQuery new_server_query()
 // Request updated ping time and other details from a single server
 HServerQuery Steam_Matchmaking_Servers::PingServer( uint32 unIP, uint16 usPort, ISteamMatchmakingPingResponse *pRequestServersResponse )
 {
-    PRINT_DEBUG("PingServer %hhu.%hhu.%hhu.%hhu:%hu\n", ((unsigned char *)&unIP)[3], ((unsigned char *)&unIP)[2], ((unsigned char *)&unIP)[1], ((unsigned char *)&unIP)[0], usPort);
+    PRINT_DEBUG("Steam_Matchmaking_Servers::PingServer %hhu.%hhu.%hhu.%hhu:%hu\n", ((unsigned char *)&unIP)[3], ((unsigned char *)&unIP)[2], ((unsigned char *)&unIP)[1], ((unsigned char *)&unIP)[0], usPort);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     Steam_Matchmaking_Servers_Direct_IP_Request r;
     r.id = new_server_query();
@@ -623,7 +625,7 @@ HServerQuery Steam_Matchmaking_Servers::PingServer( uint32 unIP, uint16 usPort, 
 // Request the list of players currently playing on a server
 HServerQuery Steam_Matchmaking_Servers::PlayerDetails( uint32 unIP, uint16 usPort, ISteamMatchmakingPlayersResponse *pRequestServersResponse )
 {
-    PRINT_DEBUG("PlayerDetails %hhu.%hhu.%hhu.%hhu:%hu\n", ((unsigned char *)&unIP)[3], ((unsigned char *)&unIP)[2], ((unsigned char *)&unIP)[1], ((unsigned char *)&unIP)[0], usPort);
+    PRINT_DEBUG("Steam_Matchmaking_Servers::PlayerDetails %hhu.%hhu.%hhu.%hhu:%hu\n", ((unsigned char *)&unIP)[3], ((unsigned char *)&unIP)[2], ((unsigned char *)&unIP)[1], ((unsigned char *)&unIP)[0], usPort);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     Steam_Matchmaking_Servers_Direct_IP_Request r;
     r.id = new_server_query();
@@ -639,7 +641,7 @@ HServerQuery Steam_Matchmaking_Servers::PlayerDetails( uint32 unIP, uint16 usPor
 // Request the list of rules that the server is running (See ISteamGameServer::SetKeyValue() to set the rules server side)
 HServerQuery Steam_Matchmaking_Servers::ServerRules( uint32 unIP, uint16 usPort, ISteamMatchmakingRulesResponse *pRequestServersResponse )
 {
-    PRINT_DEBUG("ServerRules %hhu.%hhu.%hhu.%hhu:%hu\n", ((unsigned char *)&unIP)[3], ((unsigned char *)&unIP)[2], ((unsigned char *)&unIP)[1], ((unsigned char *)&unIP)[0], usPort);
+    PRINT_DEBUG("Steam_Matchmaking_Servers::ServerRules %hhu.%hhu.%hhu.%hhu:%hu\n", ((unsigned char *)&unIP)[3], ((unsigned char *)&unIP)[2], ((unsigned char *)&unIP)[1], ((unsigned char *)&unIP)[0], usPort);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     Steam_Matchmaking_Servers_Direct_IP_Request r;
     r.id = new_server_query();
@@ -657,7 +659,7 @@ HServerQuery Steam_Matchmaking_Servers::ServerRules( uint32 unIP, uint16 usPort,
 // to one of the above calls to avoid crashing when callbacks occur.
 void Steam_Matchmaking_Servers::CancelServerQuery( HServerQuery hServerQuery )
 {
-    PRINT_DEBUG("CancelServerQuery\n");
+    PRINT_DEBUG("Steam_Matchmaking_Servers::CancelServerQuery\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     auto r = std::find_if(direct_ip_requests.begin(), direct_ip_requests.end(), [&hServerQuery](Steam_Matchmaking_Servers_Direct_IP_Request const& item) { return item.id == hServerQuery; });
     if (direct_ip_requests.end() == r) return;
@@ -673,30 +675,30 @@ void Steam_Matchmaking_Servers::RunCallbacks()
         while (g != std::end(gameservers)) {
             if (check_timedout(g->last_recv, SERVER_TIMEOUT)) {
                 g = gameservers.erase(g);
-                PRINT_DEBUG("SERVER TIMEOUT\n");
+                PRINT_DEBUG("Steam_Matchmaking_Servers::SERVER TIMEOUT\n");
             } else {
                 ++g;
             }
         }
     }
 
-    PRINT_DEBUG("REQUESTS %zu gs: %zu\n", requests.size(), gameservers.size());
+    PRINT_DEBUG("Steam_Matchmaking_Servers::REQUESTS %zu gs: %zu\n", requests.size(), gameservers.size());
 
     for (auto &r : requests) {
         if (r.cancelled || r.completed) continue;
 
         r.gameservers_filtered.clear();
         for (auto &g : gameservers) {
-            PRINT_DEBUG("game_server_check %u %u\n", g.server.appid(), r.appid);
+            PRINT_DEBUG("Steam_Matchmaking_Servers::game_server_check %u %u\n", g.server.appid(), r.appid);
             if ((g.server.appid() == r.appid) && (g.type == r.type)) {
-                PRINT_DEBUG("REQUESTS server found\n");
+                PRINT_DEBUG("Steam_Matchmaking_Servers::REQUESTS server found\n");
                 r.gameservers_filtered.push_back(g);
             }
         }
     }
 
     std::vector <struct Steam_Matchmaking_Request> requests_temp(requests);
-    PRINT_DEBUG("REQUESTS_TEMP %zu\n", requests_temp.size());
+    PRINT_DEBUG("Steam_Matchmaking_Servers::REQUESTS_TEMP %zu\n", requests_temp.size());
     for (auto &r : requests) {
         r.completed = true;
     }
@@ -707,7 +709,7 @@ void Steam_Matchmaking_Servers::RunCallbacks()
 
         if (r.callbacks) {
             for (auto &g : r.gameservers_filtered) {
-                PRINT_DEBUG("REQUESTS server responded cb %p\n", r.id);
+                PRINT_DEBUG("Steam_Matchmaking_Servers::REQUESTS server responded cb %p\n", r.id);
                 r.callbacks->ServerResponded(r.id, i);
                 ++i;
             }
@@ -721,7 +723,7 @@ void Steam_Matchmaking_Servers::RunCallbacks()
 
         if (r.old_callbacks) {
             for (auto &g : r.gameservers_filtered) {
-                PRINT_DEBUG("old REQUESTS server responded cb %p\n", r.id);
+                PRINT_DEBUG("Steam_Matchmaking_Servers::old REQUESTS server responded cb %p\n", r.id);
                 r.old_callbacks->ServerResponded(i);
                 ++i;
             }
@@ -746,9 +748,9 @@ void Steam_Matchmaking_Servers::RunCallbacks()
     }
 
     for (auto &r : direct_ip_requests_temp) {
-        PRINT_DEBUG("dip request: %u:%hu\n", r.ip, r.port);
+        PRINT_DEBUG("Steam_Matchmaking_Servers::dip request: %u:%hu\n", r.ip, r.port);
         for (auto &g : gameservers) {
-            PRINT_DEBUG("server: %u:%u\n", g.server.ip(), g.server.query_port());
+            PRINT_DEBUG("Steam_Matchmaking_Servers::server: %u:%u\n", g.server.ip(), g.server.query_port());
             uint16 query_port = g.server.query_port();
             if (query_port == 0xFFFF) {
                 query_port = g.server.port();
@@ -785,7 +787,7 @@ void Steam_Matchmaking_Servers::RunCallbacks()
 void Steam_Matchmaking_Servers::Callback(Common_Message *msg)
 {
     if (msg->has_gameserver() && msg->gameserver().type() != eFriendsServer) {
-        PRINT_DEBUG("got SERVER " "%" PRIu64 ", offline:%u\n", msg->gameserver().id(), msg->gameserver().offline());
+        PRINT_DEBUG("Steam_Matchmaking_Servers::got SERVER " "%" PRIu64 ", offline:%u\n", msg->gameserver().id(), msg->gameserver().offline());
         if (msg->gameserver().offline()) {
             for (auto &g : gameservers) {
                 if (g.server.id() == msg->gameserver().id()) {
@@ -812,7 +814,7 @@ void Steam_Matchmaking_Servers::Callback(Common_Message *msg)
                 g.server.set_ip(msg->source_ip());
                 g.type = eLANServer;
                 gameservers.push_back(g);
-                PRINT_DEBUG("SERVER ADDED\n");
+                PRINT_DEBUG("Steam_Matchmaking_Servers::SERVER ADDED\n");
             }
         }
     }
