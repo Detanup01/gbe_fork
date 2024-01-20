@@ -36,7 +36,7 @@ struct Downloaded_File {
     enum DownloadSource {
         AfterFileShare, // attempted download after a call to Steam_Remote_Storage::FileShare()
         AfterSendQueryUGCRequest, // attempted download after a call to Steam_UGC::SendQueryUGCRequest()
-        AfterUGCDownloadToLocation, // attempted download after a call to Steam_Remote_Storage::UGCDownloadToLocation()
+        FromUGCDownloadToLocation, // attempted download via Steam_Remote_Storage::UGCDownloadToLocation()
     } source;
 
     // *** used in any case
@@ -48,7 +48,7 @@ struct Downloaded_File {
     // *** used when source = SendQueryUGCRequest only
     Ugc_Remote_Storage_Bridge::QueryInfo mod_query_info;
 
-    // *** used when source = AfterUGCDownloadToLocation only
+    // *** used when source = FromUGCDownloadToLocation only
     std::string download_to_location_fullpath;
 };
 
@@ -117,7 +117,7 @@ bool FileWrite( const char *pchFile, const void *pvData, int32 cubData )
     PRINT_DEBUG("Steam_Remote_Storage::FileWrite '%s' %p %u\n", pchFile, pvData, cubData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    if (!pchFile || cubData <= 0 || cubData > k_unMaxCloudFileChunkSize || !pvData) {
+    if (!pchFile || !pchFile[0] || cubData <= 0 || cubData > k_unMaxCloudFileChunkSize || !pvData) {
         return false;
     }
 
@@ -131,7 +131,7 @@ int32 FileRead( const char *pchFile, void *pvData, int32 cubDataToRead )
     PRINT_DEBUG("Steam_Remote_Storage::FileRead '%s' %p %i\n", pchFile, pvData, cubDataToRead);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    if (!pchFile || !pvData || !cubDataToRead) return 0;
+    if (!pchFile || !pchFile[0] || !pvData || !cubDataToRead) return 0;
     int read_data = local_storage->get_data(Local_Storage::remote_storage_folder, pchFile, (char* )pvData, cubDataToRead);
     if (read_data < 0) read_data = 0;
     PRINT_DEBUG("  Read %i\n", read_data);
@@ -143,7 +143,8 @@ SteamAPICall_t FileWriteAsync( const char *pchFile, const void *pvData, uint32 c
 {
     PRINT_DEBUG("Steam_Remote_Storage::FileWriteAsync '%s' %p %u\n", pchFile, pvData, cubData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (!pchFile || cubData > k_unMaxCloudFileChunkSize || cubData == 0 || !pvData) {
+
+    if (!pchFile || !pchFile[0] || cubData > k_unMaxCloudFileChunkSize || cubData == 0 || !pvData) {
         return k_uAPICallInvalid;
     }
 
@@ -161,7 +162,7 @@ SteamAPICall_t FileReadAsync( const char *pchFile, uint32 nOffset, uint32 cubToR
     PRINT_DEBUG("Steam_Remote_Storage::FileReadAsync '%s' %u %u\n", pchFile, nOffset, cubToRead);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    if (!pchFile) return k_uAPICallInvalid;
+    if (!pchFile || !pchFile[0]) return k_uAPICallInvalid;
     unsigned int size = local_storage->file_size(Local_Storage::remote_storage_folder, pchFile);
 
     RemoteStorageFileReadAsyncComplete_t data;
@@ -215,6 +216,7 @@ bool FileForget( const char *pchFile )
 {
     PRINT_DEBUG("Steam_Remote_Storage::FileForget\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (!pchFile || !pchFile[0]) return false;
 
     return true;
 }
@@ -223,6 +225,7 @@ bool FileDelete( const char *pchFile )
 {
     PRINT_DEBUG("Steam_Remote_Storage::FileDelete\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (!pchFile || !pchFile[0]) return false;
     
     return local_storage->file_delete(Local_Storage::remote_storage_folder, pchFile);
 }
@@ -232,7 +235,8 @@ SteamAPICall_t FileShare( const char *pchFile )
 {
     PRINT_DEBUG("Steam_Remote_Storage::FileShare\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (!pchFile) return k_uAPICallInvalid;
+    if (!pchFile || !pchFile[0]) return k_uAPICallInvalid;
+
     RemoteStorageFileShareResult_t data = {};
     if (local_storage->file_exists(Local_Storage::remote_storage_folder, pchFile)) {
         data.m_eResult = k_EResultOK;
@@ -250,6 +254,7 @@ bool SetSyncPlatforms( const char *pchFile, ERemoteStoragePlatform eRemoteStorag
 {
     PRINT_DEBUG("Steam_Remote_Storage::SetSyncPlatforms\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (!pchFile || !pchFile[0]) return false;
     
     return true;
 }
@@ -260,6 +265,8 @@ UGCFileWriteStreamHandle_t FileWriteStreamOpen( const char *pchFile )
 {
     PRINT_DEBUG("Steam_Remote_Storage::FileWriteStreamOpen\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (!pchFile || !pchFile[0]) return k_UGCFileStreamHandleInvalid;
+    
     static UGCFileWriteStreamHandle_t handle;
     ++handle;
     struct Stream_Write stream_write;
@@ -273,6 +280,8 @@ bool FileWriteStreamWriteChunk( UGCFileWriteStreamHandle_t writeHandle, const vo
 {
     PRINT_DEBUG("Steam_Remote_Storage::FileWriteStreamWriteChunk\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (!pvData || cubData < 0) return false;
+
     auto request = std::find_if(stream_writes.begin(), stream_writes.end(), [&writeHandle](struct Stream_Write const& item) { return item.write_stream_handle == writeHandle; });
     if (stream_writes.end() == request)
         return false;
@@ -311,6 +320,7 @@ bool FileExists( const char *pchFile )
 {
     PRINT_DEBUG("Steam_Remote_Storage::FileExists %s\n", pchFile);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (!pchFile || !pchFile[0]) return false;
     
     return local_storage->file_exists(Local_Storage::remote_storage_folder, pchFile);
 }
@@ -319,6 +329,7 @@ bool FilePersisted( const char *pchFile )
 {
     PRINT_DEBUG("Steam_Remote_Storage::FilePersisted\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (!pchFile || !pchFile[0]) return false;
     
     return local_storage->file_exists(Local_Storage::remote_storage_folder, pchFile);
 }
@@ -327,6 +338,7 @@ int32 GetFileSize( const char *pchFile )
 {
     PRINT_DEBUG("Steam_Remote_Storage::GetFileSize %s\n", pchFile);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (!pchFile || !pchFile[0]) return 0;
     
     return local_storage->file_size(Local_Storage::remote_storage_folder, pchFile);
 }
@@ -335,6 +347,7 @@ int64 GetFileTimestamp( const char *pchFile )
 {
     PRINT_DEBUG("Steam_Remote_Storage::GetFileTimestamp\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (!pchFile || !pchFile[0]) return 0;
     
     return local_storage->file_timestamp(Local_Storage::remote_storage_folder, pchFile);
 }
@@ -381,8 +394,8 @@ bool GetQuota( uint64 *pnTotalBytes, uint64 *puAvailableBytes )
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     uint64 quota = 2 << 26;
-    *pnTotalBytes = quota;
-    *puAvailableBytes = (quota);
+    if (pnTotalBytes) *pnTotalBytes = quota;
+    if (puAvailableBytes) *puAvailableBytes = (quota);
     return true;
 }
 
@@ -392,8 +405,8 @@ bool GetQuota( int32 *pnTotalBytes, int32 *puAvailableBytes )
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     uint64 quota = 2 << 26;
-    *pnTotalBytes = quota;
-    *puAvailableBytes = (quota);
+    if (pnTotalBytes) *pnTotalBytes = quota;
+    if (puAvailableBytes) *puAvailableBytes = (quota);
     return true;
 }
 
@@ -550,6 +563,7 @@ int32 UGCRead( UGCHandle_t hContent, void *pvData, int32 cubDataToRead, uint32 c
     uint64 total_size = 0;
     Downloaded_File f = downloaded_files[hContent];
 
+    // depending on the download source, we have to decide where to grab the content/data
     switch (f.source)
     {
     case Downloaded_File::DownloadSource::AfterFileShare:
@@ -561,9 +575,9 @@ int32 UGCRead( UGCHandle_t hContent, void *pvData, int32 cubDataToRead, uint32 c
     break;
     
     case Downloaded_File::DownloadSource::AfterSendQueryUGCRequest:
-    case Downloaded_File::DownloadSource::AfterUGCDownloadToLocation:
+    case Downloaded_File::DownloadSource::FromUGCDownloadToLocation:
     {
-        PRINT_DEBUG("  Steam_Remote_Storage::UGCRead source = AfterSendQueryUGCRequest || AfterUGCDownloadToLocation [%i]\n", (int)f.source);
+        PRINT_DEBUG("  Steam_Remote_Storage::UGCRead source = AfterSendQueryUGCRequest || FromUGCDownloadToLocation [%i]\n", (int)f.source);
         auto mod = settings->getMod(f.mod_query_info.mod_id);
         auto &mod_name = f.mod_query_info.is_primary_file
             ? mod.primaryFileName
@@ -576,7 +590,7 @@ int32 UGCRead( UGCHandle_t hContent, void *pvData, int32 cubDataToRead, uint32 c
                 : Local_Storage::get_game_settings_path() + "mod_images" + PATH_SEPARATOR + std::to_string(mod.id);
 
             mod_fullpath = common_helpers::to_absolute(mod_name, mod_base_path);
-        } else { // Downloaded_File::DownloadSource::AfterUGCDownloadToLocation
+        } else { // Downloaded_File::DownloadSource::FromUGCDownloadToLocation
             mod_fullpath = f.download_to_location_fullpath;
         }
         
@@ -700,7 +714,7 @@ SteamAPICall_t PublishWorkshopFile( const char *pchFile, const char *pchPreviewF
     PRINT_DEBUG("TODO Steam_Remote_Storage::PublishWorkshopFile\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    return 0;
+    return k_uAPICallInvalid;
 }
 
 PublishedFileUpdateHandle_t CreatePublishedFileUpdateRequest( PublishedFileId_t unPublishedFileId )
@@ -708,7 +722,7 @@ PublishedFileUpdateHandle_t CreatePublishedFileUpdateRequest( PublishedFileId_t 
     PRINT_DEBUG("TODO Steam_Remote_Storage::CreatePublishedFileUpdateRequest\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    return 0;
+    return k_PublishedFileUpdateHandleInvalid;
 }
 
 bool UpdatePublishedFileFile( PublishedFileUpdateHandle_t updateHandle, const char *pchFile )
@@ -724,7 +738,7 @@ SteamAPICall_t PublishFile( const char *pchFile, const char *pchPreviewFile, App
     PRINT_DEBUG("TODO Steam_Remote_Storage::PublishFile\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    return 0;
+    return k_uAPICallInvalid;
 }
 
 SteamAPICall_t PublishWorkshopFile( const char *pchFile, const char *pchPreviewFile, AppId_t nConsumerAppId, const char *pchTitle, const char *pchDescription, SteamParamStringArray_t *pTags )
@@ -732,7 +746,7 @@ SteamAPICall_t PublishWorkshopFile( const char *pchFile, const char *pchPreviewF
     PRINT_DEBUG("TODO Steam_Remote_Storage::PublishWorkshopFile old\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    return 0;
+    return k_uAPICallInvalid;
 }
 
 SteamAPICall_t UpdatePublishedFile( RemoteStorageUpdatePublishedFileRequest_t updatePublishedFileRequest )
@@ -740,7 +754,7 @@ SteamAPICall_t UpdatePublishedFile( RemoteStorageUpdatePublishedFileRequest_t up
     PRINT_DEBUG("TODO Steam_Remote_Storage::UpdatePublishedFile\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    return 0;
+    return k_uAPICallInvalid;
 }
 
 bool UpdatePublishedFilePreviewFile( PublishedFileUpdateHandle_t updateHandle, const char *pchPreviewFile )
@@ -789,7 +803,7 @@ SteamAPICall_t CommitPublishedFileUpdate( PublishedFileUpdateHandle_t updateHand
     PRINT_DEBUG("TODO Steam_Remote_Storage::CommitPublishedFileUpdate %llu\n", updateHandle);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    return 0;
+    return k_uAPICallInvalid;
 }
 
 // Gets published file details for the given publishedfileid.  If unMaxSecondsOld is greater than 0,
@@ -802,6 +816,7 @@ SteamAPICall_t GetPublishedFileDetails( PublishedFileId_t unPublishedFileId, uin
     //TODO: check what this function really returns
     // TODO is this implementation correct?
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (unPublishedFileId == k_PublishedFileIdInvalid) return k_uAPICallInvalid;
     
     RemoteStorageGetPublishedFileDetailsResult_t data{};
     data.m_nPublishedFileId = unPublishedFileId;
@@ -859,7 +874,7 @@ SteamAPICall_t DeletePublishedFile( PublishedFileId_t unPublishedFileId )
     PRINT_DEBUG("TODO Steam_Remote_Storage::DeletePublishedFile %llu\n", unPublishedFileId);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    return 0;
+    return k_uAPICallInvalid;
 }
 
 // enumerate the files that the current user published with this app
@@ -908,6 +923,8 @@ SteamAPICall_t SubscribePublishedFile( PublishedFileId_t unPublishedFileId )
 {
     PRINT_DEBUG("TODO Steam_Remote_Storage::SubscribePublishedFile %llu\n", unPublishedFileId);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (unPublishedFileId == k_PublishedFileIdInvalid) return k_uAPICallInvalid;
+
     // TODO is this implementation correct?
     RemoteStorageSubscribePublishedFileResult_t data{};
     data.m_nPublishedFileId = unPublishedFileId;
@@ -959,6 +976,8 @@ SteamAPICall_t UnsubscribePublishedFile( PublishedFileId_t unPublishedFileId )
 {
     PRINT_DEBUG("TODO Steam_Remote_Storage::UnsubscribePublishedFile %llu\n", unPublishedFileId);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (unPublishedFileId == k_PublishedFileIdInvalid) return k_uAPICallInvalid;
+
     // TODO is this implementation correct?
     RemoteStorageUnsubscribePublishedFileResult_t data{};
     data.m_nPublishedFileId = unPublishedFileId;
@@ -987,6 +1006,8 @@ SteamAPICall_t GetPublishedItemVoteDetails( PublishedFileId_t unPublishedFileId 
     PRINT_DEBUG("TODO Steam_Remote_Storage::GetPublishedItemVoteDetails\n");
     // TODO s this implementation correct?
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (unPublishedFileId == k_PublishedFileIdInvalid) return k_uAPICallInvalid;
+
     RemoteStorageGetPublishedItemVoteDetailsResult_t data{};
     data.m_unPublishedFileId = unPublishedFileId;
     if (settings->isModInstalled(unPublishedFileId)) {
@@ -1011,6 +1032,8 @@ SteamAPICall_t UpdateUserPublishedItemVote( PublishedFileId_t unPublishedFileId,
     PRINT_DEBUG("TODO Steam_Remote_Storage::UpdateUserPublishedItemVote\n");
     // TODO is this implementation correct?
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (unPublishedFileId == k_PublishedFileIdInvalid) return k_uAPICallInvalid;
+
     RemoteStorageUpdateUserPublishedItemVoteResult_t data{};
     data.m_nPublishedFileId = unPublishedFileId;
     if (settings->isModInstalled(unPublishedFileId)) {
@@ -1034,6 +1057,8 @@ SteamAPICall_t GetUserPublishedItemVoteDetails( PublishedFileId_t unPublishedFil
     
     // TODO is this implementation correct?
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (unPublishedFileId == k_PublishedFileIdInvalid) return k_uAPICallInvalid;
+
     RemoteStorageGetPublishedItemVoteDetailsResult_t data{};
     data.m_unPublishedFileId = unPublishedFileId;
     if (settings->isModInstalled(unPublishedFileId)) {
@@ -1081,7 +1106,7 @@ SteamAPICall_t PublishVideo( EWorkshopVideoProvider eVideoProvider, const char *
 {
     PRINT_DEBUG("TODO Steam_Remote_Storage::PublishVideo\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return 0;
+    return k_uAPICallInvalid;
 }
 
 STEAM_CALL_RESULT( RemoteStoragePublishFileProgress_t )
@@ -1089,7 +1114,7 @@ SteamAPICall_t PublishVideo(const char *pchFileName, const char *pchPreviewFile,
 {
     PRINT_DEBUG("TODO Steam_Remote_Storage::PublishVideo old\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return 0;
+    return k_uAPICallInvalid;
 }
 
 STEAM_CALL_RESULT( RemoteStorageSetUserPublishedFileActionResult_t )
@@ -1097,7 +1122,7 @@ SteamAPICall_t SetUserPublishedFileAction( PublishedFileId_t unPublishedFileId, 
 {
     PRINT_DEBUG("TODO Steam_Remote_Storage::SetUserPublishedFileAction\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return 0;
+    return k_uAPICallInvalid;
 }
 
 STEAM_CALL_RESULT( RemoteStorageEnumeratePublishedFilesByUserActionResult_t )
@@ -1105,7 +1130,7 @@ SteamAPICall_t EnumeratePublishedFilesByUserAction( EWorkshopFileAction eAction,
 {
     PRINT_DEBUG("TODO Steam_Remote_Storage::EnumeratePublishedFilesByUserAction\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return 0;
+    return k_uAPICallInvalid;
 }
 
 // this method enumerates the public view of workshop files
@@ -1130,16 +1155,15 @@ SteamAPICall_t UGCDownloadToLocation( UGCHandle_t hContent, const char *pchLocat
     PRINT_DEBUG("TODO Steam_Remote_Storage::UGCDownloadToLocation %llu %s\n", hContent, pchLocation);
     // TODO is this implementation correct?
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (hContent == k_UGCHandleInvalid) return k_uAPICallInvalid;
+    //TODO: not sure if this is the right result
+    if (hContent == k_UGCHandleInvalid || !pchLocation || !pchLocation[0]) return k_uAPICallInvalid;
 
     RemoteStorageDownloadUGCResult_t data{};
     data.m_hFile = hContent;
     data.m_nAppID = settings->get_local_game_id().AppID();
 
-    if (!pchLocation || !pchLocation[0]) {
-        data.m_eResult = EResult::k_EResultInvalidParam; //TODO: not sure if this is the right result
-        data.m_nSizeInBytes = 0;
-    } else if (auto query_res = ugc_bridge->get_ugc_query_result(hContent)) {
+    auto query_res = ugc_bridge->get_ugc_query_result(hContent);
+    if (query_res) {
         auto mod = settings->getMod(query_res.value().mod_id);
         auto &mod_name = query_res.value().is_primary_file
             ? mod.primaryFileName
@@ -1164,7 +1188,7 @@ SteamAPICall_t UGCDownloadToLocation( UGCHandle_t hContent, const char *pchLocat
         copy_file(mod_fullpath, pchLocation);
 
         // TODO not sure about this though
-        downloaded_files[hContent].source = Downloaded_File::DownloadSource::AfterUGCDownloadToLocation;
+        downloaded_files[hContent].source = Downloaded_File::DownloadSource::FromUGCDownloadToLocation;
         downloaded_files[hContent].file = mod_name;
         downloaded_files[hContent].total_size = mod_size;
         

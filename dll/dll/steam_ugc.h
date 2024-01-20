@@ -77,12 +77,15 @@ UGCQueryHandle_t new_ugc_query(
 void set_details(PublishedFileId_t id, SteamUGCDetails_t *pDetails)
 {
     if (pDetails) {
+        memset(pDetails, 0, sizeof(SteamUGCDetails_t));
+
         pDetails->m_nPublishedFileId = id;
 
         if (settings->isModInstalled(id)) {
             PRINT_DEBUG("  mod is installed, setting details\n");
-            auto mod = settings->getMod(id);
             pDetails->m_eResult = k_EResultOK;
+
+            auto mod = settings->getMod(id);
             pDetails->m_bAcceptedForUse = mod.acceptedForUse;
             pDetails->m_bBanned = mod.banned;
             pDetails->m_bTagsTruncated = mod.tagsTruncated;
@@ -283,11 +286,6 @@ bool GetQueryUGCResult( UGCQueryHandle_t handle, uint32 index, SteamUGCDetails_t
         return false;
     }
 
-    if (pDetails) {
-        memset(pDetails, 0, sizeof(SteamUGCDetails_t));
-        pDetails->m_eResult = k_EResultFail;
-    }
-
     auto it = request->results.begin();
     std::advance(it, index);
     PublishedFileId_t file_id = *it;
@@ -342,6 +340,7 @@ uint32 GetQueryUGCNumTags( UGCQueryHandle_t handle, uint32 index )
     PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCNumTags\n");
     // TODO is this correct?
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return 0;
     
     auto res = get_query_ugc_tags(handle, index);
     return res.has_value() ? res.value().size() : 0;
@@ -352,6 +351,7 @@ bool GetQueryUGCTag( UGCQueryHandle_t handle, uint32 index, uint32 indexTag, STE
     PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCTag\n");
     // TODO is this correct?
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
     if (!pchValue || !cchValueSize) return false;
 
     auto res = get_query_ugc_tag(handle, index, indexTag);
@@ -367,6 +367,7 @@ bool GetQueryUGCTagDisplayName( UGCQueryHandle_t handle, uint32 index, uint32 in
     PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCTagDisplayName\n");
     // TODO is this correct?
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
     if (!pchValue || !cchValueSize) return false;
 
     auto res = get_query_ugc_tag(handle, index, indexTag);
@@ -382,14 +383,14 @@ bool GetQueryUGCPreviewURL( UGCQueryHandle_t handle, uint32 index, STEAM_OUT_STR
     PRINT_DEBUG("Steam_UGC::GetQueryUGCPreviewURL\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     //TODO: escape simulator tries downloading this url and unsubscribes if it fails
-
+    if (handle == k_UGCQueryHandleInvalid) return false;
     if (!pchURL || !cchURLSize) return false;
 
     auto res = get_query_ugc(handle, index);
     if (!res.has_value()) return false;
 
     auto mod = res.value();
-    PRINT_DEBUG("Steam_UGC:GetQueryUGCPreviewURL: %s\n", mod.previewURL.c_str());
+    PRINT_DEBUG("Steam_UGC:GetQueryUGCPreviewURL: '%s'\n", mod.previewURL.c_str());
     mod.previewURL.copy(pchURL, cchURLSize - 1);
     return true;
 }
@@ -399,6 +400,10 @@ bool GetQueryUGCMetadata( UGCQueryHandle_t handle, uint32 index, STEAM_OUT_STRIN
 {
     PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCMetadata\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
 
     return false;
 }
@@ -408,6 +413,10 @@ bool GetQueryUGCChildren( UGCQueryHandle_t handle, uint32 index, PublishedFileId
 {
     PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCChildren\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return false;
 }
@@ -417,6 +426,10 @@ bool GetQueryUGCStatistic( UGCQueryHandle_t handle, uint32 index, EItemStatistic
 {
     PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCStatistic\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return false;
 }
@@ -425,6 +438,10 @@ bool GetQueryUGCStatistic( UGCQueryHandle_t handle, uint32 index, EItemStatistic
 {
     PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCStatistic old\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return false;
 }
@@ -433,6 +450,10 @@ uint32 GetQueryUGCNumAdditionalPreviews( UGCQueryHandle_t handle, uint32 index )
 {
     PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCNumAdditionalPreviews\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return 0;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return 0;
     
     return 0;
 }
@@ -442,6 +463,10 @@ bool GetQueryUGCAdditionalPreview( UGCQueryHandle_t handle, uint32 index, uint32
 {
     PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCAdditionalPreview\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return false;
 }
@@ -450,6 +475,10 @@ bool GetQueryUGCAdditionalPreview( UGCQueryHandle_t handle, uint32 index, uint32
 {
     PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCAdditionalPreview old\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return false;
 }
@@ -458,6 +487,10 @@ uint32 GetQueryUGCNumKeyValueTags( UGCQueryHandle_t handle, uint32 index )
 {
     PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCNumKeyValueTags\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return 0;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return 0;
     
     return 0;
 }
@@ -467,6 +500,10 @@ bool GetQueryUGCKeyValueTag( UGCQueryHandle_t handle, uint32 index, uint32 keyVa
 {
     PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCKeyValueTag\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return false;
 }
@@ -475,6 +512,10 @@ bool GetQueryUGCKeyValueTag( UGCQueryHandle_t handle, uint32 index, const char *
 {
     PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCKeyValueTag2\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return false;
 }
@@ -483,6 +524,10 @@ uint32 GetQueryUGCContentDescriptors( UGCQueryHandle_t handle, uint32 index, EUG
 {
     PRINT_DEBUG("TODO Steam_UGC::GetQueryUGCContentDescriptors\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return 0;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return 0;
     
     return 0;
 }
@@ -492,9 +537,10 @@ bool ReleaseQueryUGCRequest( UGCQueryHandle_t handle )
 {
     PRINT_DEBUG("Steam_UGC::ReleaseQueryUGCRequest %llu\n", handle);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
     auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
-    if (ugc_queries.end() == request)
-        return false;
+    if (ugc_queries.end() == request) return false;
 
     ugc_queries.erase(request);
     return true;
@@ -506,6 +552,10 @@ bool AddRequiredTag( UGCQueryHandle_t handle, const char *pTagName )
 {
     PRINT_DEBUG("TODO Steam_UGC::AddRequiredTag\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return true;
 }
@@ -514,6 +564,10 @@ bool AddRequiredTagGroup( UGCQueryHandle_t handle, const SteamParamStringArray_t
 {
     PRINT_DEBUG("TODO Steam_UGC::AddRequiredTagGroup\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return true;
 }
@@ -522,6 +576,10 @@ bool AddExcludedTag( UGCQueryHandle_t handle, const char *pTagName )
 {
     PRINT_DEBUG("TODO Steam_UGC::AddExcludedTag\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return true;
 }
@@ -531,6 +589,10 @@ bool SetReturnOnlyIDs( UGCQueryHandle_t handle, bool bReturnOnlyIDs )
 {
     PRINT_DEBUG("TODO Steam_UGC::SetReturnOnlyIDs\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return true;
 }
@@ -539,7 +601,10 @@ bool SetReturnOnlyIDs( UGCQueryHandle_t handle, bool bReturnOnlyIDs )
 bool SetReturnKeyValueTags( UGCQueryHandle_t handle, bool bReturnKeyValueTags )
 {
     PRINT_DEBUG("TODO Steam_UGC::SetReturnKeyValueTags\n");
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return true;
 }
@@ -548,7 +613,10 @@ bool SetReturnKeyValueTags( UGCQueryHandle_t handle, bool bReturnKeyValueTags )
 bool SetReturnLongDescription( UGCQueryHandle_t handle, bool bReturnLongDescription )
 {
     PRINT_DEBUG("TODO Steam_UGC::SetReturnLongDescription\n");
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return true;
 }
@@ -558,8 +626,10 @@ bool SetReturnMetadata( UGCQueryHandle_t handle, bool bReturnMetadata )
 {
     PRINT_DEBUG("TODO Steam_UGC::SetReturnMetadata %i\n", (int)bReturnMetadata);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-
     if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return true;
 }
@@ -569,6 +639,10 @@ bool SetReturnChildren( UGCQueryHandle_t handle, bool bReturnChildren )
 {
     PRINT_DEBUG("TODO Steam_UGC::SetReturnChildren\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return true;
 }
@@ -578,6 +652,10 @@ bool SetReturnAdditionalPreviews( UGCQueryHandle_t handle, bool bReturnAdditiona
 {
     PRINT_DEBUG("TODO Steam_UGC::SetReturnAdditionalPreviews\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return true;
 }
@@ -587,6 +665,10 @@ bool SetReturnTotalOnly( UGCQueryHandle_t handle, bool bReturnTotalOnly )
 {
     PRINT_DEBUG("TODO Steam_UGC::SetReturnTotalOnly\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return true;
 }
@@ -596,6 +678,10 @@ bool SetReturnPlaytimeStats( UGCQueryHandle_t handle, uint32 unDays )
 {
     PRINT_DEBUG("TODO Steam_UGC::SetReturnPlaytimeStats\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return true;
 }
@@ -605,6 +691,10 @@ bool SetLanguage( UGCQueryHandle_t handle, const char *pchLanguage )
 {
     PRINT_DEBUG("TODO Steam_UGC::SetLanguage\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return true;
 }
@@ -614,6 +704,10 @@ bool SetAllowCachedResponse( UGCQueryHandle_t handle, uint32 unMaxAgeSeconds )
 {
     PRINT_DEBUG("TODO Steam_UGC::SetAllowCachedResponse\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return true;
 }
@@ -624,6 +718,10 @@ bool SetCloudFileNameFilter( UGCQueryHandle_t handle, const char *pMatchCloudFil
 {
     PRINT_DEBUG("TODO Steam_UGC::SetCloudFileNameFilter\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return true;
 }
@@ -634,6 +732,10 @@ bool SetMatchAnyTag( UGCQueryHandle_t handle, bool bMatchAnyTag )
 {
     PRINT_DEBUG("TODO Steam_UGC::SetMatchAnyTag\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return true;
 }
@@ -643,6 +745,10 @@ bool SetSearchText( UGCQueryHandle_t handle, const char *pSearchText )
 {
     PRINT_DEBUG("TODO Steam_UGC::SetSearchText\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return true;
 }
@@ -652,6 +758,10 @@ bool SetRankedByTrendDays( UGCQueryHandle_t handle, uint32 unDays )
 {
     PRINT_DEBUG("TODO Steam_UGC::SetRankedByTrendDays\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return true;
 }
@@ -661,6 +771,10 @@ bool AddRequiredKeyValueTag( UGCQueryHandle_t handle, const char *pKey, const ch
 {
     PRINT_DEBUG("TODO Steam_UGC::AddRequiredKeyValueTag\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return true;
 }
@@ -669,6 +783,10 @@ bool SetTimeCreatedDateRange( UGCQueryHandle_t handle, RTime32 rtStart, RTime32 
 {
     PRINT_DEBUG("TODO Steam_UGC::SetTimeCreatedDateRange\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return true;
 }
@@ -677,6 +795,10 @@ bool SetTimeUpdatedDateRange( UGCQueryHandle_t handle, RTime32 rtStart, RTime32 
 {
     PRINT_DEBUG("TODO Steam_UGC::SetTimeUpdatedDateRange\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return true;
 }
@@ -687,7 +809,7 @@ SteamAPICall_t RequestUGCDetails( PublishedFileId_t nPublishedFileID, uint32 unM
     PRINT_DEBUG("Steam_UGC::RequestUGCDetails %llu\n", nPublishedFileID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    SteamUGCRequestUGCDetailsResult_t data = {};
+    SteamUGCRequestUGCDetailsResult_t data{};
     data.m_bCachedData = false;
     set_details(nPublishedFileID, &(data.m_details));
     return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
@@ -1044,6 +1166,7 @@ SteamAPICall_t UnsubscribeItem( PublishedFileId_t nPublishedFileID )
 {
     PRINT_DEBUG("Steam_UGC::UnsubscribeItem %llu\n", nPublishedFileID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
     RemoteStorageUnsubscribePublishedFileResult_t data;
     data.m_nPublishedFileId = nPublishedFileID;
     if (!ugc_bridge->has_subbed_mod(nPublishedFileID)) {
@@ -1104,18 +1227,26 @@ uint32 GetItemState( PublishedFileId_t nPublishedFileID )
 // if k_EItemStateLegacyItem is set, pchFolder contains the path to the legacy file itself (not a folder)
 bool GetItemInstallInfo( PublishedFileId_t nPublishedFileID, uint64 *punSizeOnDisk, STEAM_OUT_STRING_COUNT( cchFolderSize ) char *pchFolder, uint32 cchFolderSize, uint32 *punTimeStamp )
 {
-    PRINT_DEBUG("Steam_UGC::GetItemInstallInfo %llu %p %p %u %p\n", nPublishedFileID, punSizeOnDisk, pchFolder, cchFolderSize, punTimeStamp);
+    PRINT_DEBUG("Steam_UGC::GetItemInstallInfo %llu %p %p [%u] %p\n", nPublishedFileID, punSizeOnDisk, pchFolder, cchFolderSize, punTimeStamp);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!cchFolderSize) return false;
     if (!settings->isModInstalled(nPublishedFileID)) return false;
 
     auto mod = settings->getMod(nPublishedFileID);
+    
+    // I don't know if this is accurate behavior, but to avoid returning true with invalid data
+    if ((cchFolderSize - 1) < mod.path.size()) { // -1 because the last char is reserved for null terminator
+        PRINT_DEBUG("  ERROR mod path: '%s' [%zu bytes] cannot fit into the given buffer\n", mod.path.c_str(), mod.path.size());
+        return false;
+    }
+
     if (punSizeOnDisk) *punSizeOnDisk = mod.primaryFileSize;
     if (punTimeStamp) *punTimeStamp = mod.timeUpdated;
     if (pchFolder && cchFolderSize) {
-        PRINT_DEBUG("  mod path: '%s'\n", mod.path.c_str());
+        // human fall flat doesn't send a nulled buffer, and won't recognize the proper mod path because of that
         memset(pchFolder, 0, cchFolderSize);
         mod.path.copy(pchFolder, cchFolderSize - 1);
+        PRINT_DEBUG("  copied mod path: '%s'\n", pchFolder);
     }
 
     return true;
@@ -1231,7 +1362,9 @@ SteamAPICall_t AddDependency( PublishedFileId_t nParentPublishedFileID, Publishe
     PRINT_DEBUG("Steam_UGC::AddDependency\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    return 0;
+    if (nParentPublishedFileID == k_PublishedFileIdInvalid) return k_uAPICallInvalid;
+    
+    return k_uAPICallInvalid;
 }
 
 STEAM_CALL_RESULT( RemoveUGCDependencyResult_t )
@@ -1240,7 +1373,9 @@ SteamAPICall_t RemoveDependency( PublishedFileId_t nParentPublishedFileID, Publi
     PRINT_DEBUG("Steam_UGC::RemoveDependency\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    return 0;
+    if (nParentPublishedFileID == k_PublishedFileIdInvalid) return k_uAPICallInvalid;
+    
+    return k_uAPICallInvalid;
 }
 
 
@@ -1251,7 +1386,9 @@ SteamAPICall_t AddAppDependency( PublishedFileId_t nPublishedFileID, AppId_t nAp
     PRINT_DEBUG("Steam_UGC::AddAppDependency\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    return 0;
+    if (nPublishedFileID == k_PublishedFileIdInvalid) return k_uAPICallInvalid;
+    
+    return k_uAPICallInvalid;
 }
 
 STEAM_CALL_RESULT( RemoveAppDependencyResult_t )
@@ -1260,7 +1397,9 @@ SteamAPICall_t RemoveAppDependency( PublishedFileId_t nPublishedFileID, AppId_t 
     PRINT_DEBUG("Steam_UGC::RemoveAppDependency\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    return 0;
+    if (nPublishedFileID == k_PublishedFileIdInvalid) return k_uAPICallInvalid;
+    
+    return k_uAPICallInvalid;
 }
 
 // request app dependencies. note that whatever callback you register for GetAppDependenciesResult_t may be called multiple times
@@ -1271,7 +1410,9 @@ SteamAPICall_t GetAppDependencies( PublishedFileId_t nPublishedFileID )
     PRINT_DEBUG("Steam_UGC::GetAppDependencies\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    return 0;
+    if (nPublishedFileID == k_PublishedFileIdInvalid) return k_uAPICallInvalid;
+    
+    return k_uAPICallInvalid;
 }
 
 
@@ -1282,7 +1423,9 @@ SteamAPICall_t DeleteItem( PublishedFileId_t nPublishedFileID )
     PRINT_DEBUG("Steam_UGC::DeleteItem\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    return 0;
+    if (nPublishedFileID == k_PublishedFileIdInvalid) return k_uAPICallInvalid;
+    
+    return k_uAPICallInvalid;
 }
 
 // Show the app's latest Workshop EULA to the user in an overlay window, where they can accept it or not
@@ -1301,7 +1444,7 @@ SteamAPICall_t GetWorkshopEULAStatus()
     PRINT_DEBUG("GetWorkshopEULAStatus\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    return 0;
+    return k_uAPICallInvalid;
 }
 
 // Return the user's community content descriptor preferences
