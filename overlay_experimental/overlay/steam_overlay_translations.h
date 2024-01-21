@@ -190,6 +190,98 @@ const char translationInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
 	"Pozovi u igru"
 };
 
+const char translationInviteAll[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+	"Invite all",
+
+	// 1 - Arabic
+	"Invite all",
+
+	// 2 - Bulgarian
+	"Invite all",
+
+	// 3 - Simplified Chinese
+	"Invite all",
+
+	// 4 - Traditional Chinese
+	"Invite all",
+
+	// 5 - Czech
+	"Invite all",
+
+	// 6 - Danish
+	"Invite all",
+
+	// 7 - Dutch
+	"Invite all",
+
+	// 8 - Finnish
+	"Invite all",
+
+	// 9 - French
+	"Invite all",
+
+	// 10 - German
+	"Invite all",
+
+	// 11 - Greek
+	"Invite all",
+
+	// 12 - Hungarian
+	"Invite all",
+
+	// 13 - Italian
+	"Invite all",
+
+	// 14 - Japanese
+	"Invite all",
+
+	// 15 - Korean
+	"Invite all",
+
+	// 16 - Norwegian
+	"Invite all",
+
+	// 17 - Polish
+	"Invite all",
+
+	// 18 - Portuguese
+	"Invite all",
+
+	// 19 - Brazilian Portuguese
+	"Invite all",
+
+	// 20 - Romanian
+	"Invite all",
+
+	// 21 - Russian
+	"Invite all",
+
+	// 22 - Spanish
+	"Invite all",
+
+	// 23 - Latin American
+	"Invite all",
+
+	// 24 - Swedish
+	"Invite all",
+
+	// 25 - Thai
+	"Invite all",
+
+	// 26 - Turkish
+	"Invite all",
+
+	// 27 - Ukrainian
+	"Invite all",
+
+	// 28 - Vietnamese
+	"Invite all",
+
+	// 29 - Croatian
+	"Invite all",
+};
+
 // C:\Program Files (x86)\Steam\tenfoot\resource\localization\tenfoot_*.txt
 // friends_chat_accept_game_invite
 const char translationJoin[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {

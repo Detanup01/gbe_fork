@@ -1,7 +1,12 @@
+#ifdef EMU_OVERLAY
+
+// if you're wondering about text like: ##PopupAcceptInvite
+// these are unique labels (keys) for each button/label/text,etc...
+// ImGui uses the labels as keys, adding a suffic like "My Text##SomeKey"
+// avoids confusing ImGui when another label has the same text "MyText"
+
 #include "overlay/steam_overlay.h"
 #include "overlay/steam_overlay_translations.h"
-
-#ifdef EMU_OVERLAY
 
 #include <thread>
 #include <string>
@@ -69,9 +74,9 @@ int find_free_id(std::vector<int> & ids, int base)
     return id > (base+max_window_id) ? 0 : id;
 }
 
-int find_free_friend_id(std::map<Friend, friend_window_state, Friend_Less> const& friend_windows)
+int find_free_friend_id(const std::map<Friend, friend_window_state, Friend_Less> &friend_windows)
 {
-    std::vector<int> ids;
+    std::vector<int> ids{};
     ids.reserve(friend_windows.size());
 
     std::for_each(friend_windows.begin(), friend_windows.end(), [&ids](std::pair<Friend const, friend_window_state> const& i)
@@ -84,7 +89,7 @@ int find_free_friend_id(std::map<Friend, friend_window_state, Friend_Less> const
 
 int find_free_notification_id(std::vector<Notification> const& notifications)
 {
-    std::vector<int> ids;
+    std::vector<int> ids{};
     ids.reserve(notifications.size());
 
     std::for_each(notifications.begin(), notifications.end(), [&ids](Notification const& i)
@@ -584,37 +589,46 @@ void Steam_Overlay::BuildContextMenu(Friend const& frd, friend_window_state& sta
 {
     if (ImGui::BeginPopupContextItem("Friends_ContextMenu", 1))
     {
+        // this is set to true if any button was clicked
+        // otherwise, after clicking any button, the menu will be persistent
         bool close_popup = false;
 
+        // user clicked on "chat"
         if (ImGui::Button(translationChat[current_language]))
         {
-            state.window_state |= window_state_show;
             close_popup = true;
+            state.window_state |= window_state_show;
         }
         // If we have the same appid, activate the invite/join buttons
         if (settings->get_local_game_id().AppID() == frd.appid())
         {
-            std::string translationInvite_tmp;
-            std::string translationJoin_tmp;
-            translationInvite_tmp.append(translationInvite[current_language]);
-            translationInvite_tmp.append("##PopupInvite");
-            translationJoin_tmp.append(translationJoin[current_language]);
-            translationJoin_tmp.append("##PopupInvite");
-
+            // user clicked on "invite to game"
+            std::string translationInvite_tmp(translationInvite[current_language]);
+            translationInvite_tmp.append("##PopupInviteToGame");
             if (i_have_lobby && ImGui::Button(translationInvite_tmp.c_str()))
             {
+                close_popup = true;
                 state.window_state |= window_state_invite;
                 has_friend_action.push(frd);
-                close_popup = true;
             }
+            
+            // user clicked on "accept game invite"
+            std::string translationJoin_tmp(translationJoin[current_language]);
+            translationJoin_tmp.append("##PopupAcceptInvite");
+            
             if (state.joinable && ImGui::Button(translationJoin_tmp.c_str()))
             {
-                state.window_state |= window_state_join;
-                has_friend_action.push(frd);
                 close_popup = true;
+                // don't bother adding this friend if the button "invite all" was clicked
+                // we will send them the invitation later in Steam_Overlay::RunCallbacks()
+                if (!invite_all_friends_clicked) {
+                    state.window_state |= window_state_join;
+                    has_friend_action.push(frd);
+                }
             }
         }
-        if( close_popup)
+
+        if (close_popup || invite_all_friends_clicked)
         {
             ImGui::CloseCurrentPopup();
         }
@@ -1047,7 +1061,6 @@ void Steam_Overlay::OverlayProc()
             }
 
             ImGui::SameLine();
-
             if (ImGui::Button(translationSettings[current_language])) {
                 show_settings = true;
             }
@@ -1060,6 +1073,14 @@ void Steam_Overlay::OverlayProc()
             std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
             if (!friends.empty())
             {
+                if (i_have_lobby) {
+                    std::string inviteAll(translationInviteAll[current_language]);
+                    inviteAll.append("##PopupInviteAllFriends");
+                    if (ImGui::Button(inviteAll.c_str())) { // if btn clicked
+                        invite_all_friends_clicked = true;
+                    }
+                }
+
                 if (ImGui::ListBoxHeader("##label", friends.size()))
                 {
                     std::for_each(friends.begin(), friends.end(), [this](std::pair<Friend const, friend_window_state> &i)
@@ -1373,20 +1394,17 @@ void Steam_Overlay::RunCallbacks()
     while (!has_friend_action.empty())
     {
         auto friend_info = friends.find(has_friend_action.front());
-        if (friend_info != friends.end())
-        {
-            uint64 friend_id = friend_info->first.id();
+        if (friend_info != friends.end()) {
+            uint64 friend_id = (uint64)friend_info->first.id();
             // The user clicked on "Send"
-            if (friend_info->second.window_state & window_state_send_message)
-            {
+            if (friend_info->second.window_state & window_state_send_message) {
                 char* input = friend_info->second.chat_input;
                 char* end_input = input + strlen(input);
                 char* printable_char = std::find_if(input, end_input, [](char c) {
                     return std::isgraph(c);
                 });
                 // Check if the message contains something else than blanks
-                if (printable_char != end_input)
-                {
+                if (printable_char != end_input) {
                     // Handle chat send
                     Common_Message msg;
                     Steam_Messages* steam_messages = new Steam_Messages;
@@ -1400,26 +1418,20 @@ void Steam_Overlay::RunCallbacks()
                     friend_info->second.chat_history.append(get_steam_client()->settings_client->get_local_name()).append(": ").append(input).append("\n", 1);
                 }
                 *input = 0; // Reset the input field
+
                 friend_info->second.window_state &= ~window_state_send_message;
             }
-            // The user clicked on "Invite"
-            if (friend_info->second.window_state & window_state_invite)
-            {
-                std::string connect = steamFriends->GetFriendRichPresence(settings->get_local_steam_id(), "connect");
-                if (connect.length() > 0)
-                    steamFriends->InviteUserToGame(friend_id, connect.c_str());
-                else if (settings->get_lobby().IsValid())
-                    steamMatchmaking->InviteUserToLobby(settings->get_lobby(), friend_id);
-
+            // The user clicked on "Invite" (but invite all wasn't clicked)
+            if (friend_info->second.window_state & window_state_invite) {
+                InviteFriend(friend_id, steamFriends, steamMatchmaking);
+                
                 friend_info->second.window_state &= ~window_state_invite;
             }
             // The user clicked on "Join"
-            if (friend_info->second.window_state & window_state_join)
-            {
+            if (friend_info->second.window_state & window_state_join) {
                 std::string connect = steamFriends->GetFriendRichPresence(friend_id, "connect");
                 // The user got a lobby invite and accepted it
-                if (friend_info->second.window_state & window_state_lobby_invite)
-                {
+                if (friend_info->second.window_state & window_state_lobby_invite) {
                     GameLobbyJoinRequested_t data;
                     data.m_steamIDLobby.SetFromUint64(friend_info->second.lobbyId);
                     data.m_steamIDFriend.SetFromUint64(friend_id);
@@ -1428,16 +1440,14 @@ void Steam_Overlay::RunCallbacks()
                     friend_info->second.window_state &= ~window_state_lobby_invite;
                 } else {
                 // The user got a rich presence invite and accepted it
-                    if (friend_info->second.window_state & window_state_rich_invite)
-                    {
+                    if (friend_info->second.window_state & window_state_rich_invite) {
                         GameRichPresenceJoinRequested_t data = {};
                         data.m_steamIDFriend.SetFromUint64(friend_id);
                         strncpy(data.m_rgchConnect, friend_info->second.connect, k_cchMaxRichPresenceValueLength - 1);
                         callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
-
+                        
                         friend_info->second.window_state &= ~window_state_rich_invite;
-                    } else if (connect.length() > 0)
-                    {
+                    } else if (connect.length() > 0) {
                         GameRichPresenceJoinRequested_t data = {};
                         data.m_steamIDFriend.SetFromUint64(friend_id);
                         strncpy(data.m_rgchConnect, connect.c_str(), k_cchMaxRichPresenceValueLength - 1);
@@ -1455,11 +1465,36 @@ void Steam_Overlay::RunCallbacks()
                         callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
                     }
                 }
-
+                
                 friend_info->second.window_state &= ~window_state_join;
             }
         }
         has_friend_action.pop();
+    }
+
+    // if variable == true, then set it to false and return true (because state was changed) in that case
+    bool true_tmp = true;
+    if (invite_all_friends_clicked.compare_exchange_weak(true_tmp, false)) {
+        PRINT_DEBUG("Overlay will send invitations to [%zu] friends if they're using the same app\n", friends.size());
+        uint32 current_appid = settings->get_local_game_id().AppID();
+        for (auto &fr : friends) {
+            if (fr.first.appid() == current_appid) { // friend is playing the same game
+                uint64 friend_id = (uint64)fr.first.id();
+                InviteFriend(friend_id, steamFriends, steamMatchmaking);
+            }
+        }
+    }
+}
+
+void Steam_Overlay::InviteFriend(uint64 friend_id, class Steam_Friends* steamFriends, class Steam_Matchmaking* steamMatchmaking)
+{
+    std::string connect_str = steamFriends->GetFriendRichPresence(settings->get_local_steam_id(), "connect");
+    if (connect_str.length() > 0) {
+        steamFriends->InviteUserToGame(friend_id, connect_str.c_str());
+        PRINT_DEBUG("Overlay sent game invitation to friend with id = %llu\n", friend_id);
+    } else if (settings->get_lobby().IsValid()) {
+        steamMatchmaking->InviteUserToLobby(settings->get_lobby(), friend_id);
+        PRINT_DEBUG("Overlay sent lobby invitation to friend with id = %llu\n", friend_id);
     }
 }
 

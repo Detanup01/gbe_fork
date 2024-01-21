@@ -127,6 +127,8 @@ class Steam_Overlay
     std::vector<Notification> notifications;
     std::recursive_mutex notifications_mutex;
     std::atomic<bool> have_notifications;
+    // used when the button "Invite all" is clicked
+    std::atomic<bool> invite_all_friends_clicked = false;
 
     bool overlay_state_changed;
 
@@ -159,6 +161,9 @@ class Steam_Overlay
     void BuildFriendWindow(Friend const& frd, friend_window_state &state);
     // Notifications like achievements, chat and invitations
     void BuildNotifications(int width, int height);
+    // invite a single friend
+    void InviteFriend(uint64 friend_id, class Steam_Friends* steamFriends, class Steam_Matchmaking* steamMatchmaking);
+
 public:
     Steam_Overlay(Settings* settings, SteamCallResults* callback_results, SteamCallBacks* callbacks, RunEveryRunCB* run_every_runcb, Networking *network);
 
