@@ -514,9 +514,9 @@ void Steam_Overlay::AddInviteNotification(std::pair<const Friend, friend_window_
 
         {
             char tmp[TRANSLATION_BUFFER_SIZE]{};
-            auto first_friend = wnd_state.first;
-            auto name = first_friend.name();
-            snprintf(tmp, sizeof(tmp), translationInvitedYouToJoinTheGame[current_language], name.c_str(), (int32_t)first_friend.id());
+            auto &first_friend = wnd_state.first;
+            auto &name = first_friend.name();
+            snprintf(tmp, sizeof(tmp), translationInvitedYouToJoinTheGame[current_language], name.c_str(), (uint64)first_friend.id());
             notif.message = tmp;
         }
 

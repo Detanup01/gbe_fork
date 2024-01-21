@@ -288,94 +288,94 @@ const char translationJoin[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
 // friends_chat_game_invite_details
 const char translationInvitedYouToJoinTheGame[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-	"%s has invited you to play %d",
+	"%s has invited you to play %llu",
 
 	// 1 - Arabic
-	"%s has invited you to play %d",
+	"%s has invited you to play %llu",
 
 	// 2 - Bulgarian
-	"%s Ви покани да играете %d",
+	"%s Ви покани да играете %llu",
 
 	// 3 - Simplified Chinese
-	"%s 已邀请您玩 %d",
+	"%s 已邀请您玩 %llu",
 
 	// 4 - Traditional Chinese
-	"%s 邀請您一同遊玩 %d",
+	"%s 邀請您一同遊玩 %llu",
 
 	// 5 - Czech
-	"%s Vás pozval do hry %d",
+	"%s Vás pozval do hry %llu",
 
 	// 6 - Danish
-	"%s har inviteret dig til at spille %d",
+	"%s har inviteret dig til at spille %llu",
 
 	// 7 - Dutch
-	"%s heeft je uitgenodigd om %d te spelen",
+	"%s heeft je uitgenodigd om %llu te spelen",
 
 	// 8 - Finnish
-	"%s on kutsunut sinut pelaamaan peliä %d",
+	"%s on kutsunut sinut pelaamaan peliä %llu",
 
 	// 9 - French
-	"%s vous a invité à jouer à %d",
+	"%s vous a invité à jouer à %llu",
 
 	// 10 - German
-	"%s hat Sie eingeladen, %d zu spielen",
+	"%s hat Sie eingeladen, %llu zu spielen",
 
 	// 11 - Greek
-	"Ο %s σας προσκάλεσε να παίξετε %d",
+	"Ο %s σας προσκάλεσε να παίξετε %llu",
 
 	// 12 - Hungarian
-	"%s játszani hívott a(z) %d játékba.",
+	"%s játszani hívott a(z) %llu játékba.",
 
 	// 13 - Italian
-	"%s ti ha invitato a giocare a %d",
+	"%s ti ha invitato a giocare a %llu",
 
 	// 14 - Japanese
-	"%s があなたを %d のプレイに招待しています",
+	"%s があなたを %llu のプレイに招待しています",
 
 	// 15 - Korean
-	"%s님이 %d 게임을 하자고 초대했습니다.",
+	"%s님이 %llu 게임을 하자고 초대했습니다.",
 
 	// 16 - Norwegian
-	"%s har invitert deg til å spille %d",
+	"%s har invitert deg til å spille %llu",
 
 	// 17 - Polish
-	"%s zaprasza cię do gry w %d",
+	"%s zaprasza cię do gry w %llu",
 
 	// 18 - Portuguese
-	"%s convidou-te para jogar %d",
+	"%s convidou-te para jogar %llu",
 
 	// 19 - Brazilian Portuguese
-	"%s convidou você para jogar %d",
+	"%s convidou você para jogar %llu",
 
 	// 20 - Romanian
-	"%s te-a invitat să jucați %d",
+	"%s te-a invitat să jucați %llu",
 
 	// 21 - Russian
-	"%s приглашает вас в %d",
+	"%s приглашает вас в %llu",
 
 	// 22 - Spanish
-	"%s te ha invitado a jugar a %d",
+	"%s te ha invitado a jugar a %llu",
 
 	// 23 - Latin American
-	"%s te invitó a jugar %d",
+	"%s te invitó a jugar %llu",
 
 	// 24 - Swedish
-	"%s har bjudit in dig att spela %d",
+	"%s har bjudit in dig att spela %llu",
 
 	// 25 - Thai
-	"%s ได้เชิญคุณเล่น %d",
+	"%s ได้เชิญคุณเล่น %llu",
 
 	// 26 - Turkish
-	"%s sizi %d oynamaya davet etti",
+	"%s sizi %llu oynamaya davet etti",
 
 	// 27 - Ukrainian
-	"%s запросив вас пограти у %d",
+	"%s запросив вас пограти у %llu",
 
 	// 28 - Vietnamese
-	"%s mời bạn chơi %d",
+	"%s mời bạn chơi %llu",
 
 	// 29 - Croatian
-	"%s vas je pozvao igrati %d"
+	"%s vas je pozvao igrati %llu"
 };
 
 // C:\Program Files (x86)\Steam\tenfoot\resource\localization\tenfoot_*.txt
