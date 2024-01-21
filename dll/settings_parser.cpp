@@ -1072,6 +1072,7 @@ static void parse_auto_accept_invite(class Settings *settings_client, Settings *
     std::string auto_accept_list_path = Local_Storage::get_game_settings_path() + "auto_accept_invite.txt";
     std::ifstream input( utf8_decode(auto_accept_list_path) );
     if (input.is_open()) {
+        bool accept_any_invite = true;
         consume_bom(input);
         for( std::string line; getline( input, line ); ) {
                 
@@ -1082,13 +1083,21 @@ static void parse_auto_accept_invite(class Settings *settings_client, Settings *
                 : line.substr(start, end - start + 1);
             
             if (!line.empty()) {
+                accept_any_invite = false;
                 try {
                     auto friend_id = std::stoull(line);
-                    settings_client->auto_accept_invites.insert((uint64_t)friend_id);
-                    settings_server->auto_accept_invites.insert((uint64_t)friend_id);
-                    PRINT_DEBUG("Auto accepting invitations from user with ID (SteamID64) = " "%" PRIu64 "\n", friend_id);
+                    settings_client->addFriendToOverlayAutoAccept((uint64_t)friend_id);
+                    settings_server->addFriendToOverlayAutoAccept((uint64_t)friend_id);
+                    PRINT_DEBUG("Auto accepting overlay invitations from user with ID (SteamID64) = %llu\n", friend_id);
                 } catch (...) {}
             }
+        }
+
+        if (accept_any_invite) {
+            PRINT_DEBUG("Auto accepting any overlay invitation\n");
+            settings_client->acceptAnyOverlayInvites(true);
+        } else {
+            settings_client->acceptAnyOverlayInvites(false);
         }
     }
 }

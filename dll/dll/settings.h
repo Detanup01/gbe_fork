@@ -151,12 +151,19 @@ class Settings {
     bool create_unknown_leaderboards;
     uint16 port;
 
+    // whether to auto accept any overlay invites
+    bool auto_accept_any_overlay_invites = false;
+    // list of user steam IDs to auto-accept invites from
+    std::set<uint64_t> auto_accept_overlay_invites_friends{};
+
 public:
+
 #ifdef LOBBY_CONNECT
     static const bool is_lobby_connect = true;
 #else
     static const bool is_lobby_connect = false;
 #endif
+
     static std::string sanitize(std::string name);
     Settings(CSteamID steam_id, CGameID game_id, std::string name, std::string language, bool offline);
     CSteamID get_local_steam_id();
@@ -279,8 +286,12 @@ public:
     // can use GC token for generation
     bool use_gc_token = false;
 
-    // list of user steam IDs to auto-accept invites from
-    std::unordered_set<uint64_t> auto_accept_invites{};
+    // overlay auto accept stuff
+    void acceptAnyOverlayInvites(bool value);
+    void addFriendToOverlayAutoAccept(uint64_t friend_id);
+    bool hasOverlayAutoAcceptInviteFromFriend(uint64_t friend_id) const;
+    size_t overlayAutoAcceptInvitesCount() const;
+
 };
 
 #endif

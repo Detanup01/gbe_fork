@@ -296,3 +296,27 @@ bool Settings::appIsInstalled(AppId_t appID)
 
     return true;
 }
+
+
+void Settings::acceptAnyOverlayInvites(bool value)
+{
+    auto_accept_any_overlay_invites = value;
+}
+
+void Settings::addFriendToOverlayAutoAccept(uint64_t friend_id)
+{
+    auto_accept_overlay_invites_friends.insert(friend_id);
+}
+
+bool Settings::hasOverlayAutoAcceptInviteFromFriend(uint64_t friend_id) const
+{
+    if (auto_accept_any_overlay_invites) {
+        return true;
+    }
+    return !!auto_accept_overlay_invites_friends.count(friend_id);
+}
+
+size_t Settings::overlayAutoAcceptInvitesCount() const
+{
+    return auto_accept_overlay_invites_friends.size();
+}

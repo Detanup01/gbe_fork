@@ -1,4 +1,5 @@
-* addded new `auto_accept_invite.txt` setting to automatically accept game/lobby invites from this list, each SteamID64 on a separate line
+* addded new `auto_accept_invite.txt` setting to automatically accept game/lobby invites from this list, each SteamID64 on a separate line  
+  also you can leave the file empty to accept invitations from anyone
 * fixed the condition of `warn_forced_setting`, previously it may be reset back to `false` accidentally
 * deprecated `disable_overlay_warning.txt` in `steam_settings` folder in favor of new options/files
 * added new `disable_overlay_warning_*.txt` settings to disable certain or all warnings in the overlay
