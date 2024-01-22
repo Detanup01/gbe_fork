@@ -587,26 +587,28 @@ bool Steam_Overlay::IHaveLobby()
 
 void Steam_Overlay::BuildContextMenu(Friend const& frd, friend_window_state& state)
 {
-    if (ImGui::BeginPopupContextItem("Friends_ContextMenu", 1))
-    {
+    if (ImGui::BeginPopupContextItem("Friends_ContextMenu", 1)) {
         // this is set to true if any button was clicked
         // otherwise, after clicking any button, the menu will be persistent
         bool close_popup = false;
 
         // user clicked on "chat"
-        if (ImGui::Button(translationChat[current_language]))
-        {
+        if (ImGui::Button(translationChat[current_language])) {
             close_popup = true;
             state.window_state |= window_state_show;
         }
+        // user clicked on "copy id" on a friend
+        if (ImGui::Button(translationCopyId[current_language])) {
+            close_popup = true;
+            auto friend_id_str = std::to_string(frd.id());
+            ImGui::SetClipboardText(friend_id_str.c_str());
+        }
         // If we have the same appid, activate the invite/join buttons
-        if (settings->get_local_game_id().AppID() == frd.appid())
-        {
+        if (settings->get_local_game_id().AppID() == frd.appid()) {
             // user clicked on "invite to game"
             std::string translationInvite_tmp(translationInvite[current_language]);
             translationInvite_tmp.append("##PopupInviteToGame");
-            if (i_have_lobby && ImGui::Button(translationInvite_tmp.c_str()))
-            {
+            if (i_have_lobby && ImGui::Button(translationInvite_tmp.c_str())) {
                 close_popup = true;
                 state.window_state |= window_state_invite;
                 has_friend_action.push(frd);
@@ -616,8 +618,7 @@ void Steam_Overlay::BuildContextMenu(Friend const& frd, friend_window_state& sta
             std::string translationJoin_tmp(translationJoin[current_language]);
             translationJoin_tmp.append("##PopupAcceptInvite");
             
-            if (state.joinable && ImGui::Button(translationJoin_tmp.c_str()))
-            {
+            if (state.joinable && ImGui::Button(translationJoin_tmp.c_str())) {
                 close_popup = true;
                 // don't bother adding this friend if the button "invite all" was clicked
                 // we will send them the invitation later in Steam_Overlay::RunCallbacks()
@@ -628,8 +629,7 @@ void Steam_Overlay::BuildContextMenu(Friend const& frd, friend_window_state& sta
             }
         }
 
-        if (close_popup || invite_all_friends_clicked)
-        {
+        if (close_popup || invite_all_friends_clicked) {
             ImGui::CloseCurrentPopup();
         }
 
@@ -705,13 +705,17 @@ void Steam_Overlay::BuildFriendWindow(Friend const& frd, friend_window_state& st
         ImGuiStyle &style = ImGui::GetStyle();
         wnd_width -= ImGui::CalcTextSize(translationSend[current_language]).x + style.FramePadding.x * 2 + style.ItemSpacing.x + 1;
 
+        uint64_t frd_id = frd.id();
+        ImGui::PushID((const char *)&frd_id, (const char *)&frd_id + sizeof(frd_id));
         ImGui::PushItemWidth(wnd_width);
+
         if (ImGui::InputText("##chat_line", state.chat_input, max_chat_len, ImGuiInputTextFlags_EnterReturnsTrue))
         {
             send_chat_msg = true;
             ImGui::SetKeyboardFocusHere(-1);
         }
         ImGui::PopItemWidth();
+        ImGui::PopID();
 
         ImGui::SameLine();
 
@@ -1053,8 +1057,8 @@ void Steam_Overlay::OverlayProc()
                 settings->get_local_name(),
                 settings->get_local_steam_id().ConvertToUint64(),
                 settings->get_local_game_id().AppID());
-            ImGui::SameLine();
 
+            ImGui::SameLine();
             ImGui::Spacing();
             if (ImGui::Button(translationShowAchievements[current_language])) {
                 show_achievements = true;
@@ -1064,6 +1068,14 @@ void Steam_Overlay::OverlayProc()
             if (ImGui::Button(translationSettings[current_language])) {
                 show_settings = true;
             }
+            
+            ImGui::SameLine();
+            // user clicked on "copy id" on themselves
+            if (ImGui::Button(translationCopyId[current_language])) {
+                auto friend_id_str = std::to_string(settings->get_local_steam_id().ConvertToUint64());
+                ImGui::SetClipboardText(friend_id_str.c_str());
+            }
+
 
             ImGui::Spacing();
             ImGui::Spacing();
