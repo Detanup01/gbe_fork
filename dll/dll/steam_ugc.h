@@ -1211,7 +1211,7 @@ uint32 GetItemState( PublishedFileId_t nPublishedFileID )
     if (ugc_bridge->has_subbed_mod(nPublishedFileID)) {
         if (settings->isModInstalled(nPublishedFileID)) {
             PRINT_DEBUG("  mod is subscribed and installed\n");
-            return k_EItemStateInstalled | k_EItemStateSubscribed | k_EItemStateLegacyItem;
+            return k_EItemStateInstalled | k_EItemStateSubscribed;
         }
 
         PRINT_DEBUG("  mod is subscribed\n");
