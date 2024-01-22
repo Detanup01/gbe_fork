@@ -216,14 +216,21 @@ UGCQueryHandle_t CreateQueryAllUGCRequest( EUGCQuery eQueryType, EUGCMatchingUGC
 // Query for the details of the given published file ids (the RequestUGCDetails call is deprecated and replaced with this)
 UGCQueryHandle_t CreateQueryUGCDetailsRequest( PublishedFileId_t *pvecPublishedFileID, uint32 unNumPublishedFileIDs )
 {
-    PRINT_DEBUG("Steam_UGC::CreateQueryUGCDetailsRequest\n");
+    PRINT_DEBUG("Steam_UGC::CreateQueryUGCDetailsRequest %p, max file IDs = [%u]\n", pvecPublishedFileID, unNumPublishedFileIDs);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     if (!pvecPublishedFileID) return k_UGCQueryHandleInvalid;
     if (unNumPublishedFileIDs < 1) return k_UGCQueryHandleInvalid;
-    
+
     // TODO
     std::set<PublishedFileId_t> only(pvecPublishedFileID, pvecPublishedFileID + unNumPublishedFileIDs);
+    
+#ifndef EMU_RELEASE_BUILD
+    for (const auto &id : only) {
+        PRINT_DEBUG("  Steam_UGC::CreateQueryUGCDetailsRequest file ID = %llu\n", id);
+    }
+#endif
+
     return new_ugc_query(false, only);
 }
 
@@ -252,7 +259,7 @@ SteamAPICall_t SendQueryUGCRequest( UGCQueryHandle_t handle )
         }
     }
 
-    // send these handles to stea_remote_storage since the game will later
+    // send these handles to steam_remote_storage since the game will later
     // call Steam_Remote_Storage::UGCDownload() with these files handles (primary + preview)
     for (auto fileid : request->results) {
         auto mod = settings->getMod(fileid);
