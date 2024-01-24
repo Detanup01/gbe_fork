@@ -275,83 +275,84 @@ PIMAGE_SECTION_HEADER pe_helpers::get_section_header_with_name(HMODULE hModule, 
     return nullptr;
 }
 
-DWORD pe_helpers::loadlib_remote(HANDLE hProcess, const std::wstring &lib_fullpath, const char** err_reason) {
-
-  // create a remote page
-  const size_t lib_path_str_bytes = lib_fullpath.size() * sizeof(lib_fullpath[0]);
-  LPVOID lib_remote_page = VirtualAllocEx(
+DWORD pe_helpers::loadlib_remote(HANDLE hProcess, const std::wstring &lib_fullpath, const char** err_reason)
+{
+    // create a remote page
+    const size_t lib_path_str_bytes = lib_fullpath.size() * sizeof(lib_fullpath[0]);
+    LPVOID lib_remote_page = VirtualAllocEx(
     hProcess,
     NULL,
     lib_path_str_bytes + sizeof(lib_fullpath[0]) * 2, // *2 just to be safe
     MEM_RESERVE | MEM_COMMIT,
     PAGE_READWRITE
-  );
+    );
 
-  if (!lib_remote_page) {
-    if (err_reason) {
-      *err_reason = "Failed to remotely allocate page with VirtualAllocEx()";
+    if (!lib_remote_page) {
+        if (err_reason) {
+            *err_reason = "Failed to remotely allocate page with VirtualAllocEx()";
+        }
+        return GetLastError();
     }
-    return GetLastError();
-  }
 
-  SIZE_T bytes_written = 0;
-  BOOL written = WriteProcessMemory(
-    hProcess,
-    lib_remote_page,
-    (LPCVOID)&lib_fullpath[0],
-    lib_path_str_bytes,
-    &bytes_written
-  );
+    SIZE_T bytes_written = 0;
+    BOOL written = WriteProcessMemory(
+        hProcess,
+        lib_remote_page,
+        (LPCVOID)&lib_fullpath[0],
+        lib_path_str_bytes,
+        &bytes_written
+    );
 
-  if (!written || bytes_written < lib_path_str_bytes) {
+    if (!written || bytes_written < lib_path_str_bytes) {
+        // cleanup allcoated page
+        VirtualFreeEx(
+            hProcess,
+            lib_remote_page,
+            0,
+            MEM_RELEASE);
+
+        if (err_reason) {
+            *err_reason = "Failed to remotely write dll path with WriteProcessMemory()";
+        }
+        return GetLastError();
+    }
+
+    // call LoadLibraryW() and pass the dll fullpath
+    HANDLE remote_thread = CreateRemoteThread(
+        hProcess,
+        NULL,
+        0,
+        (LPTHREAD_START_ROUTINE)LoadLibraryW,
+        lib_remote_page,
+        0,
+        NULL);
+
+    if (!remote_thread) {
+        // cleanup allcoated page
+        VirtualFreeEx(
+            hProcess,
+            lib_remote_page,
+            0,
+            MEM_RELEASE);
+
+        if (err_reason) {
+            *err_reason = "Failed to create/run remote thread with CreateRemoteThread()";
+        }
+        return GetLastError();
+    }
+
+    // wait for DllMain
+    WaitForSingleObject(remote_thread, INFINITE);
+    CloseHandle(remote_thread);
+
     // cleanup allcoated page
     VirtualFreeEx(
-      hProcess,
-      lib_remote_page,
-      0,
-      MEM_RELEASE);
+        hProcess,
+        lib_remote_page,
+        0,
+        MEM_RELEASE);
 
-    if (err_reason) {
-      *err_reason = "Failed to remotely write dll path with WriteProcessMemory()";
-    }
-    return GetLastError();
-  }
-
-  // call LoadLibraryA() and pass "launc.dll"
-  HANDLE remote_thread = CreateRemoteThread(
-    hProcess,
-    NULL,
-    0,
-    (LPTHREAD_START_ROUTINE)LoadLibraryW,
-    lib_remote_page,
-    0,
-    NULL);
-
-  if (!remote_thread) {
-    // cleanup allcoated page
-    VirtualFreeEx(
-      hProcess,
-      lib_remote_page,
-      0,
-      MEM_RELEASE);
-
-    if (err_reason) {
-      *err_reason = "Failed to create/run remote thread with CreateRemoteThread()";
-    }
-    return GetLastError();
-  }
-
-  WaitForSingleObject(remote_thread, INFINITE);
-  CloseHandle(remote_thread);
-
-  // cleanup allcoated page
-  VirtualFreeEx(
-    hProcess,
-    lib_remote_page,
-    0,
-    MEM_RELEASE);
-  
-  return ERROR_SUCCESS;
+    return ERROR_SUCCESS;
 }
 
 size_t pe_helpers::get_pe_size(HMODULE hModule)

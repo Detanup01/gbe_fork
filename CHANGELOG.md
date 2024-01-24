@@ -1,7 +1,7 @@
+* added new options to the overlay to allow copying a friend's ID, plus current player ID
+* added a new option to the overlay to invite all friends playing the same game
 * addded new `auto_accept_invite.txt` setting to automatically accept game/lobby invites from this list, each SteamID64 on a separate line  
-  also you can leave the file empty to accept invitations from anyone
-* fixed the condition of `warn_forced_setting`, previously it may be reset back to `false` accidentally
-* deprecated `disable_overlay_warning.txt` in `steam_settings` folder in favor of new options/files
+  also you can leave the file empty to accept invitations from anyone, check the updated release readme
 * added new `disable_overlay_warning_*.txt` settings to disable certain or all warnings in the overlay
   * `disable_overlay_warning_forced_setting.txt`:  
     - disable the warning for the usage of any file `force_*.txt` in the overlay
@@ -9,6 +9,12 @@
   * `disable_overlay_warning_bad_appid.txt`: disable the warning for bad app ID (when app ID = 0) in the overlay
   * `disable_overlay_warning_local_save.txt`: disable the warning for using local save in the overlay
   * `disable_overlay_warning_any.txt`: all the above
+* **deprecated** `disable_overlay_warning.txt` in `steam_settings` folder in favor of new the options/files
+* added more Stub variants
+* fixed the condition of `warn_forced_setting`, previously it may be reset back to `false` accidentally
+* fixed a casting mistake when displaying friend ID
+* avoid spam loading the achievements forever on failure, only try 3 times
+* removed a debug flag in `UGC::GetItemState()` left by mistake
 
 ---
 

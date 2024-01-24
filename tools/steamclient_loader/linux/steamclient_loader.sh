@@ -50,12 +50,12 @@ function help_page () {
 
 # mandatory checks
 if [[ ! -f "$script_dir/${STEAM_CLIENT_SO}" ]]; then
-	echo "'$STEAM_CLIENT_SO' must be placed beside this script"
-	exit 1
+  echo "'$STEAM_CLIENT_SO' must be placed beside this script"
+  exit 1
 fi
 if [ ! -f "$script_dir/${STEAM_CLIENT64_SO}" ]; then
-	echo "'$STEAM_CLIENT64_SO' must be placed beside this script"
-	exit 1
+  echo "'$STEAM_CLIENT64_SO' must be placed beside this script"
+  exit 1
 fi
 
  # no args = help page
