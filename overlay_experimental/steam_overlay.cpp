@@ -458,6 +458,7 @@ void Steam_Overlay::AddMessageNotification(std::string const& message)
         PRINT_DEBUG("No more free id to create a notification window\n");
 }
 
+// show a notification when the user unlocks an achievement
 void Steam_Overlay::AddAchievementNotification(nlohmann::json const& ach)
 {
     std::lock_guard<std::recursive_mutex> lock(notifications_mutex);
@@ -1113,7 +1114,7 @@ void Steam_Overlay::OverlayProc()
                 }
             }
 
-            if (show_achievements && achievements.size()) {
+            if (show_achievements && achievements.size()) { // display achievements list when the button "show achievements" is pressed
                 ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 32, ImGui::GetFontSize() * 32), ImVec2(8192, 8192));
                 bool show = show_achievements;
                 if (ImGui::Begin(translationAchievementWindow[current_language], &show)) {
@@ -1314,7 +1315,8 @@ void Steam_Overlay::Callback(Common_Message *msg)
 
 void Steam_Overlay::RunCallbacks()
 {
-    if (!achievements.size()) {
+    if (!achievements.size() && load_achievements_trials > 0) {
+        --load_achievements_trials;
         Steam_User_Stats* steamUserStats = get_steam_client()->steam_user_stats;
         uint32 achievements_num = steamUserStats->GetNumAchievements();
         if (achievements_num) {

@@ -438,9 +438,11 @@ Check the exaxmple files in the `steam_settings` folder
 ## Auto accept game/lobby invites:
 
 When the overlay is enabled and working, you can bypass it and auto-accept invites (lobby or game) from a list of Steam IDs (SteamID64 format).  
-The configuration file `auto_accept_invite.txt` allows you to do that, add each SteamID64 on a separate line.  
-
-Also you can auto-accept invites from anyone by leaving the file empty.  
+The configuration file `auto_accept_invite.txt` allows you to do that, it works like this:  
+* Adding an empty file: will accept invites from anyone (same behavior as if the overlay was disabled)
+* Adding a file with some friends IDs (each on a separate line):
+  * If the friend ID is found in this file, the invitation will be accepted automatically
+  * If the friend ID is not found, you'll get the regular overlay invitation  
 
 Check the exaxmple file in the `steam_settings` folder  
 
