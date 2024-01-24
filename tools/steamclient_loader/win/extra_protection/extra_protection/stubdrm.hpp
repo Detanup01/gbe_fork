@@ -1,6 +1,9 @@
 #pragma once
 
-namespace stubdrm_v3
+#include <string>
+#include <vector>
+
+namespace stubdrm
 {
     bool patch();
     

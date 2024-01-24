@@ -1,6 +1,5 @@
 #include "pe_helpers/pe_helpers.hpp"
-#include "extra_protection/stubdrm_v3.hpp"
-
+#include "extra_protection/stubdrm.hpp"
 
 BOOL APIENTRY DllMain(
     HMODULE hModule,
@@ -10,13 +9,13 @@ BOOL APIENTRY DllMain(
     switch (reason)
     {
     case DLL_PROCESS_ATTACH:
-        stubdrm_v3::patch();
+        stubdrm::patch();
         break;
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
         break;
     case DLL_PROCESS_DETACH:
-        stubdrm_v3::restore();
+        stubdrm::restore();
         break;
     }
     return TRUE;
