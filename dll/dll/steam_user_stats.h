@@ -102,15 +102,15 @@ unsigned int find_leaderboard(std::string name)
     return 0;
 }
 
-nlohmann::detail::iter_impl<nlohmann::json> defined_achievements_find(std::string key)
+nlohmann::detail::iter_impl<nlohmann::json> defined_achievements_find(const std::string &key)
 {
-    return std::find_if(defined_achievements.begin(), defined_achievements.end(), [key](nlohmann::json& item) {
-            std::string name = static_cast<std::string const&>(item["name"]);
-            return key.size() == name.size() && std::equal(name.begin(), name.end(), key.begin(),
-                                                            [](char a, char b) {
-                                                                return tolower(a) == tolower(b);
-                                                            });
-        });
+    return std::find_if(defined_achievements.begin(), defined_achievements.end(), [&key](nlohmann::json& item) {
+        std::string name = static_cast<const std::string &>( item.value("name", std::string()) );
+        return key.size() == name.size() && std::equal(
+            name.begin(), name.end(), key.begin(),
+            [](char a, char b) { return std::tolower(a) == std::tolower(b); }
+        );
+    });
 }
 
 void load_achievements_db()
@@ -283,7 +283,7 @@ bool RequestCurrentStats()
     PRINT_DEBUG("Steam_User_Stats::RequestCurrentStats\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    UserStatsReceived_t data;
+    UserStatsReceived_t data{};
     data.m_nGameID = settings->get_local_game_id().ToUint64();
     data.m_eResult = k_EResultOK;
     data.m_steamIDUser = settings->get_local_steam_id();
@@ -295,7 +295,7 @@ bool RequestCurrentStats()
 // Data accessors
 bool GetStat( const char *pchName, int32 *pData )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetStat int32 %s\n", pchName);
+    PRINT_DEBUG("Steam_User_Stats::GetStat <int32> '%s' %p\n", pchName, pData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName || !pData) return false;
@@ -303,9 +303,8 @@ bool GetStat( const char *pchName, int32 *pData )
 
     auto stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
-    if (stats_data != stats_config.end()) {
-        if (stats_data->second.type != Stat_Type::STAT_TYPE_INT) return false;
-    }
+    if (stats_config.end() == stats_data) return false;
+    if (stats_data->second.type != Stat_Type::STAT_TYPE_INT) return false;
 
     auto cached_stat = stats_cache_int.find(stat_name);
     if (cached_stat != stats_cache_int.end()) {
@@ -321,18 +320,14 @@ bool GetStat( const char *pchName, int32 *pData )
         return true;
     }
 
-    if (stats_data != stats_config.end()) {
-        stats_cache_int[stat_name] = stats_data->second.default_value_int;
-        *pData = stats_data->second.default_value_int;
-        return true;
-    }
-
-    return false;
+    stats_cache_int[stat_name] = stats_data->second.default_value_int;
+    *pData = stats_data->second.default_value_int;
+    return true;
 }
 
 bool GetStat( const char *pchName, float *pData )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetStat float %s\n", pchName);
+    PRINT_DEBUG("Steam_User_Stats::GetStat <float> '%s' %p\n", pchName, pData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName || !pData) return false;
@@ -340,9 +335,8 @@ bool GetStat( const char *pchName, float *pData )
 
     auto stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
-    if (stats_data != stats_config.end()) {
-        if (stats_data->second.type == Stat_Type::STAT_TYPE_INT) return false;
-    }
+    if (stats_config.end() == stats_data) return false;
+    if (stats_data->second.type == Stat_Type::STAT_TYPE_INT) return false;
 
     auto cached_stat = stats_cache_float.find(stat_name);
     if (cached_stat != stats_cache_float.end()) {
@@ -358,24 +352,25 @@ bool GetStat( const char *pchName, float *pData )
         return true;
     }
 
-    if (stats_data != stats_config.end()) {
-        stats_cache_float[stat_name] = stats_data->second.default_value_float;
-        *pData = stats_data->second.default_value_float;
-        return true;
-    }
-
-    return false;
+    stats_cache_float[stat_name] = stats_data->second.default_value_float;
+    *pData = stats_data->second.default_value_float;
+    return true;
 }
 
 
 // Set / update data
 bool SetStat( const char *pchName, int32 nData )
 {
-    PRINT_DEBUG("Steam_User_Stats::SetStat int32 %s\n", pchName);
+    PRINT_DEBUG("Steam_User_Stats::SetStat <int32> '%s' = %i\n", pchName, nData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName) return false;
     std::string stat_name = ascii_to_lowercase(pchName);
+
+    auto stats_config = settings->getStats();
+    auto stats_data = stats_config.find(stat_name);
+    if (stats_config.end() == stats_data) return false;
+    if (stats_data->second.type != Stat_Type::STAT_TYPE_INT) return false;
 
     auto cached_stat = stats_cache_int.find(stat_name);
     if (cached_stat != stats_cache_int.end()) {
@@ -401,11 +396,16 @@ bool SetStat( const char *pchName, int32 nData )
 
 bool SetStat( const char *pchName, float fData )
 {
-    PRINT_DEBUG("Steam_User_Stats::SetStat float %s\n", pchName);
+    PRINT_DEBUG("Steam_User_Stats::SetStat <float> '%s' = %f\n", pchName, fData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName) return false;
     std::string stat_name = ascii_to_lowercase(pchName);
+
+    auto stats_config = settings->getStats();
+    auto stats_data = stats_config.find(stat_name);
+    if (stats_config.end() == stats_data) return false;
+    if (stats_data->second.type == Stat_Type::STAT_TYPE_INT) return false;
 
     auto cached_stat = stats_cache_float.find(stat_name);
     if (cached_stat != stats_cache_float.end()) {
@@ -437,6 +437,11 @@ bool UpdateAvgRateStat( const char *pchName, float flCountThisSession, double dS
     if (!pchName) return false;
     std::string stat_name = ascii_to_lowercase(pchName);
 
+    auto stats_config = settings->getStats();
+    auto stats_data = stats_config.find(stat_name);
+    if (stats_config.end() == stats_data) return false;
+    if (stats_data->second.type == Stat_Type::STAT_TYPE_INT) return false;
+
     char data[sizeof(float) + sizeof(float) + sizeof(double)];
     int read_data = local_storage->get_data(Local_Storage::stats_storage_folder, stat_name, (char* )data, sizeof(*data));
     float oldcount = 0;
@@ -466,57 +471,65 @@ bool UpdateAvgRateStat( const char *pchName, float flCountThisSession, double dS
 // Achievement flag accessors
 bool GetAchievement( const char *pchName, bool *pbAchieved )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetAchievement %s\n", pchName);
+    PRINT_DEBUG("Steam_User_Stats::GetAchievement '%s'\n", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    if (pchName == nullptr) return false;
+    if (!pchName) return false;
 
+    nlohmann::detail::iter_impl<nlohmann::json> it = defined_achievements.end();
     try {
-        auto it = defined_achievements_find(pchName);
-        if (it == defined_achievements.end()) return false;
+        it = defined_achievements_find(pchName);
+    } catch(...) { }
+    if (defined_achievements.end() == it) return false;
+
+    // according to docs, the function returns true if the achievement was found,
+    // regardless achieved or not 
+    if (!pbAchieved) return true;
+
+    *pbAchieved = false;
+    try {
         std::string pch_name = it->value("name", std::string());
-
         auto ach = user_achievements.find(pch_name);
-        if (it != defined_achievements.end() && ach != user_achievements.end()) {
-            if(pbAchieved != nullptr) *pbAchieved = (*ach)["earned"];
-            return true;
+        if (user_achievements.end() != ach) {
+            *pbAchieved = ach->value("earned", false);
         }
-    } catch (...) {}
+    } catch (...) { }
 
-    if (pbAchieved != nullptr)* pbAchieved = false;
-
-    return false;
+    return true;
 }
 
 bool SetAchievement( const char *pchName )
 {
-    PRINT_DEBUG("Steam_User_Stats::SetAchievement %s\n", pchName);
+    PRINT_DEBUG("Steam_User_Stats::SetAchievement '%s'\n", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    if (pchName == nullptr) return false;
+    if (!pchName) return false;
     
     if (settings->achievement_bypass) return true;
 
+    nlohmann::detail::iter_impl<nlohmann::json> it = defined_achievements.end();
     try {
-        auto it = defined_achievements_find(pchName);
-        if (it == defined_achievements.end()) return false;
+        it = defined_achievements_find(pchName);
+    } catch(...) { }
+    if (defined_achievements.end() == it) return false;
+
+    try {
         std::string pch_name = it->value("name", std::string());
+        auto ach = user_achievements.find(pch_name);
+        if (user_achievements.end() == ach || ach->value("earned", false) == false) {
+            user_achievements[pch_name]["earned"] = true;
+            user_achievements[pch_name]["earned_time"] = std::chrono::duration_cast<std::chrono::duration<uint32>>(std::chrono::system_clock::now().time_since_epoch()).count();
 
-        if (it != defined_achievements.end()) {
-            if (user_achievements.find(pch_name) == user_achievements.end() || user_achievements[pch_name].value("earned", false) == false) {
-                user_achievements[pch_name]["earned"] = true;
-                user_achievements[pch_name]["earned_time"] = std::chrono::duration_cast<std::chrono::duration<uint32>>(std::chrono::system_clock::now().time_since_epoch()).count();
+            save_achievements();
+
 #ifdef EMU_OVERLAY
-                overlay->AddAchievementNotification(it.value());
+            overlay->AddAchievementNotification(it.value());
 #endif
-                save_achievements();
-            }
 
-            return true;
         }
     } catch (...) {}
 
-    return false;
+    return true;
 }
 
 bool ClearAchievement( const char *pchName )
@@ -524,22 +537,30 @@ bool ClearAchievement( const char *pchName )
     PRINT_DEBUG("Steam_User_Stats::ClearAchievement %s\n", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    if (pchName == nullptr) return false;
+    if (!pchName) return false;
+
+    nlohmann::detail::iter_impl<nlohmann::json> it = defined_achievements.end();
+    try {
+        it = defined_achievements_find(pchName);
+    } catch(...) { }
+    if (defined_achievements.end() == it) return false;
 
     try {
-        auto it = defined_achievements_find(pchName);
-        if (it == defined_achievements.end()) return false;
         std::string pch_name = it->value("name", std::string());
-
-        if (it != defined_achievements.end()) {
+        auto ach = user_achievements.find(pch_name);
+        // assume "earned" is true in case the json obj exists, but the key is absent
+        // assume "earned_time" is UINT32_MAX in case the json obj exists, but the key is absent
+        if (user_achievements.end() == ach ||
+            ach->value("earned", true) == true ||
+            ach->value("earned_time", static_cast<uint32>(UINT32_MAX)) == UINT32_MAX) {
+            
             user_achievements[pch_name]["earned"] = false;
             user_achievements[pch_name]["earned_time"] = static_cast<uint32>(0);
             save_achievements();
-            return true;
         }
     } catch (...) {}
 
-    return false;
+    return true;
 }
 
 
@@ -551,24 +572,27 @@ bool GetAchievementAndUnlockTime( const char *pchName, bool *pbAchieved, uint32 
     PRINT_DEBUG("Steam_User_Stats::GetAchievementAndUnlockTime\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    if (pchName == nullptr) return false;
+    if (!pchName) return false;
 
+    nlohmann::detail::iter_impl<nlohmann::json> it = defined_achievements.end();
     try {
-        auto it = defined_achievements_find(pchName);
-        if (it == defined_achievements.end()) return false;
-        std::string pch_name = it->value("name", std::string());
+        it = defined_achievements_find(pchName);
+    } catch(...) { }
+    if (defined_achievements.end() == it) return false;
 
+    if (pbAchieved) *pbAchieved = false;
+    if (punUnlockTime) *punUnlockTime = 0;
+    
+    try {
+        std::string pch_name = it->value("name", std::string());
         auto ach = user_achievements.find(pch_name);
-        if (it != defined_achievements.end() && ach != user_achievements.end()) {
-            if(pbAchieved != nullptr) *pbAchieved = (*ach)["earned"];
-            if(punUnlockTime != nullptr) *punUnlockTime = (*ach)["earned_time"];
-            return true;
+        if (user_achievements.end() != ach) {
+            if (pbAchieved) *pbAchieved = ach->value("earned", false);
+            if (punUnlockTime) *punUnlockTime = ach->value("earned_time", static_cast<uint32>(0));
         }
     } catch (...) {}
 
-    if(pbAchieved != nullptr) *pbAchieved = false;
-    if(punUnlockTime != nullptr) *punUnlockTime = 0;
-    return false;
+    return true;
 }
 
 
@@ -584,10 +608,11 @@ bool StoreStats()
     PRINT_DEBUG("Steam_User_Stats::StoreStats\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    UserStatsStored_t data;
-    data.m_nGameID = settings->get_local_game_id().ToUint64();
+    UserStatsStored_t data{};
     data.m_eResult = k_EResultOK;
+    data.m_nGameID = settings->get_local_game_id().ToUint64();
     callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.01);
+
     return true;
 }
 
@@ -602,7 +627,7 @@ int GetAchievementIcon( const char *pchName )
 {
     PRINT_DEBUG("TODO Steam_User_Stats::GetAchievementIcon\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (pchName == nullptr) return 0;
+    if (!pchName) return 0;
 
     return 0;
 }
@@ -610,14 +635,17 @@ int GetAchievementIcon( const char *pchName )
 std::string get_achievement_icon_name( const char *pchName, bool pbAchieved )
 {
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (pchName == nullptr) return "";
+    if (!pchName) return "";
+
+    nlohmann::detail::iter_impl<nlohmann::json> it = defined_achievements.end();
+    try {
+        it = defined_achievements_find(pchName);
+    } catch(...) { }
+    if (defined_achievements.end() == it) return "";
 
     try {
-        auto it = defined_achievements_find(pchName);
-        if (it != defined_achievements.end()) {
-            if (pbAchieved) return it.value()["icon"].get<std::string>();
-            else return it.value()["icon_gray"].get<std::string>();
-        }
+        if (pbAchieved) return it.value()["icon"].get<std::string>();
+        else return it.value()["icon_gray"].get<std::string>();
     } catch (...) {}
 
     return "";
@@ -629,37 +657,28 @@ std::string get_achievement_icon_name( const char *pchName, bool pbAchieved )
 // - "hidden" for retrieving if an achievement is hidden (returns "0" when not hidden, "1" when hidden)
 const char * GetAchievementDisplayAttribute( const char *pchName, const char *pchKey )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetAchievementDisplayAttribute %s %s\n", pchName, pchKey);
+    PRINT_DEBUG("Steam_User_Stats::GetAchievementDisplayAttribute [%s] [%s]\n", pchName, pchKey);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    if (pchName == nullptr) return "";
-    if (pchKey == nullptr) return "";
+    if (!pchName || !pchKey || !pchKey[0]) return "";
 
+    nlohmann::detail::iter_impl<nlohmann::json> it = defined_achievements.end();
+    try {
+        it = defined_achievements_find(pchName);
+    } catch(...) { }
+    if (defined_achievements.end() == it) return "";
 
-    if (strcmp (pchKey, "name") == 0) {
+    if (strncmp(pchKey, "name", sizeof("name")) == 0) {
         try {
-            auto it = defined_achievements_find(pchName);
-            if (it != defined_achievements.end()) {
-                return it.value()["displayName"].get_ptr<std::string*>()->c_str();
-            }
+            return it.value()["displayName"].get_ptr<std::string*>()->c_str();
         } catch (...) {}
-    }
-
-    if (strcmp (pchKey, "desc") == 0) {
+    } else if (strncmp(pchKey, "desc", sizeof("desc")) == 0) {
         try {
-            auto it = defined_achievements_find(pchName);
-            if (it != defined_achievements.end()) {
-                return it.value()["description"].get_ptr<std::string*>()->c_str();
-            }
+            return it.value()["description"].get_ptr<std::string*>()->c_str();
         } catch (...) {}
-    }
-
-    if (strcmp (pchKey, "hidden") == 0) {
+    } else if (strncmp(pchKey, "hidden", sizeof("hidden")) == 0) {
         try {
-            auto it = defined_achievements_find(pchName);
-            if (it != defined_achievements.end()) {
-                return it.value()["hidden"].get_ptr<std::string*>()->c_str();
-            }
+            return it.value()["hidden"].get_ptr<std::string*>()->c_str();
         } catch (...) {}
     }
 
@@ -674,43 +693,52 @@ bool IndicateAchievementProgress( const char *pchName, uint32 nCurProgress, uint
     PRINT_DEBUG("Steam_User_Stats::IndicateAchievementProgress %s\n", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    if (pchName == nullptr) return false;
+    if (!pchName) return false;
+    if (nCurProgress >= nMaxProgress) return false;
+    auto ach_name = std::string(pchName);
 
+    // find in achievements.json
+    nlohmann::detail::iter_impl<nlohmann::json> it = defined_achievements.end();
     try {
-        auto it = defined_achievements_find(pchName);
-        if (it == defined_achievements.end()) return false;
+        it = defined_achievements_find(ach_name);
+    } catch(...) { }
+    if (defined_achievements.end() == it) return false;
 
-        std::string pch_name = it->value("name", std::string());
+    // get actual name from achievements.json
+    std::string actual_ach_name{};
+    try {
+        actual_ach_name = it->value("name", std::string());
+    } catch (...) { }
+    if (actual_ach_name.empty()) { // fallback
+        actual_ach_name = ach_name;
+    }
 
-        auto ach = user_achievements.find(pch_name);
-        if (it != defined_achievements.end()) {
-            bool achieved = false;
-            if ( ach != user_achievements.end()) {
-                bool achieved = ach->value("earned", false);
-            }
-
-            UserAchievementStored_t data = {};
-            data.m_nGameID = settings->get_local_game_id().ToUint64();
-            data.m_bGroupAchievement = false;
-            strncpy(data.m_rgchAchievementName, pch_name.c_str(), k_cchStatNameMax);
-
-            if (achieved) {
-                data.m_nCurProgress = 0;
-                data.m_nMaxProgress = 0;
-            } else {
-                user_achievements[pch_name]["progress"] = nCurProgress;
-                user_achievements[pch_name]["max_progress"] = nMaxProgress;
-                data.m_nCurProgress = nCurProgress;
-                data.m_nMaxProgress = nMaxProgress;
-            }
-
-            save_achievements();
-            callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
-            return true;
+    // check if already achieved
+    bool achieved = false;
+    try {
+        auto ach = user_achievements.find(actual_ach_name);
+        if (ach != user_achievements.end()) {
+            achieved = ach->value("earned", false);
         }
+    } catch (...) { }
+    if (achieved) return false;
+
+    // save new progress
+    try {
+        user_achievements[actual_ach_name]["progress"] = nCurProgress;
+        user_achievements[actual_ach_name]["max_progress"] = nMaxProgress;
+        save_achievements();
     } catch (...) {}
 
-    return false;
+    UserAchievementStored_t data{};
+    data.m_nGameID = settings->get_local_game_id().ToUint64();
+    data.m_bGroupAchievement = false;
+    data.m_nCurProgress = nCurProgress;
+    data.m_nMaxProgress = nMaxProgress;
+    ach_name.copy(data.m_rgchAchievementName, sizeof(data.m_rgchAchievementName) - 1);
+
+    callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    return true;
 }
 
 
@@ -720,7 +748,7 @@ uint32 GetNumAchievements()
 {
     PRINT_DEBUG("Steam_User_Stats::GetNumAchievements\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return defined_achievements.size();
+    return (uint32)defined_achievements.size();
 }
 
 // Get achievement name iAchievement in [0,GetNumAchievements)
