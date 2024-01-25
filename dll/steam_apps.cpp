@@ -30,7 +30,7 @@ Steam_Apps::Steam_Apps(Settings *settings, class SteamCallResults *callback_resu
 int Steam_Apps::GetAppData( AppId_t nAppID, const char *pchKey, char *pchValue, int cchValueMax )
 {
     //TODO
-    PRINT_DEBUG("Steam_Apps::GetAppData %u %s\n", nAppID, pchKey);
+    PRINT_DEBUG("TODO Steam_Apps::GetAppData %u %s\n", nAppID, pchKey);
     return 0;
 }
 
@@ -207,7 +207,7 @@ static void FillProofOfPurchaseKey( AppProofOfPurchaseKeyResponse_t& data, AppId
 // the key is available (which may be immediately).
 void Steam_Apps::RequestAppProofOfPurchaseKey( AppId_t nAppID )
 {
-    PRINT_DEBUG("Steam_Apps::TODO RequestAppProofOfPurchaseKey\n");
+    PRINT_DEBUG("TODO Steam_Apps::RequestAppProofOfPurchaseKey\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     AppProofOfPurchaseKeyResponse_t data{};
@@ -243,7 +243,7 @@ bool Steam_Apps::GetCurrentBetaName( char *pchName, int cchNameBufferSize )
 // signal Steam that game files seems corrupt or missing
 bool Steam_Apps::MarkContentCorrupt( bool bMissingFilesOnly )
 {
-    PRINT_DEBUG("Steam_Apps::MarkContentCorrupt\n");
+    PRINT_DEBUG("TODO Steam_Apps::MarkContentCorrupt\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     //TODO: warn user
     return true;
@@ -308,12 +308,12 @@ bool Steam_Apps::BIsAppInstalled( AppId_t appID )
     // "0 Base Goldsource Shared Binaries"
     // https://developer.valvesoftware.com/wiki/Steam_Application_IDs
     if (appID == 0) return true;
-    // game LEGO® 2K Drive (app id 1451810) checks for a proper steam behavior by sending uint32_max and expects false in return
+    // game LEGO 2K Drive (app id 1451810) checks for a proper steam behavior by sending uint32_max and expects false in return
     if (appID == UINT32_MAX) return false;
     if (appID == settings->get_local_game_id().AppID()) return true;
 
     // only check for DLC if the the list is limited/bounded,
-    // calling hasDLC() wehn unlockAllDLCs is true will always satisfy the below condition
+    // calling hasDLC() when unlockAllDLCs is true will always satisfy the below condition
     if (!settings->allDLCUnlocked() && settings->hasDLC(appID)) {
         return false;
     }
@@ -335,7 +335,7 @@ CSteamID Steam_Apps::GetAppOwner()
 // but it is advised that you not param names beginning with an underscore for your own features.
 const char *Steam_Apps::GetLaunchQueryParam( const char *pchKey )
 {
-    PRINT_DEBUG("Steam_Apps::GetLaunchQueryParam\n");
+    PRINT_DEBUG("TODO Steam_Apps::GetLaunchQueryParam\n");
     return "";
 }
 
@@ -364,7 +364,7 @@ int Steam_Apps::GetAppBuildId()
 // member is k_uAppIdInvalid (zero).
 void Steam_Apps::RequestAllProofOfPurchaseKeys()
 {
-    PRINT_DEBUG("Steam_Apps::TODO RequestAllProofOfPurchaseKeys\n");
+    PRINT_DEBUG("TODO Steam_Apps::RequestAllProofOfPurchaseKeys\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     // current app
     {
@@ -428,7 +428,7 @@ SteamAPICall_t Steam_Apps::GetFileDetails( const char* pszFileName )
 // If game was already running and launched again, the NewUrlLaunchParameters_t will be fired.
 int Steam_Apps::GetLaunchCommandLine( char *pszCommandLine, int cubCommandLine )
 {
-    PRINT_DEBUG("Steam_Apps::TODO GetLaunchCommandLine\n");
+    PRINT_DEBUG("TODO Steam_Apps::GetLaunchCommandLine\n");
     return 0;
 }
 

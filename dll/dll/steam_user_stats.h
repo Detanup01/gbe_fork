@@ -600,7 +600,7 @@ bool StoreStats()
 // specified achievement.
 int GetAchievementIcon( const char *pchName )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetAchievementIcon\n");
+    PRINT_DEBUG("TODO Steam_User_Stats::GetAchievementIcon\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (pchName == nullptr) return 0;
 

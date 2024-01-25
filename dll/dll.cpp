@@ -823,12 +823,12 @@ STEAMAPI_API uint32 SteamGameServer_GetIPCCallCount()
 
 STEAMAPI_API void S_CALLTYPE SteamAPI_UseBreakpadCrashHandler( char const *pchVersion, char const *pchDate, char const *pchTime, bool bFullMemoryDumps, void *pvContext, PFNPreMinidumpCallback m_pfnPreMinidumpCallback )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
 }
 
 STEAMAPI_API void S_CALLTYPE SteamAPI_SetBreakpadAppID( uint32 unAppID )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
 }
 
 struct cb_data {
@@ -1104,27 +1104,27 @@ STEAMCLIENT_API void *CreateInterface( const char *pName, int *pReturnCode )
 
 STEAMCLIENT_API void Breakpad_SteamMiniDumpInit( uint32 a, const char *b, const char *c )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
 }
 
 STEAMCLIENT_API void Breakpad_SteamSetAppID( uint32 unAppID )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
 }
 
 STEAMCLIENT_API void Breakpad_SteamSetSteamID( uint64 ulSteamID )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
 }
 
 STEAMCLIENT_API void Breakpad_SteamWriteMiniDumpSetComment( const char *pchMsg )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
 }
 
 STEAMCLIENT_API void Breakpad_SteamWriteMiniDumpUsingExceptionInfoWithBuildId( int a, int b )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
 }
 
 STEAMCLIENT_API bool Steam_BConnected( HSteamUser hUser, HSteamPipe hSteamPipe )
@@ -1141,153 +1141,153 @@ STEAMCLIENT_API bool Steam_BLoggedOn( HSteamUser hUser, HSteamPipe hSteamPipe )
 
 STEAMCLIENT_API bool Steam_BReleaseSteamPipe( HSteamPipe hSteamPipe )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
     return false;
 }
 
 STEAMCLIENT_API HSteamUser Steam_ConnectToGlobalUser( HSteamPipe hSteamPipe )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
     return 0;
 }
 
 STEAMCLIENT_API HSteamUser Steam_CreateGlobalUser( HSteamPipe *phSteamPipe )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
     return 0;
 }
 
 STEAMCLIENT_API HSteamUser Steam_CreateLocalUser( HSteamPipe *phSteamPipe, EAccountType eAccountType )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
     return 0;
 }
 
 STEAMCLIENT_API HSteamPipe Steam_CreateSteamPipe()
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
     return 0;
 }
 
 STEAMCLIENT_API bool Steam_GSBLoggedOn( void *phSteamHandle )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
     return false;
 }
 
 STEAMCLIENT_API bool Steam_GSBSecure( void *phSteamHandle)
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
     return false;
 }
 
 STEAMCLIENT_API bool Steam_GSGetSteam2GetEncryptionKeyToSendToNewClient( void *phSteamHandle, void *pvEncryptionKey, uint32 *pcbEncryptionKey, uint32 cbMaxEncryptionKey )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
     return false;
 }
 
 STEAMCLIENT_API uint64 Steam_GSGetSteamID()
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
     return 0;
 }
 
 STEAMCLIENT_API void Steam_GSLogOff( void *phSteamHandle )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
 }
 
 STEAMCLIENT_API void Steam_GSLogOn( void *phSteamHandle )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
 }
 
 STEAMCLIENT_API bool Steam_GSRemoveUserConnect( void *phSteamHandle, uint32 unUserID )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
     return false;
 }
 
 STEAMCLIENT_API bool Steam_GSSendSteam2UserConnect( void *phSteamHandle, uint32 unUserID, const void *pvRawKey, uint32 unKeyLen, uint32 unIPPublic, uint16 usPort, const void *pvCookie, uint32 cubCookie )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
     return false;
 }
 
 STEAMCLIENT_API bool Steam_GSSendSteam3UserConnect( void *phSteamHandle, uint64 steamID, uint32 unIPPublic, const void *pvCookie, uint32 cubCookie )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
     return false;
 }
 
 STEAMCLIENT_API bool Steam_GSSendUserDisconnect( void *phSteamHandle, uint64 ulSteamID, uint32 unUserID )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
     return false;
 }
 
 STEAMCLIENT_API bool Steam_GSSendUserStatusResponse( void *phSteamHandle, uint64 ulSteamID, int nSecondsConnected, int nSecondsSinceLast )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
     return false;
 }
 
 STEAMCLIENT_API bool Steam_GSSetServerType( void *phSteamHandle, int32 nAppIdServed, uint32 unServerFlags, uint32 unGameIP, uint32 unGamePort, const char *pchGameDir, const char *pchVersion )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
     return false;
 }
 
 STEAMCLIENT_API void Steam_GSSetSpawnCount( void *phSteamHandle, uint32 ucSpawn )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
 }
 
 STEAMCLIENT_API bool Steam_GSUpdateStatus( void *phSteamHandle, int cPlayers, int cPlayersMax, int cBotPlayers, const char *pchServerName, const char *pchMapName )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
     return false;
 }
 
 STEAMCLIENT_API void* Steam_GetGSHandle( HSteamUser hUser, HSteamPipe hSteamPipe )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
     return NULL;
 }
 
 STEAMCLIENT_API int Steam_InitiateGameConnection( HSteamUser hUser, HSteamPipe hSteamPipe, void *pBlob, int cbMaxBlob, uint64 steamID, int nGameAppID, uint32 unIPServer, uint16 usPortServer, bool bSecure )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
     return 0;
 }
 
 STEAMCLIENT_API void Steam_LogOff( HSteamUser hUser, HSteamPipe hSteamPipe )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
 }
 
 STEAMCLIENT_API void Steam_LogOn( HSteamUser hUser, HSteamPipe hSteamPipe, uint64 ulSteamID )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
 }
 
 STEAMCLIENT_API void Steam_ReleaseThreadLocalMemory(bool thread_exit)
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
 }
 
 STEAMCLIENT_API void Steam_ReleaseUser( HSteamPipe hSteamPipe, HSteamUser hUser )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
 }
 
 STEAMCLIENT_API void Steam_SetLocalIPBinding( uint32 unIP, uint16 usLocalPort )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
 }
 
 STEAMCLIENT_API void Steam_TerminateGameConnection( HSteamUser hUser, HSteamPipe hSteamPipe, uint32 unIPServer, uint16 usPortServer )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("TODO dll::%s\n", __FUNCTION__);
 }
