@@ -495,6 +495,7 @@ def help():
     exe_name = os.path.basename(sys.argv[0])
     print(f"\nUsage: {exe_name} [-shots] [-thumbs] [-vid] [-imgs] [-name] [-cdx] [-aw] [-clean] appid appid appid ... ")
     print(f" Example: {exe_name} 421050 420 480")
+    print(f" Example: {exe_name} -shots -thumbs -vid -imgs -name -cdx -aw -clean -nd 421050")
     print(f" Example: {exe_name} -shots -thumbs -vid -imgs -name -cdx -aw -clean 421050")
     print("\nSwitches:")
     print(" -shots:  download screenshots for each app if they're available")
@@ -505,7 +506,7 @@ def help():
     print(" -cdx:    generate .ini file for CODEX Steam emu for each app")
     print(" -aw:     generate schemas of all possible languages for Achievement Watcher")
     print(" -clean:  delete any folder/file with the same name as the output before generating any data")
-    print(" -anon:   login as with an anonymous account, these have very limited access and cannot get all app details")
+    print(" -anon:   login as an anonymous account, these have very limited access and cannot get all app details")
     print(" -nd:     not making predeterminated disable files")
     print("\nAll switches are optional except app id, at least 1 app id must be provided\n")
 
