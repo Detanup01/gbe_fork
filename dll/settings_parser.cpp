@@ -826,7 +826,7 @@ static void try_parse_mods_file(class Settings *settings_client, Settings *setti
                 newMod.path = common_helpers::to_absolute(
                     newMod.path,
                     get_full_program_path()
-                )
+                );
             }
 
             newMod.fileType = k_EWorkshopFileTypeCommunity;
