@@ -61,12 +61,14 @@ bool Steam_Apps::BIsVACBanned()
 const char *Steam_Apps::GetCurrentGameLanguage()
 {
     PRINT_DEBUG("Steam_Apps::GetCurrentGameLanguage\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return settings->get_language();
 }
 
 const char *Steam_Apps::GetAvailableGameLanguages()
 {
     PRINT_DEBUG("Steam_Apps::GetAvailableGameLanguages\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     //TODO?
     return settings->get_language();
 }
@@ -141,21 +143,16 @@ bool Steam_Apps::BGetDLCDataByIndex( int iDLC, AppId_t *pAppID, bool *pbAvailabl
 {
     PRINT_DEBUG("Steam_Apps::BGetDLCDataByIndex\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    AppId_t appid;
-    bool available;
-    std::string name;
+    AppId_t appid = k_uAppIdInvalid;
+    bool available = false;
+    std::string name{};
     if (!settings->getDLC(iDLC, appid, available, name)) return false;
 
     if (pAppID) *pAppID = appid;
     if (pbAvailable) *pbAvailable = available;
     if (pchName && cchNameBufferSize > 0) {
-        if (cchNameBufferSize > name.size()) {
-            cchNameBufferSize = name.size();
-            pchName[cchNameBufferSize] = 0;
-        }
-
-        //TODO: should pchName be null terminated if the size is smaller or equal to the name size?
-        memcpy(pchName, name.data(), cchNameBufferSize);
+        memset(pchName, 0, cchNameBufferSize);
+        name.copy(pchName, cchNameBufferSize - 1);
     }
 
     return true;
@@ -255,8 +252,9 @@ uint32 Steam_Apps::GetInstalledDepots( AppId_t appID, DepotId_t *pvecDepots, uin
     PRINT_DEBUG("Steam_Apps::GetInstalledDepots %u, %u\n", appID, cMaxDepots);
     //TODO not sure about the behavior of this function, I didn't actually test this.
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (!pvecDepots) return 0;
-    unsigned int count = settings->depots.size();
+    unsigned int count = (unsigned int)settings->depots.size();
+    if (!pvecDepots || !cMaxDepots || !count) return 0;
+
     if (cMaxDepots < count) count = cMaxDepots;
     std::copy(settings->depots.begin(), settings->depots.begin() + count, pvecDepots);
     return count;
@@ -276,10 +274,10 @@ uint32 Steam_Apps::GetAppInstallDir( AppId_t appID, char *pchFolder, uint32 cchF
     //TODO return real path instead of dll path
     std::string installed_path = settings->getAppInstallPath(appID);
 
-    if (installed_path.size() == 0) {
+    if (installed_path.empty()) {
         std::string dll_path = get_full_program_path();
         std::string current_path = get_current_path();
-        PRINT_DEBUG("Steam_Apps::paths %s %s\n", dll_path.c_str(), current_path.c_str());
+        PRINT_DEBUG("  Steam_Apps::GetAppInstallDircurrent dll: '%s', current: '%s'\n", dll_path.c_str(), current_path.c_str());
 
         //Just pick the smallest path, it has the most chances of being the good one
         if (dll_path.size() > current_path.size() && current_path.size()) {
@@ -289,9 +287,10 @@ uint32 Steam_Apps::GetAppInstallDir( AppId_t appID, char *pchFolder, uint32 cchF
         }
     }
 
-    PRINT_DEBUG("Steam_Apps::path %s\n", installed_path.c_str());
-    if (cchFolderBufferSize && pchFolder) {
-        snprintf(pchFolder, cchFolderBufferSize, "%s", installed_path.c_str());
+    PRINT_DEBUG("  Steam_Apps::GetAppInstallDir final path '%s'\n", installed_path.c_str());
+    if (pchFolder && cchFolderBufferSize) {
+        memset(pchFolder, 0, cchFolderBufferSize);
+        installed_path.copy(pchFolder, cchFolderBufferSize - 1);
     }
 
     return installed_path.length(); //Real steam always returns the actual path length, not the copied one.
