@@ -1,8 +1,8 @@
-* added new options to the overlay to allow copying a friend's ID, plus current player ID
-* added a new option to the overlay to invite all friends playing the same game
+* added new options to the overlay to allow copying a friend's ID, plus current player ID, suggested by **[Vlxst]**
+* added a new option to the overlay to invite all friends playing the same game, suggested by **[Vlxst]**
 * addded new `auto_accept_invite.txt` setting to automatically accept game/lobby invites from this list, each SteamID64 on a separate line  
-  also you can leave the file empty to accept invitations from anyone, check the updated release readme
-* added new `disable_overlay_warning_*.txt` settings to disable certain or all warnings in the overlay
+  also you can leave the file empty to accept invitations from anyone, check the updated release readme, suggested by **[Vlxst]**
+* added new `disable_overlay_warning_*.txt` settings to disable certain or all warnings in the overlay, suggested by **[Vlxst]**
   * `disable_overlay_warning_forced_setting.txt`:  
     - disable the warning for the usage of any file `force_*.txt` in the overlay
     - unlocks the settigs menu, this may result in an undesirable output
