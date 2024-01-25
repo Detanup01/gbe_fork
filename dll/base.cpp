@@ -31,9 +31,9 @@ void randombytes(char *buf, size_t size)
 
 std::string get_env_variable(std::string name)
 {
-    wchar_t env_variable[1024];
+    wchar_t env_variable[1024]{};
     DWORD ret = GetEnvironmentVariableW(utf8_decode(name).c_str(), env_variable, _countof(env_variable));
-    if (ret <= 0) {
+    if (ret <= 0 || !env_variable[0]) {
         return std::string();
     }
 
@@ -221,7 +221,7 @@ std::string get_full_program_path()
         return env_program_path;
     }
 
-    std::string program_path;
+    std::string program_path{};
     program_path = get_full_lib_path();
     return program_path.substr(0, program_path.rfind(PATH_SEPARATOR)).append(PATH_SEPARATOR);
 }

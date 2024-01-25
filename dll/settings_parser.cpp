@@ -810,7 +810,6 @@ static std::string get_mod_preview_url(const std::string &previewFileName, const
 
 static void try_parse_mods_file(class Settings *settings_client, Settings *settings_server, nlohmann::json &mod_items, const std::string &mods_folder)
 {
-
     for (auto mod = mod_items.begin(); mod != mod_items.end(); ++mod) {
         try {
             std::string mod_images_fullpath = Local_Storage::get_game_settings_path() + "mod_images" + PATH_SEPARATOR + std::string(mod.key());
@@ -824,7 +823,10 @@ static void try_parse_mods_file(class Settings *settings_client, Settings *setti
                 newMod.path = mods_folder + PATH_SEPARATOR + std::string(mod.key());
             } else {
                 // make sure the path is normalized for current OS, and absolute
-                newMod.path = std::filesystem::absolute(newMod.path).u8string();
+                newMod.path = common_helpers::to_absolute(
+                    newMod.path,
+                    get_full_program_path()
+                )
             }
 
             newMod.fileType = k_EWorkshopFileTypeCommunity;

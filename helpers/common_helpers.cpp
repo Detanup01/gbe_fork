@@ -150,7 +150,7 @@ std::string common_helpers::to_absolute(const std::string &path, const std::stri
         std::filesystem::path(path),
         base.empty() ? std::filesystem::current_path() : std::filesystem::path(base)
     );
-    return path_abs.string();
+    return path_abs.u8string();
 }
 
 std::wstring common_helpers::to_absolute(const std::wstring &path, const std::wstring &base)
