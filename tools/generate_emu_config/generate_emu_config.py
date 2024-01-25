@@ -506,6 +506,7 @@ def help():
     print(" -aw:     generate schemas of all possible languages for Achievement Watcher")
     print(" -clean:  delete any folder/file with the same name as the output before generating any data")
     print(" -anon:   login as with an anonymous account, these have very limited access and cannot get all app details")
+    print(" -nd:     not making predeterminated disable files")
     print("\nAll switches are optional except app id, at least 1 app id must be provided\n")
 
 
@@ -513,6 +514,7 @@ def main():
     USERNAME = ""
     PASSWORD = ""
 
+    NODISABLE = False
     DOWNLOAD_SCREESHOTS = False
     DOWNLOAD_THUMBNAILS = False
     DOWNLOAD_VIDEOS = False
@@ -551,6 +553,8 @@ def main():
             CLEANUP_BEFORE_GENERATING = True
         elif f'{appid}'.lower() == '-anon':
             ANON_LOGIN = True
+        elif f'{appid}'.lower() == '-nd':
+            NODISABLE = True
         else:
             print(f'[X] invalid switch: {appid}')
             help()
@@ -832,8 +836,9 @@ def main():
                 icon,
                 logo,
                 logo_small)
-
-        disable_all_extra_features(emu_settings_dir)
+            
+        if not NODISABLE:
+            disable_all_extra_features(emu_settings_dir)
 
         inventory_data = generate_inventory(client, appid)
         if inventory_data is not None:
