@@ -27,6 +27,9 @@ BUILD_TOOL_FIND_ITFS64=1
 BUILD_TOOL_LOBBY32=1
 BUILD_TOOL_LOBBY64=1
 
+BUILD_LIB_NET_SOCKETS_32=0
+BUILD_LIB_NET_SOCKETS_64=0
+
 # < 0: deduce, > 1: force
 PARALLEL_THREADS_OVERRIDE=-1
 
@@ -65,6 +68,10 @@ for (( i=1; i<=$#; i++ )); do
     BUILD_TOOL_LOBBY32=0
   elif [[ "$var" = "-tool-lobby-64" ]]; then
     BUILD_TOOL_LOBBY64=0
+  elif [[ "$var" = "+lib-netsockets-32" ]]; then
+    BUILD_LIB_NET_SOCKETS_32=1
+  elif [[ "$var" = "+lib-netsockets-64" ]]; then
+    BUILD_LIB_NET_SOCKETS_64=1
   elif [[ "$var" = "-verbose" ]]; then
     VERBOSE=1
   elif [[ "$var" = "clean" ]]; then
@@ -358,6 +365,10 @@ function build_for () {
     return 1;
   }
   
+  local out_dir="${out_filepath%/*}"
+  [[ "$out_dir" = "$out_filepath" ]] && out_dir='.'
+  mkdir -p "$out_dir"
+  
   # https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/developer_guide/gcc-using-libraries#gcc-using-libraries_using-both-static-dynamic-library-gcc
   # https://linux.die.net/man/1/ld
   if [[ $VERBOSE = 1 ]]; then
@@ -406,8 +417,6 @@ echo; echo;
 
 if [[ "$BUILD_LIB32" = "1" ]]; then
   echo // building shared lib libsteam_api.so - 32
-  [[ -d "$build_root_32" ]] || mkdir -p "$build_root_32"
-
   all_src_files=(
     "${release_src[@]}"
     "controller/*.c"
@@ -418,8 +427,6 @@ fi
 
 if [[ "$BUILD_CLIENT32" = "1" ]]; then
   echo // building shared lib steamclient.so - 32
-  [[ -d "$build_root_32" ]] || mkdir -p "$build_root_32"
-  
   all_src_files=(
     "${release_src[@]}"
     "controller/*.c"
@@ -430,8 +437,6 @@ fi
 
 if [[ "$BUILD_TOOL_LOBBY32" = "1" ]]; then
   echo // building executable lobby_connect_x32 - 32
-  [[ -d "$build_root_tools/lobby_connect" ]] || mkdir -p "$build_root_tools/lobby_connect"
-  
   all_src_files=(
     "${release_src[@]}"
     "$tools_dir/lobby_connect/lobby_connect.cpp"
@@ -442,12 +447,19 @@ fi
 
 if [[ "$BUILD_TOOL_FIND_ITFS32" = "1" ]]; then
   echo // building executable generate_interfaces_file_x32 - 32
-  [[ -d "$build_root_tools/find_interfaces" ]] || mkdir -p "$build_root_tools/find_interfaces"
-
   all_src_files=(
     "$tools_dir/generate_interfaces/generate_interfaces.cpp"
   )
   build_for 1 1 "$build_root_tools/find_interfaces/generate_interfaces_file_x32" '' all_src_files 
+  last_code=$((last_code + $?))
+fi
+
+if [[ "$BUILD_LIB_NET_SOCKETS_32" = "1" ]]; then
+  echo // building shared lib steamnetworkingsockets.so - 32
+  all_src_files=(
+    "networking_sockets_lib/steamnetworkingsockets.cpp"
+  )
+  build_for 1 0 "$build_root_dir/networking_sockets_lib/steamnetworkingsockets.so" '' all_src_files 
   last_code=$((last_code + $?))
 fi
 
@@ -464,8 +476,6 @@ echo; echo;
 
 if [[ "$BUILD_LIB64" = "1" ]]; then
   echo // building shared lib libsteam_api.so - 64
-  [[ -d "$build_root_64" ]] || mkdir -p "$build_root_64"
-  
   all_src_files=(
     "${release_src[@]}"
     "controller/*.c"
@@ -476,8 +486,6 @@ fi
 
 if [[ "$BUILD_CLIENT64" = "1" ]]; then
   echo // building shared lib steamclient.so - 64
-  [[ -d "$build_root_64" ]] || mkdir -p "$build_root_64"
-  
   all_src_files=(
     "${release_src[@]}"
     "controller/*.c"
@@ -488,8 +496,6 @@ fi
 
 if [[ "$BUILD_TOOL_LOBBY64" = "1" ]]; then
   echo // building executable lobby_connect_x64 - 64
-  [[ -d "$build_root_tools/lobby_connect" ]] || mkdir -p "$build_root_tools/lobby_connect"
-  
   all_src_files=(
     "${release_src[@]}"
     "$tools_dir/lobby_connect/lobby_connect.cpp"
@@ -500,12 +506,19 @@ fi
 
 if [[ "$BUILD_TOOL_FIND_ITFS64" = "1" ]]; then
   echo // building executable generate_interfaces_file_x64 - 64
-  [[ -d "$build_root_tools/find_interfaces" ]] || mkdir -p "$build_root_tools/find_interfaces"
-
   all_src_files=(
     "$tools_dir/generate_interfaces/generate_interfaces.cpp"
   )
   build_for 0 1 "$build_root_tools/find_interfaces/generate_interfaces_file_x64" '' all_src_files 
+  last_code=$((last_code + $?))
+fi
+
+if [[ "$BUILD_LIB_NET_SOCKETS_64" = "1" ]]; then
+  echo // building shared lib steamnetworkingsockets64.so - 64
+  all_src_files=(
+    "networking_sockets_lib/steamnetworkingsockets.cpp"
+  )
+  build_for 0 0 "$build_root_dir/networking_sockets_lib/steamnetworkingsockets64.so" '' all_src_files 
   last_code=$((last_code + $?))
 fi
 

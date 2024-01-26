@@ -36,6 +36,9 @@ set /a BUILD_EXPCLIENT_EXTRA_64=0
 set /a BUILD_TOOL_FIND_ITFS=1
 set /a BUILD_TOOL_LOBBY=1
 
+set /a BUILD_LIB_NET_SOCKETS_32=0
+set /a BUILD_LIB_NET_SOCKETS_64=0
+
 :: < 0: deduce, > 1: force
 set /a PARALLEL_THREADS_OVERRIDE=-1
 
@@ -78,6 +81,10 @@ set /a VERBOSE=0
     set /a BUILD_TOOL_FIND_ITFS=0
   ) else if "%~1"=="-tool-lobby" (
     set /a BUILD_TOOL_LOBBY=0
+  ) else if "%~1"=="+lib-netsockets-32" (
+    set /a BUILD_LIB_NET_SOCKETS_32=1
+  ) else if "%~1"=="+lib-netsockets-64" (
+    set /a BUILD_LIB_NET_SOCKETS_64=1
   ) else if "%~1"=="-j" (
     call :get_parallel_threads_count %~2 || (
       call :err_msg "Invalid arg after -j, expected a number"
@@ -371,6 +378,14 @@ if %BUILD_TOOL_LOBBY% equ 1 (
   echo: & echo:
 )
 
+:: networking sockets lib (x32)
+if %BUILD_LIB_NET_SOCKETS_32% equ 1 (
+  call :compile_networking_sockets_lib_32 || (
+    set /a last_code+=1
+  )
+  echo: & echo:
+)
+
 endlocal & set /a last_code=%last_code%
 
 
@@ -461,6 +476,14 @@ if %BUILD_EXPCLIENT_LDR_64% equ 1 (
 
 if %BUILD_EXPCLIENT_EXTRA_64% equ 1 (
   call :compile_experimentalclient_extra_64 || (
+    set /a last_code+=1
+  )
+  echo: & echo:
+)
+
+:: networking sockets lib (x64)
+if %BUILD_LIB_NET_SOCKETS_64% equ 1 (
+  call :compile_networking_sockets_lib_64 || (
     set /a last_code+=1
   )
   echo: & echo:
@@ -609,6 +632,18 @@ endlocal & exit /b %_exit%
   )
 endlocal & exit /b %_exit%
 
+:compile_networking_sockets_lib_32
+  setlocal
+  echo // building library steamnetworkingsockets.dll - 32
+  set src_files="networking_sockets_lib\steamnetworkingsockets.cpp" 
+  call :build_for 1 0 "%build_root_dir%\networking_sockets_lib\steamnetworkingsockets.dll" src_files
+  set /a _exit=%errorlevel%
+  if %_exit% equ 0 (
+    call :change_dos_stub 1 "%build_root_dir%\networking_sockets_lib\steamnetworkingsockets.dll"
+    call "%signer_tool%" "%build_root_dir%\networking_sockets_lib\steamnetworkingsockets.dll"
+  )
+endlocal & exit /b %_exit%
+
 
 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: x64
@@ -686,6 +721,18 @@ endlocal & exit /b %_exit%
   if %_exit% equ 0 (
     call :change_dos_stub 0 "%steamclient_dir%\extra_dlls\steamclient_extra64.dll"
     call "%signer_tool%" "%steamclient_dir%\extra_dlls\steamclient_extra64.dll"
+  )
+endlocal & exit /b %_exit%
+
+:compile_networking_sockets_lib_64
+  setlocal
+  echo // building library steamnetworkingsockets64.dll - 64
+  set src_files="networking_sockets_lib\steamnetworkingsockets.cpp" 
+  call :build_for 0 0 "%build_root_dir%\networking_sockets_lib\steamnetworkingsockets64.dll" src_files
+  set /a _exit=%errorlevel%
+  if %_exit% equ 0 (
+    call :change_dos_stub 0 "%build_root_dir%\networking_sockets_lib\steamnetworkingsockets64.dll"
+    call "%signer_tool%" "%build_root_dir%\networking_sockets_lib\steamnetworkingsockets64.dll"
   )
 endlocal & exit /b %_exit%
 

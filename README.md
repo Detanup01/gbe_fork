@@ -22,7 +22,9 @@ You can find the original README here: [README.md](./z_original_repo_files/READM
 ---
 
 ## How to use the emu
-You can find instructions here: [README.release.md](./post_build/README.release.md)
+You can find instructions here: [README.release.md](./post_build/README.release.md)  
+
+You can helper scripts and tools mentioned here in this wiki: https://github.com/otavepto/gbe_fork/wiki/Emu-helpers
 
 ---
 ---
@@ -159,8 +161,13 @@ Arguments you can pass to this script:
 
 >>>>>>>>>  ___
 
-* `-tool-itf` prevent building the tool `find_interfaces`:
-* `-tool-lobby`: prevent building the tool `lobby_connect`:
+* `-tool-itf` prevent building the tool `find_interfaces`
+* `-tool-lobby`: prevent building the tool `lobby_connect`
+
+>>>>>>>>>  ___
+
+* `+lib-netsockets-32` *(experimental)*: build a standalone networking sockets library (32-bit)
+* `+lib-netsockets-64` *(experimental)*: build a standalone networking sockets library (64-bit)
 
 <br/>
 
@@ -200,10 +207,15 @@ Arguments you can pass to this script:
 
 >>>>>>>>>  ___
 
-* `-tool-itf-32`: prevent building the tool 32-bit `find_interfaces`:
-* `-tool-itf-64`: prevent building the tool 64-bit `find_interfaces`:
-* `-tool-lobby-32`: prevent building the tool 32-bit `lobby_connect`:
-* `-tool-lobby-64`: prevent building the tool 64-bit `lobby_connect`:
+* `-tool-itf-32`: prevent building the tool 32-bit `find_interfaces`
+* `-tool-itf-64`: prevent building the tool 64-bit `find_interfaces`
+* `-tool-lobby-32`: prevent building the tool 32-bit `lobby_connect`
+* `-tool-lobby-64`: prevent building the tool 64-bit `lobby_connect`
+
+>>>>>>>>>  ___
+
+* `+lib-netsockets-32` *(experimental)*: build a standalone networking sockets library (32-bit)
+* `+lib-netsockets-64` *(experimental)*: build a standalone networking sockets library (64-bit)
 
 ---
 
