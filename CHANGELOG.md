@@ -1,6 +1,9 @@
+## 2024/1/26
+
 * **[Detanup01]** added a new command line option for the tool `generate_emu_config` to disable the generation of `disable_xxx.txt` files,  
   suggested by **[Vlxst]**
-* added new settings to the overlay which allow specifying the notifications positions, check the example file `overlay_appearance.EXAMPLE.txt`
+* added new settings to the overlay which allow specifying the notifications positions, check the example file `overlay_appearance.EXAMPLE.txt`,  
+  suggested by **[ugurkahriman]**
 * fixed a mistake when discarding the utf8 bom marker
 
 ---
