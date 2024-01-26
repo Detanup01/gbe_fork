@@ -422,6 +422,7 @@ Second, the project is not a malware, if your antivirus software complains, be s
 ---
 
 ## Overlay warnings:
+**Note: at the moment this feature is only enabled in the windows experimental builds**
 
 These configuration files allow disabling various overlay warnings:  
 * `disable_overlay_warning_forced_setting.txt`:  
@@ -430,6 +431,22 @@ These configuration files allow disabling various overlay warnings:
 * `disable_overlay_warning_bad_appid.txt`: disable the warning for bad app ID (when app ID = 0) in the overlay
 * `disable_overlay_warning_local_save.txt`: disable the warning for using local save in the overlay
 * `disable_overlay_warning_any.txt`: all the above  
+
+Check the exaxmple files in the `steam_settings` folder
+
+---
+
+## Overlay appearance:
+**Note: at the moment this feature is only enabled in the windows experimental builds**
+
+These configuration file `overlay_appearance.txt` has various options to set for the overlay appearance.  
+The notifications positions could be set to one of these values:  
+* `top_left`
+* `top_center`
+* `top_right`
+* `bot_left`
+* `bot_center`
+* `bot_right`
 
 Check the exaxmple files in the `steam_settings` folder
 

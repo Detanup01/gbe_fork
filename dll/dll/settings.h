@@ -111,6 +111,13 @@ struct Group_Clans {
 };
 
 struct Overlay_Appearance {
+    enum NotificationPosition {
+        top_left, top_center, top_right,
+        bot_left, bot_center, bot_right,
+    };
+
+    constexpr const static NotificationPosition default_pos = NotificationPosition::top_right;
+
     float font_size = 16.0;
     float icon_size = 64.0;
     float notification_r = 0.16;
@@ -133,6 +140,23 @@ struct Overlay_Appearance {
     float element_active_g = -1.0;
     float element_active_b = -1.0;
     float element_active_a = -1.0;
+
+    NotificationPosition ach_earned_pos = default_pos; // achievement earned
+    NotificationPosition invite_pos = default_pos; // lobby/game invitation
+    NotificationPosition chat_msg_pos = default_pos; // chat message from a friend
+
+    static NotificationPosition translate_notification_position(const std::string &str)
+    {
+        if (str == "top_left") return NotificationPosition::top_left;
+        else if (str == "top_center") return NotificationPosition::top_center;
+        else if (str == "top_right") return NotificationPosition::top_right;
+        else if (str == "bot_left") return NotificationPosition::bot_left;
+        else if (str == "bot_center") return NotificationPosition::bot_center;
+        else if (str == "bot_right") return NotificationPosition::bot_right;
+
+        PRINT_DEBUG("Invalid position '%s'\n", str.c_str());
+        return default_pos;
+    }
 };
 
 class Settings {
@@ -261,7 +285,7 @@ public:
     bool disable_overlay_warning_bad_appid = false;
     // disable all overlay warnings
     bool disable_overlay_warning_any = false;
-    Overlay_Appearance overlay_appearance;
+    Overlay_Appearance overlay_appearance{};
 
     //app build id
     int build_id = 10;

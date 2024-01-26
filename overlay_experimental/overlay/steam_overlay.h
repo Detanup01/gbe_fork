@@ -53,8 +53,8 @@ enum notification_type
 
 struct Notification
 {
-    static constexpr float width = 0.25;
-    static constexpr float height = 5.0;
+    static constexpr float width_percent = 0.25f; // percentage from total width
+    static constexpr float height = 5.0f;
     static constexpr std::chrono::milliseconds fade_in   = std::chrono::milliseconds(2000);
     static constexpr std::chrono::milliseconds fade_out  = std::chrono::milliseconds(2000);
     static constexpr std::chrono::milliseconds show_time = std::chrono::milliseconds(6000) + fade_in + fade_out;
@@ -85,6 +85,12 @@ struct Overlay_Achievement
 #ifdef EMU_OVERLAY
 #include <future>
 #include "Renderer_Hook.h"
+
+struct NotificationsIndexes {
+    int top_left = 0, top_center = 0, top_right = 0;
+    int bot_left = 0, bot_center = 0, bot_right = 0;
+};
+
 class Steam_Overlay
 {
     Settings* settings;
@@ -153,8 +159,8 @@ class Steam_Overlay
     bool FriendJoinable(std::pair<const Friend, friend_window_state> &f);
     bool IHaveLobby();
 
-    void NotifyUser(friend_window_state& friend_state);
-    void NotifyUserAchievement();
+    void NotifySoundUserInvite(friend_window_state& friend_state);
+    void NotifySoundUserAchievement();
     void NotifySoundAutoAcceptFriendInvite();
 
     // Right click on friend
@@ -162,6 +168,7 @@ class Steam_Overlay
     // Double click on friend
     void BuildFriendWindow(Friend const& frd, friend_window_state &state);
     // Notifications like achievements, chat and invitations
+    void SetNextNotificationPos(float width, float height, float font_size, notification_type type, struct NotificationsIndexes &idx);
     void BuildNotifications(int width, int height);
     // invite a single friend
     void InviteFriend(uint64 friend_id, class Steam_Friends* steamFriends, class Steam_Matchmaking* steamMatchmaking);

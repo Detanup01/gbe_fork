@@ -1,4 +1,12 @@
-* **[Detanup01]** added a new command line option for the tool `generate_emu_config` to disable the generation of `disable_xxx.txt` files
+* **[Detanup01]** added a new command line option for the tool `generate_emu_config` to disable the generation of `disable_xxx.txt` files,  
+  suggested by **[Vlxst]**
+* added new settings to the overlay which allow specifying the notifications positions, check the example file `overlay_appearance.EXAMPLE.txt`
+* fixed a mistake when discarding the utf8 bom marker
+
+---
+
+## 2024/1/25
+
 * added new options to the overlay to allow copying a friend's ID, plus current player ID, suggested by **[Vlxst]**
 * added a new option to the overlay to invite all friends playing the same game, suggested by **[Vlxst]**
 * added new `auto_accept_invite.txt` setting to automatically accept game/lobby invites from this list, each SteamID64 on a separate line  

@@ -166,6 +166,8 @@ static inline void reset_LastError()
 #include "utfcpp/utf8.h"
 #include "controller/gamepad.h"
 
+constexpr const char * const whitespaces = " \t\r\n";
+
 // common includes
 #include "common_helpers/common_helpers.hpp"
 
@@ -247,12 +249,15 @@ static std::string uint8_vector_to_hex_string(std::vector<uint8_t>& v)
 
 static inline void consume_bom(std::ifstream &input)
 {
-    int bom[3];
+    if (!input.is_open()) return;
+
+    auto pos = input.tellg();
+    int bom[3]{};
     bom[0] = input.get();
     bom[1] = input.get();
     bom[2] = input.get();
     if (bom[0] != 0xEF || bom[1] != 0xBB || bom[2] != 0xBF) {
-        input.seekg(-3, std::ios::cur);
+        input.seekg(pos, std::ios::beg);
     }
 }
 
@@ -280,7 +285,5 @@ static inline void consume_bom(std::ifstream &input)
 #define DEFAULT_LANGUAGE "english"
 
 #define LOBBY_CONNECT_APPID ((uint32)-2)
-
-constexpr const char * const whitespaces = " \t\r\n";
 
 #endif//__INCLUDED_COMMON_INCLUDES__

@@ -336,7 +336,7 @@ void Steam_Overlay::ShowOverlay(bool state)
     overlay_state_changed = true;
 }
 
-void Steam_Overlay::NotifyUser(friend_window_state& friend_state)
+void Steam_Overlay::NotifySoundUserInvite(friend_window_state& friend_state)
 {
     if (settings->disable_overlay_friend_notification) return;
     if (!(friend_state.window_state & window_state_show) || !show_overlay)
@@ -352,7 +352,7 @@ void Steam_Overlay::NotifyUser(friend_window_state& friend_state)
     }
 }
 
-void Steam_Overlay::NotifyUserAchievement()
+void Steam_Overlay::NotifySoundUserAchievement()
 {
     if (settings->disable_overlay_achievement_notification) return;
     if (!show_overlay)
@@ -391,7 +391,7 @@ void Steam_Overlay::SetLobbyInvite(Friend friendId, uint64 lobbyId)
         // Make sure don't have rich presence invite and a lobby invite (it should not happen but who knows)
         frd.window_state &= ~window_state_rich_invite;
         AddInviteNotification(*i);
-        NotifyUser(i->second);
+        NotifySoundUserInvite(i->second);
     }
 }
 
@@ -410,7 +410,7 @@ void Steam_Overlay::SetRichInvite(Friend friendId, const char* connect_str)
         // Make sure don't have rich presence invite and a lobby invite (it should not happen but who knows)
         frd.window_state &= ~window_state_lobby_invite;
         AddInviteNotification(*i);
-        NotifyUser(i->second);
+        NotifySoundUserInvite(i->second);
     }
 }
 
@@ -487,7 +487,7 @@ void Steam_Overlay::AddAchievementNotification(nlohmann::json const& ach)
             notif.message = ach["displayName"].get<std::string>() + "\n" + ach["description"].get<std::string>();
             notif.start_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
             notifications.emplace_back(notif);
-            NotifyUserAchievement();
+            NotifySoundUserAchievement();
             have_notifications = true;
         }
         else
@@ -744,85 +744,142 @@ void Steam_Overlay::BuildFriendWindow(Friend const& frd, friend_window_state& st
 ImFont *font_default;
 ImFont *font_notif;
 
+// set the position of the next notification
+void Steam_Overlay::SetNextNotificationPos(float width, float height, float font_size, notification_type type, struct NotificationsIndexes &idx)
+{
+    // 0 on the y-axis is top, 0 on the x-axis is left
+
+    // get the required position
+    Overlay_Appearance::NotificationPosition pos = Overlay_Appearance::default_pos;
+    switch (type) {
+    case notification_type::notification_type_achievement: pos = settings->overlay_appearance.ach_earned_pos; break;
+    case notification_type::notification_type_invite: pos = settings->overlay_appearance.invite_pos; break;
+    case notification_type::notification_type_message: pos = settings->overlay_appearance.chat_msg_pos; break;
+    default: /* satisfy compiler warning */ break;
+    }
+
+    float x = 0.0f;
+    float y = 0.0f;
+    const float noti_width = width * Notification::width_percent;
+    const float noti_height = Notification::height * font_size;
+    switch (pos) {
+    // top
+    case Overlay_Appearance::NotificationPosition::top_left:
+        x = 0.0f;
+        y = noti_height * idx.top_left;
+        ++idx.top_left;
+    break;
+    case Overlay_Appearance::NotificationPosition::top_center:
+        x = (width / 2) - (noti_width / 2);
+        y = noti_height * idx.top_center;
+        ++idx.top_center;
+    break;
+    case Overlay_Appearance::NotificationPosition::top_right:
+        x = width - noti_width;
+        y = noti_height * idx.top_right;
+        ++idx.top_right;
+    break;
+    
+    // bot
+    case Overlay_Appearance::NotificationPosition::bot_left:
+        x = 0.0f;
+        y = height - noti_height * (idx.bot_left + 1);
+        ++idx.bot_left;
+    break;
+    case Overlay_Appearance::NotificationPosition::bot_center:
+        x = (width / 2) - (noti_width / 2);
+        y = height - noti_height * (idx.bot_center + 1);
+        ++idx.bot_center;
+    break;
+    case Overlay_Appearance::NotificationPosition::bot_right:
+        x = width - noti_width;
+        y = height - noti_height * (idx.bot_right + 1);
+        ++idx.bot_right;
+    break;
+    
+    default: /* satisfy compiler warning */ break;
+    }
+
+    ImGui::SetNextWindowPos(ImVec2( x, y ));
+}
+
 void Steam_Overlay::BuildNotifications(int width, int height)
 {
     auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-    int i = 0;
 
-    int font_size = ImGui::GetFontSize();
+    float font_size = ImGui::GetFontSize();
 
-    std::queue<Friend> friend_actions_temp;
+    std::queue<Friend> friend_actions_temp{};
 
     {
         std::lock_guard<std::recursive_mutex> lock(notifications_mutex);
 
-        for (auto it = notifications.begin(); it != notifications.end(); ++it, ++i)
+        NotificationsIndexes idx{};
+        for (auto it = notifications.begin(); it != notifications.end(); ++it)
         {
             auto elapsed_notif = now - it->start_time;
 
-            if ( elapsed_notif < Notification::fade_in)
-            {
+            if ( elapsed_notif < Notification::fade_in) {
                 float alpha = settings->overlay_appearance.notification_a * (elapsed_notif.count() / static_cast<float>(Notification::fade_in.count()));
                 ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, alpha));
                 ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(settings->overlay_appearance.notification_r, settings->overlay_appearance.notification_g, settings->overlay_appearance.notification_b, alpha));
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 255, 255, alpha*2));
             }
-            else if ( elapsed_notif > Notification::fade_out_start)
-            {
+            else if ( elapsed_notif > Notification::fade_out_start) {
                 float alpha = settings->overlay_appearance.notification_a * ((Notification::show_time - elapsed_notif).count() / static_cast<float>(Notification::fade_out.count()));
                 ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, alpha));
                 ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(settings->overlay_appearance.notification_r, settings->overlay_appearance.notification_g, settings->overlay_appearance.notification_b, alpha));
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 255, 255, alpha*2));
-            }
-            else
-            {
+            } else {
                 ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, settings->overlay_appearance.notification_a));
                 ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(settings->overlay_appearance.notification_r, settings->overlay_appearance.notification_g, settings->overlay_appearance.notification_b, settings->overlay_appearance.notification_a));
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 255, 255, settings->overlay_appearance.notification_a*2));
             }
             
-            ImGui::SetNextWindowPos(ImVec2((float)width - width * Notification::width, Notification::height * font_size * i ));
-            ImGui::SetNextWindowSize(ImVec2( width * Notification::width, Notification::height * font_size ));
-            ImGui::Begin(std::to_string(it->id).c_str(), nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | 
+            SetNextNotificationPos(width, height, font_size, (notification_type)it->type, idx);
+            ImGui::SetNextWindowSize(ImVec2( width * Notification::width_percent, Notification::height * font_size ));
+            std::string wnd_name = "NotiPopupShow" + std::to_string(it->id);
+            ImGui::Begin(wnd_name.c_str(), nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | 
                 ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoDecoration);
 
-            switch (it->type)
-            {
+            switch (it->type) {
                 case notification_type_achievement:
-                    {
-                        if (!it->icon.expired()) {
-                            ImGui::BeginTable("imgui_table", 2);
-                            ImGui::TableSetupColumn("imgui_table_image", ImGuiTableColumnFlags_WidthFixed, settings->overlay_appearance.icon_size);
-                            ImGui::TableSetupColumn("imgui_table_text");
-                            ImGui::TableNextRow(ImGuiTableRowFlags_None, settings->overlay_appearance.icon_size);
+                {
+                    if (!it->icon.expired()) {
+                        ImGui::BeginTable("imgui_table", 2);
+                        ImGui::TableSetupColumn("imgui_table_image", ImGuiTableColumnFlags_WidthFixed, settings->overlay_appearance.icon_size);
+                        ImGui::TableSetupColumn("imgui_table_text");
+                        ImGui::TableNextRow(ImGuiTableRowFlags_None, settings->overlay_appearance.icon_size);
 
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Image((ImU64)*it->icon.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Image((ImU64)*it->icon.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
 
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::TextWrapped("%s", it->message.c_str());
-
-                            ImGui::EndTable();
-                        } else {
-                            ImGui::TextWrapped("%s", it->message.c_str());
-                        }
-                    }
-                    break;
-                case notification_type_invite:
-                    {
+                        ImGui::TableSetColumnIndex(1);
                         ImGui::TextWrapped("%s", it->message.c_str());
-                        if (ImGui::Button(translationJoin[current_language]))
-                        {
-                            it->frd->second.window_state |= window_state_join;
-                            friend_actions_temp.push(it->frd->first);
-                            it->start_time = std::chrono::seconds(0);
-                        }
+
+                        ImGui::EndTable();
+                    } else {
+                        ImGui::TextWrapped("%s", it->message.c_str());
                     }
-                    break;
+                }
+                break;
+                case notification_type_invite:
+                {
+                    ImGui::TextWrapped("%s", it->message.c_str());
+                    if (ImGui::Button(translationJoin[current_language]))
+                    {
+                        it->frd->second.window_state |= window_state_join;
+                        friend_actions_temp.push(it->frd->first);
+                        it->start_time = std::chrono::seconds(0);
+                    }
+                }
+                break;
                 case notification_type_message:
-                    ImGui::TextWrapped("%s", it->message.c_str()); break;
+                    ImGui::TextWrapped("%s", it->message.c_str());
+                break;
                 case notification_type_auto_accept_invite:
-                    ImGui::TextWrapped("%s", it->message.c_str()); break;
+                    ImGui::TextWrapped("%s", it->message.c_str());
+                break;
             }
 
             ImGui::End();
@@ -1308,7 +1365,7 @@ void Steam_Overlay::Callback(Common_Message *msg)
             }
 
             AddMessageNotification(friend_info->first.name() + ": " + steam_message.message());
-            NotifyUser(friend_info->second);
+            NotifySoundUserInvite(friend_info->second);
         }
     }
 }

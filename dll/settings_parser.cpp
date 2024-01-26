@@ -35,8 +35,8 @@ static void load_subscribed_groups_clans(std::string clans_filepath, Settings *s
 {
     PRINT_DEBUG("Group clans file path: %s\n", clans_filepath.c_str());
     std::ifstream clans_file(utf8_decode(clans_filepath));
-    consume_bom(clans_file);
     if (clans_file.is_open()) {
+        consume_bom(clans_file);
         std::string line;
         while (std::getline(clans_file, line)) {
             if (line.length() < 0) continue;
@@ -73,22 +73,35 @@ static void load_subscribed_groups_clans(std::string clans_filepath, Settings *s
 
 static void load_overlay_appearance(std::string appearance_filepath, Settings *settings_client, Settings *settings_server)
 {
-    PRINT_DEBUG("Overlay appearance file path: %s\n", appearance_filepath.c_str());
     std::ifstream appearance_file(utf8_decode(appearance_filepath));
-    consume_bom(appearance_file);
     if (appearance_file.is_open()) {
-        std::string line;
+        PRINT_DEBUG("Parsing overlay appearance file: '%s'\n", appearance_filepath.c_str());
+        consume_bom(appearance_file);
+        std::string line{};
         while (std::getline(appearance_file, line)) {
-            if (line.length() < 0) continue;
+            if (line.length() <= 0) continue;
 
             std::size_t seperator = line.find(" ");
-            std::string name;
-            std::string value;
+            std::string name{};
+            std::string value{};
             if (seperator != std::string::npos) {
                 name = line.substr(0, seperator);
+                name.erase(0, name.find_first_not_of(whitespaces));
+                name.erase(name.find_last_not_of(whitespaces) + 1);
+
                 value = line.substr(seperator);
+                value.erase(0, value.find_first_not_of(whitespaces));
+                value.erase(value.find_last_not_of(whitespaces) + 1);
             }
 
+            // comments
+            if (name.size() && (
+                name[0] == '#' || name[0] == ';' || name.compare(0, 2, "//") == 0
+            )) {
+                continue;
+            }
+
+            PRINT_DEBUG("  Overlay appearance line '%s' = '%s'\n", name.c_str(), value.c_str());
             try {
                 if (name.compare("Font_Size") == 0) {
                     float nfont_size = std::stof(value, NULL);
@@ -178,9 +191,21 @@ static void load_overlay_appearance(std::string appearance_filepath, Settings *s
                     float nelement_active_a = std::stof(value, NULL);
                     settings_client->overlay_appearance.element_active_a = nelement_active_a;
                     settings_server->overlay_appearance.element_active_a = nelement_active_a;
+                } else if (name.compare("PosAchievement") == 0) {
+                    auto pos = Overlay_Appearance::translate_notification_position(value);
+                    settings_client->overlay_appearance.ach_earned_pos = pos;
+                    settings_server->overlay_appearance.ach_earned_pos = pos;
+                } else if (name.compare("PosInvitation") == 0) {
+                    auto pos = Overlay_Appearance::translate_notification_position(value);
+                    settings_client->overlay_appearance.invite_pos = pos;
+                    settings_server->overlay_appearance.invite_pos = pos;
+                } else if (name.compare("PosChatMsg") == 0) {
+                    auto pos = Overlay_Appearance::translate_notification_position(value);
+                    settings_client->overlay_appearance.chat_msg_pos = pos;
+                    settings_server->overlay_appearance.chat_msg_pos = pos;
                 }
-                PRINT_DEBUG("Overlay appearance %s %s\n", name.c_str(), value.c_str());
-            } catch (...) {}
+
+            } catch (...) { }
         }
     }
 }
