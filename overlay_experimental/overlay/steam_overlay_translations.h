@@ -113,7 +113,7 @@ const char translationCopyId[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
 	"Copy ID",
 
 	// 5 - Czech
-	"Copy ID",
+	"Kopírovat ID",
 
 	// 6 - Danish
 	"Copy ID",
@@ -299,7 +299,7 @@ const char translationInviteAll[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUF
 	"Invite all",
 
 	// 5 - Czech
-	"Invite all",
+	"Pozvat všechny",
 
 	// 6 - Danish
 	"Invite all",
@@ -3446,7 +3446,7 @@ const char translationAutoAcceptFriendInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TR
 	"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 5 - Czech
-	"Invitations are controlled by auto_accept_invite.txt!",
+	"Pozvánky se řídí podle auto_accept_invite.txt!",
 
 	// 6 - Danish
 	"Invitations are controlled by auto_accept_invite.txt!",
