@@ -63,7 +63,7 @@ const char translationChat[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
 	"Chat",
 
 	// 19 - Brazilian Portuguese
-	"Conversa",
+	"Conversar",
 
 	// 20 - Romanian
 	"Discuție",
@@ -155,7 +155,7 @@ const char translationCopyId[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
 	"Copy ID",
 
 	// 19 - Brazilian Portuguese
-	"Copy ID",
+	"Copiar ID",
 
 	// 20 - Romanian
 	"Copy ID",
@@ -341,7 +341,7 @@ const char translationInviteAll[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUF
 	"Invite all",
 
 	// 19 - Brazilian Portuguese
-	"Invite all",
+	"Convidar todos os jogadores",
 
 	// 20 - Romanian
 	"Invite all",
@@ -997,7 +997,7 @@ const char translationUserPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
 	"Username: %s(%llu) playing %u",
 
 	// 19 - Brazilian Portuguese
-	"Username: %s(%llu) playing %u",
+	"Username: %s(%llu) está jogando %u",
 
 	// 20 - Romanian
 	"Username: %s(%llu) playing %u",
@@ -1181,7 +1181,7 @@ const char translationShowAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
 	"Show Achievements",
 
 	// 19 - Brazilian Portuguese
-	"Show Achievements",
+	"Mostrar Conquistas",
 
 	// 20 - Romanian
 	"Show Achievements",
@@ -1462,7 +1462,7 @@ const char translationAchievementWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
 	"Achievement Window",
 
 	// 19 - Brazilian Portuguese
-	"Achievement Window",
+	"Janela de conquistas",
 
 	// 20 - Romanian
 	"Achievement Window",
@@ -1554,7 +1554,7 @@ const char translationListOfAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSL
 	"List of achievements",
 
 	// 19 - Brazilian Portuguese
-	"List of achievements",
+	"Lista de conquistas",
 
 	// 20 - Romanian
 	"List of achievements",
@@ -1646,7 +1646,7 @@ const char translationAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_
 	"Achievements",
 
 	// 19 - Brazilian Portuguese
-	"Achievements",
+	"Conquistas",
 
 	// 20 - Romanian
 	"Achievements",
@@ -1738,7 +1738,7 @@ const char translationHiddenAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
 	"hidden achievement",
 
 	// 19 - Brazilian Portuguese
-	"hidden achievement",
+	"conquista oculta",
 
 	// 20 - Romanian
 	"hidden achievement",
@@ -1830,7 +1830,7 @@ const char translationAchievedOn[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BU
 	"achieved on %s",
 
 	// 19 - Brazilian Portuguese
-	"achieved on %s",
+	"alcançado em %s",
 
 	// 20 - Romanian
 	"achieved on %s",
@@ -1922,7 +1922,7 @@ const char translationNotAchieved[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
 	"not achieved",
 
 	// 19 - Brazilian Portuguese
-	"not achieved",
+	"não alcançado",
 
 	// 20 - Romanian
 	"not achieved",
@@ -2014,7 +2014,7 @@ const char translationGlobalSettingsWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRAN
 	"Global Settings Window",
 
 	// 19 - Brazilian Portuguese
-	"Global Settings Window",
+	"Janela de Configurações Globais",
 
 	// 20 - Romanian
 	"Global Settings Window",
@@ -2106,7 +2106,7 @@ const char translationGlobalSettingsWindowDescription[TRANSLATION_NUMBER_OF_LANG
 	"These are global emulator settings and will apply to all games.",
 
 	// 19 - Brazilian Portuguese
-	"These are global emulator settings and will apply to all games.",
+	"Estas são configurações globais do emulador e serão aplicadas a TODOS os jogos.",
 
 	// 20 - Romanian
 	"These are global emulator settings and will apply to all games.",
@@ -2290,7 +2290,7 @@ const char translationLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
 	"Language:",
 
 	// 19 - Brazilian Portuguese
-	"Language:",
+	"Idioma:",
 
 	// 20 - Romanian
 	"Language:",
@@ -2382,7 +2382,7 @@ const char translationSelectedLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
 	"Selected Language: %s",
 
 	// 19 - Brazilian Portuguese
-	"Selected Language: %s",
+	"Idioma Selecionado: %s",
 
 	// 20 - Romanian
 	"Selected Language: %s",
@@ -2474,7 +2474,7 @@ const char translationRestartTheGameToApply[TRANSLATION_NUMBER_OF_LANGUAGES][TRA
 	"You may have to restart the game for these to apply.",
 
 	// 19 - Brazilian Portuguese
-	"You may have to restart the game for these to apply.",
+	"Talvez seja necessário reiniciar o jogo para que isso seja aplicado.",
 
 	// 20 - Romanian
 	"You may have to restart the game for these to apply.",
@@ -2566,7 +2566,7 @@ const char translationSave[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
 	"Save",
 
 	// 19 - Brazilian Portuguese
-	"Save",
+	"Salvar",
 
 	// 20 - Romanian
 	"Save",
@@ -2658,7 +2658,7 @@ const char translationWarning[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
 	"WARNING",
 
 	// 19 - Brazilian Portuguese
-	"WARNING",
+	"AVISO",
 
 	// 20 - Romanian
 	"WARNING",
@@ -2750,7 +2750,7 @@ const char translationWarningWarningWarning[TRANSLATION_NUMBER_OF_LANGUAGES][TRA
 	"WARNING WARNING WARNING",
 
 	// 19 - Brazilian Portuguese
-	"WARNING WARNING WARNING",
+	"AVISO AVISO AVISO",
 
 	// 20 - Romanian
 	"WARNING WARNING WARNING",
@@ -2842,7 +2842,7 @@ const char translationWarningDescription1[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
 	"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 19 - Brazilian Portuguese
-	"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+	"Alguns arquivos steam_settings/force_*.txt foram detectados. Exclua-os se quiser que este menu funcione.",
 
 	// 20 - Romanian
 	"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
@@ -2934,7 +2934,7 @@ const char translationWarningDescription2[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
 	"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 19 - Brazilian Portuguese
-	"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+	"AppID é 0, crie um steam_appid.txt com o appid correto e reinicie o jogo.",
 
 	// 20 - Romanian
 	"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
@@ -3026,7 +3026,7 @@ const char translationWarningDescription3[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
 	"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 19 - Brazilian Portuguese
-	"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+	"local_save.txt detectado, o emu está salvando localmente na pasta do jogo. Por favor, exclua-o se você não quiser isso.",
 
 	// 20 - Romanian
 	"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
@@ -3118,7 +3118,7 @@ const char translationWarningDescription4[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
 	"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 19 - Brazilian Portuguese
-	"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+	"Alguns arquivos steam_settings/force_*.txt foram detectados. Você não poderá salvar algumas configurações.",
 
 	// 20 - Romanian
 	"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
@@ -3210,7 +3210,7 @@ const char translationSteamOverlayURL[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
 	"The game tried to get the steam overlay to open this url:",
 
 	// 19 - Brazilian Portuguese
-	"The game tried to get the steam overlay to open this url:",
+	"O jogo tentou fazer com que a sobreposição do Steam abrisse este URL:",
 
 	// 20 - Romanian
 	"The game tried to get the steam overlay to open this url:",
@@ -3396,7 +3396,7 @@ const char translationPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
 	" playing ",
 
 	// 19 - Brazilian Portuguese
-	" playing ",
+	" jogando ",
 
 	// 20 - Romanian
 	" playing ",
@@ -3488,7 +3488,7 @@ const char translationAutoAcceptFriendInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TR
 	"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 19 - Brazilian Portuguese
-	"Invitations are controlled by auto_accept_invite.txt!",
+	"Os convites são controlados por auto_accept_invite.txt!",
 
 	// 20 - Romanian
 	"Invitations are controlled by auto_accept_invite.txt!",
