@@ -34,6 +34,12 @@ You do not need to create a `steam_interfaces.txt` file for the `steamclient` ve
    * `IgnoreLoaderArchDifference`: don't display an error message if the architecture of the loader is different from the app.  
    this will result in a silent failure if a dll injection didn't succeed.  
    both the loader and the app must have the same arch for the injection to work  
+   * `Mode` (in `[Persistence]` section):
+     - 0 = turned off
+     - 1 = loader will spawn the exe and keep hanging in the background until you press "OK"
+     - 2 = loader will NOT spawn exe, it will just setup the required environemnt and keep hanging  
+       in the background until you run the exe manually, and press "OK" when you've finished playing.  
+       This should help in scenarios where an external app has to launch the game, it is also recommended to run the loader with admin rights in this mode
 
 
 **Note** that any arguments passed to `steamclient_loader.exe` via command line will be passed to the target `.exe`.  

@@ -107,7 +107,7 @@ This will:
 Additional arguments you can pass to this script:
 * `-j <n>`: build with `<n>` parallel jobs, by default 70% of the available threads
 * `-verbose`: output compiler/linker commands used by `CMAKE`
-* `-packages_only`: install the required Linux pacakges via `apt isntall` and exit (don't rebuild)
+* `-packages_only`: install the required Linux packages via `apt isntall` and exit (don't rebuild)
 
 ---
 

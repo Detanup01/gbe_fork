@@ -157,7 +157,7 @@ jobs:
       run: package_win.bat release
 
 ### upload artifact/package to github Actions (release mode)
-    - name: Upload build pacakge (release)
+    - name: Upload build package (release)
       uses: actions/upload-artifact@v4
       with:
         name: "build-win-release-${{ github.sha }}"
@@ -179,7 +179,7 @@ jobs:
       run: package_win.bat debug
 
 ### upload artifact/package to github Actions (debug mode)
-    - name: Upload build pacakge (debug)
+    - name: Upload build package (debug)
       uses: actions/upload-artifact@v4
       with:
         name: "build-win-debug-${{ github.sha }}"

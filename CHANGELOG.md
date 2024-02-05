@@ -1,3 +1,13 @@
+## 2024/2/7
+
+* new persistent modes for cold client loader, mode 2 is a more accurate simulation and allows launching apps from their .exe
+
+---
+
+* **[Breaking]** changed the ini sections of the cold client loader
+
+---
+
 ## 2024/1/26
 
 * **[Detanup01]** added a new command line option for the tool `generate_emu_config` to disable the generation of `disable_xxx.txt` files,  
