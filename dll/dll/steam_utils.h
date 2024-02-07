@@ -84,7 +84,7 @@ const char *GetIPCountry()
 {
     PRINT_DEBUG("Steam_Utils::GetIPCountry\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return "US";
+    return settings->ip_country.c_str();
 }
 
 // returns true if the image exists, and valid sizes were filled out

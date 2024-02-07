@@ -316,6 +316,8 @@ public:
     bool hasOverlayAutoAcceptInviteFromFriend(uint64_t friend_id) const;
     size_t overlayAutoAcceptInvitesCount() const;
 
+    // get the alpha-2 code from: https://www.iban.com/country-codes 
+    std::string ip_country = "US";
 };
 
 #endif

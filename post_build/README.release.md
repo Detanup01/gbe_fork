@@ -465,6 +465,15 @@ Check the exaxmple file in the `steam_settings` folder
 
 ---
 
+## IP country:
+
+You can report a country IP if the game queries it, by setting the 2 characters code in the file `ip_country.txt`.  
+Use this link to get the `Alpha-2` country code: https://www.iban.com/country-codes  
+
+Check the exaxmple file in the `steam_settings` folder
+
+---
+
 ## More configurations:
 Due to the various changes and additions, it became tedious to document everything,  
 so it is recommended to check each example file in the `steam_settings` folder.

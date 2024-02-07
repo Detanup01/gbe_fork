@@ -257,6 +257,7 @@ static inline void consume_bom(std::ifstream &input)
     bom[1] = input.get();
     bom[2] = input.get();
     if (bom[0] != 0xEF || bom[1] != 0xBB || bom[2] != 0xBF) {
+        input.clear();
         input.seekg(pos, std::ios::beg);
     }
 }

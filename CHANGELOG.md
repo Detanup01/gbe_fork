@@ -1,6 +1,7 @@
 ## 2024/2/7
 
 * new persistent modes for cold client loader, mode 2 is a more accurate simulation and allows launching apps from their .exe
+* allow setting the IP country via the file `ip_country.txt`
 
 ---
 

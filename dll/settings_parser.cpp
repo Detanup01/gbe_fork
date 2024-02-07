@@ -1129,6 +1129,32 @@ static void parse_auto_accept_invite(class Settings *settings_client, Settings *
     }
 }
 
+// ip_country.txt
+static void parse_ip_country(class Settings *settings_client, Settings *settings_server)
+{
+    std::string setting_file = Local_Storage::get_game_settings_path() + "ip_country.txt";
+    std::ifstream input( utf8_decode(setting_file) );
+    if (input.is_open()) {
+        consume_bom(input);
+        std::string line{};
+        std::getline( input, line );
+
+        size_t start = line.find_first_not_of(whitespaces);
+        size_t end = line.find_last_not_of(whitespaces);
+        line = start == end
+            ? std::string()
+            : line.substr(start, end - start + 1);
+        
+        // ISO 3166-1-alpha-2 format is 2 chars only
+        if (line.size() == 2) {
+            std::transform(line.begin(), line.end(), line.begin(), [](char c) { return std::toupper(c); });
+            settings_client->ip_country = line;
+            settings_server->ip_country = line;
+            PRINT_DEBUG("Setting IP country to: '%s'\n", line.c_str());
+        }
+    }
+}
+
 uint32 create_localstorage_settings(Settings **settings_client_out, Settings **settings_server_out, Local_Storage **local_storage_out)
 {
     std::string program_path = Local_Storage::get_program_path();
@@ -1332,6 +1358,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     load_gamecontroller_settings(settings_client);
 
     parse_auto_accept_invite(settings_client, settings_server);
+    
+    parse_ip_country(settings_client, settings_server);
 
     *settings_client_out = settings_client;
     *settings_server_out = settings_server;
