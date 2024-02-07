@@ -304,7 +304,7 @@ bool patch_registry_hkcs()
 void cleanup_registry_hkcs()
 {
     if (orig_steam_hkcs_2) {
-        dbg_log::write("restoring registry entries (HKCU) #1");
+        dbg_log::write("restoring registry entries (HKCS) #1");
         HKEY Registrykey = { 0 };
         if (RegOpenKeyExW(HKEY_CLASSES_ROOT, L"steam\\Shell\\Open\\Command", 0, KEY_ALL_ACCESS, &Registrykey) == ERROR_SUCCESS) {
             RegSetValueExW(Registrykey, L"", NULL, REG_SZ, (const BYTE *)OrgCommand_hkcs, Size1_hkcs);
@@ -315,7 +315,7 @@ void cleanup_registry_hkcs()
     }
 
     if (!orig_steam_hkcs_1) {
-        dbg_log::write("removing registry entries (HKCU) #2 (added by loader)");
+        dbg_log::write("removing registry entries (HKCS) #2 (added by loader)");
         HKEY Registrykey = { 0 };
         RegDeleteKeyA(HKEY_CLASSES_ROOT, "steam");
     }
@@ -507,10 +507,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         }
     } else { // steam://run/
         constexpr const static wchar_t STEAM_LAUNCH_CMD_1[] = L"steam://run/";
-        constexpr const static wchar_t STEAM_LAUNCH_CMD_2[] = L"run/";
+        constexpr const static wchar_t STEAM_LAUNCH_CMD_2[] = L"-- \"steam://rungameid/";
         AppId.clear(); // we don't care about the app id in the ini
         std::wstring my_cmd = lpCmdLine && lpCmdLine[0] ? std::wstring(lpCmdLine) : std::wstring();
-        dbg_log::write(L"persistent mode 2 detecting steam launch cmd from: " + my_cmd);
+        dbg_log::write(L"persistent mode 2 detecting steam launch cmd from: '" + my_cmd + L"'");
         if (my_cmd.find(STEAM_LAUNCH_CMD_1) == 0) {
             AppId = my_cmd.substr(sizeof(STEAM_LAUNCH_CMD_1) / sizeof(wchar_t), my_cmd.find_first_of(L" \t"));
             dbg_log::write("persistent mode 2 got steam launch cmd #1");
@@ -543,6 +543,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         return 1;
     }
 
+    patch_registry_hkcs();
     // if (!patch_registry_hkcs()) { // this fails due to admin rights, not a big deal
     //     cleanup_registry_hkcu();
     //     cleanup_registry_hklm();
@@ -625,8 +626,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         CloseHandle(processInfo.hThread);
     }
 
-    if (PersistentMode == L"1" || (PersistentMode == L"2" && AppId.empty()) ) {
+    if (PersistentMode == L"1" ) {
         MessageBoxA(NULL, "Press OK when you have finished playing to close the loader", "Cold Client Loader (waiting)", MB_OK);
+    } else if (PersistentMode == L"2" && AppId.empty()) {
+        MessageBoxA(NULL, "Start the game, then press OK when you have finished playing to close the loader", "Cold Client Loader (waiting)", MB_OK);
     }
 
     if (PersistentMode != L"2" || AppId.empty()) { // persistent mode 0 or 1, or mode 2 without app id   
