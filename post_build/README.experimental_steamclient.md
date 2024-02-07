@@ -37,9 +37,10 @@ You do not need to create a `steam_interfaces.txt` file for the `steamclient` ve
    * `Mode` (in `[Persistence]` section):
      - 0 = turned off
      - 1 = loader will spawn the exe and keep hanging in the background until you press "OK"
-     - 2 = loader will NOT spawn exe, it will just setup the required environemnt and keep hanging  
-       in the background until you run the exe manually, and press "OK" when you've finished playing.  
-       This should help in scenarios where an external app has to launch the game, it is also recommended to run the loader with admin rights in this mode
+     - 2 = loader will NOT spawn exe, it will just setup the required environemnt and keep hanging in the background  
+       you have to run the Exe manually, and finally press "OK" when you've finished playing  
+       you have to rename the loader to "steam.exe"  
+       it is advised to run the loader as admin in this mode  
 
 
 **Note** that any arguments passed to `steamclient_loader.exe` via command line will be passed to the target `.exe`.  
