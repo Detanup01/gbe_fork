@@ -549,7 +549,7 @@ endlocal & exit /b %_exit%
   echo // building lib experimental steam_api.dll - 32
   set src_files="%win_resources_out_dir%\rsrc-api-32.res" %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "%libs_dir%\ImGui\*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_dx*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_win32.cpp" "%libs_dir%\ImGui\backends\imgui_impl_vulkan.cpp" "%libs_dir%\ImGui\backends\imgui_impl_opengl3.cpp" "%libs_dir%\ImGui\backends\imgui_win_shader_blobs.cpp" "overlay_experimental\*.cpp" "overlay_experimental\windows\*.cpp" "overlay_experimental\System\*.cpp"
   set extra_inc_dirs=/I"%libs_dir%\ImGui"
-  call :build_for 1 0 "%experimental_dir%\x32\steam_api.dll" src_files extra_inc_dirs "/DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY"
+  call :build_for 1 0 "%experimental_dir%\x32\steam_api.dll" src_files extra_inc_dirs "/DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /DImTextureID=ImU64"
   set /a _exit=%errorlevel%
   if %_exit% equ 0 (
     call :change_dos_stub 1 "%experimental_dir%\x32\steam_api.dll"
@@ -574,7 +574,7 @@ endlocal & exit /b %_exit%
   echo // building lib steamclient.dll - 32
   set src_files="%win_resources_out_dir%\rsrc-client-32.res" %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "%libs_dir%\ImGui\*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_dx*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_win32.cpp" "%libs_dir%\ImGui\backends\imgui_impl_vulkan.cpp" "%libs_dir%\ImGui\backends\imgui_impl_opengl3.cpp" "%libs_dir%\ImGui\backends\imgui_win_shader_blobs.cpp" "overlay_experimental\*.cpp" "overlay_experimental\windows\*.cpp" "overlay_experimental\System\*.cpp"
   set extra_inc_dirs=/I"%libs_dir%\ImGui"
-  call :build_for 1 0 "%steamclient_dir%\steamclient.dll" src_files extra_inc_dirs "/DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /DSTEAMCLIENT_DLL"
+  call :build_for 1 0 "%steamclient_dir%\steamclient.dll" src_files extra_inc_dirs "/DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /DImTextureID=ImU64 /DSTEAMCLIENT_DLL"
   set /a _exit=%errorlevel%
   if %_exit% equ 0 (
     call :change_dos_stub 1 "%steamclient_dir%\steamclient.dll"
@@ -664,7 +664,7 @@ endlocal & exit /b %_exit%
   echo // building lib experimental steam_api64.dll - 64
   set src_files="%win_resources_out_dir%\rsrc-api-64.res" %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "%libs_dir%\ImGui\*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_dx*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_win32.cpp" "%libs_dir%\ImGui\backends\imgui_impl_vulkan.cpp" "%libs_dir%\ImGui\backends\imgui_impl_opengl3.cpp" "%libs_dir%\ImGui\backends\imgui_win_shader_blobs.cpp" "overlay_experimental\*.cpp" "overlay_experimental\windows\*.cpp" "overlay_experimental\System\*.cpp"
   set extra_inc_dirs=/I"%libs_dir%\ImGui"
-  call :build_for 0 0 "%experimental_dir%\x64\steam_api64.dll" src_files extra_inc_dirs "/DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY"
+  call :build_for 0 0 "%experimental_dir%\x64\steam_api64.dll" src_files extra_inc_dirs "/DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /DImTextureID=ImU64"
   set /a _exit=%errorlevel%
   if %_exit% equ 0 (
     call :change_dos_stub 0 "%experimental_dir%\x64\steam_api64.dll"
@@ -689,7 +689,7 @@ endlocal & exit /b %_exit%
   echo // building lib steamclient64.dll - 64
   set src_files="%win_resources_out_dir%\rsrc-client-64.res" %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "%libs_dir%\ImGui\*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_dx*.cpp" "%libs_dir%\ImGui\backends\imgui_impl_win32.cpp" "%libs_dir%\ImGui\backends\imgui_impl_vulkan.cpp" "%libs_dir%\ImGui\backends\imgui_impl_opengl3.cpp" "%libs_dir%\ImGui\backends\imgui_win_shader_blobs.cpp" "overlay_experimental\*.cpp" "overlay_experimental\windows\*.cpp" "overlay_experimental\System\*.cpp"
   set extra_inc_dirs=/I"%libs_dir%\ImGui"
-  call :build_for 0 0 "%steamclient_dir%\steamclient64.dll" src_files extra_inc_dirs "/DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /DSTEAMCLIENT_DLL"
+  call :build_for 0 0 "%steamclient_dir%\steamclient64.dll" src_files extra_inc_dirs "/DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /DImTextureID=ImU64 /DSTEAMCLIENT_DLL"
   set /a _exit=%errorlevel%
   if %_exit% equ 0 (
     call :change_dos_stub 0 "%steamclient_dir%\steamclient64.dll"
