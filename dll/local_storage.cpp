@@ -838,7 +838,7 @@ std::vector<image_pixel_t> Local_Storage::load_image(std::string const& image_pa
 
 std::string Local_Storage::load_image_resized(std::string const& image_path, std::string const& image_data, int resolution)
 {
-    std::string resized_image(resolution * resolution * 4, 0);
+    std::string resized_image{};
     char *resized_img = (char*)malloc(sizeof(char) * resolution * resolution * 4);
     PRINT_DEBUG("Local_Storage::load_image_resized: %s for resized image (%i)\n", (resized_img == nullptr ? "could not allocate memory" : "memory allocated"), (resolution * resolution * 4));
 
