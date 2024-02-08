@@ -90,7 +90,7 @@ bool DX12_Hook::IsStarted()
 
 DX12_Hook::heap_t DX12_Hook::get_free_texture_heap()
 {
-   int64_t i;
+   uint32_t i;
    for (i = 0; i < srvDescHeapBitmap.size(); ++i) {
        if (!srvDescHeapBitmap[i]) {
            srvDescHeapBitmap[i] = true;
