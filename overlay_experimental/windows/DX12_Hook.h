@@ -35,6 +35,14 @@ private:
     static DX12_Hook* _inst;
     std::set<std::shared_ptr<uint64_t>> _ImageResources;
 
+    struct texture_t{
+        using gpu_heap_t = decltype(D3D12_GPU_DESCRIPTOR_HANDLE::ptr);
+
+        gpu_heap_t gpu_handle; // This must be the first member, ImGui will use the content of the pointer as a D3D12_GPU_DESCRIPTOR_HANDLE::ptr
+        ID3D12Resource* pTexture;
+        int64_t heap_id;
+    };
+	
     struct DX12Frame_t
     {
         D3D12_CPU_DESCRIPTOR_HANDLE RenderTarget = {};
@@ -47,6 +55,7 @@ private:
             pBackBuffer = nullptr;
         }
 
+        DX12Frame_t() {}
         DX12Frame_t(DX12Frame_t const&) = delete;
         DX12Frame_t& operator=(DX12Frame_t const&) = delete;
 
@@ -78,6 +87,13 @@ private:
         }
     };
 
+    struct heap_t
+    {
+       D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle;
+       D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle;
+       int64_t id;
+    };
+	
     // Variables
     bool _Hooked;
     bool _WindowsHooked;
@@ -95,19 +111,13 @@ private:
     // Functions
     DX12_Hook();
 
-    struct heap_t
-    {
-       D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle;
-       D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle;
-       int64_t id;
-    };
-	
     heap_t get_free_texture_heap();
     bool release_texture_heap(int64_t heap_id);
 
     ID3D12CommandQueue* _FindCommandQueueFromSwapChain(IDXGISwapChain* pSwapChain);
 
     void _ResetRenderState();
+    void _ResetStatesOnly();
     void _PrepareForOverlay(IDXGISwapChain* pSwapChain, ID3D12CommandQueue* pCommandQueue);
 
     // Hook to render functions
