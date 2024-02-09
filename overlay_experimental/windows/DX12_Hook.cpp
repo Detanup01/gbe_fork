@@ -182,8 +182,10 @@ void DX12_Hook::_PrepareForOverlay(IDXGISwapChain* pSwapChain, ID3D12CommandQueu
     {
         // UINT bufferIndex = pSwapChain3->GetCurrentBackBufferIndex();
         pDevice = nullptr;
-        if (pSwapChain3->GetDevice(IID_PPV_ARGS(&pDevice)) != S_OK)
+        if (pSwapChain3->GetDevice(IID_PPV_ARGS(&pDevice)) != S_OK) {
+            pSwapChain3->Release();
             return;
+        }
 
         UINT bufferCount = sc_desc.BufferCount;
 
@@ -217,9 +219,9 @@ void DX12_Hook::_PrepareForOverlay(IDXGISwapChain* pSwapChain, ID3D12CommandQueu
             desc.NodeMask = 1;
             if (pDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&pRtvDescHeap)) != S_OK)
             {
+                pSrvDescHeap->Release();
                 pDevice->Release();
                 pSwapChain3->Release();
-                pSrvDescHeap->Release();
                 return;
             }
         

@@ -1181,7 +1181,8 @@ void Steam_Overlay::OverlayProc()
                         bool achieved = x.achieved;
                         bool hidden = x.hidden && !achieved;
 
-                        if (x.icon.expired()) {
+                        if (x.icon.expired() && x.icon_load_trials) {
+                            --x.icon_load_trials;
                             std::string file_path = Local_Storage::get_game_settings_path() + x.icon_name;
                             unsigned long long file_size = file_size_(file_path);
                             if (!file_size) {
@@ -1192,10 +1193,12 @@ void Steam_Overlay::OverlayProc()
                                 std::string img = Local_Storage::load_image_resized(file_path, "", settings->overlay_appearance.icon_size);
                                 if (img.length() > 0) {
                                     if (_renderer) x.icon = _renderer->CreateImageResource((void*)img.c_str(), settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size);
+                                    if (!x.icon.expired()) x.icon_load_trials = Overlay_Achievement::ICON_LOAD_MAX_TRIALS;
                                 }
                             }
                         }
-                        if (x.icon_gray.expired()) {
+                        if (x.icon_gray.expired() && x.icon_gray_load_trials) {
+                            --x.icon_gray_load_trials;
                             std::string file_path = Local_Storage::get_game_settings_path() + x.icon_gray_name;
                             unsigned long long file_size = file_size_(file_path);
                             if (!file_size) {
@@ -1206,6 +1209,7 @@ void Steam_Overlay::OverlayProc()
                                 std::string img = Local_Storage::load_image_resized(file_path, "", settings->overlay_appearance.icon_size);
                                 if (img.length() > 0) {
                                     if (_renderer) x.icon_gray = _renderer->CreateImageResource((void*)img.c_str(), settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size);
+                                    if (!x.icon_gray.expired()) x.icon_gray_load_trials = Overlay_Achievement::ICON_LOAD_MAX_TRIALS;
                                 }
                             }
                         }
