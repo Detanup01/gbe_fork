@@ -180,7 +180,7 @@ void DX12_Hook::_PrepareForOverlay(IDXGISwapChain* pSwapChain, ID3D12CommandQueu
 
     if (!_Initialized)
     {
-        UINT bufferIndex = pSwapChain3->GetCurrentBackBufferIndex();
+        // UINT bufferIndex = pSwapChain3->GetCurrentBackBufferIndex();
         pDevice = nullptr;
         if (pSwapChain3->GetDevice(IID_PPV_ARGS(&pDevice)) != S_OK)
             return;
