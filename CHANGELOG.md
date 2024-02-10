@@ -1,3 +1,10 @@
+## 2024/2/10
+
+* a hacky fix for the overlay on directx12, currently very slow when loading images
+* limit the attempts to load the achievements images, to prevent a never ending FPS drop
+
+---
+
 ## 2024/2/7
 
 * new persistent modes for cold client loader, mode 2 is a more accurate simulation and allows launching apps from their .exe
