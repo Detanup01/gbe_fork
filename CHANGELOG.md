@@ -1,3 +1,9 @@
+## 2024/2/13
+
+* cold client loader: validate the PE signature before attempting to detect arch
+
+---
+
 ## 2024/2/10
 
 * a hacky fix for the overlay on directx12, currently very slow when loading images

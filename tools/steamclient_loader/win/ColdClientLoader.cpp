@@ -58,8 +58,7 @@ std::wstring get_ini_value(LPCWSTR section, LPCWSTR key, LPCWSTR default_val = N
 
 static std::vector<uint8_t> get_pe_header(const std::wstring &filepath)
 {
-    try
-    {
+    try {
         std::ifstream file(filepath, std::ios::binary);
         if (!file.is_open()) throw;
 
@@ -71,9 +70,8 @@ static std::vector<uint8_t> get_pe_header(const std::wstring &filepath)
         file.close();
 
         return data;
-    }
-    catch(const std::exception& e)
-    {
+    } catch(const std::exception& e) {
+        dbg_log::write(std::string("Error reading PE header: ") + e.what());
         return std::vector<uint8_t>();
     }
 }

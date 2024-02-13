@@ -24,19 +24,23 @@ PIMAGE_NT_HEADERS pe_helpers::get_nt_header(HMODULE hModule)
 {
     // https://dev.to/wireless90/validating-the-pe-signature-my-av-flagged-me-windows-pe-internals-2m5o/
     PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)(char*)hModule;
+    if (dosHeader->e_magic != 0x5A4D) { // "MZ" 
+        return nullptr;
+    }
     LONG newExeHeaderOffset = dosHeader->e_lfanew;
-
     return (PIMAGE_NT_HEADERS)((char*)hModule + newExeHeaderOffset);
 }
 
 PIMAGE_FILE_HEADER pe_helpers::get_file_header(HMODULE hModule)
 {
-    return &get_nt_header(hModule)->FileHeader;
+    auto nt_header = get_nt_header(hModule);
+    return nt_header ? &nt_header->FileHeader : nullptr;
 }
 
 PIMAGE_OPTIONAL_HEADER pe_helpers::get_optional_header(HMODULE hModule)
 {
-    return &get_nt_header(hModule)->OptionalHeader;
+    auto nt_header = get_nt_header(hModule);
+    return nt_header ? &nt_header->OptionalHeader : nullptr;
 }
 
 uint8_t* pe_helpers::search_memory(uint8_t *mem, size_t size, const std::string &search_patt)
@@ -234,12 +238,14 @@ std::string pe_helpers::get_err_string(DWORD code)
 
 bool pe_helpers::is_module_64(HMODULE hModule)
 {
-    return (get_file_header(hModule)->Machine == IMAGE_FILE_MACHINE_AMD64);
+    auto file_header = get_file_header(hModule);
+    return file_header ? (file_header->Machine == IMAGE_FILE_MACHINE_AMD64) : false;
 }
 
 bool pe_helpers::is_module_32(HMODULE hModule)
 {
-    return (get_file_header(hModule)->Machine == IMAGE_FILE_MACHINE_I386);
+    auto file_header = get_file_header(hModule);
+    return file_header ? (file_header->Machine == IMAGE_FILE_MACHINE_I386) : false;
 }
 
 pe_helpers::SectionHeadersResult pe_helpers::get_section_headers(HMODULE hModule)
