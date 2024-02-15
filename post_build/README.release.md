@@ -149,7 +149,7 @@ If you want to disable all the networking functionality of the emu, you can crea
 
 ---
 
-## Custom Broadcast IPOs:
+## Custom Broadcast IPs:
 If you want to set custom ips (or domains) which the emulator will send broadcast packets to, make a list of them, one on each line in: `Goldberg SteamEmu Saves\settings\custom_broadcasts.txt`  
 
 If the custom IPs/domains are specific for one game only you can put the `custom_broadcasts.txt` in the `steam_settings` folder.  
