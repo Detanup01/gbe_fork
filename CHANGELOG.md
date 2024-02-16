@@ -1,4 +1,5 @@
 * generate_emu_config: allow setting the steam id of apps/games owners from an external file `top_owners_ids.txt` beside the script
+* generate_emu_config: add the id of the currently logged-in user to the internal list of apps/games owners
 * generate_emu_config: always use the directory of the script for: the data `backup` folder, the `login_temp` folder, the `my_login.txt` file
 
 ---
