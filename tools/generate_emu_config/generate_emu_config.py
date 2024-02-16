@@ -19,6 +19,7 @@ import urllib.error
 import threading
 import queue
 import shutil
+import traceback
 
 def get_exe_dir():
     # https://pyinstaller.org/en/stable/runtime-information.html
@@ -347,11 +348,9 @@ TOP_OWNER_IDS = list(dict.fromkeys([
 ]))
 
 def generate_achievement_stats(client, game_id : int, output_directory, backup_directory) -> list[dict]:
-    steam_id_list = TOP_OWNER_IDS.copy()
-    steam_id_list.add(client.steam_id)
     stats_schema_found = None
     print(f"finding achievements stats...")
-    for id in steam_id_list:
+    for id in TOP_OWNER_IDS:
         #print(f"finding achievements stats using account ID {id}...")
         out = get_stats_schema(client, game_id, id)
         if out is not None and len(out.body.schema) > 0:
@@ -905,5 +904,9 @@ if __name__ == "__main__":
     except Exception as e:
         print("Unexpected error:")
         print(e)
+        print("-----------------------")
+        for line in traceback.format_exception(e):
+            print(line)
+        print("-----------------------")
         sys.exit(1)
 
