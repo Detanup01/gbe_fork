@@ -20,6 +20,12 @@ import threading
 import queue
 import shutil
 
+def get_exe_dir():
+    # https://pyinstaller.org/en/stable/runtime-information.html
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        return os.path.dirname(sys.executable)
+    else:
+        return os.path.dirname(os.path.abspath(__file__))
 
 def get_stats_schema(client, game_id, owner_id):
     message = MsgProto(EMsg.ClientGetUserStats)
@@ -84,7 +90,7 @@ def download_achievement_images(game_id : int, image_names : set[str], output_fo
 #    const usr_id = usr_link[usr_link.length - 1]
 #    console.log(usr_id)
 #}
-TOP_OWNER_IDS = set([
+TOP_OWNER_IDS = list(dict.fromkeys([
     76561198213148949,
     76561198108581917,
     76561198028121353,
@@ -338,7 +344,7 @@ TOP_OWNER_IDS = set([
     # 76561198017054389,
     # 76561198031129658,
     # 76561198020728639,
-])
+]))
 
 def generate_achievement_stats(client, game_id : int, output_directory, backup_directory) -> list[dict]:
     steam_id_list = TOP_OWNER_IDS.copy()
@@ -510,7 +516,6 @@ def help():
     print(" -nd:     not making predeterminated disable files")
     print("\nAll switches are optional except app id, at least 1 app id must be provided\n")
 
-
 def main():
     USERNAME = ""
     PASSWORD = ""
@@ -525,7 +530,7 @@ def main():
     GENERATE_ACHIEVEMENT_WATCHER_SCHEMAS = False
     CLEANUP_BEFORE_GENERATING = False
     ANON_LOGIN = False
-
+    
     prompt_for_unavailable = True
 
     if len(sys.argv) < 2:
@@ -567,13 +572,15 @@ def main():
         sys.exit(1)
 
     client = SteamClient()
-    if not os.path.exists("login_temp"):
-        os.makedirs("login_temp")
-    client.set_credential_location("login_temp")
+    login_tmp_folder = os.path.join(get_exe_dir(), "login_temp")
+    if not os.path.exists(login_tmp_folder):
+        os.makedirs(login_tmp_folder)
+    client.set_credential_location(login_tmp_folder)
 
-    if not ANON_LOGIN and os.path.isfile("my_login.txt"):
+    my_login_file = os.path.join(get_exe_dir(), "my_login.txt")
+    if not ANON_LOGIN and os.path.isfile(my_login_file):
         filedata = ['']
-        with open("my_login.txt", "r") as f:
+        with open(my_login_file, "r", encoding="utf-8") as f:
             filedata = f.readlines()
         filedata = list(map(lambda s: s.strip().replace("\r", "").replace("\n", ""), filedata))
         filedata = [l for l in filedata if l]
@@ -593,11 +600,12 @@ def main():
     else:
         result = client.login(USERNAME, password=PASSWORD)
         auth_code, two_factor_code = None, None
-        while result in (EResult.AccountLogonDenied, EResult.InvalidLoginAuthCode,
-                            EResult.AccountLoginDeniedNeedTwoFactor, EResult.TwoFactorCodeMismatch,
-                            EResult.TryAnotherCM, EResult.ServiceUnavailable,
-                            EResult.InvalidPassword,
-                            ):
+        while result in (
+            EResult.AccountLogonDenied, EResult.InvalidLoginAuthCode,
+            EResult.AccountLoginDeniedNeedTwoFactor, EResult.TwoFactorCodeMismatch,
+            EResult.TryAnotherCM, EResult.ServiceUnavailable,
+            EResult.InvalidPassword,
+            ):
 
             if result == EResult.InvalidPassword:
                 print("invalid password, the password you set is wrong.")
@@ -626,6 +634,21 @@ def main():
 
             result = client.login(USERNAME, PASSWORD, None, auth_code, two_factor_code)
 
+    # read and prepend top_owners_ids.txt
+    top_owners_file = os.path.join(get_exe_dir(), "top_owners_ids.txt")
+    if os.path.isfile(top_owners_file):
+        filedata = ['']
+        with open(top_owners_file, "r", encoding="utf-8") as f:
+            filedata = f.readlines()
+        filedata = list(map(lambda s: s.replace("\r", "").replace("\n", "").strip(), filedata))
+        filedata = [l for l in filedata if len(l) > 1 and l.isdecimal()]
+        all_ids = list(map(lambda s: int(s), filedata))
+        TOP_OWNER_IDS[:0] = all_ids
+            
+    # prepend user account ID as a top owner
+    if not ANON_LOGIN:
+        TOP_OWNER_IDS.insert(0, client.steam_id.as_64)
+
     for appid in appids:
         print(f"********* generating info for app id {appid} *********")
         raw = client.get_product_info(apps=[appid])
@@ -644,7 +667,7 @@ def main():
             app_name = f"Unknown_Steam_app_{appid}" # we need this for later use in the Achievement Watcher
             print(f"[X] Couldn't find app name on store")
 
-        root_backup_dir = "backup"
+        root_backup_dir = os.path.join(get_exe_dir(), "backup")
         backup_dir = os.path.join(root_backup_dir, f"{appid}")
         if not os.path.exists(backup_dir):
             os.makedirs(backup_dir)

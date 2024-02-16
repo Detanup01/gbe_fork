@@ -1,3 +1,8 @@
+* generate_emu_config: allow setting the steam id of apps/games owners from an external file `top_owners_ids.txt` beside the script
+* generate_emu_config: always use the directory of the script for: the data `backup` folder, the `login_temp` folder, the `my_login.txt` file
+
+---
+
 ## 2024/2/13
 
 * cold client loader: validate the PE signature before attempting to detect arch
