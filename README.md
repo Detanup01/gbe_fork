@@ -1,18 +1,9 @@
-# **This is a fork**
-
-This is a fork of https://gitlab.com/Mr_Goldberg/goldberg_emulator  
----
-
-> ## This fork is not a takover, not a resurreccion of the original project, and not a replacement.  
-> ## This is a fork with personal edits/changes, don't take it seriously.
+## **This is a fork** of https://gitlab.com/Mr_Goldberg/goldberg_emulator  
 
 ---
 
-## Purpose
-> ## More or less similar to any fork of any project, changing, removing, or adding things based on a personal point of view.  
-
-> ## The main purpose of this fork is providing a working base for others to use.  
-> ## You are encouraged to fork this and build upon it, but not rely on it as the only source.
+> ### This fork is not a takover, not a resurreccion of the original project, and not a replacement.  
+> ### This is just a fork with personal edits/changes, don't take it seriously.
 
 ---
 
@@ -21,10 +12,9 @@ You can find the original README here: [README.md](./z_original_repo_files/READM
 
 ---
 
-## How to use the emu
+# How to use the emu
+You can find helper guides, scripts, and tools here in this wiki: https://github.com/otavepto/gbe_fork/wiki/Emu-helpers  
 You can find instructions here: [README.release.md](./post_build/README.release.md)  
-
-You can helper scripts and tools mentioned here in this wiki: https://github.com/otavepto/gbe_fork/wiki/Emu-helpers
 
 ---
 ---
