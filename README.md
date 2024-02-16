@@ -1,9 +1,16 @@
-## **This is a fork** of https://gitlab.com/Mr_Goldberg/goldberg_emulator  
+## :large_orange_diamond: **This is a fork**
+Fork of https://gitlab.com/Mr_Goldberg/goldberg_emulator  
 
 ---
 
-> ### This fork is not a takover, not a resurreccion of the original project, and not a replacement.  
-> ### This is just a fork with personal edits/changes, don't take it seriously.
+:red_circle:  
+
+> This fork is not a takover, not a resurreccion of the original project, and not a replacement.  
+> This is just a personal fork, don't take it seriously.  
+> You are highly encouraged to fork/clone it and do whatever you want with it.  
+> Don't depend on it as the main source.
+
+:red_circle:
 
 ---
 
@@ -21,8 +28,21 @@ You can find instructions here: [README.release.md](./post_build/README.release.
 
 <br/>
 
-# **One time setup**
-## On Windows:
+# **Compiling**
+## One time setup
+### **Cloning the repo**
+
+ Clone the repo and its submodules **recursively**
+ ```bash
+ git clone --recurse-submodules https://github.com/otavepto/gbe_fork.git
+ ```
+
+ It is adviseable to always checkout submodules every now and then, to make sure they're up to date
+ ```bash
+ git submodule update --recursive --remote
+ ```
+
+### For Windows:
 * You need Windows 10 or 8.1
 * Install `Visual Studio 2022 Community`: https://visualstudio.microsoft.com/vs/community/
    * Select the Workload `Desktop development with C++`
@@ -34,7 +54,8 @@ You can find instructions here: [README.release.md](./post_build/README.release.
    ```bash
    python --version
    ```
-## On Linux:
+
+### For Linux:
 
 * Ubuntu 22.04 LTS: https://ubuntu.com/download/desktop
 * Python 3.10 or above
@@ -47,23 +68,7 @@ You can find instructions here: [README.release.md](./post_build/README.release.
    python3.10 --version
    ```
 
----
-
-# **Cloning the repo**
-
- Clone the repo and its submodules **recursively**
- ```bash
- git clone --recurse-submodules https://github.com/otavepto/gbe_fork.git
- ```
-
- It is adviseable to always checkout submodules every now and then, to make sure they're up to date
- ```bash
- git submodule update --recursive --remote
- ```
-
----
-
-# **Building dependencies**
+### **Building dependencies**
 
 These are third party libraries needed to build the emu later, they are linked with the emu during its build process.  
 You don't need to build these dependencies every time, they rarely get updated.  
@@ -71,7 +76,7 @@ The only times you'll need to rebuild them is either when their separete build f
 
 <br/>
 
-## On Windows:
+#### On Windows:
 Open CMD in the repo folder, then run the batch script
 ```batch
 build_win_deps.bat
@@ -84,7 +89,7 @@ Additional arguments you can pass to this script:
 * `-j <n>`: build with `<n>` parallel jobs, by default 70% of the available threads
 * `-verbose`: output compiler/linker commands used by `CMAKE`
 
-## On Linux:
+#### On Linux:
 Open bash terminal in the repo folder, then run the bash script
 ```bash
 sudo ./build_linux_deps.sh
@@ -101,8 +106,8 @@ Additional arguments you can pass to this script:
 
 ---
 
-# **Building the emu**
-## On Windows:
+## **Building the emu**
+### On Windows:
 Open CMD in the repo folder, then run the batch script
 ```batch
 build_win.bat release
@@ -161,7 +166,7 @@ Arguments you can pass to this script:
 
 <br/>
 
-## On Linux:
+### On Linux:
 Open bash terminal in the repo folder, then run the bash script (without sudo)
 ```bash
 ./build_linux.sh release
@@ -209,10 +214,10 @@ Arguments you can pass to this script:
 
 ---
 
-# **Building the tool `generate_emu_config`**
+## **Building the tool `generate_emu_config`**
 Navigate to the folder `tools/generate_emu_config/` then  
 
-## On Windows:
+### On Windows:
 Open CMD then:
 1. Create python virtual environemnt and install the required packages/dependencies
    ```batch
@@ -225,7 +230,7 @@ Open CMD then:
 
 This will build the tool inside `bin\win`
 
-## On Linux:
+### On Linux:
 Open bash terminal then:
 1. Create python virtual environemnt and install the required packages/dependencies
    ```batch
@@ -245,12 +250,12 @@ This will build the tool inside `bin/linux`
 
 ---
 
-# **Using Github CI as a builder**
+## **Using Github CI as a builder**
 
 This is really slow and mainly intended for the CI Workflow scripts, but you can use it as another outlet if you can't build locally.  
 **You have to fork the repo first**.
 
-## Initial setup
+### Initial setup
 In your fork, open the `Settings` tab from the top, then:
 * From the left side panel select `Actions` -> `General`
 * In the section `Actions permissions` select `Allow all actions and reusable workflows`
@@ -272,14 +277,14 @@ This will cause a problem if at any time the third-party dependencies were updat
 
 <br/>
 
-## Manual trigger
+### Manual trigger
 1. Go to the `Actions` tab in your fork
 2. Select one of the Workflow scripts from the left side panel, for example `Emu build (Windows)`
 3. On the top-right, select `Run workflow` -> select the desired branch (for example `dev`) -> press the button `Run workflow`
 4. When it's done, a package (called build artifact) will be created for that workflow.  
    Make sure to select the workflow again to view its history, then select the last run at the very top to view its artifacts
 
-## Automatic triggers
+### Automatic triggers
 The following are special branches, pushing any code to them will trigger the build Workflow scripts:  
 * `ci-build-emu-linux*`: any branch matching this pattern will trigger the **Linux** build of the emu  
   Example of a valid branch name:  
@@ -311,10 +316,10 @@ The following are special branches, pushing any code to them will trigger the bu
 
 ---
 
-# ***(Optional)* Packaging**
+## ***(Optional)* Packaging**
 This step is intended for Github CI/Workflow, but you can create a package locally.
 
-## On Windows:
+### On Windows:
 Open CMD in the repos's directory, then run this script
 ```batch
 package_win.bat <build_folder>
@@ -322,7 +327,7 @@ package_win.bat <build_folder>
 `build_folder` is any folder inside `build\win`, for example: `release`  
 The above example will create a `.7z` archive inside `build\package\win\release`
 
-## On Linux:
+### On Linux:
 Open bash terminal in the repos's directory, then run this script
 Run this script
 ```batch
