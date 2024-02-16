@@ -732,8 +732,11 @@ def main():
             achievements = generate_achievement_stats(client, appid, emu_settings_dir, backup_dir)
 
             if "supported_languages" in game_info_common:
-                langs : dict[str, dict] = game_info_common["supported_languages"]
-                languages = [lang for lang in langs if langs[lang].get("supported", "").lower() == "true"]
+                langs: dict[str, dict] = game_info_common["supported_languages"]
+                for lang in langs:
+                    support: str = langs[lang].get("supported", "").lower()
+                    if support == "true" or support == "1":
+                        languages.append(lang)
 
         if languages:
             with open(os.path.join(emu_settings_dir, "supported_languages.txt"), 'wt', encoding='utf-8') as f:
