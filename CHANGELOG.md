@@ -1,4 +1,4 @@
-* generate_emu_config: allow setting the steam id of apps/games owners from an external file `top_owners_ids.txt` beside the script
+* generate_emu_config: allow setting the steam id of apps/games owners from an external file `top_owners_ids.txt` beside the script, suggested by **[M4RCK5]**
 * generate_emu_config: support the new format for `supported_languages`
 * generate_emu_config: always use the directory of the script for: the data `backup` folder, the `login_temp` folder, the `my_login.txt` file
 
