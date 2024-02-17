@@ -3,7 +3,7 @@
 
 venv=".env-linux"
 out_dir="bin/linux"
-build_temp_dir="build/tmp/linux"
+build_temp_dir="bin/tmp/linux"
 tool_name="generate_emu_config"
 main_file="generate_emu_config.py"
 
@@ -22,6 +22,8 @@ pyinstaller "$main_file" --distpath "$out_dir" -y --clean --onedir --name "$tool
 cp -f "steam_default_icon_locked.jpg" "$out_dir/$tool_name"
 cp -f "steam_default_icon_unlocked.jpg" "$out_dir/$tool_name"
 cp -f "README.md" "$out_dir/$tool_name"
+echo "Check the README" > "$out_dir/$tool_name/my_login.EXAMPLE.txt"
+echo "Check the README" > "$out_dir/$tool_name/top_owners_ids.EXAMPLE.txt"
 
 echo;
 echo =============

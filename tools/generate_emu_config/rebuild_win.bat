@@ -5,7 +5,7 @@ pushd "%~dp0"
 
 set "venv=.env-win"
 set "out_dir=bin\win"
-set "build_temp_dir=build\tmp\win"
+set "build_temp_dir=bin\tmp\win"
 set "tool_name=generate_emu_config"
 set "icon_file=icon\Froyoshark-Enkel-Steam.ico"
 set "main_file=generate_emu_config.py"
@@ -43,6 +43,8 @@ for /f "usebackq tokens=* delims=" %%A in ('"%main_file%"') do (
 copy /y "steam_default_icon_locked.jpg" "%out_dir%\%tool_name%\"
 copy /y "steam_default_icon_unlocked.jpg" "%out_dir%\%tool_name%\"
 copy /y "README.md" "%out_dir%\%tool_name%\"
+1>"%out_dir%\%tool_name%\my_login.EXAMPLE.txt" echo Check the README
+1>"%out_dir%\%tool_name%\top_owners_ids.EXAMPLE.txt" echo Check the README
 
 echo:
 echo =============

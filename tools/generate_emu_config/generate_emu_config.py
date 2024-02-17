@@ -581,7 +581,7 @@ def main():
         filedata = ['']
         with open(my_login_file, "r", encoding="utf-8") as f:
             filedata = f.readlines()
-        filedata = list(map(lambda s: s.strip().replace("\r", "").replace("\n", ""), filedata))
+        filedata = list(map(lambda s: s.replace("\r", "").replace("\n", ""), filedata))
         filedata = [l for l in filedata if l]
         if len(filedata) == 2:
             USERNAME = filedata[0]

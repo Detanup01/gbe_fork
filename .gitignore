@@ -14,7 +14,6 @@ tools/generate_emu_config/.env*/
 tools/generate_emu_config/.vscode/
 tools/generate_emu_config/backup/
 tools/generate_emu_config/bin/
-tools/generate_emu_config/build/
 tools/generate_emu_config/login_temp/
 tools/generate_emu_config/output/
 tools/generate_emu_config/**/__pycache__/
