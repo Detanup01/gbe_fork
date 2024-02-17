@@ -250,8 +250,10 @@ static void run_at_startup()
     }
 #if defined(STEAM_WIN32)
     WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != NO_ERROR)
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != NO_ERROR) {
+        PRINT_DEBUG("Networking WSAStartup error\n");
         return;
+    }
 
     for (int i = 0; i < 10; ++i) {
         //hack: the game Full Mojo Rampage calls WSACleanup on startup so we call WSAStartup a few times so it doesn't get deallocated.
@@ -841,7 +843,7 @@ Networking::Networking(CSteamID id, uint32 appid, uint16 port, std::set<IP_PORT>
         PRINT_DEBUG("TCP: could not initialize %i\n", get_last_error());
     }
 
-    if (curl_global_init(CURL_GLOBAL_NOTHING) == 0) {
+    if (curl_global_init(CURL_GLOBAL_ALL) == 0) {
         PRINT_DEBUG("CURL successful\n");
     } else {
         PRINT_DEBUG("CURL: could not initialize\n");

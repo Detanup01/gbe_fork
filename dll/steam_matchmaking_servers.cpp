@@ -340,7 +340,7 @@ void Steam_Matchmaking_Servers::server_details(Gameserver *g, gameserveritem_t *
 {
     long long latency = 10;
     if (!(g->ip() < 0) && !(g->query_port() < 0)) {
-        unsigned char ip[4];
+        unsigned char ip[4]{};
         char newip[24];
         ip[0] = g->ip() & 0xFF;
         ip[1] = (g->ip() >> 8) & 0xFF;
@@ -348,10 +348,11 @@ void Steam_Matchmaking_Servers::server_details(Gameserver *g, gameserveritem_t *
         ip[3] = (g->ip() >> 24) & 0xFF;
         snprintf(newip, sizeof(newip), "%d.%d.%d.%d", ip[3], ip[2], ip[1], ip[0]);
 
+        PRINT_DEBUG("  server_details() connecting to ssq server on  %s:%u\n", newip, g->query_port());
         SSQ_SERVER *ssq = ssq_server_new(newip, g->query_port());
         if (ssq != NULL && ssq_server_eok(ssq)) {
-            ssq_server_timeout(ssq, SSQ_TIMEOUT_RECV, 1200);
-            ssq_server_timeout(ssq, SSQ_TIMEOUT_SEND, 1200);
+            PRINT_DEBUG("  server_details() ssq server connection ok\n");
+            ssq_server_timeout(ssq, (SSQ_TIMEOUT_SELECTOR)(SSQ_TIMEOUT_RECV | SSQ_TIMEOUT_SEND), 1200);
 
             std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
             A2S_INFO *ssq_a2s_info = ssq_info(ssq);
@@ -359,6 +360,7 @@ void Steam_Matchmaking_Servers::server_details(Gameserver *g, gameserveritem_t *
             latency = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
 
             if (ssq_server_eok(ssq)) {
+                PRINT_DEBUG("  server_details() ssq server info ok\n");
                 if (ssq_info_has_steamid(ssq_a2s_info)) g->set_id(ssq_a2s_info->steamid);
                 g->set_game_description(ssq_a2s_info->game);
                 g->set_mod_dir(ssq_a2s_info->folder);
@@ -387,9 +389,13 @@ void Steam_Matchmaking_Servers::server_details(Gameserver *g, gameserveritem_t *
                 if (ssq_info_has_gameid(ssq_a2s_info)) g->set_appid(ssq_a2s_info->gameid);
                 else g->set_appid(ssq_a2s_info->id);
                 g->set_offline(false);
+            } else {
+                PRINT_DEBUG("  server_details() ssq server info failed: %s\n", ssq_server_emsg(ssq));
             }
 
             if (ssq_a2s_info != NULL) ssq_info_free(ssq_a2s_info);
+        } else {
+            PRINT_DEBUG("  server_details() ssq server connection failed: %s\n", (ssq ? ssq_server_emsg(ssq) : "NULL instance"));
         }
 
         if (ssq != NULL) ssq_server_free(ssq);
@@ -422,16 +428,18 @@ void Steam_Matchmaking_Servers::server_details(Gameserver *g, gameserveritem_t *
     server->m_nServerVersion = g->version();
     server->SetName(g->server_name().c_str());
     server->m_steamID = CSteamID((uint64)g->id());
-    PRINT_DEBUG("Steam_Matchmaking_Servers::server_details " "%" PRIu64 "\n", g->id());
+    PRINT_DEBUG("  Steam_Matchmaking_Servers::server_details " "%" PRIu64 "\n", g->id());
 
-    strncpy(server->m_szGameTags, g->tags().c_str(), k_cbMaxGameServerTags - 1);
-    server->m_szGameTags[k_cbMaxGameServerTags - 1] = 0;
+    memset(server->m_szGameTags, 0, sizeof(server->m_szGameTags));
+    g->tags().copy(server->m_szGameTags, sizeof(server->m_szGameTags) - 1);
+    // strncpy(server->m_szGameTags, g->tags().c_str(), k_cbMaxGameServerTags - 1);
+    // server->m_szGameTags[k_cbMaxGameServerTags - 1] = 0;
 }
 
 void Steam_Matchmaking_Servers::server_details_players(Gameserver *g, Steam_Matchmaking_Servers_Direct_IP_Request *r)
 {
     if (!(g->ip() < 0) && !(g->query_port() < 0)) {
-        unsigned char ip[4];
+        unsigned char ip[4]{};
         char newip[24];
         ip[0] = g->ip() & 0xFF;
         ip[1] = (g->ip() >> 8) & 0xFF;
@@ -439,33 +447,39 @@ void Steam_Matchmaking_Servers::server_details_players(Gameserver *g, Steam_Matc
         ip[3] = (g->ip() >> 24) & 0xFF;
         snprintf(newip, sizeof(newip), "%d.%d.%d.%d", ip[3], ip[2], ip[1], ip[0]);
 
+        PRINT_DEBUG("  server_details_players() connecting to ssq server on  %s:%u\n", newip, g->query_port());
         SSQ_SERVER *ssq = ssq_server_new(newip, g->query_port());
         if (ssq != NULL && ssq_server_eok(ssq)) {
-            ssq_server_timeout(ssq, SSQ_TIMEOUT_RECV, 1200);
-            ssq_server_timeout(ssq, SSQ_TIMEOUT_SEND, 1200);
+            PRINT_DEBUG("  server_details_players() ssq server connection ok\n");
+            ssq_server_timeout(ssq, (SSQ_TIMEOUT_SELECTOR)(SSQ_TIMEOUT_RECV | SSQ_TIMEOUT_SEND), 1200);
 
-            uint8_t ssq_a2s_player_count;
+            uint8_t ssq_a2s_player_count = 0;
             A2S_PLAYER *ssq_a2s_player = ssq_player(ssq, &ssq_a2s_player_count);
 
             if (ssq_server_eok(ssq)) {
+                PRINT_DEBUG("  server_details_players() ssq server players ok\n");
                 for (int i = 0; i < ssq_a2s_player_count; i++) {
                     r->players_response->AddPlayerToList(ssq_a2s_player[i].name, ssq_a2s_player[i].score, ssq_a2s_player[i].duration);
                 }
+            } else {
+                PRINT_DEBUG("  server_details_players() ssq server players failed: %s\n", ssq_server_emsg(ssq));
             }
 
             if (ssq_a2s_player != NULL) ssq_player_free(ssq_a2s_player, ssq_a2s_player_count);
+        } else {
+            PRINT_DEBUG("  server_details_players() ssq server connection failed: %s\n", (ssq ? ssq_server_emsg(ssq) : "NULL instance"));
         }
 
         if (ssq != NULL) ssq_server_free(ssq);
     }
 
-    PRINT_DEBUG("Steam_Matchmaking_Servers::server_details_players " "%" PRIu64 "\n", g->id());
+    PRINT_DEBUG("  Steam_Matchmaking_Servers::server_details_players " "%" PRIu64 "\n", g->id());
 }
 
 void Steam_Matchmaking_Servers::server_details_rules(Gameserver *g, Steam_Matchmaking_Servers_Direct_IP_Request *r)
 {
     if (!(g->ip() < 0) && !(g->query_port() < 0)) {
-        unsigned char ip[4];
+        unsigned char ip[4]{};
         char newip[24];
         ip[0] = g->ip() & 0xFF;
         ip[1] = (g->ip() >> 8) & 0xFF;
@@ -473,27 +487,32 @@ void Steam_Matchmaking_Servers::server_details_rules(Gameserver *g, Steam_Matchm
         ip[3] = (g->ip() >> 24) & 0xFF;
         snprintf(newip, sizeof(newip), "%d.%d.%d.%d", ip[3], ip[2], ip[1], ip[0]);
 
+        PRINT_DEBUG("  server_details_rules() connecting to ssq server on %s:%u\n", newip, g->query_port());
         SSQ_SERVER *ssq = ssq_server_new(newip, g->query_port());
         if (ssq != NULL && ssq_server_eok(ssq)) {
-            ssq_server_timeout(ssq, SSQ_TIMEOUT_RECV, 1200);
-            ssq_server_timeout(ssq, SSQ_TIMEOUT_SEND, 1200);
+            ssq_server_timeout(ssq, (SSQ_TIMEOUT_SELECTOR)(SSQ_TIMEOUT_RECV | SSQ_TIMEOUT_SEND), 1200);
 
-            uint16_t ssq_a2s_rules_count;
+            uint16_t ssq_a2s_rules_count = 0;
             A2S_RULES *ssq_a2s_rules = ssq_rules(ssq, &ssq_a2s_rules_count);
 
             if (ssq_server_eok(ssq)) {
+                PRINT_DEBUG("  server_details_rules() ssq server rules ok\n");
                 for (int i = 0; i < ssq_a2s_rules_count; i++) {
                     r->rules_response->RulesResponded(ssq_a2s_rules[i].name, ssq_a2s_rules[i].value);
                 }
+            } else {
+                PRINT_DEBUG("  server_details_rules() ssq server rules failed: %s\n", ssq_server_emsg(ssq));
             }
 
             if (ssq_a2s_rules != NULL) ssq_rules_free(ssq_a2s_rules, ssq_a2s_rules_count);
+        } else {
+            PRINT_DEBUG("  server_details_rules() ssq server connection failed: %s\n", (ssq ? ssq_server_emsg(ssq) : "NULL instance"));
         }
 
         if (ssq != NULL) ssq_server_free(ssq);
     }
 
-    PRINT_DEBUG("Steam_Matchmaking_Servers::server_details_rules " "%" PRIu64 "\n", g->id());
+    PRINT_DEBUG("  Steam_Matchmaking_Servers::server_details_rules " "%" PRIu64 "\n", g->id());
 }
 
 // Get details on a given server in the list, you can get the valid range of index
@@ -597,7 +616,8 @@ void Steam_Matchmaking_Servers::RefreshServer( HServerListRequest hRequest, int 
  
 static HServerQuery new_server_query()
 {
-    static int a;
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    static int a = 0;
     ++a;
     if (!a) ++a;
     return a;
