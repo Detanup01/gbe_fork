@@ -63,6 +63,8 @@ def add_input_bindings(group, bindings, force_binding=None, keymap=keymap_digita
                                                 bindings[action_name].append(binding)
                                         else:
                                             bindings[action_name] = [binding]
+                                    else:
+                                        print(f"[X] missing keymap for {i}")
     return bindings
 
 
