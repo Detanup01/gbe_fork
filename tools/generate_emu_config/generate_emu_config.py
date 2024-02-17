@@ -787,6 +787,7 @@ def main():
         if "config" in game_info:
             if "steamcontrollerconfigdetails" in game_info["config"]:
                 controller_details = game_info["config"]["steamcontrollerconfigdetails"]
+                print('downloading controller vdf files')
                 for id in controller_details:
                     details = controller_details[id]
                     controller_type = ""
@@ -795,10 +796,12 @@ def main():
                         controller_type = details["controller_type"]
                     if "enabled_branches" in details:
                         enabled_branches = details["enabled_branches"]
-                    print(id, controller_type)
-                    out_vdf = download_published_file(client, int(id), os.path.join(backup_dir, controller_type + str(id)))
+                    print(f'downloading controller data, file id = {id}, controller type = {controller_type}')
+
+                    out_vdf = download_published_file(client, int(id), os.path.join(backup_dir, f'{controller_type}-{str(id)}'))
                     if out_vdf is not None and not config_generated:
-                        if (controller_type in ["controller_xbox360", "controller_xboxone"] and (("default" in enabled_branches) or ("public" in enabled_branches))):
+                        if (controller_type in ["controller_xbox360", "controller_xboxone", "controller_steamcontroller_gordon"] and (("default" in enabled_branches) or ("public" in enabled_branches))):
+                            print(f'controller type is supported')
                             parse_controller_vdf.generate_controller_config(out_vdf.decode('utf-8'), os.path.join(emu_settings_dir, "controller"))
                             config_generated = True
             if "steamcontrollertouchconfigdetails" in game_info["config"]:

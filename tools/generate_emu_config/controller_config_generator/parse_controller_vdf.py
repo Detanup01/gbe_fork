@@ -19,8 +19,8 @@ keymap_digital = {
     "right_bumper": "RBUMPER",
     "button_back_left": "A",
     "button_back_right": "X",
-    "": "",
-    "": "",
+    "button_back_left_upper": "B",
+    "button_back_right_upper": "Y",
     "": "",
     "": "",
     "": "",
@@ -33,24 +33,36 @@ def add_input_bindings(group, bindings, force_binding=None, keymap=keymap_digita
             for fp in group["inputs"][i][act]:
                 for bd in group["inputs"][i][act][fp]:
                     for bbd in group["inputs"][i][act][fp][bd]:
-                        if bbd == 'binding':
+                        if bbd.lower() == 'binding':
                             x = group["inputs"][i][act][fp][bd].get_all_for(bbd)
                             for ss in x:
                                 st = ss.split()
-                                if st[0] == 'game_action':
+                                supported_binding = False
+                                if st[0].lower() == 'game_action':
+                                    supported_binding = True
                                     if st[2][-1] == ",":
                                         action_name = st[2][:-1]
                                     else:
                                         action_name = st[2][:]
+                                elif st[0].lower() == 'xinput_button':
+                                    supported_binding = True
+                                    if st[1][-1] == ",":
+                                        action_name = st[1][:-1]
+                                    else:
+                                        action_name = st[1][:]
+                                
+                                if supported_binding:    
                                     if force_binding is None:
-                                        binding = keymap[i.lower()]
+                                        binding = keymap.get(i.lower(), None)
                                     else:
                                         binding = force_binding
-                                    if action_name in bindings:
-                                        if binding not in bindings[action_name]:
-                                            bindings[action_name].append(binding)
-                                    else:
-                                        bindings[action_name] = [binding]
+                                    
+                                    if binding:
+                                        if action_name in bindings:
+                                            if binding not in bindings[action_name]:
+                                                bindings[action_name].append(binding)
+                                        else:
+                                            bindings[action_name] = [binding]
     return bindings
 
 
@@ -74,29 +86,29 @@ def generate_controller_config(controller_vdf, config_dir):
     all_bindings = {}
     for p in presets:
         name = p["name"]
-        if name not in action_list:
+        if (name not in action_list) and name.lower() != 'default':
             continue
         group_bindings = p["group_source_bindings"]
         bindings = {}
         for number in group_bindings:
             s = group_bindings[number].split()
-            if s[1] != "active":
+            if s[1].lower() != "active":
                 continue
 
             #print(s)
-            if s[0] in ["switch", "button_diamond", "dpad"]:
+            if s[0].lower() in ["switch", "button_diamond", "dpad"]:
                 group = groups_byid[number]
                 #print(group)
                 bindings = add_input_bindings(group, bindings)
 
-            if s[0] in ["left_trigger", "right_trigger"]:
+            if s[0].lower() in ["left_trigger", "right_trigger"]:
                 group = groups_byid[number]
-                if group["mode"] == "trigger":
+                if group["mode"].lower() == "trigger":
                     for g in group:
-                        if g == "gameactions":
+                        if g.lower() == "gameactions":
                             #print(group)
                             action_name = group["gameactions"][name]
-                            if s[0] == "left_trigger":
+                            if s[0].lower() == "left_trigger":
                                 binding = "LTRIGGER"
                             else:
                                 binding = "RTRIGGER"
@@ -105,8 +117,8 @@ def generate_controller_config(controller_vdf, config_dir):
                                     bindings[action_name].insert(0, binding)
                             else:
                                 bindings[action_name] = [binding + "=trigger"]
-                        if g == "inputs":
-                            if s[0] == "left_trigger":
+                        if g.lower() == "inputs":
+                            if s[0].lower() == "left_trigger":
                                 binding = "DLTRIGGER"
                             else:
                                 binding = "DRTRIGGER"
@@ -114,18 +126,19 @@ def generate_controller_config(controller_vdf, config_dir):
 
                 else:
                     print("unhandled trigger mode", group["mode"])
-            if s[0] in ["joystick", "right_joystick", "dpad"]:
+                
+            if s[0].lower() in ["joystick", "right_joystick", "dpad"]:
                 group = groups_byid[number]
-                if group["mode"] == "joystick_move":
+                if group["mode"].lower() == "joystick_move":
                     for g in group:
-                        if g == "gameactions":
+                        if g.lower() == "gameactions":
                             #print(group)
                             action_name = group["gameactions"][name]
-                            if s[0] == "joystick":
+                            if s[0].lower() == "joystick":
                                 binding = "LJOY"
-                            elif s[0] == "right_joystick":
+                            elif s[0].lower() == "right_joystick":
                                 binding = "RJOY"
-                            elif s[0] == "dpad":
+                            elif s[0].lower() == "dpad":
                                 binding = "DPAD"
                             else:
                                 print("could not handle", s[0])
@@ -134,22 +147,22 @@ def generate_controller_config(controller_vdf, config_dir):
                                     bindings[action_name].insert(0, binding)
                             else:
                                 bindings[action_name] = [binding + "=joystick_move"]
-                        if g == "inputs":
-                            if s[0] == "joystick":
+                        if g.lower() == "inputs":
+                            if s[0].lower() == "joystick":
                                 binding = "LSTICK"
                             else:
                                 binding = "RSTICK"
                             bindings = add_input_bindings(group, bindings, binding)
 
-                elif group["mode"] == "dpad":
-                    if s[0] == "joystick":
+                elif group["mode"].lower() == "dpad":
+                    if s[0].lower() == "joystick":
                         binding_map = {"dpad_north":"DLJOYUP", "dpad_south": "DLJOYDOWN", "dpad_west": "DLJOYLEFT", "dpad_east": "DLJOYRIGHT", "click": "LSTICK"}
                         bindings = add_input_bindings(group, bindings, keymap=binding_map)
-                    elif s[0] == "right_joystick":
+                    elif s[0].lower() == "right_joystick":
                         binding_map = {"dpad_north":"DRJOYUP", "dpad_south": "DRJOYDOWN", "dpad_west": "DRJOYLEFT", "dpad_east": "DRJOYRIGHT", "click": "RSTICK"}
                         bindings = add_input_bindings(group, bindings, keymap=binding_map)
                     else:
-                        if s[0] != "dpad":
+                        if s[0].lower() != "dpad":
                             print("no pad", s[0])
                 else:
                     print("unhandled joy mode", group["mode"])
