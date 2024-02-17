@@ -45,6 +45,7 @@ copy /y "steam_default_icon_unlocked.jpg" "%out_dir%\%tool_name%\"
 copy /y "README.md" "%out_dir%\%tool_name%\"
 1>"%out_dir%\%tool_name%\my_login.EXAMPLE.txt" echo Check the README
 1>"%out_dir%\%tool_name%\top_owners_ids.EXAMPLE.txt" echo Check the README
+1>>"%out_dir%\%tool_name%\top_owners_ids.EXAMPLE.txt" echo You can use a website like: https://steamladder.com/ladder/games/
 
 echo:
 echo =============

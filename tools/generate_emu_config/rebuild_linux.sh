@@ -24,6 +24,7 @@ cp -f "steam_default_icon_unlocked.jpg" "$out_dir/$tool_name"
 cp -f "README.md" "$out_dir/$tool_name"
 echo "Check the README" > "$out_dir/$tool_name/my_login.EXAMPLE.txt"
 echo "Check the README" > "$out_dir/$tool_name/top_owners_ids.EXAMPLE.txt"
+echo "You can use a website like: https://steamladder.com/ladder/games/"  >> "$out_dir/$tool_name/top_owners_ids.EXAMPLE.txt"
 
 echo;
 echo =============
