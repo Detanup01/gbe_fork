@@ -44,6 +44,7 @@ To get all available options, run the tool without any arguments.
 * `-clean`: attempt to cleanup/remove the output folder from previous runs, if it exists, before downloading the data again
 * `-anon`: use anonymous account to login to Steam instead of using your own,  
   note that this account has very limited access to data, and it can't download most info
+* `-nd`: don't generate `disable_xxx.txt` files
 
 ### Example
 
