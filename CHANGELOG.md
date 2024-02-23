@@ -1,3 +1,5 @@
+# 2024/2/23
+
 * more accurately handle and download steamhttp requests in multi-threaded manner:
   - hanlde `GET`, `HEAD`, `POST`
   - properly set `POST` data (raw and parameterized), and `GET` parameters
@@ -10,7 +12,7 @@
 
 ---
 
-# 2424/2/20
+# 2024/2/20
 
 * generate_emu_config: allow setting the steam id of apps/games owners from an external file `top_owners_ids.txt` beside the script, suggested by **[M4RCK5]**
 * generate_emu_config: support the new format for `supported_languages`
