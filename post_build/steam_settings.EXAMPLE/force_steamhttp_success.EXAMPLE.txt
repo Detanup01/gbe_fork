@@ -1,0 +1,1 @@
+Rename this file to: force_steamhttp_success.txt to force the API Steam_HTTP::SendHTTPRequest() to always succeed.

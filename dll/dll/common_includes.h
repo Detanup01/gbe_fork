@@ -192,6 +192,7 @@ constexpr const char * const whitespaces = " \t\r\n";
             auto __prnt_dbg_micro = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::micro>>(__prnt_dbg_duration);                  \
             auto __prnt_dbg_ms = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::milli>>(__prnt_dbg_duration);                     \
             auto __prnt_dbg_f = fopen(dbg_log_file.c_str(), "a");                                                                                            \
+            if (!__prnt_dbg_f) break;                                                                                                                        \
             fprintf(__prnt_dbg_f, "[%llu ms, %llu us] [tid %lu] " a, __prnt_dbg_ms.count(), __prnt_dbg_micro.count(), GetCurrentThreadId(), __VA_ARGS__);    \
             fclose(__prnt_dbg_f);                                                                                                                            \
             WSASetLastError(0);                                                                                                                              \
@@ -204,6 +205,7 @@ constexpr const char * const whitespaces = " \t\r\n";
             auto __prnt_dbg_micro = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::micro>>(__prnt_dbg_duration);                   \
             auto __prnt_dbg_ms = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::milli>>(__prnt_dbg_duration);                      \
             auto __prnt_dbg_f = fopen(dbg_log_file.c_str(), "a");                                                                                             \
+            if (!__prnt_dbg_f) break;                                                                                                                         \
             fprintf(__prnt_dbg_f, "[%llu ms, %llu us] [tid %ld] " a, __prnt_dbg_ms.count(), __prnt_dbg_micro.count(), syscall(SYS_gettid), ##__VA_ARGS__);    \
             fclose(__prnt_dbg_f);                                                                                                                             \
         } while (0)

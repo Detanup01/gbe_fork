@@ -300,7 +300,8 @@ public:
     std::string local_save;
 
     //steamhttp external download support
-    bool http_online = false;
+    bool download_steamhttp_requests = false;
+    bool force_steamhttp_success = false;
 
     //steam deck flag
     bool steam_deck = false;

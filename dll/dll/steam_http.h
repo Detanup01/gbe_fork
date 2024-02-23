@@ -22,9 +22,30 @@
 
 struct Steam_Http_Request {
 	HTTPRequestHandle handle;
+	EHTTPMethod request_method;
+	std::string url{};
+	uint64 timeout_sec = 60;
+	bool requires_valid_ssl = false;
+
+	constexpr const static char STEAM_DEFAULT_USER_AGENT[] = "Valve/Steam HTTP Client 1.0";
+	// GET or POST parameter value on the request
+	std::map<std::string, std::string> headers{
+		{"User-Agent", STEAM_DEFAULT_USER_AGENT},
+	};
+
+	// GET or POST parameter value on the request
+	std::map<std::string, std::string> get_or_post_params{};
+	std::string post_raw{};
+
 	uint64 context_value;
 
-	std::string response;
+	// target local filepath to save
+	std::string target_filepath{};
+
+	// TODO
+	HTTPCookieContainerHandle cookie_container_handle = INVALID_HTTPCOOKIE_HANDLE;
+
+	std::string response{};
 };
 
 class Steam_HTTP :
@@ -40,6 +61,8 @@ public ISteamHTTP
 	std::vector<Steam_Http_Request> requests;
 
 	Steam_Http_Request *get_request(HTTPRequestHandle hRequest);
+	void online_http_request(Steam_Http_Request *request, SteamAPICall_t *pCallHandle);
+
 public:
 	Steam_HTTP(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks);
 

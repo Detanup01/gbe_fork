@@ -474,6 +474,32 @@ Check the exaxmple file in the `steam_settings` folder
 
 ---
 
+## Donwload Steam HTTP(S) requests:
+
+You can make the emu attempt to download external http(s) requests madia via `Steam_HTTP::SendHTTPRequest()`, by creating a file called `download_steamhttp_requests.txt` inside the `steam_settings` folder.  
+All the responses will be downloaded and saved locally inside: `steam_settings\http\`.  
+
+Make sure to:  
+* Add the file `disable_lan_only.txt`  
+* Remove the file `disable_networking.txt` if it's present  
+
+Note that this will **not** work if the app is using native/OS web APIs, also support for this feature is very basic and will fail in many cases.  
+
+You can use this feature, for eaxmple, to know which requests are made by the app.  
+It's up to you afterwards to specify the correct responses for these requests by changing the content of the files inside `steam_settings\http\`.  
+
+Check the exaxmple file in the `steam_settings` folder
+
+---
+
+## Force the API `Steam_HTTP::SendHTTPRequest()` to always succeed:
+
+You can force the API `Steam_HTTP::SendHTTPRequest()` to always report success, by creating a file called `force_steamhttp_success.txt` inside the `steam_settings` folder.  
+
+Check the exaxmple file in the `steam_settings` folder
+
+---
+
 ## More configurations:
 Due to the various changes and additions, it became tedious to document everything,  
 so it is recommended to check each example file in the `steam_settings` folder.

@@ -1,0 +1,4 @@
+Rename this to: download_steamhttp_requests.txt to attempt to download external HTTP(S) requests made via Steam_HTTP::SendHTTPRequest().
+Make sure to:
+* Add the file `disable_lan_only.txt`
+* Remove the file `disable_networking.txt` if it's present

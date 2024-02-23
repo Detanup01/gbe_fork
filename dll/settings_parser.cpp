@@ -1194,7 +1194,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
 
     bool steam_offline_mode = false;
     bool steam_deck_mode = false;
-    bool steamhttp_online_mode = false;
+    bool download_steamhttp_requests = false;
+    bool force_steamhttp_success = false;
     bool disable_networking = false;
     bool disable_overlay = false;
     bool disable_overlay_achievement_notification = false;
@@ -1225,8 +1226,10 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
                 steam_offline_mode = true;
             } else if (p == "steam_deck.txt") {
                 steam_deck_mode = true;
-            } else if (p == "http_online.txt") {
-                steamhttp_online_mode = true;
+            } else if (p == "download_steamhttp_requests.txt") {
+                download_steamhttp_requests = true;
+            } else if (p == "force_steamhttp_success.txt") {
+                force_steamhttp_success = true;
             } else if (p == "disable_networking.txt") {
                 disable_networking = true;
             } else if (p == "disable_overlay.txt") {
@@ -1315,8 +1318,10 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     settings_server->supported_languages = supported_languages;
     settings_client->steam_deck = steam_deck_mode;
     settings_server->steam_deck = steam_deck_mode;
-    settings_client->http_online = steamhttp_online_mode;
-    settings_server->http_online = steamhttp_online_mode;
+    settings_client->download_steamhttp_requests = download_steamhttp_requests;
+    settings_server->download_steamhttp_requests = download_steamhttp_requests;
+    settings_client->force_steamhttp_success = force_steamhttp_success;
+    settings_server->force_steamhttp_success = force_steamhttp_success;
     settings_client->achievement_bypass = achievement_bypass;
     settings_server->achievement_bypass = achievement_bypass;
     settings_client->is_beta_branch = is_beta_branch;

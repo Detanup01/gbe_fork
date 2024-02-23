@@ -1,3 +1,15 @@
+* more accurately handle and download steamhttp requests in multi-threaded manner:
+  - hanlde `GET`, `HEAD`, `POST`
+  - properly set `POST` data (raw and parameterized), and `GET` parameters
+  - properly set request headers
+
+* new config file `force_steamhttp_success.txt` in `steam_settings` folder, which forces the API `Steam_HTTP::SendHTTPRequest()` to always succeed
+
+---
+* **[breaking]** deprecated the config file `http_online.txt` in favor of the new one `download_steamhttp_requests.txt`
+
+---
+
 # 2424/2/20
 
 * generate_emu_config: allow setting the steam id of apps/games owners from an external file `top_owners_ids.txt` beside the script, suggested by **[M4RCK5]**

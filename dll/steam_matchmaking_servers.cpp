@@ -702,7 +702,7 @@ void Steam_Matchmaking_Servers::RunCallbacks()
         }
     }
 
-    PRINT_DEBUG("Steam_Matchmaking_Servers::REQUESTS %zu gs: %zu\n", requests.size(), gameservers.size());
+    PRINT_DEBUG("Steam_Matchmaking_Servers::RunCallbacks requests count = %zu, servers count = %zu\n", requests.size(), gameservers.size());
 
     for (auto &r : requests) {
         if (r.cancelled || r.completed) continue;
