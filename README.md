@@ -5,10 +5,10 @@ Fork of https://gitlab.com/Mr_Goldberg/goldberg_emulator
 
 :red_circle:  
 
-> This fork is not a takover, not a resurreccion of the original project, and not a replacement.  
-> This is just a personal fork, don't take it seriously.  
-> You are highly encouraged to fork/clone it and do whatever you want with it.  
-> Don't depend on it as the main source.
+**This fork is not a takover, not a resurreccion of the original project, and not a replacement.**  
+**This is just a personal fork, don't take it seriously.**  
+**You are highly encouraged to fork/clone it and do whatever you want with it.**  
+**Don't depend on it as the main source.**
 
 :red_circle:
 
