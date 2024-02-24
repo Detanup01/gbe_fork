@@ -21,8 +21,11 @@ import queue
 import shutil
 import traceback
 
-def get_exe_dir():
+def get_exe_dir(relative = False):
     # https://pyinstaller.org/en/stable/runtime-information.html
+    if relative:
+        return os.path.curdir
+
     if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
         return os.path.dirname(sys.executable)
     else:
@@ -513,6 +516,7 @@ def help():
     print(" -clean:  delete any folder/file with the same name as the output before generating any data")
     print(" -anon:   login as an anonymous account, these have very limited access and cannot get all app details")
     print(" -nd:     not making predeterminated disable files")
+    print(" -reldir: generate temp files/folders, and expect input files, relative to the current working directory")
     print("\nAll switches are optional except app id, at least 1 app id must be provided\n")
 
 def main():
@@ -529,6 +533,7 @@ def main():
     GENERATE_ACHIEVEMENT_WATCHER_SCHEMAS = False
     CLEANUP_BEFORE_GENERATING = False
     ANON_LOGIN = False
+    RELATIVE_DIR = False
     
     prompt_for_unavailable = True
 
@@ -560,6 +565,8 @@ def main():
             ANON_LOGIN = True
         elif f'{appid}'.lower() == '-nd':
             NODISABLE = True
+        elif f'{appid}'.lower() == '-reldir':
+            RELATIVE_DIR = True
         else:
             print(f'[X] invalid switch: {appid}')
             help()
@@ -571,12 +578,12 @@ def main():
         sys.exit(1)
 
     client = SteamClient()
-    login_tmp_folder = os.path.join(get_exe_dir(), "login_temp")
+    login_tmp_folder = os.path.join(get_exe_dir(RELATIVE_DIR), "login_temp")
     if not os.path.exists(login_tmp_folder):
         os.makedirs(login_tmp_folder)
     client.set_credential_location(login_tmp_folder)
 
-    my_login_file = os.path.join(get_exe_dir(), "my_login.txt")
+    my_login_file = os.path.join(get_exe_dir(RELATIVE_DIR), "my_login.txt")
     if not ANON_LOGIN and os.path.isfile(my_login_file):
         filedata = ['']
         with open(my_login_file, "r", encoding="utf-8") as f:
@@ -634,7 +641,7 @@ def main():
             result = client.login(USERNAME, PASSWORD, None, auth_code, two_factor_code)
 
     # read and prepend top_owners_ids.txt
-    top_owners_file = os.path.join(get_exe_dir(), "top_owners_ids.txt")
+    top_owners_file = os.path.join(get_exe_dir(RELATIVE_DIR), "top_owners_ids.txt")
     if os.path.isfile(top_owners_file):
         filedata = ['']
         with open(top_owners_file, "r", encoding="utf-8") as f:
@@ -666,7 +673,7 @@ def main():
             app_name = f"Unknown_Steam_app_{appid}" # we need this for later use in the Achievement Watcher
             print(f"[X] Couldn't find app name on store")
 
-        root_backup_dir = os.path.join(get_exe_dir(), "backup")
+        root_backup_dir = os.path.join(get_exe_dir(RELATIVE_DIR), "backup")
         backup_dir = os.path.join(root_backup_dir, f"{appid}")
         if not os.path.exists(backup_dir):
             os.makedirs(backup_dir)

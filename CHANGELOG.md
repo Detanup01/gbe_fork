@@ -1,3 +1,5 @@
+* added a new flag `-reldir` for the `generate_emu_config` script which allows it to generate temp files/folders, and expect input files, relative to the current workig directory, suggested by **[ImportTaste]**
+
 # 2024/2/24
 
 * build the python scripts `achievements_gen.py` and `parse_controller_vdf.py` into binary form using `pyinstaller` for a more user friendly usage, suggested by **[DogancanYr]**

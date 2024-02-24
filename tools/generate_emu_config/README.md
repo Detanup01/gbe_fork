@@ -11,6 +11,11 @@ generate_emu_config [options] <app id 1> [app id 2] [app id 3] ...
 
 ---
 
+### Available **\[options\]**
+To get all available options, run the tool without any arguments.  
+
+---
+
 ### Login:
 You'll be asked each time to enter your username and password.  
 You can also place a file called `my_login.txt` beside this tool with the following data:  
@@ -29,28 +34,6 @@ By default, it has a built-in list of public users IDs, and you can extend this 
 When you login with a non-anonymous account, its ID will be added to the top of the list.  
 
 <br/>
-
-## Available **\[options\]**
-To get all available options, run the tool without any arguments.  
-* `app id 1`: the ID of the first app, this is mandatory
-* `app id <n>`: multiple/more app IDs to grab the data for
-* `-shots`: download some additional screenshots for the app/game
-* `-thumbs`: download some additional thumbnails for the app/game
-* `-vid`: attempt to download the trailer/promo video
-* `-imgs`: download common Steam imgaes, this includes a poster, Steam generated background, icon(s), and some other assets
-* `-name`: output the data in a folder with the name of the app/game, illegal characters are removed
-* `-cdx`: generate `.ini` file to be used by CODEX emu, this is quite outdated and needs manual editiong
-* `-aw`: generate all schemas for Achievement Watcher by xan105: https://github.com/xan105/Achievement-Watcher  
-* `-clean`: attempt to cleanup/remove the output folder from previous runs, if it exists, before downloading the data again
-* `-anon`: use anonymous account to login to Steam instead of using your own,  
-  note that this account has very limited access to data, and it can't download most info
-* `-nd`: don't generate `disable_xxx.txt` files
-
-### Example
-
-```bash
-generate_emu_config -shots -thumbs -vid -imgs -name -cdx -aw -clean 421050 480
-```  
 
 ---
 
