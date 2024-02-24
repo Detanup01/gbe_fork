@@ -7,7 +7,6 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 build_dir="bin/linux"
-tool_name="generate_emu_config"
 out_dir="bin/package/linux"
 script_dir=$( cd -- "$( dirname -- "${0}" )" &> /dev/null && pwd )
 
@@ -21,6 +20,9 @@ apt install tar -y || exit 1
 
 mkdir -p "$script_dir/$out_dir"
 
-archive_file="$script_dir/$out_dir/$tool_name-linux.tar.gz"
+archive_file="$script_dir/$out_dir/generate_emu_config-linux.tar.gz"
 [[ -f "$archive_file" ]] && rm -f "$archive_file"
-tar -C "$script_dir/$build_dir" -c -j -vf "$archive_file" "$tool_name"
+
+pushd "$script_dir/$build_dir"
+tar -c -j -vf "$archive_file" $(ls -d */)
+popd

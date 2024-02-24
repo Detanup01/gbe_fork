@@ -3,6 +3,7 @@
 import vdf
 import sys
 import os
+import traceback
 
 keymap_digital = {
     "button_a": "A",
@@ -180,17 +181,44 @@ def generate_controller_config(controller_vdf, config_dir):
             os.makedirs(config_dir)
 
         for k in all_bindings:
-            with open(os.path.join(config_dir, k + '.txt'), 'w') as f:
+            with open(os.path.join(config_dir, f'{k}.txt'), 'w', encoding='utf-8') as f:
                 for b in all_bindings[k]:
-                    f.write(b + "=" + ','.join(all_bindings[k][b]) + "\n")
+                    f.write(f"{b}=" + ','.join(all_bindings[k][b]) + "\n")
 
+
+def help():
+    exe_name = os.path.basename(sys.argv[0])
+    print(f"\nUsage: {exe_name} xbox_controller_config.vdf [xbox360_controller_config.vdf] ... ")
+    print(f" Example: {exe_name} xbox_controller_config.vdf")
+    print(f" Example: {exe_name} xboxone_controller.vdf xbox360_controller.vdf")
+    print("\nAt least 1 .vdf file must be provided\n")
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print("format: {} xbox_controller_config.vdf".format(sys.argv[0]))
-        exit(0)
+        help()
+        sys.exit(1)
 
-    with open(sys.argv[1], 'rb') as f:
-        t = f.read().decode('utf-8')
-
-    generate_controller_config(t, os.path.join(sys.argv[1] + "_config/steam_settings", "controller"))
+    for vdf_file in sys.argv[1:]:
+        try:
+            print(f"parsing controller file '{vdf_file}'")
+            t = ''
+            with open(vdf_file, 'rb') as f:
+                t = f.read().decode('utf-8')
+            if t:
+                filename = os.path.basename(vdf_file)
+                outdir = os.path.join(f"{filename}_config", "steam_settings", "controller")
+                print(f"output dir: '{outdir}'")
+                generate_controller_config(t, outdir)
+            else:
+                print("[X] couldn't load file", file=sys.stderr)
+            
+            print('**********************************\n')
+        except Exception as e:
+            print("Unexpected error:")
+            print(e)
+            print("-----------------------")
+            for line in traceback.format_exception(e):
+                print(line)
+            print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n')
+        
+    sys.exit(0)

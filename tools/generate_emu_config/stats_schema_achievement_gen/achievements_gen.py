@@ -3,6 +3,7 @@ import sys
 import os
 import json
 import copy
+import traceback
 
 
 STAT_TYPE_INT = '1'
@@ -115,13 +116,39 @@ def generate_stats_achievements(
     return (achievements_out, stats_out,
             copy_default_unlocked_img, copy_default_locked_img)
 
+def help():
+    exe_name = os.path.basename(sys.argv[0])
+    print(f"\nUsage: {exe_name} UserGameStatsSchema_480.bin [UserGameStatsSchema_2370.bin] ... ")
+    print(f" Example: {exe_name} UserGameStatsSchema_480.bin")
+    print(f" Example: {exe_name} UserGameStatsSchema_480.bin UserGameStatsSchema_2370.bin")
+    print("\nAt least 1 .bin file must be provided\n")
+
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print("format: {} UserGameStatsSchema_480.bin".format(sys.argv[0]))
-        exit(0)
+        help()
+        sys.exit(1)
 
-
-    with open(sys.argv[1], 'rb') as f:
-        schema = f.read()
-
-    generate_stats_achievements(schema, os.path.join("{}".format( "{}_output".format(sys.argv[1])), "steam_settings"))
+    for bin_file in sys.argv[1:]:
+        try:
+            print(f"parsing schema file '{bin_file}'")
+            schema: bytes = b''
+            with open(bin_file, 'rb') as f:
+                schema = f.read()
+            if schema:
+                filename = os.path.basename(bin_file)
+                outdir = os.path.join(f"{filename}_output", "steam_settings")
+                print(f"output dir: '{outdir}'")
+                generate_stats_achievements(schema, outdir)
+            else:
+                print("[X] couldn't load file", file=sys.stderr)
+            
+            print('**********************************\n')
+        except Exception as e:
+            print("Unexpected error:")
+            print(e)
+            print("-----------------------")
+            for line in traceback.format_exception(e):
+                print(line)
+            print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n')
+        
+    sys.exit(0)

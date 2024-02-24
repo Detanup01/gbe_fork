@@ -1,3 +1,8 @@
+# 2024/2/24
+
+* build the python scripts `achievements_gen.py` and `parse_controller_vdf.py` into binary form using `pyinstaller` for a more user friendly usage, suggested by **[DogancanYr]**
+* change the scripts `achievements_gen.py` and `parse_controller_vdf.py` to accept multiple files
+
 # 2024/2/23
 
 * more accurately handle and download steamhttp requests in multi-threaded manner:

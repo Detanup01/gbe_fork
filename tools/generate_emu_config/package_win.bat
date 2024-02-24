@@ -6,7 +6,6 @@ pushd "%~dp0"
 set /a last_code=0
 
 set "build_dir=bin\win"
-set "tool_name=generate_emu_config"
 set "out_dir=bin\package\win"
 
 set /a MEM_PERCENT=90
@@ -34,16 +33,16 @@ if not exist "%build_dir%" (
 
 mkdir "%out_dir%"
 
-set "archive_file=%out_dir%\%tool_name%-win.7z"
+set "archive_file=%out_dir%\generate_emu_config-win.7z"
 if exist "%archive_file%" (
-    del /f /q "%archive_file%"
+  del /f /q "%archive_file%"
 )
 
-"%packager%" a "%archive_file%" ".\%build_dir%\%tool_name%" -t7z -slp -ssw -mx -myx -mmemuse=p%MEM_PERCENT% -ms=on -mqs=off -mf=on -mhc+ -mhe- -m0=LZMA2:d=%DICT_SIZE_MB%m -mmt=%THREAD_COUNT% -mmtf+ -mtm- -mtc- -mta- -mtr+
+"%packager%" a "%archive_file%" ".\%build_dir%\*" -t7z -slp -ssw -mx -myx -mmemuse=p%MEM_PERCENT% -ms=on -mqs=off -mf=on -mhc+ -mhe- -m0=LZMA2:d=%DICT_SIZE_MB%m -mmt=%THREAD_COUNT% -mmtf+ -mtm- -mtc- -mta- -mtr+
 
 
 :script_end
 popd
 endlocal & (
-    exit /b %last_code%
+  exit /b %last_code%
 )
