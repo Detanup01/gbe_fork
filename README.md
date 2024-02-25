@@ -20,6 +20,10 @@ You can find the original README here: [README.md](./z_original_repo_files/READM
 ---
 
 # How to use the emu
+**Always generate the interfaces file using the `find_interfaces` tool.**  
+**Generate the proper app configuration using the `generate_emu_config` tool.**  
+**If it doesn't work try the `ColdClientLoader` setup.**  
+
 You can find helper guides, scripts, and tools here in this wiki: https://github.com/otavepto/gbe_fork/wiki/Emu-helpers  
 You can find instructions here: [README.release.md](./post_build/README.release.md)  
 
