@@ -33,111 +33,7 @@ Steam_Matchmaking_Servers::Steam_Matchmaking_Servers(class Settings *settings, c
     this->network->setCallback(CALLBACK_ID_GAMESERVER, (uint64) 0, &network_callback, this);
 }
 
-static int server_list_request;
-
-HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, ISteamMatchmakingServerListResponse *pRequestServersResponse, EMatchMakingType type)
-{
-    PRINT_DEBUG("Steam_Matchmaking_Servers::RequestServerList %u %p, %i\n", iApp, pRequestServersResponse, (int)type);
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    ++server_list_request;
-    HServerListRequest id = (char *)0 + server_list_request; // (char *)0 silences the compiler warning
-
-    struct Steam_Matchmaking_Request request;
-    request.appid = iApp;
-    request.callbacks = pRequestServersResponse;
-    request.old_callbacks = NULL;
-    request.cancelled = false;
-    request.completed = false;
-    request.type = type;
-    request.id = id;
-    requests.push_back(request);
-    PRINT_DEBUG("Steam_Matchmaking_Servers::request id: %p\n", id);
-
-    if (type == eLANServer) return id;
-
-    if (type == eFriendsServer) {
-        for (auto &g : gameservers_friends) {
-            if (g.source_id != settings->get_local_steam_id().ConvertToUint64()) {
-                Gameserver server;
-                server.set_ip(g.ip);
-                server.set_port(g.port);
-                server.set_query_port(g.port);
-                server.set_appid(iApp);
-
-                struct Steam_Matchmaking_Servers_Gameserver g2;
-                g2.last_recv = std::chrono::high_resolution_clock::now();
-                g2.server = server;
-                g2.type = type;
-                gameservers.push_back(g2);
-                PRINT_DEBUG("  eFriendsServer SERVER ADDED\n");
-            }
-        }
-        return id;
-    }
-
-    std::string file_path;
-    unsigned long long file_size;
-    if (type == eInternetServer || type == eSpectatorServer) {
-        file_path = Local_Storage::get_user_appdata_path() + "/7/" + Local_Storage::remote_storage_folder + "/serverbrowser.txt";
-        file_size = file_size_(file_path);
-    } else if (type == eFavoritesServer) {
-        file_path = Local_Storage::get_user_appdata_path() + "/7/" + Local_Storage::remote_storage_folder + "/serverbrowser_favorites.txt";
-        file_size = file_size_(file_path);
-    } else if (type == eHistoryServer) {
-        file_path = Local_Storage::get_user_appdata_path() + "/7/" + Local_Storage::remote_storage_folder + "/serverbrowser_history.txt";
-        file_size = file_size_(file_path);
-    }
-
-    PRINT_DEBUG("Steam_Matchmaking_Servers::Server list file '%s' [%llu bytes]\n", file_path.c_str(), file_size);
-    std::string list;
-    if (file_size) {
-        list.resize(file_size);
-        Local_Storage::get_file_data(file_path, (char *)list.data(), file_size, 0);
-    } else {
-        return id;
-    }
-
-    std::istringstream list_ss (list);
-    std::string list_ip;
-    while (std::getline(list_ss, list_ip)) {
-        if (list_ip.length() < 0) continue;
-
-        unsigned int byte4, byte3, byte2, byte1, byte0;
-        uint32 ip_int;
-        uint16 port_int;
-        char newip[24];
-        if (sscanf(list_ip.c_str(), "%u.%u.%u.%u:%u", &byte3, &byte2, &byte1, &byte0, &byte4) == 5) {
-            ip_int = (byte3 << 24) + (byte2 << 16) + (byte1 << 8) + byte0;
-            port_int = byte4;
-
-            unsigned char ip_tmp[4];
-            ip_tmp[0] = ip_int & 0xFF;
-            ip_tmp[1] = (ip_int >> 8) & 0xFF;
-            ip_tmp[2] = (ip_int >> 16) & 0xFF;
-            ip_tmp[3] = (ip_int >> 24) & 0xFF;
-            snprintf(newip, sizeof(newip), "%d.%d.%d.%d", ip_tmp[3], ip_tmp[2], ip_tmp[1], ip_tmp[0]);
-        } else {
-            continue;
-        }
-
-        Gameserver server;
-        server.set_ip(ip_int);
-        server.set_port(port_int);
-        server.set_query_port(port_int);
-        server.set_appid(iApp);
-
-        struct Steam_Matchmaking_Servers_Gameserver g;
-        g.last_recv = std::chrono::high_resolution_clock::now();
-        g.server = server;
-        g.type = type;
-        gameservers.push_back(g);
-        PRINT_DEBUG("  SERVER ADDED\n");
-
-        list_ip = "";
-    }
-
-    return id;
-}
+static int server_list_request = 0;
 
 // Request a new list of servers of a particular type.  These calls each correspond to one of the EMatchMakingType values.
 // Each call allocates a new asynchronous request object.
@@ -145,37 +41,55 @@ HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, IS
 HServerListRequest Steam_Matchmaking_Servers::RequestInternetServerList( AppId_t iApp, STEAM_ARRAY_COUNT(nFilters) MatchMakingKeyValuePair_t **ppchFilters, uint32 nFilters, ISteamMatchmakingServerListResponse *pRequestServersResponse )
 {
     PRINT_DEBUG("Steam_Matchmaking_Servers::RequestInternetServerList\n");
-    return RequestServerList(iApp, pRequestServersResponse, eInternetServer);
+    //TODO
+    return RequestLANServerList(iApp, pRequestServersResponse);
 }
 
 HServerListRequest Steam_Matchmaking_Servers::RequestLANServerList( AppId_t iApp, ISteamMatchmakingServerListResponse *pRequestServersResponse )
 {
-    PRINT_DEBUG("Steam_Matchmaking_Servers::RequestLANServerList\n");
-    return RequestServerList(iApp, pRequestServersResponse, eLANServer);
+    PRINT_DEBUG("Steam_Matchmaking_Servers::RequestLANServerList %u\n", iApp);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    ++server_list_request;
+    HServerListRequest id = (char *)0 + server_list_request; // (char *)0 silences the compiler warning
+
+    struct Steam_Matchmaking_Request request{};
+    request.appid = iApp;
+    request.callbacks = pRequestServersResponse;
+    request.old_callbacks = NULL;
+    request.cancelled = false;
+    request.completed = false;
+    request.id = id;
+    requests.push_back(request);
+    PRINT_DEBUG("Steam_Matchmaking_Servers::RequestLANServerList request id: %p\n", id);
+    return id;
 }
 
 HServerListRequest Steam_Matchmaking_Servers::RequestFriendsServerList( AppId_t iApp, STEAM_ARRAY_COUNT(nFilters) MatchMakingKeyValuePair_t **ppchFilters, uint32 nFilters, ISteamMatchmakingServerListResponse *pRequestServersResponse )
 {
     PRINT_DEBUG("Steam_Matchmaking_Servers::RequestFriendsServerList\n");
-    return RequestServerList(iApp, pRequestServersResponse, eFriendsServer);
+    //TODO
+    return RequestLANServerList(iApp, pRequestServersResponse);
 }
 
 HServerListRequest Steam_Matchmaking_Servers::RequestFavoritesServerList( AppId_t iApp, STEAM_ARRAY_COUNT(nFilters) MatchMakingKeyValuePair_t **ppchFilters, uint32 nFilters, ISteamMatchmakingServerListResponse *pRequestServersResponse )
 {
     PRINT_DEBUG("Steam_Matchmaking_Servers::RequestFavoritesServerList\n");
-    return RequestServerList(iApp, pRequestServersResponse, eFavoritesServer);
+    //TODO
+    return RequestLANServerList(iApp, pRequestServersResponse);
 }
 
 HServerListRequest Steam_Matchmaking_Servers::RequestHistoryServerList( AppId_t iApp, STEAM_ARRAY_COUNT(nFilters) MatchMakingKeyValuePair_t **ppchFilters, uint32 nFilters, ISteamMatchmakingServerListResponse *pRequestServersResponse )
 {
     PRINT_DEBUG("Steam_Matchmaking_Servers::RequestHistoryServerList\n");
-    return RequestServerList(iApp, pRequestServersResponse, eHistoryServer);
+    //TODO
+    return RequestLANServerList(iApp, pRequestServersResponse);
 }
 
 HServerListRequest Steam_Matchmaking_Servers::RequestSpectatorServerList( AppId_t iApp, STEAM_ARRAY_COUNT(nFilters) MatchMakingKeyValuePair_t **ppchFilters, uint32 nFilters, ISteamMatchmakingServerListResponse *pRequestServersResponse )
 {
     PRINT_DEBUG("Steam_Matchmaking_Servers::RequestSpectatorServerList\n");
-    return RequestServerList(iApp, pRequestServersResponse, eSpectatorServer);
+    //TODO
+    return RequestLANServerList(iApp, pRequestServersResponse);
 }
 
 void Steam_Matchmaking_Servers::RequestOldServerList(AppId_t iApp, ISteamMatchmakingServerListResponse001 *pRequestServersResponse, EMatchMakingType type)
@@ -197,7 +111,6 @@ void Steam_Matchmaking_Servers::RequestOldServerList(AppId_t iApp, ISteamMatchma
     request.old_callbacks = pRequestServersResponse;
     request.cancelled = false;
     request.completed = false;
-    request.type = type;
     requests.push_back(request);
     requests[requests.size() - 1].id = (void *)type;
 }
@@ -338,85 +251,15 @@ void Steam_Matchmaking_Servers::ReleaseRequest( HServerListRequest hServerListRe
 
 void Steam_Matchmaking_Servers::server_details(Gameserver *g, gameserveritem_t *server)
 {
-    long long latency = 10;
-    if (!(g->ip() < 0) && !(g->query_port() < 0)) {
-        unsigned char ip[4]{};
-        char newip[24];
-        ip[0] = g->ip() & 0xFF;
-        ip[1] = (g->ip() >> 8) & 0xFF;
-        ip[2] = (g->ip() >> 16) & 0xFF;
-        ip[3] = (g->ip() >> 24) & 0xFF;
-        snprintf(newip, sizeof(newip), "%d.%d.%d.%d", ip[3], ip[2], ip[1], ip[0]);
-
-        PRINT_DEBUG("  server_details() connecting to ssq server on  %s:%u\n", newip, g->query_port());
-        SSQ_SERVER *ssq = ssq_server_new(newip, g->query_port());
-        if (ssq != NULL && ssq_server_eok(ssq)) {
-            PRINT_DEBUG("  server_details() ssq server connection ok\n");
-            ssq_server_timeout(ssq, (SSQ_TIMEOUT_SELECTOR)(SSQ_TIMEOUT_RECV | SSQ_TIMEOUT_SEND), 1200);
-
-            std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-            A2S_INFO *ssq_a2s_info = ssq_info(ssq);
-            std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-            latency = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-
-            if (ssq_server_eok(ssq)) {
-                PRINT_DEBUG("  server_details() ssq server info ok\n");
-                if (ssq_info_has_steamid(ssq_a2s_info)) g->set_id(ssq_a2s_info->steamid);
-                g->set_game_description(ssq_a2s_info->game);
-                g->set_mod_dir(ssq_a2s_info->folder);
-                if (ssq_a2s_info->server_type == A2S_SERVER_TYPE_DEDICATED) g->set_dedicated_server(true);
-                else if (ssq_a2s_info->server_type == A2S_SERVER_TYPE_STV_RELAY) g->set_dedicated_server(true);
-                else g->set_dedicated_server(false);
-                g->set_max_player_count(ssq_a2s_info->max_players);
-                g->set_bot_player_count(ssq_a2s_info->bots);
-                g->set_server_name(ssq_a2s_info->name);
-                g->set_map_name(ssq_a2s_info->map);
-                if (ssq_a2s_info->visibility) g->set_password_protected(true);
-                else g->set_password_protected(false);
-                if (ssq_info_has_stv(ssq_a2s_info)) {
-                    g->set_spectator_port(ssq_a2s_info->stv_port);
-                    g->set_spectator_server_name(ssq_a2s_info->stv_name);
-                }
-                //g->set_tags(ssq_a2s_info->keywords);
-                //g->set_gamedata();
-                //g->set_region();
-                g->set_product(ssq_a2s_info->game);
-                if (ssq_a2s_info->vac) g->set_secure(true);
-                else g->set_secure(false);
-                g->set_num_players(ssq_a2s_info->players);
-                g->set_version(std::stoull(ssq_a2s_info->version, NULL, 0));
-                if (ssq_info_has_port(ssq_a2s_info)) g->set_port(ssq_a2s_info->port);
-                if (ssq_info_has_gameid(ssq_a2s_info)) g->set_appid(ssq_a2s_info->gameid);
-                else g->set_appid(ssq_a2s_info->id);
-                g->set_offline(false);
-            } else {
-                PRINT_DEBUG("  server_details() ssq server info failed: %s\n", ssq_server_emsg(ssq));
-            }
-
-            if (ssq_a2s_info != NULL) ssq_info_free(ssq_a2s_info);
-        } else {
-            PRINT_DEBUG("  server_details() ssq server connection failed: %s\n", (ssq ? ssq_server_emsg(ssq) : "NULL instance"));
-        }
-
-        if (ssq != NULL) ssq_server_free(ssq);
-    }
-
     uint16 query_port = g->query_port();
     if (g->query_port() == 0xFFFF) {
         query_port = g->port();
     }
 
     server->m_NetAdr.Init(g->ip(), query_port, g->port());
-    server->m_nPing = latency;
+    server->m_nPing = 10; //TODO
     server->m_bHadSuccessfulResponse = true;
     server->m_bDoNotRefresh = false;
-    strncpy(server->m_szGameDir, g->mod_dir().c_str(), k_cbMaxGameServerGameDir - 1);
-    strncpy(server->m_szMap, g->map_name().c_str(), k_cbMaxGameServerMapName - 1);
-    strncpy(server->m_szGameDescription, g->game_description().c_str(), k_cbMaxGameServerGameDescription - 1);
-
-    server->m_szGameDir[k_cbMaxGameServerGameDir - 1] = 0;
-    server->m_szMap[k_cbMaxGameServerMapName - 1] = 0;
-    server->m_szGameDescription[k_cbMaxGameServerGameDescription - 1] = 0;
 
     server->m_nAppID = g->appid();
     server->m_nPlayers = g->num_players();
@@ -428,91 +271,20 @@ void Steam_Matchmaking_Servers::server_details(Gameserver *g, gameserveritem_t *
     server->m_nServerVersion = g->version();
     server->SetName(g->server_name().c_str());
     server->m_steamID = CSteamID((uint64)g->id());
-    PRINT_DEBUG("  Steam_Matchmaking_Servers::server_details " "%" PRIu64 "\n", g->id());
+    
+    memset(server->m_szGameDir, 0, sizeof(server->m_szGameDir));
+    g->mod_dir().copy(server->m_szGameDir, sizeof(server->m_szGameDir) - 1);
+
+    memset(server->m_szMap, 0, sizeof(server->m_szMap));
+    g->map_name().copy(server->m_szMap, sizeof(server->m_szMap) - 1);
+
+    memset(server->m_szGameDescription, 0, sizeof(server->m_szGameDescription));
+    g->game_description().copy(server->m_szGameDescription, sizeof(server->m_szGameDescription) - 1);
 
     memset(server->m_szGameTags, 0, sizeof(server->m_szGameTags));
     g->tags().copy(server->m_szGameTags, sizeof(server->m_szGameTags) - 1);
-    // strncpy(server->m_szGameTags, g->tags().c_str(), k_cbMaxGameServerTags - 1);
-    // server->m_szGameTags[k_cbMaxGameServerTags - 1] = 0;
-}
 
-void Steam_Matchmaking_Servers::server_details_players(Gameserver *g, Steam_Matchmaking_Servers_Direct_IP_Request *r)
-{
-    if (!(g->ip() < 0) && !(g->query_port() < 0)) {
-        unsigned char ip[4]{};
-        char newip[24];
-        ip[0] = g->ip() & 0xFF;
-        ip[1] = (g->ip() >> 8) & 0xFF;
-        ip[2] = (g->ip() >> 16) & 0xFF;
-        ip[3] = (g->ip() >> 24) & 0xFF;
-        snprintf(newip, sizeof(newip), "%d.%d.%d.%d", ip[3], ip[2], ip[1], ip[0]);
-
-        PRINT_DEBUG("  server_details_players() connecting to ssq server on  %s:%u\n", newip, g->query_port());
-        SSQ_SERVER *ssq = ssq_server_new(newip, g->query_port());
-        if (ssq != NULL && ssq_server_eok(ssq)) {
-            PRINT_DEBUG("  server_details_players() ssq server connection ok\n");
-            ssq_server_timeout(ssq, (SSQ_TIMEOUT_SELECTOR)(SSQ_TIMEOUT_RECV | SSQ_TIMEOUT_SEND), 1200);
-
-            uint8_t ssq_a2s_player_count = 0;
-            A2S_PLAYER *ssq_a2s_player = ssq_player(ssq, &ssq_a2s_player_count);
-
-            if (ssq_server_eok(ssq)) {
-                PRINT_DEBUG("  server_details_players() ssq server players ok\n");
-                for (int i = 0; i < ssq_a2s_player_count; i++) {
-                    r->players_response->AddPlayerToList(ssq_a2s_player[i].name, ssq_a2s_player[i].score, ssq_a2s_player[i].duration);
-                }
-            } else {
-                PRINT_DEBUG("  server_details_players() ssq server players failed: %s\n", ssq_server_emsg(ssq));
-            }
-
-            if (ssq_a2s_player != NULL) ssq_player_free(ssq_a2s_player, ssq_a2s_player_count);
-        } else {
-            PRINT_DEBUG("  server_details_players() ssq server connection failed: %s\n", (ssq ? ssq_server_emsg(ssq) : "NULL instance"));
-        }
-
-        if (ssq != NULL) ssq_server_free(ssq);
-    }
-
-    PRINT_DEBUG("  Steam_Matchmaking_Servers::server_details_players " "%" PRIu64 "\n", g->id());
-}
-
-void Steam_Matchmaking_Servers::server_details_rules(Gameserver *g, Steam_Matchmaking_Servers_Direct_IP_Request *r)
-{
-    if (!(g->ip() < 0) && !(g->query_port() < 0)) {
-        unsigned char ip[4]{};
-        char newip[24];
-        ip[0] = g->ip() & 0xFF;
-        ip[1] = (g->ip() >> 8) & 0xFF;
-        ip[2] = (g->ip() >> 16) & 0xFF;
-        ip[3] = (g->ip() >> 24) & 0xFF;
-        snprintf(newip, sizeof(newip), "%d.%d.%d.%d", ip[3], ip[2], ip[1], ip[0]);
-
-        PRINT_DEBUG("  server_details_rules() connecting to ssq server on %s:%u\n", newip, g->query_port());
-        SSQ_SERVER *ssq = ssq_server_new(newip, g->query_port());
-        if (ssq != NULL && ssq_server_eok(ssq)) {
-            ssq_server_timeout(ssq, (SSQ_TIMEOUT_SELECTOR)(SSQ_TIMEOUT_RECV | SSQ_TIMEOUT_SEND), 1200);
-
-            uint16_t ssq_a2s_rules_count = 0;
-            A2S_RULES *ssq_a2s_rules = ssq_rules(ssq, &ssq_a2s_rules_count);
-
-            if (ssq_server_eok(ssq)) {
-                PRINT_DEBUG("  server_details_rules() ssq server rules ok\n");
-                for (int i = 0; i < ssq_a2s_rules_count; i++) {
-                    r->rules_response->RulesResponded(ssq_a2s_rules[i].name, ssq_a2s_rules[i].value);
-                }
-            } else {
-                PRINT_DEBUG("  server_details_rules() ssq server rules failed: %s\n", ssq_server_emsg(ssq));
-            }
-
-            if (ssq_a2s_rules != NULL) ssq_rules_free(ssq_a2s_rules, ssq_a2s_rules_count);
-        } else {
-            PRINT_DEBUG("  server_details_rules() ssq server connection failed: %s\n", (ssq ? ssq_server_emsg(ssq) : "NULL instance"));
-        }
-
-        if (ssq != NULL) ssq_server_free(ssq);
-    }
-
-    PRINT_DEBUG("  Steam_Matchmaking_Servers::server_details_rules " "%" PRIu64 "\n", g->id());
+    PRINT_DEBUG("  Steam_Matchmaking_Servers::server_details " "%" PRIu64 "\n", g->id());
 }
 
 // Get details on a given server in the list, you can get the valid range of index
@@ -710,7 +482,7 @@ void Steam_Matchmaking_Servers::RunCallbacks()
         r.gameservers_filtered.clear();
         for (auto &g : gameservers) {
             PRINT_DEBUG("Steam_Matchmaking_Servers::game_server_check %u %u\n", g.server.appid(), r.appid);
-            if ((g.server.appid() == r.appid) && (g.type == r.type)) {
+            if (g.server.appid() == r.appid) {
                 PRINT_DEBUG("Steam_Matchmaking_Servers::REQUESTS server found\n");
                 r.gameservers_filtered.push_back(g);
             }
@@ -768,9 +540,9 @@ void Steam_Matchmaking_Servers::RunCallbacks()
     }
 
     for (auto &r : direct_ip_requests_temp) {
-        PRINT_DEBUG("Steam_Matchmaking_Servers::dip request: %u:%hu\n", r.ip, r.port);
+        PRINT_DEBUG("Steam_Matchmaking_Servers dip request: %u:%hu\n", r.ip, r.port);
         for (auto &g : gameservers) {
-            PRINT_DEBUG("Steam_Matchmaking_Servers::server: %u:%u\n", g.server.ip(), g.server.query_port());
+            PRINT_DEBUG("Steam_Matchmaking_Servers server: %u:%u\n", g.server.ip(), g.server.query_port());
             uint16 query_port = g.server.query_port();
             if (query_port == 0xFFFF) {
                 query_port = g.server.port();
@@ -778,15 +550,17 @@ void Steam_Matchmaking_Servers::RunCallbacks()
 
             if (query_port == r.port && g.server.ip() == r.ip) {
                 if (r.rules_response) {
-                    server_details_rules(&(g.server), &r);
+                    int number_rules = (int)g.server.values().size();
+                    PRINT_DEBUG("Steam_Matchmaking_Servers rules: %i\n", number_rules);
+                    auto rule = g.server.values().begin();
+                    for (int i = 0; i < number_rules; ++i) {
+                        PRINT_DEBUG("Steam_Matchmaking_Servers RULE '%s' '%s'\n", rule->first.c_str(), rule->second.c_str());
+                        r.rules_response->RulesResponded(rule->first.c_str(), rule->second.c_str());
+                        ++rule;
+                    }
+
                     r.rules_response->RulesRefreshComplete();
                     r.rules_response = NULL;
-                }
-
-                if (r.players_response) {
-                    server_details_players(&(g.server), &r);
-                    r.players_response->PlayersRefreshComplete();
-                    r.players_response = NULL;
                 }
 
                 if (r.ping_response) {
@@ -795,10 +569,12 @@ void Steam_Matchmaking_Servers::RunCallbacks()
                     r.ping_response->ServerResponded(server);
                     r.ping_response = NULL;
                 }
+                //TODO: players response
             }
         }
 
         if (r.rules_response) r.rules_response->RulesRefreshComplete();
+        //TODO: player response
         if (r.players_response) r.players_response->PlayersRefreshComplete();
         if (r.ping_response) r.ping_response->ServerFailedToRespond();
     }
@@ -806,13 +582,12 @@ void Steam_Matchmaking_Servers::RunCallbacks()
 
 void Steam_Matchmaking_Servers::Callback(Common_Message *msg)
 {
-    if (msg->has_gameserver() && msg->gameserver().type() != eFriendsServer) {
-        PRINT_DEBUG("Steam_Matchmaking_Servers::got SERVER " "%" PRIu64 ", offline:%u\n", msg->gameserver().id(), msg->gameserver().offline());
+    if (msg->has_gameserver()) {
+        PRINT_DEBUG("Steam_Matchmaking_Servers got SERVER " "%" PRIu64 ", offline:%u\n", msg->gameserver().id(), msg->gameserver().offline());
         if (msg->gameserver().offline()) {
             for (auto &g : gameservers) {
                 if (g.server.id() == msg->gameserver().id()) {
                     g.last_recv = std::chrono::high_resolution_clock::time_point();
-                    g.type = eLANServer;
                 }
             }
         } else {
@@ -822,7 +597,6 @@ void Steam_Matchmaking_Servers::Callback(Common_Message *msg)
                     g.last_recv = std::chrono::high_resolution_clock::now();
                     g.server = msg->gameserver();
                     g.server.set_ip(msg->source_ip());
-                    g.type = eLANServer;
                     already = true;
                 }
             }
@@ -832,31 +606,9 @@ void Steam_Matchmaking_Servers::Callback(Common_Message *msg)
                 g.last_recv = std::chrono::high_resolution_clock::now();
                 g.server = msg->gameserver();
                 g.server.set_ip(msg->source_ip());
-                g.type = eLANServer;
                 gameservers.push_back(g);
-                PRINT_DEBUG("Steam_Matchmaking_Servers::SERVER ADDED\n");
+                PRINT_DEBUG("Steam_Matchmaking_Servers SERVER ADDED\n");
             }
-        }
-    }
-
-    if (msg->has_gameserver() && msg->gameserver().type() == eFriendsServer) {
-        bool addserver = true;
-        for (auto &g : gameservers_friends) {
-            if (g.source_id == msg->source_id()) {
-                g.ip = msg->gameserver().ip();
-                g.port = msg->gameserver().port();
-                g.last_recv = std::chrono::high_resolution_clock::now();
-                addserver = false;
-            }
-        }
-
-        if (addserver) {
-            struct Steam_Matchmaking_Servers_Gameserver_Friends gameserver_friend;
-            gameserver_friend.source_id = msg->source_id();
-            gameserver_friend.ip = msg->gameserver().ip();
-            gameserver_friend.port = msg->gameserver().port();
-            gameserver_friend.last_recv = std::chrono::high_resolution_clock::now();
-            gameservers_friends.push_back(gameserver_friend);
         }
     }
 }

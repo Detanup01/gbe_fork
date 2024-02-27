@@ -243,15 +243,6 @@ To allow external downloads which will be stored in this `steam_settings\http` f
 
 ---
 
-## Avatar:
-Copy a `PNG` or `JPG` image to your `Goldberg SteamEmu Settings\settings` folder and name it `account_avatar`
-
-You can also set a default profile picture for users who are missing one by copying a similar file called `account_avatar_default`  
-
-You can find example in `steam_settings.EXAMPLE`
-
----
-
 ## Support for CPY steam_api(64).dll cracks:
 See the build in the experimental folder.
 

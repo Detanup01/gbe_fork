@@ -485,12 +485,10 @@ def get_dlc(raw_infos):
         return (set(), set(), set())
 
 EXTRA_FEATURES: list[tuple[str, str]] = [
-    ("disable_account_avatar.txt",                   "disable avatar functionality."),
     ("disable_networking.txt",                       "disable all networking functionality."),
     ("disable_overlay.txt",                          "disable the overlay."),
     ("disable_overlay_achievement_notification.txt", "disable the achievement notifications."),
     ("disable_overlay_friend_notification.txt",      "disable the friend invite and message notifications."),
-    ("disable_source_query.txt",                     "Do not send server details for the server browser. Only works for game servers."),
 ]
 
 def disable_all_extra_features(emu_settings_dir : str) -> None:

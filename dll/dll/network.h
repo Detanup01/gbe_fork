@@ -91,9 +91,8 @@ struct Connection {
 
 class Networking {
     bool enabled = false;
-    bool query_alive;
     std::chrono::high_resolution_clock::time_point last_run;
-    sock_t query_socket, udp_socket, tcp_socket;
+    sock_t udp_socket, tcp_socket;
     uint16 udp_port, tcp_port;
     uint32 own_ip;
     std::vector<struct Connection> connections;
@@ -140,9 +139,6 @@ public:
     uint32 getIP(CSteamID id);
     uint32 getOwnIP();
 
-    void startQuery(IP_PORT ip_port);
-    void shutDownQuery();
-    bool isQueryAlive();
 };
 
 #endif

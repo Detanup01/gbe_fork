@@ -1205,8 +1205,6 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     bool disable_overlay_warning_bad_appid = false;
     bool disable_overlay_warning_any = false;
     bool disable_lobby_creation = false;
-    bool disable_source_query = false;
-    bool disable_account_avatar = false;
     bool achievement_bypass = false;
     bool is_beta_branch = false;
     bool use_gc_token = false;
@@ -1248,10 +1246,6 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
                 disable_overlay_warning_any = true;
             } else if (p == "disable_lobby_creation.txt") {
                 disable_lobby_creation = true;
-            } else if (p == "disable_source_query.txt") {
-                disable_source_query = true;
-            } else if (p == "disable_account_avatar.txt") {
-                disable_account_avatar = true;
             } else if (p == "achievements_bypass.txt") {
                 achievement_bypass = true;
             } else if (p == "is_beta_branch.txt") {
@@ -1308,10 +1302,6 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
 
     settings_client->disable_lobby_creation = disable_lobby_creation;
     settings_server->disable_lobby_creation = disable_lobby_creation;
-    settings_client->disable_source_query = disable_source_query;
-    settings_server->disable_source_query = disable_source_query;
-    settings_client->disable_account_avatar = disable_account_avatar;
-    settings_server->disable_account_avatar = disable_account_avatar;
     settings_client->build_id = build_id;
     settings_server->build_id = build_id;
     settings_client->supported_languages = supported_languages;
