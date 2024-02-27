@@ -385,7 +385,7 @@ void AdvertiseGame( CSteamID steamIDGameServer, uint32 unIPServer, uint16 usPort
     server->set_port(usPortServer);
     server->set_query_port(usPortServer);
     server->set_appid(settings->get_local_game_id().ToUint64());
-    server->set_type(eFriendsServer);
+    server->set_type(eLANServer);
     Common_Message msg;
     msg.set_allocated_gameserver(server);
     msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
