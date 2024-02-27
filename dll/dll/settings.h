@@ -248,6 +248,7 @@ public:
     //images
     std::map<int, struct Image_Data> images;
     int add_image(std::string data, uint32 width, uint32 height);
+    bool disable_account_avatar = false;
 
     //installed app ids, Steam_Apps::BIsAppInstalled()
     std::set<AppId_t> installed_app_ids;
@@ -264,6 +265,9 @@ public:
 
     //networking
     bool disable_networking = false;
+
+    //gameserver source query
+    bool disable_source_query = false;
 
     //overlay
     bool disable_overlay = false;

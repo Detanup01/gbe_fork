@@ -169,6 +169,7 @@ message Gameserver {
     uint32 appid = 35;
 
     bool offline = 48;
+    uint32 type = 49;
 }
 
 message Friend {
@@ -177,6 +178,7 @@ message Friend {
     map<string, bytes> rich_presence = 3;
     uint32 appid = 4;
     uint64 lobby_id = 5;
+    bytes avatar = 6;
 }
 
 message Auth_Ticket {

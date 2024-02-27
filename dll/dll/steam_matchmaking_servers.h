@@ -16,6 +16,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "base.h"
+#include <ssq/a2s.h>
 
 #define SERVER_TIMEOUT 10.0
 #define DIRECT_IP_DELAY 0.05
@@ -31,9 +32,17 @@ struct Steam_Matchmaking_Servers_Direct_IP_Request {
 	ISteamMatchmakingPingResponse *ping_response = NULL;
 };
 
+struct Steam_Matchmaking_Servers_Gameserver_Friends {
+    uint64 source_id;
+    uint32 ip;
+    uint16 port;
+    std::chrono::high_resolution_clock::time_point last_recv;
+};
+
 struct Steam_Matchmaking_Servers_Gameserver {
     Gameserver server;
     std::chrono::high_resolution_clock::time_point last_recv;
+    EMatchMakingType type;
 };
 
 struct Steam_Matchmaking_Request {
@@ -43,6 +52,7 @@ struct Steam_Matchmaking_Request {
 	ISteamMatchmakingServerListResponse001 *old_callbacks;
     bool completed, cancelled, released;
     std::vector <struct Steam_Matchmaking_Servers_Gameserver> gameservers_filtered;
+    EMatchMakingType type;
 };
 
 class Steam_Matchmaking_Servers : public ISteamMatchmakingServers,
@@ -52,8 +62,10 @@ public ISteamMatchmakingServers001
     class Networking *network;
 
     std::vector <struct Steam_Matchmaking_Servers_Gameserver> gameservers;
+    std::vector <struct Steam_Matchmaking_Servers_Gameserver_Friends> gameservers_friends;
     std::vector <struct Steam_Matchmaking_Request> requests;
     std::vector <struct Steam_Matchmaking_Servers_Direct_IP_Request> direct_ip_requests;
+	HServerListRequest RequestServerList(AppId_t iApp, ISteamMatchmakingServerListResponse *pRequestServersResponse, EMatchMakingType type);
 	void RequestOldServerList(AppId_t iApp, ISteamMatchmakingServerListResponse001 *pRequestServersResponse, EMatchMakingType type);
 public:
     Steam_Matchmaking_Servers(class Settings *settings, class Networking *network);
@@ -222,4 +234,6 @@ public:
     void RunCallbacks();
     void Callback(Common_Message *msg);
     void server_details(Gameserver *g, gameserveritem_t *server);
+    void server_details_players(Gameserver *g, Steam_Matchmaking_Servers_Direct_IP_Request *r);
+    void server_details_rules(Gameserver *g, Steam_Matchmaking_Servers_Direct_IP_Request *r);
 };

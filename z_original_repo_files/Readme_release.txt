@@ -130,6 +130,11 @@ The Main_Page file would contain the data returned by the steamHTTP api when it 
 An example that was made for payday 2 can be found in steam_settings.EXAMPLE
 To allow external downloads which will be stored in this steam_settings\http folder copy the disable_lan_only file to the steam_settings folder with .EXAMPLE removed from the file name.
 
+Avatar:
+Copy a PNG or JPG image to your Goldberg SteamEmu Settings\settings folder and name it account_avatar
+You can also set a default profile picture for users who are missing one by copying a similar file called account_avatar_default
+You can find example in steam_settings.EXAMPLE
+
 
 Support for CPY steam_api(64).dll cracks: See the build in the experimental folder.
 

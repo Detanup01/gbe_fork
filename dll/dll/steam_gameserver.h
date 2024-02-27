@@ -17,16 +17,22 @@
 
 #include "base.h"
 #include "auth.h"
- 
+
 //-----------------------------------------------------------------------------
 // Purpose: Functions for authenticating users via Steam to play on a game server
 //-----------------------------------------------------------------------------
 
 struct Gameserver_Outgoing_Packet {
-	std::string data;
+	std::vector<uint8_t> data;
 
 	uint32 ip;
 	uint16 port;
+};
+
+struct Gameserver_Player_Info_t {
+    std::chrono::steady_clock::time_point join_time;
+    std::string name;
+    uint32 score;
 };
 
 class Steam_GameServer : 
@@ -51,6 +57,7 @@ public ISteamGameServer
     bool logged_in = false;
     bool call_servers_disconnected = false;
     Gameserver server_data;
+    std::vector<std::pair<CSteamID, Gameserver_Player_Info_t>> players;
 
     uint32 flags;
     bool policy_response_called;
@@ -63,6 +70,9 @@ public:
 
     Steam_GameServer(class Settings *settings, class Networking *network, class SteamCallBacks *callbacks);
     ~Steam_GameServer();
+
+    std::vector<std::pair<CSteamID, Gameserver_Player_Info_t>>* get_players();
+
 //
 // Basic server data.  These properties, if set, must be set before before calling LogOn.  They
 // may not be changed after logged in.
