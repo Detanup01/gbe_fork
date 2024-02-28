@@ -234,4 +234,6 @@ public:
     void RunCallbacks();
     void Callback(Common_Message *msg);
     void server_details(Gameserver *g, gameserveritem_t *server);
+    void server_details_players(Gameserver *g, Steam_Matchmaking_Servers_Direct_IP_Request *r);
+    void server_details_rules(Gameserver *g, Steam_Matchmaking_Servers_Direct_IP_Request *r);
 };

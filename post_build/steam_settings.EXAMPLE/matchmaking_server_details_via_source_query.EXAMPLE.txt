@@ -1,0 +1,1 @@
+Rename this file to matchmaking_server_details_via_source_query.txt to grab the server details for match making using an actual server query.

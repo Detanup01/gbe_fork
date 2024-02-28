@@ -500,6 +500,17 @@ Check the exaxmple file in the `steam_settings` folder
 
 ---
 
+## Enable non-LAN behavior in `steam_matchmaking_servers`:
+
+By default, match making servers (which handles browsing for matches) will always return LAN servers list whenever the game inquires about the available servers with a specific type (Internet, Friends, LAN, etc...).  
+You can make the emu return the proper/actual servers list for the given type by creating a file called `matchmaking_server_list_actual_type.txt` inside the `steam_settings` folder.  
+**This is currently broken**.  
+
+Also, match making servers will return the info of the server from the incoming local packets, you can make the emu retrieve the actual server info by performing a source server query, this is enabled by creating a file called `matchmaking_server_details_via_source_query.txt` inside the `steam_settings` folder.  
+**This is currently broken**.  
+
+---
+
 ## More configurations:
 Due to the various changes and additions, it became tedious to document everything,  
 so it is recommended to check each example file in the `steam_settings` folder.

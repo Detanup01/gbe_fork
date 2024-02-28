@@ -1,0 +1,2 @@
+Rename this file to matchmaking_server_list_actual_type.txt to use the proper type of the server list (internet, friends, etc...) when requested by the game.
+Otherwise, the emu will always return LAN server list.

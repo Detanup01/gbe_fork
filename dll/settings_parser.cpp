@@ -1212,6 +1212,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     bool use_gc_token = false;
     bool enable_new_app_ticket = false;
     int build_id = 10;
+    bool matchmaking_server_list_always_lan_type = true;
+    bool matchmaking_server_details_via_source_query = false;
 
     bool warn_forced_setting = false;
 
@@ -1270,6 +1272,10 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
                 enable_new_app_ticket = true;
             } else if (p == "gc_token.txt") {
                 use_gc_token = true;
+            } else if (p == "matchmaking_server_list_actual_type.txt") {
+                matchmaking_server_list_always_lan_type = false;
+            } else if (p == "matchmaking_server_details_via_source_query.txt") {
+                matchmaking_server_details_via_source_query = true;
             }
         }
     }
@@ -1330,6 +1336,11 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     settings_server->enable_new_app_ticket = enable_new_app_ticket;
     settings_client->use_gc_token = use_gc_token;
     settings_server->use_gc_token = use_gc_token;
+
+    settings_client->matchmaking_server_list_always_lan_type = matchmaking_server_list_always_lan_type;
+    settings_server->matchmaking_server_list_always_lan_type = matchmaking_server_list_always_lan_type;
+    settings_client->matchmaking_server_details_via_source_query = matchmaking_server_details_via_source_query;
+    settings_server->matchmaking_server_details_via_source_query = matchmaking_server_details_via_source_query;
 
     if (local_save) {
         settings_client->local_save = save_path;

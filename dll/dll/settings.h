@@ -269,6 +269,10 @@ public:
     //gameserver source query
     bool disable_source_query = false;
 
+    //matchmaking server list & server details
+    bool matchmaking_server_list_always_lan_type = true;
+    bool matchmaking_server_details_via_source_query = false;
+
     //overlay
     bool disable_overlay = false;
     bool disable_overlay_achievement_notification = false;
