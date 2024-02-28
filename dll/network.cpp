@@ -300,7 +300,7 @@ static int send_packet_to(sock_t sock, IP_PORT ip_port, char *data, unsigned lon
 
 static int receive_packet(sock_t sock, IP_PORT *ip_port, char *data, unsigned long max_length)
 {
-    struct sockaddr_storage addr;
+    struct sockaddr_storage addr{};
 #if defined(STEAM_WIN32)
     int addrlen = sizeof(addr);
 #else
@@ -943,22 +943,24 @@ void Networking::Run()
     int len;
 
     if (query_alive && is_socket_valid(query_socket)) {
-        PRINT_DEBUG("RECV QUERY\n");
+        PRINT_DEBUG("Networking::Run RECV Source Query\n");
         Steam_Client* client = get_steam_client();
         sockaddr_in addr;
         addr.sin_family = AF_INET;
 
         while ((len = receive_packet(query_socket, &ip_port, data, sizeof(data))) >= 0) {
+            PRINT_DEBUG("Networking::Run requesting Source Query server info from Steam_GameServer\n");
             client->steam_gameserver->HandleIncomingPacket(data, len, htonl(ip_port.ip), htons(ip_port.port));
             len = client->steam_gameserver->GetNextOutgoingPacket(data, sizeof(data), &ip_port.ip, &ip_port.port);
 
+            PRINT_DEBUG("Networking::Run sending Source Query server info\n");
             addr.sin_addr.s_addr = htonl(ip_port.ip);
             addr.sin_port        = htons(ip_port.port);
             sendto(query_socket, data, len, 0, (sockaddr*)&addr, sizeof(addr));
         }
     }
 
-    PRINT_DEBUG("RECV UDP\n");
+    PRINT_DEBUG("Networking::Run RECV UDP\n");
     while((len = receive_packet(udp_socket, &ip_port, data, sizeof(data))) >= 0) {
         PRINT_DEBUG("recv %i %hhu.%hhu.%hhu.%hhu:%hu\n", len, ((unsigned char *)&ip_port.ip)[0], ((unsigned char *)&ip_port.ip)[1], ((unsigned char *)&ip_port.ip)[2], ((unsigned char *)&ip_port.ip)[3], htons(ip_port.port));
         Common_Message msg;
@@ -981,7 +983,7 @@ void Networking::Run()
         }
     }
 
-    PRINT_DEBUG("RECV LOCAL\n");
+    PRINT_DEBUG("Networking::Run RECV LOCAL\n");
     std::vector<Common_Message> local_send_copy = local_send;
     local_send.clear();
 
@@ -1346,7 +1348,7 @@ void Networking::startQuery(IP_PORT ip_port)
         }
         retry = 0;
 
-        sockaddr_in addr;
+        sockaddr_in addr{};
         addr.sin_addr.s_addr = htonl(ip_port.ip);
         addr.sin_port        = htons(ip_port.port);
         addr.sin_family      = AF_INET;
@@ -1369,7 +1371,7 @@ void Networking::startQuery(IP_PORT ip_port)
             }
         }
 
-        char str_ip[16];
+        char str_ip[16]{};
         inet_ntop(AF_INET, &(addr.sin_addr), str_ip, 16);
 
         PRINT_DEBUG("Started query server on %s:%d\n", str_ip, htons(addr.sin_port));

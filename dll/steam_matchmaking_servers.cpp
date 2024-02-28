@@ -15,7 +15,7 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "dll/steam_matchmaking_servers.h"
+#include "dll/dll.h"
 
 
 static void network_callback(void *object, Common_Message *msg)
@@ -652,16 +652,14 @@ void Steam_Matchmaking_Servers::RunCallbacks()
 
                 if (r.players_response) {
                     uint32_t number_players = g.server.num_players();
-                    PRINT_DEBUG("Steam_Matchmaking_Servers players: %i\n", number_players);
-                    // const auto &players = get_steam_client()->steam_gameserver->get_players();
-                    // auto &player = players->begin();
-
-                    // for (int i = 0; i < number_players && i < players->size(); i++) {
-                    //     float playtime = static_cast<float>(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - player->second.join_time).count());
-                    //     PRINT_DEBUG("Steam_Matchmaking_Servers PLAYER [%u] '%s' %u %f\n", i, player->second.name.c_str(), player->second.score, playtime);
-                    //     r.players_response->AddPlayerToList(player->second.name.c_str(), player->second.score, playtime);
-                    //     ++player;
-                    // }
+                    PRINT_DEBUG("Steam_Matchmaking_Servers players: %u\n", number_players);
+                    const auto &players = get_steam_client()->steam_gameserver->get_players();
+                    auto &player = players->cbegin();
+                    for (int i = 0; i < number_players && player != players->end(); ++i, ++player) {
+                        float playtime = static_cast<float>(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - player->second.join_time).count());
+                        PRINT_DEBUG("Steam_Matchmaking_Servers PLAYER [%u] '%s' %u %f\n", i, player->second.name.c_str(), player->second.score, playtime);
+                        r.players_response->AddPlayerToList(player->second.name.c_str(), player->second.score, playtime);
+                    }
                     r.players_response->PlayersRefreshComplete();
                     r.players_response = NULL;
                 }
