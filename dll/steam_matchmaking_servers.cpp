@@ -42,6 +42,11 @@ HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, IS
     ++server_list_request;
     HServerListRequest id = (char *)0 + server_list_request; // (char *)0 silences the compiler warning
 
+    if (settings->matchmaking_server_list_always_lan_type) {
+        PRINT_DEBUG("Steam_Matchmaking_Servers::RequestServerList forcing request type to LAN\n");
+        type = EMatchMakingType::eLANServer;
+    }
+
     struct Steam_Matchmaking_Request request{};
     request.appid = iApp;
     request.callbacks = pRequestServersResponse;
@@ -53,7 +58,7 @@ HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, IS
     requests.push_back(request);
     PRINT_DEBUG("Steam_Matchmaking_Servers::request id: %p\n", id);
 
-    if (type == eLANServer || settings->matchmaking_server_list_always_lan_type) return id;
+    if (type == eLANServer) return id;
 
     if (type == eFriendsServer) {
         for (auto &g : gameservers_friends) {
