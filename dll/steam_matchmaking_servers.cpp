@@ -535,7 +535,7 @@ void Steam_Matchmaking_Servers::server_details_rules(Gameserver *g, Steam_Matchm
         PRINT_DEBUG("  Steam_Matchmaking_Servers::server_details_rules rules: %i\n", number_rules);
         auto rule = g->values().begin();
         for (int i = 0; i < number_rules; ++i) {
-            PRINT_DEBUG("  Steam_Matchmaking_Servers::server_details_rules RULE '%s' '%s'\n", rule->first.c_str(), rule->second.c_str());
+            PRINT_DEBUG("  Steam_Matchmaking_Servers::server_details_rules RULE '%s'='%s'\n", rule->first.c_str(), rule->second.c_str());
             r->rules_response->RulesResponded(rule->first.c_str(), rule->second.c_str());
             ++rule;
         }

@@ -907,10 +907,11 @@ void Callback(Common_Message *msg)
 {
     if (msg->has_network()) {
 #ifndef EMU_RELEASE_BUILD
-        PRINT_DEBUG("Steam_Networking: got msg from: " "%" PRIu64 " to: " "%" PRIu64 " size %zu type %u | messages %p: %zu\n", msg->source_id(), msg->dest_id(), msg->network().data().size(), msg->network().type(), &messages, messages.size());
-        for (int i = 0; i < msg->network().data().size(); ++i) {
-            PRINT_DEBUG("%02hhX", msg->network().data().data()[i]);
-        }PRINT_DEBUG("\n");
+        PRINT_DEBUG(
+            "Steam_Networking: got msg from: " "%" PRIu64 " to: " "%" PRIu64 " size %zu type %u | messages %p: %zu\n",
+            msg->source_id(), msg->dest_id(), msg->network().data().size(), msg->network().type(), &messages, messages.size()
+        );
+        PRINT_DEBUG("Steam_Networking msg data: '%s'\n", uint8_vector_to_hex_string( std::vector<uint8_t>(msg->network().data().begin(), msg->network().data().end()) ).c_str());
 #endif
 
         if (msg->network().type() == Network_pb::DATA) {

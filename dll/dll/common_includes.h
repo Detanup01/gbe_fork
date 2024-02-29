@@ -233,12 +233,12 @@ static inline void thisThreadYieldFor(std::chrono::microseconds u)
     PRINT_DEBUG("Thread finished waiting\n");
 }
 
-static std::string uint8_vector_to_hex_string(std::vector<uint8_t>& v)
+static std::string uint8_vector_to_hex_string(const std::vector<uint8_t>& v)
 {
-    std::string result;
+    std::string result{};
     result.reserve(v.size() * 2);   // two digits per character
 
-    static constexpr char hex[] = "0123456789ABCDEF";
+    static constexpr const char hex[] = "0123456789ABCDEF";
 
     for (uint8_t c : v)
     {
