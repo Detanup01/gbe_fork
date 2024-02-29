@@ -1,6 +1,6 @@
 * revert the changes to `steam_matchmaking_servers` and only enable them via the 2 new config files:
-  - `matchmaking_server_list_actual_type.txt`: this makes steam matchmaking use the actual type of the requestd server list, otherwise it's always LAN
-  - `matchmaking_server_details_via_source_query.txt`: this makes steam matchmaking use actual source server query to grab the server info
+  - `matchmaking_server_list_actual_type.txt`: enable the behavior which allows steam matchmaking to use the actual type of the requestd server list, otherwise it's always LAN
+  - `matchmaking_server_details_via_source_query.txt`: enable the behavior which allows steam matchmaking to use actual source server query to grab the server info
 
   thanks a lot to **[LuKeSt0rm]** for the help and testing
 
