@@ -485,7 +485,7 @@ void Steam_Matchmaking_Servers::server_details_players(Gameserver *g, Steam_Matc
         uint32_t number_players = g->num_players();
         PRINT_DEBUG("  Steam_Matchmaking_Servers::server_details_players players: %u\n", number_players);
         const auto &players = get_steam_client()->steam_gameserver->get_players();
-        auto &player = players->cbegin();
+        auto player = players->cbegin();
         for (int i = 0; i < number_players && player != players->end(); ++i, ++player) {
             float playtime = static_cast<float>(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - player->second.join_time).count());
             PRINT_DEBUG("  Steam_Matchmaking_Servers::server_details_players PLAYER [%u] '%s' %u %f\n", i, player->second.name.c_str(), player->second.score, playtime);
