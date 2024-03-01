@@ -67,11 +67,6 @@ if %jobs_count% lss 2 (
     set /a jobs_count=2
 )
 
-call :extract_all_deps || (
-    set /a last_code=1
-    goto :end_script
-)
-
 
 :: ############## common CMAKE args ##############
 :: https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS_CONFIG.html#variable:CMAKE_%3CLANG%3E_FLAGS_%3CCONFIG%3E
@@ -103,6 +98,13 @@ set "clean_gen64=if exist build64\ rmdir /s /q build64"
 
 :: "-DCMAKE_C_STANDARD_LIBRARIES=kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib" "-DCMAKE_CXX_STANDARD_LIBRARIES=kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib"
 
+
+call :extract_all_deps || (
+    set /a last_code=1
+    goto :end_script
+)
+
+
 echo // [?] All CMAKE builds will use %jobs_count% parallel jobs
 
 :: ############## build ssq ##############
@@ -122,7 +124,7 @@ call "%~dp0build_win_set_env.bat" 32 || (
 set /a _exit=%errorlevel%
 %cmake_build32%
 set /a _exit+=%errorlevel%
-endlocal & set /a last_code+=%_exit%
+endlocal & set /a last_code=%last_code%+%_exit%
 
 setlocal
 call "%~dp0build_win_set_env.bat" 64 || (
@@ -137,7 +139,7 @@ call "%~dp0build_win_set_env.bat" 64 || (
 set /a _exit=%errorlevel%
 %cmake_build64%
 set /a _exit+=%errorlevel%
-endlocal & set /a last_code+=%_exit%
+endlocal & set /a last_code=%last_code%+%_exit%
 
 popd
 echo: & echo:
@@ -161,7 +163,7 @@ set /a _exit=%errorlevel%
 %cmake_build32% --target install
 set /a _exit+=%errorlevel%
 %clean_gen32%
-endlocal & set /a last_code+=%_exit%
+endlocal & set /a last_code=%last_code%+%_exit%
 
 setlocal
 call "%~dp0build_win_set_env.bat" 64 || (
@@ -177,7 +179,7 @@ set /a _exit=%errorlevel%
 %cmake_build64% --target install
 set /a _exit+=%errorlevel%
 %clean_gen64%
-endlocal & set /a last_code+=%_exit%
+endlocal & set /a last_code=%last_code%+%_exit%
 
 popd
 echo: & echo:
@@ -231,7 +233,7 @@ set /a _exit=%errorlevel%
 %cmake_build32% --target install
 set /a _exit+=%errorlevel%
 %clean_gen32%
-endlocal & set /a last_code+=%_exit%
+endlocal & set /a last_code=%last_code%+%_exit%
 
 setlocal
 call "%~dp0build_win_set_env.bat" 64 || (
@@ -247,7 +249,7 @@ set /a _exit=%errorlevel%
 %cmake_build64% --target install
 set /a _exit+=%errorlevel%
 %clean_gen64%
-endlocal & set /a last_code+=%_exit%
+endlocal & set /a last_code=%last_code%+%_exit%
 
 popd
 echo: & echo:
@@ -273,7 +275,7 @@ set /a _exit=%errorlevel%
 %cmake_build32% --target install
 set /a _exit+=%errorlevel%
 %clean_gen32%
-endlocal & set /a last_code+=%_exit%
+endlocal & set /a last_code=%last_code%+%_exit%
 
 setlocal
 call "%~dp0build_win_set_env.bat" 64 || (
@@ -289,7 +291,7 @@ set /a _exit=%errorlevel%
 %cmake_build64% --target install
 set /a _exit+=%errorlevel%
 %clean_gen64%
-endlocal & set /a last_code+=%_exit%
+endlocal & set /a last_code=%last_code%+%_exit%
 
 popd
 echo: & echo:
@@ -315,7 +317,7 @@ set /a _exit=%errorlevel%
 %cmake_build32% --target install
 set /a _exit+=%errorlevel%
 %clean_gen32%
-endlocal & set /a last_code+=%_exit%
+endlocal & set /a last_code=%last_code%+%_exit%
 
 setlocal
 call "%~dp0build_win_set_env.bat" 64 || (
@@ -331,7 +333,104 @@ set /a _exit=%errorlevel%
 %cmake_build64% --target install
 set /a _exit+=%errorlevel%
 %clean_gen64%
-endlocal & set /a last_code+=%_exit%
+endlocal & set /a last_code=%last_code%+%_exit%
+
+popd
+echo: & echo:
+
+
+:: ############## build ingame_overlay ##############
+echo // building ingame_overlay lib
+pushd "%deps_dir%\ingame_overlay"
+
+:: fixes 32-bit compilation of DX12
+set "_imgui_cfg_file=%cd%\imconfig.imcfg"
+1>"%_imgui_cfg_file%" (
+    echo #pragma once
+    echo #define ImTextureID ImU64
+)
+set ingame_overlay_common_defs="-DIMGUI_USER_CONFIG=%_imgui_cfg_file:\=/%" -DINGAMEOVERLAY_USE_SYSTEM_LIBRARIES=OFF -DINGAMEOVERLAY_USE_SPDLOG=OFF -DINGAMEOVERLAY_BUILD_TESTS=OFF
+
+setlocal
+call "%~dp0build_win_set_env.bat" 32 || (
+    endlocal
+    popd
+    call :err_msg "Couldn't find Visual Studio or build tools - 32"
+    set /a last_code=1
+    goto :end_script
+)
+
+echo:
+echo // building ingame_overlay [System dep x32]
+pushd "deps\System"
+%recreate_32%
+%cmake_gen32% -DBUILD_SYSTEMLIB_TESTS=OFF
+set /a _exit=%errorlevel%
+%cmake_build32% --target install
+set /a _exit+=%errorlevel%
+%clean_gen32%
+popd
+
+echo:
+echo // building ingame_overlay [mini_detour dep x32]
+pushd "deps\mini_detour"
+%recreate_32%
+%cmake_gen32% -DBUILD_MINIDETOUR_TESTS=OFF
+set /a _exit+=%errorlevel%
+%cmake_build32% --target install
+set /a _exit+=%errorlevel%
+%clean_gen32%
+popd
+
+echo:
+echo // building ingame_overlay [main lib x32]
+%recreate_32%
+%cmake_gen32% %ingame_overlay_common_defs%
+set /a _exit+=%errorlevel%
+%cmake_build32% --target install
+set /a _exit+=%errorlevel%
+%clean_gen32%
+endlocal & set /a last_code=%last_code%+%_exit%
+
+setlocal
+call "%~dp0build_win_set_env.bat" 64 || (
+    endlocal
+    popd
+    call :err_msg "Couldn't find Visual Studio or build tools - 64"
+    set /a last_code=1
+    goto :end_script
+)
+
+echo:
+echo // building ingame_overlay [System dep x64]
+pushd "deps\System"
+%recreate_64%
+%cmake_gen64% -DBUILD_SYSTEMLIB_TESTS=OFF
+set /a _exit=%errorlevel%
+%cmake_build64% --target install
+set /a _exit+=%errorlevel%
+%clean_gen64%
+popd
+
+echo:
+echo // building ingame_overlay [mini_detour dep x64]
+pushd "deps\mini_detour"
+%recreate_64%
+%cmake_gen64% -DBUILD_MINIDETOUR_TESTS=OFF
+set /a _exit=%errorlevel%
+%cmake_build64% --target install
+set /a _exit+=%errorlevel%
+%clean_gen64%
+popd
+
+echo // building ingame_overlay [main lib x64]
+%recreate_64%
+%cmake_gen64% %ingame_overlay_common_defs%
+set /a _exit=%errorlevel%
+%cmake_build64% --target install
+set /a _exit+=%errorlevel%
+%clean_gen64%
+endlocal & set /a last_code=%last_code%+%_exit%
 
 popd
 echo: & echo:
@@ -426,4 +525,5 @@ zlib\zlib.tar.gz
 curl\curl.tar.gz
 protobuf\protobuf.tar.gz
 mbedtls\mbedtls.tar.gz
+ingame_overlay\ingame_overlay.tar.gz
 ]
