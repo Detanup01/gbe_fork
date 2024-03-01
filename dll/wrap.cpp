@@ -35,26 +35,6 @@
 const char *STEAM_PATH;
 size_t STEAM_PATH_SIZE;
 
-#ifndef __x86_64__
-# define _STAT_VER_LINUX_OLD    1
-# define _STAT_VER_KERNEL       1
-# define _STAT_VER_SVR4         2
-# define _STAT_VER_LINUX        3
-# define _MKNOD_VER_LINUX       1
-# define _MKNOD_VER_SVR4        2
-#else
-# define _STAT_VER_KERNEL       0
-# define _STAT_VER_LINUX        1
-# define _MKNOD_VER_LINUX       0
-#endif
-#define _STAT_VER               _STAT_VER_LINUX
-#define _MKNOD_VER              _MKNOD_VER_LINUX
-
-/* From kernel_stat.h It help me save some condition  */
-#define XSTAT_IS_XSTAT64     1
-#define STATFS_IS_STATFS64   __STATFS_MATCHES_STATFS64
-#define STAT_IS_KERNEL_STAT  1
-
 // Returns a '/' terminated absolute path to the steam folder in user's home,
 // root is returned if env home is not set
 const char *get_steam_path()
@@ -311,16 +291,7 @@ STEAMAPI_API int __wrap_access(const char *path, int mode)
 STEAMAPI_API int __wrap___xstat(int ver, const char * path, struct stat * stat_buf)
 {
     const char *path_lowercased = lowercase_path(path, false, false);
-    int result;
-
-    switch (ver) {
-    case _STAT_VER_KERNEL:
-        result = stat(path_lowercased, stat_buf);
-        break;
-    default:
-        result = EINVAL;
-    }
-
+    int result = stat(path_lowercased, stat_buf);
     if (path_lowercased != path) {
         free((void *)path_lowercased);
     }
@@ -335,16 +306,7 @@ STEAMAPI_API int __wrap_stat(const char * path, struct stat * stat_buf)
 STEAMAPI_API int __wrap___lxstat(int ver, const char * path, struct stat * stat_buf)
 {
     const char *path_lowercased = lowercase_path(path, false, false);
-    int result;
-
-    switch (ver) {
-    case _STAT_VER_KERNEL:
-        result = lstat(path_lowercased, stat_buf);
-        break;
-    default:
-        result = EINVAL;
-    }
-
+    int result = lstat(path_lowercased, stat_buf);
     if (path_lowercased != path) {
         free((void *)path_lowercased);
     }
@@ -389,16 +351,7 @@ STEAMAPI_API DIR *__wrap_opendir(const char *path)
 STEAMAPI_API int __wrap___xstat64(int ver, const char *path, struct stat64 *stat_buf)
 {
     const char *path_lowercased = lowercase_path(path, false, false);
-    int result;
-
-    switch (ver) {
-    case _STAT_VER_KERNEL:
-        result = stat64(path_lowercased, stat_buf);
-        break;
-    default:
-        result = EINVAL;
-    }
-
+    int result = stat64(path_lowercased, stat_buf);
     if (path_lowercased != path) {
         free((void *)path_lowercased);
     }
@@ -408,16 +361,7 @@ STEAMAPI_API int __wrap___xstat64(int ver, const char *path, struct stat64 *stat
 STEAMAPI_API int __wrap___lxstat64(int ver, const char *path, struct stat64 *stat_buf)
 {
     const char *path_lowercased = lowercase_path(path, false, false);
-    int result;
-
-    switch (ver) {
-    case _STAT_VER_KERNEL:
-        result = lstat64(path_lowercased, stat_buf);
-        break;
-    default:
-        result = EINVAL;
-    }
-
+    int result = lstat64(path_lowercased, stat_buf);
     if (path_lowercased != path) {
         free((void *)path_lowercased);
     }
