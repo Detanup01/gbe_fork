@@ -32,6 +32,7 @@ deps_archives=(
   "curl/curl.tar.gz"
   "protobuf/protobuf.tar.gz"
   "mbedtls/mbedtls.tar.gz"
+  "ingame_overlay/ingame_overlay.tar.gz"
 )
 
 # < 0: deduce, > 1: force
@@ -97,6 +98,21 @@ build_threads="$(( $(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 0) * 70 / 100
 [[ $PARALLEL_THREADS_OVERRIDE -gt 0 ]] && build_threads="$PARALLEL_THREADS_OVERRIDE"
 [[ $build_threads -lt 2 ]] && build_threads=2
 
+
+############## common CMAKE args ##############
+# https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS_CONFIG.html#variable:CMAKE_%3CLANG%3E_FLAGS_%3CCONFIG%3E
+cmake_common_args='-G "Unix Makefiles" -S .'
+cmake_common_defs="-DCMAKE_BUILD_TYPE=Release -DCMAKE_C_STANDARD_REQUIRED=ON -DCMAKE_CXX_STANDARD_REQUIRED=ON -DCMAKE_C_STANDARD=17 -DCMAKE_CXX_STANDARD=17 -DCMAKE_POSITION_INDEPENDENT_CODE=True -DBUILD_SHARED_LIBS=OFF"
+recreate_32="rm -f -r build32/ && rm -f -r install32/ && mkdir build32/ && mkdir install32/"
+recreate_64="rm -f -r build64/ && rm -f -r install64/ && mkdir build64/ && mkdir install64/"
+cmake_gen32="'$mycmake' $cmake_common_args -B build32 -DCMAKE_TOOLCHAIN_FILE=$deps_dir/32-bit-toolchain.cmake -DCMAKE_INSTALL_PREFIX=install32 $cmake_common_defs"
+cmake_gen64="'$mycmake' $cmake_common_args -B build64 -DCMAKE_TOOLCHAIN_FILE=$deps_dir/64-bit-toolchain.cmake -DCMAKE_INSTALL_PREFIX=install64 $cmake_common_defs"
+cmake_build32="'$mycmake' --build build32 --config Release --parallel $build_threads $VERBOSITY"
+cmake_build64="'$mycmake' --build build64 --config Release --parallel $build_threads $VERBOSITY"
+clean_gen32="[[ -d build32 ]] && rm -f -r build32/"
+clean_gen64="[[ -d build64 ]] && rm -f -r build64/"
+
+
 echo ===========================
 echo Tools will be installed in: "$deps_dir"
 echo Building with $build_threads threads
@@ -128,7 +144,6 @@ set(CMAKE_CXX_COMPILER clang++)
 
 set(CMAKE_C_FLAGS_INIT   "-m32")
 set(CMAKE_CXX_FLAGS_INIT "-m32")
-
 EOL
 
 cat > "$deps_dir/64-bit-toolchain.cmake" << EOL
@@ -142,23 +157,9 @@ set(CMAKE_SYSTEM_NAME Linux)
 # which compilers to use for C and C++
 set(CMAKE_C_COMPILER   clang)
 set(CMAKE_CXX_COMPILER clang++)
-
 EOL
 
 echo; echo;
-
-############## common CMAKE args ##############
-# https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS_CONFIG.html#variable:CMAKE_%3CLANG%3E_FLAGS_%3CCONFIG%3E
-cmake_common_args='-G "Unix Makefiles" -S .'
-cmake_common_defs="-DCMAKE_BUILD_TYPE=Release -DCMAKE_C_STANDARD_REQUIRED=ON -DCMAKE_CXX_STANDARD_REQUIRED=ON -DCMAKE_C_STANDARD=17 -DCMAKE_CXX_STANDARD=17 -DCMAKE_POSITION_INDEPENDENT_CODE=True -DBUILD_SHARED_LIBS=OFF"
-recreate_32="rm -f -r build32/ && rm -f -r install32/ && mkdir build32/ && mkdir install32/"
-recreate_64="rm -f -r build64/ && rm -f -r install64/ && mkdir build64/ && mkdir install64/"
-cmake_gen32="'$mycmake' $cmake_common_args -B build32 -DCMAKE_TOOLCHAIN_FILE=$deps_dir/32-bit-toolchain.cmake -DCMAKE_INSTALL_PREFIX=install32 $cmake_common_defs"
-cmake_gen64="'$mycmake' $cmake_common_args -B build64 -DCMAKE_TOOLCHAIN_FILE=$deps_dir/64-bit-toolchain.cmake -DCMAKE_INSTALL_PREFIX=install64 $cmake_common_defs"
-cmake_build32="'$mycmake' --build build32 --config Release --parallel $build_threads $VERBOSITY"
-cmake_build64="'$mycmake' --build build64 --config Release --parallel $build_threads $VERBOSITY"
-clean_gen32="[[ -d build32 ]] && rm -f -r build32/"
-clean_gen64="[[ -d build64 ]] && rm -f -r build64/"
 
 chmod 777 "$mycmake"
 
@@ -348,6 +349,36 @@ eval $clean_gen32
 
 eval $recreate_64
 eval $cmake_gen64 $mbedtls_common_defs
+last_code=$((last_code + $?))
+eval $cmake_build64 --target install
+last_code=$((last_code + $?))
+eval $clean_gen64
+
+popd
+echo; echo;
+
+
+############## build ingame_overlay ##############
+echo // building ingame_overlay lib
+pushd "$deps_dir/ingame_overlay"
+
+_imgui_cfg_file="$(pwd)/imconfig.imcfg"
+cat > "$_imgui_cfg_file" << EOL
+#pragma once
+#define ImTextureID ImU64
+EOL
+
+ingame_overlay_common_defs="'-DIMGUI_USER_CONFIG=$_imgui_cfg_file' -DINGAMEOVERLAY_USE_SYSTEM_LIBRARIES=OFF -DINGAMEOVERLAY_USE_SPDLOG=OFF -DINGAMEOVERLAY_BUILD_TESTS=OFF"
+
+eval $recreate_32
+eval $cmake_gen32 $ingame_overlay_common_defs
+last_code=$((last_code + $?))
+eval $cmake_build32 --target install
+last_code=$((last_code + $?))
+eval $clean_gen32
+
+eval $recreate_64
+eval $cmake_gen64 $ingame_overlay_common_defs
 last_code=$((last_code + $?))
 eval $cmake_build64 --target install
 last_code=$((last_code + $?))
