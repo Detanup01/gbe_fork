@@ -88,7 +88,7 @@ struct Overlay_Achievement
 
 #ifdef EMU_OVERLAY
 #include <future>
-#include "Renderer_Hook.h"
+#include "InGameOverlay/RendererHook.h"
 
 struct NotificationsIndexes {
     int top_left = 0, top_center = 0, top_right = 0;
@@ -146,8 +146,8 @@ class Steam_Overlay
 
     std::recursive_mutex overlay_mutex;
     std::atomic<bool> i_have_lobby;
-    std::future<ingame_overlay::Renderer_Hook*> future_renderer;
-    ingame_overlay::Renderer_Hook* _renderer;
+    std::future<InGameOverlay::RendererHook_t*> future_renderer;
+    InGameOverlay::RendererHook_t* _renderer;
 
     Steam_Overlay(Steam_Overlay const&) = delete;
     Steam_Overlay(Steam_Overlay&&) = delete;

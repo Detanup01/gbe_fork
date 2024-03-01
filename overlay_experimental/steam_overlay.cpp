@@ -12,12 +12,12 @@
 #include <string>
 #include <sstream>
 #include <cctype>
-#include <imgui.h>
+#include "InGameOverlay/ImGui/imgui.h"
 
 #include "dll/dll.h"
 #include "dll/settings_parser.h"
 
-#include "overlay/Renderer_Detector.h"
+#include "InGameOverlay/RendererDetector.h"
 
 static constexpr int max_window_id = 10000;
 static constexpr int base_notif_window_id  = 0 * max_window_id;
@@ -100,10 +100,6 @@ int find_free_notification_id(std::vector<Notification> const& notifications)
 
     return find_free_id(ids, base_friend_window_id);
 }
-
-#ifdef __WINDOWS__
-#include "windows/Windows_Hook.h"
-#endif
 
 #include "overlay/notification.h"
 char *notif_achievement_wav_custom;
@@ -200,32 +196,31 @@ void Steam_Overlay::SetNotificationInset(int nHorizontalInset, int nVerticalInse
 
 void Steam_Overlay::SetupOverlay()
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("Steam_Overlay::SetupOverlay\n");
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (!setup_overlay_called)
-    {
+    if (!setup_overlay_called) {
         setup_overlay_called = true;
-        future_renderer = ingame_overlay::DetectRenderer();
+        future_renderer = InGameOverlay::DetectRenderer();
     }
 }
 
 
 void Steam_Overlay::UnSetupOverlay()
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("Steam_Overlay::UnSetupOverlay\n");
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    ingame_overlay::StopRendererDetection();
+    InGameOverlay::StopRendererDetection();
     if (!Ready() && future_renderer.valid()) {
-        if (future_renderer.wait_for(std::chrono::milliseconds{500}) ==  std::future_status::ready) {
-            future_renderer.get();
-            ingame_overlay::FreeDetector();
+        if (future_renderer.wait_for(std::chrono::milliseconds{500}) == std::future_status::ready) {
+            future_renderer.get(); // to invalidate the future object
+            InGameOverlay::FreeDetector();
         }
     }
 }
 
 void Steam_Overlay::HookReady(bool ready)
 {
-    PRINT_DEBUG("%s %u\n", __FUNCTION__, ready);
+    PRINT_DEBUG("Steam_Overlay::HookReady %i\n", (int)ready);
     {
         // TODO: Uncomment this and draw our own cursor (cosmetics)
         ImGuiIO &io = ImGui::GetIO();
@@ -282,55 +277,11 @@ void Steam_Overlay::ShowOverlay(bool state)
 
     ImGuiIO &io = ImGui::GetIO();
 
-    if(state)
-    {
+    if (state) {
         io.MouseDrawCursor = true;
-    }
-    else
-    {
+    } else {
         io.MouseDrawCursor = false;
     }
-
-#ifdef __WINDOWS__
-    static RECT old_clip;
-
-    if (state)
-    {
-        HWND game_hwnd = Windows_Hook::Inst()->GetGameHwnd();
-        RECT cliRect, wndRect, clipRect;
-
-        GetClipCursor(&old_clip);
-        // The window rectangle has borders and menus counted in the size
-        GetWindowRect(game_hwnd, &wndRect);
-        // The client rectangle is the window without borders
-        GetClientRect(game_hwnd, &cliRect);
-
-        clipRect = wndRect; // Init clip rectangle
-
-        // Get Window width with borders
-        wndRect.right -= wndRect.left;
-        // Get Window height with borders & menus
-        wndRect.bottom -= wndRect.top;
-        // Compute the border width
-        int borderWidth = (wndRect.right - cliRect.right) / 2;
-        // Client top clip is the menu bar width minus bottom border
-        clipRect.top += wndRect.bottom - cliRect.bottom - borderWidth;
-        // Client left clip is the left border minus border width
-        clipRect.left += borderWidth;
-        // Here goes the same for right and bottom
-        clipRect.right -= borderWidth;
-        clipRect.bottom -= borderWidth;
-
-        ClipCursor(&clipRect);
-    }
-    else
-    {
-        ClipCursor(&old_clip);
-    }
-
-#else
-
-#endif
 
     show_overlay = state;
     overlay_state_changed = true;
@@ -702,7 +653,7 @@ void Steam_Overlay::BuildFriendWindow(Friend const& frd, friend_window_state& st
         // | \--------------------------/ |
         // | [__chat line__] [send]       |
         // |------------------------------|
-        float wnd_width = ImGui::GetWindowContentRegionWidth();
+        float wnd_width = ImGui::GetContentRegionAvail().x;
         ImGuiStyle &style = ImGui::GetStyle();
         wnd_width -= ImGui::CalcTextSize(translationSend[current_language]).x + style.FramePadding.x * 2 + style.ItemSpacing.x + 1;
 
@@ -985,7 +936,7 @@ void Steam_Overlay::CreateFonts()
     font_notif = font_default = font;
 
     if (need_extra_fonts) {
-        PRINT_DEBUG("loading extra fonts\n");
+        PRINT_DEBUG("Steam_Overlay loading extra fonts\n");
         fontcfg.MergeMode = true;
 #if defined(__WINDOWS__)
         Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\simsun.ttc", font_size, &fontcfg);
@@ -1044,6 +995,14 @@ void Steam_Overlay::LoadAudio()
             }
         }
     }
+}
+
+// ListBoxHeader() is deprecated and inlined inside <imgui.h>
+// Helper to calculate size from items_count and height_in_items
+static inline bool ImGuiHelper_BeginListBox(const char* label, int items_count) {
+    int min_items = items_count < 7 ? items_count : 7;
+    float height = ImGui::GetTextLineHeightWithSpacing() * (min_items + 0.25f) + ImGui::GetStyle().FramePadding.y * 2.0f;
+    return ImGui::BeginListBox(label, ImVec2(0.0f, height));
 }
 
 // Try to make this function as short as possible or it might affect game's fps.
@@ -1141,8 +1100,7 @@ void Steam_Overlay::OverlayProc()
             ImGui::LabelText("##label", translationFriends[current_language]);
 
             std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-            if (!friends.empty())
-            {
+            if (!friends.empty()) {
                 if (i_have_lobby) {
                     std::string inviteAll(translationInviteAll[current_language]);
                     inviteAll.append("##PopupInviteAllFriends");
@@ -1151,23 +1109,20 @@ void Steam_Overlay::OverlayProc()
                     }
                 }
 
-                if (ImGui::ListBoxHeader("##label", friends.size()))
-                {
-                    std::for_each(friends.begin(), friends.end(), [this](std::pair<Friend const, friend_window_state> &i)
-                    {
+                if (ImGuiHelper_BeginListBox("##label", friends.size())) {
+                    std::for_each(friends.begin(), friends.end(), [this](std::pair<Friend const, friend_window_state> &i) {
                         ImGui::PushID(i.second.id-base_friend_window_id+base_friend_item_id);
 
                         ImGui::Selectable(i.second.window_title.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick);
                         BuildContextMenu(i.first, i.second);
-                        if (ImGui::IsItemClicked() && ImGui::IsMouseDoubleClicked(0))
-                        {
+                        if (ImGui::IsItemClicked() && ImGui::IsMouseDoubleClicked(0)) {
                             i.second.window_state |= window_state_show;
                         }
                         ImGui::PopID();
 
                         BuildFriendWindow(i.first, i.second);
                     });
-                    ImGui::ListBoxFooter();
+                    ImGui::EndListBox();
                 }
             }
 
@@ -1224,9 +1179,9 @@ void Steam_Overlay::OverlayProc()
 
                             ImGui::TableSetColumnIndex(0);
                             if (achieved) {
-                                ImGui::Image((ImU64)*x.icon.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
+                                ImGui::Image((ImTextureID)*x.icon.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
                             } else {
-                                ImGui::Image((ImU64)*x.icon_gray.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
+                                ImGui::Image((ImTextureID)*x.icon_gray.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
                             }
 
                             ImGui::TableSetColumnIndex(1);
@@ -1353,18 +1308,15 @@ void Steam_Overlay::OverlayProc()
 void Steam_Overlay::Callback(Common_Message *msg)
 {
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (msg->has_steam_messages())
-    {
+    if (msg->has_steam_messages()) {
         Friend frd;
         frd.set_id(msg->source_id());
         auto friend_info = friends.find(frd);
-        if (friend_info != friends.end())
-        {
+        if (friend_info != friends.end()) {
             Steam_Messages const& steam_message = msg->steam_messages();
             // Change color to cyan for friend
             friend_info->second.chat_history.append(friend_info->first.name() + ": " + steam_message.message()).append("\n", 1);
-            if (!(friend_info->second.window_state & window_state_show))
-            {
+            if (!(friend_info->second.window_state & window_state_show)) {
                 friend_info->second.window_state |= window_state_need_attention;
             }
 
@@ -1381,7 +1333,7 @@ void Steam_Overlay::RunCallbacks()
         Steam_User_Stats* steamUserStats = get_steam_client()->steam_user_stats;
         uint32 achievements_num = steamUserStats->GetNumAchievements();
         if (achievements_num) {
-            PRINT_DEBUG("POPULATE OVERLAY ACHIEVEMENTS\n");
+            PRINT_DEBUG("Steam_Overlay POPULATE OVERLAY ACHIEVEMENTS\n");
             for (unsigned i = 0; i < achievements_num; ++i) {
                 Overlay_Achievement ach;
                 ach.name = steamUserStats->GetAchievementName(i);
@@ -1410,39 +1362,37 @@ void Steam_Overlay::RunCallbacks()
                 achievements.push_back(ach);
             }
 
-            PRINT_DEBUG("POPULATE OVERLAY ACHIEVEMENTS DONE\n");
+            PRINT_DEBUG("Steam_Overlay POPULATE OVERLAY ACHIEVEMENTS DONE\n");
         }
     }
 
     if (!Ready() && future_renderer.valid()) {
-        if (future_renderer.wait_for(std::chrono::milliseconds{0}) ==  std::future_status::ready) {
+        if (future_renderer.wait_for(std::chrono::milliseconds{0}) == std::future_status::ready) {
             _renderer = future_renderer.get();
-            PRINT_DEBUG("got renderer %p\n", _renderer);
+            PRINT_DEBUG("Steam_Overlay got renderer %p\n", _renderer);
             CreateFonts();
             LoadAudio();
         }
     }
 
     if (!Ready() && _renderer) {
-            _renderer->OverlayHookReady = std::bind(&Steam_Overlay::HookReady, this, std::placeholders::_1);
-            _renderer->OverlayProc = std::bind(&Steam_Overlay::OverlayProc, this);
-            auto callback = std::bind(&Steam_Overlay::OpenOverlayHook, this, std::placeholders::_1);
-            PRINT_DEBUG("start renderer\n", _renderer);
-            std::set<ingame_overlay::ToggleKey> keys = {ingame_overlay::ToggleKey::SHIFT, ingame_overlay::ToggleKey::TAB};
-            _renderer->ImGuiFontAtlas = fonts_atlas;
-            bool started = _renderer->StartHook(callback, keys);
-            PRINT_DEBUG("tried to start renderer %u\n", started);
+        _renderer->OverlayHookReady = [this](InGameOverlay::OverlayHookState state) { HookReady(state == InGameOverlay::OverlayHookState::Ready); };
+        _renderer->OverlayProc = [this]() { OverlayProc(); };
+        PRINT_DEBUG("start renderer\n", _renderer);
+        std::set<InGameOverlay::ToggleKey> keys = {InGameOverlay::ToggleKey::SHIFT, InGameOverlay::ToggleKey::TAB};
+        auto key_combination_callback = [this]() { OpenOverlayHook(true); };
+        bool started = _renderer->StartHook(key_combination_callback, keys, fonts_atlas);
+        PRINT_DEBUG("Steam_Overlay tried to start renderer hook (result=%u)\n", started);
     }
 
-    if (overlay_state_changed)
-    {
-        GameOverlayActivated_t data = { 0 };
+    if (overlay_state_changed) {
+        overlay_state_changed = false;
+
+        GameOverlayActivated_t data{};
         data.m_bActive = show_overlay;
         data.m_bUserInitiated = true;
         data.m_nAppID = settings->get_local_game_id().AppID();
         callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
-
-        overlay_state_changed = false;
     }
 
     Steam_Friends* steamFriends = get_steam_client()->steam_friends;
@@ -1466,8 +1416,7 @@ void Steam_Overlay::RunCallbacks()
         i.second.joinable = FriendJoinable(i);
     });
 
-    while (!has_friend_action.empty())
-    {
+    while (!has_friend_action.empty()) {
         auto friend_info = friends.find(has_friend_action.front());
         if (friend_info != friends.end()) {
             uint64 friend_id = (uint64)friend_info->first.id();
