@@ -312,17 +312,17 @@ bool IsP2PPacketAvailable( uint32 *pcubMsgSize, int nChannel)
     //this->network->Run();
     //RunCallbacks();
 
-    PRINT_DEBUG("Messages %zu %p\n", messages.size(), &messages);
+    PRINT_DEBUG("Steam_Networking::IsP2PPacketAvailable Messages %zu %p\n", messages.size(), &messages);
     for (auto &msg : messages) {
         if (connection_exists((uint64)msg.source_id()) && msg.mutable_network()->channel() == nChannel && msg.network().processed()) {
             uint32 size = msg.mutable_network()->data().size();
             if (pcubMsgSize) *pcubMsgSize = size;
-            PRINT_DEBUG("available with size: %u\n", size);
+            PRINT_DEBUG("Steam_Networking::IsP2PPacketAvailable available with size: %u\n", size);
             return true;
         }
     }
 
-    PRINT_DEBUG("Not available\n");
+    PRINT_DEBUG("Steam_Networking::IsP2PPacketAvailable (not available)\n");
     if (pcubMsgSize) *pcubMsgSize = 0;
     return false;
 }
