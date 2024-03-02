@@ -417,16 +417,17 @@ echo // building ingame_overlay [mini_detour dep x64]
 pushd "deps\mini_detour"
 %recreate_64%
 %cmake_gen64% -DBUILD_MINIDETOUR_TESTS=OFF
-set /a _exit=%errorlevel%
+set /a _exit+=%errorlevel%
 %cmake_build64% --target install
 set /a _exit+=%errorlevel%
 %clean_gen64%
 popd
 
+echo:
 echo // building ingame_overlay [main lib x64]
 %recreate_64%
 %cmake_gen64% %ingame_overlay_common_defs%
-set /a _exit=%errorlevel%
+set /a _exit+=%errorlevel%
 %cmake_build64% --target install
 set /a _exit+=%errorlevel%
 %clean_gen64%

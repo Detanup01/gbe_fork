@@ -370,6 +370,27 @@ EOL
 
 ingame_overlay_common_defs="'-DIMGUI_USER_CONFIG=$_imgui_cfg_file' -DINGAMEOVERLAY_USE_SYSTEM_LIBRARIES=OFF -DINGAMEOVERLAY_USE_SPDLOG=OFF -DINGAMEOVERLAY_BUILD_TESTS=OFF"
 
+echo; echo "// building ingame_overlay [System dep x32]"
+pushd "deps/System"
+eval $recreate_32
+eval $cmake_gen32 -DBUILD_SYSTEMLIB_TESTS=OFF
+last_code=$((last_code + $?))
+eval $cmake_build32 --target install
+last_code=$((last_code + $?))
+eval $clean_gen32
+popd
+
+echo; echo "// building ingame_overlay [mini_detour dep x32]"
+pushd "deps/mini_detour"
+eval $recreate_32
+eval $cmake_gen32 -DBUILD_MINIDETOUR_TESTS=OFF
+last_code=$((last_code + $?))
+eval $cmake_build32 --target install
+last_code=$((last_code + $?))
+eval $clean_gen32
+popd
+
+echo; echo "// building ingame_overlay [main lib x32]"
 eval $recreate_32
 eval $cmake_gen32 $ingame_overlay_common_defs
 last_code=$((last_code + $?))
@@ -377,6 +398,27 @@ eval $cmake_build32 --target install
 last_code=$((last_code + $?))
 eval $clean_gen32
 
+echo; echo "// building ingame_overlay [System dep x64]"
+pushd "deps/System"
+eval $recreate_64
+eval $cmake_gen64 -DBUILD_SYSTEMLIB_TESTS=OFF
+last_code=$((last_code + $?))
+eval $cmake_build64 --target install
+last_code=$((last_code + $?))
+eval $clean_gen64
+popd
+
+echo; echo "// building ingame_overlay [mini_detour dep x64]"
+pushd "deps/mini_detour"
+eval $recreate_64
+eval $cmake_gen64 -DBUILD_MINIDETOUR_TESTS=OFF
+last_code=$((last_code + $?))
+eval $cmake_build64 --target install
+last_code=$((last_code + $?))
+eval $clean_gen64
+popd
+
+echo; echo "// building ingame_overlay [main lib x64]"
 eval $recreate_64
 eval $cmake_gen64 $ingame_overlay_common_defs
 last_code=$((last_code + $?))

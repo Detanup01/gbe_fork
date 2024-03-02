@@ -20,7 +20,7 @@ apt install tar -y || exit 1
 
 mkdir -p "$script_dir/$out_dir"
 
-archive_file="$script_dir/$out_dir/generate_emu_config-linux.tar.gz"
+archive_file="$script_dir/$out_dir/generate_emu_config-linux.tar.bz2"
 [[ -f "$archive_file" ]] && rm -f "$archive_file"
 
 pushd "$script_dir/$build_dir"
