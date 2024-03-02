@@ -1,3 +1,16 @@
+* updated the ingame overlay project, thanks to **[Nemirtingas]** for the project: https://github.com/Nemirtingas/ingame_overlay
+* removed the source files of the ingame overlay project, it is now a dependency, so rebuild your dependencies!
+* removed the code which locks the cursor inside the overlay window
+* removed the code which changes the cursor inside the overlay window
+* removed the code which adds custom fonts on Windows OS, but keep scaling
+* only attempt to load achievements images when hook is ready
+* cleanup overlay images on unhook
+* free the detector when we get a renderer hook instance
+* use locks everywhere in the overlay
+* updated the Windows build script
+
+---
+
 # 2024/2/29
 
 * revert the changes to `steam_matchmaking_servers` and only enable them via the 2 new config files:
