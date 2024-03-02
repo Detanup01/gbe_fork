@@ -230,6 +230,26 @@ void Steam_Overlay::HookReady(bool ready)
 
         io.IniFilename = NULL;
 
+#ifdef __WINDOWS__
+        // https://github.com/ocornut/imgui/blob/fbf45ad149b10ff8d9cb97aefe0dc5a9562fd66e/backends/imgui_impl_win32.cpp#L373-L382
+        struct ImGui_ImplWin32_Data
+        {
+            HWND hWnd;
+        };
+
+        auto bd = ImGui::GetCurrentContext() ? (ImGui_ImplWin32_Data*)ImGui::GetIO().BackendPlatformUserData : nullptr;;
+        if (bd) {
+
+            // IM_ASSERT(bd != nullptr && "Did you call ImGui_ImplWin32_Init()?");
+
+            // Setup display size (every frame to accommodate for window resizing)
+            RECT rect = { 0, 0, 0, 0 };
+            ::GetClientRect(bd->hWnd, &rect);
+            io.DisplaySize = ImVec2((float)(rect.right - rect.left), (float)(rect.bottom - rect.top));
+
+        }
+#endif // __WINDOWS__
+
         is_ready = ready;
     }
 }
@@ -1019,9 +1039,7 @@ void Steam_Overlay::OverlayProc()
         ImGui::PopFont();
     }
 
-    if (show_overlay)
-    {
-        io.ConfigFlags &= ~ImGuiConfigFlags_NoMouseCursorChange;
+    if (show_overlay) {
         // Set the overlay windows to the size of the game window
         ImGui::SetNextWindowPos({ 0,0 });
         ImGui::SetNextWindowSize({ static_cast<float>(io.DisplaySize.x),
@@ -1300,8 +1318,6 @@ void Steam_Overlay::OverlayProc()
 
         if (!show)
             ShowOverlay(false);
-    } else {
-        io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
     }
 }
 
@@ -1375,12 +1391,14 @@ void Steam_Overlay::RunCallbacks()
         }
     }
 
-    if (!Ready() && _renderer) {
-        _renderer->OverlayHookReady = [this](InGameOverlay::OverlayHookState state) { HookReady(state == InGameOverlay::OverlayHookState::Ready); };
-        _renderer->OverlayProc = [this]() { OverlayProc(); };
-        PRINT_DEBUG("start renderer\n", _renderer);
-        std::set<InGameOverlay::ToggleKey> keys = {InGameOverlay::ToggleKey::SHIFT, InGameOverlay::ToggleKey::TAB};
+    if (!Ready() && _renderer && !_renderer->IsStarted()) {
+        const static std::set<InGameOverlay::ToggleKey> keys = {InGameOverlay::ToggleKey::SHIFT, InGameOverlay::ToggleKey::TAB};
         auto key_combination_callback = [this]() { OpenOverlayHook(true); };
+        _renderer->OverlayProc = [this]() { OverlayProc(); };
+        _renderer->OverlayHookReady = [this](InGameOverlay::OverlayHookState state) {
+            PRINT_DEBUG("Steam_Overlay hook state changed %i\n", (int)state);
+            HookReady(state == InGameOverlay::OverlayHookState::Ready || state == InGameOverlay::OverlayHookState::Reset);
+        };
         bool started = _renderer->StartHook(key_combination_callback, keys, fonts_atlas);
         PRINT_DEBUG("Steam_Overlay tried to start renderer hook (result=%u)\n", started);
     }
