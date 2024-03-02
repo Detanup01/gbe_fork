@@ -1,5 +1,4 @@
-
-Font_Size 16.0
+Font_Size 13.5
 Icon_Size 64.0
 
 Notification_R 0.16

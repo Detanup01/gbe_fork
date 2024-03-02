@@ -116,7 +116,6 @@ class Steam_Overlay
     std::string show_url;
     std::vector<Overlay_Achievement> achievements;
     bool show_achievements, show_settings;
-    void *fonts_atlas;
 
     // disable input when force_*.txt file is used
     bool disable_user_input;

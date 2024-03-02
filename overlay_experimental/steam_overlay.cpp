@@ -6,6 +6,7 @@
 // avoids confusing ImGui when another label has the same text "MyText"
 
 #include "overlay/steam_overlay.h"
+#include "overlay/notification.h"
 #include "overlay/steam_overlay_translations.h"
 
 #include <thread>
@@ -59,6 +60,10 @@ static constexpr char *valid_languages[] = {
 
 #define URL_WINDOW_NAME "URL Window"
 
+ImFontAtlas fonts_atlas{};
+ImFont *font_default{};
+ImFont *font_notif{};
+
 int find_free_id(std::vector<int> & ids, int base)
 {
     std::sort(ids.begin(), ids.end());
@@ -101,7 +106,6 @@ int find_free_notification_id(std::vector<Notification> const& notifications)
     return find_free_id(ids, base_friend_window_id);
 }
 
-#include "overlay/notification.h"
 char *notif_achievement_wav_custom;
 char *notif_invite_wav_custom;
 bool notif_achievement_wav_custom_inuse = false;
@@ -135,8 +139,7 @@ Steam_Overlay::Steam_Overlay(Settings* settings, SteamCallResults* callback_resu
     i_have_lobby(false),
     show_achievements(false),
     show_settings(false),
-    _renderer(nullptr),
-    fonts_atlas(nullptr)
+    _renderer(nullptr)
 {
     strncpy(username_text, settings->get_local_name(), sizeof(username_text));
 
@@ -185,6 +188,7 @@ bool Steam_Overlay::NeedPresent() const
 
 void Steam_Overlay::SetNotificationPosition(ENotificationPosition eNotificationPosition)
 {
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     notif_position = eNotificationPosition;
 }
 
@@ -216,54 +220,52 @@ void Steam_Overlay::UnSetupOverlay()
             InGameOverlay::FreeDetector();
         }
     }
+    
+    if (_renderer) {
+        for (auto &ach : achievements) {
+            if (!ach.icon.expired()) _renderer->ReleaseImageResource(ach.icon);
+            if (!ach.icon_gray.expired()) _renderer->ReleaseImageResource(ach.icon_gray);
+        }
+
+        _renderer = nullptr;
+        PRINT_DEBUG("Steam_Overlay::UnSetupOverlay freed all images\n");
+    }
 }
 
 void Steam_Overlay::HookReady(bool ready)
 {
     PRINT_DEBUG("Steam_Overlay::HookReady %i\n", (int)ready);
-    {
-        // TODO: Uncomment this and draw our own cursor (cosmetics)
-        ImGuiIO &io = ImGui::GetIO();
-        //io.WantSetMousePos = false;
-        //io.MouseDrawCursor = false;
-        //io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
 
-        io.IniFilename = NULL;
+    is_ready = ready;
+    
+    ImGuiIO &io = ImGui::GetIO();
+    ImGuiStyle &style = ImGui::GetStyle();
 
-#ifdef __WINDOWS__
-        // https://github.com/ocornut/imgui/blob/fbf45ad149b10ff8d9cb97aefe0dc5a9562fd66e/backends/imgui_impl_win32.cpp#L373-L382
-        struct ImGui_ImplWin32_Data
-        {
-            HWND hWnd;
-        };
+    // disable loading the default ini file
+    io.IniFilename = NULL;
 
-        auto bd = ImGui::GetCurrentContext() ? (ImGui_ImplWin32_Data*)ImGui::GetIO().BackendPlatformUserData : nullptr;;
-        if (bd) {
+    // Disable round window
+    style.WindowRounding = 0.0;
 
-            // IM_ASSERT(bd != nullptr && "Did you call ImGui_ImplWin32_Init()?");
-
-            // Setup display size (every frame to accommodate for window resizing)
-            RECT rect = { 0, 0, 0, 0 };
-            ::GetClientRect(bd->hWnd, &rect);
-            io.DisplaySize = ImVec2((float)(rect.right - rect.left), (float)(rect.bottom - rect.top));
-
-        }
-#endif // __WINDOWS__
-
-        is_ready = ready;
-    }
+    // TODO: Uncomment this and draw our own cursor (cosmetics)
+    //io.WantSetMousePos = false;
+    //io.MouseDrawCursor = false;
+    //io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
 }
 
 void Steam_Overlay::OpenOverlayInvite(CSteamID lobbyId)
 {
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     ShowOverlay(true);
 }
 
 void Steam_Overlay::OpenOverlay(const char* pchDialog)
 {
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     // TODO: Show pages depending on pchDialog
     if ((strncmp(pchDialog, "Friends", sizeof("Friends") - 1) == 0) && (settings->overlayAutoAcceptInvitesCount() > 0)) {
-        PRINT_DEBUG("Not opening overlay's friends list because some friends are defined in the auto accept list\n");
+        PRINT_DEBUG("Steam_Overlay won't open overlay's friends list because some friends are defined in the auto accept list\n");
         AddAutoAcceptInviteNotification();
     } else {
         ShowOverlay(true);
@@ -272,6 +274,7 @@ void Steam_Overlay::OpenOverlay(const char* pchDialog)
 
 void Steam_Overlay::OpenOverlayWebpage(const char* pchURL)
 {
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     show_url = pchURL;
     ShowOverlay(true);
 }
@@ -283,6 +286,7 @@ bool Steam_Overlay::ShowOverlay() const
 
 bool Steam_Overlay::OpenOverlayHook(bool toggle)
 {
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     if (toggle) {
         ShowOverlay(!show_overlay);
     }
@@ -292,15 +296,19 @@ bool Steam_Overlay::OpenOverlayHook(bool toggle)
 
 void Steam_Overlay::ShowOverlay(bool state)
 {
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     if (!Ready() || show_overlay == state)
         return;
 
-    ImGuiIO &io = ImGui::GetIO();
-
+    // this is very important, it doesn't just prevent input confusion between game's window
+    // and overlay's window, but internally it calls the necessary fuctions to properly update
+    // ImGui window size
     if (state) {
-        io.MouseDrawCursor = true;
+        _renderer->HideAppInputs(true);
+        _renderer->HideOverlayInputs(false);
     } else {
-        io.MouseDrawCursor = false;
+        _renderer->HideAppInputs(false);
+        _renderer->HideOverlayInputs(true);
     }
 
     show_overlay = state;
@@ -399,7 +407,7 @@ void Steam_Overlay::FriendConnect(Friend _friend)
         item.joinable = false;
     }
     else
-        PRINT_DEBUG("No more free id to create a friend window\n");
+        PRINT_DEBUG("Steam_Overlay error no free id to create a friend window\n");
 }
 
 void Steam_Overlay::FriendDisconnect(Friend _friend)
@@ -426,7 +434,7 @@ void Steam_Overlay::AddMessageNotification(std::string const& message)
         have_notifications = true;
     }
     else
-        PRINT_DEBUG("No more free id to create a notification window\n");
+        PRINT_DEBUG("Steam_Overlay error no free id to create a notification window\n");
 }
 
 // show a notification when the user unlocks an achievement
@@ -462,7 +470,7 @@ void Steam_Overlay::AddAchievementNotification(nlohmann::json const& ach)
             have_notifications = true;
         }
         else
-            PRINT_DEBUG("No more free id to create a notification window\n");
+            PRINT_DEBUG("Steam_Overlay error no free id to create a notification window\n");
     }
 
     std::string ach_name = ach.value("name", "");
@@ -502,7 +510,7 @@ void Steam_Overlay::AddInviteNotification(std::pair<const Friend, friend_window_
         have_notifications = true;
     }
     else
-        PRINT_DEBUG("No more free id to create a notification window\n");
+        PRINT_DEBUG("Steam_Overlay error no free id to create a notification window\n");
 }
 
 void Steam_Overlay::AddAutoAcceptInviteNotification()
@@ -526,7 +534,7 @@ void Steam_Overlay::AddAutoAcceptInviteNotification()
         NotifySoundAutoAcceptFriendInvite();
         have_notifications = true;
     } else {
-        PRINT_DEBUG("No free id to create an auto-accept notification window\n");
+        PRINT_DEBUG("Steam_Overlay error no free id to create an auto-accept notification window\n");
     }
 }
 
@@ -712,9 +720,6 @@ void Steam_Overlay::BuildFriendWindow(Friend const& frd, friend_window_state& st
     ImGui::End();
 }
 
-ImFont *font_default;
-ImFont *font_notif;
-
 // set the position of the next notification
 void Steam_Overlay::SetNextNotificationPos(float width, float height, float font_size, notification_type type, struct NotificationsIndexes &idx)
 {
@@ -875,105 +880,32 @@ void Steam_Overlay::BuildNotifications(int width, int height)
 
 void Steam_Overlay::CreateFonts()
 {
-    if (fonts_atlas) return;
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    static bool configured_font = false;
 
-    ImFontAtlas *Fonts = new ImFontAtlas();
+    if (configured_font) return;
+    configured_font = true;
 
-    ImFontConfig fontcfg;
+    ImFontConfig fontcfg{};
 
     float font_size = settings->overlay_appearance.font_size;
     fontcfg.OversampleH = fontcfg.OversampleV = 1;
     fontcfg.PixelSnapH = true;
     fontcfg.SizePixels = font_size;
+    fontcfg.GlyphRanges = fonts_atlas.GetGlyphRangesDefault();
 
-    ImFontGlyphRangesBuilder font_builder;
-    for (auto & x : achievements) {
-        font_builder.AddText(x.title.c_str());
-        font_builder.AddText(x.description.c_str());
-    }
-    for (int i = 0; i < TRANSLATION_NUMBER_OF_LANGUAGES; i++) {
-        font_builder.AddText(translationChat[i]);
-        font_builder.AddText(translationInvite[i]);
-        font_builder.AddText(translationJoin[i]);
-        font_builder.AddText(translationInvitedYouToJoinTheGame[i]);
-        font_builder.AddText(translationAccept[i]);
-        font_builder.AddText(translationRefuse[i]);
-        font_builder.AddText(translationSend[i]);
-        font_builder.AddText(translationSteamOverlay[i]);
-        font_builder.AddText(translationUserPlaying[i]);
-        font_builder.AddText(translationRenderer[i]);
-        font_builder.AddText(translationShowAchievements[i]);
-        font_builder.AddText(translationSettings[i]);
-        font_builder.AddText(translationFriends[i]);
-        font_builder.AddText(translationAchievementWindow[i]);
-        font_builder.AddText(translationListOfAchievements[i]);
-        font_builder.AddText(translationAchievements[i]);
-        font_builder.AddText(translationHiddenAchievement[i]);
-        font_builder.AddText(translationAchievedOn[i]);
-        font_builder.AddText(translationNotAchieved[i]);
-        font_builder.AddText(translationGlobalSettingsWindow[i]);
-        font_builder.AddText(translationGlobalSettingsWindowDescription[i]);
-        font_builder.AddText(translationUsername[i]);
-        font_builder.AddText(translationLanguage[i]);
-        font_builder.AddText(translationSelectedLanguage[i]);
-        font_builder.AddText(translationRestartTheGameToApply[i]);
-        font_builder.AddText(translationSave[i]);
-        font_builder.AddText(translationWarning[i]);
-        font_builder.AddText(translationWarningWarningWarning[i]);
-        font_builder.AddText(translationWarningDescription1[i]);
-        font_builder.AddText(translationWarningDescription2[i]);
-        font_builder.AddText(translationWarningDescription3[i]);
-        font_builder.AddText(translationWarningDescription4[i]);
-        font_builder.AddText(translationSteamOverlayURL[i]);
-        font_builder.AddText(translationClose[i]);
-        font_builder.AddText(translationPlaying[i]);
-    }
-
-    font_builder.AddRanges(Fonts->GetGlyphRangesDefault());
-
-    ImVector<ImWchar> ranges;
-    font_builder.BuildRanges(&ranges);
-
-    bool need_extra_fonts = false;
-    for (auto &x : ranges) {
-        if (x > 0xFF) {
-            need_extra_fonts = true;
-            break;
-        }
-    }
-
-    fontcfg.GlyphRanges = ranges.Data;
-    ImFont *font = NULL;
-
-#if defined(__WINDOWS__)
-    font = Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\micross.ttf", font_size, &fontcfg);
-#endif
-
-    if (!font) {
-        font = Fonts->AddFontDefault(&fontcfg);
-    }
-
+    ImFont *font = fonts_atlas.AddFontDefault(&fontcfg);
+    
     font_notif = font_default = font;
+    
+    fonts_atlas.Build();
 
-    if (need_extra_fonts) {
-        PRINT_DEBUG("Steam_Overlay loading extra fonts\n");
-        fontcfg.MergeMode = true;
-#if defined(__WINDOWS__)
-        Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\simsun.ttc", font_size, &fontcfg);
-        Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\malgun.ttf", font_size, &fontcfg);
-#endif
-    }
-
-    Fonts->Build();
-    fonts_atlas = (void *)Fonts;
-
-    // ImGuiStyle& style = ImGui::GetStyle();
-    // style.WindowRounding = 0.0; // Disable round window
     reset_LastError();
 }
 
 void Steam_Overlay::LoadAudio()
 {
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     std::string file_path;
     std::string file_name;
     unsigned long long file_size;
@@ -1028,10 +960,21 @@ static inline bool ImGuiHelper_BeginListBox(const char* label, int items_count) 
 // Try to make this function as short as possible or it might affect game's fps.
 void Steam_Overlay::OverlayProc()
 {
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     if (!Ready())
         return;
 
     ImGuiIO& io = ImGui::GetIO();
+
+    if (show_overlay) {
+        // Set the overlay windows to the size of the game window
+        ImGui::SetNextWindowPos({ 0,0 });
+        ImGui::SetNextWindowSize({ io.DisplaySize.x, io.DisplaySize.y });
+
+        ImGui::SetNextWindowBgAlpha(0.50);
+
+        ImGui::PushFont(font_default);
+    }
 
     if (have_notifications) {
         ImGui::PushFont(font_notif);
@@ -1039,286 +982,281 @@ void Steam_Overlay::OverlayProc()
         ImGui::PopFont();
     }
 
-    if (show_overlay) {
-        // Set the overlay windows to the size of the game window
-        ImGui::SetNextWindowPos({ 0,0 });
-        ImGui::SetNextWindowSize({ static_cast<float>(io.DisplaySize.x),
-                                   static_cast<float>(io.DisplaySize.y) });
-
-        ImGui::SetNextWindowBgAlpha(0.50);
-
-        ImGui::PushFont(font_default);
-
-        bool show = true;
-
-        char tmp[TRANSLATION_BUFFER_SIZE]{};
-        snprintf(tmp, sizeof(tmp), translationRenderer[current_language], (_renderer == nullptr ? "Unknown" : _renderer->GetLibraryName().c_str()));
-        std::string windowTitle;
-        windowTitle.append(translationSteamOverlay[current_language]);
-        windowTitle.append(" (");
-        windowTitle.append(tmp);
-        windowTitle.append(")");
-
-        if ((settings->overlay_appearance.background_r != -1.0) && (settings->overlay_appearance.background_g != -1.0) && (settings->overlay_appearance.background_b != -1.0) && (settings->overlay_appearance.background_a != -1.0)) {
-            ImVec4 colorSet = ImVec4(settings->overlay_appearance.background_r, settings->overlay_appearance.background_g, settings->overlay_appearance.background_b, settings->overlay_appearance.background_a);
-            ImGui::PushStyleColor(ImGuiCol_WindowBg, colorSet);
-        }
-        if ((settings->overlay_appearance.element_r != -1.0) && (settings->overlay_appearance.element_g != -1.0) && (settings->overlay_appearance.element_b != -1.0) && (settings->overlay_appearance.element_a != -1.0)) {
-            ImVec4 colorSet = ImVec4(settings->overlay_appearance.element_r, settings->overlay_appearance.element_g, settings->overlay_appearance.element_b, settings->overlay_appearance.element_a);
-            ImGui::PushStyleColor(ImGuiCol_TitleBgActive, colorSet);
-            ImGui::PushStyleColor(ImGuiCol_Button, colorSet);
-            ImGui::PushStyleColor(ImGuiCol_FrameBg, colorSet);
-            ImGui::PushStyleColor(ImGuiCol_ResizeGrip, colorSet);
-        }
-        if ((settings->overlay_appearance.element_hovered_r != -1.0) && (settings->overlay_appearance.element_hovered_g != -1.0) && (settings->overlay_appearance.element_hovered_b != -1.0) && (settings->overlay_appearance.element_hovered_a != -1.0)) {
-            ImVec4 colorSet = ImVec4(settings->overlay_appearance.element_hovered_r, settings->overlay_appearance.element_hovered_g, settings->overlay_appearance.element_hovered_b, settings->overlay_appearance.element_hovered_a);
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colorSet);
-            ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, colorSet);
-            ImGui::PushStyleColor(ImGuiCol_ResizeGripHovered, colorSet);
-            ImGui::PushStyleColor(ImGuiCol_HeaderHovered, colorSet);
-        }
-        if ((settings->overlay_appearance.element_active_r != -1.0) && (settings->overlay_appearance.element_active_g != -1.0) && (settings->overlay_appearance.element_active_b != -1.0) && (settings->overlay_appearance.element_active_a != -1.0)) {
-            ImVec4 colorSet = ImVec4(settings->overlay_appearance.element_active_r, settings->overlay_appearance.element_active_g, settings->overlay_appearance.element_active_b, settings->overlay_appearance.element_active_a);
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, colorSet);
-            ImGui::PushStyleColor(ImGuiCol_FrameBgActive, colorSet);
-            ImGui::PushStyleColor(ImGuiCol_ResizeGripActive, colorSet);
-            ImGui::PushStyleColor(ImGuiCol_Header, colorSet);
-            ImGui::PushStyleColor(ImGuiCol_HeaderActive, colorSet);
-        }
-
-        if (ImGui::Begin(windowTitle.c_str(), &show, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus))
-        {
-            ImGui::LabelText("##label", translationUserPlaying[current_language],
-                settings->get_local_name(),
-                settings->get_local_steam_id().ConvertToUint64(),
-                settings->get_local_game_id().AppID());
-
-            ImGui::SameLine();
-            ImGui::Spacing();
-            if (ImGui::Button(translationShowAchievements[current_language])) {
-                show_achievements = true;
-            }
-
-            ImGui::SameLine();
-            if (ImGui::Button(translationSettings[current_language])) {
-                show_settings = true;
-            }
-            
-            ImGui::SameLine();
-            // user clicked on "copy id" on themselves
-            if (ImGui::Button(translationCopyId[current_language])) {
-                auto friend_id_str = std::to_string(settings->get_local_steam_id().ConvertToUint64());
-                ImGui::SetClipboardText(friend_id_str.c_str());
-            }
-
-
-            ImGui::Spacing();
-            ImGui::Spacing();
-
-            ImGui::LabelText("##label", translationFriends[current_language]);
-
-            std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-            if (!friends.empty()) {
-                if (i_have_lobby) {
-                    std::string inviteAll(translationInviteAll[current_language]);
-                    inviteAll.append("##PopupInviteAllFriends");
-                    if (ImGui::Button(inviteAll.c_str())) { // if btn clicked
-                        invite_all_friends_clicked = true;
-                    }
-                }
-
-                if (ImGuiHelper_BeginListBox("##label", friends.size())) {
-                    std::for_each(friends.begin(), friends.end(), [this](std::pair<Friend const, friend_window_state> &i) {
-                        ImGui::PushID(i.second.id-base_friend_window_id+base_friend_item_id);
-
-                        ImGui::Selectable(i.second.window_title.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick);
-                        BuildContextMenu(i.first, i.second);
-                        if (ImGui::IsItemClicked() && ImGui::IsMouseDoubleClicked(0)) {
-                            i.second.window_state |= window_state_show;
-                        }
-                        ImGui::PopID();
-
-                        BuildFriendWindow(i.first, i.second);
-                    });
-                    ImGui::EndListBox();
-                }
-            }
-
-            if (show_achievements && achievements.size()) { // display achievements list when the button "show achievements" is pressed
-                ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 32, ImGui::GetFontSize() * 32), ImVec2(8192, 8192));
-                bool show = show_achievements;
-                if (ImGui::Begin(translationAchievementWindow[current_language], &show)) {
-                    ImGui::Text(translationListOfAchievements[current_language]);
-                    ImGui::BeginChild(translationAchievements[current_language]);
-                    for (auto & x : achievements) {
-                        bool achieved = x.achieved;
-                        bool hidden = x.hidden && !achieved;
-
-                        if (x.icon.expired() && x.icon_load_trials) {
-                            --x.icon_load_trials;
-                            std::string file_path = Local_Storage::get_game_settings_path() + x.icon_name;
-                            unsigned long long file_size = file_size_(file_path);
-                            if (!file_size) {
-                                file_path = Local_Storage::get_game_settings_path() + "achievement_images/" + x.icon_name;
-                                file_size = file_size_(file_path);
-                            }
-                            if (file_size) {
-                                std::string img = Local_Storage::load_image_resized(file_path, "", settings->overlay_appearance.icon_size);
-                                if (img.length() > 0) {
-                                    if (_renderer) x.icon = _renderer->CreateImageResource((void*)img.c_str(), settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size);
-                                    if (!x.icon.expired()) x.icon_load_trials = Overlay_Achievement::ICON_LOAD_MAX_TRIALS;
-                                }
-                            }
-                        }
-                        if (x.icon_gray.expired() && x.icon_gray_load_trials) {
-                            --x.icon_gray_load_trials;
-                            std::string file_path = Local_Storage::get_game_settings_path() + x.icon_gray_name;
-                            unsigned long long file_size = file_size_(file_path);
-                            if (!file_size) {
-                                file_path = Local_Storage::get_game_settings_path() + "achievement_images/" + x.icon_gray_name;
-                                file_size = file_size_(file_path);
-                            }
-                            if (file_size) {
-                                std::string img = Local_Storage::load_image_resized(file_path, "", settings->overlay_appearance.icon_size);
-                                if (img.length() > 0) {
-                                    if (_renderer) x.icon_gray = _renderer->CreateImageResource((void*)img.c_str(), settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size);
-                                    if (!x.icon_gray.expired()) x.icon_gray_load_trials = Overlay_Achievement::ICON_LOAD_MAX_TRIALS;
-                                }
-                            }
-                        }
-
-                        ImGui::Separator();
-
-                        if (!x.icon.expired() && !x.icon_gray.expired()) {
-                            ImGui::BeginTable(x.title.c_str(), 2);
-                            ImGui::TableSetupColumn("imgui_table_image", ImGuiTableColumnFlags_WidthFixed, settings->overlay_appearance.icon_size);
-                            ImGui::TableSetupColumn("imgui_table_text");
-                            ImGui::TableNextRow(ImGuiTableRowFlags_None, settings->overlay_appearance.icon_size);
-
-                            ImGui::TableSetColumnIndex(0);
-                            if (achieved) {
-                                ImGui::Image((ImTextureID)*x.icon.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
-                            } else {
-                                ImGui::Image((ImTextureID)*x.icon_gray.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
-                            }
-
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%s", x.title.c_str());
-                        } else {
-                            ImGui::Text("%s", x.title.c_str());
-                        }
-
-                        if (hidden) {
-                            ImGui::Text(translationHiddenAchievement[current_language]);
-                        } else {
-                            ImGui::TextWrapped("%s", x.description.c_str());
-                        }
-
-                        if (achieved) {
-                            char buffer[80] = {};
-                            time_t unlock_time = (time_t)x.unlock_time;
-                            std::strftime(buffer, 80, "%Y-%m-%d at %H:%M:%S", std::localtime(&unlock_time));
-
-                            ImGui::TextColored(ImVec4(0, 255, 0, 255), translationAchievedOn[current_language], buffer);
-                        } else {
-                            ImGui::TextColored(ImVec4(255, 0, 0, 255), translationNotAchieved[current_language]);
-                        }
-
-                        if (!x.icon.expired() && !x.icon_gray.expired()) ImGui::EndTable();
-
-                        ImGui::Separator();
-                    }
-                    ImGui::EndChild();
-                }
-                ImGui::End();
-                show_achievements = show;
-            }
-
-            if (show_settings) {
-                if (ImGui::Begin(translationGlobalSettingsWindow[current_language], &show_settings)) {
-                    ImGui::Text(translationGlobalSettingsWindowDescription[current_language]);
-
-                    ImGui::Separator();
-
-                    ImGui::Text(translationUsername[current_language]);
-                    ImGui::SameLine();
-                    ImGui::InputText("##username", username_text, sizeof(username_text), disable_user_input ? ImGuiInputTextFlags_ReadOnly : 0);
-
-                    ImGui::Separator();
-
-                    ImGui::Text(translationLanguage[current_language]);
-                    ImGui::ListBox("##language", &current_language, valid_languages, sizeof(valid_languages) / sizeof(char *), 7);
-                    ImGui::Text(translationSelectedLanguage[current_language], valid_languages[current_language]);
-
-                    ImGui::Separator();
-
-                    if (!disable_user_input) {
-                        ImGui::Text(translationRestartTheGameToApply[current_language]);
-                        if (ImGui::Button(translationSave[current_language])) {
-                            save_settings = true;
-                            show_settings = false;
-                        }
-                    } else {
-                        ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
-                        ImGui::TextWrapped(translationWarningDescription1[current_language]);
-                        ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
-                    }
-                }
-
-                ImGui::End();
-            }
-
-            std::string url = show_url;
-            if (url.size()) {
-                bool show = true;
-                if (ImGui::Begin(URL_WINDOW_NAME, &show)) {
-                    ImGui::Text(translationSteamOverlayURL[current_language]);
-                    ImGui::Spacing();
-                    ImGui::PushItemWidth(ImGui::CalcTextSize(url.c_str()).x + 20);
-                    ImGui::InputText("##url_copy", (char *)url.data(), url.size(), ImGuiInputTextFlags_ReadOnly);
-                    ImGui::PopItemWidth();
-                    ImGui::Spacing();
-                    if (ImGui::Button(translationClose[current_language]) || !show)
-                        show_url = "";
-                    // ImGui::SetWindowSize(ImVec2(ImGui::CalcTextSize(url.c_str()).x + 10, 0));
-                }
-                ImGui::End();
-            }
-
-            bool show_warning = warn_local_save || warn_forced_setting || warn_bad_appid;
-            if (show_warning) {
-                ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 32, ImGui::GetFontSize() * 32), ImVec2(8192, 8192));
-                ImGui::SetNextWindowFocus();
-                if (ImGui::Begin(translationWarning[current_language], &show_warning)) {
-                    if (warn_bad_appid) {
-                        ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
-                        ImGui::TextWrapped(translationWarningDescription2[current_language]);
-                        ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
-                    }
-                    if (warn_local_save) {
-                        ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
-                        ImGui::TextWrapped(translationWarningDescription3[current_language]);
-                        ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
-                    }
-                    if (warn_forced_setting) {
-                        ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
-                        ImGui::TextWrapped(translationWarningDescription4[current_language]);
-                        ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
-                    }
-                }
-                ImGui::End();
-                if (!show_warning) {
-                    warn_local_save = warn_forced_setting = false;
-                }
-            }
-        }
-        ImGui::End();
-
-        ImGui::PopFont();
-
-        if (!show)
-            ShowOverlay(false);
+    // ******************** exit early if we shouldn't show the overlay
+    if (!show_overlay) {
+        return;
     }
+    // ********************
+    
+    bool show = true;
+
+    char tmp[TRANSLATION_BUFFER_SIZE]{};
+    snprintf(tmp, sizeof(tmp), translationRenderer[current_language], (_renderer == nullptr ? "Unknown" : _renderer->GetLibraryName().c_str()));
+    std::string windowTitle;
+    windowTitle.append(translationSteamOverlay[current_language]);
+    windowTitle.append(" (");
+    windowTitle.append(tmp);
+    windowTitle.append(")");
+
+    if ((settings->overlay_appearance.background_r != -1.0) && (settings->overlay_appearance.background_g != -1.0) && (settings->overlay_appearance.background_b != -1.0) && (settings->overlay_appearance.background_a != -1.0)) {
+        ImVec4 colorSet = ImVec4(settings->overlay_appearance.background_r, settings->overlay_appearance.background_g, settings->overlay_appearance.background_b, settings->overlay_appearance.background_a);
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, colorSet);
+    }
+    if ((settings->overlay_appearance.element_r != -1.0) && (settings->overlay_appearance.element_g != -1.0) && (settings->overlay_appearance.element_b != -1.0) && (settings->overlay_appearance.element_a != -1.0)) {
+        ImVec4 colorSet = ImVec4(settings->overlay_appearance.element_r, settings->overlay_appearance.element_g, settings->overlay_appearance.element_b, settings->overlay_appearance.element_a);
+        ImGui::PushStyleColor(ImGuiCol_TitleBgActive, colorSet);
+        ImGui::PushStyleColor(ImGuiCol_Button, colorSet);
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, colorSet);
+        ImGui::PushStyleColor(ImGuiCol_ResizeGrip, colorSet);
+    }
+    if ((settings->overlay_appearance.element_hovered_r != -1.0) && (settings->overlay_appearance.element_hovered_g != -1.0) && (settings->overlay_appearance.element_hovered_b != -1.0) && (settings->overlay_appearance.element_hovered_a != -1.0)) {
+        ImVec4 colorSet = ImVec4(settings->overlay_appearance.element_hovered_r, settings->overlay_appearance.element_hovered_g, settings->overlay_appearance.element_hovered_b, settings->overlay_appearance.element_hovered_a);
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colorSet);
+        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, colorSet);
+        ImGui::PushStyleColor(ImGuiCol_ResizeGripHovered, colorSet);
+        ImGui::PushStyleColor(ImGuiCol_HeaderHovered, colorSet);
+    }
+    if ((settings->overlay_appearance.element_active_r != -1.0) && (settings->overlay_appearance.element_active_g != -1.0) && (settings->overlay_appearance.element_active_b != -1.0) && (settings->overlay_appearance.element_active_a != -1.0)) {
+        ImVec4 colorSet = ImVec4(settings->overlay_appearance.element_active_r, settings->overlay_appearance.element_active_g, settings->overlay_appearance.element_active_b, settings->overlay_appearance.element_active_a);
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, colorSet);
+        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, colorSet);
+        ImGui::PushStyleColor(ImGuiCol_ResizeGripActive, colorSet);
+        ImGui::PushStyleColor(ImGuiCol_Header, colorSet);
+        ImGui::PushStyleColor(ImGuiCol_HeaderActive, colorSet);
+    }
+
+    if (ImGui::Begin(windowTitle.c_str(), &show, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus))
+    {
+        ImGui::LabelText("##label", translationUserPlaying[current_language],
+            settings->get_local_name(),
+            settings->get_local_steam_id().ConvertToUint64(),
+            settings->get_local_game_id().AppID());
+
+        ImGui::SameLine();
+        ImGui::Spacing();
+        if (ImGui::Button(translationShowAchievements[current_language])) {
+            show_achievements = true;
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button(translationSettings[current_language])) {
+            show_settings = true;
+        }
+        
+        ImGui::SameLine();
+        // user clicked on "copy id" on themselves
+        if (ImGui::Button(translationCopyId[current_language])) {
+            auto friend_id_str = std::to_string(settings->get_local_steam_id().ConvertToUint64());
+            ImGui::SetClipboardText(friend_id_str.c_str());
+        }
+
+
+        ImGui::Spacing();
+        ImGui::Spacing();
+
+        ImGui::LabelText("##label", translationFriends[current_language]);
+
+        std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+        if (!friends.empty()) {
+            if (i_have_lobby) {
+                std::string inviteAll(translationInviteAll[current_language]);
+                inviteAll.append("##PopupInviteAllFriends");
+                if (ImGui::Button(inviteAll.c_str())) { // if btn clicked
+                    invite_all_friends_clicked = true;
+                }
+            }
+
+            if (ImGuiHelper_BeginListBox("##label", friends.size())) {
+                std::for_each(friends.begin(), friends.end(), [this](std::pair<Friend const, friend_window_state> &i) {
+                    ImGui::PushID(i.second.id-base_friend_window_id+base_friend_item_id);
+
+                    ImGui::Selectable(i.second.window_title.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick);
+                    BuildContextMenu(i.first, i.second);
+                    if (ImGui::IsItemClicked() && ImGui::IsMouseDoubleClicked(0)) {
+                        i.second.window_state |= window_state_show;
+                    }
+                    ImGui::PopID();
+
+                    BuildFriendWindow(i.first, i.second);
+                });
+                ImGui::EndListBox();
+            }
+        }
+
+        if (show_achievements && achievements.size()) { // display achievements list when the button "show achievements" is pressed
+            ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 32, ImGui::GetFontSize() * 32), ImVec2(8192, 8192));
+            bool show = show_achievements;
+            if (ImGui::Begin(translationAchievementWindow[current_language], &show)) {
+                ImGui::Text(translationListOfAchievements[current_language]);
+                ImGui::BeginChild(translationAchievements[current_language]);
+                for (auto & x : achievements) {
+                    bool achieved = x.achieved;
+                    bool hidden = x.hidden && !achieved;
+
+                    if (x.icon.expired() && x.icon_load_trials) {
+                        --x.icon_load_trials;
+                        std::string file_path = Local_Storage::get_game_settings_path() + x.icon_name;
+                        unsigned long long file_size = file_size_(file_path);
+                        if (!file_size) {
+                            file_path = Local_Storage::get_game_settings_path() + "achievement_images/" + x.icon_name;
+                            file_size = file_size_(file_path);
+                        }
+                        if (file_size) {
+                            std::string img = Local_Storage::load_image_resized(file_path, "", settings->overlay_appearance.icon_size);
+                            if (img.length() > 0) {
+                                if (_renderer) x.icon = _renderer->CreateImageResource((void*)img.c_str(), settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size);
+                                if (!x.icon.expired()) x.icon_load_trials = Overlay_Achievement::ICON_LOAD_MAX_TRIALS;
+                            }
+                        }
+                    }
+                    if (x.icon_gray.expired() && x.icon_gray_load_trials) {
+                        --x.icon_gray_load_trials;
+                        std::string file_path = Local_Storage::get_game_settings_path() + x.icon_gray_name;
+                        unsigned long long file_size = file_size_(file_path);
+                        if (!file_size) {
+                            file_path = Local_Storage::get_game_settings_path() + "achievement_images/" + x.icon_gray_name;
+                            file_size = file_size_(file_path);
+                        }
+                        if (file_size) {
+                            std::string img = Local_Storage::load_image_resized(file_path, "", settings->overlay_appearance.icon_size);
+                            if (img.length() > 0) {
+                                if (_renderer) x.icon_gray = _renderer->CreateImageResource((void*)img.c_str(), settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size);
+                                if (!x.icon_gray.expired()) x.icon_gray_load_trials = Overlay_Achievement::ICON_LOAD_MAX_TRIALS;
+                            }
+                        }
+                    }
+
+                    ImGui::Separator();
+
+                    if (!x.icon.expired() && !x.icon_gray.expired()) {
+                        ImGui::BeginTable(x.title.c_str(), 2);
+                        ImGui::TableSetupColumn("imgui_table_image", ImGuiTableColumnFlags_WidthFixed, settings->overlay_appearance.icon_size);
+                        ImGui::TableSetupColumn("imgui_table_text");
+                        ImGui::TableNextRow(ImGuiTableRowFlags_None, settings->overlay_appearance.icon_size);
+
+                        ImGui::TableSetColumnIndex(0);
+                        if (achieved) {
+                            ImGui::Image((ImTextureID)*x.icon.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
+                        } else {
+                            ImGui::Image((ImTextureID)*x.icon_gray.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
+                        }
+
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::Text("%s", x.title.c_str());
+                    } else {
+                        ImGui::Text("%s", x.title.c_str());
+                    }
+
+                    if (hidden) {
+                        ImGui::Text(translationHiddenAchievement[current_language]);
+                    } else {
+                        ImGui::TextWrapped("%s", x.description.c_str());
+                    }
+
+                    if (achieved) {
+                        char buffer[80] = {};
+                        time_t unlock_time = (time_t)x.unlock_time;
+                        std::strftime(buffer, 80, "%Y-%m-%d at %H:%M:%S", std::localtime(&unlock_time));
+
+                        ImGui::TextColored(ImVec4(0, 255, 0, 255), translationAchievedOn[current_language], buffer);
+                    } else {
+                        ImGui::TextColored(ImVec4(255, 0, 0, 255), translationNotAchieved[current_language]);
+                    }
+
+                    if (!x.icon.expired() && !x.icon_gray.expired()) ImGui::EndTable();
+
+                    ImGui::Separator();
+                }
+                ImGui::EndChild();
+            }
+            ImGui::End();
+            show_achievements = show;
+        }
+
+        if (show_settings) {
+            if (ImGui::Begin(translationGlobalSettingsWindow[current_language], &show_settings)) {
+                ImGui::Text(translationGlobalSettingsWindowDescription[current_language]);
+
+                ImGui::Separator();
+
+                ImGui::Text(translationUsername[current_language]);
+                ImGui::SameLine();
+                ImGui::InputText("##username", username_text, sizeof(username_text), disable_user_input ? ImGuiInputTextFlags_ReadOnly : 0);
+
+                ImGui::Separator();
+
+                ImGui::Text(translationLanguage[current_language]);
+                ImGui::ListBox("##language", &current_language, valid_languages, sizeof(valid_languages) / sizeof(char *), 7);
+                ImGui::Text(translationSelectedLanguage[current_language], valid_languages[current_language]);
+
+                ImGui::Separator();
+
+                if (!disable_user_input) {
+                    ImGui::Text(translationRestartTheGameToApply[current_language]);
+                    if (ImGui::Button(translationSave[current_language])) {
+                        save_settings = true;
+                        show_settings = false;
+                    }
+                } else {
+                    ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
+                    ImGui::TextWrapped(translationWarningDescription1[current_language]);
+                    ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
+                }
+            }
+
+            ImGui::End();
+        }
+
+        std::string url = show_url;
+        if (url.size()) {
+            bool show = true;
+            if (ImGui::Begin(URL_WINDOW_NAME, &show)) {
+                ImGui::Text(translationSteamOverlayURL[current_language]);
+                ImGui::Spacing();
+                ImGui::PushItemWidth(ImGui::CalcTextSize(url.c_str()).x + 20);
+                ImGui::InputText("##url_copy", (char *)url.data(), url.size(), ImGuiInputTextFlags_ReadOnly);
+                ImGui::PopItemWidth();
+                ImGui::Spacing();
+                if (ImGui::Button(translationClose[current_language]) || !show)
+                    show_url = "";
+                // ImGui::SetWindowSize(ImVec2(ImGui::CalcTextSize(url.c_str()).x + 10, 0));
+            }
+            ImGui::End();
+        }
+
+        bool show_warning = warn_local_save || warn_forced_setting || warn_bad_appid;
+        if (show_warning) {
+            ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 32, ImGui::GetFontSize() * 32), ImVec2(8192, 8192));
+            ImGui::SetNextWindowFocus();
+            if (ImGui::Begin(translationWarning[current_language], &show_warning)) {
+                if (warn_bad_appid) {
+                    ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
+                    ImGui::TextWrapped(translationWarningDescription2[current_language]);
+                    ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
+                }
+                if (warn_local_save) {
+                    ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
+                    ImGui::TextWrapped(translationWarningDescription3[current_language]);
+                    ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
+                }
+                if (warn_forced_setting) {
+                    ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
+                    ImGui::TextWrapped(translationWarningDescription4[current_language]);
+                    ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
+                }
+            }
+            ImGui::End();
+            if (!show_warning) {
+                warn_local_save = warn_forced_setting = false;
+            }
+        }
+    }
+    ImGui::End();
+
+    ImGui::PopFont();
+
+    if (!show)
+        ShowOverlay(false);
 }
 
 void Steam_Overlay::Callback(Common_Message *msg)
@@ -1344,7 +1282,8 @@ void Steam_Overlay::Callback(Common_Message *msg)
 
 void Steam_Overlay::RunCallbacks()
 {
-    if (!achievements.size() && load_achievements_trials > 0) {
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (Ready() && !achievements.size() && load_achievements_trials > 0) {
         --load_achievements_trials;
         Steam_User_Stats* steamUserStats = get_steam_client()->steam_user_stats;
         uint32 achievements_num = steamUserStats->GetNumAchievements();
@@ -1378,28 +1317,42 @@ void Steam_Overlay::RunCallbacks()
                 achievements.push_back(ach);
             }
 
+            // don't punish successfull attempts
+            if (achievements.size()) {
+                ++load_achievements_trials;
+            }
             PRINT_DEBUG("Steam_Overlay POPULATE OVERLAY ACHIEVEMENTS DONE\n");
         }
     }
 
+    // if the detector has finished its job, and the overlay was still not ready
+    // then get the renderer hook instance
     if (!Ready() && future_renderer.valid()) {
         if (future_renderer.wait_for(std::chrono::milliseconds{0}) == std::future_status::ready) {
             _renderer = future_renderer.get();
+            InGameOverlay::StopRendererDetection();
+            InGameOverlay::FreeDetector();
             PRINT_DEBUG("Steam_Overlay got renderer %p\n", _renderer);
             CreateFonts();
             LoadAudio();
         }
     }
 
+    // if we have a renderer hook instance but it wasn't started yet
     if (!Ready() && _renderer && !_renderer->IsStarted()) {
-        const static std::set<InGameOverlay::ToggleKey> keys = {InGameOverlay::ToggleKey::SHIFT, InGameOverlay::ToggleKey::TAB};
-        auto key_combination_callback = [this]() { OpenOverlayHook(true); };
+        const static std::set<InGameOverlay::ToggleKey> overlay_toggle_keys = {
+            InGameOverlay::ToggleKey::SHIFT, InGameOverlay::ToggleKey::TAB
+        };
+        auto overlay_toggle_callback = [this]() { OpenOverlayHook(true); };
         _renderer->OverlayProc = [this]() { OverlayProc(); };
         _renderer->OverlayHookReady = [this](InGameOverlay::OverlayHookState state) {
             PRINT_DEBUG("Steam_Overlay hook state changed %i\n", (int)state);
+            if (state ==  InGameOverlay::OverlayHookState::Removing) {
+                _renderer = nullptr;
+            }
             HookReady(state == InGameOverlay::OverlayHookState::Ready || state == InGameOverlay::OverlayHookState::Reset);
         };
-        bool started = _renderer->StartHook(key_combination_callback, keys, fonts_atlas);
+        bool started = _renderer->StartHook(overlay_toggle_callback, overlay_toggle_keys, &fonts_atlas);
         PRINT_DEBUG("Steam_Overlay tried to start renderer hook (result=%u)\n", started);
     }
 
@@ -1409,6 +1362,7 @@ void Steam_Overlay::RunCallbacks()
         GameOverlayActivated_t data{};
         data.m_bActive = show_overlay;
         data.m_bUserInitiated = true;
+        data.m_dwOverlayPID = 123;
         data.m_nAppID = settings->get_local_game_id().AppID();
         callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
     }
@@ -1428,7 +1382,6 @@ void Steam_Overlay::RunCallbacks()
     }
 
     i_have_lobby = IHaveLobby();
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     std::for_each(friends.begin(), friends.end(), [this](std::pair<Friend const, friend_window_state> &i)
     {
         i.second.joinable = FriendJoinable(i);
@@ -1515,9 +1468,9 @@ void Steam_Overlay::RunCallbacks()
     }
 
     // if variable == true, then set it to false and return true (because state was changed) in that case
-    bool true_tmp = true;
-    if (invite_all_friends_clicked.compare_exchange_weak(true_tmp, false)) {
-        PRINT_DEBUG("Overlay will send invitations to [%zu] friends if they're using the same app\n", friends.size());
+    bool yes_clicked = true;
+    if (invite_all_friends_clicked.compare_exchange_weak(yes_clicked, false)) {
+        PRINT_DEBUG("Steam_Overlay will send invitations to [%zu] friends if they're using the same app\n", friends.size());
         uint32 current_appid = settings->get_local_game_id().AppID();
         for (auto &fr : friends) {
             if (fr.first.appid() == current_appid) { // friend is playing the same game
@@ -1533,10 +1486,10 @@ void Steam_Overlay::InviteFriend(uint64 friend_id, class Steam_Friends* steamFri
     std::string connect_str = steamFriends->GetFriendRichPresence(settings->get_local_steam_id(), "connect");
     if (connect_str.length() > 0) {
         steamFriends->InviteUserToGame(friend_id, connect_str.c_str());
-        PRINT_DEBUG("Overlay sent game invitation to friend with id = %llu\n", friend_id);
+        PRINT_DEBUG("Steam_Overlay sent game invitation to friend with id = %llu\n", friend_id);
     } else if (settings->get_lobby().IsValid()) {
         steamMatchmaking->InviteUserToLobby(settings->get_lobby(), friend_id);
-        PRINT_DEBUG("Overlay sent lobby invitation to friend with id = %llu\n", friend_id);
+        PRINT_DEBUG("Steam_Overlay sent lobby invitation to friend with id = %llu\n", friend_id);
     }
 }
 
