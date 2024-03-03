@@ -205,6 +205,7 @@ void Steam_Overlay::SetupOverlay()
     if (!setup_overlay_called) {
         setup_overlay_called = true;
         future_renderer = InGameOverlay::DetectRenderer();
+        PRINT_DEBUG("Steam_Overlay::SetupOverlay requested renderer detector/hook\n");
     }
 }
 
@@ -1054,7 +1055,7 @@ void Steam_Overlay::OverlayProc()
         ImGui::Spacing();
         ImGui::Spacing();
 
-        ImGui::LabelText("##label", translationFriends[current_language]);
+        ImGui::LabelText("##label", "%s", translationFriends[current_language]);
 
         std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
         if (!friends.empty()) {
@@ -1087,7 +1088,7 @@ void Steam_Overlay::OverlayProc()
             ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 32, ImGui::GetFontSize() * 32), ImVec2(8192, 8192));
             bool show = show_achievements;
             if (ImGui::Begin(translationAchievementWindow[current_language], &show)) {
-                ImGui::Text(translationListOfAchievements[current_language]);
+                ImGui::Text("%s", translationListOfAchievements[current_language]);
                 ImGui::BeginChild(translationAchievements[current_language]);
                 for (auto & x : achievements) {
                     bool achieved = x.achieved;
@@ -1148,7 +1149,7 @@ void Steam_Overlay::OverlayProc()
                     }
 
                     if (hidden) {
-                        ImGui::Text(translationHiddenAchievement[current_language]);
+                        ImGui::Text("%s", translationHiddenAchievement[current_language]);
                     } else {
                         ImGui::TextWrapped("%s", x.description.c_str());
                     }
@@ -1160,7 +1161,7 @@ void Steam_Overlay::OverlayProc()
 
                         ImGui::TextColored(ImVec4(0, 255, 0, 255), translationAchievedOn[current_language], buffer);
                     } else {
-                        ImGui::TextColored(ImVec4(255, 0, 0, 255), translationNotAchieved[current_language]);
+                        ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationNotAchieved[current_language]);
                     }
 
                     if (!x.icon.expired() && !x.icon_gray.expired()) ImGui::EndTable();
@@ -1175,32 +1176,32 @@ void Steam_Overlay::OverlayProc()
 
         if (show_settings) {
             if (ImGui::Begin(translationGlobalSettingsWindow[current_language], &show_settings)) {
-                ImGui::Text(translationGlobalSettingsWindowDescription[current_language]);
+                ImGui::Text("%s", translationGlobalSettingsWindowDescription[current_language]);
 
                 ImGui::Separator();
 
-                ImGui::Text(translationUsername[current_language]);
+                ImGui::Text("%s", translationUsername[current_language]);
                 ImGui::SameLine();
                 ImGui::InputText("##username", username_text, sizeof(username_text), disable_user_input ? ImGuiInputTextFlags_ReadOnly : 0);
 
                 ImGui::Separator();
 
-                ImGui::Text(translationLanguage[current_language]);
-                ImGui::ListBox("##language", &current_language, valid_languages, sizeof(valid_languages) / sizeof(char *), 7);
+                ImGui::Text("%s", translationLanguage[current_language]);
+                ImGui::ListBox("##language", &current_language, valid_languages, sizeof(valid_languages) / sizeof(valid_languages[0]), 7);
                 ImGui::Text(translationSelectedLanguage[current_language], valid_languages[current_language]);
 
                 ImGui::Separator();
 
                 if (!disable_user_input) {
-                    ImGui::Text(translationRestartTheGameToApply[current_language]);
+                    ImGui::Text("%s", translationRestartTheGameToApply[current_language]);
                     if (ImGui::Button(translationSave[current_language])) {
                         save_settings = true;
                         show_settings = false;
                     }
                 } else {
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
-                    ImGui::TextWrapped(translationWarningDescription1[current_language]);
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
+                    ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationWarningWarningWarning[current_language]);
+                    ImGui::TextWrapped("%s", translationWarningDescription1[current_language]);
+                    ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationWarningWarningWarning[current_language]);
                 }
             }
 
@@ -1211,7 +1212,7 @@ void Steam_Overlay::OverlayProc()
         if (url.size()) {
             bool show = true;
             if (ImGui::Begin(URL_WINDOW_NAME, &show)) {
-                ImGui::Text(translationSteamOverlayURL[current_language]);
+                ImGui::Text("%s", translationSteamOverlayURL[current_language]);
                 ImGui::Spacing();
                 ImGui::PushItemWidth(ImGui::CalcTextSize(url.c_str()).x + 20);
                 ImGui::InputText("##url_copy", (char *)url.data(), url.size(), ImGuiInputTextFlags_ReadOnly);
@@ -1230,19 +1231,19 @@ void Steam_Overlay::OverlayProc()
             ImGui::SetNextWindowFocus();
             if (ImGui::Begin(translationWarning[current_language], &show_warning)) {
                 if (warn_bad_appid) {
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
-                    ImGui::TextWrapped(translationWarningDescription2[current_language]);
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
+                    ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationWarningWarningWarning[current_language]);
+                    ImGui::TextWrapped("%s", translationWarningDescription2[current_language]);
+                    ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationWarningWarningWarning[current_language]);
                 }
                 if (warn_local_save) {
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
-                    ImGui::TextWrapped(translationWarningDescription3[current_language]);
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
+                    ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationWarningWarningWarning[current_language]);
+                    ImGui::TextWrapped("%s", translationWarningDescription3[current_language]);
+                    ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationWarningWarningWarning[current_language]);
                 }
                 if (warn_forced_setting) {
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
-                    ImGui::TextWrapped(translationWarningDescription4[current_language]);
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255), translationWarningWarningWarning[current_language]);
+                    ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationWarningWarningWarning[current_language]);
+                    ImGui::TextWrapped("%s", translationWarningDescription4[current_language]);
+                    ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationWarningWarningWarning[current_language]);
                 }
             }
             ImGui::End();
