@@ -25,7 +25,7 @@ static constexpr int base_notif_window_id  = 0 * max_window_id;
 static constexpr int base_friend_window_id = 1 * max_window_id;
 static constexpr int base_friend_item_id   = 2 * max_window_id;
 
-static constexpr char *valid_languages[] = {
+static const char* valid_languages[] = {
     "english",
     "arabic",
     "bulgarian",
@@ -158,8 +158,8 @@ Steam_Overlay::Steam_Overlay(Settings* settings, SteamCallResults* callback_resu
     const char *language = settings->get_language();
 
     int i = 0;
-    for (auto l : valid_languages) {
-        if (strcmp(l, language) == 0) {
+    for (auto &lang : valid_languages) {
+        if (strcmp(lang, language) == 0) {
             current_language = i;
             break;
         }
@@ -1371,7 +1371,7 @@ void Steam_Overlay::RunCallbacks()
     Steam_Matchmaking* steamMatchmaking = get_steam_client()->steam_matchmaking;
 
     if (save_settings) {
-        char *language_text = valid_languages[current_language];
+        const char *language_text = valid_languages[current_language];
         save_global_settings(get_steam_client()->local_storage, username_text, language_text);
         get_steam_client()->settings_client->set_local_name(username_text);
         get_steam_client()->settings_server->set_local_name(username_text);

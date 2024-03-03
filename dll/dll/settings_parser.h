@@ -22,6 +22,6 @@
 
 //returns appid
 uint32 create_localstorage_settings(Settings **settings_client_out, Settings **settings_server_out, Local_Storage **local_storage_out);
-void save_global_settings(Local_Storage *local_storage, char *name, char *language);
+void save_global_settings(Local_Storage *local_storage, const char *name, const char *language);
 
 #endif

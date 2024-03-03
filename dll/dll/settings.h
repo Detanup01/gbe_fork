@@ -188,14 +188,14 @@ public:
     static const bool is_lobby_connect = false;
 #endif
 
-    static std::string sanitize(std::string name);
-    Settings(CSteamID steam_id, CGameID game_id, std::string name, std::string language, bool offline);
+    static std::string sanitize(const std::string &name);
+    Settings(CSteamID steam_id, CGameID game_id, const std::string &name, const std::string &language, bool offline);
     CSteamID get_local_steam_id();
     CGameID get_local_game_id();
     const char *get_local_name();
-    void set_local_name(char *name);
+    void set_local_name(const char *name);
     const char *get_language();
-    void set_language(char *language);
+    void set_language(const char *language);
 
     void set_game_id(CGameID game_id);
     void set_lobby(CSteamID lobby_id);
@@ -216,12 +216,12 @@ public:
     std::vector<DepotId_t> depots;
 
     //App Install paths
-    void setAppInstallPath(AppId_t appID, std::string path);
+    void setAppInstallPath(AppId_t appID, const std::string &path);
     std::string getAppInstallPath(AppId_t appID);
 
     //mod stuff
-    void addMod(PublishedFileId_t id, std::string title, std::string path);
-    void addModDetails(PublishedFileId_t id, Mod_entry details);
+    void addMod(PublishedFileId_t id, const std::string &title, const std::string &path);
+    void addModDetails(PublishedFileId_t id, const Mod_entry &details);
     Mod_entry getMod(PublishedFileId_t id);
     bool isModInstalled(PublishedFileId_t id);
     std::set<PublishedFileId_t> modSet();
@@ -247,7 +247,7 @@ public:
 
     //images
     std::map<int, struct Image_Data> images;
-    int add_image(std::string data, uint32 width, uint32 height);
+    int add_image(const std::string &data, uint32 width, uint32 height);
     bool disable_account_avatar = false;
 
     //installed app ids, Steam_Apps::BIsAppInstalled()

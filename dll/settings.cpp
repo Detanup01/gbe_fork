@@ -18,7 +18,7 @@
 #include "dll/settings.h"
 
 
-std::string Settings::sanitize(std::string name)
+std::string Settings::sanitize(const std::string &name)
 {
     // https://github.com/microsoft/referencesource/blob/51cf7850defa8a17d815b4700b67116e3fa283c2/mscorlib/system/io/path.cs#L88C9-L89C1
     // https://github.com/microsoft/referencesource/blob/51cf7850defa8a17d815b4700b67116e3fa283c2/mscorlib/system/io/pathinternal.cs#L32
@@ -53,12 +53,12 @@ std::string Settings::sanitize(std::string name)
         }
     }
 
-    std::string res;
+    std::string res{};
     utf8::utf32to8(unicode_name.begin(), unicode_name.end(), std::back_inserter(res));
     return res;
 }
 
-Settings::Settings(CSteamID steam_id, CGameID game_id, std::string name, std::string language, bool offline)
+Settings::Settings(CSteamID steam_id, CGameID game_id, const std::string &name, const std::string &language, bool offline)
 {
     this->steam_id = steam_id;
     this->game_id = game_id;
@@ -102,12 +102,12 @@ const char *Settings::get_language()
     return language.c_str();
 }
 
-void Settings::set_local_name(char *name)
+void Settings::set_local_name(const char *name)
 {
     this->name = name;
 }
 
-void Settings::set_language(char *language)
+void Settings::set_language(const char *language)
 {
     this->language = language;
 }
@@ -148,7 +148,7 @@ void Settings::addDLC(AppId_t appID, std::string name, bool available)
     DLCs.push_back(new_entry);
 }
 
-void Settings::addMod(PublishedFileId_t id, std::string title, std::string path)
+void Settings::addMod(PublishedFileId_t id, const std::string &title, const std::string &path)
 {
     auto f = std::find_if(mods.begin(), mods.end(), [&id](Mod_entry const& item) { return item.id == id; });
     if (mods.end() != f) {
@@ -164,7 +164,7 @@ void Settings::addMod(PublishedFileId_t id, std::string title, std::string path)
     mods.push_back(new_entry);
 }
 
-void Settings::addModDetails(PublishedFileId_t id, Mod_entry details)
+void Settings::addModDetails(PublishedFileId_t id, const Mod_entry &details)
 {
     auto f = std::find_if(mods.begin(), mods.end(), [&id](Mod_entry const& item) { return item.id == id; });
     if (f != mods.end()) {
@@ -256,7 +256,7 @@ bool Settings::allDLCUnlocked() const
     return this->unlockAllDLCs;
 }
 
-void Settings::setAppInstallPath(AppId_t appID, std::string path)
+void Settings::setAppInstallPath(AppId_t appID, const std::string &path)
 {
     app_paths[appID] = path;
 }
@@ -275,7 +275,7 @@ void Settings::setLeaderboard(std::string leaderboard, enum ELeaderboardSortMeth
     leaderboards[leaderboard] = leader;
 }
 
-int Settings::add_image(std::string data, uint32 width, uint32 height)
+int Settings::add_image(const std::string &data, uint32 width, uint32 height)
 {
     int last = images.size() + 1;
     struct Image_Data dt;

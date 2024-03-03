@@ -1385,7 +1385,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     return appid;
 }
 
-void save_global_settings(Local_Storage *local_storage, char *name, char *language)
+void save_global_settings(Local_Storage *local_storage, const char *name, const char *language)
 {
     local_storage->store_data_settings("account_name.txt", name, strlen(name));
     local_storage->store_data_settings("language.txt", language, strlen(language));

@@ -64,7 +64,7 @@ std::string Local_Storage::get_global_settings_path()
     return "";
 }
 
-Local_Storage::Local_Storage(std::string save_directory)
+Local_Storage::Local_Storage(const std::string &save_directory)
 {
 
 }
@@ -74,7 +74,7 @@ void Local_Storage::setAppId(uint32 appid)
 
 }
 
-int Local_Storage::store_file_data(std::string folder, std::string file, char *data, unsigned int length)
+int Local_Storage::store_file_data(std::string folder, std::string file, const char *data, unsigned int length)
 {
     return -1;
 }
@@ -84,7 +84,7 @@ int Local_Storage::store_data(std::string folder, std::string file, char *data, 
     return -1;
 }
 
-int Local_Storage::store_data_settings(std::string file, char *data, unsigned int length)
+int Local_Storage::store_data_settings(std::string file, const char *data, unsigned int length)
 {
     return -1;
 }
@@ -511,7 +511,7 @@ static std::string desanitize_file_name(std::string name)
     return name;
 }
 
-Local_Storage::Local_Storage(std::string save_directory)
+Local_Storage::Local_Storage(const std::string &save_directory)
 {
     this->save_directory = save_directory;
 
@@ -525,7 +525,7 @@ void Local_Storage::setAppId(uint32 appid)
     this->appid = std::to_string(appid) + PATH_SEPARATOR;
 }
 
-int Local_Storage::store_file_data(std::string folder, std::string file, char *data, unsigned int length)
+int Local_Storage::store_file_data(std::string folder, std::string file, const char *data, unsigned int length)
 {
     if (folder.back() != *PATH_SEPARATOR) {
         folder.append(PATH_SEPARATOR);
@@ -609,7 +609,7 @@ int Local_Storage::store_data(std::string folder, std::string file, char *data, 
     return store_file_data(save_directory + appid + folder, file, data, length);
 }
 
-int Local_Storage::store_data_settings(std::string file, char *data, unsigned int length)
+int Local_Storage::store_data_settings(std::string file, const char *data, unsigned int length)
 {
     return store_file_data(get_global_settings_path(), file, data, length);
 }
