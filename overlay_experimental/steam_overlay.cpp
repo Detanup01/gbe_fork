@@ -542,11 +542,11 @@ bool Steam_Overlay::FriendJoinable(std::pair<const Friend, friend_window_state> 
 {
     Steam_Friends* steamFriends = get_steam_client()->steam_friends;
 
-    if( std::string(steamFriends->GetFriendRichPresence(f.first.id(), "connect")).length() > 0 )
+    if( std::string(steamFriends->GetFriendRichPresence((uint64)f.first.id(), "connect")).length() > 0 )
         return true;
 
     FriendGameInfo_t friend_game_info = {};
-    steamFriends->GetFriendGamePlayed(f.first.id(), &friend_game_info);
+    steamFriends->GetFriendGamePlayed((uint64)f.first.id(), &friend_game_info);
     if (friend_game_info.m_steamIDLobby.IsValid() && (f.second.window_state & window_state_lobby_invite))
         return true;
 
