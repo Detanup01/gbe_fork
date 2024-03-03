@@ -17,9 +17,13 @@ done
 
 BUILD_LIB32=1
 BUILD_LIB64=1
+BUILD_EXP_LIB32=1
+BUILD_EXP_LIB64=1
 
 BUILD_CLIENT32=1
 BUILD_CLIENT64=1
+BUILD_EXPT_CLIENT32=1
+BUILD_EXPT_CLIENT64=1
 BUILD_TOOL_CLIENT_LDR=1
 
 BUILD_TOOL_FIND_ITFS32=1
@@ -54,10 +58,18 @@ for (( i=1; i<=$#; i++ )); do
     BUILD_LIB32=0
   elif [[ "$var" = "-lib-64" ]]; then
     BUILD_LIB64=0
+  elif [[ "$var" = "-exp-lib-32" ]]; then
+    BUILD_EXP_LIB32=0
+  elif [[ "$var" = "-exp-lib-64" ]]; then
+    BUILD_EXP_LIB64=0
   elif [[ "$var" = "-client-32" ]]; then
     BUILD_CLIENT32=0
   elif [[ "$var" = "-client-64" ]]; then
     BUILD_CLIENT64=0
+  elif [[ "$var" = "-exp-client-32" ]]; then
+    BUILD_EXPT_CLIENT32=0
+  elif [[ "$var" = "-exp-client-64" ]]; then
+    BUILD_EXPT_CLIENT64=0
   elif [[ "$var" = "-tool-clientldr" ]]; then
     BUILD_TOOL_CLIENT_LDR=0
   elif [[ "$var" = "-tool-itf-32" ]]; then
@@ -117,6 +129,7 @@ fi
 build_root_dir="build/linux/$build_folder"
 build_root_32="$build_root_dir/x32"
 build_root_64="$build_root_dir/x64"
+build_root_experimental="$build_root_dir/experimental"
 build_root_tools="$build_root_dir/tools"
 
 # common stuff
@@ -161,6 +174,15 @@ mbedtls_inc64="$deps_dir/mbedtls/install64/include"
 mbedtls_lib32="$deps_dir/mbedtls/install32/lib"
 mbedtls_lib64="$deps_dir/mbedtls/install64/lib"
 
+overlay_inc32="$deps_dir/ingame_overlay/install32/include"
+overlay_inc64="$deps_dir/ingame_overlay/install64/include"
+overlay_lib32="$deps_dir/ingame_overlay/install32/lib"
+overlay_sys_lib32="$deps_dir/ingame_overlay/deps/System/install32/lib"
+overlay_detour_lib32="$deps_dir/ingame_overlay/deps/mini_detour/install32/lib"
+overlay_lib64="$deps_dir/ingame_overlay/install64/lib"
+overlay_sys_lib64="$deps_dir/ingame_overlay/deps/System/install64/lib"
+overlay_detour_lib64="$deps_dir/ingame_overlay/deps/mini_detour/install64/lib"
+
 # directories to use for #include
 release_incs_both=(
   "$ssq_inc"
@@ -196,6 +218,10 @@ release_libs_dir32=(
   "$protob_lib32"
   "$zlib_lib32"
   "$mbedtls_lib32"
+
+  "$overlay_lib32"
+  "$overlay_sys_lib32"
+  "$overlay_detour_lib32"
 )
 release_libs_dir64=(
   "$ssq_lib64"
@@ -203,6 +229,10 @@ release_libs_dir64=(
   "$protob_lib64"
   "$zlib_lib64"
   "$mbedtls_lib64"
+
+  "$overlay_lib64"
+  "$overlay_sys_lib64"
+  "$overlay_detour_lib64"
 )
 
 # libraries to link with, either static ".a" or dynamic ".so" (name only)
@@ -260,14 +290,17 @@ echo "[?] All build operations will use $build_threads parallel jobs"
 
 last_code=0
 
+empty_arr=()
 
 function build_for () {
 
   local is_32_build=$( [[ "$1" != 0 ]] && { echo 1; } || { echo 0; }  )
   local is_exe=$( [[ "$2" != 0 ]] && { echo 1; } || { echo 0; }  )
-  local out_filepath="${3:?'missing filepath'}"
-  local extra_defs="$4"
-  local -n all_src=$5
+  local out_filepath="${3:?'missing output filepath'}"
+  local -n all_src=$4
+  local -n extra_inc_dirs=$5
+  local extra_defs="$6"
+  local -n extra_libs=$7
 
   [[ "${#all_src[@]}" = "0" ]] && {
     echo [X] "No source files specified" >&2;
@@ -287,8 +320,8 @@ function build_for () {
   local linker_pic_pie='-shared'
   [[ $is_exe = 1 ]] && linker_pic_pie='-pie'
 
-  local tmp_work_dir="${out_filepath##*/}_$is_32_build"
-  tmp_work_dir="$build_temp_dir/${tmp_work_dir%.*}"
+  local tmp_work_dir="${out_filepath##*/}"
+  tmp_work_dir="$build_temp_dir/${tmp_work_dir%.*}_$is_32_build"
   echo "  -- Cleaning compilation directory '$tmp_work_dir/'"
   rm -f -r "$tmp_work_dir"
   mkdir -p "$tmp_work_dir" || {
@@ -331,6 +364,10 @@ function build_for () {
     target_incs=("${release_incs64[@]}")
     target_libs_dirs=("${release_libs_dir64[@]}")
   fi
+  target_incs=(
+    "${target_incs[@]}"
+    "${extra_inc_dirs[@]}"
+  )
   # wrap each -ImyIncDir with single quotes -> '-ImyIncDir'
   target_incs=("${target_incs[@]/#/\'-I}")
   target_incs=("${target_incs[@]/%/\'}")
@@ -368,15 +405,20 @@ function build_for () {
   local out_dir="${out_filepath%/*}"
   [[ "$out_dir" = "$out_filepath" ]] && out_dir='.'
   mkdir -p "$out_dir"
+
+  local target_libs=(
+    "${release_libs[@]}"
+    "${extra_libs[@]}"
+  )
   
   # https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/developer_guide/gcc-using-libraries#gcc-using-libraries_using-both-static-dynamic-library-gcc
   # https://linux.die.net/man/1/ld
   if [[ $VERBOSE = 1 ]]; then
-    echo "clang++ $common_compiler_args $cpiler_pic_pie $cpiler_m32 $optimize_level $dbg_level $linker_pic_pie $linker_strip_dbg_symbols -o" "$out_filepath" "${obj_files[@]}" "${target_libs_dirs[@]/#/-L}" "-Wl,--whole-archive -Wl,-Bstatic" "${release_libs[@]/#/-l}" "-Wl,-Bdynamic -Wl,--no-whole-archive -Wl,--exclude-libs,ALL"
+    echo "clang++ $common_compiler_args $cpiler_pic_pie $cpiler_m32 $optimize_level $dbg_level $linker_pic_pie $linker_strip_dbg_symbols -o" "$out_filepath" "${obj_files[@]}" "${target_libs_dirs[@]/#/-L}" "-Wl,--whole-archive -Wl,-Bstatic" "${target_libs[@]/#/-l}" "-Wl,-Bdynamic -Wl,--no-whole-archive -Wl,--exclude-libs,ALL"
     echo;
   fi
 
-  clang++ $common_compiler_args $cpiler_pic_pie $cpiler_m32 $optimize_level $dbg_level $linker_pic_pie $linker_strip_dbg_symbols -o "$out_filepath" "${obj_files[@]}" "${target_libs_dirs[@]/#/-L}" -Wl,--whole-archive -Wl,-Bstatic "${release_libs[@]/#/-l}" -Wl,-Bdynamic -Wl,--no-whole-archive -Wl,--exclude-libs,ALL
+  clang++ $common_compiler_args $cpiler_pic_pie $cpiler_m32 $optimize_level $dbg_level $linker_pic_pie $linker_strip_dbg_symbols -o "$out_filepath" "${obj_files[@]}" "${target_libs_dirs[@]/#/-L}" -Wl,--whole-archive -Wl,-Bstatic "${target_libs[@]/#/-l}" -Wl,-Bdynamic -Wl,--no-whole-archive -Wl,--exclude-libs,ALL
   exit_code=$?
   echo "  -- Exit code = $exit_code"
   echo; echo;
@@ -415,13 +457,14 @@ mkdir -p "$protoc_out_dir"
 last_code=$((last_code + $?))
 echo; echo;
 
+
 if [[ "$BUILD_LIB32" = "1" ]]; then
   echo // building shared lib libsteam_api.so - 32
   all_src_files=(
     "${release_src[@]}"
     "controller/*.c"
   )
-  build_for 1 0 "$build_root_32/libsteam_api.so" '-DCONTROLLER_SUPPORT' all_src_files 
+  build_for 1 0 "$build_root_32/libsteam_api.so" all_src_files empty_arr '-DCONTROLLER_SUPPORT' empty_arr
   last_code=$((last_code + $?))
 fi
 
@@ -431,7 +474,45 @@ if [[ "$BUILD_CLIENT32" = "1" ]]; then
     "${release_src[@]}"
     "controller/*.c"
   )
-  build_for 1 0 "$build_root_32/steamclient.so" '-DCONTROLLER_SUPPORT -DSTEAMCLIENT_DLL' all_src_files 
+  build_for 1 0 "$build_root_32/steamclient.so" all_src_files empty_arr '-DCONTROLLER_SUPPORT -DSTEAMCLIENT_DLL' empty_arr
+  last_code=$((last_code + $?))
+fi
+
+if [[ "$BUILD_EXP_LIB32" = "1" ]]; then
+  echo // building shared lib experimental libsteam_api.so - 32
+  all_src_files=(
+    "${release_src[@]}"
+    "controller/*.c"
+    "overlay_experimental/*.cpp"
+  )
+  extra_incs=(
+    "$overlay_inc32"
+  )
+  extra_link_libs=(
+    "ingame_overlay"
+    "system" # ingame_overlay dependency
+    "mini_detour" # ingame_overlay dependency
+  )
+  build_for 1 0 "$build_root_experimental/x32/libsteam_api.so" all_src_files extra_incs '-DCONTROLLER_SUPPORT -DEMU_OVERLAY -DImTextureID=ImU64' extra_link_libs
+  last_code=$((last_code + $?))
+fi
+
+if [[ "$BUILD_EXPT_CLIENT32" = "1" ]]; then
+  echo // building shared lib experimental steamclient.so - 32
+  all_src_files=(
+    "${release_src[@]}"
+    "controller/*.c"
+    "overlay_experimental/*.cpp"
+  )
+  extra_incs=(
+    "$overlay_inc32"
+  )
+  extra_link_libs=(
+    "ingame_overlay"
+    "system" # ingame_overlay dependency
+    "mini_detour" # ingame_overlay dependency
+  )
+  build_for 1 0 "$build_root_experimental/x32/steamclient.so" all_src_files extra_incs '-DCONTROLLER_SUPPORT -DSTEAMCLIENT_DLL -DEMU_OVERLAY -DImTextureID=ImU64' extra_link_libs
   last_code=$((last_code + $?))
 fi
 
@@ -441,7 +522,7 @@ if [[ "$BUILD_TOOL_LOBBY32" = "1" ]]; then
     "${release_src[@]}"
     "$tools_dir/lobby_connect/lobby_connect.cpp"
   )
-  build_for 1 1 "$build_root_tools/lobby_connect/lobby_connect_x32" '-DNO_DISK_WRITES -DLOBBY_CONNECT' all_src_files 
+  build_for 1 1 "$build_root_tools/lobby_connect/lobby_connect_x32" all_src_files empty_arr '-DNO_DISK_WRITES -DLOBBY_CONNECT' empty_arr
   last_code=$((last_code + $?))
 fi
 
@@ -450,7 +531,7 @@ if [[ "$BUILD_TOOL_FIND_ITFS32" = "1" ]]; then
   all_src_files=(
     "$tools_dir/generate_interfaces/generate_interfaces.cpp"
   )
-  build_for 1 1 "$build_root_tools/find_interfaces/generate_interfaces_file_x32" '' all_src_files 
+  build_for 1 1 "$build_root_tools/find_interfaces/generate_interfaces_file_x32" all_src_files empty_arr '' empty_arr
   last_code=$((last_code + $?))
 fi
 
@@ -459,7 +540,7 @@ if [[ "$BUILD_LIB_NET_SOCKETS_32" = "1" ]]; then
   all_src_files=(
     "networking_sockets_lib/steamnetworkingsockets.cpp"
   )
-  build_for 1 0 "$build_root_dir/networking_sockets_lib/steamnetworkingsockets.so" '' all_src_files 
+  build_for 1 0 "$build_root_dir/networking_sockets_lib/steamnetworkingsockets.so" all_src_files empty_arr '' empty_arr
   last_code=$((last_code + $?))
 fi
 
@@ -480,7 +561,7 @@ if [[ "$BUILD_LIB64" = "1" ]]; then
     "${release_src[@]}"
     "controller/*.c"
   )
-  build_for 0 0 "$build_root_64/libsteam_api.so" '-DCONTROLLER_SUPPORT' all_src_files 
+  build_for 0 0 "$build_root_64/libsteam_api.so" all_src_files empty_arr '-DCONTROLLER_SUPPORT' empty_arr
   last_code=$((last_code + $?))
 fi
 
@@ -490,7 +571,45 @@ if [[ "$BUILD_CLIENT64" = "1" ]]; then
     "${release_src[@]}"
     "controller/*.c"
   )
-  build_for 0 0 "$build_root_64/steamclient.so" '-DCONTROLLER_SUPPORT -DSTEAMCLIENT_DLL' all_src_files 
+  build_for 0 0 "$build_root_64/steamclient.so" all_src_files empty_arr '-DCONTROLLER_SUPPORT -DSTEAMCLIENT_DLL' empty_arr
+  last_code=$((last_code + $?))
+fi
+
+if [[ "$BUILD_EXP_LIB64" = "1" ]]; then
+  echo // building shared lib experimental libsteam_api.so - 64
+  all_src_files=(
+    "${release_src[@]}"
+    "controller/*.c"
+    "overlay_experimental/*.cpp"
+  )
+  extra_incs=(
+    "$overlay_inc64"
+  )
+  extra_link_libs=(
+    "ingame_overlay"
+    "system" # ingame_overlay dependency
+    "mini_detour" # ingame_overlay dependency
+  )
+  build_for 0 0 "$build_root_experimental/x64/libsteam_api.so" all_src_files extra_incs '-DCONTROLLER_SUPPORT -DEMU_OVERLAY -DImTextureID=ImU64' extra_link_libs
+  last_code=$((last_code + $?))
+fi
+
+if [[ "$BUILD_EXPT_CLIENT64" = "1" ]]; then
+  echo // building shared lib experimental steamclient.so - 64
+  all_src_files=(
+    "${release_src[@]}"
+    "controller/*.c"
+    "overlay_experimental/*.cpp"
+  )
+  extra_incs=(
+    "$overlay_inc64"
+  )
+  extra_link_libs=(
+    "ingame_overlay"
+    "system" # ingame_overlay dependency
+    "mini_detour" # ingame_overlay dependency
+  )
+  build_for 0 0 "$build_root_experimental/x64/steamclient.so" all_src_files extra_incs '-DCONTROLLER_SUPPORT -DSTEAMCLIENT_DLL -DEMU_OVERLAY -DImTextureID=ImU64' extra_link_libs
   last_code=$((last_code + $?))
 fi
 
@@ -500,7 +619,7 @@ if [[ "$BUILD_TOOL_LOBBY64" = "1" ]]; then
     "${release_src[@]}"
     "$tools_dir/lobby_connect/lobby_connect.cpp"
   )
-  build_for 0 1 "$build_root_tools/lobby_connect/lobby_connect_x64" '-DNO_DISK_WRITES -DLOBBY_CONNECT' all_src_files 
+  build_for 0 1 "$build_root_tools/lobby_connect/lobby_connect_x64" all_src_files empty_arr '-DNO_DISK_WRITES -DLOBBY_CONNECT' empty_arr
   last_code=$((last_code + $?))
 fi
 
@@ -509,7 +628,7 @@ if [[ "$BUILD_TOOL_FIND_ITFS64" = "1" ]]; then
   all_src_files=(
     "$tools_dir/generate_interfaces/generate_interfaces.cpp"
   )
-  build_for 0 1 "$build_root_tools/find_interfaces/generate_interfaces_file_x64" '' all_src_files 
+  build_for 0 1 "$build_root_tools/find_interfaces/generate_interfaces_file_x64" all_src_files empty_arr '' empty_arr
   last_code=$((last_code + $?))
 fi
 
@@ -518,7 +637,7 @@ if [[ "$BUILD_LIB_NET_SOCKETS_64" = "1" ]]; then
   all_src_files=(
     "networking_sockets_lib/steamnetworkingsockets.cpp"
   )
-  build_for 0 0 "$build_root_dir/networking_sockets_lib/steamnetworkingsockets64.so" '' all_src_files 
+  build_for 0 0 "$build_root_dir/networking_sockets_lib/steamnetworkingsockets64.so" all_src_files empty_arr '' empty_arr
   last_code=$((last_code + $?))
 fi
 
