@@ -197,6 +197,13 @@ Arguments you can pass to this script:
 
 >>>>>>>>>  ___
 
+* `-exp-lib-32`: prevent building experimental 32-bit `libsteam_api.so`
+* `-exp-lib-64`: prevent building experimental 64-bit `libsteam_api.so`
+* `-exp-client-32`: prevent building experimental steam client 64-bit `steamclient.so`
+* `-exp-client-64`: prevent building experimental steam client 64-bit `steamclient.so`
+
+>>>>>>>>>  ___
+
 * `-client-32`: prevent building steam client 32-bit `steamclient.so`
 * `-client-64`: prevent building steam client 64-bit `steamclient.so`
 

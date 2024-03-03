@@ -1,5 +1,6 @@
 * updated the ingame overlay project, thanks to **[Nemirtingas]** for the project: https://github.com/Nemirtingas/ingame_overlay
-* removed the source files of the ingame overlay project, it is now a dependency, so rebuild your dependencies!
+* build an experimental version of the emu with overlay support for Linux
+* removed the source files of the ingame overlay project, it is now a dependency, rebuild your dependencies!
 * removed the code which locks the cursor inside the overlay window
 * removed the code which changes the cursor inside the overlay window
 * removed the code which adds custom fonts on Windows OS, but keep scaling
@@ -7,7 +8,8 @@
 * cleanup overlay images on unhook
 * free the detector when we get a renderer hook instance
 * use locks everywhere in the overlay
-* updated the Windows build script
+* fixed all compilation warnings produced by the overlay on Linux
+* updated all build script
 
 ---
 
