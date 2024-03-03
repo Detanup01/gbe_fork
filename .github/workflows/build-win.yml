@@ -72,7 +72,7 @@ jobs:
       if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
       shell: cmd
       working-directory: ${{ github.workspace }}
-      run: build_win_deps.bat
+      run: build_win_deps.bat -verbose
 
 
   build:
@@ -123,7 +123,7 @@ jobs:
       if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
       shell: cmd
       working-directory: ${{ github.workspace }}
-      run: build_win_deps.bat
+      run: build_win_deps.bat -verbose
 
 ## extra helpers/tools, these are not built inside the deps build dir
     - name: Clone third-party build helpers (common/win)
@@ -148,7 +148,7 @@ jobs:
     - name: Build release mode
       shell: cmd
       working-directory: ${{ github.workspace }}
-      run: build_win.bat +exclient-extra-32 +exclient-extra-64 release
+      run: build_win.bat -verbose +exclient-extra-32 +exclient-extra-64 release
 
 ### package (release mode)
     - name: Package build (release)
@@ -170,7 +170,7 @@ jobs:
     - name: Build debug mode
       shell: cmd
       working-directory: ${{ github.workspace }}
-      run: build_win.bat +exclient-extra-32 +exclient-extra-64 debug
+      run: build_win.bat -verbose +exclient-extra-32 +exclient-extra-64 debug
 
 ### package (debug mode)
     - name: Package build (debug)

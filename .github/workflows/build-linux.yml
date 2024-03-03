@@ -72,7 +72,7 @@ jobs:
     - name: Build deps
       if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
       shell: bash
-      run: sudo chmod 777 build_linux_deps.sh && sudo ./build_linux_deps.sh
+      run: sudo chmod 777 build_linux_deps.sh && sudo ./build_linux_deps.sh -verbose
 
 
   build:
@@ -122,12 +122,12 @@ jobs:
     - name: Build deps
       if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
       shell: bash
-      run: sudo chmod 777 build_linux_deps.sh && sudo ./build_linux_deps.sh
+      run: sudo chmod 777 build_linux_deps.sh && sudo ./build_linux_deps.sh -verbose
 
 ## mandatory Linux packages, installed via sudo apt install ...
     - name: Install required packages
       shell: bash
-      run: sudo chmod 777 build_linux_deps.sh && sudo ./build_linux_deps.sh -packages_only
+      run: sudo chmod 777 build_linux_deps.sh && sudo ./build_linux_deps.sh -verbose -packages_only
 
 ## extra helpers/tools, these are not built inside the deps build dir
     - name: Clone third-party build helpers (build/linux)
@@ -147,7 +147,7 @@ jobs:
     - name: Build release mode
       shell: bash
       working-directory: ${{ github.workspace }}
-      run:  "sudo chmod 777 build_linux.sh && ./build_linux.sh release"
+      run:  "sudo chmod 777 build_linux.sh && ./build_linux.sh -verbose release"
 
 ### package (release mode)
     - name: Package build (release)
@@ -169,7 +169,7 @@ jobs:
     - name: Build debug mode
       shell: bash
       working-directory: ${{ github.workspace }}
-      run:  "sudo chmod 777 build_linux.sh && ./build_linux.sh debug"
+      run:  "sudo chmod 777 build_linux.sh && ./build_linux.sh -verbose debug"
 
 ### package (debug mode)
     - name: Package build (debug)
