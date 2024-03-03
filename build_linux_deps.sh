@@ -68,23 +68,28 @@ last_code=0
 echo // installing required packages
 apt update -y
 last_code=$((last_code + $?))
-apt install coreutils -y # echo, printf, etc...
+
+apt install "coreutils" -y # echo, printf, etc...
 last_code=$((last_code + $?))
-apt install build-essential -y
+apt install "tar" -y # we need to extract packages
 last_code=$((last_code + $?))
-apt install gcc-multilib g++-multilib -y # needed for 32-bit builds
-last_code=$((last_code + $?))
-apt install clang -y
-last_code=$((last_code + $?))
-apt install libglx-dev -y # needed for overlay build (header files such as GL/glx.h)
-last_code=$((last_code + $?))
-apt install libgl-dev -y # needed for overlay build (header files such as GL/gl.h)
-last_code=$((last_code + $?))
-apt install binutils -y # (optional) contains the tool 'readelf' mainly, and other usefull binary stuff
-last_code=$((last_code + $?))
-apt install tar -y # we need to extract packages
-last_code=$((last_code + $?))
+apt install "binutils" -y # (optional) contains the tool 'readelf' mainly, and other usefull binary stuff
 #apt install cmake git wget unzip -y
+
+all_packages=(
+  "build-essential"
+  "gcc-multilib"  # needed for 32-bit builds
+  "g++-multilib"
+  "clang"
+  "libglx-dev" # needed for overlay build (header files such as GL/glx.h)
+  "libgl-dev" # needed for overlay build (header files such as GL/gl.h)
+  "binutils" # (optional) contains the tool 'readelf' mainly, and other usefull binary stuff
+)
+
+for dep in "${all_packages[@]}"; do
+  apt install "$dep" -y
+  last_code=$((last_code + $?))
+done
 
 # exit early if we should install packages only, used by CI mainly
 [[ "$INSTALL_PACKAGES_ONLY" -ne 0 ]] && exit $last_code
@@ -377,7 +382,7 @@ ingame_overlay_common_defs="'-DIMGUI_USER_CONFIG=$_imgui_cfg_file' -DINGAMEOVERL
 echo; echo "// building ingame_overlay [System dep x32]"
 pushd "deps/System"
 eval $recreate_32
-eval $cmake_gen32 -DBUILD_SYSTEMLIB_TESTS=OFF
+eval $cmake_gen32 "-DCMAKE_CXX_FLAGS_RELEASE='-include cstdint -include cinttypes'" -DBUILD_SYSTEMLIB_TESTS=OFF
 last_code=$((last_code + $?))
 eval $cmake_build32 --target install
 last_code=$((last_code + $?))
@@ -396,7 +401,7 @@ popd
 
 echo; echo "// building ingame_overlay [main lib x32]"
 eval $recreate_32
-eval $cmake_gen32 $ingame_overlay_common_defs
+eval $cmake_gen32 "-DCMAKE_CXX_FLAGS_RELEASE='-include cstdint -include cinttypes'" $ingame_overlay_common_defs
 last_code=$((last_code + $?))
 eval $cmake_build32 --target install
 last_code=$((last_code + $?))
@@ -405,7 +410,7 @@ eval $clean_gen32
 echo; echo "// building ingame_overlay [System dep x64]"
 pushd "deps/System"
 eval $recreate_64
-eval $cmake_gen64 -DBUILD_SYSTEMLIB_TESTS=OFF
+eval $cmake_gen64 "-DCMAKE_CXX_FLAGS_RELEASE='-include cstdint -include cinttypes'" -DBUILD_SYSTEMLIB_TESTS=OFF
 last_code=$((last_code + $?))
 eval $cmake_build64 --target install
 last_code=$((last_code + $?))
@@ -424,7 +429,7 @@ popd
 
 echo; echo "// building ingame_overlay [main lib x64]"
 eval $recreate_64
-eval $cmake_gen64 $ingame_overlay_common_defs
+eval $cmake_gen64 "-DCMAKE_CXX_FLAGS_RELEASE='-include cstdint -include cinttypes'" $ingame_overlay_common_defs
 last_code=$((last_code + $?))
 eval $cmake_build64 --target install
 last_code=$((last_code + $?))
