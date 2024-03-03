@@ -76,6 +76,10 @@ apt install gcc-multilib g++-multilib -y # needed for 32-bit builds
 last_code=$((last_code + $?))
 apt install clang -y
 last_code=$((last_code + $?))
+apt install libglx-dev -y # needed for overlay build (header files such as GL/glx.h)
+last_code=$((last_code + $?))
+apt install libgl-dev -y # needed for overlay build (header files such as GL/gl.h)
+last_code=$((last_code + $?))
 apt install binutils -y # (optional) contains the tool 'readelf' mainly, and other usefull binary stuff
 last_code=$((last_code + $?))
 apt install tar -y # we need to extract packages
