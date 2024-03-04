@@ -324,11 +324,12 @@ void Steam_Overlay::ShowOverlay(bool state)
     show_overlay = state;
     overlay_state_changed = true;
 
+    PRINT_DEBUG("Steam_Overlay::ShowOverlay %i\n", (int)state);
+
     ImGuiIO &io = ImGui::GetIO();
 
-    // this is very important, it doesn't just prevent input confusion between game's window
-    // and overlay's window, but internally it calls the necessary fuctions to properly update
-    // ImGui window size
+    // this is very important internally it calls the necessary fuctions
+    // to properly update ImGui window size on the next OverlayProc() call
     if (state) {
         // force draw the cursor, otherwise games like Truberbrook will not have an overlay cursor
         io.MouseDrawCursor = true;
@@ -995,6 +996,7 @@ void Steam_Overlay::OverlayProc()
         // then disable frame rendering
         if (notifications.empty() && !show_overlay) {
             _renderer->HideOverlayInputs(true);
+            PRINT_DEBUG("Steam_Overlay::OverlayProc disabled frame processing since it won't show overlay and has 0 notifications\n");
         }
     }
 
