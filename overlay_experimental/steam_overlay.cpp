@@ -64,6 +64,10 @@ ImFontAtlas fonts_atlas{};
 ImFont *font_default{};
 ImFont *font_notif{};
 
+std::recursive_mutex overlay_mutex{};
+std::atomic<bool> setup_overlay_called = false;
+
+
 int find_free_id(std::vector<int> & ids, int base)
 {
     std::sort(ids.begin(), ids.end());
@@ -129,7 +133,6 @@ Steam_Overlay::Steam_Overlay(Settings* settings, SteamCallResults* callback_resu
     callbacks(callbacks),
     run_every_runcb(run_every_runcb),
     network(network),
-    setup_overlay_called(false),
     show_overlay(false),
     is_ready(false),
     notif_position(ENotificationPosition::k_EPositionBottomLeft),
@@ -183,7 +186,7 @@ bool Steam_Overlay::Ready() const
 
 bool Steam_Overlay::NeedPresent() const
 {
-    return true;
+    return !settings->disable_overlay;
 }
 
 void Steam_Overlay::SetNotificationPosition(ENotificationPosition eNotificationPosition)
@@ -200,10 +203,10 @@ void Steam_Overlay::SetNotificationInset(int nHorizontalInset, int nVerticalInse
 
 void Steam_Overlay::SetupOverlay()
 {
-    PRINT_DEBUG("Steam_Overlay::SetupOverlay\n");
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (!setup_overlay_called) {
-        setup_overlay_called = true;
+    PRINT_DEBUG("Steam_Overlay::SetupOverlay\n");
+    bool not_called = false;
+    if (setup_overlay_called.compare_exchange_weak(not_called, true)) {
         future_renderer = InGameOverlay::DetectRenderer();
         PRINT_DEBUG("Steam_Overlay::SetupOverlay requested renderer detector/hook\n");
     }
@@ -212,47 +215,63 @@ void Steam_Overlay::SetupOverlay()
 
 void Steam_Overlay::UnSetupOverlay()
 {
-    PRINT_DEBUG("Steam_Overlay::UnSetupOverlay\n");
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    InGameOverlay::StopRendererDetection();
-    if (!Ready() && future_renderer.valid()) {
-        if (future_renderer.wait_for(std::chrono::milliseconds{500}) == std::future_status::ready) {
-            future_renderer.get(); // to invalidate the future object
-            InGameOverlay::FreeDetector();
+    PRINT_DEBUG("Steam_Overlay::UnSetupOverlay\n");
+    bool called = true;
+    if (setup_overlay_called.compare_exchange_weak(called, false)) {
+        InGameOverlay::StopRendererDetection();
+        if (!Ready() && future_renderer.valid()) {
+            if (future_renderer.wait_for(std::chrono::milliseconds{500}) == std::future_status::ready) {
+                future_renderer.get(); // to invalidate the future object
+                InGameOverlay::FreeDetector();
+            }
         }
-    }
-    
-    if (_renderer) {
-        for (auto &ach : achievements) {
-            if (!ach.icon.expired()) _renderer->ReleaseImageResource(ach.icon);
-            if (!ach.icon_gray.expired()) _renderer->ReleaseImageResource(ach.icon_gray);
+        
+        if (_renderer) {
+            for (auto &ach : achievements) {
+                if (!ach.icon.expired()) _renderer->ReleaseImageResource(ach.icon);
+                if (!ach.icon_gray.expired()) _renderer->ReleaseImageResource(ach.icon_gray);
+            }
+            _renderer = nullptr;
+            PRINT_DEBUG("Steam_Overlay::UnSetupOverlay freed all images\n");
         }
-
-        _renderer = nullptr;
-        PRINT_DEBUG("Steam_Overlay::UnSetupOverlay freed all images\n");
     }
 }
 
+// called initially and when window size is updated
 void Steam_Overlay::HookReady(bool ready)
 {
-    PRINT_DEBUG("Steam_Overlay::HookReady %i\n", (int)ready);
+    // NOTE usage of local objects here cause an exception when this is called with false state
+    // the reason is that by the time this hook is called, the object would've been already destructed
+    // this is why we check this global state
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+
+    if (!setup_overlay_called) return;
 
     is_ready = ready;
     
-    ImGuiIO &io = ImGui::GetIO();
-    ImGuiStyle &style = ImGui::GetStyle();
+    PRINT_DEBUG("Steam_Overlay::HookReady %i\n", (int)ready);
 
-    // disable loading the default ini file
-    io.IniFilename = NULL;
+    static bool initialized_imgui = false;
+    if (ready && !initialized_imgui) {
+        std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+        initialized_imgui = true;
 
-    // Disable round window
-    style.WindowRounding = 0.0;
+        ImGuiIO &io = ImGui::GetIO();
+        ImGuiStyle &style = ImGui::GetStyle();
 
-    // TODO: Uncomment this and draw our own cursor (cosmetics)
-    //io.WantSetMousePos = false;
-    //io.MouseDrawCursor = false;
-    //io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+        // disable loading the default ini file
+        io.IniFilename = NULL;
+
+        // Disable round window
+        style.WindowRounding = 0.0;
+
+        // TODO: Uncomment this and draw our own cursor (cosmetics)
+        //io.WantSetMousePos = false;
+        //io.MouseDrawCursor = false;
+        //io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+    }
+
 }
 
 void Steam_Overlay::OpenOverlayInvite(CSteamID lobbyId)
@@ -285,6 +304,7 @@ bool Steam_Overlay::ShowOverlay() const
     return show_overlay;
 }
 
+// called when the user presses SHIFT + TAB
 bool Steam_Overlay::OpenOverlayHook(bool toggle)
 {
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
@@ -301,19 +321,30 @@ void Steam_Overlay::ShowOverlay(bool state)
     if (!Ready() || show_overlay == state)
         return;
 
+    show_overlay = state;
+    overlay_state_changed = true;
+
+    ImGuiIO &io = ImGui::GetIO();
+
     // this is very important, it doesn't just prevent input confusion between game's window
     // and overlay's window, but internally it calls the necessary fuctions to properly update
     // ImGui window size
     if (state) {
+        // force draw the cursor, otherwise games like Truberbrook will not have an overlay cursor
+        io.MouseDrawCursor = true;
+        // clip the cursor
         _renderer->HideAppInputs(true);
+        // allow internal frmae processing
         _renderer->HideOverlayInputs(false);
     } else {
+        io.MouseDrawCursor = false;
+        // don't clip the cursor
         _renderer->HideAppInputs(false);
-        _renderer->HideOverlayInputs(true);
+        // only stop internal frame processing when our state flag == false, and we don't have notifications
+        if (notifications.empty()) {
+            _renderer->HideOverlayInputs(true);
+        }
     }
-
-    show_overlay = state;
-    overlay_state_changed = true;
 }
 
 void Steam_Overlay::NotifySoundUserInvite(friend_window_state& friend_state)
@@ -419,38 +450,51 @@ void Steam_Overlay::FriendDisconnect(Friend _friend)
         friends.erase(it);
 }
 
-void Steam_Overlay::AddMessageNotification(std::string const& message)
+bool Steam_Overlay::submit_notification(notification_type type, const std::string &msg, std::pair<const Friend, friend_window_state> *frd, const std::weak_ptr<uint64_t> &icon)
 {
-    std::lock_guard<std::recursive_mutex> lock(notifications_mutex);
-    if (settings->disable_overlay_friend_notification) return;
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    PRINT_DEBUG("Steam_Overlay::submit_notification %i, '%s'\n", (int)type, msg.c_str());
     int id = find_free_notification_id(notifications);
-    if (id != 0)
-    {
-        Notification notif;
-        notif.id = id;
-        notif.type = notification_type_message;
-        notif.message = message;
-        notif.start_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
-        notifications.emplace_back(notif);
-        have_notifications = true;
+    if (id == 0) {
+        PRINT_DEBUG("Steam_Overlay::submit_notification error no free id to create a notification window\n");
+        return false;
     }
-    else
-        PRINT_DEBUG("Steam_Overlay error no free id to create a notification window\n");
+
+    // this is very important, internally it calls the necessary fuctions to properly update
+    // ImGui window size, change it here since we want the next OverlayProc to have a full window size
+    // otherwise notification position will relative to an outdated window size
+    _renderer->HideOverlayInputs(false);
+
+    Notification notif{};
+    notif.start_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
+    notif.id = id;
+    notif.type = type;
+    notif.message = msg;
+    notif.frd = frd;
+    notif.icon = icon;
+    
+    notifications.emplace_back(notif);
+
+    return true;
+}
+
+void Steam_Overlay::AddChatMessageNotification(std::string const &message)
+{
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (settings->disable_overlay_friend_notification) return;
+
+    submit_notification(notification_type_message, message);
 }
 
 // show a notification when the user unlocks an achievement
 void Steam_Overlay::AddAchievementNotification(nlohmann::json const& ach)
 {
-    std::lock_guard<std::recursive_mutex> lock(notifications_mutex);
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    std::lock_guard<std::recursive_mutex> lock2(global_mutex);
     if (!settings->disable_overlay_achievement_notification) {
-        int id = find_free_notification_id(notifications);
-        if (id != 0)
-        {
-            Notification notif;
-            notif.id = id;
-            notif.type = notification_type_achievement;
-
-            // Load achievement image
+        // Load achievement image
+        std::weak_ptr<uint64_t> icon_rsrc{};
+        if (_renderer) {
             std::string file_path = Local_Storage::get_game_settings_path() + ach["icon"].get<std::string>();
             unsigned long long file_size = file_size_(file_path);
             if (!file_size) {
@@ -460,18 +504,18 @@ void Steam_Overlay::AddAchievementNotification(nlohmann::json const& ach)
             if (file_size) {
                 std::string img = Local_Storage::load_image_resized(file_path, "", settings->overlay_appearance.icon_size);
                 if (img.length() > 0) {
-                    if (_renderer) notif.icon = _renderer->CreateImageResource((void*)img.c_str(), settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size);
+                    icon_rsrc = _renderer->CreateImageResource((void*)img.c_str(), settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size);
                 }
             }
-
-            notif.message = ach["displayName"].get<std::string>() + "\n" + ach["description"].get<std::string>();
-            notif.start_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
-            notifications.emplace_back(notif);
-            NotifySoundUserAchievement();
-            have_notifications = true;
         }
-        else
-            PRINT_DEBUG("Steam_Overlay error no free id to create a notification window\n");
+
+        submit_notification(
+            notification_type_achievement,
+            ach["displayName"].get<std::string>() + "\n" + ach["description"].get<std::string>(),
+            {},
+            icon_rsrc
+        );
+        NotifySoundUserAchievement();
     }
 
     std::string ach_name = ach.value("name", "");
@@ -488,59 +532,31 @@ void Steam_Overlay::AddAchievementNotification(nlohmann::json const& ach)
 
 void Steam_Overlay::AddInviteNotification(std::pair<const Friend, friend_window_state>& wnd_state)
 {
-    std::lock_guard<std::recursive_mutex> lock(notifications_mutex);
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     if (settings->disable_overlay_friend_notification) return;
-    int id = find_free_notification_id(notifications);
-    if (id != 0)
-    {
-        Notification notif;
-        notif.id = id;
-        notif.type = notification_type_invite;
-        notif.frd = &wnd_state;
 
-        {
-            char tmp[TRANSLATION_BUFFER_SIZE]{};
-            auto &first_friend = wnd_state.first;
-            auto &name = first_friend.name();
-            snprintf(tmp, sizeof(tmp), translationInvitedYouToJoinTheGame[current_language], name.c_str(), (uint64)first_friend.id());
-            notif.message = tmp;
-        }
-
-        notif.start_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
-        notifications.emplace_back(notif);
-        have_notifications = true;
-    }
-    else
-        PRINT_DEBUG("Steam_Overlay error no free id to create a notification window\n");
+    char tmp[TRANSLATION_BUFFER_SIZE]{};
+    auto &first_friend = wnd_state.first;
+    auto &name = first_friend.name();
+    snprintf(tmp, sizeof(tmp), translationInvitedYouToJoinTheGame[current_language], name.c_str(), (uint64)first_friend.id());
+    
+    submit_notification(notification_type_invite, tmp, &wnd_state);
 }
 
 void Steam_Overlay::AddAutoAcceptInviteNotification()
 {
-    std::lock_guard<std::recursive_mutex> lock(notifications_mutex);
-    int id = find_free_notification_id(notifications);
-    if (id != 0)
-    {
-        Notification notif{};
-        notif.id = id;
-        notif.type = notification_type_auto_accept_invite;
-        
-        {
-            char tmp[TRANSLATION_BUFFER_SIZE]{};
-            snprintf(tmp, sizeof(tmp), "%s", translationAutoAcceptFriendInvite[current_language]);
-            notif.message = tmp;
-        }
-
-        notif.start_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
-        notifications.emplace_back(notif);
-        NotifySoundAutoAcceptFriendInvite();
-        have_notifications = true;
-    } else {
-        PRINT_DEBUG("Steam_Overlay error no free id to create an auto-accept notification window\n");
-    }
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    
+    char tmp[TRANSLATION_BUFFER_SIZE]{};
+    snprintf(tmp, sizeof(tmp), "%s", translationAutoAcceptFriendInvite[current_language]);
+    
+    submit_notification(notification_type_auto_accept_invite, tmp);
+    NotifySoundAutoAcceptFriendInvite();
 }
 
 bool Steam_Overlay::FriendJoinable(std::pair<const Friend, friend_window_state> &f)
 {
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     Steam_Friends* steamFriends = get_steam_client()->steam_friends;
 
     if( std::string(steamFriends->GetFriendRichPresence((uint64)f.first.id(), "connect")).length() > 0 )
@@ -556,6 +572,7 @@ bool Steam_Overlay::FriendJoinable(std::pair<const Friend, friend_window_state> 
 
 bool Steam_Overlay::IHaveLobby()
 {
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     Steam_Friends* steamFriends = get_steam_client()->steam_friends;
     if (std::string(steamFriends->GetFriendRichPresence(settings->get_local_steam_id(), "connect")).length() > 0)
         return true;
@@ -782,96 +799,90 @@ void Steam_Overlay::SetNextNotificationPos(float width, float height, float font
 
 void Steam_Overlay::BuildNotifications(int width, int height)
 {
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-
     float font_size = ImGui::GetFontSize();
-
     std::queue<Friend> friend_actions_temp{};
 
-    {
-        std::lock_guard<std::recursive_mutex> lock(notifications_mutex);
+    NotificationsIndexes idx{};
+    for (auto it = notifications.begin(); it != notifications.end(); ++it) {
+        auto elapsed_notif = now - it->start_time;
 
-        NotificationsIndexes idx{};
-        for (auto it = notifications.begin(); it != notifications.end(); ++it)
-        {
-            auto elapsed_notif = now - it->start_time;
-
-            if ( elapsed_notif < Notification::fade_in) {
-                float alpha = settings->overlay_appearance.notification_a * (elapsed_notif.count() / static_cast<float>(Notification::fade_in.count()));
-                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, alpha));
-                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(settings->overlay_appearance.notification_r, settings->overlay_appearance.notification_g, settings->overlay_appearance.notification_b, alpha));
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 255, 255, alpha*2));
-            }
-            else if ( elapsed_notif > Notification::fade_out_start) {
-                float alpha = settings->overlay_appearance.notification_a * ((Notification::show_time - elapsed_notif).count() / static_cast<float>(Notification::fade_out.count()));
-                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, alpha));
-                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(settings->overlay_appearance.notification_r, settings->overlay_appearance.notification_g, settings->overlay_appearance.notification_b, alpha));
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 255, 255, alpha*2));
-            } else {
-                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, settings->overlay_appearance.notification_a));
-                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(settings->overlay_appearance.notification_r, settings->overlay_appearance.notification_g, settings->overlay_appearance.notification_b, settings->overlay_appearance.notification_a));
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 255, 255, settings->overlay_appearance.notification_a*2));
-            }
-            
-            SetNextNotificationPos(width, height, font_size, (notification_type)it->type, idx);
-            ImGui::SetNextWindowSize(ImVec2( width * Notification::width_percent, Notification::height * font_size ));
-            std::string wnd_name = "NotiPopupShow" + std::to_string(it->id);
-            ImGui::Begin(wnd_name.c_str(), nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | 
-                ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoDecoration);
-
-            switch (it->type) {
-                case notification_type_achievement:
-                {
-                    if (!it->icon.expired()) {
-                        ImGui::BeginTable("imgui_table", 2);
-                        ImGui::TableSetupColumn("imgui_table_image", ImGuiTableColumnFlags_WidthFixed, settings->overlay_appearance.icon_size);
-                        ImGui::TableSetupColumn("imgui_table_text");
-                        ImGui::TableNextRow(ImGuiTableRowFlags_None, settings->overlay_appearance.icon_size);
-
-                        ImGui::TableSetColumnIndex(0);
-                        ImGui::Image((ImU64)*it->icon.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
-
-                        ImGui::TableSetColumnIndex(1);
-                        ImGui::TextWrapped("%s", it->message.c_str());
-
-                        ImGui::EndTable();
-                    } else {
-                        ImGui::TextWrapped("%s", it->message.c_str());
-                    }
-                }
-                break;
-                case notification_type_invite:
-                {
-                    ImGui::TextWrapped("%s", it->message.c_str());
-                    if (ImGui::Button(translationJoin[current_language]))
-                    {
-                        it->frd->second.window_state |= window_state_join;
-                        friend_actions_temp.push(it->frd->first);
-                        it->start_time = std::chrono::seconds(0);
-                    }
-                }
-                break;
-                case notification_type_message:
-                    ImGui::TextWrapped("%s", it->message.c_str());
-                break;
-                case notification_type_auto_accept_invite:
-                    ImGui::TextWrapped("%s", it->message.c_str());
-                break;
-            }
-
-            ImGui::End();
-
-            ImGui::PopStyleColor(3);
+        if ( elapsed_notif < Notification::fade_in) { // still appearing (fading in)
+            float alpha = settings->overlay_appearance.notification_a * (elapsed_notif.count() / static_cast<float>(Notification::fade_in.count()));
+            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, alpha));
+            ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(settings->overlay_appearance.notification_r, settings->overlay_appearance.notification_g, settings->overlay_appearance.notification_b, alpha));
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 255, 255, alpha*2));
+        } else if ( elapsed_notif > Notification::fade_out_start) { // fading out 
+            float alpha = settings->overlay_appearance.notification_a * ((Notification::show_time - elapsed_notif).count() / static_cast<float>(Notification::fade_out.count()));
+            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, alpha));
+            ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(settings->overlay_appearance.notification_r, settings->overlay_appearance.notification_g, settings->overlay_appearance.notification_b, alpha));
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 255, 255, alpha*2));
+        } else { // still in the visible time limit
+            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, settings->overlay_appearance.notification_a));
+            ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(settings->overlay_appearance.notification_r, settings->overlay_appearance.notification_g, settings->overlay_appearance.notification_b, settings->overlay_appearance.notification_a));
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 255, 255, settings->overlay_appearance.notification_a*2));
         }
-        notifications.erase(std::remove_if(notifications.begin(), notifications.end(), [&now](Notification &item) {
-            return (now - item.start_time) > Notification::show_time;
-        }), notifications.end());
+        
+        SetNextNotificationPos(width, height, font_size, (notification_type)it->type, idx);
+        ImGui::SetNextWindowSize(ImVec2( width * Notification::width_percent, Notification::height * font_size ));
+        
+        std::string wnd_name = "NotiPopupShow" + std::to_string(it->id);
+        ImGui::Begin(wnd_name.c_str(), nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | 
+            ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoDecoration);
 
-        have_notifications = !notifications.empty();
+        switch (it->type) {
+            case notification_type_achievement: {
+                if (!it->icon.expired()) {
+                    ImGui::BeginTable("imgui_table", 2);
+                    ImGui::TableSetupColumn("imgui_table_image", ImGuiTableColumnFlags_WidthFixed, settings->overlay_appearance.icon_size);
+                    ImGui::TableSetupColumn("imgui_table_text");
+                    ImGui::TableNextRow(ImGuiTableRowFlags_None, settings->overlay_appearance.icon_size);
+
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Image((ImU64)*it->icon.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
+
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::TextWrapped("%s", it->message.c_str());
+
+                    ImGui::EndTable();
+                } else {
+                    ImGui::TextWrapped("%s", it->message.c_str());
+                }
+            }
+            break;
+
+            case notification_type_invite: {
+                ImGui::TextWrapped("%s", it->message.c_str());
+                if (ImGui::Button(translationJoin[current_language]))
+                {
+                    it->frd->second.window_state |= window_state_join;
+                    friend_actions_temp.push(it->frd->first);
+                    it->start_time = std::chrono::seconds(0);
+                }
+            }
+            break;
+
+            case notification_type_message:
+                ImGui::TextWrapped("%s", it->message.c_str());
+            break;
+
+            case notification_type_auto_accept_invite:
+                ImGui::TextWrapped("%s", it->message.c_str());
+            break;
+        }
+
+        ImGui::End();
+
+        ImGui::PopStyleColor(3);
     }
 
+    // erase all notifications whose visible time exceeded the max
+    notifications.erase(std::remove_if(notifications.begin(), notifications.end(), [&now](Notification &item) {
+        return (now - item.start_time) > Notification::show_time;
+    }), notifications.end());
+
     if (!friend_actions_temp.empty()) {
-        std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
         while (!friend_actions_temp.empty()) {
             has_friend_action.push(friend_actions_temp.front());
             friend_actions_temp.pop();
@@ -967,20 +978,24 @@ void Steam_Overlay::OverlayProc()
 
     ImGuiIO& io = ImGui::GetIO();
 
-    if (show_overlay) {
-        // Set the overlay windows to the size of the game window
+    // Set the overlay windows to the size of the game window
+    // only if we have a reason (full overlay or just some notification)
+    if (show_overlay || notifications.size()) {
         ImGui::SetNextWindowPos({ 0,0 });
         ImGui::SetNextWindowSize({ io.DisplaySize.x, io.DisplaySize.y });
-
-        ImGui::SetNextWindowBgAlpha(0.50);
-
-        ImGui::PushFont(font_default);
+        ImGui::SetNextWindowBgAlpha(0.60);
     }
 
-    if (have_notifications) {
+    if (notifications.size()) {
         ImGui::PushFont(font_notif);
         BuildNotifications(io.DisplaySize.x, io.DisplaySize.y);
         ImGui::PopFont();
+        
+        // after showing all notifications, and if we won't show the overlay
+        // then disable frame rendering
+        if (notifications.empty() && !show_overlay) {
+            _renderer->HideOverlayInputs(true);
+        }
     }
 
     // ******************** exit early if we shouldn't show the overlay
@@ -989,6 +1004,8 @@ void Steam_Overlay::OverlayProc()
     }
     // ********************
     
+    //ImGui::SetNextWindowFocus();
+    ImGui::PushFont(font_default);
     bool show = true;
 
     char tmp[TRANSLATION_BUFFER_SIZE]{};
@@ -1057,7 +1074,6 @@ void Steam_Overlay::OverlayProc()
 
         ImGui::LabelText("##label", "%s", translationFriends[current_language]);
 
-        std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
         if (!friends.empty()) {
             if (i_have_lobby) {
                 std::string inviteAll(translationInviteAll[current_language]);
@@ -1275,7 +1291,7 @@ void Steam_Overlay::Callback(Common_Message *msg)
                 friend_info->second.window_state |= window_state_need_attention;
             }
 
-            AddMessageNotification(friend_info->first.name() + ": " + steam_message.message());
+            AddChatMessageNotification(friend_info->first.name() + ": " + steam_message.message());
             NotifySoundUserInvite(friend_info->second);
         }
     }
@@ -1284,6 +1300,7 @@ void Steam_Overlay::Callback(Common_Message *msg)
 void Steam_Overlay::RunCallbacks()
 {
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    std::lock_guard<std::recursive_mutex> lock2(global_mutex);
     if (Ready() && !achievements.size() && load_achievements_trials > 0) {
         --load_achievements_trials;
         Steam_User_Stats* steamUserStats = get_steam_client()->steam_user_stats;
@@ -1348,9 +1365,6 @@ void Steam_Overlay::RunCallbacks()
         _renderer->OverlayProc = [this]() { OverlayProc(); };
         _renderer->OverlayHookReady = [this](InGameOverlay::OverlayHookState state) {
             PRINT_DEBUG("Steam_Overlay hook state changed %i\n", (int)state);
-            if (state ==  InGameOverlay::OverlayHookState::Removing) {
-                _renderer = nullptr;
-            }
             HookReady(state == InGameOverlay::OverlayHookState::Ready || state == InGameOverlay::OverlayHookState::Reset);
         };
         bool started = _renderer->StartHook(overlay_toggle_callback, overlay_toggle_keys, &fonts_atlas);

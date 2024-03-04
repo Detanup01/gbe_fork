@@ -88,6 +88,7 @@ struct Overlay_Achievement
 
 #ifdef EMU_OVERLAY
 #include <future>
+#include <atomic>
 #include "InGameOverlay/RendererHook.h"
 
 struct NotificationsIndexes {
@@ -108,8 +109,7 @@ class Steam_Overlay
 
     // avoids spam loading on failure
     std::atomic<int32_t> load_achievements_trials = 3;
-    bool setup_overlay_called;
-    bool is_ready;
+    bool is_ready = false;
     bool show_overlay;
     ENotificationPosition notif_position;
     int h_inset, v_inset;
@@ -127,7 +127,7 @@ class Steam_Overlay
     bool warn_bad_appid;
 
     char username_text[256];
-    std::atomic_bool save_settings;
+    std::atomic<bool> save_settings;
 
     int current_language;
 
@@ -136,17 +136,14 @@ class Steam_Overlay
     // Callback infos
     std::queue<Friend> has_friend_action;
     std::vector<Notification> notifications;
-    std::recursive_mutex notifications_mutex;
-    std::atomic<bool> have_notifications;
     // used when the button "Invite all" is clicked
     std::atomic<bool> invite_all_friends_clicked = false;
 
     bool overlay_state_changed;
 
-    std::recursive_mutex overlay_mutex;
     std::atomic<bool> i_have_lobby;
     std::future<InGameOverlay::RendererHook_t*> future_renderer;
-    InGameOverlay::RendererHook_t* _renderer;
+    InGameOverlay::RendererHook_t *_renderer;
 
     Steam_Overlay(Steam_Overlay const&) = delete;
     Steam_Overlay(Steam_Overlay&&) = delete;
@@ -161,6 +158,8 @@ class Steam_Overlay
 
     bool FriendJoinable(std::pair<const Friend, friend_window_state> &f);
     bool IHaveLobby();
+
+    bool submit_notification(notification_type type, const std::string &msg, std::pair<const Friend, friend_window_state> *frd = nullptr, const std::weak_ptr<uint64_t> &icon = {});
 
     void NotifySoundUserInvite(friend_window_state& friend_state);
     void NotifySoundUserAchievement();
@@ -211,7 +210,7 @@ public:
     void FriendConnect(Friend _friend);
     void FriendDisconnect(Friend _friend);
 
-    void AddMessageNotification(std::string const& message);
+    void AddChatMessageNotification(std::string const& message);
     void AddAchievementNotification(nlohmann::json const& ach);
     void AddInviteNotification(std::pair<const Friend, friend_window_state> &wnd_state);
     void AddAutoAcceptInviteNotification();
@@ -254,7 +253,7 @@ public:
     void FriendConnect(Friend _friend) {}
     void FriendDisconnect(Friend _friend) {}
 
-    void AddMessageNotification(std::string const& message) {}
+    void AddChatMessageNotification(std::string const& message) {}
     void AddAchievementNotification(nlohmann::json const& ach) {}
     void AddInviteNotification(std::pair<const Friend, friend_window_state> &wnd_state) {}
     void AddAutoAcceptInviteNotification() {}
