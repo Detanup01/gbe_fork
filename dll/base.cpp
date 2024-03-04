@@ -93,7 +93,7 @@ bool set_env_variable(std::string name, std::string value)
 
 #endif
 
-std::recursive_mutex global_mutex;
+std::recursive_mutex global_mutex{};
 
 // some arbitrary counter/time for reference
 const std::chrono::time_point<std::chrono::high_resolution_clock> startup_counter = std::chrono::high_resolution_clock::now();

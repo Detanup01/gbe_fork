@@ -947,7 +947,7 @@ void Steam_Client::SetWarningMessageHook( SteamAPIWarningMessageHook_t pFunction
 // Trigger global shutdown for the DLL
 bool Steam_Client::BShutdownIfAllPipesClosed()
 {
-    PRINT_DEBUG("BShutdownIfAllPipesClosed\n");
+    PRINT_DEBUG("Steam_Client::BShutdownIfAllPipesClosed\n");
     if (!steam_pipes.size()) {
         bool joinable = background_keepalive.joinable();
         if (joinable) {
