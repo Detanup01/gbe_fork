@@ -1123,8 +1123,10 @@ static void parse_auto_accept_invite(class Settings *settings_client, Settings *
         if (accept_any_invite) {
             PRINT_DEBUG("Auto accepting any overlay invitation\n");
             settings_client->acceptAnyOverlayInvites(true);
+            settings_server->acceptAnyOverlayInvites(true);
         } else {
             settings_client->acceptAnyOverlayInvites(false);
+            settings_server->acceptAnyOverlayInvites(false);
         }
     }
 }
@@ -1151,6 +1153,35 @@ static void parse_ip_country(class Settings *settings_client, Settings *settings
             settings_client->ip_country = line;
             settings_server->ip_country = line;
             PRINT_DEBUG("Setting IP country to: '%s'\n", line.c_str());
+        }
+    }
+}
+
+// overlay_hook_delay_sec.txt
+static void parse_overlay_hook_delay_sec(class Settings *settings_client, Settings *settings_server)
+{
+    std::string auto_accept_list_path = Local_Storage::get_game_settings_path() + "overlay_hook_delay_sec.txt";
+    std::ifstream input( utf8_decode(auto_accept_list_path) );
+    if (input.is_open()) {
+        bool accept_any_invite = true;
+        consume_bom(input);
+        std::string line{};
+        std::getline( input, line );
+        size_t start = line.find_first_not_of(whitespaces);
+        size_t end = line.find_last_not_of(whitespaces);
+        line = start == end
+            ? std::string()
+            : line.substr(start, end - start + 1);
+        
+        if (!line.empty()) {
+            try {
+                auto delay_sec = std::stoi(line);
+                if (delay_sec >= 0) {
+                    settings_client->overlay_hook_delay_sec = delay_sec;
+                    settings_server->overlay_hook_delay_sec = delay_sec;
+                    PRINT_DEBUG("Setting overlay hook delay to %i seconds\n", delay_sec);
+                }
+            } catch (...) {}
         }
     }
 }
@@ -1348,19 +1379,12 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     }
 
     parse_dlc(settings_client, settings_server);
-
     parse_app_paths(settings_client, settings_server, program_path);
-
     parse_leaderboards(settings_client, settings_server);
-
     parse_stats(settings_client, settings_server);
-
     parse_depots(settings_client, settings_server);
-
     parse_subscribed_groups(settings_client, settings_server);
-
     parse_installed_app_Ids(settings_client, settings_server);
-
     parse_force_branch_name(settings_client, settings_server);
 
     load_subscribed_groups_clans(local_storage->get_global_settings_path() + "subscribed_groups_clans.txt", settings_client, settings_server);
@@ -1370,12 +1394,10 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     load_overlay_appearance(Local_Storage::get_game_settings_path() + "overlay_appearance.txt", settings_client, settings_server);
 
     parse_mods_folder(settings_client, settings_server, local_storage);
-
     load_gamecontroller_settings(settings_client);
-
     parse_auto_accept_invite(settings_client, settings_server);
-    
     parse_ip_country(settings_client, settings_server);
+    parse_overlay_hook_delay_sec(settings_client, settings_server);
 
     *settings_client_out = settings_client;
     *settings_server_out = settings_server;

@@ -275,6 +275,7 @@ public:
 
     //overlay
     bool disable_overlay = false;
+    int overlay_hook_delay_sec = 5;
     bool disable_overlay_achievement_notification = false;
     bool disable_overlay_friend_notification = false;
     //warn people who use force_ settings
