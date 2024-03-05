@@ -264,7 +264,7 @@ Do not run more than one steam game with the **same appid** at the same time on 
 ---
 
 ## Overlay:
-**Note: at the moment this feature is only enabled in the windows experimental builds**
+**Note: at the moment this feature is only enabled in the experimental builds**
 ---
 
 The overlay can be disabled by putting a file named `disable_overlay.txt` in the `steam_settings` folder.  
@@ -422,7 +422,8 @@ Second, the project is not a malware, if your antivirus software complains, be s
 ---
 
 ## Overlay warnings:
-**Note: at the moment this feature is only enabled in the windows experimental builds**
+**Note: at the moment this feature is only enabled in the experimental builds**
+---
 
 These configuration files allow disabling various overlay warnings:  
 * `disable_overlay_warning_forced_setting.txt`:  
@@ -432,12 +433,13 @@ These configuration files allow disabling various overlay warnings:
 * `disable_overlay_warning_local_save.txt`: disable the warning for using local save in the overlay
 * `disable_overlay_warning_any.txt`: all the above  
 
-Check the exaxmple files in the `steam_settings` folder
+Check the example files in the `steam_settings` folder
 
 ---
 
 ## Overlay appearance:
-**Note: at the moment this feature is only enabled in the windows experimental builds**
+**Note: at the moment this feature is only enabled in the experimental builds**
+---
 
 These configuration file `overlay_appearance.txt` has various options to set for the overlay appearance.  
 The notifications positions could be set to one of these values:  
@@ -448,11 +450,13 @@ The notifications positions could be set to one of these values:
 * `bot_center`
 * `bot_right`
 
-Check the exaxmple files in the `steam_settings` folder
+Check the example files in the `steam_settings` folder
 
 ---
 
 ## Auto accept game/lobby invites:
+**Note: at the moment this feature is only enabled in the experimental builds**
+---
 
 When the overlay is enabled and working, you can bypass it and auto-accept invites (lobby or game) from a list of Steam IDs (SteamID64 format).  
 The configuration file `auto_accept_invite.txt` allows you to do that, it works like this:  
@@ -461,7 +465,7 @@ The configuration file `auto_accept_invite.txt` allows you to do that, it works 
   * If the friend ID is found in this file, the invitation will be accepted automatically
   * If the friend ID is not found, you'll get the regular overlay invitation  
 
-Check the exaxmple file in the `steam_settings` folder  
+Check the example file in the `steam_settings` folder  
 
 ---
 
@@ -470,7 +474,7 @@ Check the exaxmple file in the `steam_settings` folder
 You can report a country IP if the game queries it, by setting the 2 characters code in the file `ip_country.txt`.  
 Use this link to get the `Alpha-2` country code: https://www.iban.com/country-codes  
 
-Check the exaxmple file in the `steam_settings` folder
+Check the example file in the `steam_settings` folder
 
 ---
 
@@ -488,7 +492,7 @@ Note that this will **not** work if the app is using native/OS web APIs, also su
 You can use this feature, for eaxmple, to know which requests are made by the app.  
 It's up to you afterwards to specify the correct responses for these requests by changing the content of the files inside `steam_settings\http\`.  
 
-Check the exaxmple file in the `steam_settings` folder
+Check the example file in the `steam_settings` folder
 
 ---
 
@@ -496,7 +500,7 @@ Check the exaxmple file in the `steam_settings` folder
 
 You can force the API `Steam_HTTP::SendHTTPRequest()` to always report success, by creating a file called `force_steamhttp_success.txt` inside the `steam_settings` folder.  
 
-Check the exaxmple file in the `steam_settings` folder
+Check the example file in the `steam_settings` folder
 
 ---
 
@@ -508,6 +512,21 @@ You can make the emu return the proper/actual servers list for the given type by
 
 Also, match making servers will return the info of the server from the incoming local packets, you can make the emu retrieve the actual server info by performing a source server query, this is enabled by creating a file called `matchmaking_server_details_via_source_query.txt` inside the `steam_settings` folder.  
 **This is currently broken**.  
+
+---
+
+## Overlay hook delay:
+**Note: at the moment this feature is only enabled in the experimental builds**
+---
+
+By default the emu will wait `5 seconds` before attempting to start the overlay renderer detector, this allows some games to initialize properly, otherwise the detector may not detect the renderer (DirectX, OpenGL, etc...) and the overlay will not work (example game: `Have a Nice Death`).  
+You can control this delay via the configuration file `overlay_hook_delay_sec.txt`. It must contain only one line, specifying the amount of seconds to wait.  
+It is **NOT** recommended to remove this delay or setting it to 0, also negative values will be ignored.  
+
+The renderer detector will have a `10 second` timeout after initialization (not counting the delay), after that it will fail.  
+This avoids an infinite detection loop and a potential FPS drop on failure.  
+
+Check the example file in the `steam_settings` folder
 
 ---
 
