@@ -645,7 +645,10 @@ std::string get_achievement_icon_name( const char *pchName, bool pbAchieved )
 
     try {
         if (pbAchieved) return it.value()["icon"].get<std::string>();
-        else return it.value()["icon_gray"].get<std::string>();
+        
+        std::string locked_icon = it.value().value("icon_gray", std::string());
+        if (locked_icon.size()) return locked_icon;
+        else return it.value().value("icongray", std::string()); // old format
     } catch (...) {}
 
     return "";
