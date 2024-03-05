@@ -142,7 +142,6 @@ class Steam_Overlay
     bool overlay_state_changed;
 
     std::atomic<bool> i_have_lobby;
-    std::future<InGameOverlay::RendererHook_t*> future_renderer;
     InGameOverlay::RendererHook_t *_renderer;
 
     Steam_Overlay(Steam_Overlay const&) = delete;
@@ -175,6 +174,13 @@ class Steam_Overlay
     // invite a single friend
     void InviteFriend(uint64 friend_id, class Steam_Friends* steamFriends, class Steam_Matchmaking* steamMatchmaking);
 
+    void renderer_hook_init_thread();
+    
+    void CreateFonts();
+    void LoadAudio();
+
+    void HookReady(bool ready);
+
 public:
     Steam_Overlay(Settings* settings, SteamCallResults* callback_results, SteamCallBacks* callbacks, RunEveryRunCB* run_every_runcb, Networking *network);
 
@@ -190,10 +196,6 @@ public:
     void SetupOverlay();
     void UnSetupOverlay();
 
-    void HookReady(bool ready);
-
-    void CreateFonts();
-    void LoadAudio();
     void OverlayProc();
 
     void OpenOverlayInvite(CSteamID lobbyId);
