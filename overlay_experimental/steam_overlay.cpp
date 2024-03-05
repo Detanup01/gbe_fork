@@ -387,6 +387,27 @@ bool Steam_Overlay::OpenOverlayHook(bool toggle)
     return show_overlay;
 }
 
+void Steam_Overlay::allow_renderer_frame_processing(bool state)
+{
+    // this is very important internally it calls the necessary fuctions
+    // to properly update ImGui window size on the next OverlayProc() call
+    if (state) {
+        // clip the cursor
+        _renderer->HideAppInputs(true);
+        // allow internal frmae processing
+        _renderer->HideOverlayInputs(false);
+        PRINT_DEBUG("Steam_Overlay::allow_renderer_frame_processing enabled frame processing\n");
+    } else if (notifications.empty() && !show_overlay) {
+        // don't clip the cursor
+        _renderer->HideAppInputs(false);
+        // only stop internal frame processing when our state flag == false, and we don't have notifications
+        _renderer->HideOverlayInputs(true);
+        PRINT_DEBUG("Steam_Overlay::allow_renderer_frame_processing disabled frame processing\n");
+    } else {
+        PRINT_DEBUG("Steam_Overlay::allow_renderer_frame_processing will not disable frame processing, notifications count=%zu, show overlay=%i\n", notifications.size(), (int)show_overlay);
+    }
+}
+
 void Steam_Overlay::ShowOverlay(bool state)
 {
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
@@ -398,26 +419,11 @@ void Steam_Overlay::ShowOverlay(bool state)
     PRINT_DEBUG("Steam_Overlay::ShowOverlay %i\n", (int)state);
 
     ImGuiIO &io = ImGui::GetIO();
+    // force draw the cursor, otherwise games like Truberbrook will not have an overlay cursor
+    io.MouseDrawCursor = state;
+    
+    Steam_Overlay::allow_renderer_frame_processing(state);
 
-    // this is very important internally it calls the necessary fuctions
-    // to properly update ImGui window size on the next OverlayProc() call
-    if (state) {
-        // clip the cursor
-        _renderer->HideAppInputs(true);
-        // allow internal frmae processing
-        _renderer->HideOverlayInputs(false);
-        // force draw the cursor, otherwise games like Truberbrook will not have an overlay cursor
-        io.MouseDrawCursor = true;
-    } else {
-        // don't clip the cursor
-        _renderer->HideAppInputs(false);
-        // only stop internal frame processing when our state flag == false, and we don't have notifications
-        if (notifications.empty()) {
-            _renderer->HideOverlayInputs(true);
-            PRINT_DEBUG("Steam_Overlay::ShowOverlay didn't find any notifications, disabling frame processing\n", (int)state);
-        }
-        io.MouseDrawCursor = false;
-    }
 }
 
 void Steam_Overlay::NotifySoundUserInvite(friend_window_state& friend_state)
@@ -550,11 +556,8 @@ bool Steam_Overlay::submit_notification(notification_type type, const std::strin
     
     notifications.emplace_back(notif);
 
-    // this is very important, internally it calls the necessary fuctions to properly update
-    // ImGui window size, change it here since we want the next OverlayProc to have a full window size
-    // otherwise notification position will relative to an outdated window size
     PRINT_DEBUG("Steam_Overlay::submit_notification enabling frame processing to show notification\n");
-    _renderer->HideOverlayInputs(false);
+    Steam_Overlay::allow_renderer_frame_processing(true);
 
     return true;
 }
@@ -902,6 +905,9 @@ void Steam_Overlay::BuildNotifications(int width, int height)
     for (auto it = notifications.begin(); it != notifications.end(); ++it) {
         auto elapsed_notif = now - it->start_time;
 
+        SetNextNotificationPos(width, height, font_size, (notification_type)it->type, idx);
+        ImGui::SetNextWindowSize(ImVec2( width * Notification::width_percent, Notification::height * font_size ));
+        
         if ( elapsed_notif < Notification::fade_in) { // still appearing (fading in)
             float alpha = settings->overlay_appearance.notification_a * (elapsed_notif.count() / static_cast<float>(Notification::fade_in.count()));
             ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, alpha));
@@ -918,12 +924,10 @@ void Steam_Overlay::BuildNotifications(int width, int height)
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 255, 255, settings->overlay_appearance.notification_a*2));
         }
         
-        SetNextNotificationPos(width, height, font_size, (notification_type)it->type, idx);
-        ImGui::SetNextWindowSize(ImVec2( width * Notification::width_percent, Notification::height * font_size ));
-        
         std::string wnd_name = "NotiPopupShow" + std::to_string(it->id);
-        ImGui::Begin(wnd_name.c_str(), nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | 
-            ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoDecoration);
+        ImGui::Begin(wnd_name.c_str(), nullptr,
+            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoFocusOnAppearing |
+            ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize);
 
         switch (it->type) {
             case notification_type_achievement: {
@@ -1137,8 +1141,8 @@ void Steam_Overlay::OverlayProc()
         // after showing all notifications, and if we won't show the overlay
         // then disable frame rendering
         if (notifications.empty() && !show_overlay) {
-            _renderer->HideOverlayInputs(true);
             PRINT_DEBUG("Steam_Overlay::OverlayProc disabled frame processing (no request to show overlay and 0 notifications)\n");
+            Steam_Overlay::allow_renderer_frame_processing(false);
         }
     }
 
@@ -1187,9 +1191,10 @@ void Steam_Overlay::OverlayProc()
         ImGui::PushStyleColor(ImGuiCol_HeaderActive, colorSet);
     }
 
-    if (ImGui::Begin(windowTitle.c_str(), &show, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus))
+    if (ImGui::Begin(windowTitle.c_str(), &show,
+            ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus))
     {
-        ImGui::LabelText("##label", translationUserPlaying[current_language],
+        ImGui::LabelText("##playinglabel", translationUserPlaying[current_language],
             settings->get_local_name(),
             settings->get_local_steam_id().ConvertToUint64(),
             settings->get_local_game_id().AppID());

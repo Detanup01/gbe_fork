@@ -180,6 +180,7 @@ class Steam_Overlay
     void LoadAudio();
 
     void HookReady(bool ready);
+    void allow_renderer_frame_processing(bool state);
 
 public:
     Steam_Overlay(Settings* settings, SteamCallResults* callback_results, SteamCallBacks* callbacks, RunEveryRunCB* run_every_runcb, Networking *network);
