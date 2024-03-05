@@ -931,14 +931,13 @@ void Steam_Overlay::BuildNotifications(int width, int height)
 
         switch (it->type) {
             case notification_type_achievement: {
-                if (!it->icon.expired()) {
-                    ImGui::BeginTable("imgui_table", 2);
+                if (!it->icon.expired() && ImGui::BeginTable("imgui_table", 2)) {
                     ImGui::TableSetupColumn("imgui_table_image", ImGuiTableColumnFlags_WidthFixed, settings->overlay_appearance.icon_size);
                     ImGui::TableSetupColumn("imgui_table_text");
                     ImGui::TableNextRow(ImGuiTableRowFlags_None, settings->overlay_appearance.icon_size);
 
                     ImGui::TableSetColumnIndex(0);
-                    ImGui::Image((ImU64)*it->icon.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
+                    ImGui::Image((ImTextureID)*it->icon.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
 
                     ImGui::TableSetColumnIndex(1);
                     ImGui::TextWrapped("%s", it->message.c_str());
