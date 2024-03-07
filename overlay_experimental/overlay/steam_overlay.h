@@ -91,7 +91,8 @@ struct Overlay_Achievement
 #include <atomic>
 #include "InGameOverlay/RendererHook.h"
 
-struct NotificationsIndexes {
+struct NotificationsIndexes
+{
     int top_left = 0, top_center = 0, top_right = 0;
     int bot_left = 0, bot_center = 0, bot_right = 0;
 };
@@ -155,32 +156,42 @@ class Steam_Overlay
     void Callback(Common_Message* msg);
     void RunCallbacks();
 
-    bool FriendJoinable(std::pair<const Friend, friend_window_state> &f);
-    bool IHaveLobby();
+    bool is_friend_joinable(std::pair<const Friend, friend_window_state> &f);
+    bool got_lobby();
 
     bool submit_notification(notification_type type, const std::string &msg, std::pair<const Friend, friend_window_state> *frd = nullptr, const std::weak_ptr<uint64_t> &icon = {});
 
-    void NotifySoundUserInvite(friend_window_state& friend_state);
-    void NotifySoundUserAchievement();
-    void NotifySoundAutoAcceptFriendInvite();
+    void notify_sound_user_invite(friend_window_state& friend_state);
+    void notify_sound_user_achievement();
+    void notify_sound_auto_accept_friend_invite();
 
     // Right click on friend
-    void BuildContextMenu(Friend const& frd, friend_window_state &state);
+    void build_friend_context_menu(Friend const& frd, friend_window_state &state);
     // Double click on friend
-    void BuildFriendWindow(Friend const& frd, friend_window_state &state);
+    void build_friend_window(Friend const& frd, friend_window_state &state);
     // Notifications like achievements, chat and invitations
-    void SetNextNotificationPos(float width, float height, float font_size, notification_type type, struct NotificationsIndexes &idx);
-    void BuildNotifications(int width, int height);
+    void set_next_notification_pos(float width, float height, float font_size, notification_type type, struct NotificationsIndexes &idx);
+    void build_notifications(int width, int height);
     // invite a single friend
-    void InviteFriend(uint64 friend_id, class Steam_Friends* steamFriends, class Steam_Matchmaking* steamMatchmaking);
+    void invite_friend(uint64 friend_id, class Steam_Friends* steamFriends, class Steam_Matchmaking* steamMatchmaking);
 
     void renderer_hook_init_thread();
     
-    void CreateFonts();
-    void LoadAudio();
+    void create_fonts();
+    void load_audio();
 
-    void HookReady(bool ready);
+    void overlay_state_hook(bool ready);
     void allow_renderer_frame_processing(bool state);
+
+    void overlay_proc();
+
+    void add_auto_accept_invite_notification();
+
+    void AddInviteNotification(std::pair<const Friend, friend_window_state> &wnd_state);
+    
+    void add_chat_message_notification(std::string const& message);
+
+    bool open_overlay_hook(bool toggle);
 
 public:
     Steam_Overlay(Settings* settings, SteamCallResults* callback_results, SteamCallBacks* callbacks, RunEveryRunCB* run_every_runcb, Networking *network);
@@ -197,15 +208,12 @@ public:
     void SetupOverlay();
     void UnSetupOverlay();
 
-    void OverlayProc();
-
     void OpenOverlayInvite(CSteamID lobbyId);
     void OpenOverlay(const char* pchDialog);
     void OpenOverlayWebpage(const char* pchURL);
 
     bool ShowOverlay() const;
     void ShowOverlay(bool state);
-    bool OpenOverlayHook(bool toggle);
 
     void SetLobbyInvite(Friend friendId, uint64 lobbyId);
     void SetRichInvite(Friend friendId, const char* connect_str);
@@ -213,10 +221,7 @@ public:
     void FriendConnect(Friend _friend);
     void FriendDisconnect(Friend _friend);
 
-    void AddChatMessageNotification(std::string const& message);
     void AddAchievementNotification(nlohmann::json const& ach);
-    void AddInviteNotification(std::pair<const Friend, friend_window_state> &wnd_state);
-    void AddAutoAcceptInviteNotification();
 };
 
 #else
@@ -237,18 +242,12 @@ public:
     void SetupOverlay() {}
     void UnSetupOverlay() {}
 
-    void HookReady(bool ready) {}
-
-    void CreateFonts() {}
-    void OverlayProc() {}
-
     void OpenOverlayInvite(CSteamID lobbyId) {}
     void OpenOverlay(const char* pchDialog) {}
     void OpenOverlayWebpage(const char* pchURL) {}
 
     bool ShowOverlay() const { return false; }
     void ShowOverlay(bool state) {}
-    bool OpenOverlayHook(bool toggle) { return false; }
 
     void SetLobbyInvite(Friend friendId, uint64 lobbyId) {}
     void SetRichInvite(Friend friendId, const char* connect_str) {}
@@ -256,10 +255,7 @@ public:
     void FriendConnect(Friend _friend) {}
     void FriendDisconnect(Friend _friend) {}
 
-    void AddChatMessageNotification(std::string const& message) {}
     void AddAchievementNotification(nlohmann::json const& ach) {}
-    void AddInviteNotification(std::pair<const Friend, friend_window_state> &wnd_state) {}
-    void AddAutoAcceptInviteNotification() {}
 };
 
 #endif
