@@ -519,11 +519,11 @@ Also, match making servers will return the info of the server from the incoming 
 **Note: at the moment this feature is only enabled in the experimental builds**
 ---
 
-By default the emu will wait `5 seconds` before attempting to start the overlay renderer detector, this allows some games to initialize properly, otherwise the detector may not detect the renderer (DirectX, OpenGL, etc...) and the overlay will not work (example game: `Have a Nice Death`).  
+By default the emu will wait `3 seconds` before attempting to start the overlay renderer detector, this allows some games to initialize properly, otherwise the detector may not detect the renderer (DirectX, OpenGL, etc...) and the overlay will not work (example game: `Have a Nice Death`).  
 You can control this delay via the configuration file `overlay_hook_delay_sec.txt`. It must contain only one line, specifying the amount of seconds to wait.  
 It is **NOT** recommended to remove this delay or setting it to 0, also negative values will be ignored.  
 
-The renderer detector will have a `10 second` timeout after initialization (not counting the delay), after that it will fail.  
+The renderer detector will have a `10 second` timeout after initialization (not including the delay), after that it will fail.  
 This avoids an infinite detection loop and a potential FPS drop on failure.  
 
 Check the example file in the `steam_settings` folder
