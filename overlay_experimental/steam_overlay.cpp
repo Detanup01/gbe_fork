@@ -20,6 +20,8 @@
 
 #include "InGameOverlay/RendererDetector.h"
 
+#define URL_WINDOW_NAME "URL Window"
+
 static constexpr int max_window_id = 10000;
 static constexpr int base_notif_window_id  = 0 * max_window_id;
 static constexpr int base_friend_window_id = 1 * max_window_id;
@@ -58,8 +60,6 @@ static const char* valid_languages[] = {
     "croatian"
 };
 
-#define URL_WINDOW_NAME "URL Window"
-
 ImFontAtlas fonts_atlas{};
 ImFont *font_default{};
 ImFont *font_notif{};
@@ -67,53 +67,20 @@ ImFont *font_notif{};
 std::recursive_mutex overlay_mutex{};
 std::atomic<bool> setup_overlay_called = false;
 
-
-int find_free_id(std::vector<int> & ids, int base)
-{
-    std::sort(ids.begin(), ids.end());
-
-    int id = base;
-    for (auto i : ids)
-    {
-        if (id < i)
-            break;
-        id = i + 1;
-    }
-
-    return id > (base+max_window_id) ? 0 : id;
-}
-
-int find_free_friend_id(const std::map<Friend, friend_window_state, Friend_Less> &friend_windows)
-{
-    std::vector<int> ids{};
-    ids.reserve(friend_windows.size());
-
-    std::for_each(friend_windows.begin(), friend_windows.end(), [&ids](std::pair<Friend const, friend_window_state> const& i)
-    {
-        ids.emplace_back(i.second.id);
-    });
-    
-    return find_free_id(ids, base_friend_window_id);
-}
-
-int find_free_notification_id(std::vector<Notification> const& notifications)
-{
-    std::vector<int> ids{};
-    ids.reserve(notifications.size());
-
-    std::for_each(notifications.begin(), notifications.end(), [&ids](Notification const& i)
-    {
-        ids.emplace_back(i.id);
-    });
-    
-
-    return find_free_id(ids, base_friend_window_id);
-}
-
-char *notif_achievement_wav_custom;
-char *notif_invite_wav_custom;
+char *notif_achievement_wav_custom{};
+char *notif_invite_wav_custom{};
 bool notif_achievement_wav_custom_inuse = false;
 bool notif_invite_wav_custom_inuse = false;
+
+
+// ListBoxHeader() is deprecated and inlined inside <imgui.h>
+// Helper to calculate size from items_count and height_in_items
+static inline bool ImGuiHelper_BeginListBox(const char* label, int items_count) {
+    int min_items = items_count < 7 ? items_count : 7;
+    float height = ImGui::GetTextLineHeightWithSpacing() * (min_items + 0.25f) + ImGui::GetStyle().FramePadding.y * 2.0f;
+    return ImGui::BeginListBox(label, ImVec2(0.0f, height));
+}
+
 
 void Steam_Overlay::steam_overlay_run_every_runcb(void* object)
 {
@@ -181,33 +148,6 @@ Steam_Overlay::~Steam_Overlay()
     UnSetupOverlay();
 }
 
-bool Steam_Overlay::Ready() const
-{
-    return is_ready;
-}
-
-bool Steam_Overlay::NeedPresent() const
-{
-    PRINT_DEBUG("Steam_Overlay::NeedPresent\n");
-    return !settings->disable_overlay;
-}
-
-void Steam_Overlay::SetNotificationPosition(ENotificationPosition eNotificationPosition)
-{
-    PRINT_DEBUG("TODO Steam_Overlay::SetNotificationPosition %i\n", (int)eNotificationPosition);
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-
-    notif_position = eNotificationPosition;
-}
-
-void Steam_Overlay::SetNotificationInset(int nHorizontalInset, int nVerticalInset)
-{
-    PRINT_DEBUG("TODO Steam_Overlay::SetNotificationInset x=%i y=%i\n", nHorizontalInset, nVerticalInset);
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-
-    h_inset = nHorizontalInset;
-    v_inset = nVerticalInset;
-}
 
 void Steam_Overlay::renderer_hook_init_thread()
 {
@@ -236,7 +176,10 @@ void Steam_Overlay::renderer_hook_init_thread()
     InGameOverlay::FreeDetector();
     // exit on failure
     if (timeout_ctr <= 0 || !setup_overlay_called || !future_renderer.valid()) {
-        PRINT_DEBUG("Steam_Overlay::renderer_hook_init failed to detect renderer\n");
+        PRINT_DEBUG(
+            "Steam_Overlay::renderer_hook_init failed to detect renderer, ctr=%i, overlay was set up=%i, valid hook intance-%i\n",
+            timeout_ctr, (int)setup_overlay_called, future_renderer.valid()
+        );
         return;
     }
 
@@ -259,41 +202,128 @@ void Steam_Overlay::renderer_hook_init_thread()
     };
 
     bool started = _renderer->StartHook(overlay_toggle_callback, overlay_toggle_keys, &fonts_atlas);
-    PRINT_DEBUG("Steam_Overlay::renderer_hook_init tried to start renderer hook (result=%u)\n", started);
+    PRINT_DEBUG("Steam_Overlay::renderer_hook_init started renderer hook (result=%i)\n", (int)started);
     
 }
 
-void Steam_Overlay::SetupOverlay()
+void Steam_Overlay::create_fonts()
 {
-    PRINT_DEBUG("Steam_Overlay::SetupOverlay\n");
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    static std::atomic<bool> create_fonts_called = false;
+    bool not_created_yet = false;
+    if (!create_fonts_called.compare_exchange_weak(not_created_yet, true)) return;
 
-    bool not_called_yet = false;
-    if (setup_overlay_called.compare_exchange_weak(not_called_yet, true)) {
-        std::thread([this]() { renderer_hook_init_thread(); }).detach();
+    // disable rounding the texture height to the next power of two
+    // see this: https://github.com/ocornut/imgui/blob/master/docs/FONTS.md#4-font-atlas-texture-fails-to-upload-to-gpu
+    fonts_atlas.Flags |= ImFontAtlasFlags_NoPowerOfTwoHeight;
+
+    float font_size = settings->overlay_appearance.font_size;
+    
+    ImFontConfig fontcfg{};
+    fontcfg.PixelSnapH = true;
+    fontcfg.OversampleH = 1;
+    fontcfg.OversampleV = 1;
+    fontcfg.SizePixels = font_size;
+
+    static ImFontGlyphRangesBuilder font_builder{};
+    for (auto &x : achievements) {
+        font_builder.AddText(x.title.c_str());
+        font_builder.AddText(x.description.c_str());
     }
+    for (int i = 0; i < TRANSLATION_NUMBER_OF_LANGUAGES; i++) {
+        font_builder.AddText(translationChat[i]);
+        font_builder.AddText(translationCopyId[i]);
+        font_builder.AddText(translationInvite[i]);
+        font_builder.AddText(translationInviteAll[i]);
+        font_builder.AddText(translationJoin[i]);
+        font_builder.AddText(translationInvitedYouToJoinTheGame[i]);
+        font_builder.AddText(translationAccept[i]);
+        font_builder.AddText(translationRefuse[i]);
+        font_builder.AddText(translationSend[i]);
+        font_builder.AddText(translationSteamOverlay[i]);
+        font_builder.AddText(translationUserPlaying[i]);
+        font_builder.AddText(translationRenderer[i]);
+        font_builder.AddText(translationShowAchievements[i]);
+        font_builder.AddText(translationSettings[i]);
+        font_builder.AddText(translationFriends[i]);
+        font_builder.AddText(translationAchievementWindow[i]);
+        font_builder.AddText(translationListOfAchievements[i]);
+        font_builder.AddText(translationAchievements[i]);
+        font_builder.AddText(translationHiddenAchievement[i]);
+        font_builder.AddText(translationAchievedOn[i]);
+        font_builder.AddText(translationNotAchieved[i]);
+        font_builder.AddText(translationGlobalSettingsWindow[i]);
+        font_builder.AddText(translationGlobalSettingsWindowDescription[i]);
+        font_builder.AddText(translationUsername[i]);
+        font_builder.AddText(translationLanguage[i]);
+        font_builder.AddText(translationSelectedLanguage[i]);
+        font_builder.AddText(translationRestartTheGameToApply[i]);
+        font_builder.AddText(translationSave[i]);
+        font_builder.AddText(translationWarning[i]);
+        font_builder.AddText(translationWarningWarningWarning[i]);
+        font_builder.AddText(translationWarningDescription1[i]);
+        font_builder.AddText(translationWarningDescription2[i]);
+        font_builder.AddText(translationWarningDescription3[i]);
+        font_builder.AddText(translationWarningDescription4[i]);
+        font_builder.AddText(translationSteamOverlayURL[i]);
+        font_builder.AddText(translationClose[i]);
+        font_builder.AddText(translationPlaying[i]);
+        font_builder.AddText(translationAutoAcceptFriendInvite[i]);
+    }
+    font_builder.AddRanges(fonts_atlas.GetGlyphRangesDefault());
+
+    static ImVector<ImWchar> ranges{};
+    font_builder.BuildRanges(&ranges);
+    fontcfg.GlyphRanges = ranges.Data;
+
+    ImFont *font = fonts_atlas.AddFontDefault(&fontcfg);
+    font_notif = font_default = font;
+    
+    fonts_atlas.Build();
+
+    reset_LastError();
 }
 
-
-void Steam_Overlay::UnSetupOverlay()
+void Steam_Overlay::load_audio()
 {
-    PRINT_DEBUG("Steam_Overlay::UnSetupOverlay\n");
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    std::string file_path{};
+    std::string file_name{};
+    unsigned long long file_size;
 
-    bool already_called = true;
-    if (setup_overlay_called.compare_exchange_weak(already_called, false)) {
-        is_ready = false;
+    for (int i = 0; i < 2; i++) {
+        if (i == 0) file_name = "overlay_achievement_notification.wav";
+        if (i == 1) file_name = "overlay_friend_notification.wav";
 
-        // allow the future_renderer thread to exit if needed
-        std::this_thread::sleep_for(std::chrono::milliseconds(500 + 50));
-        
-        if (_renderer) {
-            for (auto &ach : achievements) {
-                if (!ach.icon.expired()) _renderer->ReleaseImageResource(ach.icon);
-                if (!ach.icon_gray.expired()) _renderer->ReleaseImageResource(ach.icon_gray);
+        file_path = Local_Storage::get_game_settings_path() + file_name;
+        file_size = file_size_(file_path);
+        if (!file_size) {
+            if (settings->local_save.length() > 0) {
+                file_path = settings->local_save + "/settings/" + file_name;
+            } else {
+                file_path = Local_Storage::get_user_appdata_path() + "/settings/" + file_name;
             }
-            _renderer = nullptr;
-            PRINT_DEBUG("Steam_Overlay::UnSetupOverlay freed all images\n");
+            file_size = file_size_(file_path);
+        }
+        if (file_size) {
+            std::ifstream myfile;
+            myfile.open(utf8_decode(file_path), std::ios::binary | std::ios::in);
+            if (myfile.is_open()) {
+                myfile.seekg (0, myfile.end);
+                int length = myfile.tellg();
+                myfile.seekg (0, myfile.beg);
+
+                if (i == 0) {
+                    notif_achievement_wav_custom = new char [length];
+                    myfile.read (notif_achievement_wav_custom, length);
+                    notif_achievement_wav_custom_inuse = true;
+                }
+                if (i == 1) {
+                    notif_invite_wav_custom = new char [length];
+                    myfile.read (notif_invite_wav_custom, length);
+                    notif_invite_wav_custom_inuse = true;
+                }
+
+                myfile.close();
+            }
         }
     }
 }
@@ -307,6 +337,7 @@ void Steam_Overlay::overlay_state_hook(bool ready)
     // the reason is that by the time this hook is called, the object may have been already destructed
     // this is why we use global mutex
     // TODO this also doesn't seem right, no idea why it happens though
+    // NOTE after initializing the renderer detector on another thread this was solved
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
 
     if (!setup_overlay_called) return;
@@ -335,45 +366,6 @@ void Steam_Overlay::overlay_state_hook(bool ready)
         //io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
     }
 
-}
-
-void Steam_Overlay::OpenOverlayInvite(CSteamID lobbyId)
-{
-    PRINT_DEBUG("TODO Steam_Overlay::OpenOverlayInvite %llu\n", lobbyId.ConvertToUint64());
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (!Ready()) return;
-
-    ShowOverlay(true);
-}
-
-void Steam_Overlay::OpenOverlay(const char* pchDialog)
-{
-    PRINT_DEBUG("TODO Steam_Overlay::OpenOverlay '%s'\n", pchDialog);
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (!Ready()) return;
-    
-    // TODO: Show pages depending on pchDialog
-    if ((strncmp(pchDialog, "Friends", sizeof("Friends") - 1) == 0) && (settings->overlayAutoAcceptInvitesCount() > 0)) {
-        PRINT_DEBUG("Steam_Overlay won't open overlay's friends list because some friends are defined in the auto accept list\n");
-        add_auto_accept_invite_notification();
-    } else {
-        ShowOverlay(true);
-    }
-}
-
-void Steam_Overlay::OpenOverlayWebpage(const char* pchURL)
-{
-    PRINT_DEBUG("TODO Steam_Overlay::OpenOverlayWebpage '%s'\n", pchURL);
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (!Ready()) return;
-    
-    show_url = pchURL;
-    ShowOverlay(true);
-}
-
-bool Steam_Overlay::ShowOverlay() const
-{
-    return show_overlay;
 }
 
 // called when the user presses SHIFT + TAB
@@ -406,24 +398,6 @@ void Steam_Overlay::allow_renderer_frame_processing(bool state)
     } else {
         PRINT_DEBUG("Steam_Overlay::allow_renderer_frame_processing will not disable frame processing, notifications count=%zu, show overlay=%i\n", notifications.size(), (int)show_overlay);
     }
-}
-
-void Steam_Overlay::ShowOverlay(bool state)
-{
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (!Ready() || show_overlay == state) return;
-
-    show_overlay = state;
-    overlay_state_changed = true;
-
-    PRINT_DEBUG("Steam_Overlay::ShowOverlay %i\n", (int)state);
-
-    ImGuiIO &io = ImGui::GetIO();
-    // force draw the cursor, otherwise games like Truberbrook will not have an overlay cursor
-    io.MouseDrawCursor = state;
-    
-    Steam_Overlay::allow_renderer_frame_processing(state);
-
 }
 
 void Steam_Overlay::notify_sound_user_invite(friend_window_state& friend_state)
@@ -466,72 +440,46 @@ void Steam_Overlay::notify_sound_auto_accept_friend_invite()
 #endif
 }
 
-void Steam_Overlay::SetLobbyInvite(Friend friendId, uint64 lobbyId)
+int find_free_id(std::vector<int> & ids, int base)
 {
-    PRINT_DEBUG("Steam_Overlay::SetLobbyInvite " "%" PRIu64 " %llu\n", friendId.id(), lobbyId);
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (!Ready()) return;
+    std::sort(ids.begin(), ids.end());
 
-    auto i = friends.find(friendId);
-    if (i != friends.end())
+    int id = base;
+    for (auto i : ids)
     {
-        auto& frd = i->second;
-        frd.lobbyId = lobbyId;
-        frd.window_state |= window_state_lobby_invite;
-        // Make sure don't have rich presence invite and a lobby invite (it should not happen but who knows)
-        frd.window_state &= ~window_state_rich_invite;
-        AddInviteNotification(*i);
-        notify_sound_user_invite(i->second);
+        if (id < i)
+            break;
+        id = i + 1;
     }
+
+    return id > (base+max_window_id) ? 0 : id;
 }
 
-void Steam_Overlay::SetRichInvite(Friend friendId, const char* connect_str)
+int find_free_friend_id(const std::map<Friend, friend_window_state, Friend_Less> &friend_windows)
 {
-    PRINT_DEBUG("Steam_Overlay::SetRichInvite " "%" PRIu64 " '%s'\n", friendId.id(), connect_str);
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (!Ready()) return;
+    std::vector<int> ids{};
+    ids.reserve(friend_windows.size());
 
-    auto i = friends.find(friendId);
-    if (i != friends.end())
+    std::for_each(friend_windows.begin(), friend_windows.end(), [&ids](std::pair<Friend const, friend_window_state> const& i)
     {
-        auto& frd = i->second;
-        strncpy(frd.connect, connect_str, k_cchMaxRichPresenceValueLength - 1);
-        frd.window_state |= window_state_rich_invite;
-        // Make sure don't have rich presence invite and a lobby invite (it should not happen but who knows)
-        frd.window_state &= ~window_state_lobby_invite;
-        AddInviteNotification(*i);
-        notify_sound_user_invite(i->second);
-    }
+        ids.emplace_back(i.second.id);
+    });
+    
+    return find_free_id(ids, base_friend_window_id);
 }
 
-void Steam_Overlay::FriendConnect(Friend _friend)
+int find_free_notification_id(std::vector<Notification> const& notifications)
 {
-    PRINT_DEBUG("Steam_Overlay::FriendConnect " "%" PRIu64 "\n", _friend.id());
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (!Ready()) return;
-    
-    int id = find_free_friend_id(friends);
-    if (id != 0) {
-        auto& item = friends[_friend];
-        item.window_title = std::move(_friend.name() + translationPlaying[current_language] + std::to_string(_friend.appid()));
-        item.window_state = window_state_none;
-        item.id = id;
-        memset(item.chat_input, 0, max_chat_len);
-        item.joinable = false;
-    } else {
-        PRINT_DEBUG("Steam_Overlay::FriendConnect error no free id to create a friend window\n");
-    }
-}
+    std::vector<int> ids{};
+    ids.reserve(notifications.size());
 
-void Steam_Overlay::FriendDisconnect(Friend _friend)
-{
-    PRINT_DEBUG("Steam_Overlay::FriendDisconnect " "%" PRIu64 "\n", _friend.id());
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (!Ready()) return;
+    std::for_each(notifications.begin(), notifications.end(), [&ids](Notification const& i)
+    {
+        ids.emplace_back(i.id);
+    });
     
-    auto it = friends.find(_friend);
-    if (it != friends.end())
-        friends.erase(it);
+
+    return find_free_id(ids, base_friend_window_id);
 }
 
 bool Steam_Overlay::submit_notification(notification_type type, const std::string &msg, std::pair<const Friend, friend_window_state> *frd, const std::weak_ptr<uint64_t> &icon)
@@ -569,86 +517,6 @@ void Steam_Overlay::add_chat_message_notification(std::string const &message)
     if (settings->disable_overlay_friend_notification) return;
 
     submit_notification(notification_type_message, message);
-}
-
-// show a notification when the user unlocks an achievement
-void Steam_Overlay::AddAchievementNotification(nlohmann::json const& ach)
-{
-    PRINT_DEBUG("Steam_Overlay::AddAchievementNotification\n");
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-
-    {
-        std::lock_guard<std::recursive_mutex> lock2(global_mutex);
-
-        std::string ach_name = ach.value("name", std::string());
-        for (auto &a : achievements) {
-            if (a.name == ach_name) {
-                bool achieved = false;
-                uint32 unlock_time = 0;
-                get_steam_client()->steam_user_stats->GetAchievementAndUnlockTime(a.name.c_str(), &achieved, &unlock_time);
-                a.achieved = achieved;
-                a.unlock_time = unlock_time;
-            }
-        }
-    }
-
-    if (!settings->disable_overlay_achievement_notification) {
-        // Load achievement image
-        std::weak_ptr<uint64_t> icon_rsrc{};
-        std::string icon_path = ach.value("icon", std::string());
-        if (icon_path.size()) {
-            std::string file_path{};
-            unsigned long long file_size = 0;
-            file_path = Local_Storage::get_game_settings_path() + icon_path;
-            file_size = file_size_(file_path);
-            if (!file_size) {
-                file_path = Local_Storage::get_game_settings_path() + "achievement_images/" + icon_path;
-                file_size = file_size_(file_path);
-            }
-            if (file_size) {
-                std::string img = Local_Storage::load_image_resized(file_path, "", settings->overlay_appearance.icon_size);
-                if (img.length() > 0) {
-                    icon_rsrc = _renderer->CreateImageResource((void*)img.c_str(), settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size);
-                }
-            }
-        }
-
-        submit_notification(
-            notification_type_achievement,
-            ach.value("displayName", std::string()) + "\n" + ach.value("description", std::string()),
-            {},
-            icon_rsrc
-        );
-        notify_sound_user_achievement();
-    }
-}
-
-void Steam_Overlay::AddInviteNotification(std::pair<const Friend, friend_window_state>& wnd_state)
-{
-    PRINT_DEBUG("Steam_Overlay::AddInviteNotification\n");
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (settings->disable_overlay_friend_notification) return;
-    if (!Ready()) return;
-    
-    char tmp[TRANSLATION_BUFFER_SIZE]{};
-    auto &first_friend = wnd_state.first;
-    auto &name = first_friend.name();
-    snprintf(tmp, sizeof(tmp), translationInvitedYouToJoinTheGame[current_language], name.c_str(), (uint64)first_friend.id());
-    
-    submit_notification(notification_type_invite, tmp, &wnd_state);
-}
-
-void Steam_Overlay::add_auto_accept_invite_notification()
-{
-    PRINT_DEBUG("Steam_Overlay::add_auto_accept_invite_notification\n");
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (!Ready()) return;
-    
-    char tmp[TRANSLATION_BUFFER_SIZE]{};
-    snprintf(tmp, sizeof(tmp), "%s", translationAutoAcceptFriendInvite[current_language]);
-    
-    submit_notification(notification_type_auto_accept_invite, tmp);
-    notify_sound_auto_accept_friend_invite();
 }
 
 bool Steam_Overlay::is_friend_joinable(std::pair<const Friend, friend_window_state> &f)
@@ -925,8 +793,7 @@ void Steam_Overlay::build_notifications(int width, int height)
         
         std::string wnd_name = "NotiPopupShow" + std::to_string(it->id);
         ImGui::Begin(wnd_name.c_str(), nullptr,
-            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoFocusOnAppearing |
-            ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize);
+            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize);
 
         switch (it->type) {
             case notification_type_achievement: {
@@ -986,131 +853,29 @@ void Steam_Overlay::build_notifications(int width, int height)
     }
 }
 
-void Steam_Overlay::create_fonts()
+void Steam_Overlay::add_auto_accept_invite_notification()
 {
-    static std::atomic<bool> create_fonts_called = false;
-    bool not_created_yet = false;
-    if (!create_fonts_called.compare_exchange_weak(not_created_yet, true)) return;
-
-    float font_size = settings->overlay_appearance.font_size;
+    PRINT_DEBUG("Steam_Overlay::add_auto_accept_invite_notification\n");
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (!Ready()) return;
     
-    static ImFontConfig fontcfg{};
-    fontcfg.PixelSnapH = true;
-    fontcfg.OversampleH = 1;
-    fontcfg.OversampleV = 1;
-    fontcfg.SizePixels = font_size;
-
-    static ImFontGlyphRangesBuilder font_builder{};
-    font_builder.AddRanges(fonts_atlas.GetGlyphRangesDefault());
-    for (auto &x : achievements) {
-        font_builder.AddText(x.title.c_str());
-        font_builder.AddText(x.description.c_str());
-    }
-    for (int i = 0; i < TRANSLATION_NUMBER_OF_LANGUAGES; i++) {
-        font_builder.AddText(translationChat[i]);
-        font_builder.AddText(translationCopyId[i]);
-        font_builder.AddText(translationInvite[i]);
-        font_builder.AddText(translationInviteAll[i]);
-        font_builder.AddText(translationJoin[i]);
-        font_builder.AddText(translationInvitedYouToJoinTheGame[i]);
-        font_builder.AddText(translationAccept[i]);
-        font_builder.AddText(translationRefuse[i]);
-        font_builder.AddText(translationSend[i]);
-        font_builder.AddText(translationSteamOverlay[i]);
-        font_builder.AddText(translationUserPlaying[i]);
-        font_builder.AddText(translationRenderer[i]);
-        font_builder.AddText(translationShowAchievements[i]);
-        font_builder.AddText(translationSettings[i]);
-        font_builder.AddText(translationFriends[i]);
-        font_builder.AddText(translationAchievementWindow[i]);
-        font_builder.AddText(translationListOfAchievements[i]);
-        font_builder.AddText(translationAchievements[i]);
-        font_builder.AddText(translationHiddenAchievement[i]);
-        font_builder.AddText(translationAchievedOn[i]);
-        font_builder.AddText(translationNotAchieved[i]);
-        font_builder.AddText(translationGlobalSettingsWindow[i]);
-        font_builder.AddText(translationGlobalSettingsWindowDescription[i]);
-        font_builder.AddText(translationUsername[i]);
-        font_builder.AddText(translationLanguage[i]);
-        font_builder.AddText(translationSelectedLanguage[i]);
-        font_builder.AddText(translationRestartTheGameToApply[i]);
-        font_builder.AddText(translationSave[i]);
-        font_builder.AddText(translationWarning[i]);
-        font_builder.AddText(translationWarningWarningWarning[i]);
-        font_builder.AddText(translationWarningDescription1[i]);
-        font_builder.AddText(translationWarningDescription2[i]);
-        font_builder.AddText(translationWarningDescription3[i]);
-        font_builder.AddText(translationWarningDescription4[i]);
-        font_builder.AddText(translationSteamOverlayURL[i]);
-        font_builder.AddText(translationClose[i]);
-        font_builder.AddText(translationPlaying[i]);
-        font_builder.AddText(translationAutoAcceptFriendInvite[i]);
-    }
-    static ImVector<ImWchar> ranges{};
-    font_builder.BuildRanges(&ranges);
-
-    fontcfg.GlyphRanges = ranges.Data;
-
-    ImFont *font = fonts_atlas.AddFontDefault(&fontcfg);
+    char tmp[TRANSLATION_BUFFER_SIZE]{};
+    snprintf(tmp, sizeof(tmp), "%s", translationAutoAcceptFriendInvite[current_language]);
     
-    font_notif = font_default = font;
-    
-    fonts_atlas.Build();
-
-    reset_LastError();
+    submit_notification(notification_type_auto_accept_invite, tmp);
+    notify_sound_auto_accept_friend_invite();
 }
 
-void Steam_Overlay::load_audio()
+void Steam_Overlay::invite_friend(uint64 friend_id, class Steam_Friends* steamFriends, class Steam_Matchmaking* steamMatchmaking)
 {
-    std::string file_path{};
-    std::string file_name{};
-    unsigned long long file_size;
-
-    for (int i = 0; i < 2; i++) {
-        if (i == 0) file_name = "overlay_achievement_notification.wav";
-        if (i == 1) file_name = "overlay_friend_notification.wav";
-
-        file_path = Local_Storage::get_game_settings_path() + file_name;
-        file_size = file_size_(file_path);
-        if (!file_size) {
-            if (settings->local_save.length() > 0) {
-                file_path = settings->local_save + "/settings/" + file_name;
-            } else {
-                file_path = Local_Storage::get_user_appdata_path() + "/settings/" + file_name;
-            }
-            file_size = file_size_(file_path);
-        }
-        if (file_size) {
-            std::ifstream myfile;
-            myfile.open(utf8_decode(file_path), std::ios::binary | std::ios::in);
-            if (myfile.is_open()) {
-                myfile.seekg (0, myfile.end);
-                int length = myfile.tellg();
-                myfile.seekg (0, myfile.beg);
-
-                if (i == 0) {
-                    notif_achievement_wav_custom = new char [length];
-                    myfile.read (notif_achievement_wav_custom, length);
-                    notif_achievement_wav_custom_inuse = true;
-                }
-                if (i == 1) {
-                    notif_invite_wav_custom = new char [length];
-                    myfile.read (notif_invite_wav_custom, length);
-                    notif_invite_wav_custom_inuse = true;
-                }
-
-                myfile.close();
-            }
-        }
+    std::string connect_str = steamFriends->GetFriendRichPresence(settings->get_local_steam_id(), "connect");
+    if (connect_str.length() > 0) {
+        steamFriends->InviteUserToGame(friend_id, connect_str.c_str());
+        PRINT_DEBUG("Steam_Overlay sent game invitation to friend with id = %llu\n", friend_id);
+    } else if (settings->get_lobby().IsValid()) {
+        steamMatchmaking->InviteUserToLobby(settings->get_lobby(), friend_id);
+        PRINT_DEBUG("Steam_Overlay sent lobby invitation to friend with id = %llu\n", friend_id);
     }
-}
-
-// ListBoxHeader() is deprecated and inlined inside <imgui.h>
-// Helper to calculate size from items_count and height_in_items
-static inline bool ImGuiHelper_BeginListBox(const char* label, int items_count) {
-    int min_items = items_count < 7 ? items_count : 7;
-    float height = ImGui::GetTextLineHeightWithSpacing() * (min_items + 0.25f) + ImGui::GetStyle().FramePadding.y * 2.0f;
-    return ImGui::BeginListBox(label, ImVec2(0.0f, height));
 }
 
 // Try to make this function as short as possible or it might affect game's fps.
@@ -1188,7 +953,8 @@ void Steam_Overlay::overlay_proc()
     }
 
     if (ImGui::Begin(windowTitle.c_str(), &show,
-            ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus))
+            ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_NoBringToFrontOnFocus))
     {
         ImGui::LabelText("##playinglabel", translationUserPlaying[current_language],
             settings->get_local_name(),
@@ -1421,6 +1187,261 @@ void Steam_Overlay::overlay_proc()
         ShowOverlay(false);
 }
 
+
+void Steam_Overlay::SetupOverlay()
+{
+    PRINT_DEBUG("Steam_Overlay::SetupOverlay\n");
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+
+    bool not_called_yet = false;
+    if (setup_overlay_called.compare_exchange_weak(not_called_yet, true)) {
+        std::thread([this]() { renderer_hook_init_thread(); }).detach();
+    }
+}
+
+void Steam_Overlay::UnSetupOverlay()
+{
+    PRINT_DEBUG("Steam_Overlay::UnSetupOverlay\n");
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+
+    bool already_called = true;
+    if (setup_overlay_called.compare_exchange_weak(already_called, false)) {
+        is_ready = false;
+
+        // allow the future_renderer thread to exit if needed
+        std::this_thread::sleep_for(std::chrono::milliseconds(500 + 50));
+        
+        if (_renderer) {
+            for (auto &ach : achievements) {
+                if (!ach.icon.expired()) _renderer->ReleaseImageResource(ach.icon);
+                if (!ach.icon_gray.expired()) _renderer->ReleaseImageResource(ach.icon_gray);
+            }
+            _renderer = nullptr;
+            PRINT_DEBUG("Steam_Overlay::UnSetupOverlay freed all images\n");
+        }
+    }
+}
+
+bool Steam_Overlay::Ready() const
+{
+    return is_ready;
+}
+
+bool Steam_Overlay::NeedPresent() const
+{
+    PRINT_DEBUG("Steam_Overlay::NeedPresent\n");
+    return !settings->disable_overlay;
+}
+
+void Steam_Overlay::SetNotificationPosition(ENotificationPosition eNotificationPosition)
+{
+    PRINT_DEBUG("TODO Steam_Overlay::SetNotificationPosition %i\n", (int)eNotificationPosition);
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+
+    notif_position = eNotificationPosition;
+}
+
+void Steam_Overlay::SetNotificationInset(int nHorizontalInset, int nVerticalInset)
+{
+    PRINT_DEBUG("TODO Steam_Overlay::SetNotificationInset x=%i y=%i\n", nHorizontalInset, nVerticalInset);
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+
+    h_inset = nHorizontalInset;
+    v_inset = nVerticalInset;
+}
+
+void Steam_Overlay::OpenOverlayInvite(CSteamID lobbyId)
+{
+    PRINT_DEBUG("TODO Steam_Overlay::OpenOverlayInvite %llu\n", lobbyId.ConvertToUint64());
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (!Ready()) return;
+
+    ShowOverlay(true);
+}
+
+void Steam_Overlay::OpenOverlay(const char* pchDialog)
+{
+    PRINT_DEBUG("TODO Steam_Overlay::OpenOverlay '%s'\n", pchDialog);
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (!Ready()) return;
+    
+    // TODO: Show pages depending on pchDialog
+    if ((strncmp(pchDialog, "Friends", sizeof("Friends") - 1) == 0) && (settings->overlayAutoAcceptInvitesCount() > 0)) {
+        PRINT_DEBUG("Steam_Overlay won't open overlay's friends list because some friends are defined in the auto accept list\n");
+        add_auto_accept_invite_notification();
+    } else {
+        ShowOverlay(true);
+    }
+}
+
+void Steam_Overlay::OpenOverlayWebpage(const char* pchURL)
+{
+    PRINT_DEBUG("TODO Steam_Overlay::OpenOverlayWebpage '%s'\n", pchURL);
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (!Ready()) return;
+    
+    show_url = pchURL;
+    ShowOverlay(true);
+}
+
+bool Steam_Overlay::ShowOverlay() const
+{
+    return show_overlay;
+}
+
+void Steam_Overlay::ShowOverlay(bool state)
+{
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (!Ready() || show_overlay == state) return;
+
+    show_overlay = state;
+    overlay_state_changed = true;
+
+    PRINT_DEBUG("Steam_Overlay::ShowOverlay %i\n", (int)state);
+
+    ImGuiIO &io = ImGui::GetIO();
+    // force draw the cursor, otherwise games like Truberbrook will not have an overlay cursor
+    io.MouseDrawCursor = state;
+    
+    Steam_Overlay::allow_renderer_frame_processing(state);
+
+}
+
+void Steam_Overlay::SetLobbyInvite(Friend friendId, uint64 lobbyId)
+{
+    PRINT_DEBUG("Steam_Overlay::SetLobbyInvite " "%" PRIu64 " %llu\n", friendId.id(), lobbyId);
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (!Ready()) return;
+
+    auto i = friends.find(friendId);
+    if (i != friends.end())
+    {
+        auto& frd = i->second;
+        frd.lobbyId = lobbyId;
+        frd.window_state |= window_state_lobby_invite;
+        // Make sure don't have rich presence invite and a lobby invite (it should not happen but who knows)
+        frd.window_state &= ~window_state_rich_invite;
+        AddInviteNotification(*i);
+        notify_sound_user_invite(i->second);
+    }
+}
+
+void Steam_Overlay::SetRichInvite(Friend friendId, const char* connect_str)
+{
+    PRINT_DEBUG("Steam_Overlay::SetRichInvite " "%" PRIu64 " '%s'\n", friendId.id(), connect_str);
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (!Ready()) return;
+
+    auto i = friends.find(friendId);
+    if (i != friends.end())
+    {
+        auto& frd = i->second;
+        strncpy(frd.connect, connect_str, k_cchMaxRichPresenceValueLength - 1);
+        frd.window_state |= window_state_rich_invite;
+        // Make sure don't have rich presence invite and a lobby invite (it should not happen but who knows)
+        frd.window_state &= ~window_state_lobby_invite;
+        AddInviteNotification(*i);
+        notify_sound_user_invite(i->second);
+    }
+}
+
+void Steam_Overlay::FriendConnect(Friend _friend)
+{
+    PRINT_DEBUG("Steam_Overlay::FriendConnect " "%" PRIu64 "\n", _friend.id());
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (!Ready()) return;
+    
+    int id = find_free_friend_id(friends);
+    if (id != 0) {
+        auto& item = friends[_friend];
+        item.window_title = std::move(_friend.name() + translationPlaying[current_language] + std::to_string(_friend.appid()));
+        item.window_state = window_state_none;
+        item.id = id;
+        memset(item.chat_input, 0, max_chat_len);
+        item.joinable = false;
+    } else {
+        PRINT_DEBUG("Steam_Overlay::FriendConnect error no free id to create a friend window\n");
+    }
+}
+
+void Steam_Overlay::FriendDisconnect(Friend _friend)
+{
+    PRINT_DEBUG("Steam_Overlay::FriendDisconnect " "%" PRIu64 "\n", _friend.id());
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (!Ready()) return;
+    
+    auto it = friends.find(_friend);
+    if (it != friends.end())
+        friends.erase(it);
+}
+
+// show a notification when the user unlocks an achievement
+void Steam_Overlay::AddAchievementNotification(nlohmann::json const& ach)
+{
+    PRINT_DEBUG("Steam_Overlay::AddAchievementNotification\n");
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+
+    {
+        std::lock_guard<std::recursive_mutex> lock2(global_mutex);
+
+        std::string ach_name = ach.value("name", std::string());
+        for (auto &a : achievements) {
+            if (a.name == ach_name) {
+                bool achieved = false;
+                uint32 unlock_time = 0;
+                get_steam_client()->steam_user_stats->GetAchievementAndUnlockTime(a.name.c_str(), &achieved, &unlock_time);
+                a.achieved = achieved;
+                a.unlock_time = unlock_time;
+            }
+        }
+    }
+
+    if (!settings->disable_overlay_achievement_notification) {
+        // Load achievement image
+        std::weak_ptr<uint64_t> icon_rsrc{};
+        std::string icon_path = ach.value("icon", std::string());
+        if (icon_path.size()) {
+            std::string file_path{};
+            unsigned long long file_size = 0;
+            file_path = Local_Storage::get_game_settings_path() + icon_path;
+            file_size = file_size_(file_path);
+            if (!file_size) {
+                file_path = Local_Storage::get_game_settings_path() + "achievement_images/" + icon_path;
+                file_size = file_size_(file_path);
+            }
+            if (file_size) {
+                std::string img = Local_Storage::load_image_resized(file_path, "", settings->overlay_appearance.icon_size);
+                if (img.length() > 0) {
+                    icon_rsrc = _renderer->CreateImageResource((void*)img.c_str(), settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size);
+                }
+            }
+        }
+
+        submit_notification(
+            notification_type_achievement,
+            ach.value("displayName", std::string()) + "\n" + ach.value("description", std::string()),
+            {},
+            icon_rsrc
+        );
+        notify_sound_user_achievement();
+    }
+}
+
+void Steam_Overlay::AddInviteNotification(std::pair<const Friend, friend_window_state>& wnd_state)
+{
+    PRINT_DEBUG("Steam_Overlay::AddInviteNotification\n");
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (settings->disable_overlay_friend_notification) return;
+    if (!Ready()) return;
+    
+    char tmp[TRANSLATION_BUFFER_SIZE]{};
+    auto &first_friend = wnd_state.first;
+    auto &name = first_friend.name();
+    snprintf(tmp, sizeof(tmp), translationInvitedYouToJoinTheGame[current_language], name.c_str(), (uint64)first_friend.id());
+    
+    submit_notification(notification_type_invite, tmp, &wnd_state);
+}
+
 void Steam_Overlay::Callback(Common_Message *msg)
 {
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
@@ -1613,18 +1634,6 @@ void Steam_Overlay::RunCallbacks()
                 invite_friend(friend_id, steamFriends, steamMatchmaking);
             }
         }
-    }
-}
-
-void Steam_Overlay::invite_friend(uint64 friend_id, class Steam_Friends* steamFriends, class Steam_Matchmaking* steamMatchmaking)
-{
-    std::string connect_str = steamFriends->GetFriendRichPresence(settings->get_local_steam_id(), "connect");
-    if (connect_str.length() > 0) {
-        steamFriends->InviteUserToGame(friend_id, connect_str.c_str());
-        PRINT_DEBUG("Steam_Overlay sent game invitation to friend with id = %llu\n", friend_id);
-    } else if (settings->get_lobby().IsValid()) {
-        steamMatchmaking->InviteUserToLobby(settings->get_lobby(), friend_id);
-        PRINT_DEBUG("Steam_Overlay sent lobby invitation to friend with id = %llu\n", friend_id);
     }
 }
 
