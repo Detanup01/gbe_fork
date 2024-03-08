@@ -519,16 +519,16 @@ Also, match making servers will return the info of the server from the incoming 
 **Note: at the moment this feature is only enabled in the experimental builds**
 ---
 
-By default the emu will wait `5 seconds` before attempting to start the overlay renderer detector, this allows some games to initialize properly, otherwise the detector may not detect the current renderer (DirectX, OpenGL, etc...) and the overlay will not work (example games: `Have a Nice Death`, `Saints Row (2022)`).  
+By default the emu will immediately start the renderer detector for the overlay, but you can give it some initial delay,  
+which allows some games to initialize properly, otherwise the detector may not detect the current renderer (DirectX, OpenGL, etc...) and the overlay will not work (example games: `Have a Nice Death`, and `Saints Row (2022)`).  
 
 After that initial delay, the emu will give the detector `15 seconds` as a timeout, after that time if the detector didn't return a valid result, it will fail.  
 This avoids an infinite detection loop and a potential FPS drop on failure.  
 
 You can control these timings via the configuration files:
 * `overlay_hook_delay_sec.txt`: controls the amount of seconds to wait for initially before attempting the detection.  
-* `overlay_renderer_detector_timeout_sec.txt`: controls the timeout (in seconds) of the detection.  
+* `overlay_renderer_detector_timeout_sec.txt`: controls the timeout of the detection, in seconds.  
 
-It is **NOT** recommended to remove these timings or setting them to 0.  
 Negative values will be ignored, also the renderer detector timeout cannot be 0.  
 
 Check the example files in the `steam_settings` folder

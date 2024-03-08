@@ -5,7 +5,7 @@
 * for Linux: new experimental build of the emu with overlay support  
   currently only *some* 64-bit games using OpenGL will work
 * use a new method to initialize the overlay on a separate thread with a configurable initialization delay and renderer detection timeout  
-  - the new config file `overlay_hook_delay_sec.txt` controls the initial delay (default = `5 seconds`)  
+  - the new config file `overlay_hook_delay_sec.txt` controls the initial delay (default = `0 seconds`)  
   - the new config file `overlay_renderer_detector_timeout_sec.txt` controls the detection timeout (default = `15 seconds`)  
 
   check the updated `README`
