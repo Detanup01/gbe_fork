@@ -16,15 +16,15 @@ FILESUBTYPE    0x0L // VFT2_UNKNOWN
     {
         BLOCK "040904b0" // language code = U.S. English, character-set identifier = Unicode
         {
-            VALUE "LegalCopyright",    "Copyright (C) 2021 Goldberg Emulator"
-            VALUE "InternalName",      "Goldberg Emulator (win64)"
+            VALUE "LegalCopyright",    "Copyright (C) 2021 GSE"
+            VALUE "InternalName",      "GSE (win64)"
             VALUE "FileVersion",       "08.56.38.63"
-            VALUE "CompanyName",       "Goldberg Emulator"
+            VALUE "CompanyName",       "GSE"
             VALUE "ProductVersion",    "01.00.00.02"
-            VALUE "FileDescription",   "Goldberg Emulator"
+            VALUE "FileDescription",   "GSE"
             VALUE "Source Control ID", "8563863"
             VALUE "OriginalFilename",  "steam.exe"
-            VALUE "ProductName",       "Goldberg Emulator"
+            VALUE "ProductName",       "GSE"
         }
     }
 
@@ -52,13 +52,13 @@ FILESUBTYPE    0x0L // VFT2_UNKNOWN
     {
         BLOCK "040904b0" // language code = U.S. English, character-set identifier = Unicode
         {
-            VALUE "CompanyName",       "Goldberg Emulator"
-            VALUE "FileDescription",   "Goldberg Emulator"
+            VALUE "CompanyName",       "GSE"
+            VALUE "FileDescription",   "GSE"
             VALUE "FileVersion",       "1, 0, 0, 2"
-            VALUE "InternalName",      "Goldberg Emulator"
-            VALUE "LegalCopyright",    "Copyright (C) 2021 Goldberg Emulator"
+            VALUE "InternalName",      "GSE"
+            VALUE "LegalCopyright",    "Copyright (C) 2021 GSE"
             VALUE "OriginalFilename",  "steam.exe"
-            VALUE "ProductName",       "Goldberg Emulator"
+            VALUE "ProductName",       "GSE"
             VALUE "ProductVersion",    "1, 0, 0, 2"
         }
     }

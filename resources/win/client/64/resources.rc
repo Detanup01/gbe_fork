@@ -16,15 +16,15 @@ FILESUBTYPE    0x0L // VFT2_UNKNOWN
     {
         BLOCK "040904b0" // language code = U.S. English, character-set identifier = Unicode
         {
-            VALUE "LegalCopyright", "Copyright (C) 2005 Goldberg Emulator"
+            VALUE "LegalCopyright", "Copyright (C) 2005 GSE"
             VALUE "InternalName", "Steamclient.dll (win64)"
             VALUE "FileVersion", "08.56.38.63"
-            VALUE "CompanyName", "Goldberg Emulator"
+            VALUE "CompanyName", "GSE"
             VALUE "ProductVersion", "03.00.00.01"
             VALUE "FileDescription", "Steamclient.dll"
             VALUE "Source Control ID", "8563863"
             VALUE "OriginalFilename", "Steamclient.dll"
-            VALUE "ProductName", "Goldberg Emulator"
+            VALUE "ProductName", "GSE"
         }
     }
 
@@ -52,13 +52,13 @@ FILESUBTYPE    0x0L // VFT2_UNKNOWN
     {
         BLOCK "040904b0" // language code = U.S. English, character-set identifier = Unicode
         {
-            VALUE "CompanyName", "Goldberg Emulator"
+            VALUE "CompanyName", "GSE"
             VALUE "FileDescription", "Steamclient.dll"
             VALUE "FileVersion", "3, 0, 0, 1"
             VALUE "InternalName", "Steamclient.dll"
-            VALUE "LegalCopyright", "Copyright (C) 2005 Goldberg Emulator"
+            VALUE "LegalCopyright", "Copyright (C) 2005 GSE"
             VALUE "OriginalFilename", "Steamclient.dll"
-            VALUE "ProductName", "Goldberg Emulator"
+            VALUE "ProductName", "GSE"
             VALUE "ProductVersion", "3, 0, 0, 1"
         }
     }
