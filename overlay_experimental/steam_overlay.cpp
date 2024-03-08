@@ -1249,6 +1249,9 @@ void Steam_Overlay::UnSetupOverlay()
     if (setup_overlay_called.compare_exchange_weak(already_called, false)) {
         is_ready = false;
 
+        // stop internal frame processing
+        if (_renderer) _renderer->HideOverlayInputs(true);
+
         // allow the future_renderer thread to exit if needed
         // std::this_thread::sleep_for(std::chrono::milliseconds((int)(renderer_detector_polling_ms * 1.3f)));
         common_helpers::thisThreadYieldFor(
