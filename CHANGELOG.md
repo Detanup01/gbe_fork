@@ -28,6 +28,7 @@
 * cleanup/free overlay images on unhook
 * free the detector instance once it's no longer needed
 * use locks everywhere in the overlay + more debug messages
+* fixed a bug in the settings parser where lines with 1 single character would be completely erased after trimming spaces
 * fixed all compilation warnings produced by the overlay on Linux
 * updated all build scripts
 
