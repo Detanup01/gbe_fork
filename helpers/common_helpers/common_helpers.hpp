@@ -1,9 +1,11 @@
 #pragma once
 
+#include <cstdlib>
 #include <string>
 #include <fstream>
 #include <filesystem>
 #include <chrono>
+#include <vector>
 
 namespace common_helpers {
 
