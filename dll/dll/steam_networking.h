@@ -911,7 +911,7 @@ void Callback(Common_Message *msg)
             "Steam_Networking: got msg from: " "%" PRIu64 " to: " "%" PRIu64 " size %zu type %u | messages %p: %zu\n",
             msg->source_id(), msg->dest_id(), msg->network().data().size(), msg->network().type(), &messages, messages.size()
         );
-        PRINT_DEBUG("Steam_Networking msg data: '%s'\n", uint8_vector_to_hex_string( std::vector<uint8_t>(msg->network().data().begin(), msg->network().data().end()) ).c_str());
+        PRINT_DEBUG("Steam_Networking msg data: '%s'\n", common_helpers::uint8_vector_to_hex_string( std::vector<uint8_t>(msg->network().data().begin(), msg->network().data().end()) ).c_str());
 #endif
 
         if (msg->network().type() == Network_pb::DATA) {

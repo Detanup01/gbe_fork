@@ -3,6 +3,7 @@
 #include <string>
 #include <fstream>
 #include <filesystem>
+#include <chrono>
 
 namespace common_helpers {
 
@@ -23,6 +24,16 @@ bool starts_with_i(const std::wstring &target, const std::wstring &query);
 bool ends_with_i(const std::string &target, const std::string &query);
 
 bool ends_with_i(const std::wstring &target, const std::wstring &query);
+
+std::string string_strip(const std::string& str);
+
+std::string uint8_vector_to_hex_string(const std::vector<uint8_t>& v);
+
+std::string ascii_to_lowercase(std::string data);
+
+void thisThreadYieldFor(std::chrono::microseconds u);
+
+void consume_bom(std::ifstream &input);
 
 std::string to_lower(std::string str);
 

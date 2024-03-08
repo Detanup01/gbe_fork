@@ -167,8 +167,6 @@ static inline void reset_LastError()
 #include "utfcpp/utf8.h"
 #include "controller/gamepad.h"
 
-constexpr const char * const whitespaces = " \t\r\n";
-
 // common includes
 #include "common_helpers/common_helpers.hpp"
 
@@ -214,56 +212,6 @@ constexpr const char * const whitespaces = " \t\r\n";
 #else // EMU_RELEASE_BUILD
     #define PRINT_DEBUG(...)
 #endif // EMU_RELEASE_BUILD
-
-static inline std::string ascii_to_lowercase(std::string data) {
-    std::transform(data.begin(), data.end(), data.begin(),
-        [](unsigned char c){ return std::tolower(c); });
-    return data;
-}
-
-static inline void thisThreadYieldFor(std::chrono::microseconds u)
-{
-    PRINT_DEBUG("Thread is waiting for %lld us\n", (long long int)u.count());
-    const auto start = std::chrono::high_resolution_clock::now();
-    const auto end = start + u;
-    do
-    {
-        std::this_thread::yield();
-    }
-    while (std::chrono::high_resolution_clock::now() < end);
-    PRINT_DEBUG("Thread finished waiting\n");
-}
-
-static std::string uint8_vector_to_hex_string(const std::vector<uint8_t>& v)
-{
-    std::string result{};
-    result.reserve(v.size() * 2);   // two digits per character
-
-    static constexpr const char hex[] = "0123456789ABCDEF";
-
-    for (uint8_t c : v)
-    {
-        result.push_back(hex[c / 16]);
-        result.push_back(hex[c % 16]);
-    }
-
-    return result;
-}
-
-static inline void consume_bom(std::ifstream &input)
-{
-    if (!input.is_open()) return;
-
-    auto pos = input.tellg();
-    int bom[3]{};
-    bom[0] = input.get();
-    bom[1] = input.get();
-    bom[2] = input.get();
-    if (bom[0] != 0xEF || bom[1] != 0xBB || bom[2] != 0xBF) {
-        input.clear();
-        input.seekg(pos, std::ios::beg);
-    }
-}
 
 // Emulator includes
 // add them here after the inline functions definitions

@@ -21,7 +21,7 @@ static void load_custom_broadcasts(std::string broadcasts_filepath, std::set<IP_
 {
     PRINT_DEBUG("Broadcasts file path: %s\n", broadcasts_filepath.c_str());
     std::ifstream broadcasts_file(utf8_decode(broadcasts_filepath));
-    consume_bom(broadcasts_file);
+    common_helpers::consume_bom(broadcasts_file);
     if (broadcasts_file.is_open()) {
         std::string line;
         while (std::getline(broadcasts_file, line)) {
@@ -36,7 +36,7 @@ static void load_subscribed_groups_clans(std::string clans_filepath, Settings *s
     PRINT_DEBUG("Group clans file path: %s\n", clans_filepath.c_str());
     std::ifstream clans_file(utf8_decode(clans_filepath));
     if (clans_file.is_open()) {
-        consume_bom(clans_file);
+        common_helpers::consume_bom(clans_file);
         std::string line;
         while (std::getline(clans_file, line)) {
             if (line.length() < 0) continue;
@@ -76,7 +76,7 @@ static void load_overlay_appearance(std::string appearance_filepath, Settings *s
     std::ifstream appearance_file(utf8_decode(appearance_filepath));
     if (appearance_file.is_open()) {
         PRINT_DEBUG("Parsing overlay appearance file: '%s'\n", appearance_filepath.c_str());
-        consume_bom(appearance_file);
+        common_helpers::consume_bom(appearance_file);
         std::string line{};
         while (std::getline(appearance_file, line)) {
             if (line.length() <= 0) continue;
@@ -86,12 +86,10 @@ static void load_overlay_appearance(std::string appearance_filepath, Settings *s
             std::string value{};
             if (seperator != std::string::npos) {
                 name = line.substr(0, seperator);
-                name.erase(0, name.find_first_not_of(whitespaces));
-                name.erase(name.find_last_not_of(whitespaces) + 1);
+                name = common_helpers::string_strip(name);
 
-                value = line.substr(seperator);
-                value.erase(0, value.find_first_not_of(whitespaces));
-                value.erase(value.find_last_not_of(whitespaces) + 1);
+                value = line.substr(seperator + 1);
+                value = common_helpers::string_strip(value);
             }
 
             // comments
@@ -239,7 +237,7 @@ static void load_gamecontroller_settings(Settings *settings)
         std::string controller_config_path = path + PATH_SEPARATOR + p;
         std::ifstream input( utf8_decode(controller_config_path) );
         if (input.is_open()) {
-            consume_bom(input);
+            common_helpers::consume_bom(input);
             std::map<std::string, std::pair<std::set<std::string>, std::string>> button_pairs;
 
             for( std::string line; getline( input, line ); ) {
@@ -464,7 +462,7 @@ std::set<std::string> parse_supported_languages(class Local_Storage *local_stora
 
     std::string first_language;
     if (input.is_open()) {
-        consume_bom(input);
+        common_helpers::consume_bom(input);
         for( std::string line; getline( input, line ); ) {
             if (!line.empty() && line[line.length()-1] == '\n') {
                 line.pop_back();
@@ -500,7 +498,7 @@ static void parse_dlc(class Settings *settings_client, Settings *settings_server
     std::string dlc_config_path = Local_Storage::get_game_settings_path() + "DLC.txt";
     std::ifstream input( utf8_decode(dlc_config_path) );
     if (input.is_open()) {
-        consume_bom(input);
+        common_helpers::consume_bom(input);
         settings_client->unlockAllDLC(false);
         settings_server->unlockAllDLC(false);
         PRINT_DEBUG("Locking all DLC\n");
@@ -545,7 +543,7 @@ static void parse_app_paths(class Settings *settings_client, Settings *settings_
     std::ifstream input( utf8_decode(dlc_config_path) );
 
     if (input.is_open()) {
-        consume_bom(input);
+        common_helpers::consume_bom(input);
         for( std::string line; getline( input, line ); ) {
             if (!line.empty() && line[line.length()-1] == '\n') {
                 line.pop_back();
@@ -582,7 +580,7 @@ static void parse_leaderboards(class Settings *settings_client, Settings *settin
     std::string dlc_config_path = Local_Storage::get_game_settings_path() + "leaderboards.txt";
     std::ifstream input( utf8_decode(dlc_config_path) );
     if (input.is_open()) {
-        consume_bom(input);
+        common_helpers::consume_bom(input);
         settings_client->setCreateUnknownLeaderboards(false);
         settings_server->setCreateUnknownLeaderboards(false);
 
@@ -627,7 +625,7 @@ static void parse_stats(class Settings *settings_client, Settings *settings_serv
     std::string stats_config_path = Local_Storage::get_game_settings_path() + "stats.txt";
     std::ifstream input( utf8_decode(stats_config_path) );
     if (input.is_open()) {
-        consume_bom(input);
+        common_helpers::consume_bom(input);
         for( std::string line; getline( input, line ); ) {
             if (!line.empty() && line[line.length()-1] == '\n') {
                 line.pop_back();
@@ -695,7 +693,7 @@ static void parse_depots(class Settings *settings_client, Settings *settings_ser
     std::string depots_config_path = Local_Storage::get_game_settings_path() + "depots.txt";
     std::ifstream input( utf8_decode(depots_config_path) );
     if (input.is_open()) {
-        consume_bom(input);
+        common_helpers::consume_bom(input);
         for( std::string line; getline( input, line ); ) {
             if (!line.empty() && line[line.length()-1] == '\n') {
                 line.pop_back();
@@ -722,7 +720,7 @@ static void parse_subscribed_groups(class Settings *settings_client, Settings *s
     std::string depots_config_path = Local_Storage::get_game_settings_path() + "subscribed_groups.txt";
     std::ifstream input( utf8_decode(depots_config_path) );
     if (input.is_open()) {
-        consume_bom(input);
+        common_helpers::consume_bom(input);
         for( std::string line; getline( input, line ); ) {
             if (!line.empty() && line[line.length()-1] == '\n') {
                 line.pop_back();
@@ -752,7 +750,7 @@ static void parse_installed_app_Ids(class Settings *settings_client, Settings *s
         settings_client->assume_any_app_installed = false;
         settings_server->assume_any_app_installed = false;
         PRINT_DEBUG("Limiting/Locking installed apps\n");
-        consume_bom(input);
+        common_helpers::consume_bom(input);
         for( std::string line; getline( input, line ); ) {
             if (!line.empty() && line[line.length()-1] == '\n') {
                 line.pop_back();
@@ -783,16 +781,10 @@ static void parse_force_branch_name(class Settings *settings_client, Settings *s
     std::string installed_apps_list_path = Local_Storage::get_game_settings_path() + "force_branch_name.txt";
     std::ifstream input( utf8_decode(installed_apps_list_path) );
     if (input.is_open()) {
-        consume_bom(input);
+        common_helpers::consume_bom(input);
         std::string line;
         getline( input, line );
-        
-        size_t start = line.find_first_not_of(whitespaces);
-        size_t end = line.find_last_not_of(whitespaces);
-        line = start == end
-            ? std::string()
-            : line.substr(start, end - start + 1);
-        
+        line = common_helpers::string_strip(line);
         if (!line.empty()) {
             settings_client->current_branch_name = line;
             settings_server->current_branch_name = line;
@@ -1072,16 +1064,10 @@ static void parse_crash_printer_location()
     std::string installed_apps_list_path = Local_Storage::get_game_settings_path() + "crash_printer_location.txt";
     std::ifstream input( utf8_decode(installed_apps_list_path) );
     if (input.is_open()) {
-        consume_bom(input);
+        common_helpers::consume_bom(input);
         std::string line;
         std::getline( input, line );
-        
-        size_t start = line.find_first_not_of(whitespaces);
-        size_t end = line.find_last_not_of(whitespaces);
-        line = start == end
-            ? std::string()
-            : line.substr(start, end - start + 1);
-        
+        line = common_helpers::string_strip(line);
         if (!line.empty()) {
             auto crash_path = utf8_decode(get_full_program_path() + line);
             if (crash_printer::init(crash_path)) {
@@ -1100,15 +1086,9 @@ static void parse_auto_accept_invite(class Settings *settings_client, Settings *
     std::ifstream input( utf8_decode(auto_accept_list_path) );
     if (input.is_open()) {
         bool accept_any_invite = true;
-        consume_bom(input);
+        common_helpers::consume_bom(input);
         for( std::string line; getline( input, line ); ) {
-                
-            size_t start = line.find_first_not_of(whitespaces);
-            size_t end = line.find_last_not_of(whitespaces);
-            line = start == end
-                ? std::string()
-                : line.substr(start, end - start + 1);
-            
+            line = common_helpers::string_strip(line);
             if (!line.empty()) {
                 accept_any_invite = false;
                 try {
@@ -1137,16 +1117,10 @@ static void parse_ip_country(class Settings *settings_client, Settings *settings
     std::string setting_file = Local_Storage::get_game_settings_path() + "ip_country.txt";
     std::ifstream input( utf8_decode(setting_file) );
     if (input.is_open()) {
-        consume_bom(input);
+        common_helpers::consume_bom(input);
         std::string line{};
         std::getline( input, line );
-
-        size_t start = line.find_first_not_of(whitespaces);
-        size_t end = line.find_last_not_of(whitespaces);
-        line = start == end
-            ? std::string()
-            : line.substr(start, end - start + 1);
-        
+        line = common_helpers::string_strip(line);
         // ISO 3166-1-alpha-2 format is 2 chars only
         if (line.size() == 2) {
             std::transform(line.begin(), line.end(), line.begin(), [](char c) { return std::toupper(c); });
@@ -1164,15 +1138,10 @@ static void parse_overlay_hook_delay_sec(class Settings *settings_client, Settin
     std::ifstream input( utf8_decode(auto_accept_list_path) );
     if (input.is_open()) {
         bool accept_any_invite = true;
-        consume_bom(input);
+        common_helpers::consume_bom(input);
         std::string line{};
         std::getline( input, line );
-        size_t start = line.find_first_not_of(whitespaces);
-        size_t end = line.find_last_not_of(whitespaces);
-        line = start == end
-            ? std::string()
-            : line.substr(start, end - start + 1);
-        
+        line = common_helpers::string_strip(line);
         if (!line.empty()) {
             try {
                 auto delay_sec = std::stoi(line);

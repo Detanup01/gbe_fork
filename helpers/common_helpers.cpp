@@ -2,6 +2,7 @@
 #include <fstream>
 #include <cwchar>
 #include <algorithm>
+#include <thread>
 
 static bool create_dir_impl(std::filesystem::path &dirpath)
 {
@@ -104,6 +105,71 @@ bool common_helpers::ends_with_i(const std::wstring &target, const std::wstring 
 
     return _target.compare(_target.length() - _query.length(), _query.length(), _query) == 0;
 
+}
+
+std::string common_helpers::string_strip(const std::string& str)
+{
+    static constexpr const char whitespaces[] = " \t\r\n";
+
+    size_t start = str.find_first_not_of(whitespaces);
+    size_t end = str.find_last_not_of(whitespaces);
+    
+    if (start == std::string::npos) return {};
+
+    if (start == end) {
+        auto c = str[start];
+        for (auto c_white = whitespaces; *c_white; ++c_white) {
+            if (c == *c_white) return {};
+        }
+    }
+
+    return str.substr(start, end - start + 1);
+}
+
+std::string common_helpers::uint8_vector_to_hex_string(const std::vector<uint8_t>& v)
+{
+    std::string result{};
+    result.reserve(v.size() * 2);   // two digits per character
+
+    static constexpr const char hex[] = "0123456789ABCDEF";
+
+    for (uint8_t c : v)
+    {
+        result.push_back(hex[c / 16]);
+        result.push_back(hex[c % 16]);
+    }
+
+    return result;
+}
+
+std::string common_helpers::ascii_to_lowercase(std::string data) {
+    std::transform(data.begin(), data.end(), data.begin(),
+        [](unsigned char c){ return std::tolower(c); });
+    return data;
+}
+
+void common_helpers::thisThreadYieldFor(std::chrono::microseconds u)
+{
+    const auto start = std::chrono::high_resolution_clock::now();
+    const auto end = start + u;
+    do {
+        std::this_thread::yield();
+    } while (std::chrono::high_resolution_clock::now() < end);
+}
+
+void common_helpers::consume_bom(std::ifstream &input)
+{
+    if (!input.is_open()) return;
+
+    auto pos = input.tellg();
+    int bom[3]{};
+    bom[0] = input.get();
+    bom[1] = input.get();
+    bom[2] = input.get();
+    if (bom[0] != 0xEF || bom[1] != 0xBB || bom[2] != 0xBF) {
+        input.clear();
+        input.seekg(pos, std::ios::beg);
+    }
 }
 
 std::string common_helpers::to_lower(std::string str)

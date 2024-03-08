@@ -165,7 +165,7 @@ static std::vector<uint8_t> sign_auth_data(const std::string &private_key_conten
 
 #ifndef EMU_RELEASE_BUILD
         // we nedd a live object until the printf does its job, hence this special handling
-        auto str = uint8_vector_to_hex_string(signature);
+        auto str = common_helpers::uint8_vector_to_hex_string(signature);
         PRINT_DEBUG("sign_auth_data final signature [%zu bytes]:\n  %s\n", signature.size(), str.c_str());
 #endif
 
@@ -296,7 +296,7 @@ public:
 
 #ifndef EMU_RELEASE_BUILD
         // we nedd a live object until the printf does its job, hence this special handling
-        auto str = uint8_vector_to_hex_string(buffer);
+        auto str = common_helpers::uint8_vector_to_hex_string(buffer);
         PRINT_DEBUG("AUTH::AppTicketGC::SER final data [%zu bytes]:\n  %s\n", buffer.size(), str.c_str());
 #endif
 
@@ -407,7 +407,7 @@ struct AppTicket {
 #ifndef EMU_RELEASE_BUILD
         {
             // we nedd a live object until the printf does its job, hence this special handling
-            auto str = uint8_vector_to_hex_string(buffer);
+            auto str = common_helpers::uint8_vector_to_hex_string(buffer);
             PRINT_DEBUG("AUTH::AppTicket::SER (before licenses + DLCs):\n  %s\n", str.c_str());
         }
 #endif
@@ -460,7 +460,7 @@ struct AppTicket {
 #ifndef EMU_RELEASE_BUILD
         {
             // we nedd a live object until the printf does its job, hence this special handling
-            auto str = uint8_vector_to_hex_string(buffer);
+            auto str = common_helpers::uint8_vector_to_hex_string(buffer);
             PRINT_DEBUG("AUTH::AppTicket::SER final data [%zu bytes]:\n  %s\n", buffer.size(), str.c_str());
         }
 #endif
@@ -602,7 +602,7 @@ struct Auth_Data {
 #ifndef EMU_RELEASE_BUILD
         {
             // we nedd a live object until the printf does its job, hence this special handling
-            auto str = uint8_vector_to_hex_string(buffer);
+            auto str = common_helpers::uint8_vector_to_hex_string(buffer);
             PRINT_DEBUG("AUTH::Auth_Data::SER final data (before signature) [%zu bytes]:\n  %s\n", buffer.size(), str.c_str());
         }
 #endif
@@ -615,7 +615,7 @@ struct Auth_Data {
 #ifndef EMU_RELEASE_BUILD
         {
             // we nedd a live object until the printf does its job, hence this special handling
-            auto str = uint8_vector_to_hex_string(buffer);
+            auto str = common_helpers::uint8_vector_to_hex_string(buffer);
             PRINT_DEBUG("AUTH::Auth_Data::SER final data (after signature) [%zu bytes]:\n  %s\n", buffer.size(), str.c_str());
         }
 #endif

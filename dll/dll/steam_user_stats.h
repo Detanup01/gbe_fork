@@ -142,7 +142,7 @@ void save_leaderboard_score(Steam_Leaderboard *leaderboard)
         output.push_back(s);
     }
 
-    std::string leaderboard_name = ascii_to_lowercase(leaderboard->name);
+    std::string leaderboard_name = common_helpers::ascii_to_lowercase(leaderboard->name);
     local_storage->store_data(Local_Storage::leaderboard_storage_folder, leaderboard_name, (char* )output.data(), sizeof(uint32_t) * output.size());
 }
 
@@ -150,7 +150,7 @@ std::vector<Steam_Leaderboard_Score> load_leaderboard_scores(std::string name)
 {
     std::vector<Steam_Leaderboard_Score> out;
 
-    std::string leaderboard_name = ascii_to_lowercase(name);
+    std::string leaderboard_name = common_helpers::ascii_to_lowercase(name);
     unsigned size = local_storage->file_size(Local_Storage::leaderboard_storage_folder, leaderboard_name);
     if (size == 0 || (size % sizeof(uint32_t)) != 0) return out;
 
@@ -254,7 +254,7 @@ Steam_User_Stats(Settings *settings, Local_Storage *local_storage, class SteamCa
             achievement_trigger trig;
             trig.name = name;
             trig.value_operation = static_cast<std::string const&>(it["progress"]["value"]["operation"]);
-            std::string stat_name = ascii_to_lowercase(static_cast<std::string const&>(it["progress"]["value"]["operand1"]));
+            std::string stat_name = common_helpers::ascii_to_lowercase(static_cast<std::string const&>(it["progress"]["value"]["operand1"]));
             trig.min_value = static_cast<std::string const&>(it["progress"]["min_val"]);
             trig.max_value = static_cast<std::string const&>(it["progress"]["max_val"]);
             achievement_stat_trigger[stat_name].push_back(trig);
@@ -299,7 +299,7 @@ bool GetStat( const char *pchName, int32 *pData )
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName || !pData) return false;
-    std::string stat_name = ascii_to_lowercase(pchName);
+    std::string stat_name = common_helpers::ascii_to_lowercase(pchName);
 
     auto stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
@@ -331,7 +331,7 @@ bool GetStat( const char *pchName, float *pData )
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName || !pData) return false;
-    std::string stat_name = ascii_to_lowercase(pchName);
+    std::string stat_name = common_helpers::ascii_to_lowercase(pchName);
 
     auto stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
@@ -365,7 +365,7 @@ bool SetStat( const char *pchName, int32 nData )
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName) return false;
-    std::string stat_name = ascii_to_lowercase(pchName);
+    std::string stat_name = common_helpers::ascii_to_lowercase(pchName);
 
     auto stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
@@ -400,7 +400,7 @@ bool SetStat( const char *pchName, float fData )
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName) return false;
-    std::string stat_name = ascii_to_lowercase(pchName);
+    std::string stat_name = common_helpers::ascii_to_lowercase(pchName);
 
     auto stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
@@ -435,7 +435,7 @@ bool UpdateAvgRateStat( const char *pchName, float flCountThisSession, double dS
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName) return false;
-    std::string stat_name = ascii_to_lowercase(pchName);
+    std::string stat_name = common_helpers::ascii_to_lowercase(pchName);
 
     auto stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
