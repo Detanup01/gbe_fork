@@ -20,6 +20,14 @@
 
 #include "InGameOverlay/RendererDetector.h"
 
+// fonts
+#include "fonts/NotoSansJP_SemiBold.hpp" // japanese
+#include "fonts/NotoSansKR_SemiBold.hpp" // korean
+#include "fonts/NotoSansSC_SemiBold.hpp" // simplified chinese
+#include "fonts/NotoSansTC_SemiBold.hpp" // traditional chinese
+#include "fonts/NotoSansThai_SemiBold.hpp" // Thai
+#include "fonts/Roboto_Medium.hpp"
+
 #define URL_WINDOW_NAME "URL Window"
 
 static constexpr int max_window_id = 10000;
@@ -145,7 +153,6 @@ Steam_Overlay::Steam_Overlay(Settings* settings, SteamCallResults* callback_resu
 Steam_Overlay::~Steam_Overlay()
 {
     run_every_runcb->remove(&Steam_Overlay::steam_overlay_run_every_runcb, this);
-    UnSetupOverlay();
 }
 
 
@@ -218,11 +225,12 @@ void Steam_Overlay::create_fonts()
 
     float font_size = settings->overlay_appearance.font_size;
     
-    ImFontConfig fontcfg{};
-    fontcfg.PixelSnapH = true;
-    fontcfg.OversampleH = 1;
-    fontcfg.OversampleV = 1;
-    fontcfg.SizePixels = font_size;
+    static ImFontConfig font_cfg{};
+    font_cfg.FontDataOwnedByAtlas = false; // https://github.com/ocornut/imgui/blob/master/docs/FONTS.md#loading-font-data-from-memory
+    font_cfg.PixelSnapH = true;
+    font_cfg.OversampleH = 1;
+    font_cfg.OversampleV = 1;
+    font_cfg.SizePixels = font_size;
 
     static ImFontGlyphRangesBuilder font_builder{};
     for (auto &x : achievements) {
@@ -273,12 +281,20 @@ void Steam_Overlay::create_fonts()
 
     static ImVector<ImWchar> ranges{};
     font_builder.BuildRanges(&ranges);
-    fontcfg.GlyphRanges = ranges.Data;
+    font_cfg.GlyphRanges = ranges.Data;
 
-    ImFont *font = fonts_atlas.AddFontDefault(&fontcfg);
+    fonts_atlas.AddFontDefault(&font_cfg);
+    font_cfg.MergeMode = true; // merge next fonts into the first one, as if they were all just 1 font file
+    fonts_atlas.AddFontFromMemoryCompressedTTF(NotoSansJP_SemiBold_compressed_data, NotoSansJP_SemiBold_compressed_size, font_size, &font_cfg);
+    fonts_atlas.AddFontFromMemoryCompressedTTF(NotoSansKR_SemiBold_compressed_data, NotoSansKR_SemiBold_compressed_size, font_size, &font_cfg);
+    fonts_atlas.AddFontFromMemoryCompressedTTF(NotoSansSC_SemiBold_compressed_data, NotoSansSC_SemiBold_compressed_size, font_size, &font_cfg);
+    fonts_atlas.AddFontFromMemoryCompressedTTF(NotoSansTC_SemiBold_compressed_data, NotoSansTC_SemiBold_compressed_size, font_size, &font_cfg);
+    fonts_atlas.AddFontFromMemoryCompressedTTF(NotoSansThai_SemiBold_compressed_data, NotoSansThai_SemiBold_compressed_size, font_size, &font_cfg);
+    ImFont *font = fonts_atlas.AddFontFromMemoryCompressedTTF(Roboto_Medium_compressed_data, Roboto_Medium_compressed_size, font_size, &font_cfg);
     font_notif = font_default = font;
     
-    fonts_atlas.Build();
+    bool res = fonts_atlas.Build();
+    PRINT_DEBUG("Steam_Overlay::create_fonts built fonts atlas (result=%i)\n", (int)res);
 
     reset_LastError();
 }
