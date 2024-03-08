@@ -1,14 +1,27 @@
-* updated the ingame overlay project, thanks to **[Nemirtingas]** for the project: https://github.com/Nemirtingas/ingame_overlay
-* build an experimental version of the emu with overlay support for Linux
-* use a new method to initialize the overlay on a separate thread with a configurable initialization delay, use the new config file `overlay_hook_delay_sec.txt` to control this delay, check the updated README
-* attempt to load the locked achievement icon from the json key `icongray` if the normal one failed, adding compatibility with older format
-* removed the source files of the ingame overlay project, it is now a dependency, **rebuild your dependencies!**
+# 2024/3/8
+
+* updated the ingame overlay project, suggested by **[CHESIRE721]**  
+  Thanks to **[Nemirtingas]** for the amazing project: https://github.com/Nemirtingas/ingame_overlay
+* for Linux: new experimental build of the emu with overlay support  
+  currently only *some* 64-bit games using OpenGL will work
+* use a new method to initialize the overlay on a separate thread with a configurable initialization delay,  
+  use the new config file `overlay_hook_delay_sec.txt` to control this delay, check the updated `README`
+* added builtin fonts to properly render all overlay translations:
+  - `NotoSansJP-SemiBold`: for japanese
+  - `NotoSansKR-SemiBold`: for korean
+  - `NotoSansSC-SemiBold`: for simplified chinese
+  - `NotoSansTC-SemiBold`: for traditional chinese
+  - `NotoSansThai-SemiBold`: for Thai
+  - `Google-Roboto-Medium`: for other languages
+* removed the source files of the ingame overlay project, it is now a dependency,  
+  **rebuild your dependencies!**
 * removed the code which locks the cursor inside the overlay window
-* cleanup overlay images on unhook
+* attempt to load the locked achievement icon from the json key `icongray` if the normal one failed, adding compatibility with older format
+* cleanup/free overlay images on unhook
 * free the detector instance once it's no longer needed
 * use locks everywhere in the overlay + more debug messages
 * fixed all compilation warnings produced by the overlay on Linux
-* updated all build script
+* updated all build scripts
 
 ---
 
