@@ -87,6 +87,7 @@ struct Overlay_Achievement
 };
 
 #ifdef EMU_OVERLAY
+
 #include <future>
 #include <atomic>
 #include "InGameOverlay/RendererHook.h"
@@ -130,20 +131,23 @@ class Steam_Overlay
     char username_text[256];
     std::atomic<bool> save_settings;
 
-    int current_language;
+    int current_language = 0;
 
-    std::string warning_message;
+    std::string warning_message{};
 
     // Callback infos
-    std::queue<Friend> has_friend_action;
-    std::vector<Notification> notifications;
+    std::queue<Friend> has_friend_action{};
+    std::vector<Notification> notifications{};
     // used when the button "Invite all" is clicked
     std::atomic<bool> invite_all_friends_clicked = false;
 
     bool overlay_state_changed;
 
     std::atomic<bool> i_have_lobby;
-    InGameOverlay::RendererHook_t *_renderer;
+    
+    constexpr static const int renderer_detector_polling_ms = 100;
+    std::future<InGameOverlay::RendererHook_t *> future_renderer{};
+    InGameOverlay::RendererHook_t *_renderer{};
 
     Steam_Overlay(Steam_Overlay const&) = delete;
     Steam_Overlay(Steam_Overlay&&) = delete;
@@ -175,6 +179,8 @@ class Steam_Overlay
     // invite a single friend
     void invite_friend(uint64 friend_id, class Steam_Friends* steamFriends, class Steam_Matchmaking* steamMatchmaking);
 
+    void request_renderer_detector();
+    void renderer_detector_delay_thread();
     void renderer_hook_init_thread();
     
     void create_fonts();

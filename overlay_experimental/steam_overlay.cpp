@@ -155,25 +155,37 @@ Steam_Overlay::~Steam_Overlay()
     run_every_runcb->remove(&Steam_Overlay::steam_overlay_run_every_runcb, this);
 }
 
-constexpr static const int renderer_detector_polling_ms = 100;
-
-void Steam_Overlay::renderer_hook_init_thread()
+void Steam_Overlay::request_renderer_detector()
 {
-    if (settings->overlay_hook_delay_sec > 0) {
-        // give games some time to init their renderer (DirectX, OpenGL, etc...)
-        std::this_thread::sleep_for(std::chrono::seconds(settings->overlay_hook_delay_sec));
+    PRINT_DEBUG("Steam_Overlay::request_renderer_detector\n");
+    // request renderer detection
+    future_renderer = InGameOverlay::DetectRenderer();
+}
+
+void Steam_Overlay::renderer_detector_delay_thread()
+{
+    PRINT_DEBUG("Steam_Overlay::renderer_detector_delay_thread waiting for %i seconds\n", settings->overlay_hook_delay_sec);
+    // give games some time to init their renderer (DirectX, OpenGL, etc...)
+    int timeout_ctr = settings->overlay_hook_delay_sec /*seconds*/ * 1000 /*milli per second*/ / renderer_detector_polling_ms;
+    while (timeout_ctr > 0 && setup_overlay_called ) {
+        --timeout_ctr;
+        std::this_thread::sleep_for(std::chrono::milliseconds(renderer_detector_polling_ms));
     }
 
     // early exit before we get a chance to do anything
     if (!setup_overlay_called) {
-        PRINT_DEBUG("Steam_Overlay::renderer_hook_init early exit before renderer detection\n");
+        PRINT_DEBUG("Steam_Overlay::renderer_detector_delay_thread early exit before renderer detection\n");
         return;
     }
     
     // request renderer detection
-    auto future_renderer = InGameOverlay::DetectRenderer();
-    PRINT_DEBUG("Steam_Overlay::renderer_hook_init requested renderer detector/hook\n");
+    request_renderer_detector();
+    renderer_hook_init_thread();
+}
 
+void Steam_Overlay::renderer_hook_init_thread()
+{
+    PRINT_DEBUG("Steam_Overlay::renderer_hook_init_thread\n");
     int timeout_ctr = settings->overlay_renderer_detector_timeout_sec /*seconds*/ * 1000 /*milli per second*/ / renderer_detector_polling_ms;
     while (timeout_ctr > 0 && setup_overlay_called && future_renderer.wait_for(std::chrono::milliseconds(renderer_detector_polling_ms)) != std::future_status::ready) {
         --timeout_ctr;
@@ -187,7 +199,7 @@ void Steam_Overlay::renderer_hook_init_thread()
     // again check for 'setup_overlay_called' to be extra sure that the overlay wasn't deinitialized
     if (!setup_overlay_called || !final_chance || timeout_ctr <= 0) {
         PRINT_DEBUG(
-            "Steam_Overlay::renderer_hook_init failed to detect renderer, ctr=%i, overlay was set up=%i, hook intance state=%i\n",
+            "Steam_Overlay::renderer_hook_init_thread failed to detect renderer, ctr=%i, overlay was set up=%i, hook intance state=%i\n",
             timeout_ctr, (int)setup_overlay_called, (int)final_chance
         );
         return;
@@ -196,7 +208,7 @@ void Steam_Overlay::renderer_hook_init_thread()
     // do a one time initialization
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     _renderer = future_renderer.get();
-    PRINT_DEBUG("Steam_Overlay::renderer_hook_init got renderer %p\n", _renderer);
+    PRINT_DEBUG("Steam_Overlay::renderer_hook_init_thread got renderer %p\n", _renderer);
     create_fonts();
     load_audio();
     
@@ -212,7 +224,7 @@ void Steam_Overlay::renderer_hook_init_thread()
     };
 
     bool started = _renderer->StartHook(overlay_toggle_callback, overlay_toggle_keys, &fonts_atlas);
-    PRINT_DEBUG("Steam_Overlay::renderer_hook_init started renderer hook (result=%i)\n", (int)started);
+    PRINT_DEBUG("Steam_Overlay::renderer_hook_init_thread started renderer hook (result=%i)\n", (int)started);
     
 }
 
@@ -300,7 +312,7 @@ void Steam_Overlay::create_fonts()
     font_notif = font_default = font;
     
     bool res = fonts_atlas.Build();
-    PRINT_DEBUG("Steam_Overlay::create_fonts built fonts atlas (result=%i)\n", (int)res);
+    PRINT_DEBUG("Steam_Overlay::create_fonts created fonts atlas (result=%i)\n", (int)res);
 
     reset_LastError();
 }
@@ -1217,7 +1229,14 @@ void Steam_Overlay::SetupOverlay()
 
     bool not_called_yet = false;
     if (setup_overlay_called.compare_exchange_weak(not_called_yet, true)) {
-        std::thread([this]() { renderer_hook_init_thread(); }).detach();
+        if (settings->overlay_hook_delay_sec > 0) {
+            std::thread([this]() { renderer_detector_delay_thread(); }).detach();
+        } else {
+            // "HITMAN 3" fails if the detector was started later (after a delay)
+            // so request the renderer detector immediately (the old behavior)
+            request_renderer_detector();
+            std::thread([this]() { renderer_hook_init_thread(); }).detach();
+        }
     }
 }
 
@@ -1231,7 +1250,12 @@ void Steam_Overlay::UnSetupOverlay()
         is_ready = false;
 
         // allow the future_renderer thread to exit if needed
-        std::this_thread::sleep_for(std::chrono::milliseconds((int)(renderer_detector_polling_ms * 1.3f)));
+        // std::this_thread::sleep_for(std::chrono::milliseconds((int)(renderer_detector_polling_ms * 1.3f)));
+        common_helpers::thisThreadYieldFor(
+            std::chrono::duration_cast<std::chrono::microseconds>(
+                std::chrono::milliseconds((int)(renderer_detector_polling_ms * 1.3f))
+            )
+        );
         
         if (_renderer) {
             for (auto &ach : achievements) {
