@@ -147,7 +147,7 @@ protoc_exe_64="$deps_dir/protobuf/install64/bin/protoc"
 parallel_exe="$third_party_build_dir/rush/rush"
 
 # https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html
-common_compiler_args="-std=c++17 -fvisibility=hidden -fexceptions -fno-jump-tables"
+common_compiler_args="-std=c++17 -fvisibility=hidden -fexceptions -fno-jump-tables -fno-char8_t"
 
 # third party dependencies (include folder + folder containing .a file)
 ssq_inc="$deps_dir/libssq/include"

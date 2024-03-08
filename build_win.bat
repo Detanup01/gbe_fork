@@ -175,7 +175,7 @@ set "dos_stub_exe_64=%win_resources_src_dir%\file_dos_stub\file_dos_stub_64.exe"
 set "protoc_exe_32=%deps_dir%\protobuf\install32\bin\protoc.exe"
 set "protoc_exe_64=%deps_dir%\protobuf\install64\bin\protoc.exe"
 
-set "common_compiler_args=/std:c++17 /MP%build_threads% /DYNAMICBASE /errorReport:none /nologo /utf-8 /EHsc /GF /GL- /GS"
+set "common_compiler_args=/std:c++17 /MP%build_threads% /DYNAMICBASE /errorReport:none /nologo /utf-8 /Zc:char8_t- /EHsc /GF /GL- /GS"
 set "common_compiler_args_32=%common_compiler_args%"
 set "common_compiler_args_64=%common_compiler_args%"
 

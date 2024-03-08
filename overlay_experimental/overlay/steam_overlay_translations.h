@@ -6,3517 +6,3517 @@ const int TRANSLATION_BUFFER_SIZE = 256;
 // Friends_Indicator_Chat
 const char translationChat[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Chat",
+  u8"Chat",
 
 	// 1 - Arabic
-  (const char *)u8"Chat",
+  u8"Chat",
 
 	// 2 - Bulgarian
-  (const char *)u8"Чат",
+  u8"Чат",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"聊天",
+  u8"聊天",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"聊天",
+  u8"聊天",
 
 	// 5 - Czech
-  (const char *)u8"Konverzace",
+  u8"Konverzace",
 
 	// 6 - Danish
-  (const char *)u8"Chat",
+  u8"Chat",
 
 	// 7 - Dutch
-  (const char *)u8"Chatten",
+  u8"Chatten",
 
 	// 8 - Finnish
-  (const char *)u8"Chat",
+  u8"Chat",
 
 	// 9 - French
-  (const char *)u8"Chat",
+  u8"Chat",
 
 	// 10 - German
-  (const char *)u8"Chat",
+  u8"Chat",
 
 	// 11 - Greek
-  (const char *)u8"Συνομιλία",
+  u8"Συνομιλία",
 
 	// 12 - Hungarian
-  (const char *)u8"Csevegés",
+  u8"Csevegés",
 
 	// 13 - Italian
-  (const char *)u8"Chat",
+  u8"Chat",
 
 	// 14 - Japanese
-  (const char *)u8"チャット",
+  u8"チャット",
 
 	// 15 - Korean
-  (const char *)u8"채팅",
+  u8"채팅",
 
 	// 16 - Norwegian
-  (const char *)u8"Prat",
+  u8"Prat",
 
 	// 17 - Polish
-  (const char *)u8"Czat",
+  u8"Czat",
 
 	// 18 - Portuguese
-  (const char *)u8"Chat",
+  u8"Chat",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Conversar",
+  u8"Conversar",
 
 	// 20 - Romanian
-  (const char *)u8"Discuție",
+  u8"Discuție",
 
 	// 21 - Russian
-  (const char *)u8"Чат",
+  u8"Чат",
 
 	// 22 - Spanish
-  (const char *)u8"Chat",
+  u8"Chat",
 
 	// 23 - Latin American
-  (const char *)u8"Chat",
+  u8"Chat",
 
 	// 24 - Swedish
-  (const char *)u8"Chatt",
+  u8"Chatt",
 
 	// 25 - Thai
-  (const char *)u8"แช็ต",
+  u8"แช็ต",
 
 	// 26 - Turkish
-  (const char *)u8"Sohbet",
+  u8"Sohbet",
 
 	// 27 - Ukrainian
-  (const char *)u8"Чат",
+  u8"Чат",
 
 	// 28 - Vietnamese
-  (const char *)u8"Trò chuyện",
+  u8"Trò chuyện",
 
 	// 29 - Croatian
-  (const char *)u8"Razgovor"
+  u8"Razgovor"
 };
 
 const char translationCopyId[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 1 - Arabic
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 2 - Bulgarian
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 5 - Czech
-  (const char *)u8"Kopírovat ID",
+  u8"Kopírovat ID",
 
 	// 6 - Danish
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 7 - Dutch
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 8 - Finnish
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 9 - French
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 10 - German
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 11 - Greek
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 12 - Hungarian
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 13 - Italian
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 14 - Japanese
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 15 - Korean
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 16 - Norwegian
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 17 - Polish
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 18 - Portuguese
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Copiar ID",
+  u8"Copiar ID",
 
 	// 20 - Romanian
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 21 - Russian
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 22 - Spanish
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 23 - Latin American
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 24 - Swedish
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 25 - Thai
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 26 - Turkish
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 27 - Ukrainian
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 28 - Vietnamese
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 
 	// 29 - Croatian
-  (const char *)u8"Copy ID",
+  u8"Copy ID",
 };
 
 // C:\Program Files (x86)\Steam\tenfoot\resource\localization\tenfoot_*.txt
 // Friends_ProfileDetails_Action_InviteToGame
 const char translationInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Invite to Game",
+  u8"Invite to Game",
 
 	// 1 - Arabic
-  (const char *)u8"Invite to Game",
+  u8"Invite to Game",
 
 	// 2 - Bulgarian
-  (const char *)u8"Покана към игра",
+  u8"Покана към игра",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"邀请加入游戏",
+  u8"邀请加入游戏",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"邀請至遊戲",
+  u8"邀請至遊戲",
 
 	// 5 - Czech
-  (const char *)u8"Pozvat do hry",
+  u8"Pozvat do hry",
 
 	// 6 - Danish
-  (const char *)u8"Inviter til spil",
+  u8"Inviter til spil",
 
 	// 7 - Dutch
-  (const char *)u8"Uitnodigen om mee te spelen",
+  u8"Uitnodigen om mee te spelen",
 
 	// 8 - Finnish
-  (const char *)u8"Kutsu peliin",
+  u8"Kutsu peliin",
 
 	// 9 - French
-  (const char *)u8"Inviter à jouer",
+  u8"Inviter à jouer",
 
 	// 10 - German
-  (const char *)u8"Zu Spiel einladen",
+  u8"Zu Spiel einladen",
 
 	// 11 - Greek
-  (const char *)u8"Πρόσκληση σε παιχνίδι",
+  u8"Πρόσκληση σε παιχνίδι",
 
 	// 12 - Hungarian
-  (const char *)u8"Meghívás játékra",
+  u8"Meghívás játékra",
 
 	// 13 - Italian
-  (const char *)u8"Invita a giocare",
+  u8"Invita a giocare",
 
 	// 14 - Japanese
-  (const char *)u8"ゲームに招待",
+  u8"ゲームに招待",
 
 	// 15 - Korean
-  (const char *)u8"게임 초대",
+  u8"게임 초대",
 
 	// 16 - Norwegian
-  (const char *)u8"Inviter til spill",
+  u8"Inviter til spill",
 
 	// 17 - Polish
-  (const char *)u8"Zaproś do gry",
+  u8"Zaproś do gry",
 
 	// 18 - Portuguese
-  (const char *)u8"Convidar para jogar",
+  u8"Convidar para jogar",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Convidar para partida",
+  u8"Convidar para partida",
 
 	// 20 - Romanian
-  (const char *)u8"Invită la joc",
+  u8"Invită la joc",
 
 	// 21 - Russian
-  (const char *)u8"Пригласить в игру",
+  u8"Пригласить в игру",
 
 	// 22 - Spanish
-  (const char *)u8"Invitar a la partida",
+  u8"Invitar a la partida",
 
 	// 23 - Latin American
-  (const char *)u8"Invitar a la partida",
+  u8"Invitar a la partida",
 
 	// 24 - Swedish
-  (const char *)u8"Bjud in till spel",
+  u8"Bjud in till spel",
 
 	// 25 - Thai
-  (const char *)u8"เชิญเข้าร่วมเกม",
+  u8"เชิญเข้าร่วมเกม",
 
 	// 26 - Turkish
-  (const char *)u8"Oyuna Davet Et",
+  u8"Oyuna Davet Et",
 
 	// 27 - Ukrainian
-  (const char *)u8"Запросити у гру",
+  u8"Запросити у гру",
 
 	// 28 - Vietnamese
-  (const char *)u8"Mời vào trò chơi",
+  u8"Mời vào trò chơi",
 
 	// 29 - Croatian
-  (const char *)u8"Pozovi u igru"
+  u8"Pozovi u igru"
 };
 
 const char translationInviteAll[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 1 - Arabic
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 2 - Bulgarian
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 5 - Czech
-  (const char *)u8"Pozvat všechny",
+  u8"Pozvat všechny",
 
 	// 6 - Danish
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 7 - Dutch
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 8 - Finnish
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 9 - French
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 10 - German
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 11 - Greek
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 12 - Hungarian
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 13 - Italian
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 14 - Japanese
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 15 - Korean
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 16 - Norwegian
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 17 - Polish
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 18 - Portuguese
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Convidar todos os jogadores",
+  u8"Convidar todos os jogadores",
 
 	// 20 - Romanian
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 21 - Russian
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 22 - Spanish
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 23 - Latin American
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 24 - Swedish
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 25 - Thai
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 26 - Turkish
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 27 - Ukrainian
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 28 - Vietnamese
-  (const char *)u8"Invite all",
+  u8"Invite all",
 
 	// 29 - Croatian
-  (const char *)u8"Invite all",
+  u8"Invite all",
 };
 
 // C:\Program Files (x86)\Steam\tenfoot\resource\localization\tenfoot_*.txt
 // friends_chat_accept_game_invite
 const char translationJoin[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Accept Game Invite",
+  u8"Accept Game Invite",
 
 	// 1 - Arabic
-  (const char *)u8"Accept Game Invite",
+  u8"Accept Game Invite",
 
 	// 2 - Bulgarian
-  (const char *)u8"Приемане на игрална покана",
+  u8"Приемане на игрална покана",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"接受游戏邀请",
+  u8"接受游戏邀请",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"接受遊戲邀請",
+  u8"接受遊戲邀請",
 
 	// 5 - Czech
-  (const char *)u8"Přijmout pozvánku do hry",
+  u8"Přijmout pozvánku do hry",
 
 	// 6 - Danish
-  (const char *)u8"Accepter spilinvitation",
+  u8"Accepter spilinvitation",
 
 	// 7 - Dutch
-  (const char *)u8"Speluitnodiging accepteren",
+  u8"Speluitnodiging accepteren",
 
 	// 8 - Finnish
-  (const char *)u8"Hyväksy pelikutsu",
+  u8"Hyväksy pelikutsu",
 
 	// 9 - French
-  (const char *)u8"Accepter l'invitation au jeu",
+  u8"Accepter l'invitation au jeu",
 
 	// 10 - German
-  (const char *)u8"Spieleinladung annehmen",
+  u8"Spieleinladung annehmen",
 
 	// 11 - Greek
-  (const char *)u8"Αποδοχή πρόσκλησης παιχνιδιού",
+  u8"Αποδοχή πρόσκλησης παιχνιδιού",
 
 	// 12 - Hungarian
-  (const char *)u8"Játék-meghívás elfogadása",
+  u8"Játék-meghívás elfogadása",
 
 	// 13 - Italian
-  (const char *)u8"Accetta invito a giocare",
+  u8"Accetta invito a giocare",
 
 	// 14 - Japanese
-  (const char *)u8"ゲーム招待の承認",
+  u8"ゲーム招待の承認",
 
 	// 15 - Korean
-  (const char *)u8"게임 초대 수락",
+  u8"게임 초대 수락",
 
 	// 16 - Norwegian
-  (const char *)u8"Godta spill-invitasjon",
+  u8"Godta spill-invitasjon",
 
 	// 17 - Polish
-  (const char *)u8"Przyjmij zaproszenie do gry",
+  u8"Przyjmij zaproszenie do gry",
 
 	// 18 - Portuguese
-  (const char *)u8"Aceitar convite",
+  u8"Aceitar convite",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Aceitar convite para partida",
+  u8"Aceitar convite para partida",
 
 	// 20 - Romanian
-  (const char *)u8"Acceptă invitația la joc",
+  u8"Acceptă invitația la joc",
 
 	// 21 - Russian
-  (const char *)u8"Принять приглашение в игру",
+  u8"Принять приглашение в игру",
 
 	// 22 - Spanish
-  (const char *)u8"Aceptar invitación a partida",
+  u8"Aceptar invitación a partida",
 
 	// 23 - Latin American
-  (const char *)u8"Aceptar invitación a partida",
+  u8"Aceptar invitación a partida",
 
 	// 24 - Swedish
-  (const char *)u8"Acceptera spelinbjudan",
+  u8"Acceptera spelinbjudan",
 
 	// 25 - Thai
-  (const char *)u8"ยอมรับคำเชิญร่วมเกม",
+  u8"ยอมรับคำเชิญร่วมเกม",
 
 	// 26 - Turkish
-  (const char *)u8"Oyun Davetini Kabul Et",
+  u8"Oyun Davetini Kabul Et",
 
 	// 27 - Ukrainian
-  (const char *)u8"Прийняти запрошення до гри",
+  u8"Прийняти запрошення до гри",
 
 	// 28 - Vietnamese
-  (const char *)u8"Nhập lời mời",
+  u8"Nhập lời mời",
 
 	// 29 - Croatian
-  (const char *)u8"Prihvati poziv"
+  u8"Prihvati poziv"
 };
 
 // C:\Program Files (x86)\Steam\tenfoot\resource\localization\tenfoot_*.txt
 // friends_chat_game_invite_details
 const char translationInvitedYouToJoinTheGame[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"%s has invited you to play %llu",
+  u8"%s has invited you to play %llu",
 
 	// 1 - Arabic
-  (const char *)u8"%s has invited you to play %llu",
+  u8"%s has invited you to play %llu",
 
 	// 2 - Bulgarian
-  (const char *)u8"%s Ви покани да играете %llu",
+  u8"%s Ви покани да играете %llu",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"%s 已邀请您玩 %llu",
+  u8"%s 已邀请您玩 %llu",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"%s 邀請您一同遊玩 %llu",
+  u8"%s 邀請您一同遊玩 %llu",
 
 	// 5 - Czech
-  (const char *)u8"%s Vás pozval do hry %llu",
+  u8"%s Vás pozval do hry %llu",
 
 	// 6 - Danish
-  (const char *)u8"%s har inviteret dig til at spille %llu",
+  u8"%s har inviteret dig til at spille %llu",
 
 	// 7 - Dutch
-  (const char *)u8"%s heeft je uitgenodigd om %llu te spelen",
+  u8"%s heeft je uitgenodigd om %llu te spelen",
 
 	// 8 - Finnish
-  (const char *)u8"%s on kutsunut sinut pelaamaan peliä %llu",
+  u8"%s on kutsunut sinut pelaamaan peliä %llu",
 
 	// 9 - French
-  (const char *)u8"%s vous a invité à jouer à %llu",
+  u8"%s vous a invité à jouer à %llu",
 
 	// 10 - German
-  (const char *)u8"%s hat Sie eingeladen, %llu zu spielen",
+  u8"%s hat Sie eingeladen, %llu zu spielen",
 
 	// 11 - Greek
-  (const char *)u8"Ο %s σας προσκάλεσε να παίξετε %llu",
+  u8"Ο %s σας προσκάλεσε να παίξετε %llu",
 
 	// 12 - Hungarian
-  (const char *)u8"%s játszani hívott a(z) %llu játékba.",
+  u8"%s játszani hívott a(z) %llu játékba.",
 
 	// 13 - Italian
-  (const char *)u8"%s ti ha invitato a giocare a %llu",
+  u8"%s ti ha invitato a giocare a %llu",
 
 	// 14 - Japanese
-  (const char *)u8"%s があなたを %llu のプレイに招待しています",
+  u8"%s があなたを %llu のプレイに招待しています",
 
 	// 15 - Korean
-  (const char *)u8"%s님이 %llu 게임을 하자고 초대했습니다.",
+  u8"%s님이 %llu 게임을 하자고 초대했습니다.",
 
 	// 16 - Norwegian
-  (const char *)u8"%s har invitert deg til å spille %llu",
+  u8"%s har invitert deg til å spille %llu",
 
 	// 17 - Polish
-  (const char *)u8"%s zaprasza cię do gry w %llu",
+  u8"%s zaprasza cię do gry w %llu",
 
 	// 18 - Portuguese
-  (const char *)u8"%s convidou-te para jogar %llu",
+  u8"%s convidou-te para jogar %llu",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"%s convidou você para jogar %llu",
+  u8"%s convidou você para jogar %llu",
 
 	// 20 - Romanian
-  (const char *)u8"%s te-a invitat să jucați %llu",
+  u8"%s te-a invitat să jucați %llu",
 
 	// 21 - Russian
-  (const char *)u8"%s приглашает вас в %llu",
+  u8"%s приглашает вас в %llu",
 
 	// 22 - Spanish
-  (const char *)u8"%s te ha invitado a jugar a %llu",
+  u8"%s te ha invitado a jugar a %llu",
 
 	// 23 - Latin American
-  (const char *)u8"%s te invitó a jugar %llu",
+  u8"%s te invitó a jugar %llu",
 
 	// 24 - Swedish
-  (const char *)u8"%s har bjudit in dig att spela %llu",
+  u8"%s har bjudit in dig att spela %llu",
 
 	// 25 - Thai
-  (const char *)u8"%s ได้เชิญคุณเล่น %llu",
+  u8"%s ได้เชิญคุณเล่น %llu",
 
 	// 26 - Turkish
-  (const char *)u8"%s sizi %llu oynamaya davet etti",
+  u8"%s sizi %llu oynamaya davet etti",
 
 	// 27 - Ukrainian
-  (const char *)u8"%s запросив вас пограти у %llu",
+  u8"%s запросив вас пограти у %llu",
 
 	// 28 - Vietnamese
-  (const char *)u8"%s mời bạn chơi %llu",
+  u8"%s mời bạn chơi %llu",
 
 	// 29 - Croatian
-  (const char *)u8"%s vas je pozvao igrati %llu"
+  u8"%s vas je pozvao igrati %llu"
 };
 
 // C:\Program Files (x86)\Steam\tenfoot\resource\localization\tenfoot_*.txt
 // Broadcast_Notification_Accept_Request
 const char translationAccept[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Accept",
+  u8"Accept",
 
 	// 1 - Arabic
-  (const char *)u8"Accept",
+  u8"Accept",
 
 	// 2 - Bulgarian
-  (const char *)u8"Приемане",
+  u8"Приемане",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"接受",
+  u8"接受",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"接受",
+  u8"接受",
 
 	// 5 - Czech
-  (const char *)u8"Schválit",
+  u8"Schválit",
 
 	// 6 - Danish
-  (const char *)u8"Accepter",
+  u8"Accepter",
 
 	// 7 - Dutch
-  (const char *)u8"Accepteren",
+  u8"Accepteren",
 
 	// 8 - Finnish
-  (const char *)u8"Hyväksy",
+  u8"Hyväksy",
 
 	// 9 - French
-  (const char *)u8"Accepter",
+  u8"Accepter",
 
 	// 10 - German
-  (const char *)u8"Annehmen",
+  u8"Annehmen",
 
 	// 11 - Greek
-  (const char *)u8"Αποδοχή",
+  u8"Αποδοχή",
 
 	// 12 - Hungarian
-  (const char *)u8"Elfogad",
+  u8"Elfogad",
 
 	// 13 - Italian
-  (const char *)u8"Accetta",
+  u8"Accetta",
 
 	// 14 - Japanese
-  (const char *)u8"承認",
+  u8"承認",
 
 	// 15 - Korean
-  (const char *)u8"수락",
+  u8"수락",
 
 	// 16 - Norwegian
-  (const char *)u8"Godta",
+  u8"Godta",
 
 	// 17 - Polish
-  (const char *)u8"Akceptuj",
+  u8"Akceptuj",
 
 	// 18 - Portuguese
-  (const char *)u8"Aceitar",
+  u8"Aceitar",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Aceitar",
+  u8"Aceitar",
 
 	// 20 - Romanian
-  (const char *)u8"Acceptă",
+  u8"Acceptă",
 
 	// 21 - Russian
-  (const char *)u8"Принять",
+  u8"Принять",
 
 	// 22 - Spanish
-  (const char *)u8"Aceptar",
+  u8"Aceptar",
 
 	// 23 - Latin American
-  (const char *)u8"Aceptar",
+  u8"Aceptar",
 
 	// 24 - Swedish
-  (const char *)u8"Acceptera",
+  u8"Acceptera",
 
 	// 25 - Thai
-  (const char *)u8"ยอมรับ",
+  u8"ยอมรับ",
 
 	// 26 - Turkish
-  (const char *)u8"Kabul Et",
+  u8"Kabul Et",
 
 	// 27 - Ukrainian
-  (const char *)u8"Прийняти",
+  u8"Прийняти",
 
 	// 28 - Vietnamese
-  (const char *)u8"Đồng ý",
+  u8"Đồng ý",
 
 	// 29 - Croatian
-  (const char *)u8"Prihvati"
+  u8"Prihvati"
 };
 
 // C:\Program Files (x86)\Steam\tenfoot\resource\localization\tenfoot_*.txt
 // Broadcast_Notification_Ignore_Request
 const char translationRefuse[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Ignore",
+  u8"Ignore",
 
 	// 1 - Arabic
-  (const char *)u8"Ignore",
+  u8"Ignore",
 
 	// 2 - Bulgarian
-  (const char *)u8"Игнориране",
+  u8"Игнориране",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"忽略",
+  u8"忽略",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"忽略",
+  u8"忽略",
 
 	// 5 - Czech
-  (const char *)u8"Odmítnout",
+  u8"Odmítnout",
 
 	// 6 - Danish
-  (const char *)u8"Ignorer",
+  u8"Ignorer",
 
 	// 7 - Dutch
-  (const char *)u8"Negeren",
+  u8"Negeren",
 
 	// 8 - Finnish
-  (const char *)u8"Hylkää",
+  u8"Hylkää",
 
 	// 9 - French
-  (const char *)u8"Ignorer",
+  u8"Ignorer",
 
 	// 10 - German
-  (const char *)u8"Ignorieren",
+  u8"Ignorieren",
 
 	// 11 - Greek
-  (const char *)u8"Αγνόηση",
+  u8"Αγνόηση",
 
 	// 12 - Hungarian
-  (const char *)u8"Mellőz",
+  u8"Mellőz",
 
 	// 13 - Italian
-  (const char *)u8"Ignora",
+  u8"Ignora",
 
 	// 14 - Japanese
-  (const char *)u8"無視",
+  u8"無視",
 
 	// 15 - Korean
-  (const char *)u8"무시",
+  u8"무시",
 
 	// 16 - Norwegian
-  (const char *)u8"Ignorer",
+  u8"Ignorer",
 
 	// 17 - Polish
-  (const char *)u8"Ignoruj",
+  u8"Ignoruj",
 
 	// 18 - Portuguese
-  (const char *)u8"Ignorar",
+  u8"Ignorar",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Ignorar",
+  u8"Ignorar",
 
 	// 20 - Romanian
-  (const char *)u8"Ignoră",
+  u8"Ignoră",
 
 	// 21 - Russian
-  (const char *)u8"Отклонить",
+  u8"Отклонить",
 
 	// 22 - Spanish
-  (const char *)u8"Ignorar",
+  u8"Ignorar",
 
 	// 23 - Latin American
-  (const char *)u8"Ignorar",
+  u8"Ignorar",
 
 	// 24 - Swedish
-  (const char *)u8"Ignorera",
+  u8"Ignorera",
 
 	// 25 - Thai
-  (const char *)u8"ละเว้น",
+  u8"ละเว้น",
 
 	// 26 - Turkish
-  (const char *)u8"Yok say",
+  u8"Yok say",
 
 	// 27 - Ukrainian
-  (const char *)u8"Відхилити",
+  u8"Відхилити",
 
 	// 28 - Vietnamese
-  (const char *)u8"Phớt lờ",
+  u8"Phớt lờ",
 
 	// 29 - Croatian
-  (const char *)u8"Ignoriraj"
+  u8"Ignoriraj"
 };
 
 // C:\Program Files (x86)\Steam\tenfoot\resource\localization\tenfoot_*.txt
 // Friends_ProfileDetails_Action_SendMessage
 const char translationSend[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Send Message",
+  u8"Send Message",
 
 	// 1 - Arabic
-  (const char *)u8"Send Message",
+  u8"Send Message",
 
 	// 2 - Bulgarian
-  (const char *)u8"Изпращане на съобщение",
+  u8"Изпращане на съобщение",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"发送消息",
+  u8"发送消息",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"傳送訊息",
+  u8"傳送訊息",
 
 	// 5 - Czech
-  (const char *)u8"Odeslat zprávu",
+  u8"Odeslat zprávu",
 
 	// 6 - Danish
-  (const char *)u8"Send besked",
+  u8"Send besked",
 
 	// 7 - Dutch
-  (const char *)u8"Bericht verzenden",
+  u8"Bericht verzenden",
 
 	// 8 - Finnish
-  (const char *)u8"Lähetä viesti",
+  u8"Lähetä viesti",
 
 	// 9 - French
-  (const char *)u8"Envoyer un message",
+  u8"Envoyer un message",
 
 	// 10 - German
-  (const char *)u8"Nachricht senden",
+  u8"Nachricht senden",
 
 	// 11 - Greek
-  (const char *)u8"Αποστολή μηνύματος",
+  u8"Αποστολή μηνύματος",
 
 	// 12 - Hungarian
-  (const char *)u8"Üzenet küldése",
+  u8"Üzenet küldése",
 
 	// 13 - Italian
-  (const char *)u8"Invia un messaggio",
+  u8"Invia un messaggio",
 
 	// 14 - Japanese
-  (const char *)u8"メッセージを送信",
+  u8"メッセージを送信",
 
 	// 15 - Korean
-  (const char *)u8"메시지 보내기",
+  u8"메시지 보내기",
 
 	// 16 - Norwegian
-  (const char *)u8"Send melding",
+  u8"Send melding",
 
 	// 17 - Polish
-  (const char *)u8"Wyślij wiadomość",
+  u8"Wyślij wiadomość",
 
 	// 18 - Portuguese
-  (const char *)u8"Enviar mensagem",
+  u8"Enviar mensagem",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Enviar mensagem",
+  u8"Enviar mensagem",
 
 	// 20 - Romanian
-  (const char *)u8"Trimite Mesaj",
+  u8"Trimite Mesaj",
 
 	// 21 - Russian
-  (const char *)u8"Отправить сообщение",
+  u8"Отправить сообщение",
 
 	// 22 - Spanish
-  (const char *)u8"Enviar mensaje",
+  u8"Enviar mensaje",
 
 	// 23 - Latin American
-  (const char *)u8"Enviar mensaje",
+  u8"Enviar mensaje",
 
 	// 24 - Swedish
-  (const char *)u8"Skicka meddelande",
+  u8"Skicka meddelande",
 
 	// 25 - Thai
-  (const char *)u8"ส่งข้อความ",
+  u8"ส่งข้อความ",
 
 	// 26 - Turkish
-  (const char *)u8"İleti Gönder",
+  u8"İleti Gönder",
 
 	// 27 - Ukrainian
-  (const char *)u8"Надіслати повідомлення",
+  u8"Надіслати повідомлення",
 
 	// 28 - Vietnamese
-  (const char *)u8"Gửi thông điệp",
+  u8"Gửi thông điệp",
 
 	// 29 - Croatian
-  (const char *)u8"Pošalji Poruku"
+  u8"Pošalji Poruku"
 };
 
 // C:\Program Files (x86)\Steam\tenfoot\resource\localization\tenfoot_*.txt
 // SettingsInGame_Enable & SettingsInGame_Overlay
 const char translationSteamOverlay[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Steam Overlay",
+  u8"Steam Overlay",
 
 	// 1 - Arabic
-  (const char *)u8"Steam Overlay",
+  u8"Steam Overlay",
 
 	// 2 - Bulgarian
-  (const char *)u8"Steam слой",
+  u8"Steam слой",
 
 	// 3 - Simplified Chinese
 	u8"Steam 界面",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"Steam 內嵌介面",
+  u8"Steam 內嵌介面",
 
 	// 5 - Czech
-  (const char *)u8"Překrytí služby Steam",
+  u8"Překrytí služby Steam",
 
 	// 6 - Danish
-  (const char *)u8"Steam-overlayet",
+  u8"Steam-overlayet",
 
 	// 7 - Dutch
-  (const char *)u8"Steam-overlay",
+  u8"Steam-overlay",
 
 	// 8 - Finnish
-  (const char *)u8"Steam-yhteisönäkymä",
+  u8"Steam-yhteisönäkymä",
 
 	// 9 - French
-  (const char *)u8"L'overlay Steam",
+  u8"L'overlay Steam",
 
 	// 10 - German
-  (const char *)u8"Steam Overlay",
+  u8"Steam Overlay",
 
 	// 11 - Greek
-  (const char *)u8"Επικάλυψης Steam",
+  u8"Επικάλυψης Steam",
 
 	// 12 - Hungarian
-  (const char *)u8"Steam Átfedés",
+  u8"Steam Átfedés",
 
 	// 13 - Italian
-  (const char *)u8"L'Overlay di Steam",
+  u8"L'Overlay di Steam",
 
 	// 14 - Japanese
-  (const char *)u8"Steam オーバーレイ",
+  u8"Steam オーバーレイ",
 
 	// 15 - Korean
-  (const char *)u8"Steam 오버레이",
+  u8"Steam 오버레이",
 
 	// 16 - Norwegian
-  (const char *)u8"Steam-overlegg",
+  u8"Steam-overlegg",
 
 	// 17 - Polish
-  (const char *)u8"Nakładkę Steam",
+  u8"Nakładkę Steam",
 
 	// 18 - Portuguese
-  (const char *)u8"Painel Steam",
+  u8"Painel Steam",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Painel Steam",
+  u8"Painel Steam",
 
 	// 20 - Romanian
-  (const char *)u8"Interfață suplimentară Steam",
+  u8"Interfață suplimentară Steam",
 
 	// 21 - Russian
-  (const char *)u8"Оверлей Steam",
+  u8"Оверлей Steam",
 
 	// 22 - Spanish
-  (const char *)u8"Interfaz de Steam",
+  u8"Interfaz de Steam",
 
 	// 23 - Latin American
-  (const char *)u8"Interfaz de Steam",
+  u8"Interfaz de Steam",
 
 	// 24 - Swedish
-  (const char *)u8"Steams överlägg",
+  u8"Steams överlägg",
 
 	// 25 - Thai
-  (const char *)u8"โอเวอร์เลย์ Steam",
+  u8"โอเวอร์เลย์ Steam",
 
 	// 26 - Turkish
-  (const char *)u8"Steam Arayüz",
+  u8"Steam Arayüz",
 
 	// 27 - Ukrainian
-  (const char *)u8"Оверлей Steam",
+  u8"Оверлей Steam",
 
 	// 28 - Vietnamese
-  (const char *)u8"Lớp phủ Steam",
+  u8"Lớp phủ Steam",
 
 	// 29 - Croatian
-  (const char *)u8"Steam Overlay"
+  u8"Steam Overlay"
 };
 
 const char translationUserPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 1 - Arabic
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 2 - Bulgarian
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 5 - Czech
-  (const char *)u8"Uživatel: %s(%llu) hraje %u",
+  u8"Uživatel: %s(%llu) hraje %u",
 
 	// 6 - Danish
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 7 - Dutch
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 8 - Finnish
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 9 - French
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 10 - German
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 11 - Greek
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 12 - Hungarian
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 13 - Italian
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 14 - Japanese
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 15 - Korean
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 16 - Norwegian
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 17 - Polish
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 18 - Portuguese
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Username: %s(%llu) está jogando %u",
+  u8"Username: %s(%llu) está jogando %u",
 
 	// 20 - Romanian
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 21 - Russian
-  (const char *)u8"Имя пользователя: %s(%llu) играет в %u",
+  u8"Имя пользователя: %s(%llu) играет в %u",
 
 	// 22 - Spanish
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 23 - Latin American
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 24 - Swedish
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 25 - Thai
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 26 - Turkish
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 27 - Ukrainian
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 28 - Vietnamese
-  (const char *)u8"Username: %s(%llu) playing %u",
+  u8"Username: %s(%llu) playing %u",
 
 	// 29 - Croatian
-  (const char *)u8"Igrač: %s(%llu) igra %u"
+  u8"Igrač: %s(%llu) igra %u"
 };
 
 const char translationRenderer[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 1 - Arabic
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 2 - Bulgarian
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 5 - Czech
-  (const char *)u8"Vykreslovač: %s",
+  u8"Vykreslovač: %s",
 
 	// 6 - Danish
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 7 - Dutch
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 8 - Finnish
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 9 - French
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 10 - German
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 11 - Greek
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 12 - Hungarian
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 13 - Italian
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 14 - Japanese
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 15 - Korean
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 16 - Norwegian
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 17 - Polish
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 18 - Portuguese
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 20 - Romanian
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 21 - Russian
-  (const char *)u8"Рендер: %s",
+  u8"Рендер: %s",
 
 	// 22 - Spanish
-  (const char *)u8"Renderizador: %s",
+  u8"Renderizador: %s",
 
 	// 23 - Latin American
-  (const char *)u8"Renderizador: %s",
+  u8"Renderizador: %s",
 
 	// 24 - Swedish
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 25 - Thai
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 26 - Turkish
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 27 - Ukrainian
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 28 - Vietnamese
-  (const char *)u8"Renderer: %s",
+  u8"Renderer: %s",
 
 	// 29 - Croatian
-  (const char *)u8"Renderer: %s"
+  u8"Renderer: %s"
 };
 
 const char translationShowAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 1 - Arabic
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 2 - Bulgarian
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 5 - Czech
-  (const char *)u8"Zobrazit achievementy",
+  u8"Zobrazit achievementy",
 
 	// 6 - Danish
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 7 - Dutch
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 8 - Finnish
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 9 - French
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 10 - German
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 11 - Greek
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 12 - Hungarian
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 13 - Italian
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 14 - Japanese
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 15 - Korean
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 16 - Norwegian
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 17 - Polish
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 18 - Portuguese
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Mostrar Conquistas",
+  u8"Mostrar Conquistas",
 
 	// 20 - Romanian
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 21 - Russian
-  (const char *)u8"Показать Достижения",
+  u8"Показать Достижения",
 
 	// 22 - Spanish
-  (const char *)u8"Mostrar Logros",
+  u8"Mostrar Logros",
 
 	// 23 - Latin American
-  (const char *)u8"Mostrar Logros",
+  u8"Mostrar Logros",
 
 	// 24 - Swedish
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 25 - Thai
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 26 - Turkish
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 27 - Ukrainian
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 28 - Vietnamese
-  (const char *)u8"Show Achievements",
+  u8"Show Achievements",
 
 	// 29 - Croatian
-  (const char *)u8"Prikaži Postignuća"
+  u8"Prikaži Postignuća"
 };
 
 // C:\Program Files (x86)\Steam\resource\overlay_*.txt
 // steam_menu_friends_settings
 const char translationSettings[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Settings",
+  u8"Settings",
 
 	// 1 - Arabic
-  (const char *)u8"Settings",
+  u8"Settings",
 
 	// 2 - Bulgarian
-  (const char *)u8"Настройки",
+  u8"Настройки",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"设置",
+  u8"设置",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"設定",
+  u8"設定",
 
 	// 5 - Czech
-  (const char *)u8"Nastavení",
+  u8"Nastavení",
 
 	// 6 - Danish
-  (const char *)u8"Indstillinger",
+  u8"Indstillinger",
 
 	// 7 - Dutch
-  (const char *)u8"Instellingen",
+  u8"Instellingen",
 
 	// 8 - Finnish
-  (const char *)u8"Asetukset",
+  u8"Asetukset",
 
 	// 9 - French
-  (const char *)u8"Paramètres",
+  u8"Paramètres",
 
 	// 10 - German
-  (const char *)u8"Einstellungen",
+  u8"Einstellungen",
 
 	// 11 - Greek
-  (const char *)u8"Ρυθμίσεις",
+  u8"Ρυθμίσεις",
 
 	// 12 - Hungarian
-  (const char *)u8"Beállítások",
+  u8"Beállítások",
 
 	// 13 - Italian
-  (const char *)u8"Impostazioni",
+  u8"Impostazioni",
 
 	// 14 - Japanese
-  (const char *)u8"設定",
+  u8"設定",
 
 	// 15 - Korean
-  (const char *)u8"설정",
+  u8"설정",
 
 	// 16 - Norwegian
-  (const char *)u8"Innstillinger",
+  u8"Innstillinger",
 
 	// 17 - Polish
-  (const char *)u8"Ustawienia",
+  u8"Ustawienia",
 
 	// 18 - Portuguese
-  (const char *)u8"Definições",
+  u8"Definições",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Configurações",
+  u8"Configurações",
 
 	// 20 - Romanian
-  (const char *)u8"Setări",
+  u8"Setări",
 
 	// 21 - Russian
-  (const char *)u8"Настройки",
+  u8"Настройки",
 
 	// 22 - Spanish
-  (const char *)u8"Parámetros",
+  u8"Parámetros",
 
 	// 23 - Latin American
-  (const char *)u8"Parámetros",
+  u8"Parámetros",
 
 	// 24 - Swedish
-  (const char *)u8"Inställningar",
+  u8"Inställningar",
 
 	// 25 - Thai
-  (const char *)u8"การตั้งค่า",
+  u8"การตั้งค่า",
 
 	// 26 - Turkish
-  (const char *)u8"Ayarlar",
+  u8"Ayarlar",
 
 	// 27 - Ukrainian
-  (const char *)u8"Налаштування",
+  u8"Налаштування",
 
 	// 28 - Vietnamese
-  (const char *)u8"Thiết lập",
+  u8"Thiết lập",
 
 	// 29 - Croatian
-  (const char *)u8"Postavke"
+  u8"Postavke"
 };
 
 // C:\Program Files (x86)\Steam\resource\overlay_*.txt
 // steam_menu_friends_view
 const char translationFriends[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Friends",
+  u8"Friends",
 
 	// 1 - Arabic
-  (const char *)u8"Friends",
+  u8"Friends",
 
 	// 2 - Bulgarian
-  (const char *)u8"Приятели",
+  u8"Приятели",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"好友",
+  u8"好友",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"好友",
+  u8"好友",
 
 	// 5 - Czech
-  (const char *)u8"Přátelé",
+  u8"Přátelé",
 
 	// 6 - Danish
-  (const char *)u8"Venner",
+  u8"Venner",
 
 	// 7 - Dutch
-  (const char *)u8"Vrienden",
+  u8"Vrienden",
 
 	// 8 - Finnish
-  (const char *)u8"Kaverit",
+  u8"Kaverit",
 
 	// 9 - French
-  (const char *)u8"Contacts",
+  u8"Contacts",
 
 	// 10 - German
-  (const char *)u8"Freunde",
+  u8"Freunde",
 
 	// 11 - Greek
-  (const char *)u8"Φίλοι",
+  u8"Φίλοι",
 
 	// 12 - Hungarian
-  (const char *)u8"Barátok",
+  u8"Barátok",
 
 	// 13 - Italian
-  (const char *)u8"Amici",
+  u8"Amici",
 
 	// 14 - Japanese
-  (const char *)u8"フレンド",
+  u8"フレンド",
 
 	// 15 - Korean
-  (const char *)u8"친구",
+  u8"친구",
 
 	// 16 - Norwegian
-  (const char *)u8"Venner",
+  u8"Venner",
 
 	// 17 - Polish
-  (const char *)u8"Znajomi",
+  u8"Znajomi",
 
 	// 18 - Portuguese
-  (const char *)u8"Amigos",
+  u8"Amigos",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Amigos",
+  u8"Amigos",
 
 	// 20 - Romanian
-  (const char *)u8"Prieteni",
+  u8"Prieteni",
 
 	// 21 - Russian
-  (const char *)u8"Друзья",
+  u8"Друзья",
 
 	// 22 - Spanish
-  (const char *)u8"Amigos",
+  u8"Amigos",
 
 	// 23 - Latin American
-  (const char *)u8"Amigos",
+  u8"Amigos",
 
 	// 24 - Swedish
-  (const char *)u8"Vänner",
+  u8"Vänner",
 
 	// 25 - Thai
-  (const char *)u8"เพื่อน",
+  u8"เพื่อน",
 
 	// 26 - Turkish
-  (const char *)u8"Arkadaşlar",
+  u8"Arkadaşlar",
 
 	// 27 - Ukrainian
-  (const char *)u8"Друзі",
+  u8"Друзі",
 
 	// 28 - Vietnamese
-  (const char *)u8"Bạn bè",
+  u8"Bạn bè",
 
 	// 29 - Croatian
-  (const char *)u8"Prijatelji"
+  u8"Prijatelji"
 
 };
 
 const char translationAchievementWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 1 - Arabic
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 2 - Bulgarian
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 5 - Czech
-  (const char *)u8"Okno achievementů",
+  u8"Okno achievementů",
 
 	// 6 - Danish
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 7 - Dutch
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 8 - Finnish
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 9 - French
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 10 - German
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 11 - Greek
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 12 - Hungarian
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 13 - Italian
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 14 - Japanese
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 15 - Korean
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 16 - Norwegian
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 17 - Polish
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 18 - Portuguese
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Janela de conquistas",
+  u8"Janela de conquistas",
 
 	// 20 - Romanian
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 21 - Russian
-  (const char *)u8"Окно Достижений",
+  u8"Окно Достижений",
 
 	// 22 - Spanish
-  (const char *)u8"Ventana de Logros",
+  u8"Ventana de Logros",
 
 	// 23 - Latin American
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 24 - Swedish
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 25 - Thai
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 26 - Turkish
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 27 - Ukrainian
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 28 - Vietnamese
-  (const char *)u8"Achievement Window",
+  u8"Achievement Window",
 
 	// 29 - Croatian
-  (const char *)u8"Prozor Postignuća"
+  u8"Prozor Postignuća"
 };
 
 const char translationListOfAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 1 - Arabic
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 2 - Bulgarian
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 5 - Czech
-  (const char *)u8"Seznam achievementů",
+  u8"Seznam achievementů",
 
 	// 6 - Danish
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 7 - Dutch
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 8 - Finnish
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 9 - French
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 10 - German
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 11 - Greek
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 12 - Hungarian
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 13 - Italian
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 14 - Japanese
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 15 - Korean
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 16 - Norwegian
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 17 - Polish
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 18 - Portuguese
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Lista de conquistas",
+  u8"Lista de conquistas",
 
 	// 20 - Romanian
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 21 - Russian
-  (const char *)u8"Список достижений",
+  u8"Список достижений",
 
 	// 22 - Spanish
-  (const char *)u8"Lista de Logros",
+  u8"Lista de Logros",
 
 	// 23 - Latin American
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 24 - Swedish
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 25 - Thai
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 26 - Turkish
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 27 - Ukrainian
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 28 - Vietnamese
-  (const char *)u8"List of achievements",
+  u8"List of achievements",
 
 	// 29 - Croatian
-  (const char *)u8"Popis postignuća"
+  u8"Popis postignuća"
 };
 
 const char translationAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 1 - Arabic
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 2 - Bulgarian
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 5 - Czech
-  (const char *)u8"Achievementy",
+  u8"Achievementy",
 
 	// 6 - Danish
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 7 - Dutch
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 8 - Finnish
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 9 - French
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 10 - German
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 11 - Greek
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 12 - Hungarian
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 13 - Italian
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 14 - Japanese
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 15 - Korean
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 16 - Norwegian
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 17 - Polish
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 18 - Portuguese
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Conquistas",
+  u8"Conquistas",
 
 	// 20 - Romanian
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 21 - Russian
-  (const char *)u8"Достижения",
+  u8"Достижения",
 
 	// 22 - Spanish
-  (const char *)u8"Logros",
+  u8"Logros",
 
 	// 23 - Latin American
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 24 - Swedish
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 25 - Thai
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 26 - Turkish
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 27 - Ukrainian
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 28 - Vietnamese
-  (const char *)u8"Achievements",
+  u8"Achievements",
 
 	// 29 - Croatian
-  (const char *)u8"Postignuća"
+  u8"Postignuća"
 };
 
 const char translationHiddenAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 1 - Arabic
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 2 - Bulgarian
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 5 - Czech
-  (const char *)u8"Skrytý achievement",
+  u8"Skrytý achievement",
 
 	// 6 - Danish
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 7 - Dutch
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 8 - Finnish
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 9 - French
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 10 - German
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 11 - Greek
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 12 - Hungarian
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 13 - Italian
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 14 - Japanese
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 15 - Korean
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 16 - Norwegian
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 17 - Polish
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 18 - Portuguese
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"conquista oculta",
+  u8"conquista oculta",
 
 	// 20 - Romanian
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 21 - Russian
-  (const char *)u8"скрытое достижение",
+  u8"скрытое достижение",
 
 	// 22 - Spanish
-  (const char *)u8"Logro oculto",
+  u8"Logro oculto",
 
 	// 23 - Latin American
-  (const char *)u8"Logro oculto",
+  u8"Logro oculto",
 
 	// 24 - Swedish
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 25 - Thai
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 26 - Turkish
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 27 - Ukrainian
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 28 - Vietnamese
-  (const char *)u8"hidden achievement",
+  u8"hidden achievement",
 
 	// 29 - Croatian
-  (const char *)u8"Sakrivena postignuća"
+  u8"Sakrivena postignuća"
 };
 
 const char translationAchievedOn[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 1 - Arabic
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 2 - Bulgarian
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 5 - Czech
-  (const char *)u8"odemčeno %s",
+  u8"odemčeno %s",
 
 	// 6 - Danish
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 7 - Dutch
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 8 - Finnish
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 9 - French
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 10 - German
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 11 - Greek
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 12 - Hungarian
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 13 - Italian
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 14 - Japanese
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 15 - Korean
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 16 - Norwegian
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 17 - Polish
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 18 - Portuguese
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"alcançado em %s",
+  u8"alcançado em %s",
 
 	// 20 - Romanian
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 21 - Russian
-  (const char *)u8"получено %s",
+  u8"получено %s",
 
 	// 22 - Spanish
-  (const char *)u8"desbloqueado el %s",
+  u8"desbloqueado el %s",
 
 	// 23 - Latin American
-  (const char *)u8"logrado el %s",
+  u8"logrado el %s",
 
 	// 24 - Swedish
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 25 - Thai
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 26 - Turkish
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 27 - Ukrainian
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 28 - Vietnamese
-  (const char *)u8"achieved on %s",
+  u8"achieved on %s",
 
 	// 29 - Croatian
-  (const char *)u8"postignuto %s"
+  u8"postignuto %s"
 };
 
 const char translationNotAchieved[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 1 - Arabic
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 2 - Bulgarian
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 5 - Czech
-  (const char *)u8"uzamčeno",
+  u8"uzamčeno",
 
 	// 6 - Danish
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 7 - Dutch
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 8 - Finnish
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 9 - French
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 10 - German
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 11 - Greek
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 12 - Hungarian
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 13 - Italian
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 14 - Japanese
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 15 - Korean
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 16 - Norwegian
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 17 - Polish
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 18 - Portuguese
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"não alcançado",
+  u8"não alcançado",
 
 	// 20 - Romanian
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 21 - Russian
-  (const char *)u8"не получено",
+  u8"не получено",
 
 	// 22 - Spanish
-  (const char *)u8"bloqueado",
+  u8"bloqueado",
 
 	// 23 - Latin American
-  (const char *)u8"no logrado",
+  u8"no logrado",
 
 	// 24 - Swedish
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 25 - Thai
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 26 - Turkish
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 27 - Ukrainian
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 28 - Vietnamese
-  (const char *)u8"not achieved",
+  u8"not achieved",
 
 	// 29 - Croatian
-  (const char *)u8"nije postignuto"
+  u8"nije postignuto"
 };
 
 const char translationGlobalSettingsWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 1 - Arabic
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 2 - Bulgarian
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 5 - Czech
-  (const char *)u8"Okno globálních nastavení",
+  u8"Okno globálních nastavení",
 
 	// 6 - Danish
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 7 - Dutch
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 8 - Finnish
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 9 - French
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 10 - German
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 11 - Greek
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 12 - Hungarian
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 13 - Italian
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 14 - Japanese
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 15 - Korean
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 16 - Norwegian
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 17 - Polish
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 18 - Portuguese
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Janela de Configurações Globais",
+  u8"Janela de Configurações Globais",
 
 	// 20 - Romanian
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 21 - Russian
-  (const char *)u8"Окно Глобальных Настроек",
+  u8"Окно Глобальных Настроек",
 
 	// 22 - Spanish
-  (const char *)u8"Ventana de Configuración",
+  u8"Ventana de Configuración",
 
 	// 23 - Latin American
-  (const char *)u8"Ventana de Párametros",
+  u8"Ventana de Párametros",
 
 	// 24 - Swedish
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 25 - Thai
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 26 - Turkish
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 27 - Ukrainian
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 28 - Vietnamese
-  (const char *)u8"Global Settings Window",
+  u8"Global Settings Window",
 
 	// 29 - Croatian
-  (const char *)u8"Prozor Globalnih Postavki"
+  u8"Prozor Globalnih Postavki"
 };
 
 const char translationGlobalSettingsWindowDescription[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 1 - Arabic
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 2 - Bulgarian
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 5 - Czech
-  (const char *)u8"Toto jsou globální nastavení emulátoru a budou platit pro všechny hry.",
+  u8"Toto jsou globální nastavení emulátoru a budou platit pro všechny hry.",
 
 	// 6 - Danish
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 7 - Dutch
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 8 - Finnish
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 9 - French
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 10 - German
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 11 - Greek
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 12 - Hungarian
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 13 - Italian
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 14 - Japanese
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 15 - Korean
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 16 - Norwegian
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 17 - Polish
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 18 - Portuguese
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Estas são configurações globais do emulador e serão aplicadas a TODOS os jogos.",
+  u8"Estas são configurações globais do emulador e serão aplicadas a TODOS os jogos.",
 
 	// 20 - Romanian
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 21 - Russian
-  (const char *)u8"Это глобальные настройки эмулятора, которые будут применяться ко всем играм.",
+  u8"Это глобальные настройки эмулятора, которые будут применяться ко всем играм.",
 
 	// 22 - Spanish
-  (const char *)u8"Configuración del emulador para aplicar a todos los juegos.",
+  u8"Configuración del emulador para aplicar a todos los juegos.",
 
 	// 23 - Latin American
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 24 - Swedish
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 25 - Thai
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 26 - Turkish
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 27 - Ukrainian
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 28 - Vietnamese
-  (const char *)u8"These are global emulator settings and will apply to all games.",
+  u8"These are global emulator settings and will apply to all games.",
 
 	// 29 - Croatian
-  (const char *)u8"Ovo su globalne postavke emulatora i primjenjuju se na sve igre."
+  u8"Ovo su globalne postavke emulatora i primjenjuju se na sve igre."
 };
 
 const char translationUsername[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 1 - Arabic
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 2 - Bulgarian
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 5 - Czech
-  (const char *)u8"Uživatelské jméno:",
+  u8"Uživatelské jméno:",
 
 	// 6 - Danish
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 7 - Dutch
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 8 - Finnish
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 9 - French
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 10 - German
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 11 - Greek
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 12 - Hungarian
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 13 - Italian
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 14 - Japanese
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 15 - Korean
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 16 - Norwegian
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 17 - Polish
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 18 - Portuguese
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 20 - Romanian
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 21 - Russian
-  (const char *)u8"Имя пользователя:",
+  u8"Имя пользователя:",
 
 	// 22 - Spanish
-  (const char *)u8"Usuario:",
+  u8"Usuario:",
 
 	// 23 - Latin American
-  (const char *)u8"Usuario:",
+  u8"Usuario:",
 
 	// 24 - Swedish
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 25 - Thai
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 26 - Turkish
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 27 - Ukrainian
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 28 - Vietnamese
-  (const char *)u8"Username:",
+  u8"Username:",
 
 	// 29 - Croatian
-  (const char *)u8"Korisničko Ime:"
+  u8"Korisničko Ime:"
 };
 
 const char translationLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 1 - Arabic
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 2 - Bulgarian
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 5 - Czech
-  (const char *)u8"Jazyk:",
+  u8"Jazyk:",
 
 	// 6 - Danish
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 7 - Dutch
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 8 - Finnish
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 9 - French
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 10 - German
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 11 - Greek
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 12 - Hungarian
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 13 - Italian
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 14 - Japanese
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 15 - Korean
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 16 - Norwegian
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 17 - Polish
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 18 - Portuguese
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Idioma:",
+  u8"Idioma:",
 
 	// 20 - Romanian
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 21 - Russian
-  (const char *)u8"Язык:",
+  u8"Язык:",
 
 	// 22 - Spanish
-  (const char *)u8"Idioma:",
+  u8"Idioma:",
 
 	// 23 - Latin American
-  (const char *)u8"Lenguaje:",
+  u8"Lenguaje:",
 
 	// 24 - Swedish
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 25 - Thai
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 26 - Turkish
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 27 - Ukrainian
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 28 - Vietnamese
-  (const char *)u8"Language:",
+  u8"Language:",
 
 	// 29 - Croatian
-  (const char *)u8"Jezik:"
+  u8"Jezik:"
 };
 
 const char translationSelectedLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 1 - Arabic
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 2 - Bulgarian
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 5 - Czech
-  (const char *)u8"Zvolený jazyk: %s",
+  u8"Zvolený jazyk: %s",
 
 	// 6 - Danish
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 7 - Dutch
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 8 - Finnish
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 9 - French
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 10 - German
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 11 - Greek
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 12 - Hungarian
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 13 - Italian
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 14 - Japanese
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 15 - Korean
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 16 - Norwegian
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 17 - Polish
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 18 - Portuguese
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Idioma Selecionado: %s",
+  u8"Idioma Selecionado: %s",
 
 	// 20 - Romanian
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 21 - Russian
-  (const char *)u8"Выбранный Язык: %s",
+  u8"Выбранный Язык: %s",
 
 	// 22 - Spanish
-  (const char *)u8"Selecciona Idioma: %s",
+  u8"Selecciona Idioma: %s",
 
 	// 23 - Latin American
-  (const char *)u8"Selecciona Lenguaje: %s",
+  u8"Selecciona Lenguaje: %s",
 
 	// 24 - Swedish
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 25 - Thai
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 26 - Turkish
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 27 - Ukrainian
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 28 - Vietnamese
-  (const char *)u8"Selected Language: %s",
+  u8"Selected Language: %s",
 
 	// 29 - Croatian
-  (const char *)u8"Odabrani Jezik: %s"
+  u8"Odabrani Jezik: %s"
 };
 
 const char translationRestartTheGameToApply[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 1 - Arabic
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 2 - Bulgarian
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 5 - Czech
-  (const char *)u8"Pro uplatnění změn může být nutné restartovat hru.",
+  u8"Pro uplatnění změn může být nutné restartovat hru.",
 
 	// 6 - Danish
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 7 - Dutch
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 8 - Finnish
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 9 - French
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 10 - German
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 11 - Greek
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 12 - Hungarian
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 13 - Italian
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 14 - Japanese
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 15 - Korean
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 16 - Norwegian
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 17 - Polish
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 18 - Portuguese
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Talvez seja necessário reiniciar o jogo para que isso seja aplicado.",
+  u8"Talvez seja necessário reiniciar o jogo para que isso seja aplicado.",
 
 	// 20 - Romanian
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 21 - Russian
-  (const char *)u8"Для применения изменений может потребоваться перезапуск игры.",
+  u8"Для применения изменений может потребоваться перезапуск игры.",
 
 	// 22 - Spanish
-  (const char *)u8"Quizás debas reiniciar el juego para aplicar los cambios.",
+  u8"Quizás debas reiniciar el juego para aplicar los cambios.",
 
 	// 23 - Latin American
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 24 - Swedish
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 25 - Thai
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 26 - Turkish
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 27 - Ukrainian
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 28 - Vietnamese
-  (const char *)u8"You may have to restart the game for these to apply.",
+  u8"You may have to restart the game for these to apply.",
 
 	// 29 - Croatian
-  (const char *)u8"Možda ćete trebati ponovo pokrenuti igru."
+  u8"Možda ćete trebati ponovo pokrenuti igru."
 };
 
 const char translationSave[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 1 - Arabic
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 2 - Bulgarian
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 5 - Czech
-  (const char *)u8"Uložit",
+  u8"Uložit",
 
 	// 6 - Danish
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 7 - Dutch
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 8 - Finnish
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 9 - French
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 10 - German
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 11 - Greek
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 12 - Hungarian
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 13 - Italian
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 14 - Japanese
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 15 - Korean
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 16 - Norwegian
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 17 - Polish
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 18 - Portuguese
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Salvar",
+  u8"Salvar",
 
 	// 20 - Romanian
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 21 - Russian
-  (const char *)u8"Сохранить",
+  u8"Сохранить",
 
 	// 22 - Spanish
-  (const char *)u8"Guardar",
+  u8"Guardar",
 
 	// 23 - Latin American
-  (const char *)u8"Guardar",
+  u8"Guardar",
 
 	// 24 - Swedish
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 25 - Thai
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 26 - Turkish
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 27 - Ukrainian
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 28 - Vietnamese
-  (const char *)u8"Save",
+  u8"Save",
 
 	// 29 - Croatian
-  (const char *)u8"Spremi"
+  u8"Spremi"
 };
 
 const char translationWarning[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 1 - Arabic
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 2 - Bulgarian
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 5 - Czech
-  (const char *)u8"VAROVÁNÍ",
+  u8"VAROVÁNÍ",
 
 	// 6 - Danish
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 7 - Dutch
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 8 - Finnish
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 9 - French
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 10 - German
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 11 - Greek
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 12 - Hungarian
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 13 - Italian
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 14 - Japanese
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 15 - Korean
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 16 - Norwegian
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 17 - Polish
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 18 - Portuguese
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"AVISO",
+  u8"AVISO",
 
 	// 20 - Romanian
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 21 - Russian
-  (const char *)u8"ВНИМАНИЕ",
+  u8"ВНИМАНИЕ",
 
 	// 22 - Spanish
-  (const char *)u8"ADVERTENCIA",
+  u8"ADVERTENCIA",
 
 	// 23 - Latin American
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 24 - Swedish
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 25 - Thai
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 26 - Turkish
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 27 - Ukrainian
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 28 - Vietnamese
-  (const char *)u8"WARNING",
+  u8"WARNING",
 
 	// 29 - Croatian
-  (const char *)u8"UPOZORENJE"
+  u8"UPOZORENJE"
 };
 
 const char translationWarningWarningWarning[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 1 - Arabic
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 2 - Bulgarian
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 5 - Czech
-  (const char *)u8"VAROVÁNÍ VAROVÁNÍ VAROVÁNÍ",
+  u8"VAROVÁNÍ VAROVÁNÍ VAROVÁNÍ",
 
 	// 6 - Danish
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 7 - Dutch
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 8 - Finnish
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 9 - French
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 10 - German
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 11 - Greek
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 12 - Hungarian
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 13 - Italian
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 14 - Japanese
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 15 - Korean
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 16 - Norwegian
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 17 - Polish
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 18 - Portuguese
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"AVISO AVISO AVISO",
+  u8"AVISO AVISO AVISO",
 
 	// 20 - Romanian
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 21 - Russian
-  (const char *)u8"ВНИМАНИЕ ВНИМАНИЕ ВНИМАНИЕ",
+  u8"ВНИМАНИЕ ВНИМАНИЕ ВНИМАНИЕ",
 
 	// 22 - Spanish
-  (const char *)u8"ADVERTENCIA ADVERTENCIA ADVERTENCIA",
+  u8"ADVERTENCIA ADVERTENCIA ADVERTENCIA",
 
 	// 23 - Latin American
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 24 - Swedish
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 25 - Thai
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 26 - Turkish
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 27 - Ukrainian
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 28 - Vietnamese
-  (const char *)u8"WARNING WARNING WARNING",
+  u8"WARNING WARNING WARNING",
 
 	// 29 - Croatian
-  (const char *)u8"UPOZORENJE UPOZORENJE UPOZORENJE"
+  u8"UPOZORENJE UPOZORENJE UPOZORENJE"
 };
 
 const char translationWarningDescription1[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 1 - Arabic
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 2 - Bulgarian
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 5 - Czech
-  (const char *)u8"Byly zjištěny soubory steam_settings/force_*.txt. Pokud chcete, aby toto menu fungovalo, odstraňte je.",
+  u8"Byly zjištěny soubory steam_settings/force_*.txt. Pokud chcete, aby toto menu fungovalo, odstraňte je.",
 
 	// 6 - Danish
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 7 - Dutch
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 8 - Finnish
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 9 - French
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 10 - German
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 11 - Greek
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 12 - Hungarian
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 13 - Italian
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 14 - Japanese
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 15 - Korean
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 16 - Norwegian
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 17 - Polish
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 18 - Portuguese
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Alguns arquivos steam_settings/force_*.txt foram detectados. Exclua-os se quiser que este menu funcione.",
+  u8"Alguns arquivos steam_settings/force_*.txt foram detectados. Exclua-os se quiser que este menu funcione.",
 
 	// 20 - Romanian
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 21 - Russian
-  (const char *)u8"Обнаружены файлы steam_settings/force_*.txt. Пожалуйста, удалите их, если хотите, чтобы это меню работало.",
+  u8"Обнаружены файлы steam_settings/force_*.txt. Пожалуйста, удалите их, если хотите, чтобы это меню работало.",
 
 	// 22 - Spanish
-  (const char *)u8"Un archivo de steam_settings/force_*.txt ha sido detectado. Por favor bórralo si quieres que el menu funcione.",
+  u8"Un archivo de steam_settings/force_*.txt ha sido detectado. Por favor bórralo si quieres que el menu funcione.",
 
 	// 23 - Latin American
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 24 - Swedish
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 25 - Thai
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 26 - Turkish
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 27 - Ukrainian
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 28 - Vietnamese
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 29 - Croatian
-  (const char *)u8"Neke steam_settings/force_*.txt datoteke su otkrivene. Molimo da ih izbrišete ako želite da ovaj izbornik radi."
+  u8"Neke steam_settings/force_*.txt datoteke su otkrivene. Molimo da ih izbrišete ako želite da ovaj izbornik radi."
 };
 
 const char translationWarningDescription2[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 1 - Arabic
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 2 - Bulgarian
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 5 - Czech
-  (const char *)u8"AppID je 0, vytvořte, prosím, steam_appid.txt se správným appid a restartujte hru.",
+  u8"AppID je 0, vytvořte, prosím, steam_appid.txt se správným appid a restartujte hru.",
 
 	// 6 - Danish
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 7 - Dutch
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 8 - Finnish
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 9 - French
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 10 - German
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 11 - Greek
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 12 - Hungarian
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 13 - Italian
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 14 - Japanese
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 15 - Korean
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 16 - Norwegian
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 17 - Polish
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 18 - Portuguese
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"AppID é 0, crie um steam_appid.txt com o appid correto e reinicie o jogo.",
+  u8"AppID é 0, crie um steam_appid.txt com o appid correto e reinicie o jogo.",
 
 	// 20 - Romanian
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 21 - Russian
-  (const char *)u8"AppID равен 0, пожалуйста, создайте файл steam_appid.txt с правильным appid и перезапустите игру.",
+  u8"AppID равен 0, пожалуйста, создайте файл steam_appid.txt с правильным appid и перезапустите игру.",
 
 	// 22 - Spanish
-  (const char *)u8"AppID es 0, por favor crea un steam_appid.txt con la appid correcta y reinicia el juego.",
+  u8"AppID es 0, por favor crea un steam_appid.txt con la appid correcta y reinicia el juego.",
 
 	// 23 - Latin American
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 24 - Swedish
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 25 - Thai
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 26 - Turkish
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 27 - Ukrainian
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 28 - Vietnamese
-  (const char *)u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 29 - Croatian
-  (const char *)u8"AppID je 0, molimo napravite steam_appid.txt sa točnim appid-em i ponovo pokrenite igru."
+  u8"AppID je 0, molimo napravite steam_appid.txt sa točnim appid-em i ponovo pokrenite igru."
 };
 
 const char translationWarningDescription3[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 1 - Arabic
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 2 - Bulgarian
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 5 - Czech
-  (const char *)u8"Zjištěn local_save.txt, emulátor ukládá lokálně do složky hry. Pokud to nechcete, odstraňte ho.",
+  u8"Zjištěn local_save.txt, emulátor ukládá lokálně do složky hry. Pokud to nechcete, odstraňte ho.",
 
 	// 6 - Danish
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 7 - Dutch
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 8 - Finnish
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 9 - French
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 10 - German
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 11 - Greek
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 12 - Hungarian
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 13 - Italian
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 14 - Japanese
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 15 - Korean
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 16 - Norwegian
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 17 - Polish
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 18 - Portuguese
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"local_save.txt detectado, o emu está salvando localmente na pasta do jogo. Por favor, exclua-o se você não quiser isso.",
+  u8"local_save.txt detectado, o emu está salvando localmente na pasta do jogo. Por favor, exclua-o se você não quiser isso.",
 
 	// 20 - Romanian
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 21 - Russian
-  (const char *)u8"Обнаружен файл local_save.txt, эмулятор сохраняет локально в папку с игрой, если вам это не нужно, удалите его.",
+  u8"Обнаружен файл local_save.txt, эмулятор сохраняет локально в папку с игрой, если вам это не нужно, удалите его.",
 
 	// 22 - Spanish
-  (const char *)u8"local_save.txt detectado, el emulador está guardando en la carpeta del juego. Por favor bórralo si no quieres esto.",
+  u8"local_save.txt detectado, el emulador está guardando en la carpeta del juego. Por favor bórralo si no quieres esto.",
 
 	// 23 - Latin American
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 24 - Swedish
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 25 - Thai
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 26 - Turkish
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 27 - Ukrainian
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 28 - Vietnamese
-  (const char *)u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 29 - Croatian
-  (const char *)u8"Datoteka local_save.txt je otkrivena u mapi igre. Molimo vas da je obiršete ako ne želite ovo."
+  u8"Datoteka local_save.txt je otkrivena u mapi igre. Molimo vas da je obiršete ako ne želite ovo."
 };
 
 const char translationWarningDescription4[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 1 - Arabic
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 2 - Bulgarian
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 5 - Czech
-  (const char *)u8"Byly zjištěny soubory steam_settings/force_*.txt. Některá nastavení nebude možné uložit.",
+  u8"Byly zjištěny soubory steam_settings/force_*.txt. Některá nastavení nebude možné uložit.",
 
 	// 6 - Danish
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 7 - Dutch
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 8 - Finnish
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 9 - French
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 10 - German
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 11 - Greek
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 12 - Hungarian
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 13 - Italian
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 14 - Japanese
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 15 - Korean
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 16 - Norwegian
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 17 - Polish
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 18 - Portuguese
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Alguns arquivos steam_settings/force_*.txt foram detectados. Você não poderá salvar algumas configurações.",
+  u8"Alguns arquivos steam_settings/force_*.txt foram detectados. Você não poderá salvar algumas configurações.",
 
 	// 20 - Romanian
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 21 - Russian
-  (const char *)u8"Обнаружены файлы steam_settings/force_*.txt. Вы не сможете сохранить некоторые настройки.",
+  u8"Обнаружены файлы steam_settings/force_*.txt. Вы не сможете сохранить некоторые настройки.",
 
 	// 22 - Spanish
-  (const char *)u8"Un archivo steam_settings/force_*.txt ha sido detectado. No podrás guardar ciertas configuraciones.",
+  u8"Un archivo steam_settings/force_*.txt ha sido detectado. No podrás guardar ciertas configuraciones.",
 
 	// 23 - Latin American
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 24 - Swedish
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 25 - Thai
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 26 - Turkish
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 27 - Ukrainian
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 28 - Vietnamese
-  (const char *)u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 29 - Croatian
-  (const char *)u8"Neke steam_settings/force_*.txt datoteke su otkrivene. Možda nećete moći spremiti neke postavke."
+  u8"Neke steam_settings/force_*.txt datoteke su otkrivene. Možda nećete moći spremiti neke postavke."
 };
 
 const char translationSteamOverlayURL[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 1 - Arabic
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 2 - Bulgarian
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 5 - Czech
-  (const char *)u8"Hra se pokusila otevřít v rozhraní překrytí služby Steam tuto webovou adresu:",
+  u8"Hra se pokusila otevřít v rozhraní překrytí služby Steam tuto webovou adresu:",
 
 	// 6 - Danish
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 7 - Dutch
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 8 - Finnish
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 9 - French
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 10 - German
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 11 - Greek
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 12 - Hungarian
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 13 - Italian
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 14 - Japanese
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 15 - Korean
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 16 - Norwegian
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 17 - Polish
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 18 - Portuguese
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"O jogo tentou fazer com que a sobreposição do Steam abrisse este URL:",
+  u8"O jogo tentou fazer com que a sobreposição do Steam abrisse este URL:",
 
 	// 20 - Romanian
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 21 - Russian
-  (const char *)u8"Игра пыталась заставить оверлей Steam открыть этот url:",
+  u8"Игра пыталась заставить оверлей Steam открыть этот url:",
 
 	// 22 - Spanish
-  (const char *)u8"El juego intentó abrir una interfaz de steam en esta url:",
+  u8"El juego intentó abrir una interfaz de steam en esta url:",
 
 	// 23 - Latin American
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 24 - Swedish
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 25 - Thai
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 26 - Turkish
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 27 - Ukrainian
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 28 - Vietnamese
-  (const char *)u8"The game tried to get the steam overlay to open this url:",
+  u8"The game tried to get the steam overlay to open this url:",
 
 	// 29 - Croatian
-  (const char *)u8"Igra je pokušala otvoriti ovaj URL pomoću steam overlaya:"
+  u8"Igra je pokušala otvoriti ovaj URL pomoću steam overlaya:"
 };
 
 // C:\Program Files (x86)\Steam\resource\vgui_*.txt
 // vgui_close
 const char translationClose[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Close",
+  u8"Close",
 
 	// 1 - Arabic
-  (const char *)u8"Close",
+  u8"Close",
 
 	// 2 - Bulgarian
-  (const char *)u8"Затваряне",
+  u8"Затваряне",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"关闭",
+  u8"关闭",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"關閉",
+  u8"關閉",
 
 	// 5 - Czech
-  (const char *)u8"Zavřít",
+  u8"Zavřít",
 
 	// 6 - Danish
-  (const char *)u8"Luk",
+  u8"Luk",
 
 	// 7 - Dutch
-  (const char *)u8"Sluiten",
+  u8"Sluiten",
 
 	// 8 - Finnish
-  (const char *)u8"Sulje",
+  u8"Sulje",
 
 	// 9 - French
-  (const char *)u8"Fermer",
+  u8"Fermer",
 
 	// 10 - German
-  (const char *)u8"Schliessen",
+  u8"Schliessen",
 
 	// 11 - Greek
-  (const char *)u8"ΚΛΕΙΣΙΜΟ",
+  u8"ΚΛΕΙΣΙΜΟ",
 
 	// 12 - Hungarian
-  (const char *)u8"Bezárás",
+  u8"Bezárás",
 
 	// 13 - Italian
-  (const char *)u8"Chiudi",
+  u8"Chiudi",
 
 	// 14 - Japanese
-  (const char *)u8"閉じる",
+  u8"閉じる",
 
 	// 15 - Korean
-  (const char *)u8"닫기",
+  u8"닫기",
 
 	// 16 - Norwegian
-  (const char *)u8"Lukk",
+  u8"Lukk",
 
 	// 17 - Polish
-  (const char *)u8"Zamknij",
+  u8"Zamknij",
 
 	// 18 - Portuguese
-  (const char *)u8"Fechar",
+  u8"Fechar",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Fechar",
+  u8"Fechar",
 
 	// 20 - Romanian
-  (const char *)u8"Închide",
+  u8"Închide",
 
 	// 21 - Russian
-  (const char *)u8"Закрыть",
+  u8"Закрыть",
 
 	// 22 - Spanish
-  (const char *)u8"Cerrar",
+  u8"Cerrar",
 
 	// 23 - Latin American
-  (const char *)u8"Cerrar",
+  u8"Cerrar",
 
 	// 24 - Swedish
-  (const char *)u8"Stäng",
+  u8"Stäng",
 
 	// 25 - Thai
-  (const char *)u8"ปิด",
+  u8"ปิด",
 
 	// 26 - Turkish
-  (const char *)u8"Kapat",
+  u8"Kapat",
 
 	// 27 - Ukrainian
-  (const char *)u8"Закрити",
+  u8"Закрити",
 
 	// 28 - Vietnamese
-  (const char *)u8"Đóng",
+  u8"Đóng",
 
 	// 29 - Croatian
-  (const char *)u8"Zatvori"
+  u8"Zatvori"
 };
 
 const char translationPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 1 - Arabic
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 2 - Bulgarian
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 3 - Simplified Chinese
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 4 - Traditional Chinese
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 5 - Czech
-  (const char *)u8" hraje ",
+  u8" hraje ",
 
 	// 6 - Danish
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 7 - Dutch
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 8 - Finnish
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 9 - French
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 10 - German
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 11 - Greek
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 12 - Hungarian
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 13 - Italian
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 14 - Japanese
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 15 - Korean
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 16 - Norwegian
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 17 - Polish
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 18 - Portuguese
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8" jogando ",
+  u8" jogando ",
 
 	// 20 - Romanian
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 21 - Russian
-  (const char *)u8" играет в ",
+  u8" играет в ",
 
 	// 22 - Spanish
-  (const char *)u8" jugando ",
+  u8" jugando ",
 
 	// 23 - Latin American
-  (const char *)u8" jugando ",
+  u8" jugando ",
 
 	// 24 - Swedish
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 25 - Thai
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 26 - Turkish
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 27 - Ukrainian
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 28 - Vietnamese
-  (const char *)u8" playing ",
+  u8" playing ",
 
 	// 29 - Croatian
-  (const char *)u8" igra "
+  u8" igra "
 };
 
 const char translationAutoAcceptFriendInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 1 - Arabic
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 2 - Bulgarian
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 3 - Simplified Chinese
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 4 - Traditional Chinese
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 5 - Czech
-  (const char *)u8"Pozvánky se řídí podle auto_accept_invite.txt!",
+  u8"Pozvánky se řídí podle auto_accept_invite.txt!",
 
 	// 6 - Danish
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 7 - Dutch
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 8 - Finnish
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 9 - French
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 10 - German
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 11 - Greek
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 12 - Hungarian
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 13 - Italian
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 14 - Japanese
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 15 - Korean
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 16 - Norwegian
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 17 - Polish
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 18 - Portuguese
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 19 - Brazilian Portuguese
-  (const char *)u8"Os convites são controlados por auto_accept_invite.txt!",
+  u8"Os convites são controlados por auto_accept_invite.txt!",
 
 	// 20 - Romanian
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 21 - Russian
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 22 - Spanish
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 23 - Latin American
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 24 - Swedish
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 25 - Thai
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 26 - Turkish
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 27 - Ukrainian
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 28 - Vietnamese
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 29 - Croatian
-  (const char *)u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Invitations are controlled by auto_accept_invite.txt!",
 };
