@@ -63,8 +63,8 @@ if %PARALLEL_THREADS_OVERRIDE% gtr 0 (
     set /a jobs_count=PARALLEL_THREADS_OVERRIDE
 )
 
-if %jobs_count% lss 2 (
-    set /a jobs_count=2
+if %jobs_count% lss 1 (
+    set /a jobs_count=1
 )
 
 

@@ -119,8 +119,8 @@ if defined NUMBER_OF_PROCESSORS (
 if %PARALLEL_THREADS_OVERRIDE% gtr 0 (
   set /a build_threads=PARALLEL_THREADS_OVERRIDE
 )
-if %build_threads% lss 2 (
-  set /a build_threads=2
+if %build_threads% lss 1 (
+  set /a build_threads=1
 )
 
 :: build type
@@ -552,7 +552,7 @@ endlocal & exit /b %_exit%
 :compile_experimental_lib32
   setlocal
   echo // building lib experimental steam_api.dll - 32
-  set src_files="%win_resources_out_dir%\rsrc-api-32.res" %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "overlay_experimental\*.cpp"
+  set src_files="%win_resources_out_dir%\rsrc-api-32.res" %release_src% "%libs_dir%\detours\*.cpp" "controller\gamepad.c" "overlay_experimental\*.cpp"
   set extra_inc_dirs=%overlay_inc32%
   set extra_libs=%overlay_lib32%
   call :build_for 1 0 "%experimental_dir%\x32\steam_api.dll" src_files extra_inc_dirs "/DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /DImTextureID=ImU64" extra_libs
@@ -578,7 +578,7 @@ endlocal & exit /b %_exit%
 :compile_experimentalclient_32
   setlocal
   echo // building lib steamclient.dll - 32
-  set src_files="%win_resources_out_dir%\rsrc-client-32.res" %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "overlay_experimental\*.cpp"
+  set src_files="%win_resources_out_dir%\rsrc-client-32.res" %release_src% "%libs_dir%\detours\*.cpp" "controller\gamepad.c" "overlay_experimental\*.cpp"
   set extra_inc_dirs=%overlay_inc32%
   set extra_libs=%overlay_lib32%
   call :build_for 1 0 "%steamclient_dir%\steamclient.dll" src_files extra_inc_dirs "/DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /DImTextureID=ImU64 /DSTEAMCLIENT_DLL" extra_libs
@@ -670,7 +670,7 @@ endlocal & exit /b %_exit%
 :compile_experimental_lib64
   setlocal
   echo // building lib experimental steam_api64.dll - 64
-  set src_files="%win_resources_out_dir%\rsrc-api-64.res" %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "overlay_experimental\*.cpp"
+  set src_files="%win_resources_out_dir%\rsrc-api-64.res" %release_src% "%libs_dir%\detours\*.cpp" "controller\gamepad.c" "overlay_experimental\*.cpp"
   set extra_inc_dirs=%overlay_inc64%
   set extra_libs=%overlay_lib64%
   call :build_for 0 0 "%experimental_dir%\x64\steam_api64.dll" src_files extra_inc_dirs "/DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /DImTextureID=ImU64" extra_libs
@@ -696,7 +696,7 @@ endlocal & exit /b %_exit%
 :compile_experimentalclient_64
   setlocal
   echo // building lib steamclient64.dll - 64
-  set src_files="%win_resources_out_dir%\rsrc-client-64.res" %release_src% "%libs_dir%\detours\*.cpp" controller/gamepad.c "overlay_experimental\*.cpp"
+  set src_files="%win_resources_out_dir%\rsrc-client-64.res" %release_src% "%libs_dir%\detours\*.cpp" "controller\gamepad.c" "overlay_experimental\*.cpp"
   set extra_inc_dirs=%overlay_inc64%
   set extra_libs=%overlay_lib64%
   call :build_for 0 0 "%steamclient_dir%\steamclient64.dll" src_files extra_inc_dirs "/DEMU_EXPERIMENTAL_BUILD /DCONTROLLER_SUPPORT /DEMU_OVERLAY /DImTextureID=ImU64 /DSTEAMCLIENT_DLL" extra_libs

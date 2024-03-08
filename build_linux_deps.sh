@@ -105,7 +105,7 @@ echo; echo;
 # use 70%
 build_threads="$(( $(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 0) * 70 / 100 ))"
 [[ $PARALLEL_THREADS_OVERRIDE -gt 0 ]] && build_threads="$PARALLEL_THREADS_OVERRIDE"
-[[ $build_threads -lt 2 ]] && build_threads=2
+[[ $build_threads -lt 1 ]] && build_threads=1
 
 
 ############## common CMAKE args ##############
