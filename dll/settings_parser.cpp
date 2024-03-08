@@ -109,6 +109,14 @@ static void load_overlay_appearance(std::string appearance_filepath, Settings *s
                     float nicon_size = std::stof(value, NULL);
                     settings_client->overlay_appearance.icon_size = nicon_size;
                     settings_server->overlay_appearance.icon_size = nicon_size;
+                } else if (name.compare("Font_Glyph_Extra_Spacing_x") == 0) {
+                    float size = std::stof(value, NULL);
+                    settings_client->overlay_appearance.font_glyph_extra_spacing_x = size;
+                    settings_server->overlay_appearance.font_glyph_extra_spacing_x = size;
+                } else if (name.compare("Font_Glyph_Extra_Spacing_y") == 0) {
+                    float size = std::stof(value, NULL);
+                    settings_client->overlay_appearance.font_glyph_extra_spacing_y = size;
+                    settings_server->overlay_appearance.font_glyph_extra_spacing_y = size;
                 } else if (name.compare("Notification_R") == 0) {
                     float nnotification_r = std::stof(value, NULL);
                     settings_client->overlay_appearance.notification_r = nnotification_r;

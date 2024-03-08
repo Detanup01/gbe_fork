@@ -234,6 +234,9 @@ void Steam_Overlay::create_fonts()
     font_cfg.OversampleH = 1;
     font_cfg.OversampleV = 1;
     font_cfg.SizePixels = font_size;
+    // non-latin characters look ugly and squeezed without this horizontal spacing
+    font_cfg.GlyphExtraSpacing.x = settings->overlay_appearance.font_glyph_extra_spacing_x; 
+    font_cfg.GlyphExtraSpacing.y = settings->overlay_appearance.font_glyph_extra_spacing_y;
 
     static ImFontGlyphRangesBuilder font_builder{};
     for (auto &x : achievements) {

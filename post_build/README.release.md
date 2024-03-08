@@ -450,7 +450,7 @@ The notifications positions could be set to one of these values:
 * `bot_center`
 * `bot_right`
 
-Check the example files in the `steam_settings` folder
+Check the example file in the `steam_settings` folder
 
 ---
 

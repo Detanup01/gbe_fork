@@ -1,6 +1,9 @@
 Font_Size 13.5
 Icon_Size 64.0
 
+Font_Glyph_Extra_Spacing_x 1.0
+Font_Glyph_Extra_Spacing_y 0.0
+
 Notification_R 0.16
 Notification_G 0.29
 Notification_B 0.48

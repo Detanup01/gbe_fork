@@ -4,8 +4,11 @@
   Thanks to **[Nemirtingas]** for the amazing project: https://github.com/Nemirtingas/ingame_overlay
 * for Linux: new experimental build of the emu with overlay support  
   currently only *some* 64-bit games using OpenGL will work
-* use a new method to initialize the overlay on a separate thread with a configurable initialization delay,  
-  use the new config file `overlay_hook_delay_sec.txt` to control this delay, check the updated `README`
+* use a new method to initialize the overlay on a separate thread with a configurable initialization delay and renderer detection timeout  
+  - the new config file `overlay_hook_delay_sec.txt` controls the initial delay (default = `5 seconds`)  
+  - the new config file `overlay_renderer_detector_timeout_sec.txt` controls the detection timeout (default = `15 seconds`)  
+
+  check the updated `README`
 * added builtin fonts to properly render all overlay translations:
   - `NotoSansJP-SemiBold`: for japanese
   - `NotoSansKR-SemiBold`: for korean
@@ -13,6 +16,11 @@
   - `NotoSansTC-SemiBold`: for traditional chinese
   - `NotoSansThai-SemiBold`: for Thai
   - `Google-Roboto-Medium`: for other languages
+* added 2 new entries for the config file `overlay_appearance.txt`
+  - `Font_Glyph_Extra_Spacing_x`: controls the extra horizontal spacing of characters (default = 1.0)  
+  - `Font_Glyph_Extra_Spacing_y`: controls the extra vertical spacing of characters (default = 0.0)  
+  
+  the extra horizontal spacing is especially needed for non-latin characters, otherwise they are squeezed
 * removed the source files of the ingame overlay project, it is now a dependency,  
   **rebuild your dependencies!**
 * removed the code which locks the cursor inside the overlay window
