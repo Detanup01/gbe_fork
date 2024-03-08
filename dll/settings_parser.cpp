@@ -1137,7 +1137,6 @@ static void parse_overlay_hook_delay_sec(class Settings *settings_client, Settin
     std::string auto_accept_list_path = Local_Storage::get_game_settings_path() + "overlay_hook_delay_sec.txt";
     std::ifstream input( utf8_decode(auto_accept_list_path) );
     if (input.is_open()) {
-        bool accept_any_invite = true;
         common_helpers::consume_bom(input);
         std::string line{};
         std::getline( input, line );
@@ -1149,6 +1148,29 @@ static void parse_overlay_hook_delay_sec(class Settings *settings_client, Settin
                     settings_client->overlay_hook_delay_sec = delay_sec;
                     settings_server->overlay_hook_delay_sec = delay_sec;
                     PRINT_DEBUG("Setting overlay hook delay to %i seconds\n", delay_sec);
+                }
+            } catch (...) {}
+        }
+    }
+}
+
+// overlay_renderer_detector_timeout_sec.txt
+static void parse_overlay_renderer_detector_timeout_sec(class Settings *settings_client, Settings *settings_server)
+{
+    std::string auto_accept_list_path = Local_Storage::get_game_settings_path() + "overlay_renderer_detector_timeout_sec.txt";
+    std::ifstream input( utf8_decode(auto_accept_list_path) );
+    if (input.is_open()) {
+        common_helpers::consume_bom(input);
+        std::string line{};
+        std::getline( input, line );
+        line = common_helpers::string_strip(line);
+        if (!line.empty()) {
+            try {
+                auto timeout_sec = std::stoi(line);
+                if (timeout_sec > 0) {
+                    settings_client->overlay_renderer_detector_timeout_sec = timeout_sec;
+                    settings_server->overlay_renderer_detector_timeout_sec = timeout_sec;
+                    PRINT_DEBUG("Setting overlay renderer detector timeout to %i seconds\n", timeout_sec);
                 }
             } catch (...) {}
         }
@@ -1367,6 +1389,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     parse_auto_accept_invite(settings_client, settings_server);
     parse_ip_country(settings_client, settings_server);
     parse_overlay_hook_delay_sec(settings_client, settings_server);
+    parse_overlay_renderer_detector_timeout_sec(settings_client, settings_server);
 
     *settings_client_out = settings_client;
     *settings_server_out = settings_server;

@@ -155,6 +155,7 @@ Steam_Overlay::~Steam_Overlay()
     run_every_runcb->remove(&Steam_Overlay::steam_overlay_run_every_runcb, this);
 }
 
+constexpr static const int renderer_detector_polling_ms = 100;
 
 void Steam_Overlay::renderer_hook_init_thread()
 {
@@ -172,9 +173,9 @@ void Steam_Overlay::renderer_hook_init_thread()
     // request renderer detection
     auto future_renderer = InGameOverlay::DetectRenderer();
     PRINT_DEBUG("Steam_Overlay::renderer_hook_init requested renderer detector/hook\n");
-    int polling_time_ms = 500;
-    int timeout_ctr = 10 /*seconds*/ * 1000 /*milli per second*/ / polling_time_ms;
-    while (timeout_ctr > 0 && setup_overlay_called && future_renderer.wait_for(std::chrono::milliseconds(polling_time_ms)) != std::future_status::ready) {
+
+    int timeout_ctr = settings->overlay_renderer_detector_timeout_sec /*seconds*/ * 1000 /*milli per second*/ / renderer_detector_polling_ms;
+    while (timeout_ctr > 0 && setup_overlay_called && future_renderer.wait_for(std::chrono::milliseconds(renderer_detector_polling_ms)) != std::future_status::ready) {
         --timeout_ctr;
     }
 
@@ -182,10 +183,12 @@ void Steam_Overlay::renderer_hook_init_thread()
     InGameOverlay::StopRendererDetection();
     InGameOverlay::FreeDetector();
     // exit on failure
-    if (timeout_ctr <= 0 || !setup_overlay_called || !future_renderer.valid()) {
+    bool final_chance = (future_renderer.wait_for(std::chrono::milliseconds(1)) == std::future_status::ready) && future_renderer.valid();
+    // again check for 'setup_overlay_called' to be extra sure that the overlay wasn't deinitialized
+    if (!setup_overlay_called || !final_chance || timeout_ctr <= 0) {
         PRINT_DEBUG(
-            "Steam_Overlay::renderer_hook_init failed to detect renderer, ctr=%i, overlay was set up=%i, valid hook intance-%i\n",
-            timeout_ctr, (int)setup_overlay_called, future_renderer.valid()
+            "Steam_Overlay::renderer_hook_init failed to detect renderer, ctr=%i, overlay was set up=%i, hook intance state=%i\n",
+            timeout_ctr, (int)setup_overlay_called, (int)final_chance
         );
         return;
     }
@@ -1225,7 +1228,7 @@ void Steam_Overlay::UnSetupOverlay()
         is_ready = false;
 
         // allow the future_renderer thread to exit if needed
-        std::this_thread::sleep_for(std::chrono::milliseconds(500 + 50));
+        std::this_thread::sleep_for(std::chrono::milliseconds((int)(renderer_detector_polling_ms * 1.3f)));
         
         if (_renderer) {
             for (auto &ach : achievements) {
