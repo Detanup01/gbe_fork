@@ -120,6 +120,9 @@ Steam_Overlay::Steam_Overlay(Settings* settings, SteamCallResults* callback_resu
     show_settings(false),
     _renderer(nullptr)
 {
+    // don't even bother initializing the overlay
+    if (settings->disable_overlay) return;
+
     strncpy(username_text, settings->get_local_name(), sizeof(username_text));
 
     // we need these copies to show the warning only once, then disable the flag
@@ -152,6 +155,8 @@ Steam_Overlay::Steam_Overlay(Settings* settings, SteamCallResults* callback_resu
 
 Steam_Overlay::~Steam_Overlay()
 {
+    if (settings->disable_overlay) return;
+
     run_every_runcb->remove(&Steam_Overlay::steam_overlay_run_every_runcb, this);
 }
 
@@ -900,6 +905,21 @@ void Steam_Overlay::add_auto_accept_invite_notification()
     notify_sound_auto_accept_friend_invite();
 }
 
+void Steam_Overlay::add_invite_notification(std::pair<const Friend, friend_window_state>& wnd_state)
+{
+    PRINT_DEBUG("Steam_Overlay::add_invite_notification\n");
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (settings->disable_overlay_friend_notification) return;
+    if (!Ready()) return;
+    
+    char tmp[TRANSLATION_BUFFER_SIZE]{};
+    auto &first_friend = wnd_state.first;
+    auto &name = first_friend.name();
+    snprintf(tmp, sizeof(tmp), translationInvitedYouToJoinTheGame[current_language], name.c_str(), (uint64)first_friend.id());
+    
+    submit_notification(notification_type_invite, tmp, &wnd_state);
+}
+
 void Steam_Overlay::invite_friend(uint64 friend_id, class Steam_Friends* steamFriends, class Steam_Matchmaking* steamMatchmaking)
 {
     std::string connect_str = steamFriends->GetFriendRichPresence(settings->get_local_steam_id(), "connect");
@@ -1226,6 +1246,7 @@ void Steam_Overlay::SetupOverlay()
 {
     PRINT_DEBUG("Steam_Overlay::SetupOverlay\n");
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (settings->disable_overlay) return;
 
     bool not_called_yet = false;
     if (setup_overlay_called.compare_exchange_weak(not_called_yet, true)) {
@@ -1370,7 +1391,7 @@ void Steam_Overlay::SetLobbyInvite(Friend friendId, uint64 lobbyId)
         frd.window_state |= window_state_lobby_invite;
         // Make sure don't have rich presence invite and a lobby invite (it should not happen but who knows)
         frd.window_state &= ~window_state_rich_invite;
-        AddInviteNotification(*i);
+        add_invite_notification(*i);
         notify_sound_user_invite(i->second);
     }
 }
@@ -1389,7 +1410,7 @@ void Steam_Overlay::SetRichInvite(Friend friendId, const char* connect_str)
         frd.window_state |= window_state_rich_invite;
         // Make sure don't have rich presence invite and a lobby invite (it should not happen but who knows)
         frd.window_state &= ~window_state_lobby_invite;
-        AddInviteNotification(*i);
+        add_invite_notification(*i);
         notify_sound_user_invite(i->second);
     }
 }
@@ -1429,6 +1450,7 @@ void Steam_Overlay::AddAchievementNotification(nlohmann::json const& ach)
 {
     PRINT_DEBUG("Steam_Overlay::AddAchievementNotification\n");
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (!Ready()) return;
 
     {
         std::lock_guard<std::recursive_mutex> lock2(global_mutex);
@@ -1476,24 +1498,11 @@ void Steam_Overlay::AddAchievementNotification(nlohmann::json const& ach)
     }
 }
 
-void Steam_Overlay::AddInviteNotification(std::pair<const Friend, friend_window_state>& wnd_state)
-{
-    PRINT_DEBUG("Steam_Overlay::AddInviteNotification\n");
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (settings->disable_overlay_friend_notification) return;
-    if (!Ready()) return;
-    
-    char tmp[TRANSLATION_BUFFER_SIZE]{};
-    auto &first_friend = wnd_state.first;
-    auto &name = first_friend.name();
-    snprintf(tmp, sizeof(tmp), translationInvitedYouToJoinTheGame[current_language], name.c_str(), (uint64)first_friend.id());
-    
-    submit_notification(notification_type_invite, tmp, &wnd_state);
-}
-
 void Steam_Overlay::Callback(Common_Message *msg)
 {
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (!Ready()) return;
+
     if (msg->has_steam_messages()) {
         Friend frd;
         frd.set_id(msg->source_id());
@@ -1576,6 +1585,8 @@ void Steam_Overlay::RunCallbacks()
     Steam_Matchmaking* steamMatchmaking = get_steam_client()->steam_matchmaking;
 
     if (save_settings) {
+        save_settings = false;
+
         const char *language_text = valid_languages[current_language];
         save_global_settings(get_steam_client()->local_storage, username_text, language_text);
         get_steam_client()->settings_client->set_local_name(username_text);
@@ -1583,7 +1594,6 @@ void Steam_Overlay::RunCallbacks()
         get_steam_client()->settings_client->set_language(language_text);
         get_steam_client()->settings_server->set_language(language_text);
         steamFriends->resend_friend_data();
-        save_settings = false;
     }
 
     i_have_lobby = got_lobby();
@@ -1639,7 +1649,7 @@ void Steam_Overlay::RunCallbacks()
 
                     friend_info->second.window_state &= ~window_state_lobby_invite;
                 } else {
-                // The user got a rich presence invite and accepted it
+                    // The user got a rich presence invite and accepted it
                     if (friend_info->second.window_state & window_state_rich_invite) {
                         GameRichPresenceJoinRequested_t data = {};
                         data.m_steamIDFriend.SetFromUint64(friend_id);

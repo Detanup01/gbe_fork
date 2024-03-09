@@ -193,7 +193,7 @@ class Steam_Overlay
 
     void add_auto_accept_invite_notification();
 
-    void AddInviteNotification(std::pair<const Friend, friend_window_state> &wnd_state);
+    void add_invite_notification(std::pair<const Friend, friend_window_state> &wnd_state);
     
     void add_chat_message_notification(std::string const& message);
 

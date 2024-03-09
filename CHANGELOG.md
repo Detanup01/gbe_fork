@@ -1,3 +1,11 @@
+# 2024/3/8 (hotfix 1)
+
+* don't allow posting overlay achievements notifications when the overlay isn't ready yet
+* don't run overlay callback when it isn't ready yet
+* don't initialize or setup the overlay when `disable_overlay.txt` is used
+
+---
+
 # 2024/3/8
 
 * updated the ingame overlay project, suggested by **[CHESIRE721]**  
