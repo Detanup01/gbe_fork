@@ -649,17 +649,16 @@ void Steam_Overlay::build_friend_window(Friend const& frd, friend_window_state& 
 
     float width = ImGui::CalcTextSize("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA").x;
     
-    if (state.window_state & window_state_need_attention && ImGui::IsWindowFocused())
-    {
+    if (state.window_state & window_state_need_attention && ImGui::IsWindowFocused()) {
         state.window_state &= ~window_state_need_attention;
     }
     ImGui::SetNextWindowSizeConstraints(ImVec2{ width, ImGui::GetFontSize()*8 + ImGui::GetFrameHeightWithSpacing()*4 },
         ImVec2{ std::numeric_limits<float>::max() , std::numeric_limits<float>::max() });
 
+    ImGui::SetNextWindowBgAlpha(0.9f);
     // Window id is after the ###, the window title is the friend name
     std::string friend_window_id = std::move("###" + std::to_string(state.id));
-    if (ImGui::Begin((state.window_title + friend_window_id).c_str(), &show))
-    {
+    if (ImGui::Begin((state.window_title + friend_window_id).c_str(), &show)) {
         if (state.window_state & window_state_need_attention && ImGui::IsWindowFocused())
         {
             state.window_state &= ~window_state_need_attention;
@@ -735,6 +734,7 @@ void Steam_Overlay::build_friend_window(Friend const& frd, friend_window_state& 
             }
         }
     }
+    
     // User closed the friend window
     if (!show)
         state.window_state &= ~window_state_show;
@@ -813,6 +813,7 @@ void Steam_Overlay::build_notifications(int width, int height)
 
         set_next_notification_pos(width, height, font_size, (notification_type)it->type, idx);
         ImGui::SetNextWindowSize(ImVec2( width * Notification::width_percent, Notification::height * font_size ));
+        ImGui::SetNextWindowBgAlpha(0.9f);
         
         if ( elapsed_notif < Notification::fade_in) { // still appearing (fading in)
             float alpha = settings->overlay_appearance.notification_a * (elapsed_notif.count() / static_cast<float>(Notification::fade_in.count()));
@@ -830,48 +831,73 @@ void Steam_Overlay::build_notifications(int width, int height)
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 255, 255, settings->overlay_appearance.notification_a*2));
         }
         
-        std::string wnd_name = "NotiPopupShow" + std::to_string(it->id);
-        ImGui::Begin(wnd_name.c_str(), nullptr,
-            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize);
-
+        // some extra window flags for each notification type
+        ImGuiWindowFlags extra_flags = 0;
         switch (it->type) {
-            case notification_type_achievement: {
-                if (!it->icon.expired() && ImGui::BeginTable("imgui_table", 2)) {
-                    ImGui::TableSetupColumn("imgui_table_image", ImGuiTableColumnFlags_WidthFixed, settings->overlay_appearance.icon_size);
-                    ImGui::TableSetupColumn("imgui_table_text");
-                    ImGui::TableNextRow(ImGuiTableRowFlags_None, settings->overlay_appearance.icon_size);
-
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Image((ImTextureID)*it->icon.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
-
-                    ImGui::TableSetColumnIndex(1);
-                    ImGui::TextWrapped("%s", it->message.c_str());
-
-                    ImGui::EndTable();
-                } else {
-                    ImGui::TextWrapped("%s", it->message.c_str());
-                }
-            }
-            break;
-
-            case notification_type_invite: {
-                ImGui::TextWrapped("%s", it->message.c_str());
-                if (ImGui::Button(translationJoin[current_language]))
-                {
-                    it->frd->second.window_state |= window_state_join;
-                    friend_actions_temp.push(it->frd->first);
-                    it->start_time = std::chrono::seconds(0);
-                }
-            }
+            // games like "Mafia Definitive Edition" will pause the entire game/scene if focus was stolen
+            // be less intrusive for notifications that do not require interaction
+            case notification_type_achievement:
+            case notification_type_auto_accept_invite:
+                extra_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs;
             break;
 
             case notification_type_message:
-                ImGui::TextWrapped("%s", it->message.c_str());
+            case notification_type_invite:
+                // nothing
             break;
 
-            case notification_type_auto_accept_invite:
-                ImGui::TextWrapped("%s", it->message.c_str());
+            default:
+                PRINT_DEBUG("Steam_Overlay::build_notifications error unhandled flags for type %i\n", (int)it->type);
             break;
+        }
+
+        std::string wnd_name = "NotiPopupShow" + std::to_string(it->id);
+        if (ImGui::Begin(wnd_name.c_str(), nullptr,
+            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | extra_flags)) {
+            switch (it->type) {
+                case notification_type_achievement: {
+                    if (!it->icon.expired() && ImGui::BeginTable("imgui_table", 2)) {
+                        ImGui::TableSetupColumn("imgui_table_image", ImGuiTableColumnFlags_WidthFixed, settings->overlay_appearance.icon_size);
+                        ImGui::TableSetupColumn("imgui_table_text");
+                        ImGui::TableNextRow(ImGuiTableRowFlags_None, settings->overlay_appearance.icon_size);
+
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Image((ImTextureID)*it->icon.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
+
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::TextWrapped("%s", it->message.c_str());
+
+                        ImGui::EndTable();
+                    } else {
+                        ImGui::TextWrapped("%s", it->message.c_str());
+                    }
+                }
+                break;
+
+                case notification_type_invite: {
+                    ImGui::TextWrapped("%s", it->message.c_str());
+                    if (ImGui::Button(translationJoin[current_language]))
+                    {
+                        it->frd->second.window_state |= window_state_join;
+                        friend_actions_temp.push(it->frd->first);
+                        it->start_time = std::chrono::seconds(0);
+                    }
+                }
+                break;
+
+                case notification_type_message:
+                    ImGui::TextWrapped("%s", it->message.c_str());
+                break;
+
+                case notification_type_auto_accept_invite:
+                    ImGui::TextWrapped("%s", it->message.c_str());
+                break;
+                
+                default:
+                    PRINT_DEBUG("Steam_Overlay::build_notifications error unhandled notification for type %i\n", (int)it->type);
+                break;
+            }
+
         }
 
         ImGui::End();
@@ -938,14 +964,14 @@ void Steam_Overlay::overlay_proc()
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     if (!Ready()) return;
 
-    ImGuiIO& io = ImGui::GetIO();
+    ImGuiIO &io = ImGui::GetIO();
 
     // Set the overlay windows to the size of the game window
     // only if we have a reason (full overlay or just some notification)
     if (show_overlay || notifications.size()) {
         ImGui::SetNextWindowPos({ 0,0 });
         ImGui::SetNextWindowSize({ io.DisplaySize.x, io.DisplaySize.y });
-        ImGui::SetNextWindowBgAlpha(0.55);
+        ImGui::SetNextWindowBgAlpha(0.55f);
     }
 
     if (notifications.size()) {
@@ -1065,8 +1091,10 @@ void Steam_Overlay::overlay_proc()
             }
         }
 
-        if (show_achievements && achievements.size()) { // display achievements list when the button "show achievements" is pressed
+        // user clicked on "show achievements" button
+        if (show_achievements && achievements.size()) {
             ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 32, ImGui::GetFontSize() * 32), ImVec2(8192, 8192));
+            ImGui::SetNextWindowBgAlpha(0.9f);
             bool show = show_achievements;
             if (ImGui::Begin(translationAchievementWindow[current_language], &show)) {
                 ImGui::Text("%s", translationListOfAchievements[current_language]);
@@ -1110,26 +1138,41 @@ void Steam_Overlay::overlay_proc()
 
                     ImGui::Separator();
 
-                    if (!x.icon.expired() && !x.icon_gray.expired()) {
-                        ImGui::BeginTable(x.title.c_str(), 2);
-                        ImGui::TableSetupColumn("imgui_table_image", ImGuiTableColumnFlags_WidthFixed, settings->overlay_appearance.icon_size);
-                        ImGui::TableSetupColumn("imgui_table_text");
-                        ImGui::TableNextRow(ImGuiTableRowFlags_None, settings->overlay_appearance.icon_size);
+                    bool could_create_ach_table_entry = false;
+                    if (!x.icon.expired() || !x.icon_gray.expired()) {
+                        if (ImGui::BeginTable(x.title.c_str(), 2)) {
+                            could_create_ach_table_entry = true;
 
-                        ImGui::TableSetColumnIndex(0);
-                        if (achieved) {
-                            ImGui::Image((ImTextureID)*x.icon.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
-                        } else {
-                            ImGui::Image((ImTextureID)*x.icon_gray.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
+                            ImGui::TableSetupColumn("imgui_table_image", ImGuiTableColumnFlags_WidthFixed, settings->overlay_appearance.icon_size);
+                            ImGui::TableSetupColumn("imgui_table_text");
+                            ImGui::TableNextRow(ImGuiTableRowFlags_None, settings->overlay_appearance.icon_size);
+
+                            ImGui::TableSetColumnIndex(0);
+                            if (achieved) {
+                                if (!x.icon.expired()) {
+                                    ImGui::Image(
+                                        (ImTextureID)*x.icon.lock().get(),
+                                        ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size)
+                                    );
+                                }
+                            } else {
+                                if (!x.icon_gray.expired()) {
+                                    ImGui::Image(
+                                        (ImTextureID)*x.icon_gray.lock().get(),
+                                        ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size)
+                                    );
+                                }
+                            }
+
+                            ImGui::TableSetColumnIndex(1);
+                            // the next column is the achievement text below
                         }
-
-                        ImGui::TableSetColumnIndex(1);
-                        ImGui::Text("%s", x.title.c_str());
-                    } else {
-                        ImGui::Text("%s", x.title.c_str());
                     }
+                    
+                    // we want to display the ach text regardless the icons were displayed or not
+                    ImGui::Text("%s", x.title.c_str());
 
-                    if (hidden) {
+                    if (hidden && !achieved) {
                         ImGui::Text("%s", translationHiddenAchievement[current_language]);
                     } else {
                         ImGui::TextWrapped("%s", x.description.c_str());
@@ -1145,17 +1188,20 @@ void Steam_Overlay::overlay_proc()
                         ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationNotAchieved[current_language]);
                     }
 
-                    if (!x.icon.expired() && !x.icon_gray.expired()) ImGui::EndTable();
+                    if (could_create_ach_table_entry) ImGui::EndTable();
 
                     ImGui::Separator();
                 }
                 ImGui::EndChild();
             }
+            
             ImGui::End();
             show_achievements = show;
         }
 
+        // user clicked on "settings" button
         if (show_settings) {
+            ImGui::SetNextWindowBgAlpha(0.9f);
             if (ImGui::Begin(translationGlobalSettingsWindow[current_language], &show_settings)) {
                 ImGui::Text("%s", translationGlobalSettingsWindowDescription[current_language]);
 
@@ -1189,9 +1235,10 @@ void Steam_Overlay::overlay_proc()
             ImGui::End();
         }
 
-        std::string url = show_url;
-        if (url.size()) {
+        if (show_url.size()) {
+            std::string url = show_url;
             bool show = true;
+            ImGui::SetNextWindowBgAlpha(0.9f);
             if (ImGui::Begin(URL_WINDOW_NAME, &show)) {
                 ImGui::Text("%s", translationSteamOverlayURL[current_language]);
                 ImGui::Spacing();
@@ -1203,6 +1250,7 @@ void Steam_Overlay::overlay_proc()
                     show_url = "";
                 // ImGui::SetWindowSize(ImVec2(ImGui::CalcTextSize(url.c_str()).x + 10, 0));
             }
+
             ImGui::End();
         }
 
@@ -1210,6 +1258,7 @@ void Steam_Overlay::overlay_proc()
         if (show_warning) {
             ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 32, ImGui::GetFontSize() * 32), ImVec2(8192, 8192));
             ImGui::SetNextWindowFocus();
+            ImGui::SetNextWindowBgAlpha(0.9f);
             if (ImGui::Begin(translationWarning[current_language], &show_warning)) {
                 if (warn_bad_appid) {
                     ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationWarningWarningWarning[current_language]);
@@ -1227,12 +1276,14 @@ void Steam_Overlay::overlay_proc()
                     ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationWarningWarningWarning[current_language]);
                 }
             }
+
             ImGui::End();
             if (!show_warning) {
                 warn_local_save = warn_forced_setting = false;
             }
         }
     }
+
     ImGui::End();
 
     ImGui::PopFont();

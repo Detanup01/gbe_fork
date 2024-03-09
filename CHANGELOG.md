@@ -1,3 +1,13 @@
+# 2024/3/9
+
+* prevent notifications that do not require interaction from stealing focus 
+* check for success when creating the overlay popup window
+* make the backgrounds of notifications and popups less transparent (more visible), for easier visibility
+* show hidden achievement description in the overlay if it was unlocked
+* don't fail loading both achievement icons, locked and unlocked, if eihter one of them wasn't loaded but the other was
+
+---
+
 # 2024/3/8 (hotfix 1)
 
 * don't allow posting overlay achievements notifications when the overlay isn't ready yet
