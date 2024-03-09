@@ -1416,7 +1416,7 @@ void Steam_Client::RegisterCallback( class CCallbackBase *pCallback, int iCallba
     int base_callback = (iCallback / 100) * 100;
     int callback_id = iCallback % 100;
     bool isGameServer = CCallbackMgr::isServer(pCallback);
-    PRINT_DEBUG("isGameServer %u\n", isGameServer);
+    PRINT_DEBUG("Steam_Client::RegisterCallback isGameServer %u %i %i\n", isGameServer, iCallback, base_callback);
 
     switch (base_callback) {
         case k_iSteamUserCallbacks:
@@ -1640,7 +1640,7 @@ void Steam_Client::UnregisterCallback( class CCallbackBase *pCallback)
     int base_callback = (iCallback / 100) * 100;
     int callback_id = iCallback % 100;
     bool isGameServer = CCallbackMgr::isServer(pCallback);
-    PRINT_DEBUG("isGameServer %u\n", isGameServer);
+    PRINT_DEBUG("Steam_Client::UnregisterCallback isGameServer %u %i\n", isGameServer, base_callback);
 
     switch (base_callback) {
         case k_iSteamUserCallbacks:
