@@ -32,7 +32,7 @@ static LONG WINAPI exception_handler(LPEXCEPTION_POINTERS ex_pointers)
 
 int main()
 {
-    // simululate the existence of previous handler
+    // simulate the existence of previous handler
     SetUnhandledExceptionFilter(exception_handler);
 
     if (!remove_file(logs_filepath)) {

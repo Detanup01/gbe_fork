@@ -35,7 +35,7 @@ void exception_handler_SIGILL(int signal, siginfo_t *info, void *context)
 
 int main()
 {
-    // simululate the existence of previous handler
+    // simulate the existence of previous handler
     struct sigaction sa_SIGSEGV_prev{};
     sa_SIGSEGV_prev.sa_sigaction = exception_handler_SIGILL;
     sa_SIGSEGV_prev.sa_flags = SA_SIGINFO | SA_RESETHAND;
