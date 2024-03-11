@@ -442,16 +442,21 @@ void Steam_Overlay::allow_renderer_frame_processing(bool state, bool cleaning_up
 }
 
 void Steam_Overlay::obscure_cursor_input(bool state) {
-    bool opposite_request = !state;
-    if (obscure_cursor_requests.compare_exchange_weak(opposite_request, state)) { // if we have the opposite state
-        if (state) {
+    if (state) {
+        auto new_val = ++obscure_cursor_requests;
+        if (new_val == 1) { // only take an action on first request
             // clip the cursor
             _renderer->HideAppInputs(true);
-            PRINT_DEBUG("Steam_Overlay::obscure_cursor_input obscured app input\n");
-        } else {
-            // restore the old cursor
-            _renderer->HideAppInputs(false);
-            PRINT_DEBUG("Steam_Overlay::obscure_cursor_input restored app input\n");
+            PRINT_DEBUG("Steam_Overlay::obscure_cursor_input obscured app input (count=%u)\n", new_val);
+        }
+    } else {
+        if (obscure_cursor_requests > 0) {
+            auto new_val = --obscure_cursor_requests;
+            if (!new_val) { // only take an action when the requests reach 0
+                // restore the old cursor
+                _renderer->HideAppInputs(false);
+                PRINT_DEBUG("Steam_Overlay::obscure_cursor_input restored app input (count=%u)\n", new_val);
+            }
         }
     }
 }
@@ -559,7 +564,24 @@ bool Steam_Overlay::submit_notification(notification_type type, const std::strin
     notif.icon = icon;
     
     notifications.emplace_back(notif);
-    Steam_Overlay::allow_renderer_frame_processing(true);
+    allow_renderer_frame_processing(true);
+    switch (type) {
+        // we want to steal focus for these ones
+        case notification_type_message:
+        case notification_type_invite:
+            obscure_cursor_input(true);
+        break;
+
+        // not effective
+        case notification_type_achievement:
+        case notification_type_auto_accept_invite:
+            // nothing
+        break;
+
+        default:
+            PRINT_DEBUG("Steam_Overlay::submit_notification error unhandled type %i\n", (int)type);
+        break;
+    }
 
     return true;
 }
@@ -923,10 +945,29 @@ void Steam_Overlay::build_notifications(int width, int height)
     // erase all notifications whose visible time exceeded the max
     notifications.erase(std::remove_if(notifications.begin(), notifications.end(), [this, &now](Notification &item) {
         if ((now - item.start_time) > Notification::show_time) {
-            PRINT_DEBUG("Steam_Overlay::build_notifications will disable frame processing after removing a notification\n");
+            PRINT_DEBUG("Steam_Overlay::build_notifications removing a notification\n");
             allow_renderer_frame_processing(false);
+            switch (item.type) {
+                // we want to restore focus for these ones
+                case notification_type_message:
+                case notification_type_invite:
+                    obscure_cursor_input(false);
+                break;
+
+                // not effective
+                case notification_type_achievement:
+                case notification_type_auto_accept_invite:
+                    // nothing
+                break;
+
+                default:
+                    PRINT_DEBUG("Steam_Overlay::build_notifications error unhandled remove for type %i\n", (int)item.type);
+                break;
+            }
+
             return true;
         }
+        
         return false;
     }), notifications.end());
 

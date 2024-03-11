@@ -1,3 +1,12 @@
+# 2024/3/11
+* manage overlay cursor input/clipping and internal frame processing in a better way,
+  should prevent more games from pausing to display notifications
+* allow notifications of these types to steal/obscure input:
+  - `notification_type_message`
+  - `notification_type_invite`
+
+---
+
 # 2024/3/9
 
 * prevent notifications that do not require interaction from stealing focus 

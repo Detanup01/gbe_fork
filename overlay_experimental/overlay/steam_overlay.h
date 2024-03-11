@@ -148,7 +148,7 @@ class Steam_Overlay
     // changed each time a notification is posted or overlay is shown/hidden
     std::atomic_uint32_t renderer_frame_processing_requests = 0;
     // changed only when overlay is shown/hidden, true means overlay is shown
-    std::atomic_bool obscure_cursor_requests = false;
+    std::atomic_uint32_t obscure_cursor_requests = 0;
     
     constexpr static const int renderer_detector_polling_ms = 100;
     std::future<InGameOverlay::RendererHook_t *> future_renderer{};
