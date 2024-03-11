@@ -418,24 +418,41 @@ bool Steam_Overlay::open_overlay_hook(bool toggle)
     return show_overlay;
 }
 
-void Steam_Overlay::allow_renderer_frame_processing(bool state)
+void Steam_Overlay::allow_renderer_frame_processing(bool state, bool cleaning_up_overlay)
 {
     // this is very important internally it calls the necessary fuctions
     // to properly update ImGui window size on the next overlay_proc() call
+
     if (state) {
-        // clip the cursor
-        _renderer->HideAppInputs(true);
-        // allow internal frmae processing
-        _renderer->HideOverlayInputs(false);
-        PRINT_DEBUG("Steam_Overlay::allow_renderer_frame_processing enabled frame processing\n");
-    } else if (notifications.empty() && !show_overlay) {
-        // don't clip the cursor
-        _renderer->HideAppInputs(false);
-        // only stop internal frame processing when our state flag == false, and we don't have notifications
-        _renderer->HideOverlayInputs(true);
-        PRINT_DEBUG("Steam_Overlay::allow_renderer_frame_processing disabled frame processing\n");
+        auto new_val = ++renderer_frame_processing_requests;
+        if (new_val == 1) { // only take an action on first request
+            // allow internal frmae processing
+            _renderer->HideOverlayInputs(false);
+            PRINT_DEBUG("Steam_Overlay::allow_renderer_frame_processing enabled frame processing (count=%u)\n", new_val);
+        }
     } else {
-        PRINT_DEBUG("Steam_Overlay::allow_renderer_frame_processing will not disable frame processing, notifications count=%zu, show overlay=%i\n", notifications.size(), (int)show_overlay);
+        if (renderer_frame_processing_requests > 0) {
+            auto new_val = --renderer_frame_processing_requests;
+            if (!new_val || cleaning_up_overlay) { // only take an action when the requests reach 0 or by force
+                _renderer->HideOverlayInputs(true);
+                PRINT_DEBUG("Steam_Overlay::allow_renderer_frame_processing disabled frame processing (count=%u, force=%i)\n", new_val, (int)cleaning_up_overlay);
+            }
+        }
+    }
+}
+
+void Steam_Overlay::obscure_cursor_input(bool state) {
+    bool opposite_request = !state;
+    if (obscure_cursor_requests.compare_exchange_weak(opposite_request, state)) { // if we have the opposite state
+        if (state) {
+            // clip the cursor
+            _renderer->HideAppInputs(true);
+            PRINT_DEBUG("Steam_Overlay::obscure_cursor_input obscured app input\n");
+        } else {
+            // restore the old cursor
+            _renderer->HideAppInputs(false);
+            PRINT_DEBUG("Steam_Overlay::obscure_cursor_input restored app input\n");
+        }
     }
 }
 
@@ -523,7 +540,7 @@ int find_free_notification_id(std::vector<Notification> const& notifications)
 
 bool Steam_Overlay::submit_notification(notification_type type, const std::string &msg, std::pair<const Friend, friend_window_state> *frd, const std::weak_ptr<uint64_t> &icon)
 {
-    PRINT_DEBUG("Steam_Overlay::submit_notification %i '%s'\n", (int)type, msg.c_str());
+    PRINT_DEBUG("Steam_Overlay::submit_notification %i\n", (int)type);
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     if (!Ready()) return false;
     
@@ -542,8 +559,6 @@ bool Steam_Overlay::submit_notification(notification_type type, const std::strin
     notif.icon = icon;
     
     notifications.emplace_back(notif);
-
-    PRINT_DEBUG("Steam_Overlay::submit_notification enabling frame processing to show notification\n");
     Steam_Overlay::allow_renderer_frame_processing(true);
 
     return true;
@@ -906,8 +921,13 @@ void Steam_Overlay::build_notifications(int width, int height)
     }
 
     // erase all notifications whose visible time exceeded the max
-    notifications.erase(std::remove_if(notifications.begin(), notifications.end(), [&now](Notification &item) {
-        return (now - item.start_time) > Notification::show_time;
+    notifications.erase(std::remove_if(notifications.begin(), notifications.end(), [this, &now](Notification &item) {
+        if ((now - item.start_time) > Notification::show_time) {
+            PRINT_DEBUG("Steam_Overlay::build_notifications will disable frame processing after removing a notification\n");
+            allow_renderer_frame_processing(false);
+            return true;
+        }
+        return false;
     }), notifications.end());
 
     if (!friend_actions_temp.empty()) {
@@ -978,13 +998,6 @@ void Steam_Overlay::overlay_proc()
         ImGui::PushFont(font_notif);
         build_notifications(io.DisplaySize.x, io.DisplaySize.y);
         ImGui::PopFont();
-        
-        // after showing all notifications, and if we won't show the overlay
-        // then disable frame rendering
-        if (notifications.empty() && !show_overlay) {
-            PRINT_DEBUG("Steam_Overlay::overlay_proc disabled frame processing (no request to show overlay and 0 notifications)\n");
-            Steam_Overlay::allow_renderer_frame_processing(false);
-        }
     }
 
     // ******************** exit early if we shouldn't show the overlay
@@ -1321,8 +1334,16 @@ void Steam_Overlay::UnSetupOverlay()
     if (setup_overlay_called.compare_exchange_weak(already_called, false)) {
         is_ready = false;
 
-        // stop internal frame processing
-        if (_renderer) _renderer->HideOverlayInputs(true);
+        // stop internal frame processing & restore cursor
+        if (_renderer) {
+            allow_renderer_frame_processing(false, true);
+            obscure_cursor_input(false);
+
+            // for some reason this gets triggered after the overlay instance has been destroyed
+            // I assume because the game de-initializes DX later after closing Steam APIs
+            // this hacky solution just sets it to an empty function
+            _renderer->OverlayHookReady = [](InGameOverlay::OverlayHookState state) {};
+        }
 
         // allow the future_renderer thread to exit if needed
         // std::this_thread::sleep_for(std::chrono::milliseconds((int)(renderer_detector_polling_ms * 1.3f)));
@@ -1333,12 +1354,13 @@ void Steam_Overlay::UnSetupOverlay()
         );
         
         if (_renderer) {
+            PRINT_DEBUG("Steam_Overlay::UnSetupOverlay will free any images resources\n");
             for (auto &ach : achievements) {
                 if (!ach.icon.expired()) _renderer->ReleaseImageResource(ach.icon);
                 if (!ach.icon_gray.expired()) _renderer->ReleaseImageResource(ach.icon_gray);
             }
+
             _renderer = nullptr;
-            PRINT_DEBUG("Steam_Overlay::UnSetupOverlay freed all images\n");
         }
     }
 }
@@ -1425,6 +1447,7 @@ void Steam_Overlay::ShowOverlay(bool state)
     io.MouseDrawCursor = state;
     
     Steam_Overlay::allow_renderer_frame_processing(state);
+    Steam_Overlay::obscure_cursor_input(state);
 
 }
 
