@@ -5,6 +5,13 @@
 #include <map>
 #include <queue>
 
+#ifdef EMU_OVERLAY
+
+#include <future>
+#include <atomic>
+#include <memory>
+#include "InGameOverlay/RendererHook.h"
+
 static constexpr size_t max_chat_len = 768;
 
 enum window_state
@@ -81,16 +88,11 @@ struct Overlay_Achievement
     std::weak_ptr<uint64_t> icon;
     std::weak_ptr<uint64_t> icon_gray;
 
+    // avoids spam loading on failure
     constexpr const static int ICON_LOAD_MAX_TRIALS = 3;
     uint8_t icon_load_trials = ICON_LOAD_MAX_TRIALS;
     uint8_t icon_gray_load_trials = ICON_LOAD_MAX_TRIALS;
 };
-
-#ifdef EMU_OVERLAY
-
-#include <future>
-#include <atomic>
-#include "InGameOverlay/RendererHook.h"
 
 struct NotificationsIndexes
 {
@@ -100,6 +102,8 @@ struct NotificationsIndexes
 
 class Steam_Overlay
 {
+    constexpr static const char ACH_FALLBACK_DIR[] = "achievement_images";
+
     Settings* settings;
     SteamCallResults* callback_results;
     SteamCallBacks* callbacks;
@@ -110,13 +114,17 @@ class Steam_Overlay
     std::map<Friend, friend_window_state, Friend_Less> friends;
 
     // avoids spam loading on failure
-    std::atomic<int32_t> load_achievements_trials = 3;
+    constexpr const static int LOAD_ACHIEVEMENTS_MAX_TRIALS = 3;
+    std::atomic<int32_t> load_achievements_trials = LOAD_ACHIEVEMENTS_MAX_TRIALS;
     bool is_ready = false;
     bool show_overlay;
     ENotificationPosition notif_position;
     int h_inset, v_inset;
     std::string show_url;
     std::vector<Overlay_Achievement> achievements;
+    // index of the next achievement whose icons will be loaded
+    // used by the callback
+    int next_ach_to_load = 0;
     bool show_achievements, show_settings;
 
     // disable input when force_*.txt file is used
@@ -204,6 +212,9 @@ class Steam_Overlay
     void add_chat_message_notification(std::string const& message);
 
     bool open_overlay_hook(bool toggle);
+
+    bool try_load_ach_icon(Overlay_Achievement &ach);
+    bool try_load_ach_gray_icon(Overlay_Achievement &ach);
 
 public:
     Steam_Overlay(Settings* settings, SteamCallResults* callback_results, SteamCallBacks* callbacks, RunEveryRunCB* run_every_runcb, Networking *network);

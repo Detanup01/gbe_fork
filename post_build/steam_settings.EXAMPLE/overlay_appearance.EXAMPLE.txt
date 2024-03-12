@@ -1,8 +1,15 @@
+; global font size
 Font_Size 13.5
+; achievement icon size
 Icon_Size 64.0
 
+; spacing between characters
 Font_Glyph_Extra_Spacing_x 1.0
 Font_Glyph_Extra_Spacing_y 0.0
+
+; increase these values by 1 if the font is blurry
+Font_Oversample_H 1
+Font_Oversample_V 1
 
 Notification_R 0.16
 Notification_G 0.29

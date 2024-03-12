@@ -839,26 +839,25 @@ std::vector<image_pixel_t> Local_Storage::load_image(std::string const& image_pa
 std::string Local_Storage::load_image_resized(std::string const& image_path, std::string const& image_data, int resolution)
 {
     std::string resized_image{};
-    char *resized_img = (char*)malloc(sizeof(char) * resolution * resolution * 4);
-    PRINT_DEBUG("Local_Storage::load_image_resized: %s for resized image (%i)\n", (resized_img == nullptr ? "could not allocate memory" : "memory allocated"), (resolution * resolution * 4));
+    const size_t resized_img_size = resolution * resolution * 4;
 
-    if (resized_img != nullptr) {
-        if (image_path.length() > 0) {
-            int width, height;
-            unsigned char *img = stbi_load(image_path.c_str(), &width, &height, nullptr, 4);
-            PRINT_DEBUG("Local_Storage::load_image_resized: \"%s\" %s\n", image_path.c_str(), (img == nullptr ? stbi_failure_reason() : "loaded"));
-            if (img != nullptr) {
-                stbir_resize_uint8(img, width, height, 0, (unsigned char*)resized_img, resolution, resolution, 0, 4);
-                resized_image = std::string(resized_img, resolution * resolution * 4);
-                stbi_image_free(img);
-            }
-        } else if (image_data.length() > 0) {
-            stbir_resize_uint8((unsigned char*)image_data.c_str(), 184, 184, 0, (unsigned char*)resized_img, resolution, resolution, 0, 4);
-            resized_image = std::string(resized_img, resolution * resolution * 4);
+    if (image_path.length() > 0) {
+        int width = 0;
+        int height = 0;
+        unsigned char *img = stbi_load(image_path.c_str(), &width, &height, nullptr, 4);
+        PRINT_DEBUG("Local_Storage::load_image_resized: stbi_load  %s '%s'\n", (img == nullptr ? stbi_failure_reason() : "loaded"), image_path.c_str());
+        if (img != nullptr) {
+            std::vector<char> out_resized(resized_img_size);
+            stbir_resize_uint8(img, width, height, 0, (unsigned char*)&out_resized[0], resolution, resolution, 0, 4);
+            resized_image = std::string((char*)&out_resized[0], out_resized.size());
+            stbi_image_free(img);
         }
-        free(resized_img);
+    } else if (image_data.length() > 0) {
+        std::vector<char> out_resized(resized_img_size);
+        stbir_resize_uint8((unsigned char*)image_data.c_str(), 184, 184, 0, (unsigned char*)&out_resized[0], resolution, resolution, 0, 4);
+        resized_image = std::string((char*)&out_resized[0], out_resized.size());
     }
-
+    
     reset_LastError();
     return resized_image;
 }

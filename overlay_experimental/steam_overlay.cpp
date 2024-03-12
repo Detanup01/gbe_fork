@@ -13,6 +13,8 @@
 #include <string>
 #include <sstream>
 #include <cctype>
+#include <utility>
+
 #include "InGameOverlay/ImGui/imgui.h"
 
 #include "dll/dll.h"
@@ -565,23 +567,24 @@ bool Steam_Overlay::submit_notification(notification_type type, const std::strin
     
     notifications.emplace_back(notif);
     allow_renderer_frame_processing(true);
-    switch (type) {
-        // we want to steal focus for these ones
-        case notification_type_message:
-        case notification_type_invite:
-            obscure_cursor_input(true);
-        break;
+    // uncomment this block to obscure cursor input and steal focus for these specific notifications
+    // switch (type) {
+    //     // we want to steal focus for these ones
+    //     case notification_type_message:
+    //     case notification_type_invite:
+    //         obscure_cursor_input(true);
+    //     break;
 
-        // not effective
-        case notification_type_achievement:
-        case notification_type_auto_accept_invite:
-            // nothing
-        break;
+    //     // not effective
+    //     case notification_type_achievement:
+    //     case notification_type_auto_accept_invite:
+    //         // nothing
+    //     break;
 
-        default:
-            PRINT_DEBUG("Steam_Overlay::submit_notification error unhandled type %i\n", (int)type);
-        break;
-    }
+    //     default:
+    //         PRINT_DEBUG("Steam_Overlay::submit_notification error unhandled type %i\n", (int)type);
+    //     break;
+    // }
 
     return true;
 }
@@ -869,16 +872,16 @@ void Steam_Overlay::build_notifications(int width, int height)
         }
         
         // some extra window flags for each notification type
-        ImGuiWindowFlags extra_flags = 0;
+        ImGuiWindowFlags extra_flags = ImGuiWindowFlags_NoFocusOnAppearing;
         switch (it->type) {
             // games like "Mafia Definitive Edition" will pause the entire game/scene if focus was stolen
             // be less intrusive for notifications that do not require interaction
             case notification_type_achievement:
             case notification_type_auto_accept_invite:
-                extra_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs;
+            case notification_type_message:
+                extra_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoInputs;
             break;
 
-            case notification_type_message:
             case notification_type_invite:
                 // nothing
             break;
@@ -947,23 +950,24 @@ void Steam_Overlay::build_notifications(int width, int height)
         if ((now - item.start_time) > Notification::show_time) {
             PRINT_DEBUG("Steam_Overlay::build_notifications removing a notification\n");
             allow_renderer_frame_processing(false);
-            switch (item.type) {
-                // we want to restore focus for these ones
-                case notification_type_message:
-                case notification_type_invite:
-                    obscure_cursor_input(false);
-                break;
+            // uncomment this block to restore app input focus
+            // switch (item.type) {
+            //     // we want to restore focus for these ones
+            //     case notification_type_message:
+            //     case notification_type_invite:
+            //         obscure_cursor_input(false);
+            //     break;
 
-                // not effective
-                case notification_type_achievement:
-                case notification_type_auto_accept_invite:
-                    // nothing
-                break;
+            //     // not effective
+            //     case notification_type_achievement:
+            //     case notification_type_auto_accept_invite:
+            //         // nothing
+            //     break;
 
-                default:
-                    PRINT_DEBUG("Steam_Overlay::build_notifications error unhandled remove for type %i\n", (int)item.type);
-                break;
-            }
+            //     default:
+            //         PRINT_DEBUG("Steam_Overlay::build_notifications error unhandled remove for type %i\n", (int)item.type);
+            //     break;
+            // }
 
             return true;
         }
@@ -1017,6 +1021,62 @@ void Steam_Overlay::invite_friend(uint64 friend_id, class Steam_Friends* steamFr
         steamMatchmaking->InviteUserToLobby(settings->get_lobby(), friend_id);
         PRINT_DEBUG("Steam_Overlay sent lobby invitation to friend with id = %llu\n", friend_id);
     }
+}
+
+bool Steam_Overlay::try_load_ach_icon(Overlay_Achievement &ach)
+{
+    if (!_renderer) return false;
+    if (!ach.icon.expired()) return true;
+    
+    if (ach.icon_load_trials && ach.icon_name.size()) {
+        --ach.icon_load_trials;
+        std::string file_path = std::move(Local_Storage::get_game_settings_path() + ach.icon_name);
+        unsigned long long file_size = file_size_(file_path);
+        if (!file_size) {
+            file_path = std::move(Local_Storage::get_game_settings_path() + Steam_Overlay::ACH_FALLBACK_DIR + "/" + ach.icon_name);
+            file_size = file_size_(file_path);
+        }
+        if (file_size) {
+            std::string img = Local_Storage::load_image_resized(file_path, "", settings->overlay_appearance.icon_size);
+            if (img.length() > 0) {
+                ach.icon = _renderer->CreateImageResource(
+                    (void*)img.c_str(),
+                    settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size);
+                if (!ach.icon.expired()) ach.icon_load_trials = Overlay_Achievement::ICON_LOAD_MAX_TRIALS;
+                PRINT_DEBUG("Steam_Overlay::try_load_ach_icon '%s' (result=%i)\n", ach.name.c_str(), (int)!ach.icon.expired());
+            }
+        }
+    }
+
+    return !ach.icon.expired();
+}
+
+bool Steam_Overlay::try_load_ach_gray_icon(Overlay_Achievement &ach)
+{
+    if (!_renderer) return false;
+    if (!ach.icon_gray.expired()) return true;
+    
+    if (ach.icon_gray_load_trials && ach.icon_gray_name.size()) {
+        --ach.icon_gray_load_trials;
+        std::string file_path = std::move(Local_Storage::get_game_settings_path() + ach.icon_gray_name);
+        unsigned long long file_size = file_size_(file_path);
+        if (!file_size) {
+            file_path = std::move(Local_Storage::get_game_settings_path() + Steam_Overlay::ACH_FALLBACK_DIR + "/" + ach.icon_gray_name);
+            file_size = file_size_(file_path);
+        }
+        if (file_size) {
+            std::string img = Local_Storage::load_image_resized(file_path, "", settings->overlay_appearance.icon_size);
+            if (img.length() > 0) {
+                ach.icon_gray = _renderer->CreateImageResource(
+                    (void*)img.c_str(),
+                    settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size);
+                if (!ach.icon_gray.expired()) ach.icon_gray_load_trials = Overlay_Achievement::ICON_LOAD_MAX_TRIALS;
+                PRINT_DEBUG("Steam_Overlay::try_load_ach_gray_icon '%s' (result=%i)\n", ach.name.c_str(), (int)!ach.icon_gray.expired());
+            }
+        }
+    }
+
+    return !ach.icon_gray.expired();
 }
 
 // Try to make this function as short as possible or it might affect game's fps.
@@ -1157,38 +1217,8 @@ void Steam_Overlay::overlay_proc()
                     bool achieved = x.achieved;
                     bool hidden = x.hidden && !achieved;
 
-                    if (x.icon.expired() && x.icon_load_trials) {
-                        --x.icon_load_trials;
-                        std::string file_path = Local_Storage::get_game_settings_path() + x.icon_name;
-                        unsigned long long file_size = file_size_(file_path);
-                        if (!file_size) {
-                            file_path = Local_Storage::get_game_settings_path() + "achievement_images/" + x.icon_name;
-                            file_size = file_size_(file_path);
-                        }
-                        if (file_size) {
-                            std::string img = Local_Storage::load_image_resized(file_path, "", settings->overlay_appearance.icon_size);
-                            if (img.length() > 0) {
-                                if (_renderer) x.icon = _renderer->CreateImageResource((void*)img.c_str(), settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size);
-                                if (!x.icon.expired()) x.icon_load_trials = Overlay_Achievement::ICON_LOAD_MAX_TRIALS;
-                            }
-                        }
-                    }
-                    if (x.icon_gray.expired() && x.icon_gray_load_trials) {
-                        --x.icon_gray_load_trials;
-                        std::string file_path = Local_Storage::get_game_settings_path() + x.icon_gray_name;
-                        unsigned long long file_size = file_size_(file_path);
-                        if (!file_size) {
-                            file_path = Local_Storage::get_game_settings_path() + "achievement_images/" + x.icon_gray_name;
-                            file_size = file_size_(file_path);
-                        }
-                        if (file_size) {
-                            std::string img = Local_Storage::load_image_resized(file_path, "", settings->overlay_appearance.icon_size);
-                            if (img.length() > 0) {
-                                if (_renderer) x.icon_gray = _renderer->CreateImageResource((void*)img.c_str(), settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size);
-                                if (!x.icon_gray.expired()) x.icon_gray_load_trials = Overlay_Achievement::ICON_LOAD_MAX_TRIALS;
-                            }
-                        }
-                    }
+                    try_load_ach_icon(x);
+                    try_load_ach_gray_icon(x);
 
                     ImGui::Separator();
 
@@ -1397,8 +1427,15 @@ void Steam_Overlay::UnSetupOverlay()
         if (_renderer) {
             PRINT_DEBUG("Steam_Overlay::UnSetupOverlay will free any images resources\n");
             for (auto &ach : achievements) {
-                if (!ach.icon.expired()) _renderer->ReleaseImageResource(ach.icon);
-                if (!ach.icon_gray.expired()) _renderer->ReleaseImageResource(ach.icon_gray);
+                if (!ach.icon.expired()) {
+                    _renderer->ReleaseImageResource(ach.icon);
+                    ach.icon.reset();
+                }
+
+                if (!ach.icon_gray.expired()) {
+                    _renderer->ReleaseImageResource(ach.icon_gray);
+                    ach.icon_gray.reset();
+                }
             }
 
             _renderer = nullptr;
@@ -1567,12 +1604,15 @@ void Steam_Overlay::AddAchievementNotification(nlohmann::json const& ach)
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     if (!Ready()) return;
 
+    std::vector<Overlay_Achievement*> found_achs{};
     {
         std::lock_guard<std::recursive_mutex> lock2(global_mutex);
 
         std::string ach_name = ach.value("name", std::string());
         for (auto &a : achievements) {
             if (a.name == ach_name) {
+                found_achs.push_back(&a);
+                
                 bool achieved = false;
                 uint32 unlock_time = 0;
                 get_steam_client()->steam_user_stats->GetAchievementAndUnlockTime(a.name.c_str(), &achieved, &unlock_time);
@@ -1583,32 +1623,16 @@ void Steam_Overlay::AddAchievementNotification(nlohmann::json const& ach)
     }
 
     if (!settings->disable_overlay_achievement_notification) {
-        // Load achievement image
-        std::weak_ptr<uint64_t> icon_rsrc{};
-        std::string icon_path = ach.value("icon", std::string());
-        if (icon_path.size()) {
-            std::string file_path{};
-            unsigned long long file_size = 0;
-            file_path = Local_Storage::get_game_settings_path() + icon_path;
-            file_size = file_size_(file_path);
-            if (!file_size) {
-                file_path = Local_Storage::get_game_settings_path() + "achievement_images/" + icon_path;
-                file_size = file_size_(file_path);
-            }
-            if (file_size) {
-                std::string img = Local_Storage::load_image_resized(file_path, "", settings->overlay_appearance.icon_size);
-                if (img.length() > 0) {
-                    icon_rsrc = _renderer->CreateImageResource((void*)img.c_str(), settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size);
-                }
-            }
+        for (auto found_ach : found_achs) {
+            try_load_ach_icon(*found_ach);
+            submit_notification(
+                notification_type_achievement,
+                ach.value("displayName", std::string()) + "\n" + ach.value("description", std::string()),
+                {},
+                found_ach->icon
+            );
         }
-
-        submit_notification(
-            notification_type_achievement,
-            ach.value("displayName", std::string()) + "\n" + ach.value("description", std::string()),
-            {},
-            icon_rsrc
-        );
+        
         notify_sound_user_achievement();
     }
 }
@@ -1648,7 +1672,7 @@ void Steam_Overlay::RunCallbacks()
         if (achievements_num) {
             PRINT_DEBUG("Steam_Overlay POPULATE OVERLAY ACHIEVEMENTS\n");
             for (unsigned i = 0; i < achievements_num; ++i) {
-                Overlay_Achievement ach;
+                Overlay_Achievement ach{};
                 ach.name = steamUserStats->GetAchievementName(i);
                 ach.title = steamUserStats->GetAchievementDisplayAttribute(ach.name.c_str(), "name");
                 ach.description = steamUserStats->GetAchievementDisplayAttribute(ach.name.c_str(), "desc");
@@ -1676,14 +1700,23 @@ void Steam_Overlay::RunCallbacks()
             }
 
             // don't punish successfull attempts
-            if (achievements.size()) {
-                ++load_achievements_trials;
-            }
-            PRINT_DEBUG("Steam_Overlay POPULATE OVERLAY ACHIEVEMENTS DONE\n");
+            if (achievements.size()) load_achievements_trials = Steam_Overlay::LOAD_ACHIEVEMENTS_MAX_TRIALS;
+            PRINT_DEBUG("Steam_Overlay POPULATE OVERLAY ACHIEVEMENTS DONE (count=%lu, loaded=%zu)\n", achievements_num, achievements.size());
         }
     }
 
     if (!Ready()) return;
+
+    // load images/icons for the next ach
+    if (next_ach_to_load < achievements.size()) {
+        try_load_ach_icon(achievements[next_ach_to_load]);
+        try_load_ach_gray_icon(achievements[next_ach_to_load]);
+
+        ++next_ach_to_load;
+        // this allows the callback to keep trying forever in case the image resource was reset
+        // each icon has a limit though, so it won't slow things down forever
+        if (next_ach_to_load >= achievements.size()) next_ach_to_load = 0;
+    }
 
     if (overlay_state_changed) {
         overlay_state_changed = false;

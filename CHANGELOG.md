@@ -1,9 +1,10 @@
 # 2024/3/11
 * manage overlay cursor input/clipping and internal frame processing in a better way,
   should prevent more games from pausing to display notifications
-* allow notifications of these types to steal/obscure input:
-  - `notification_type_message`
-  - `notification_type_invite`
+* load the icons of a single achievement each overlay callback invokation, will slow things down during startup  
+  but this avoids having to load the achievement icon during gameplay which causes micro-stutter
+* avoid loading and resizing the achievement icon each time it's unlocked
+* Local_Storage: avoid allocating buffers unless `stbi_load()` was successfull
 
 ---
 
