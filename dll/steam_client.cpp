@@ -270,10 +270,9 @@ HSteamUser Steam_Client::ConnectToGlobalUser( HSteamPipe hSteamPipe )
     }
 
     userLogIn();
-#ifdef EMU_OVERLAY
-    if(!settings_client->disable_overlay)
-        steam_overlay->SetupOverlay();
-#endif
+    
+    if (!settings_client->disable_overlay) steam_overlay->SetupOverlay();
+
     steam_pipes[hSteamPipe] = Steam_Pipe::CLIENT;
     return CLIENT_HSTEAMUSER;
 }
@@ -958,10 +957,8 @@ bool Steam_Client::BShutdownIfAllPipesClosed()
         }
 
         steam_controller->Shutdown();
-#ifdef EMU_OVERLAY
-    if(!settings_client->disable_overlay)
-        steam_overlay->UnSetupOverlay();
-#endif
+
+        if(!settings_client->disable_overlay) steam_overlay->UnSetupOverlay();
 
         if (joinable) {
             background_keepalive.join();

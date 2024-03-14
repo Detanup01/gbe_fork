@@ -92,17 +92,17 @@ static inline bool ImGuiHelper_BeginListBox(const char* label, int items_count) 
 }
 
 
-void Steam_Overlay::steam_overlay_run_every_runcb(void* object)
+void Steam_Overlay::overlay_run_callback(void* object)
 {
     PRINT_DEBUG("overlay_run_every_runcb %p\n", object);
     Steam_Overlay* _this = reinterpret_cast<Steam_Overlay*>(object);
-    _this->RunCallbacks();
+    _this->steam_run_callback();
 }
 
-void Steam_Overlay::steam_overlay_callback(void* object, Common_Message* msg)
+void Steam_Overlay::overlay_networking_callback(void* object, Common_Message* msg)
 {
     Steam_Overlay* _this = reinterpret_cast<Steam_Overlay*>(object);
-    _this->Callback(msg);
+    _this->networking_msg_received(msg);
 }
 
 Steam_Overlay::Steam_Overlay(Settings* settings, SteamCallResults* callback_results, SteamCallBacks* callbacks, RunEveryRunCB* run_every_runcb, Networking* network) :
@@ -110,17 +110,7 @@ Steam_Overlay::Steam_Overlay(Settings* settings, SteamCallResults* callback_resu
     callback_results(callback_results),
     callbacks(callbacks),
     run_every_runcb(run_every_runcb),
-    network(network),
-    show_overlay(false),
-    is_ready(false),
-    notif_position(ENotificationPosition::k_EPositionBottomLeft),
-    h_inset(0),
-    v_inset(0),
-    overlay_state_changed(false),
-    i_have_lobby(false),
-    show_achievements(false),
-    show_settings(false),
-    _renderer(nullptr)
+    network(network)
 {
     // don't even bother initializing the overlay
     if (settings->disable_overlay) return;
@@ -151,15 +141,15 @@ Steam_Overlay::Steam_Overlay(Settings* settings, SteamCallResults* callback_resu
         ++i;
     }
 
-    run_every_runcb->add(&Steam_Overlay::steam_overlay_run_every_runcb, this);
-    this->network->setCallback(CALLBACK_ID_STEAM_MESSAGES, settings->get_local_steam_id(), &Steam_Overlay::steam_overlay_callback, this);
+    run_every_runcb->add(&Steam_Overlay::overlay_run_callback, this);
+    this->network->setCallback(CALLBACK_ID_STEAM_MESSAGES, settings->get_local_steam_id(), &Steam_Overlay::overlay_networking_callback, this);
 }
 
 Steam_Overlay::~Steam_Overlay()
 {
     if (settings->disable_overlay) return;
 
-    run_every_runcb->remove(&Steam_Overlay::steam_overlay_run_every_runcb, this);
+    run_every_runcb->remove(&Steam_Overlay::overlay_run_callback, this);
 }
 
 void Steam_Overlay::request_renderer_detector()
@@ -213,18 +203,19 @@ void Steam_Overlay::renderer_hook_init_thread()
     }
 
     // do a one time initialization
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    // std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     _renderer = future_renderer.get();
     PRINT_DEBUG("Steam_Overlay::renderer_hook_init_thread got renderer %p\n", _renderer);
     create_fonts();
     load_audio();
+    load_achievements_data();
     
     // setup renderer callbacks
     const static std::set<InGameOverlay::ToggleKey> overlay_toggle_keys = {
         InGameOverlay::ToggleKey::SHIFT, InGameOverlay::ToggleKey::TAB
     };
     auto overlay_toggle_callback = [this]() { open_overlay_hook(true); };
-    _renderer->OverlayProc = [this]() { overlay_proc(); };
+    _renderer->OverlayProc = [this]() { overlay_render_proc(); };
     _renderer->OverlayHookReady = [this](InGameOverlay::OverlayHookState state) {
         PRINT_DEBUG("Steam_Overlay hook state changed to <%i>\n", (int)state);
         overlay_state_hook(state == InGameOverlay::OverlayHookState::Ready || state == InGameOverlay::OverlayHookState::Reset);
@@ -232,7 +223,6 @@ void Steam_Overlay::renderer_hook_init_thread()
 
     bool started = _renderer->StartHook(overlay_toggle_callback, overlay_toggle_keys, &fonts_atlas);
     PRINT_DEBUG("Steam_Overlay::renderer_hook_init_thread started renderer hook (result=%i)\n", (int)started);
-    
 }
 
 void Steam_Overlay::create_fonts()
@@ -369,44 +359,108 @@ void Steam_Overlay::load_audio()
     }
 }
 
+void Steam_Overlay::load_achievements_data()
+{
+    PRINT_DEBUG("Steam_Overlay::load_achievements_data\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    Steam_User_Stats* steamUserStats = get_steam_client()->steam_user_stats;
+    uint32 achievements_num = steamUserStats->GetNumAchievements();
+    for (uint32 i = 0; i < achievements_num; ++i) {
+        Overlay_Achievement ach{};
+        ach.name = steamUserStats->GetAchievementName(i);
+        ach.title = steamUserStats->GetAchievementDisplayAttribute(ach.name.c_str(), "name");
+        ach.description = steamUserStats->GetAchievementDisplayAttribute(ach.name.c_str(), "desc");
+        
+        const char *hidden = steamUserStats->GetAchievementDisplayAttribute(ach.name.c_str(), "hidden");
+        ach.hidden = hidden && hidden[0] == '1';
+
+        bool achieved = false;
+        uint32 unlock_time = 0;
+        if (steamUserStats->GetAchievementAndUnlockTime(ach.name.c_str(), &achieved, &unlock_time)) {
+            ach.achieved = achieved;
+            ach.unlock_time = unlock_time;
+        } else {
+            ach.achieved = false;
+            ach.unlock_time = 0;
+        }
+
+        ach.icon_name = steamUserStats->get_achievement_icon_name(ach.name.c_str(), true);
+        ach.icon_gray_name = steamUserStats->get_achievement_icon_name(ach.name.c_str(), false);
+
+        achievements.push_back(ach);
+        
+        if (!setup_overlay_called) return;
+    }
+
+    PRINT_DEBUG("Steam_Overlay::load_achievements_data count=%lu, loaded=%zu\n", achievements_num, achievements.size());
+
+}
+
+void Steam_Overlay::initial_load_achievements_icons()
+{
+    {
+        std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+        if (late_init_ach_icons) return;
+    }
+
+    PRINT_DEBUG("Steam_Overlay::initial_load_achievements_icons\n");
+    for (auto &ach : achievements) {
+        {
+            std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+            if (!is_ready || !setup_overlay_called) {
+                PRINT_DEBUG("Steam_Overlay::initial_load_achievements_icons early exit\n");
+                return;
+            }
+        }
+
+        try_load_ach_icon(ach);
+
+        {
+            std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+            if (!is_ready || !setup_overlay_called) {
+                PRINT_DEBUG("Steam_Overlay::initial_load_achievements_icons early exit\n");
+                return;
+            }
+        }
+
+        try_load_ach_gray_icon(ach);
+    }
+
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    late_init_ach_icons = true;
+}
+
 // called initially and when window size is updated
 void Steam_Overlay::overlay_state_hook(bool ready)
 {
     PRINT_DEBUG("Steam_Overlay::overlay_state_hook %i\n", (int)ready);
-
+    
     // NOTE usage of local objects here cause an exception when this is called with false state
     // the reason is that by the time this hook is called, the object may have been already destructed
     // this is why we use global mutex
     // TODO this also doesn't seem right, no idea why it happens though
     // NOTE after initializing the renderer detector on another thread this was solved
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-
     if (!setup_overlay_called) return;
 
     is_ready = ready;
-    
-    static bool initialized_imgui = false;
-    // Antichamber crashes here because ImGui Context was null!
-    // no idea why
-    if (ready && !initialized_imgui && ImGui::GetCurrentContext()) {
-        initialized_imgui = true;
 
-        PRINT_DEBUG("Steam_Overlay::overlay_state_hook initializing ImGui config\n");
-        ImGuiIO &io = ImGui::GetIO();
-        ImGuiStyle &style = ImGui::GetStyle();
+    if (ready) {
+        // Antichamber may crash here because ImGui Context is null!, no idea why
+        bool not_yet = false;
+        if (ImGui::GetCurrentContext() && late_init_imgui.compare_exchange_weak(not_yet, true)) {
+            PRINT_DEBUG("Steam_Overlay::overlay_state_hook late init ImGui\n");
 
-        // disable loading the default ini file
-        io.IniFilename = NULL;
+            ImGuiIO &io = ImGui::GetIO();
+            // disable loading the default ini file
+            io.IniFilename = NULL;
 
-        // Disable round window
-        style.WindowRounding = 0.0;
-
-        // TODO: Uncomment this and draw our own cursor (cosmetics)
-        //io.WantSetMousePos = false;
-        //io.MouseDrawCursor = false;
-        //io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+            ImGuiStyle &style = ImGui::GetStyle();
+            // Disable round window
+            style.WindowRounding = 0.0;
+        }
     }
-
 }
 
 // called when the user presses SHIFT + TAB
@@ -423,7 +477,7 @@ bool Steam_Overlay::open_overlay_hook(bool toggle)
 void Steam_Overlay::allow_renderer_frame_processing(bool state, bool cleaning_up_overlay)
 {
     // this is very important internally it calls the necessary fuctions
-    // to properly update ImGui window size on the next overlay_proc() call
+    // to properly update ImGui window size on the next overlay_render_proc() call
 
     if (state) {
         auto new_val = ++renderer_frame_processing_requests;
@@ -443,21 +497,37 @@ void Steam_Overlay::allow_renderer_frame_processing(bool state, bool cleaning_up
     }
 }
 
-void Steam_Overlay::obscure_cursor_input(bool state) {
+void Steam_Overlay::obscure_game_input(bool state) {
     if (state) {
         auto new_val = ++obscure_cursor_requests;
         if (new_val == 1) { // only take an action on first request
+            ImGuiIO &io = ImGui::GetIO();
+            // force draw the cursor, otherwise games like Truberbrook will not have an overlay cursor
+            io.MouseDrawCursor = state;
+            // not necessary, just to be sure
+            io.WantCaptureMouse = state;
+            // not necessary, just to be sure
+            io.WantCaptureKeyboard = state;
+
             // clip the cursor
             _renderer->HideAppInputs(true);
-            PRINT_DEBUG("Steam_Overlay::obscure_cursor_input obscured app input (count=%u)\n", new_val);
+            PRINT_DEBUG("Steam_Overlay::obscure_game_input obscured app input (count=%u)\n", new_val);
         }
     } else {
         if (obscure_cursor_requests > 0) {
             auto new_val = --obscure_cursor_requests;
             if (!new_val) { // only take an action when the requests reach 0
+                ImGuiIO &io = ImGui::GetIO();
+                // force draw the cursor, otherwise games like Truberbrook will not have an overlay cursor
+                io.MouseDrawCursor = state;
+                // not necessary, just to be sure
+                io.WantCaptureMouse = state;
+                // not necessary, just to be sure
+                io.WantCaptureKeyboard = state;
+                
                 // restore the old cursor
                 _renderer->HideAppInputs(false);
-                PRINT_DEBUG("Steam_Overlay::obscure_cursor_input restored app input (count=%u)\n", new_val);
+                PRINT_DEBUG("Steam_Overlay::obscure_game_input restored app input (count=%u)\n", new_val);
             }
         }
     }
@@ -572,7 +642,7 @@ bool Steam_Overlay::submit_notification(notification_type type, const std::strin
     //     // we want to steal focus for these ones
     //     case notification_type_message:
     //     case notification_type_invite:
-    //         obscure_cursor_input(true);
+    //         obscure_game_input(true);
     //     break;
 
     //     // not effective
@@ -663,7 +733,7 @@ void Steam_Overlay::build_friend_context_menu(Friend const& frd, friend_window_s
             if (state.joinable && ImGui::Button(translationJoin_tmp.c_str())) {
                 close_popup = true;
                 // don't bother adding this friend if the button "invite all" was clicked
-                // we will send them the invitation later in Steam_Overlay::RunCallbacks()
+                // we will send them the invitation later in Steam_Overlay::steam_run_callback()
                 if (!invite_all_friends_clicked) {
                     state.window_state |= window_state_join;
                     has_friend_action.push(frd);
@@ -955,7 +1025,7 @@ void Steam_Overlay::build_notifications(int width, int height)
             //     // we want to restore focus for these ones
             //     case notification_type_message:
             //     case notification_type_invite:
-            //         obscure_cursor_input(false);
+            //         obscure_game_input(false);
             //     break;
 
             //     // not effective
@@ -1080,8 +1150,9 @@ bool Steam_Overlay::try_load_ach_gray_icon(Overlay_Achievement &ach)
 }
 
 // Try to make this function as short as possible or it might affect game's fps.
-void Steam_Overlay::overlay_proc()
+void Steam_Overlay::overlay_render_proc()
 {
+    initial_load_achievements_icons();
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     if (!Ready()) return;
 
@@ -1119,26 +1190,61 @@ void Steam_Overlay::overlay_proc()
     windowTitle.append(tmp);
     windowTitle.append(")");
 
-    if ((settings->overlay_appearance.background_r != -1.0) && (settings->overlay_appearance.background_g != -1.0) && (settings->overlay_appearance.background_b != -1.0) && (settings->overlay_appearance.background_a != -1.0)) {
-        ImVec4 colorSet = ImVec4(settings->overlay_appearance.background_r, settings->overlay_appearance.background_g, settings->overlay_appearance.background_b, settings->overlay_appearance.background_a);
+    if ((settings->overlay_appearance.background_r >= 0) &&
+        (settings->overlay_appearance.background_g >= 0) &&
+        (settings->overlay_appearance.background_b >= 0) &&
+        (settings->overlay_appearance.background_a >= 0)) {
+        ImVec4 colorSet = ImVec4(
+            settings->overlay_appearance.background_r,
+            settings->overlay_appearance.background_g,
+            settings->overlay_appearance.background_b,
+            settings->overlay_appearance.background_a
+        );
         ImGui::PushStyleColor(ImGuiCol_WindowBg, colorSet);
     }
-    if ((settings->overlay_appearance.element_r != -1.0) && (settings->overlay_appearance.element_g != -1.0) && (settings->overlay_appearance.element_b != -1.0) && (settings->overlay_appearance.element_a != -1.0)) {
-        ImVec4 colorSet = ImVec4(settings->overlay_appearance.element_r, settings->overlay_appearance.element_g, settings->overlay_appearance.element_b, settings->overlay_appearance.element_a);
+
+    if ((settings->overlay_appearance.element_r >= 0) &&
+        (settings->overlay_appearance.element_g >= 0) &&
+        (settings->overlay_appearance.element_b >= 0) &&
+        (settings->overlay_appearance.element_a >= 0)) {
+        ImVec4 colorSet = ImVec4(
+            settings->overlay_appearance.element_r,
+            settings->overlay_appearance.element_g,
+            settings->overlay_appearance.element_b,
+            settings->overlay_appearance.element_a
+        );
         ImGui::PushStyleColor(ImGuiCol_TitleBgActive, colorSet);
         ImGui::PushStyleColor(ImGuiCol_Button, colorSet);
         ImGui::PushStyleColor(ImGuiCol_FrameBg, colorSet);
         ImGui::PushStyleColor(ImGuiCol_ResizeGrip, colorSet);
     }
-    if ((settings->overlay_appearance.element_hovered_r != -1.0) && (settings->overlay_appearance.element_hovered_g != -1.0) && (settings->overlay_appearance.element_hovered_b != -1.0) && (settings->overlay_appearance.element_hovered_a != -1.0)) {
-        ImVec4 colorSet = ImVec4(settings->overlay_appearance.element_hovered_r, settings->overlay_appearance.element_hovered_g, settings->overlay_appearance.element_hovered_b, settings->overlay_appearance.element_hovered_a);
+
+    if ((settings->overlay_appearance.element_hovered_r >= 0) &&
+        (settings->overlay_appearance.element_hovered_g >= 0) &&
+        (settings->overlay_appearance.element_hovered_b >= 0) &&
+        (settings->overlay_appearance.element_hovered_a >= 0)) {
+        ImVec4 colorSet = ImVec4(
+            settings->overlay_appearance.element_hovered_r,
+            settings->overlay_appearance.element_hovered_g,
+            settings->overlay_appearance.element_hovered_b,
+            settings->overlay_appearance.element_hovered_a
+        );
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colorSet);
         ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, colorSet);
         ImGui::PushStyleColor(ImGuiCol_ResizeGripHovered, colorSet);
         ImGui::PushStyleColor(ImGuiCol_HeaderHovered, colorSet);
     }
-    if ((settings->overlay_appearance.element_active_r != -1.0) && (settings->overlay_appearance.element_active_g != -1.0) && (settings->overlay_appearance.element_active_b != -1.0) && (settings->overlay_appearance.element_active_a != -1.0)) {
-        ImVec4 colorSet = ImVec4(settings->overlay_appearance.element_active_r, settings->overlay_appearance.element_active_g, settings->overlay_appearance.element_active_b, settings->overlay_appearance.element_active_a);
+
+    if ((settings->overlay_appearance.element_active_r >= 0) &&
+        (settings->overlay_appearance.element_active_g >= 0) &&
+        (settings->overlay_appearance.element_active_b >= 0) &&
+        (settings->overlay_appearance.element_active_a >= 0)) {
+        ImVec4 colorSet = ImVec4(
+            settings->overlay_appearance.element_active_r,
+            settings->overlay_appearance.element_active_g,
+            settings->overlay_appearance.element_active_b,
+            settings->overlay_appearance.element_active_a
+        );
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, colorSet);
         ImGui::PushStyleColor(ImGuiCol_FrameBgActive, colorSet);
         ImGui::PushStyleColor(ImGuiCol_ResizeGripActive, colorSet);
@@ -1148,8 +1254,7 @@ void Steam_Overlay::overlay_proc()
 
     if (ImGui::Begin(windowTitle.c_str(), &show,
             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
-            ImGuiWindowFlags_NoBringToFrontOnFocus))
-    {
+            ImGuiWindowFlags_NoBringToFrontOnFocus)) {
         ImGui::LabelText("##playinglabel", translationUserPlaying[current_language],
             settings->get_local_name(),
             settings->get_local_steam_id().ConvertToUint64(),
@@ -1256,7 +1361,7 @@ void Steam_Overlay::overlay_proc()
                     // we want to display the ach text regardless the icons were displayed or not
                     ImGui::Text("%s", x.title.c_str());
 
-                    if (hidden && !achieved) {
+                    if (hidden) {
                         ImGui::Text("%s", translationHiddenAchievement[current_language]);
                     } else {
                         ImGui::TextWrapped("%s", x.description.c_str());
@@ -1319,6 +1424,7 @@ void Steam_Overlay::overlay_proc()
             ImGui::End();
         }
 
+        // we have a url to open/display
         if (show_url.size()) {
             std::string url = show_url;
             bool show = true;
@@ -1376,6 +1482,161 @@ void Steam_Overlay::overlay_proc()
         ShowOverlay(false);
 }
 
+void Steam_Overlay::networking_msg_received(Common_Message *msg)
+{
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    
+    if (!Ready()) return;
+
+    if (msg->has_steam_messages()) {
+        Friend frd;
+        frd.set_id(msg->source_id());
+        auto friend_info = friends.find(frd);
+        if (friend_info != friends.end()) {
+            Steam_Messages const& steam_message = msg->steam_messages();
+            // Change color to cyan for friend
+            friend_info->second.chat_history.append(friend_info->first.name() + ": " + steam_message.message()).append("\n", 1);
+            if (!(friend_info->second.window_state & window_state_show)) {
+                friend_info->second.window_state |= window_state_need_attention;
+            }
+
+            add_chat_message_notification(friend_info->first.name() + ": " + steam_message.message());
+            notify_sound_user_invite(friend_info->second);
+        }
+    }
+}
+
+void Steam_Overlay::steam_run_callback()
+{
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    
+    if (!Ready()) return;
+
+    if (overlay_state_changed) {
+        overlay_state_changed = false;
+
+        GameOverlayActivated_t data{};
+        data.m_bActive = show_overlay;
+        data.m_bUserInitiated = true;
+        data.m_dwOverlayPID = 123;
+        data.m_nAppID = settings->get_local_game_id().AppID();
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    }
+
+    Steam_Friends* steamFriends = get_steam_client()->steam_friends;
+    Steam_Matchmaking* steamMatchmaking = get_steam_client()->steam_matchmaking;
+
+    if (save_settings) {
+        save_settings = false;
+
+        const char *language_text = valid_languages[current_language];
+        save_global_settings(get_steam_client()->local_storage, username_text, language_text);
+        get_steam_client()->settings_client->set_local_name(username_text);
+        get_steam_client()->settings_server->set_local_name(username_text);
+        get_steam_client()->settings_client->set_language(language_text);
+        get_steam_client()->settings_server->set_language(language_text);
+        steamFriends->resend_friend_data();
+    }
+
+    i_have_lobby = got_lobby();
+    std::for_each(friends.begin(), friends.end(), [this](std::pair<Friend const, friend_window_state> &i)
+    {
+        i.second.joinable = is_friend_joinable(i);
+    });
+
+    while (!has_friend_action.empty()) {
+        auto friend_info = friends.find(has_friend_action.front());
+        if (friend_info != friends.end()) {
+            uint64 friend_id = (uint64)friend_info->first.id();
+            // The user clicked on "Send"
+            if (friend_info->second.window_state & window_state_send_message) {
+                char* input = friend_info->second.chat_input;
+                char* end_input = input + strlen(input);
+                char* printable_char = std::find_if(input, end_input, [](char c) { return std::isgraph(c); });
+
+                // Check if the message contains something else than blanks
+                if (printable_char != end_input) {
+                    // Handle chat send
+                    Common_Message msg;
+                    Steam_Messages* steam_messages = new Steam_Messages;
+                    steam_messages->set_type(Steam_Messages::FRIEND_CHAT);
+                    steam_messages->set_message(friend_info->second.chat_input);
+                    msg.set_allocated_steam_messages(steam_messages);
+                    msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
+                    msg.set_dest_id(friend_id);
+                    network->sendTo(&msg, true);
+
+                    friend_info->second.chat_history.append(get_steam_client()->settings_client->get_local_name()).append(": ").append(input).append("\n", 1);
+                }
+                *input = 0; // Reset the input field
+
+                friend_info->second.window_state &= ~window_state_send_message;
+            }
+            // The user clicked on "Invite" (but invite all wasn't clicked)
+            if (friend_info->second.window_state & window_state_invite) {
+                invite_friend(friend_id, steamFriends, steamMatchmaking);
+                
+                friend_info->second.window_state &= ~window_state_invite;
+            }
+            // The user clicked on "Join"
+            if (friend_info->second.window_state & window_state_join) {
+                std::string connect = steamFriends->GetFriendRichPresence(friend_id, "connect");
+                // The user got a lobby invite and accepted it
+                if (friend_info->second.window_state & window_state_lobby_invite) {
+                    GameLobbyJoinRequested_t data;
+                    data.m_steamIDLobby.SetFromUint64(friend_info->second.lobbyId);
+                    data.m_steamIDFriend.SetFromUint64(friend_id);
+                    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+
+                    friend_info->second.window_state &= ~window_state_lobby_invite;
+                } else {
+                    // The user got a rich presence invite and accepted it
+                    if (friend_info->second.window_state & window_state_rich_invite) {
+                        GameRichPresenceJoinRequested_t data = {};
+                        data.m_steamIDFriend.SetFromUint64(friend_id);
+                        strncpy(data.m_rgchConnect, friend_info->second.connect, k_cchMaxRichPresenceValueLength - 1);
+                        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+                        
+                        friend_info->second.window_state &= ~window_state_rich_invite;
+                    } else if (connect.length() > 0) {
+                        GameRichPresenceJoinRequested_t data = {};
+                        data.m_steamIDFriend.SetFromUint64(friend_id);
+                        strncpy(data.m_rgchConnect, connect.c_str(), k_cchMaxRichPresenceValueLength - 1);
+                        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+                    }
+
+                    //Not sure about this but it fixes sonic racing transformed invites
+                    FriendGameInfo_t friend_game_info = {};
+                    steamFriends->GetFriendGamePlayed(friend_id, &friend_game_info);
+                    uint64 lobby_id = friend_game_info.m_steamIDLobby.ConvertToUint64();
+                    if (lobby_id) {
+                        GameLobbyJoinRequested_t data;
+                        data.m_steamIDLobby.SetFromUint64(lobby_id);
+                        data.m_steamIDFriend.SetFromUint64(friend_id);
+                        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+                    }
+                }
+                
+                friend_info->second.window_state &= ~window_state_join;
+            }
+        }
+        has_friend_action.pop();
+    }
+
+    // if variable == true, then set it to false and return true (because state was changed) in that case
+    bool yes_clicked = true;
+    if (invite_all_friends_clicked.compare_exchange_weak(yes_clicked, false)) {
+        PRINT_DEBUG("Steam_Overlay will send invitations to [%zu] friends if they're using the same app\n", friends.size());
+        uint32 current_appid = settings->get_local_game_id().AppID();
+        for (auto &fr : friends) {
+            if (fr.first.appid() == current_appid) { // friend is playing the same game
+                uint64 friend_id = (uint64)fr.first.id();
+                invite_friend(friend_id, steamFriends, steamMatchmaking);
+            }
+        }
+    }
+}
+
 
 void Steam_Overlay::SetupOverlay()
 {
@@ -1408,7 +1669,7 @@ void Steam_Overlay::UnSetupOverlay()
         // stop internal frame processing & restore cursor
         if (_renderer) {
             allow_renderer_frame_processing(false, true);
-            obscure_cursor_input(false);
+            obscure_game_input(false);
 
             // for some reason this gets triggered after the overlay instance has been destroyed
             // I assume because the game de-initializes DX later after closing Steam APIs
@@ -1445,7 +1706,7 @@ void Steam_Overlay::UnSetupOverlay()
 
 bool Steam_Overlay::Ready() const
 {
-    return is_ready;
+    return is_ready && late_init_imgui && late_init_ach_icons;
 }
 
 bool Steam_Overlay::NeedPresent() const
@@ -1517,15 +1778,11 @@ void Steam_Overlay::ShowOverlay(bool state)
 
     show_overlay = state;
     overlay_state_changed = true;
-
+    
     PRINT_DEBUG("Steam_Overlay::ShowOverlay %i\n", (int)state);
-
-    ImGuiIO &io = ImGui::GetIO();
-    // force draw the cursor, otherwise games like Truberbrook will not have an overlay cursor
-    io.MouseDrawCursor = state;
     
     Steam_Overlay::allow_renderer_frame_processing(state);
-    Steam_Overlay::obscure_cursor_input(state);
+    Steam_Overlay::obscure_game_input(state);
 
 }
 
@@ -1634,213 +1891,6 @@ void Steam_Overlay::AddAchievementNotification(nlohmann::json const& ach)
         }
         
         notify_sound_user_achievement();
-    }
-}
-
-void Steam_Overlay::Callback(Common_Message *msg)
-{
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (!Ready()) return;
-
-    if (msg->has_steam_messages()) {
-        Friend frd;
-        frd.set_id(msg->source_id());
-        auto friend_info = friends.find(frd);
-        if (friend_info != friends.end()) {
-            Steam_Messages const& steam_message = msg->steam_messages();
-            // Change color to cyan for friend
-            friend_info->second.chat_history.append(friend_info->first.name() + ": " + steam_message.message()).append("\n", 1);
-            if (!(friend_info->second.window_state & window_state_show)) {
-                friend_info->second.window_state |= window_state_need_attention;
-            }
-
-            add_chat_message_notification(friend_info->first.name() + ": " + steam_message.message());
-            notify_sound_user_invite(friend_info->second);
-        }
-    }
-}
-
-void Steam_Overlay::RunCallbacks()
-{
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    std::lock_guard<std::recursive_mutex> lock2(global_mutex);
-
-    if (!achievements.size() && load_achievements_trials > 0) {
-        --load_achievements_trials;
-        Steam_User_Stats* steamUserStats = get_steam_client()->steam_user_stats;
-        uint32 achievements_num = steamUserStats->GetNumAchievements();
-        if (achievements_num) {
-            PRINT_DEBUG("Steam_Overlay POPULATE OVERLAY ACHIEVEMENTS\n");
-            for (unsigned i = 0; i < achievements_num; ++i) {
-                Overlay_Achievement ach{};
-                ach.name = steamUserStats->GetAchievementName(i);
-                ach.title = steamUserStats->GetAchievementDisplayAttribute(ach.name.c_str(), "name");
-                ach.description = steamUserStats->GetAchievementDisplayAttribute(ach.name.c_str(), "desc");
-                const char *hidden = steamUserStats->GetAchievementDisplayAttribute(ach.name.c_str(), "hidden");
-                if (hidden && hidden[0] == '1') {
-                    ach.hidden = true;
-                } else {
-                    ach.hidden = false;
-                }
-
-                bool achieved = false;
-                uint32 unlock_time = 0;
-                if (steamUserStats->GetAchievementAndUnlockTime(ach.name.c_str(), &achieved, &unlock_time)) {
-                    ach.achieved = achieved;
-                    ach.unlock_time = unlock_time;
-                } else {
-                    ach.achieved = false;
-                    ach.unlock_time = 0;
-                }
-
-                ach.icon_name = steamUserStats->get_achievement_icon_name(ach.name.c_str(), true);
-                ach.icon_gray_name = steamUserStats->get_achievement_icon_name(ach.name.c_str(), false);
-
-                achievements.push_back(ach);
-            }
-
-            // don't punish successfull attempts
-            if (achievements.size()) load_achievements_trials = Steam_Overlay::LOAD_ACHIEVEMENTS_MAX_TRIALS;
-            PRINT_DEBUG("Steam_Overlay POPULATE OVERLAY ACHIEVEMENTS DONE (count=%lu, loaded=%zu)\n", achievements_num, achievements.size());
-        }
-    }
-
-    if (!Ready()) return;
-
-    // load images/icons for the next ach
-    if (next_ach_to_load < achievements.size()) {
-        try_load_ach_icon(achievements[next_ach_to_load]);
-        try_load_ach_gray_icon(achievements[next_ach_to_load]);
-
-        ++next_ach_to_load;
-        // this allows the callback to keep trying forever in case the image resource was reset
-        // each icon has a limit though, so it won't slow things down forever
-        if (next_ach_to_load >= achievements.size()) next_ach_to_load = 0;
-    }
-
-    if (overlay_state_changed) {
-        overlay_state_changed = false;
-
-        GameOverlayActivated_t data{};
-        data.m_bActive = show_overlay;
-        data.m_bUserInitiated = true;
-        data.m_dwOverlayPID = 123;
-        data.m_nAppID = settings->get_local_game_id().AppID();
-        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
-    }
-
-    Steam_Friends* steamFriends = get_steam_client()->steam_friends;
-    Steam_Matchmaking* steamMatchmaking = get_steam_client()->steam_matchmaking;
-
-    if (save_settings) {
-        save_settings = false;
-
-        const char *language_text = valid_languages[current_language];
-        save_global_settings(get_steam_client()->local_storage, username_text, language_text);
-        get_steam_client()->settings_client->set_local_name(username_text);
-        get_steam_client()->settings_server->set_local_name(username_text);
-        get_steam_client()->settings_client->set_language(language_text);
-        get_steam_client()->settings_server->set_language(language_text);
-        steamFriends->resend_friend_data();
-    }
-
-    i_have_lobby = got_lobby();
-    std::for_each(friends.begin(), friends.end(), [this](std::pair<Friend const, friend_window_state> &i)
-    {
-        i.second.joinable = is_friend_joinable(i);
-    });
-
-    while (!has_friend_action.empty()) {
-        auto friend_info = friends.find(has_friend_action.front());
-        if (friend_info != friends.end()) {
-            uint64 friend_id = (uint64)friend_info->first.id();
-            // The user clicked on "Send"
-            if (friend_info->second.window_state & window_state_send_message) {
-                char* input = friend_info->second.chat_input;
-                char* end_input = input + strlen(input);
-                char* printable_char = std::find_if(input, end_input, [](char c) {
-                    return std::isgraph(c);
-                });
-                // Check if the message contains something else than blanks
-                if (printable_char != end_input) {
-                    // Handle chat send
-                    Common_Message msg;
-                    Steam_Messages* steam_messages = new Steam_Messages;
-                    steam_messages->set_type(Steam_Messages::FRIEND_CHAT);
-                    steam_messages->set_message(friend_info->second.chat_input);
-                    msg.set_allocated_steam_messages(steam_messages);
-                    msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
-                    msg.set_dest_id(friend_id);
-                    network->sendTo(&msg, true);
-
-                    friend_info->second.chat_history.append(get_steam_client()->settings_client->get_local_name()).append(": ").append(input).append("\n", 1);
-                }
-                *input = 0; // Reset the input field
-
-                friend_info->second.window_state &= ~window_state_send_message;
-            }
-            // The user clicked on "Invite" (but invite all wasn't clicked)
-            if (friend_info->second.window_state & window_state_invite) {
-                invite_friend(friend_id, steamFriends, steamMatchmaking);
-                
-                friend_info->second.window_state &= ~window_state_invite;
-            }
-            // The user clicked on "Join"
-            if (friend_info->second.window_state & window_state_join) {
-                std::string connect = steamFriends->GetFriendRichPresence(friend_id, "connect");
-                // The user got a lobby invite and accepted it
-                if (friend_info->second.window_state & window_state_lobby_invite) {
-                    GameLobbyJoinRequested_t data;
-                    data.m_steamIDLobby.SetFromUint64(friend_info->second.lobbyId);
-                    data.m_steamIDFriend.SetFromUint64(friend_id);
-                    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
-
-                    friend_info->second.window_state &= ~window_state_lobby_invite;
-                } else {
-                    // The user got a rich presence invite and accepted it
-                    if (friend_info->second.window_state & window_state_rich_invite) {
-                        GameRichPresenceJoinRequested_t data = {};
-                        data.m_steamIDFriend.SetFromUint64(friend_id);
-                        strncpy(data.m_rgchConnect, friend_info->second.connect, k_cchMaxRichPresenceValueLength - 1);
-                        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
-                        
-                        friend_info->second.window_state &= ~window_state_rich_invite;
-                    } else if (connect.length() > 0) {
-                        GameRichPresenceJoinRequested_t data = {};
-                        data.m_steamIDFriend.SetFromUint64(friend_id);
-                        strncpy(data.m_rgchConnect, connect.c_str(), k_cchMaxRichPresenceValueLength - 1);
-                        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
-                    }
-
-                    //Not sure about this but it fixes sonic racing transformed invites
-                    FriendGameInfo_t friend_game_info = {};
-                    steamFriends->GetFriendGamePlayed(friend_id, &friend_game_info);
-                    uint64 lobby_id = friend_game_info.m_steamIDLobby.ConvertToUint64();
-                    if (lobby_id) {
-                        GameLobbyJoinRequested_t data;
-                        data.m_steamIDLobby.SetFromUint64(lobby_id);
-                        data.m_steamIDFriend.SetFromUint64(friend_id);
-                        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
-                    }
-                }
-                
-                friend_info->second.window_state &= ~window_state_join;
-            }
-        }
-        has_friend_action.pop();
-    }
-
-    // if variable == true, then set it to false and return true (because state was changed) in that case
-    bool yes_clicked = true;
-    if (invite_all_friends_clicked.compare_exchange_weak(yes_clicked, false)) {
-        PRINT_DEBUG("Steam_Overlay will send invitations to [%zu] friends if they're using the same app\n", friends.size());
-        uint32 current_appid = settings->get_local_game_id().AppID();
-        for (auto &fr : friends) {
-            if (fr.first.appid() == current_appid) { // friend is playing the same game
-                uint64 friend_id = (uint64)fr.first.id();
-                invite_friend(friend_id, steamFriends, steamMatchmaking);
-            }
-        }
     }
 }
 

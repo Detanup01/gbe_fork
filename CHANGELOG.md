@@ -1,8 +1,8 @@
-# 2024/3/11
+# 2024/3/14
 * manage overlay cursor input/clipping and internal frame processing in a better way,
   should prevent more games from pausing to display notifications
-* load the icons of a single achievement each overlay callback invokation, will slow things down during startup  
-  but this avoids having to load the achievement icon during gameplay which causes micro-stutter
+* initially attempt to load the icons of all achievements, this will slow things down at startup,  
+  but avoids having to load the achievement icon during gameplay which causes micro-stutter
 * avoid loading and resizing the achievement icon each time it's unlocked
 * Local_Storage: avoid allocating buffers unless `stbi_load()` was successfull
 

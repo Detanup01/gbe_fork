@@ -111,33 +111,32 @@ class Steam_Overlay
     Networking* network;
 
     // friend id, show client window (to chat and accept invite maybe)
-    std::map<Friend, friend_window_state, Friend_Less> friends;
+    std::map<Friend, friend_window_state, Friend_Less> friends{};
 
-    // avoids spam loading on failure
-    constexpr const static int LOAD_ACHIEVEMENTS_MAX_TRIALS = 3;
-    std::atomic<int32_t> load_achievements_trials = LOAD_ACHIEVEMENTS_MAX_TRIALS;
     bool is_ready = false;
-    bool show_overlay;
-    ENotificationPosition notif_position;
-    int h_inset, v_inset;
-    std::string show_url;
-    std::vector<Overlay_Achievement> achievements;
-    // index of the next achievement whose icons will be loaded
-    // used by the callback
-    int next_ach_to_load = 0;
-    bool show_achievements, show_settings;
+
+    ENotificationPosition notif_position = ENotificationPosition::k_EPositionBottomLeft;
+    int h_inset = 0;
+    int v_inset = 0;
+    std::string show_url{};
+
+    std::vector<Overlay_Achievement> achievements{};
+    
+    bool show_overlay = false;
+    bool show_achievements = false;
+    bool show_settings = false;
 
     // disable input when force_*.txt file is used
-    bool disable_user_input;
+    bool disable_user_input = false;
     // warn when force_*.txt file is used
-    bool warn_forced_setting;
+    bool warn_forced_setting = false;
     // warn when using local save
-    bool warn_local_save;
+    bool warn_local_save = false;
     // warn when app ID = 0
-    bool warn_bad_appid;
+    bool warn_bad_appid = false;
 
-    char username_text[256];
-    std::atomic<bool> save_settings;
+    char username_text[256]{};
+    std::atomic<bool> save_settings = false;
 
     int current_language = 0;
 
@@ -149,9 +148,13 @@ class Steam_Overlay
     // used when the button "Invite all" is clicked
     std::atomic<bool> invite_all_friends_clicked = false;
 
-    bool overlay_state_changed;
+    bool overlay_state_changed = false;
 
-    std::atomic<bool> i_have_lobby;
+    std::atomic<bool> i_have_lobby = false;
+
+    // some stuff has to be initialized once the renderer hook is ready
+    std::atomic<bool> late_init_imgui = false;
+    bool late_init_ach_icons = false;
 
     // changed each time a notification is posted or overlay is shown/hidden
     std::atomic_uint32_t renderer_frame_processing_requests = 0;
@@ -167,12 +170,9 @@ class Steam_Overlay
     Steam_Overlay& operator=(Steam_Overlay const&) = delete;
     Steam_Overlay& operator=(Steam_Overlay&&) = delete;
 
-    static void steam_overlay_run_every_runcb(void* object);
-    static void steam_overlay_callback(void* object, Common_Message* msg);
-
-    void Callback(Common_Message* msg);
-    void RunCallbacks();
-
+    static void overlay_run_callback(void* object);
+    static void overlay_networking_callback(void* object, Common_Message* msg);
+    
     bool is_friend_joinable(std::pair<const Friend, friend_window_state> &f);
     bool got_lobby();
 
@@ -198,12 +198,12 @@ class Steam_Overlay
     
     void create_fonts();
     void load_audio();
+    void load_achievements_data();
+    void initial_load_achievements_icons();
 
     void overlay_state_hook(bool ready);
     void allow_renderer_frame_processing(bool state, bool cleaning_up_overlay = false);
-    void obscure_cursor_input(bool state);
-
-    void overlay_proc();
+    void obscure_game_input(bool state);
 
     void add_auto_accept_invite_notification();
 
@@ -215,6 +215,10 @@ class Steam_Overlay
 
     bool try_load_ach_icon(Overlay_Achievement &ach);
     bool try_load_ach_gray_icon(Overlay_Achievement &ach);
+
+    void overlay_render_proc();
+    void networking_msg_received(Common_Message* msg);
+    void steam_run_callback();
 
 public:
     Steam_Overlay(Settings* settings, SteamCallResults* callback_results, SteamCallBacks* callbacks, RunEveryRunCB* run_every_runcb, Networking *network);

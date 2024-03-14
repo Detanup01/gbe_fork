@@ -518,13 +518,12 @@ bool SetAchievement( const char *pchName )
         auto ach = user_achievements.find(pch_name);
         if (user_achievements.end() == ach || ach->value("earned", false) == false) {
             user_achievements[pch_name]["earned"] = true;
-            user_achievements[pch_name]["earned_time"] = std::chrono::duration_cast<std::chrono::duration<uint32>>(std::chrono::system_clock::now().time_since_epoch()).count();
+            user_achievements[pch_name]["earned_time"] =
+                std::chrono::duration_cast<std::chrono::duration<uint32>>(std::chrono::system_clock::now().time_since_epoch()).count();
 
             save_achievements();
 
-#ifdef EMU_OVERLAY
-            overlay->AddAchievementNotification(it.value());
-#endif
+            if(!settings->disable_overlay) overlay->AddAchievementNotification(it.value());
 
         }
     } catch (...) {}
