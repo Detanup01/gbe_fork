@@ -1861,6 +1861,9 @@ void Steam_Overlay::AddAchievementNotification(nlohmann::json const& ach)
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     if (!Ready()) return;
 
+    // don't return early when disable_overlay_achievement_notification is true
+    // otherwise when you open the achievements list/menu you won't see the new unlock status
+
     std::vector<Overlay_Achievement*> found_achs{};
     {
         std::lock_guard<std::recursive_mutex> lock2(global_mutex);
