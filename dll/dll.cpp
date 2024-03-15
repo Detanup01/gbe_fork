@@ -885,7 +885,7 @@ STEAMAPI_API void S_CALLTYPE SteamAPI_ManualDispatch_RunFrame( HSteamPipe hSteam
 /// (after dispatching the callback) before calling SteamAPI_ManualDispatch_GetNextCallback again.
 STEAMAPI_API steam_bool S_CALLTYPE SteamAPI_ManualDispatch_GetNextCallback( HSteamPipe hSteamPipe, CallbackMsg_t *pCallbackMsg )
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("SteamAPI_ManualDispatch_GetNextCallback %i %p\n", hSteamPipe, pCallbackMsg);
     std::queue<struct cb_data> *q = NULL;
     HSteamUser m_hSteamUser = 0;
     Steam_Client *steam_client = get_steam_client();

@@ -345,7 +345,7 @@ int32 GetFileSize( const char *pchFile )
 
 int64 GetFileTimestamp( const char *pchFile )
 {
-    PRINT_DEBUG("Steam_Remote_Storage::GetFileTimestamp\n");
+    PRINT_DEBUG("Steam_Remote_Storage::GetFileTimestamp '%s'\n", pchFile);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!pchFile || !pchFile[0]) return 0;
     
