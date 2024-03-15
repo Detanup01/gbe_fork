@@ -194,7 +194,7 @@ void Steam_Utils::RunFrame()
 // control how often you do them.
 uint32 Steam_Utils::GetIPCCallCount()
 {
-    PRINT_DEBUG("Steam_Utils::GetIPCCallCount\n");
+    PRINT_DEBUG("TODO Steam_Utils::GetIPCCallCount\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     static int i = 0;
     i += 123;
@@ -250,7 +250,7 @@ bool Steam_Utils::BOverlayNeedsPresent()
 STEAM_CALL_RESULT( CheckFileSignature_t )
 SteamAPICall_t Steam_Utils::CheckFileSignature( const char *szFileName )
 {
-    PRINT_DEBUG("Steam_Utils::CheckFileSignature\n");
+    PRINT_DEBUG("Steam_Utils::CheckFileSignature '%s'\n", szFileName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     CheckFileSignature_t data;
     data.m_eCheckFileSignature = k_ECheckFileSignatureValidSignature;
