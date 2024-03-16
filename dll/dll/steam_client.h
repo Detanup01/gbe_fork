@@ -216,7 +216,7 @@ public:
 
 
 	// Deprecated. Applications should use SteamAPI_RunCallbacks() or SteamGameServer_RunCallbacks() instead.
-	STEAM_PRIVATE_API( void RunFrame(); )
+	STEAM_PRIVATE_API( void RunFrame() );
 
 	// returns the number of IPC calls made since the last time this function was called
 	// Used for perf debugging so you can understand how many IPC calls your game makes per frame
@@ -298,7 +298,7 @@ public:
     void RegisterCallResult( class CCallbackBase *pCallback, SteamAPICall_t hAPICall);
     void UnregisterCallResult( class CCallbackBase *pCallback, SteamAPICall_t hAPICall);
     
-    void RunCallbacks(bool runClientCB, bool runGameserverCB);
+    void RunCallbacks(bool runClientCB, bool runGameserverCB, bool runBackgroundThread=true);
     void setAppID(uint32 appid);
     void userLogIn();
     void serverInit();

@@ -1872,34 +1872,45 @@ void Steam_Client::UnregisterCallResult( class CCallbackBase *pCallback, SteamAP
     callback_results_server->rmCallBack(hAPICall, pCallback);
 }
 
-void Steam_Client::RunCallbacks(bool runClientCB, bool runGameserverCB)
+void Steam_Client::RunCallbacks(bool runClientCB, bool runGameserverCB, bool runBackgroundThread)
 {
+    PRINT_DEBUG("Steam_Client::RunCallbacks begin ------------------------------------------------------\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (!background_keepalive.joinable()) background_keepalive = std::thread(background_thread, this);
+    if (runBackgroundThread && !background_keepalive.joinable()) {
+        background_keepalive = std::thread(background_thread, this);
+        PRINT_DEBUG("Steam_Client::RunCallbacks spawned background thread *********\n");
+    }
 
+    PRINT_DEBUG("Steam_Client::RunCallbacks network *********\n");
     network->Run();
-    PRINT_DEBUG("Steam_Client::RunCallbacks steam_matchmaking_servers\n");
+
+    PRINT_DEBUG("Steam_Client::RunCallbacks steam_matchmaking_servers *********\n");
     steam_matchmaking_servers->RunCallbacks();
+    
+    PRINT_DEBUG("Steam_Client::RunCallbacks run_every_runcb *********\n");
     run_every_runcb->run();
 
+    PRINT_DEBUG("Steam_Client::RunCallbacks steam_gameserver *********\n");
     steam_gameserver->RunCallbacks();
 
     if (runClientCB) {
-        PRINT_DEBUG("Steam_Client::RunCallbacks callback_results_client\n");
+        PRINT_DEBUG("Steam_Client::RunCallbacks callback_results_client *********\n");
         callback_results_client->runCallResults();
     }
 
     if (runGameserverCB) {
-        PRINT_DEBUG("Steam_Client::RunCallbacks callback_results_server\n");
+        PRINT_DEBUG("Steam_Client::RunCallbacks callback_results_server *********\n");
         callback_results_server->runCallResults();
     }
 
-    PRINT_DEBUG("Steam_Client::RunCallbacks callbacks_server\n");
+    PRINT_DEBUG("Steam_Client::RunCallbacks callbacks_server *********\n");
     callbacks_server->runCallBacks();
-    PRINT_DEBUG("Steam_Client::RunCallbacks callbacks_client\n");
+
+    PRINT_DEBUG("Steam_Client::RunCallbacks callbacks_client *********\n");
     callbacks_client->runCallBacks();
+
     last_cb_run = std::chrono::duration_cast<std::chrono::duration<unsigned long long>>(std::chrono::system_clock::now().time_since_epoch()).count();
-    PRINT_DEBUG("Steam_Client::RunCallbacks done\n");
+    PRINT_DEBUG("Steam_Client::RunCallbacks done ------------------------------------------------------\n\n");
 }
 
 void Steam_Client::DestroyAllInterfaces()

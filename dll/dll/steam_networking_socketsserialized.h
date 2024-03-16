@@ -40,7 +40,7 @@ static void steam_callback(void *object, Common_Message *msg)
 
 static void steam_run_every_runcb(void *object)
 {
-    PRINT_DEBUG("steam_networkingsockets_run_every_runcb\n");
+    PRINT_DEBUG("steam_networkingsockets_serialized_run_every_runcb\n");
 
     Steam_Networking_Sockets_Serialized *steam_networkingsockets = (Steam_Networking_Sockets_Serialized *)object;
     steam_networkingsockets->RunCallbacks();

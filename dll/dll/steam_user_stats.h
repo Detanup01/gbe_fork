@@ -1199,7 +1199,7 @@ SteamAPICall_t RequestGlobalStats( int nHistoryDays )
 {
     PRINT_DEBUG("Steam_User_Stats::RequestGlobalStats %i\n", nHistoryDays);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    GlobalStatsReceived_t data;
+    GlobalStatsReceived_t data{};
     data.m_nGameID = settings->get_local_game_id().ToUint64();
     data.m_eResult = k_EResultOK;
     return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
