@@ -6,8 +6,12 @@
     the script will attempt to detect and use the built-in tool `sudo` if it was available
 * for windows: updated stub drm patterns and added a workaround for older variants,  
   this increases the compatibility, but makes it easier to be detected
-* added missing example file `disable_lobby_creation.txt` in `steam_settings` folder + updated release `README`
+* new stub dll `GameOverlayRenderer` for the experiemntal steamclient setup,  
+  some apps verify the existence of this dll, either on disk, or inside their memory space.  
+  not recommended to ignore it
 * allow overlay invitations to obscure game input to be able to accept/reject the request
+* added missing example file `disable_lobby_creation.txt` in `steam_settings` folder + updated release `README`
+* for windows build script: prevent permissive language extensions via the compiler flag `/permissive-`
 
 ---
 

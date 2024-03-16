@@ -39,6 +39,9 @@ set /a BUILD_TOOL_LOBBY=1
 set /a BUILD_LIB_NET_SOCKETS_32=0
 set /a BUILD_LIB_NET_SOCKETS_64=0
 
+set /a BUILD_LIB_GAMEOVERLAY_32=0
+set /a BUILD_LIB_GAMEOVERLAY_64=0
+
 :: < 0: deduce, > 1: force
 set /a PARALLEL_THREADS_OVERRIDE=-1
 
@@ -85,6 +88,10 @@ set /a VERBOSE=0
     set /a BUILD_LIB_NET_SOCKETS_32=1
   ) else if "%~1"=="+lib-netsockets-64" (
     set /a BUILD_LIB_NET_SOCKETS_64=1
+  ) else if "%~1"=="+lib-gameoverlay-32" (
+    set /a BUILD_LIB_GAMEOVERLAY_32=1
+  ) else if "%~1"=="+lib-gameoverlay-64" (
+    set /a BUILD_LIB_GAMEOVERLAY_64=1
   ) else if "%~1"=="-j" (
     call :get_parallel_threads_count %~2 || (
       call :err_msg "Invalid arg after -j, expected a number"
@@ -175,7 +182,7 @@ set "dos_stub_exe_64=%win_resources_src_dir%\file_dos_stub\file_dos_stub_64.exe"
 set "protoc_exe_32=%deps_dir%\protobuf\install32\bin\protoc.exe"
 set "protoc_exe_64=%deps_dir%\protobuf\install64\bin\protoc.exe"
 
-set "common_compiler_args=/std:c++17 /MP%build_threads% /DYNAMICBASE /errorReport:none /nologo /utf-8 /Zc:char8_t- /EHsc /GF /GL- /GS"
+set "common_compiler_args=/std:c++17 /permissive- /MP%build_threads% /DYNAMICBASE /errorReport:none /nologo /utf-8 /Zc:char8_t- /EHsc /GF /GL- /GS"
 set "common_compiler_args_32=%common_compiler_args%"
 set "common_compiler_args_64=%common_compiler_args%"
 
@@ -391,6 +398,14 @@ if %BUILD_LIB_NET_SOCKETS_32% equ 1 (
   echo: & echo:
 )
 
+:: gameoverlayrenderer lib (x32)
+if %BUILD_LIB_GAMEOVERLAY_32% equ 1 (
+  call :compile_gameoverlay_lib_32 || (
+    set /a last_code+=1
+  )
+  echo: & echo:
+)
+
 endlocal & set /a last_code=%last_code%
 
 
@@ -494,6 +509,14 @@ if %BUILD_LIB_NET_SOCKETS_64% equ 1 (
   echo: & echo:
 )
 
+:: gameoverlayrenderer lib (x64)
+if %BUILD_LIB_GAMEOVERLAY_64% equ 1 (
+  call :compile_gameoverlay_lib_64 || (
+    set /a last_code+=1
+  )
+  echo: & echo:
+)
+
 endlocal & set /a last_code=%last_code%
 
 
@@ -577,7 +600,7 @@ endlocal & exit /b %_exit%
 
 :compile_experimentalclient_32
   setlocal
-  echo // building lib steamclient.dll - 32
+  echo // building experimental lib steamclient.dll - 32
   set src_files="%win_resources_out_dir%\rsrc-client-32.res" %release_src% "%libs_dir%\detours\*.cpp" "controller\gamepad.c" "overlay_experimental\*.cpp"
   set extra_inc_dirs=%overlay_inc32%
   set extra_libs=%overlay_lib32%
@@ -591,7 +614,7 @@ endlocal & exit /b %_exit%
 
 :compile_experimentalclient_ldr_32
   setlocal
-  echo // building executable steamclient_loader_32.exe - 32
+  echo // building experimental executable steamclient_loader_32.exe - 32
   set src_files="%win_resources_out_dir%\rsrc-launcher-32.res" "%tools_src_dir%\steamclient_loader\win\*.cpp" "helpers\pe_helpers.cpp" "helpers\common_helpers.cpp" "helpers\dbg_log.cpp"
   set extra_inc_dirs=/I"%tools_src_dir%\steamclient_loader\win\extra_protection" /I"pe_helpers"
   set extra_libs="user32.lib"
@@ -605,7 +628,7 @@ endlocal & exit /b %_exit%
 
 :compile_experimentalclient_extra_32
   setlocal
-  echo // building library steamclient_extra.dll - 32
+  echo // building experimental library steamclient_extra.dll - 32
   set src_files="%win_resources_out_dir%\rsrc-client-32.res" "%tools_src_dir%\steamclient_loader\win\extra_protection\*.cpp" "helpers\pe_helpers.cpp" "helpers\common_helpers.cpp" "%libs_dir%\detours\*.cpp"
   set extra_inc_dirs=/I"%tools_src_dir%\steamclient_loader\win\extra_protection" /I"pe_helpers"
   call :build_for 1 0 "%steamclient_dir%\extra_dlls\steamclient_extra.dll" src_files extra_inc_dirs
@@ -652,6 +675,19 @@ endlocal & exit /b %_exit%
   )
 endlocal & exit /b %_exit%
 
+:compile_gameoverlay_lib_32
+  setlocal
+  echo // building experimental library GameOverlayRenderer.dll - 32
+  set src_files="game_overlay_renderer_lib\game_overlay_renderer_lib.cpp" 
+  set extra_inc_dirs=/I"game_overlay_renderer_lib"
+  call :build_for 1 0 "%steamclient_dir%\GameOverlayRenderer.dll" src_files extra_inc_dirs
+  set /a _exit=%errorlevel%
+  if %_exit% equ 0 (
+    call :change_dos_stub 1 "%steamclient_dir%\GameOverlayRenderer.dll"
+    call "%signer_tool%" "%steamclient_dir%\GameOverlayRenderer.dll"
+  )
+endlocal & exit /b %_exit%
+
 
 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: x64
@@ -695,7 +731,7 @@ endlocal & exit /b %_exit%
 
 :compile_experimentalclient_64
   setlocal
-  echo // building lib steamclient64.dll - 64
+  echo // building experimental lib steamclient64.dll - 64
   set src_files="%win_resources_out_dir%\rsrc-client-64.res" %release_src% "%libs_dir%\detours\*.cpp" "controller\gamepad.c" "overlay_experimental\*.cpp"
   set extra_inc_dirs=%overlay_inc64%
   set extra_libs=%overlay_lib64%
@@ -709,7 +745,7 @@ endlocal & exit /b %_exit%
 
 :compile_experimentalclient_ldr_64
   setlocal
-  echo // building executable steamclient_loader_64.exe - 64
+  echo // building experimental executable steamclient_loader_64.exe - 64
   set src_files="%win_resources_out_dir%\rsrc-launcher-64.res" "%tools_src_dir%\steamclient_loader\win\*.cpp" "helpers\pe_helpers.cpp" "helpers\common_helpers.cpp" "helpers\dbg_log.cpp"
   set extra_inc_dirs=/I"%tools_src_dir%\steamclient_loader\win\extra_protection" /I"pe_helpers"
   set extra_libs="user32.lib"
@@ -723,7 +759,7 @@ endlocal & exit /b %_exit%
 
 :compile_experimentalclient_extra_64
   setlocal
-  echo // building library steamclient_extra64.dll - 64
+  echo // building experimental library steamclient_extra64.dll - 64
   set src_files="%win_resources_out_dir%\rsrc-client-64.res" "%tools_src_dir%\steamclient_loader\win\extra_protection\*.cpp" "helpers\pe_helpers.cpp" "helpers\common_helpers.cpp" "%libs_dir%\detours\*.cpp"
   set extra_inc_dirs=/I"%tools_src_dir%\steamclient_loader\win\extra_protection" /I"pe_helpers"
   call :build_for 0 0 "%steamclient_dir%\extra_dlls\steamclient_extra64.dll" src_files extra_inc_dirs
@@ -743,6 +779,19 @@ endlocal & exit /b %_exit%
   if %_exit% equ 0 (
     call :change_dos_stub 0 "%build_root_dir%\networking_sockets_lib\steamnetworkingsockets64.dll"
     call "%signer_tool%" "%build_root_dir%\networking_sockets_lib\steamnetworkingsockets64.dll"
+  )
+endlocal & exit /b %_exit%
+
+:compile_gameoverlay_lib_64
+  setlocal
+  echo // building experimental library GameOverlayRenderer64.dll - 64
+  set src_files="game_overlay_renderer_lib\game_overlay_renderer_lib.cpp" 
+  set extra_inc_dirs=/I"game_overlay_renderer_lib"
+  call :build_for 0 0 "%steamclient_dir%\GameOverlayRenderer64.dll" src_files extra_inc_dirs
+  set /a _exit=%errorlevel%
+  if %_exit% equ 0 (
+    call :change_dos_stub 0 "%steamclient_dir%\GameOverlayRenderer64.dll"
+    call "%signer_tool%" "%steamclient_dir%\GameOverlayRenderer64.dll"
   )
 endlocal & exit /b %_exit%
 

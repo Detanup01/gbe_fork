@@ -79,7 +79,7 @@ static std::vector<uint8_t> get_pe_header(const std::wstring &filepath)
 static std::vector<std::wstring> collect_dlls_to_inject(
     const std::wstring &extra_dlls_folder,
     bool is_exe_32,
-    std::wstring &failed_dlls = std::wstring{})
+    std::wstring &failed_dlls)
 {
     const auto load_order_file = std::filesystem::path(extra_dlls_folder) / "load_order.txt";
     std::vector<std::wstring> dlls_to_inject{};
@@ -361,6 +361,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     
     // dlls to inject
     std::wstring ForceInjectSteamClient = get_ini_value(L"Injection", L"ForceInjectSteamClient");
+    std::wstring ForceInjectGameOverlayRenderer = get_ini_value(L"Injection", L"ForceInjectGameOverlayRenderer");
     std::wstring DllsToInjectFolder = common_helpers::to_absolute(
         get_ini_value(L"Injection", L"DllsToInjectFolder"),
         pe_helpers::get_current_exe_path_w()
@@ -374,6 +375,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     std::wstring ResumeByDebugger = get_ini_value(L"Debug", L"ResumeByDebugger");
 
     to_bool_ini_val(ForceInjectSteamClient);
+    to_bool_ini_val(ForceInjectGameOverlayRenderer);
     to_bool_ini_val(IgnoreInjectionError);
     to_bool_ini_val(IgnoreLoaderArchDifference);
     to_bool_ini_val(ResumeByDebugger);
@@ -388,6 +390,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     dbg_log::write(L"SteamClient::SteamClient64Dll: " + Client64Path);
     dbg_log::write(L"SteamClient::PersistentMode: " + PersistentMode);
     dbg_log::write(L"SteamClient::ForceInjectSteamClient: " + ForceInjectSteamClient);
+    dbg_log::write(L"SteamClient::ForceInjectGameOverlayRenderer: " + ForceInjectGameOverlayRenderer);
     dbg_log::write(L"Injection::DllsToInjectFolder: " + DllsToInjectFolder);
     dbg_log::write(L"Injection::IgnoreInjectionError: " + IgnoreInjectionError);
     dbg_log::write(L"Injection::IgnoreLoaderArchDifference: " + IgnoreLoaderArchDifference);
@@ -484,6 +487,31 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
             if (choice != IDYES) {
                 dbg_log::close();
                 return 1;
+            }
+        }
+    }
+    if (ForceInjectGameOverlayRenderer.size()) {
+        if (is_exe_32) {
+            std::wstring GameOverlayPath = common_helpers::to_absolute(
+                L"GameOverlayRenderer.dll",
+                std::filesystem::path(ClientPath).parent_path().wstring()
+            );
+            if (!common_helpers::file_exist(GameOverlayPath)) {
+                dbg_log::write("Couldn't find GameOverlayRenderer.dll");
+                MessageBoxA(NULL, "Couldn't find GameOverlayRenderer.dll.", "ColdClientLoader", MB_ICONERROR);
+            } else {
+                dlls_to_inject.insert(dlls_to_inject.begin(), GameOverlayPath);
+            }
+        } else { // 64
+            std::wstring GameOverlay64Path = common_helpers::to_absolute(
+                L"GameOverlayRenderer64.dll",
+                std::filesystem::path(Client64Path).parent_path().wstring()
+            );
+            if (!common_helpers::file_exist(GameOverlay64Path)) {
+                dbg_log::write("Couldn't find GameOverlayRenderer64.dll");
+                MessageBoxA(NULL, "Couldn't find GameOverlayRenderer64.dll.", "ColdClientLoader", MB_ICONERROR);
+            } else {
+                dlls_to_inject.insert(dlls_to_inject.begin(), GameOverlay64Path);
             }
         }
     }

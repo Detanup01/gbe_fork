@@ -17,17 +17,26 @@ You do not need to create a `steam_interfaces.txt` file for the `steamclient` ve
    * `steamclient64.dll`
    * `ColdClientLoader.ini`
    * `steamclient_loader.exe`
-2. Edit `ColdClientLoader.ini` and specify:
+
+2. While it is not mandatory, it is highly recommended to copy the relevant `GameOverlayRenderer` dll(s)  
+   This is recommended because some apps check for the existence of this dll, either on disk, on inside their memory space, otherwise they'll trigger custom protection.  
+   When in doubt, just copy both dlls.  
+   * `GameOverlayRenderer.dll`: for 32-bit apps
+   * `GameOverlayRenderer64.dll`: for 64-bit apps
+
+3. Edit `ColdClientLoader.ini` and specify:  
    * `AppId`: the app ID
    * `Exe`: the path to the game's executable/launcher, either full path or relative to this loader  
    * `ExeRunDir` *(optional)*: generally this must be set to the folder containing the game's exe, if left empty then it will be automatically set to the folder containing the game's exe.  
    * `ExeCommandLine` *(optional)*: additional args to pass to the exe, example: `-dx11 -windowed`  
-   Optionally you can specify a different location for `steamclient(64).dll`:  
+     Optionally you can specify a different location for `steamclient(64).dll`:  
    * `SteamClientDll`: path to `steamclient.dll`, either full path or relative to this loader  
-   * `SteamClient64Dll`: path to `steamclient(64).dll`, either full path or relative to this loader  
+   * `SteamClient64Dll`: path to `steamclient64.dll`, either full path or relative to this loader  
    * `ForceInjectSteamClient`: force inject `steamclient(64).dll` instead of letting the app load it automatically  
+   * `ForceInjectGameOverlayRenderer`: force inject `GameOverlayRenderer(64).dll` instead of letting the app load it automatically.  
+     These dlls are expected to be in the same folder of `steamclient(64).dll`
    * `ResumeByDebugger`: setting this to `1` or `y` or `true` will prevent the loader from calling `ResumeThread()` on the main thread after spawning the .exe, and it will display a mesage with the process ID (PID) so you attach your debugger on it.  
-   Note that you have to resume the main thread from the debugger after attaching, also the entry breakpoint may not be set automatically, but you can do that manually.  
+     Note that you have to resume the main thread from the debugger after attaching, also the entry breakpoint may not be set automatically, but you can do that manually.  
    * `DllsToInjectFolder` *(optional)*: path to a folder containing dlls to force inject into the app upon start,  
      the loader will attempt to detect the dll architecture (32 or 64 bit), if it didn't match the architecture of the exe, then it will ignored  
    * `IgnoreInjectionError`: setting this to `1` or `y` or `true` will prevent the loader from displaying an error message when a dll injection fails  
@@ -59,4 +68,12 @@ Any .dll file not mentioned in this file will be loaded later, but in random ord
 ---
 
 ## `extra_dlls`  
-This folder contains an experimental dll which, when injected, will attempt to patch the Stub drm in meory, only for v3.1  
+This folder contains an experimental dll which, when injected, will attempt to patch the Stub drm in memory, mainly for newer variants but it also works on some of the older ones.  
+
+This isn't a complete solution, just a different method.  
+
+---
+
+## `GameOverlayRenderer`
+Some apps verify the existence of this dll, either on disk, or inside their memory space, that's why this dll exists.  
+It is **NOT** recommended to ignore this dll.  
