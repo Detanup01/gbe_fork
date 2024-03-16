@@ -1,10 +1,14 @@
-# 2024/3/14
+# 2024/3/16
 * manage overlay cursor input/clipping and internal frame processing in a better way,
   should prevent more games from pausing to display notifications
 * initially attempt to load the icons of all achievements, this will slow things down at startup,  
   but avoids having to load the achievement icon during gameplay which causes micro-stutter
 * avoid loading and resizing the achievement icon each time it's unlocked
 * Local_Storage: avoid allocating buffers unless `stbi_load()` was successfull
+* changed how manual callback dispatch is handled, now it won't run the background thread,  
+  this might break stuff
+* removed an outdated example file for dll injection in the `ColdClientLoader`
+* refactor/restructure `steam_utils` into a separate cpp file
 
 ---
 
