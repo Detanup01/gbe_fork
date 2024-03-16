@@ -232,9 +232,10 @@ void Steam_Apps::RequestAppProofOfPurchaseKey( AppId_t nAppID )
 // https://partner.steamgames.com/doc/api/ISteamApps
 bool Steam_Apps::GetCurrentBetaName( char *pchName, int cchNameBufferSize )
 {
-    PRINT_DEBUG("Steam_Apps::GetCurrentBetaName %i\n", cchNameBufferSize);
+    PRINT_DEBUG("Steam_Apps::GetCurrentBetaName %p [%i]\n", pchName, cchNameBufferSize);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (pchName && cchNameBufferSize > settings->current_branch_name.size()) {
+        memset(pchName, 0, cchNameBufferSize);
         memcpy(pchName, settings->current_branch_name.c_str(), settings->current_branch_name.size());
     }
 
