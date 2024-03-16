@@ -22,6 +22,11 @@
 
 #define PUSH_BACK_IF_NOT_IN(vector, element) { if(std::find(vector.begin(), vector.end(), element) == vector.end()) vector.push_back(element); }
 
+#define STEAM_CALLRESULT_TIMEOUT 120.0
+#define STEAM_CALLRESULT_WAIT_FOR_CB 0.01
+#define DEFAULT_CB_TIMEOUT 0.002
+
+
 extern std::recursive_mutex global_mutex;
 extern const std::chrono::time_point<std::chrono::high_resolution_clock> startup_counter;
 extern const std::chrono::time_point<std::chrono::system_clock> startup_time;
@@ -49,8 +54,6 @@ public:
     };
 };
 
-#define STEAM_CALLRESULT_TIMEOUT 120.0
-#define STEAM_CALLRESULT_WAIT_FOR_CB 0.01
 struct Steam_Call_Result {
     Steam_Call_Result(SteamAPICall_t a, int icb, void *r, unsigned int s, double r_in, bool run_cc_cb) {
         api_call = a;
@@ -108,8 +111,6 @@ std::string get_current_path();
 std::string canonical_path(std::string path);
 bool file_exists_(std::string full_path);
 unsigned int file_size_(std::string full_path);
-
-#define DEFAULT_CB_TIMEOUT 0.002
 
 class SteamCallResults {
     std::vector<struct Steam_Call_Result> callresults;
@@ -185,6 +186,7 @@ public:
     }
 
     SteamAPICall_t addCallResult(SteamAPICall_t api_call, int iCallback, void *result, unsigned int size, double timeout=DEFAULT_CB_TIMEOUT, bool run_call_completed_cb=true) {
+        PRINT_DEBUG("addCallResult %i\n", iCallback);
         auto cb_result = std::find_if(callresults.begin(), callresults.end(), [api_call](struct Steam_Call_Result const& item) { return item.api_call == api_call; });
         if (cb_result != callresults.end()) {
             if (cb_result->reserved) {
@@ -256,7 +258,7 @@ public:
                     if (run_call_completed_cb) {
                         //can it happen that one is removed during the callback?
                         std::vector<class CCallbackBase *> callbacks = completed_callbacks;
-                        SteamAPICallCompleted_t data;
+                        SteamAPICallCompleted_t data{};
                         data.m_hAsyncCall = api_call;
                         data.m_iCallback = iCallback;
                         data.m_cubParam = result.size();
