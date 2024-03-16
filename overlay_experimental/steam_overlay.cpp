@@ -393,7 +393,7 @@ void Steam_Overlay::load_achievements_data()
         if (!setup_overlay_called) return;
     }
 
-    PRINT_DEBUG("Steam_Overlay::load_achievements_data count=%lu, loaded=%zu\n", achievements_num, achievements.size());
+    PRINT_DEBUG("Steam_Overlay::load_achievements_data count=%u, loaded=%zu\n", achievements_num, achievements.size());
 
 }
 
