@@ -938,7 +938,7 @@ STEAMAPI_API steam_bool S_CALLTYPE SteamAPI_ManualDispatch_GetNextCallback( HSte
 /// You must call this after dispatching the callback, if SteamAPI_ManualDispatch_GetNextCallback returns true.
 STEAMAPI_API void S_CALLTYPE SteamAPI_ManualDispatch_FreeLastCallback( HSteamPipe hSteamPipe )
 {
-    PRINT_DEBUG("%s %i\n", __FUNCTION__, hSteamPipe);
+    PRINT_DEBUG("SteamAPI_ManualDispatch_FreeLastCallback %i\n", hSteamPipe);
     std::queue<struct cb_data> *q = NULL;
     Steam_Client *steam_client = get_steam_client();
     auto it = steam_client->steam_pipes.find(hSteamPipe);
@@ -1102,7 +1102,7 @@ STEAMCLIENT_API steam_bool Steam_BGetCallback( HSteamPipe hSteamPipe, CallbackMs
 
 STEAMCLIENT_API void Steam_FreeLastCallback( HSteamPipe hSteamPipe )
 {
-    PRINT_DEBUG("%s %i\n", __FUNCTION__, hSteamPipe);
+    PRINT_DEBUG("Steam_FreeLastCallback %i\n", hSteamPipe);
     SteamAPI_ManualDispatch_FreeLastCallback( hSteamPipe );
 }
 

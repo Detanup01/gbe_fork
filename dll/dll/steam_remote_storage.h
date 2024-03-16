@@ -172,7 +172,7 @@ SteamAPICall_t FileReadAsync( const char *pchFile, uint32 nOffset, uint32 cubToR
 
     if ((size - nOffset) < cubToRead) cubToRead = size - nOffset;
 
-    struct Async_Read a_read;
+    struct Async_Read a_read{};
     data.m_eResult = k_EResultOK;
     a_read.offset = data.m_nOffset = nOffset;
     a_read.api_call = data.m_hFileReadAsync = callback_results->reserveCallResult();

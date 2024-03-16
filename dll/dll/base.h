@@ -204,7 +204,7 @@ public:
         }
 
         PRINT_DEBUG("addCallResult ERROR\n");
-        return 0;
+        return k_uAPICallInvalid;
     }
 
     SteamAPICall_t reserveCallResult() {
@@ -296,6 +296,7 @@ public:
         while (c != std::end(callresults)) {
             if (c->to_delete) {
                 if (c->timed_out()) {
+                    PRINT_DEBUG("runCallResults removed callresult %i\n", c->iCallback);
                     c = callresults.erase(c);
                 } else {
                     ++c;

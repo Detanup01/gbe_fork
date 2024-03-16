@@ -147,9 +147,9 @@ void Steam_Utils::SetOverlayNotificationPosition( ENotificationPosition eNotific
 // can be used directly, but more commonly used via the callback dispatch API (see steam_api.h)
 bool Steam_Utils::IsAPICallCompleted( SteamAPICall_t hSteamAPICall, bool *pbFailed )
 {
-    PRINT_DEBUG("Steam_Utils::IsAPICallCompleted: %llu\n", hSteamAPICall);
+    PRINT_DEBUG("Steam_Utils::IsAPICallCompleted %llu\n", hSteamAPICall);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (pbFailed) *pbFailed = true;
+    if (pbFailed) *pbFailed = false;
 
     if (hSteamAPICall == 1) { //bug ? soul calibur 6 calls this function with the return value 1 of Steam_User_Stats::RequestCurrentStats and expects this function to return true
         if (pbFailed) *pbFailed = true;
@@ -157,7 +157,6 @@ bool Steam_Utils::IsAPICallCompleted( SteamAPICall_t hSteamAPICall, bool *pbFail
     }
 
     if (!callback_results->exists(hSteamAPICall)) return false;
-    if (pbFailed) *pbFailed = false;
     return true; //all api calls "complete" right away
 }
 
