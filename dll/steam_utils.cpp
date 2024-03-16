@@ -149,6 +149,8 @@ bool Steam_Utils::IsAPICallCompleted( SteamAPICall_t hSteamAPICall, bool *pbFail
 {
     PRINT_DEBUG("Steam_Utils::IsAPICallCompleted: %llu\n", hSteamAPICall);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (pbFailed) *pbFailed = true;
+
     if (hSteamAPICall == 1) { //bug ? soul calibur 6 calls this function with the return value 1 of Steam_User_Stats::RequestCurrentStats and expects this function to return true
         if (pbFailed) *pbFailed = true;
         return true;
@@ -184,7 +186,9 @@ STEAM_PRIVATE_API(
 void Steam_Utils::RunFrame()
 {
     PRINT_DEBUG("Steam_Utils::RunFrame\n");
-    get_steam_client()->RunCallbacks(true, false);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    // Steam_Client *client = get_steam_client();
+    // client ->RunCallbacks(true, false, false);
 }
 )
 
