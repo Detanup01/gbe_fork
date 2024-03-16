@@ -840,7 +840,8 @@ static std::queue<struct cb_data> server_cb;
 
 static void cb_add_queue_server(std::vector<char> result, int callback)
 {
-    struct cb_data cb;
+    PRINT_DEBUG("cb_add_queue_server adding callback=%i, size=%zu\n", callback, result.size());
+    struct cb_data cb{};
     cb.cb_id = callback;
     cb.result = result;
     server_cb.push(cb);
@@ -848,7 +849,8 @@ static void cb_add_queue_server(std::vector<char> result, int callback)
 
 static void cb_add_queue_client(std::vector<char> result, int callback)
 {
-    struct cb_data cb;
+    PRINT_DEBUG("cb_add_queue_client adding callback=%i, m_iCallback=%i\n", callback, ((SteamAPICallCompleted_t *)&result[0])->m_iCallback);
+    struct cb_data cb{};
     cb.cb_id = callback;
     cb.result = result;
     client_cb.push(cb);
@@ -858,25 +860,30 @@ static void cb_add_queue_client(std::vector<char> result, int callback)
 /// you use any of the other manual dispatch functions below.
 STEAMAPI_API void S_CALLTYPE SteamAPI_ManualDispatch_Init()
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
-    Steam_Client *steam_client = get_steam_client();
-    steam_client->callback_results_server->setCbAll(&cb_add_queue_server);
-    steam_client->callback_results_client->setCbAll(&cb_add_queue_client);
+    static std::atomic_bool manual_dispatch_called = false;
+    bool not_yet = false;
+    if (manual_dispatch_called.compare_exchange_weak(not_yet, true)) {
+        PRINT_DEBUG("SteamAPI_ManualDispatch_Init\n");
+        Steam_Client *steam_client = get_steam_client();
+        steam_client->callback_results_server->setCbAll(&cb_add_queue_server);
+        steam_client->callback_results_client->setCbAll(&cb_add_queue_client);
+    }
 }
 
 /// Perform certain periodic actions that need to be performed.
 STEAMAPI_API void S_CALLTYPE SteamAPI_ManualDispatch_RunFrame( HSteamPipe hSteamPipe )
 {
-    PRINT_DEBUG("%s %i\n", __FUNCTION__, hSteamPipe);
+    PRINT_DEBUG("SteamAPI_ManualDispatch_RunFrame %i\n", hSteamPipe);
     Steam_Client *steam_client = get_steam_client();
-    if (!steam_client->steam_pipes.count(hSteamPipe)) {
+    auto it = steam_client->steam_pipes.find(hSteamPipe);
+    if (steam_client->steam_pipes.end() == it) {
         return;
     }
 
-    if (steam_client->steam_pipes[hSteamPipe] == Steam_Pipe::SERVER) {
-        steam_client->RunCallbacks(false, true);
-    } else if (steam_client->steam_pipes[hSteamPipe] == Steam_Pipe::CLIENT) {
-        steam_client->RunCallbacks(true, false);
+    if (it->second == Steam_Pipe::SERVER) {
+        steam_client->RunCallbacks(false, true, false);
+    } else if (it->second == Steam_Pipe::CLIENT) {
+        steam_client->RunCallbacks(true, false, false);
     }
 }
 
@@ -886,37 +893,45 @@ STEAMAPI_API void S_CALLTYPE SteamAPI_ManualDispatch_RunFrame( HSteamPipe hSteam
 STEAMAPI_API steam_bool S_CALLTYPE SteamAPI_ManualDispatch_GetNextCallback( HSteamPipe hSteamPipe, CallbackMsg_t *pCallbackMsg )
 {
     PRINT_DEBUG("SteamAPI_ManualDispatch_GetNextCallback %i %p\n", hSteamPipe, pCallbackMsg);
-    std::queue<struct cb_data> *q = NULL;
-    HSteamUser m_hSteamUser = 0;
     Steam_Client *steam_client = get_steam_client();
     if (!steam_client->steamclient_server_inited) {
         while(!server_cb.empty()) server_cb.pop();
     }
 
-    if (!steam_client->steam_pipes.count(hSteamPipe)) {
+    auto it = steam_client->steam_pipes.find(hSteamPipe);
+    if (steam_client->steam_pipes.end() == it) {
+        PRINT_DEBUG("SteamAPI_ManualDispatch_GetNextCallback error invalid hSteamPipe\n");
         return false;
     }
 
-    if (steam_client->steam_pipes[hSteamPipe] == Steam_Pipe::SERVER) {
+    std::queue<struct cb_data> *q = NULL;
+    HSteamUser m_hSteamUser = 0;
+    if (it->second == Steam_Pipe::SERVER) {
         q = &server_cb;
         m_hSteamUser = SERVER_HSTEAMUSER;
-    } else if (steam_client->steam_pipes[hSteamPipe] == Steam_Pipe::CLIENT) {
+    } else if (it->second == Steam_Pipe::CLIENT) {
         q = &client_cb;
         m_hSteamUser = CLIENT_HSTEAMUSER;
     } else {
+        PRINT_DEBUG("SteamAPI_ManualDispatch_GetNextCallback error invalid steam pipe type\n");
         return false;
     }
 
-    if (q->empty()) return false;
+    if (q->empty()) {
+        PRINT_DEBUG("SteamAPI_ManualDispatch_GetNextCallback error queue is empty\n");
+        return false;
+    }
+
     if (pCallbackMsg) {
         pCallbackMsg->m_hSteamUser = m_hSteamUser;
         pCallbackMsg->m_iCallback = q->front().cb_id;
         pCallbackMsg->m_pubParam = (uint8 *)&(q->front().result[0]);
         pCallbackMsg->m_cubParam = q->front().result.size();
-        PRINT_DEBUG("Steam_BGetCallback cb number %i\n", q->front().cb_id);
+        PRINT_DEBUG("SteamAPI_ManualDispatch_GetNextCallback cb number %i\n", q->front().cb_id);
         return true;
     }
 
+    PRINT_DEBUG("SteamAPI_ManualDispatch_GetNextCallback error nullptr pCallbackMsg\n");
     return false;
 }
 
@@ -926,13 +941,14 @@ STEAMAPI_API void S_CALLTYPE SteamAPI_ManualDispatch_FreeLastCallback( HSteamPip
     PRINT_DEBUG("%s %i\n", __FUNCTION__, hSteamPipe);
     std::queue<struct cb_data> *q = NULL;
     Steam_Client *steam_client = get_steam_client();
-    if (!steam_client->steam_pipes.count(hSteamPipe)) {
+    auto it = steam_client->steam_pipes.find(hSteamPipe);
+    if (steam_client->steam_pipes.end() == it) {
         return;
     }
 
-    if (steam_client->steam_pipes[hSteamPipe] == Steam_Pipe::SERVER) {
+    if (it->second == Steam_Pipe::SERVER) {
         q = &server_cb;
-    } else if (steam_client->steam_pipes[hSteamPipe] == Steam_Pipe::CLIENT) {
+    } else if (it->second == Steam_Pipe::CLIENT) {
         q = &client_cb;
     } else {
         return;
@@ -1077,10 +1093,10 @@ SteamMasterServerUpdater
 
 STEAMCLIENT_API steam_bool Steam_BGetCallback( HSteamPipe hSteamPipe, CallbackMsg_t *pCallbackMsg )
 {
-    PRINT_DEBUG("%s %i\n", __FUNCTION__, hSteamPipe);
+    PRINT_DEBUG("Steam_BGetCallback %i\n", hSteamPipe);
     SteamAPI_ManualDispatch_Init();
     Steam_Client *steam_client = get_steam_client();
-    steam_client->RunCallbacks(true, true);
+    steam_client->RunCallbacks(true, true, false);
     return SteamAPI_ManualDispatch_GetNextCallback( hSteamPipe, pCallbackMsg );
 }
 
