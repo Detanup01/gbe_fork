@@ -1,0 +1,1 @@
+rename this file to disable_lobby_creation.txt to prevent lobby creation in steam matchmaking
