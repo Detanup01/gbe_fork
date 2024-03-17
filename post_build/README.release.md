@@ -535,6 +535,13 @@ Check the example files in the `steam_settings` folder
 
 ---
 
+## Prevent lobby creation:
+
+You can prevent lobby creation (created via steam matchmaking APIs) by creating a file called `disable_lobby_creation.txt` in your `steam_settings` folder.  
+Check the example file.  
+
+---
+
 ## More configurations:
 Due to the various changes and additions, it became tedious to document everything,  
 so it is recommended to check each example file in the `steam_settings` folder.

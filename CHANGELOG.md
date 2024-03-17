@@ -1,3 +1,8 @@
+* **[detiam]** fix linking errors when build on archlinux
+* added missing example file `disable_lobby_creation.txt` in `steam_settings` folder + updated release `README`
+
+---
+
 # 2024/3/16
 
 * **[bitsynth]** Fix Age of Empires 2: Definitive Edition, the game expects the app itself to be an owned DLC,  
