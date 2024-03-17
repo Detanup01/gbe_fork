@@ -12,12 +12,6 @@
 # https://linux.die.net/man/1/nm
 #nm -D --defined-only libsteam.so | grep " T "
 
-
-if [ "$(id -u)" -ne 0 ]; then
-  echo "Please run as root" >&2
-  exit 1
-fi
-
 # common stuff
 script_dir=$( cd -- "$( dirname -- "${0}" )" &> /dev/null && pwd )
 deps_dir="$script_dir/build/deps/linux"
@@ -38,6 +32,7 @@ deps_archives=(
 # < 0: deduce, > 1: force
 PARALLEL_THREADS_OVERRIDE=-1
 VERBOSITY=''
+INSTALL_PACKAGES=1
 INSTALL_PACKAGES_ONLY=0
 
 for (( i=1; i<=$#; i++ )); do
@@ -52,6 +47,8 @@ for (( i=1; i<=$#; i++ )); do
     #echo "[?] Overriding parralel build jobs count with $PARALLEL_THREADS_OVERRIDE"
   elif [[ "$var" = "-verbose" ]]; then
     VERBOSITY='-v'
+  elif [[ "$var" = "-packages_skip" ]]; then
+    INSTALL_PACKAGES=0
   elif [[ "$var" = "-packages_only" ]]; then
     INSTALL_PACKAGES_ONLY=1
   else
@@ -66,19 +63,12 @@ last_code=0
 
 ############## required packages ##############
 echo // installing required packages
-apt update -y
-last_code=$((last_code + $?))
-
-apt install "coreutils" -y # echo, printf, etc...
-last_code=$((last_code + $?))
-apt install "tar" -y # we need to extract packages
-last_code=$((last_code + $?))
-apt install "binutils" -y # (optional) contains the tool 'readelf' mainly, and other usefull binary stuff
-#apt install cmake git wget unzip -y
 
 all_packages=(
+  "coreutils" # echo, printf, etc...
+  "tar" # we need to extract packages
   "build-essential"
-  "gcc-multilib"  # needed for 32-bit builds
+  "gcc-multilib" # needed for 32-bit builds
   "g++-multilib"
   "clang"
   "libglx-dev" # needed for overlay build (header files such as GL/glx.h)
@@ -86,13 +76,33 @@ all_packages=(
   "binutils" # (optional) contains the tool 'readelf' mainly, and other usefull binary stuff
 )
 
-for dep in "${all_packages[@]}"; do
-  apt install "$dep" -y
-  last_code=$((last_code + $?))
-done
+if [[ "$INSTALL_PACKAGES" -ne 0 ]]; then
+  if [ "$(id -u)" -ne 0 ]; then
+    # if sudo exist, use sudo.
+    if type sudo > /dev/null 2>&1; then
+      apt_run() { sudo apt "$@" -y || exit $? ; }
+    else
+      echo "Please run as root, install sudo or pass '-packages_skip' argument." >&2
+      exit 1
+    fi
+  else
+    apt_run() { apt "$@" -y || exit $? ; }
+  fi
 
-# exit early if we should install packages only, used by CI mainly
-[[ "$INSTALL_PACKAGES_ONLY" -ne 0 ]] && exit $last_code
+  apt_run update
+  last_code=$((last_code + $?))
+
+  for dep in "${all_packages[@]}"; do
+    apt_run install "$dep"
+    last_code=$((last_code + $?))
+  done
+
+  # exit early if we should install packages only, used by CI mainly
+  [[ "$INSTALL_PACKAGES_ONLY" -ne 0 ]] && exit $last_code
+else
+  echo "Package installation skipped, please be sure the follow packages correspond to your distro is installed."
+  echo "${all_packages[*]}"
+fi
 
 echo; echo;
 
