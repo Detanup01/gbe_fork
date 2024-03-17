@@ -30,7 +30,7 @@ public ISteamRemotePlay
 public:
 static void steam_callback(void *object, Common_Message *msg)
 {
-    PRINT_DEBUG("steam_remoteplay_callback\n");
+    // PRINT_DEBUG("steam_remoteplay_callback\n");
 
     Steam_RemotePlay *steam_remoteplay = (Steam_RemotePlay *)object;
     steam_remoteplay->Callback(msg);
@@ -38,7 +38,7 @@ static void steam_callback(void *object, Common_Message *msg)
 
 static void steam_run_every_runcb(void *object)
 {
-    PRINT_DEBUG("steam_remoteplay_run_every_runcb\n");
+    // PRINT_DEBUG("steam_remoteplay_run_every_runcb\n");
 
     Steam_RemotePlay *steam_remoteplay = (Steam_RemotePlay *)object;
     steam_remoteplay->RunCallbacks();

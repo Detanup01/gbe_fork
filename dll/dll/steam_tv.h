@@ -31,7 +31,7 @@ public ISteamTV
 public:
 static void steam_callback(void *object, Common_Message *msg)
 {
-    PRINT_DEBUG("TODO Steam_TV::steam_tv_callback\n");
+    // PRINT_DEBUG("TODO Steam_TV::steam_tv_callback\n");
 
     Steam_TV *steam_parties = (Steam_TV *)object;
     steam_parties->Callback(msg);
@@ -39,7 +39,7 @@ static void steam_callback(void *object, Common_Message *msg)
 
 static void steam_run_every_runcb(void *object)
 {
-    PRINT_DEBUG("steam_tv_run_every_runcb\n");
+    // PRINT_DEBUG("steam_tv_run_every_runcb\n");
 
     Steam_TV *steam_parties = (Steam_TV *)object;
     steam_parties->RunCallbacks();

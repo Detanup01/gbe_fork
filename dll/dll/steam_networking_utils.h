@@ -36,7 +36,7 @@ public ISteamNetworkingUtils
 public:
 static void steam_callback(void *object, Common_Message *msg)
 {
-    PRINT_DEBUG("steam_networkingutils_callback\n");
+    // PRINT_DEBUG("steam_networkingutils_callback\n");
 
     Steam_Networking_Utils *steam_networkingutils = (Steam_Networking_Utils *)object;
     steam_networkingutils->Callback(msg);
@@ -44,7 +44,7 @@ static void steam_callback(void *object, Common_Message *msg)
 
 static void steam_run_every_runcb(void *object)
 {
-    PRINT_DEBUG("steam_networkingutils_run_every_runcb\n");
+    // PRINT_DEBUG("steam_networkingutils_run_every_runcb\n");
 
     Steam_Networking_Utils *steam_networkingutils = (Steam_Networking_Utils *)object;
     steam_networkingutils->RunCallbacks();

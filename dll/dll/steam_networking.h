@@ -221,7 +221,7 @@ void remove_killed_connection_sockets()
 public:
 static void steam_networking_callback(void *object, Common_Message *msg)
 {
-    PRINT_DEBUG("steam_networking_callback\n");
+    // PRINT_DEBUG("steam_networking_callback\n");
 
     Steam_Networking *steam_networking = (Steam_Networking *)object;
     steam_networking->Callback(msg);
@@ -229,7 +229,7 @@ static void steam_networking_callback(void *object, Common_Message *msg)
 
 static void steam_networking_run_every_runcp(void *object)
 {
-    PRINT_DEBUG("steam_networking_run_every_runcp\n");
+    // PRINT_DEBUG("steam_networking_run_every_runcp\n");
 
     Steam_Networking *steam_networking = (Steam_Networking *)object;
     steam_networking->RunCallbacks();
@@ -906,13 +906,11 @@ void RunCallbacks()
 void Callback(Common_Message *msg)
 {
     if (msg->has_network()) {
-#ifndef EMU_RELEASE_BUILD
         PRINT_DEBUG(
             "Steam_Networking: got msg from: " "%" PRIu64 " to: " "%" PRIu64 " size %zu type %u | messages %p: %zu\n",
             msg->source_id(), msg->dest_id(), msg->network().data().size(), msg->network().type(), &messages, messages.size()
         );
         PRINT_DEBUG("Steam_Networking msg data: '%s'\n", common_helpers::uint8_vector_to_hex_string( std::vector<uint8_t>(msg->network().data().begin(), msg->network().data().end()) ).c_str());
-#endif
 
         if (msg->network().type() == Network_pb::DATA) {
             unprocessed_messages.push_back(Common_Message(*msg));

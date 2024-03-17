@@ -269,7 +269,7 @@ static void background_rumble(Rumble_Thread_Data *data)
 
 static void steam_run_every_runcb(void *object)
 {
-    PRINT_DEBUG("steam_controller_run_every_runcb\n");
+    // PRINT_DEBUG("steam_controller_run_every_runcb\n");
 
     Steam_Controller *steam_controller = (Steam_Controller *)object;
     steam_controller->RunCallbacks();
@@ -415,7 +415,7 @@ void EnableActionEventCallbacks( SteamInputActionEventCallbackPointer pCallback 
 // possible latency, you call this directly before reading controller state.
 void RunFrame(bool bReservedValue)
 {
-    PRINT_DEBUG("Steam_Controller::RunFrame()\n");
+    // PRINT_DEBUG("Steam_Controller::RunFrame()\n");
     if (disabled || !initialized) {
         return;
     }

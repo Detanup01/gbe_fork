@@ -94,7 +94,7 @@ static inline bool ImGuiHelper_BeginListBox(const char* label, int items_count) 
 
 void Steam_Overlay::overlay_run_callback(void* object)
 {
-    PRINT_DEBUG("overlay_run_every_runcb %p\n", object);
+    // PRINT_DEBUG("overlay_run_every_runcb %p\n", object);
     Steam_Overlay* _this = reinterpret_cast<Steam_Overlay*>(object);
     _this->steam_run_callback();
 }

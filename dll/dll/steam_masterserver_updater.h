@@ -29,7 +29,7 @@ public ISteamMasterServerUpdater
 public:
 static void steam_callback(void *object, Common_Message *msg)
 {
-    PRINT_DEBUG("steam_masterserverupdater_callback\n");
+    // PRINT_DEBUG("steam_masterserverupdater_callback\n");
 
     Steam_Masterserver_Updater *steam_masterserverupdater = (Steam_Masterserver_Updater *)object;
     steam_masterserverupdater->Callback(msg);
@@ -37,7 +37,7 @@ static void steam_callback(void *object, Common_Message *msg)
 
 static void steam_run_every_runcb(void *object)
 {
-    PRINT_DEBUG("steam_masterserverupdater_run_every_runcb\n");
+    // PRINT_DEBUG("steam_masterserverupdater_run_every_runcb\n");
 
     Steam_Masterserver_Updater *steam_masterserverupdater = (Steam_Masterserver_Updater *)object;
     steam_masterserverupdater->RunCallbacks();

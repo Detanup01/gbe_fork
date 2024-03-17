@@ -94,7 +94,7 @@ public ISteamNetworkingSockets
 public:
 static void steam_callback(void *object, Common_Message *msg)
 {
-    PRINT_DEBUG("steam_networkingsockets_callback\n");
+    // PRINT_DEBUG("steam_networkingsockets_callback\n");
 
     Steam_Networking_Sockets *steam_networkingsockets = (Steam_Networking_Sockets *)object;
     steam_networkingsockets->Callback(msg);
@@ -102,7 +102,7 @@ static void steam_callback(void *object, Common_Message *msg)
 
 static void steam_run_every_runcb(void *object)
 {
-    PRINT_DEBUG("steam_networkingsockets_run_every_runcb\n");
+    // PRINT_DEBUG("steam_networkingsockets_run_every_runcb\n");
 
     Steam_Networking_Sockets *steam_networkingsockets = (Steam_Networking_Sockets *)object;
     steam_networkingsockets->RunCallbacks();

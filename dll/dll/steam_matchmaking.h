@@ -289,7 +289,7 @@ void on_self_enter_leave_lobby(CSteamID id, int type, bool leaving)
 public:
 static void steam_matchmaking_callback(void *object, Common_Message *msg)
 {
-    PRINT_DEBUG("Steam_MatchMaking::steam_matchmaking_callback\n");
+    // PRINT_DEBUG("Steam_MatchMaking::steam_matchmaking_callback\n");
 
     Steam_Matchmaking *steam_matchmaking = (Steam_Matchmaking *)object;
     steam_matchmaking->Callback(msg);
@@ -297,7 +297,7 @@ static void steam_matchmaking_callback(void *object, Common_Message *msg)
 
 static void steam_matchmaking_run_every_runcb(void *object)
 {
-    PRINT_DEBUG("Steam_MatchMaking::steam_matchmaking_run_every_runcb\n");
+    // PRINT_DEBUG("Steam_MatchMaking::steam_matchmaking_run_every_runcb\n");
 
     Steam_Matchmaking *steam_matchmaking = (Steam_Matchmaking *)object;
     steam_matchmaking->RunCallbacks();

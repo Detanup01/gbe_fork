@@ -31,7 +31,7 @@ public ISteamGameSearch
 public:
 static void steam_callback(void *object, Common_Message *msg)
 {
-    PRINT_DEBUG("steam_gamesearch_callback\n");
+    // PRINT_DEBUG("steam_gamesearch_callback\n");
 
     Steam_Game_Search *steam_gamesearch = (Steam_Game_Search *)object;
     steam_gamesearch->Callback(msg);
@@ -39,7 +39,7 @@ static void steam_callback(void *object, Common_Message *msg)
 
 static void steam_run_every_runcb(void *object)
 {
-    PRINT_DEBUG("steam_gamesearch_run_every_runcb\n");
+    // PRINT_DEBUG("steam_gamesearch_run_every_runcb\n");
 
     Steam_Game_Search *steam_gamesearch = (Steam_Game_Search *)object;
     steam_gamesearch->RunCallbacks();

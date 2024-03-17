@@ -29,7 +29,7 @@ public ISteamUnifiedMessages
 public:
 static void steam_callback(void *object, Common_Message *msg)
 {
-    PRINT_DEBUG("steam_steamunifiedmessages_callback\n");
+    // PRINT_DEBUG("steam_steamunifiedmessages_callback\n");
 
     Steam_Unified_Messages *steam_steamunifiedmessages = (Steam_Unified_Messages *)object;
     steam_steamunifiedmessages->Callback(msg);
@@ -37,7 +37,7 @@ static void steam_callback(void *object, Common_Message *msg)
 
 static void steam_run_every_runcb(void *object)
 {
-    PRINT_DEBUG("steam_steamunifiedmessages_run_every_runcb\n");
+    // PRINT_DEBUG("steam_steamunifiedmessages_run_every_runcb\n");
 
     Steam_Unified_Messages *steam_steamunifiedmessages = (Steam_Unified_Messages *)object;
     steam_steamunifiedmessages->RunCallbacks();

@@ -202,7 +202,7 @@ struct Avatar_Numbers add_friend_avatars(CSteamID id)
 public:
 static void steam_friends_callback(void *object, Common_Message *msg)
 {
-    PRINT_DEBUG("Steam_Friends::steam_friends_callback\n");
+    // PRINT_DEBUG("Steam_Friends::steam_friends_callback\n");
 
     Steam_Friends *steam_friends = (Steam_Friends *)object;
     steam_friends->Callback(msg);
@@ -210,7 +210,7 @@ static void steam_friends_callback(void *object, Common_Message *msg)
 
 static void steam_friends_run_every_runcb(void *object)
 {
-    PRINT_DEBUG("Steam_Friends::steam_friends_run_every_runcb\n");
+    // PRINT_DEBUG("Steam_Friends::steam_friends_run_every_runcb\n");
 
     Steam_Friends *steam_friends = (Steam_Friends *)object;
     steam_friends->RunCallbacks();
@@ -1152,13 +1152,14 @@ uint32 GetProfileItemPropertyUint( CSteamID steamID, ECommunityProfileItemType i
 
 void RunCallbacks()
 {
-	PRINT_DEBUG("Steam_Friends::RunCallbacks\n");
+	// PRINT_DEBUG("Steam_Friends::RunCallbacks\n");
     if (settings->get_lobby() != lobby_id) {
         lobby_id = settings->get_lobby();
         resend_friend_data();
     }
 
     if (modified) {
+	    PRINT_DEBUG("Steam_Friends::RunCallbacks sending modified data\n");
         Common_Message msg;
         msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
         Friend *f = new Friend(us);

@@ -112,7 +112,7 @@ public:
 
 static void run_every_runcb_cb(void *object)
 {
-    PRINT_DEBUG("Steam_Inventory::run_every_runcb\n");
+    // PRINT_DEBUG("Steam_Inventory::run_every_runcb\n");
 
     Steam_Inventory *obj = (Steam_Inventory *)object;
     obj->RunCallbacks();

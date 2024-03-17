@@ -41,7 +41,7 @@ void push_incoming(std::string message)
 public:
 static void steam_callback(void *object, Common_Message *msg)
 {
-    PRINT_DEBUG("steam_gamecoordinator_callback\n");
+    // PRINT_DEBUG("steam_gamecoordinator_callback\n");
 
     Steam_Game_Coordinator *steam_gamecoordinator = (Steam_Game_Coordinator *)object;
     steam_gamecoordinator->Callback(msg);
@@ -49,7 +49,7 @@ static void steam_callback(void *object, Common_Message *msg)
 
 static void steam_run_every_runcb(void *object)
 {
-    PRINT_DEBUG("steam_gamecoordinator_run_every_runcb\n");
+    // PRINT_DEBUG("steam_gamecoordinator_run_every_runcb\n");
 
     Steam_Game_Coordinator *steam_gamecoordinator = (Steam_Game_Coordinator *)object;
     steam_gamecoordinator->RunCallbacks();
