@@ -1,4 +1,6 @@
-* **[bitsynth]** Fix Age of Empires 2: Definitive Edition, the game expects the app itself to be an owned DLC  
+# 2024/3/16
+
+* **[bitsynth]** Fix Age of Empires 2: Definitive Edition, the game expects the app itself to be an owned DLC,  
   otherwise most options will be disabled
 
 * `Steam_Apps::GetCurrentBetaName()` make sure the out buffer is null terminated
@@ -6,6 +8,7 @@
 ---
 
 # 2024/3/16
+
 * manage overlay cursor input/clipping and internal frame processing in a better way,
   should prevent more games from pausing to display notifications
 * initially attempt to load the icons of all achievements, this will slow things down at startup,  
