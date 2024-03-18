@@ -346,4 +346,4 @@ Run this script
 package_linux.sh <build_folder>
 ```
 `build_folder` is any folder inside `build/linux`, for example: `release`  
-The above example will create a `.tar.gz` archive inside `build/package/linux/release`
+The above example will create a compressed `.tar` archive inside `build/package/linux/release`
