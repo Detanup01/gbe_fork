@@ -1,4 +1,5 @@
 * **[detiam]** fix linking errors when build on archlinux
+* for windows: updated stub drm patterns and added a workaround for older variants
 * added missing example file `disable_lobby_creation.txt` in `steam_settings` folder + updated release `README`
 
 ---

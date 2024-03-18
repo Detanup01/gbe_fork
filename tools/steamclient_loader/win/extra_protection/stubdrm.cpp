@@ -13,15 +13,18 @@ typedef struct SnrUnit {
 
 typedef struct SnrDetails {
     std::string detection_patt{};
+    bool change_mem_access = false;
     std::vector<SnrUnit_t> snr_units{};
 } SnrDetails_t;
 
 // x64
 #if defined(_WIN64)
-    const std::vector<SnrDetails> snr_patts {
+    static const std::vector<SnrDetails> snr_patts {
         {
             // detection_patt
             "FF 94 24 ?? ?? ?? ?? 88 44 24 ?? 0F BE 44 24 ?? 83 ?? 30 74 ?? E9",
+            // change memory pages access to r/w/e
+            false,
             // snr_units
             {
                 // patt 1 is a bunch of checks for registry + files validity (including custom DOS stub)
@@ -40,6 +43,8 @@ typedef struct SnrDetails {
         {
             // detection_patt
             "FF D? 44 0F B6 ?? 3C 30 0F 85",
+            // change memory pages access to r/w/e
+            false,
             // snr_units
             {
                 {
@@ -55,10 +60,12 @@ typedef struct SnrDetails {
 // x32
 #if !defined(_WIN64)
 
-    const std::vector<SnrDetails> snr_patts {
+    static const std::vector<SnrDetails> snr_patts {
         {
             // detection_patt
             "FF 95 ?? ?? ?? ?? 88 45 ?? 0F BE 4D ?? 83 ?? 30 74 ?? E9",
+            // change memory pages access to r/w/e
+            false,
             // snr_units
             {
                 // patt 1 is a bunch of checks for registry + files validity (including custom DOS stub)
@@ -77,11 +84,17 @@ typedef struct SnrDetails {
         {
             // detection_patt
             "FF 95 ?? ?? ?? ?? 89 85 ?? ?? ?? ?? 8B ?? ?? ?? ?? ?? 89 ?? ?? ?? ?? ?? 8B ?? ?? 89 ?? ?? ?? ?? ?? 83 A5 ?? ?? ?? ?? ?? EB",
+            // change memory pages access to r/w/e
+            true,
             // snr_units
             {
                 {
                     "F6 C? 02 0F 85 ?? ?? ?? ?? 5? FF ?? 6?",
                     "?? ?? ?? 90 E9 00 03",
+                },
+                {
+                    "F6 C? 02 89 ?? ?? ?? ?? ?? A3 ?? ?? ?? ?? 0F 85",
+                    "?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 90 E9 00 03 00 00",
                 },
             },
         },
@@ -89,6 +102,8 @@ typedef struct SnrDetails {
         {
             // detection_patt
             "FF D? 88 45 ?? 3C 30 0F 85 ?? ?? ?? ?? B8 4D 5A",
+            // change memory pages access to r/w/e
+            false,
             // snr_units
             {
                 {
@@ -106,14 +121,44 @@ typedef struct SnrDetails {
 
 #endif // _WIN64
 
-const std::vector<SnrUnit_t> *current_snr_units = nullptr;
+
+static size_t current_snr_details = static_cast<size_t>(-1);
 
 static std::recursive_mutex mtx_win32_api{};
-static uint8_t *proc_addr_base = (uint8_t *)GetModuleHandleW(NULL);
+static uint8_t *exe_addr_base = (uint8_t *)GetModuleHandleW(NULL);
 static uint8_t *bind_addr_base = nullptr;
 static uint8_t *bind_addr_end = nullptr;
 
 bool restore_win32_apis();
+
+// stub v2 needs manual change for .text, section must have write access
+static void change_mem_pages_access()
+{
+    auto sections = pe_helpers::get_section_headers((HMODULE)exe_addr_base);
+    if (!sections.count) return;
+
+    for (size_t i = 0; i < sections.count; ++i) {
+        auto section = sections.ptr[i];
+        uint8_t *section_base_addr = exe_addr_base + section.VirtualAddress;
+        MEMORY_BASIC_INFORMATION mbi{};
+        constexpr const static auto ANY_EXECUTE_RIGHT = PAGE_EXECUTE | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY;
+        if (VirtualQuery((LPCVOID)section_base_addr, &mbi, sizeof(mbi)) && // function succeeded
+            (mbi.Protect & ANY_EXECUTE_RIGHT)) { // this page (not entire section) has execute rights
+            DWORD current_protection = 0;
+            auto res = VirtualProtect(section_base_addr, mbi.RegionSize, PAGE_EXECUTE_READWRITE, &current_protection);
+            // if (!res) {
+            //     MessageBoxA(
+            //         nullptr,
+            //         (std::string("Failed to change access of page '") + (char *)section.Name + "' ").c_str(),
+            //         "Failed",
+            //         MB_OK
+            //     );
+            // }
+        }
+    }
+
+
+}
 
 static void patch_if_possible(void *ret_addr)
 {
@@ -123,7 +168,7 @@ static void patch_if_possible(void *ret_addr)
     if (!page_details.BaseAddress || page_details.AllocationProtect != PAGE_READWRITE) return;
 
     bool anything_found = false;
-    for (const auto &snr_unit : *current_snr_units) {
+    for (const auto &snr_unit : snr_patts[current_snr_details].snr_units) {
         auto mem = pe_helpers::search_memory(
             (uint8_t *)page_details.BaseAddress,
             page_details.RegionSize,
@@ -144,6 +189,7 @@ static void patch_if_possible(void *ret_addr)
 
     if (anything_found) {
         restore_win32_apis();
+        if (snr_patts[current_snr_details].change_mem_access) change_mem_pages_access();
     }
 
     // MessageBoxA(NULL, ("ret addr = " + std::to_string((size_t)ret_addr)).c_str(), "Patched", MB_OK);
@@ -239,15 +285,15 @@ static bool restore_win32_apis()
 
 bool stubdrm::patch()
 {
-    auto bind_section = pe_helpers::get_section_header_with_name(((HMODULE)proc_addr_base), ".bind");
+    auto bind_section = pe_helpers::get_section_header_with_name(((HMODULE)exe_addr_base), ".bind");
     if (!bind_section) return false; // we don't have .bind section
 
-    bind_addr_base = proc_addr_base + bind_section->VirtualAddress;
+    bind_addr_base = exe_addr_base + bind_section->VirtualAddress;
     MEMORY_BASIC_INFORMATION mbi{};
     if (!VirtualQuery((LPVOID)bind_addr_base, &mbi, sizeof(mbi))) return false;
 
     bind_addr_end = bind_addr_base + mbi.RegionSize;
-    auto addrOfEntry = proc_addr_base + pe_helpers::get_optional_header((HMODULE)proc_addr_base)->AddressOfEntryPoint;
+    auto addrOfEntry = exe_addr_base + pe_helpers::get_optional_header((HMODULE)exe_addr_base)->AddressOfEntryPoint;
     if (addrOfEntry < bind_addr_base || addrOfEntry >= bind_addr_end) return false; // entry addr is not inside .bind
 
     for (const auto &patt : snr_patts) {
@@ -257,7 +303,7 @@ bool stubdrm::patch()
             patt.detection_patt);
         
         if (mem) {
-            current_snr_units = &patt.snr_units;
+            current_snr_details = &patt - &snr_patts[0];
             return redirect_win32_apis();
         }
     }

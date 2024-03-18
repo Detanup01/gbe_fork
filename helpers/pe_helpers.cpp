@@ -462,7 +462,7 @@ size_t pe_helpers::get_current_exe_mem_size()
     for (size_t i = 0; i < sections.count; ++i) {
         auto section = sections.ptr[i];
         MEMORY_BASIC_INFORMATION mbi{};
-        if (!VirtualQuery((LPVOID)((uint8_t *)hmod + section.VirtualAddress), &mbi, sizeof(mbi))) {
+        if (!VirtualQuery((LPCVOID)((uint8_t *)hmod + section.VirtualAddress), &mbi, sizeof(mbi))) {
             return 0;
         }
         size = mbi.RegionSize; // actual section size in mem
