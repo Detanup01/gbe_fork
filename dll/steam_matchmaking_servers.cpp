@@ -717,7 +717,7 @@ void Steam_Matchmaking_Servers::CancelServerQuery( HServerQuery hServerQuery )
 
 void Steam_Matchmaking_Servers::RunCallbacks()
 {
-    PRINT_DEBUG("Steam_Matchmaking_Servers::RunCallbacks\n");
+    // PRINT_DEBUG("Steam_Matchmaking_Servers::RunCallbacks\n");
 
     {
         auto g = std::begin(gameservers);

@@ -933,7 +933,7 @@ void Networking::Run()
     }
 
     //PRINT_DEBUG("Networking::Run() %lf\n", time_extra);
-    PRINT_DEBUG("Networking::Run()\n");
+    // PRINT_DEBUG("Networking::Run()\n");
     if (check_timedout(last_broadcast, BROADCAST_INTERVAL)) {
         send_announce_broadcasts();
     }

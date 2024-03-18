@@ -638,23 +638,23 @@ bool Steam_Overlay::submit_notification(notification_type type, const std::strin
     notifications.emplace_back(notif);
     allow_renderer_frame_processing(true);
     // uncomment this block to obscure cursor input and steal focus for these specific notifications
-    // switch (type) {
-    //     // we want to steal focus for these ones
-    //     case notification_type_message:
-    //     case notification_type_invite:
-    //         obscure_game_input(true);
-    //     break;
+    switch (type) {
+        // we want to steal focus for these ones
+        case notification_type_invite:
+            obscure_game_input(true);
+        break;
 
-    //     // not effective
-    //     case notification_type_achievement:
-    //     case notification_type_auto_accept_invite:
-    //         // nothing
-    //     break;
+        // not effective
+        case notification_type_achievement:
+        case notification_type_auto_accept_invite:
+        case notification_type_message:
+            // nothing
+        break;
 
-    //     default:
-    //         PRINT_DEBUG("Steam_Overlay::submit_notification error unhandled type %i\n", (int)type);
-    //     break;
-    // }
+        default:
+            PRINT_DEBUG("Steam_Overlay::submit_notification error unhandled type %i\n", (int)type);
+        break;
+    }
 
     return true;
 }
@@ -1021,23 +1021,23 @@ void Steam_Overlay::build_notifications(int width, int height)
             PRINT_DEBUG("Steam_Overlay::build_notifications removing a notification\n");
             allow_renderer_frame_processing(false);
             // uncomment this block to restore app input focus
-            // switch (item.type) {
-            //     // we want to restore focus for these ones
-            //     case notification_type_message:
-            //     case notification_type_invite:
-            //         obscure_game_input(false);
-            //     break;
+            switch (item.type) {
+                // we want to restore focus for these ones
+                case notification_type_invite:
+                    obscure_game_input(false);
+                break;
 
-            //     // not effective
-            //     case notification_type_achievement:
-            //     case notification_type_auto_accept_invite:
-            //         // nothing
-            //     break;
+                // not effective
+                case notification_type_achievement:
+                case notification_type_auto_accept_invite:
+                case notification_type_message:
+                    // nothing
+                break;
 
-            //     default:
-            //         PRINT_DEBUG("Steam_Overlay::build_notifications error unhandled remove for type %i\n", (int)item.type);
-            //     break;
-            // }
+                default:
+                    PRINT_DEBUG("Steam_Overlay::build_notifications error unhandled remove for type %i\n", (int)item.type);
+                break;
+            }
 
             return true;
         }
