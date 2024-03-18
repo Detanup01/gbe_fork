@@ -1,11 +1,17 @@
-* **[detiam]** fix linking errors when build on archlinux
-* for windows: updated stub drm patterns and added a workaround for older variants
+* **[detiam]** fix linking errors when building on archlinux
+* **[detiam]** optimize Linux deps build script:
+  - new argument `-packages_skip`: allows skipping installation of distro packages, such as `build-essential`, `gcc-multilib`, etc...
+  - the above command introduced the ability to run without root
+  - if the script was ran without root, and `-packages_skip` wasn't specified,  
+    the script will attempt to detect and use the built-in tool `sudo` if it was available
+* for windows: updated stub drm patterns and added a workaround for older variants,  
+  this increases the compatibility, but makes it easier to be detected
 * added missing example file `disable_lobby_creation.txt` in `steam_settings` folder + updated release `README`
 * allow overlay invitations to obscure game input to be able to accept/reject the request
 
 ---
 
-# 2024/3/16
+# 2024/3/17
 
 * **[bitsynth]** Fix Age of Empires 2: Definitive Edition, the game expects the app itself to be an owned DLC,  
   otherwise most options will be disabled
@@ -93,10 +99,14 @@
 
 * added a new flag `-reldir` for the `generate_emu_config` script which allows it to generate temp files/folders, and expect input files, relative to the current workig directory, suggested by **[ImportTaste]**
 
+---
+
 # 2024/2/24
 
 * build the python scripts `achievements_gen.py` and `parse_controller_vdf.py` into binary form using `pyinstaller` for a more user friendly usage, suggested by **[DogancanYr]**
 * change the scripts `achievements_gen.py` and `parse_controller_vdf.py` to accept multiple files
+
+---
 
 # 2024/2/23
 
@@ -371,7 +381,7 @@ auto resuming the main app thread, giving you a chance to attach your debugger.
 ---
 
 ## 2023/12/14
-* based on cvsR4U1 by ce20fdf2 from viewtopic.php?p=2936697#p2936697
+* based on cvsR4U1 by **[ce20fdf2]** from viewtopic.php?p=2936697#p2936697
 
 * apply the fix for the Linux build (due to newer glibc) from this pull request by Randy Li: https://gitlab.com/Mr_Goldberg/goldberg_emulator/-/merge_requests/42/
 
@@ -610,6 +620,7 @@ auto resuming the main app thread, giving you a chance to attach your debugger.
 
 * in `steam_overlay.cpp`, in `AddAchievementNotification()`: prefer original paths of achievements icons first, then fallback to `achievement_images/`
 
+---
 
 ## Older changes
 * add missing implementation of (de)sanitize_string when `NO_DISK_WRITE` is defined which fixes compilation of `lobby_connect`
@@ -625,7 +636,7 @@ auto resuming the main app thread, giving you a chance to attach your debugger.
 
 * add missing note in ReadMe about `libssq`
 
-* add new release 4 by ce20fdf2 from viewtopic.php?p=2933673#p2933673
-* add hotfix 3 by ce20fdf2 from viewtopic.php?p=2921215#p2921215
-* add hotfix 2 by ce20fdf2: viewtopic.php?p=2884110#p2884110
-* add initial hotfix by ce20fdf2
+* add new release 4 by **[ce20fdf2]** from viewtopic.php?p=2933673#p2933673
+* add hotfix 3 by **[ce20fdf2]** from viewtopic.php?p=2921215#p2921215
+* add hotfix 2 by **[ce20fdf2]**: viewtopic.php?p=2884110#p2884110
+* add initial hotfix by **[ce20fdf2]**
