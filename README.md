@@ -37,12 +37,12 @@ You can find instructions here: [README.release.md](./post_build/README.release.
 ### **Cloning the repo**
 
  Clone the repo and its submodules **recursively**
- ```bash
+ ```shell
  git clone --recurse-submodules https://github.com/otavepto/gbe_fork.git
  ```
 
  It is adviseable to always checkout submodules every now and then, to make sure they're up to date
- ```bash
+ ```shell
  git submodule update --recursive --remote
  ```
 
@@ -55,7 +55,7 @@ You can find instructions here: [README.release.md](./post_build/README.release.
 * *(Optional)* Install a GUI for Git like [GitHub Desktop](https://desktop.github.com/), or [Sourcetree](https://www.sourcetreeapp.com/)
 * Python 3.10 or above: https://www.python.org/downloads/windows/  
    After installation, make sure it works
-   ```bash
+   ```batch
    python --version
    ```
 
@@ -63,7 +63,7 @@ You can find instructions here: [README.release.md](./post_build/README.release.
 
 * Ubuntu 22.04 LTS: https://ubuntu.com/download/desktop
 * Python 3.10 or above
-   ```bash
+   ```shell
    sudo add-apt-repository ppa:deadsnakes/ppa -y
    sudo apt update -y
    sudo apt install python3.10 -y
@@ -95,7 +95,7 @@ Additional arguments you can pass to this script:
 
 #### On Linux:
 Open bash terminal in the repo folder, then run the bash script
-```bash
+```shell
 sudo ./build_linux_deps.sh
 ```
 This will:
@@ -172,7 +172,7 @@ Arguments you can pass to this script:
 
 ### On Linux:
 Open bash terminal in the repo folder, then run the bash script (without sudo)
-```bash
+```shell
 ./build_linux.sh release
 ```
 This will build a release build of the emu in the folder `build/linux/release`
@@ -244,16 +244,16 @@ This will build the tool inside `bin\win`
 ### On Linux:
 Open bash terminal then:
 1. Create python virtual environemnt and install the required packages/dependencies
-   ```batch
+   ```shell
    sudo ./recreate_venv_linux.sh
    ```  
    You might need to edit this script to use a different python version.  
    Find this line and change it:
-   ```bash
+   ```shell
    python_package="python3.10"
    ``` 
 2. Build the tool using `pyinstaller`  
-   ```batch
+   ```shell
    ./rebuild_linux.sh
    ```
 
@@ -341,8 +341,8 @@ The above example will create a `.7z` archive inside `build\package\win\release`
 ### On Linux:
 Open bash terminal in the repos's directory, then run this script
 Run this script
-```batch
-package_win.bat <build_folder>
+```shell
+package_linux.sh <build_folder>
 ```
 `build_folder` is any folder inside `build/linux`, for example: `release`  
 The above example will create a `.tar.gz` archive inside `build/package/linux/release`
