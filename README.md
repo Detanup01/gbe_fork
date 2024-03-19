@@ -341,7 +341,6 @@ The above example will create a `.7z` archive inside `build\package\win\release`
 
 ### On Linux:
 Open bash terminal in the repos's directory, then run this script
-Run this script
 ```shell
 package_linux.sh <build_folder>
 ```
