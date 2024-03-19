@@ -1910,7 +1910,7 @@ void Steam_Client::RunCallbacks(bool runClientCB, bool runGameserverCB, bool run
     callbacks_client->runCallBacks();
 
     last_cb_run = std::chrono::duration_cast<std::chrono::duration<unsigned long long>>(std::chrono::system_clock::now().time_since_epoch()).count();
-    // PRINT_DEBUG("Steam_Client::RunCallbacks done ------------------------------------------------------\n");
+    PRINT_DEBUG("Steam_Client::RunCallbacks done ------------------------------------------------------\n");
 }
 
 void Steam_Client::DestroyAllInterfaces()

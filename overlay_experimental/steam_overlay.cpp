@@ -674,14 +674,19 @@ bool Steam_Overlay::is_friend_joinable(std::pair<const Friend, friend_window_sta
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     Steam_Friends* steamFriends = get_steam_client()->steam_friends;
 
-    if( std::string(steamFriends->GetFriendRichPresence((uint64)f.first.id(), "connect")).length() > 0 )
+    if (std::string(steamFriends->GetFriendRichPresence((uint64)f.first.id(), "connect")).length() > 0 ) {
+        PRINT_DEBUG("Steam_Overlay::is_friend_joinable " "%" PRIu64 " true (connect string)\n", f.first.id());
         return true;
+    }
 
     FriendGameInfo_t friend_game_info{};
     steamFriends->GetFriendGamePlayed((uint64)f.first.id(), &friend_game_info);
-    if (friend_game_info.m_steamIDLobby.IsValid() && (f.second.window_state & window_state_lobby_invite))
+    if (friend_game_info.m_steamIDLobby.IsValid() && (f.second.window_state & window_state_lobby_invite)) {
+        PRINT_DEBUG("Steam_Overlay::is_friend_joinable " "%" PRIu64 " true (friend in a game)\n", f.first.id());
         return true;
+    }
 
+    PRINT_DEBUG("Steam_Overlay::is_friend_joinable " "%" PRIu64 " false\n", f.first.id());
     return false;
 }
 
@@ -1153,6 +1158,7 @@ bool Steam_Overlay::try_load_ach_gray_icon(Overlay_Achievement &ach)
 void Steam_Overlay::overlay_render_proc()
 {
     initial_load_achievements_icons();
+    
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     if (!Ready()) return;
 
@@ -1166,18 +1172,21 @@ void Steam_Overlay::overlay_render_proc()
         ImGui::SetNextWindowBgAlpha(0.55f);
     }
 
+    if (show_overlay) {
+        render_main_window();
+    }
+
     if (notifications.size()) {
         ImGui::PushFont(font_notif);
         build_notifications(io.DisplaySize.x, io.DisplaySize.y);
         ImGui::PopFont();
     }
 
-    // ******************** exit early if we shouldn't show the overlay
-    if (!show_overlay) {
-        return;
-    }
-    // ********************
-    
+}
+
+// Try to make this function as short as possible or it might affect game's fps.
+void Steam_Overlay::render_main_window()
+{
     //ImGui::SetNextWindowFocus();
     ImGui::PushFont(font_default);
     bool show = true;
@@ -1478,8 +1487,8 @@ void Steam_Overlay::overlay_render_proc()
 
     ImGui::PopFont();
 
-    if (!show)
-        ShowOverlay(false);
+    if (!show) ShowOverlay(false);
+
 }
 
 void Steam_Overlay::networking_msg_received(Common_Message *msg)

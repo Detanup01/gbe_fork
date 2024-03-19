@@ -36,7 +36,7 @@ SteamAPICall_t Steam_GameServerStats::RequestUserStats( CSteamID steamIDUser )
     PRINT_DEBUG("Steam_GameServerStats::RequestUserStats\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    GSStatsReceived_t data;
+    GSStatsReceived_t data{};
     data.m_eResult = k_EResultFail;//k_EResultOK;
     data.m_steamIDUser = steamIDUser;
     return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));

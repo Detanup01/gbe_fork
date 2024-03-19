@@ -381,6 +381,7 @@ const char *GetFriendPersonaName( CSteamID steamIDFriend )
         if (f) name = f->name().c_str();
     }
 
+    PRINT_DEBUG("Steam_Friends::GetFriendPersonaName returned '%s'\n", name);
     return name;
 }
 
@@ -388,31 +389,31 @@ const char *GetFriendPersonaName( CSteamID steamIDFriend )
 // returns true if the friend is actually in a game, and fills in pFriendGameInfo with an extra details 
 bool GetFriendGamePlayed( CSteamID steamIDFriend, STEAM_OUT_STRUCT() FriendGameInfo_t *pFriendGameInfo )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendGamePlayed %llu\n", steamIDFriend.ConvertToUint64());
+    PRINT_DEBUG("Steam_Friends::GetFriendGamePlayed %llu %p\n", steamIDFriend.ConvertToUint64(), pFriendGameInfo);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     bool ret = false;
 
     if (steamIDFriend == settings->get_local_steam_id()) {
+        PRINT_DEBUG("Steam_Friends::GetFriendGamePlayed found myself! %llu %llu\n", settings->get_local_game_id().ToUint64(), settings->get_lobby().ConvertToUint64());
         if (pFriendGameInfo) {
             pFriendGameInfo->m_gameID = settings->get_local_game_id();
             pFriendGameInfo->m_unGameIP = 0;
             pFriendGameInfo->m_usGamePort = 0;
             pFriendGameInfo->m_usQueryPort = 0;
             pFriendGameInfo->m_steamIDLobby = settings->get_lobby();
-            PRINT_DEBUG("self %llu %llu\n", settings->get_local_game_id().ToUint64(), settings->get_lobby().ConvertToUint64());
         }
 
         ret = true;
     } else {
         Friend *f = find_friend(steamIDFriend);
         if (f) {
+            PRINT_DEBUG("Steam_Friends::GetFriendGamePlayed found someone %u " "%" PRIu64 "\n", f->appid(), f->lobby_id());
             if (pFriendGameInfo) {
                 pFriendGameInfo->m_gameID = CGameID(f->appid());
                 pFriendGameInfo->m_unGameIP = 0;
                 pFriendGameInfo->m_usGamePort = 0;
                 pFriendGameInfo->m_usQueryPort = 0;
                 pFriendGameInfo->m_steamIDLobby = CSteamID((uint64)f->lobby_id());
-                PRINT_DEBUG("%u " "%" PRIu64 "\n", f->appid(), f->lobby_id());
             }
 
             ret = true;
@@ -847,7 +848,7 @@ void ClearRichPresence()
 
 const char *GetFriendRichPresence( CSteamID steamIDFriend, const char *pchKey )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendRichPresence %llu %s\n", steamIDFriend.ConvertToUint64(), pchKey);
+    PRINT_DEBUG("Steam_Friends::GetFriendRichPresence %llu '%s'\n", steamIDFriend.ConvertToUint64(), pchKey);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     const char *value = "";
 
@@ -863,6 +864,7 @@ const char *GetFriendRichPresence( CSteamID steamIDFriend, const char *pchKey )
         if (result != f->rich_presence().end()) value = result->second.c_str();
     }
 
+    PRINT_DEBUG("Steam_Friends::GetFriendRichPresence returned '%s'\n", value);
     return value;
 }
 
