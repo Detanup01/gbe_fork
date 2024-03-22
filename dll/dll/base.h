@@ -32,8 +32,8 @@ extern const std::chrono::time_point<std::chrono::high_resolution_clock> startup
 extern const std::chrono::time_point<std::chrono::system_clock> startup_time;
 
 void randombytes(char *buf, size_t size);
-std::string get_env_variable(std::string name);
-bool set_env_variable(std::string name, std::string value);
+std::string get_env_variable(const std::string &name);
+bool set_env_variable(const std::string &name, const std::string &value);
 bool check_timedout(std::chrono::high_resolution_clock::time_point old, double timeout);
 
 class CCallbackMgr

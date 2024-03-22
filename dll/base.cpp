@@ -29,7 +29,7 @@ void randombytes(char *buf, size_t size)
     
 }
 
-std::string get_env_variable(std::string name)
+std::string get_env_variable(const std::string &name)
 {
     wchar_t env_variable[1024]{};
     DWORD ret = GetEnvironmentVariableW(utf8_decode(name).c_str(), env_variable, _countof(env_variable));
@@ -41,7 +41,7 @@ std::string get_env_variable(std::string name)
     return utf8_encode(env_variable);
 }
 
-bool set_env_variable(std::string name, std::string value)
+bool set_env_variable(const std::string &name, const std::string &value)
 {
     return SetEnvironmentVariableW(utf8_decode(name).c_str(), utf8_decode(value).c_str());
 }
@@ -76,7 +76,7 @@ void randombytes(char *buf, size_t size)
   }
 }
 
-std::string get_env_variable(std::string name)
+std::string get_env_variable(const std::string &name)
 {
     char *env = getenv(name.c_str());
     if (!env) {
@@ -86,7 +86,7 @@ std::string get_env_variable(std::string name)
     return std::string(env);
 }
 
-bool set_env_variable(std::string name, std::string value)
+bool set_env_variable(const std::string &name, const std::string &value)
 {
     return setenv(name.c_str(), value.c_str(), 1) == 0;
 }
@@ -119,6 +119,8 @@ CSteamID generate_steam_anon_user()
 
 SteamAPICall_t generate_steam_api_call_id() {
     static SteamAPICall_t a;
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     randombytes((char *)&a, sizeof(a));
     ++a;
     if (a == 0) ++a;
