@@ -684,7 +684,7 @@ static void parse_stats(class Settings *settings_client, Settings *settings_serv
             }
 
             if (stat_name.size()) {
-                PRINT_DEBUG("Adding stat type: %s|%u|%f|%u\n", stat_name.c_str(), config.type, config.default_value_float, config.default_value_int);
+                PRINT_DEBUG("Adding stat type: %s|%u|%f|%i\n", stat_name.c_str(), config.type, config.default_value_float, config.default_value_int);
                 settings_client->setStatDefiniton(stat_name, config);
                 settings_server->setStatDefiniton(stat_name, config);
             } else {

@@ -50,6 +50,7 @@ static void background_thread(Steam_Client *client)
 
 Steam_Client::Steam_Client()
 {
+    PRINT_DEBUG("Steam_Client init start ----------\n");
     uint32 appid = create_localstorage_settings(&settings_client, &settings_server, &local_storage);
     local_storage->update_save_filenames(Local_Storage::remote_storage_folder);
 
@@ -61,12 +62,13 @@ Steam_Client::Steam_Client()
     callbacks_server = new SteamCallBacks(callback_results_server);
     run_every_runcb = new RunEveryRunCB();
 
-    PRINT_DEBUG("steam client init: id: %llu server id: %llu appid: %u port: %u \n", settings_client->get_local_steam_id().ConvertToUint64(), settings_server->get_local_steam_id().ConvertToUint64(), appid, settings_server->get_port());
+    PRINT_DEBUG("Steam_Client init: id: %llu server id: %llu, appid: %u, port: %u\n", settings_client->get_local_steam_id().ConvertToUint64(), settings_server->get_local_steam_id().ConvertToUint64(), appid, settings_server->get_port());
 
     if (appid) {
-        set_env_variable("SteamAppId", std::to_string(appid));
-        set_env_variable("SteamGameId", std::to_string(appid));
-		set_env_variable("SteamOverlayGameId", std::to_string(appid));
+        auto appid_str = std::to_string(appid);
+        set_env_variable("SteamAppId", appid_str);
+        set_env_variable("SteamGameId", appid_str);
+		set_env_variable("SteamOverlayGameId", appid_str);
     }
 
     steam_overlay = new Steam_Overlay(settings_client, callback_results_client, callbacks_client, run_every_runcb, network);
@@ -120,13 +122,13 @@ Steam_Client::Steam_Client()
     steam_gameserver_game_coordinator = new Steam_Game_Coordinator(settings_server, network, callback_results_server, callbacks_server, run_every_runcb);
     steam_masterserver_updater = new Steam_Masterserver_Updater(settings_server, network, callback_results_server, callbacks_server, run_every_runcb);
 
-    PRINT_DEBUG("client init AppTicket\n");
+    PRINT_DEBUG("Steam_Client init AppTicket\n");
     steam_app_ticket = new Steam_AppTicket(settings_client);
 
     gameserver_has_ipv6_functions = false;
 
     last_cb_run = 0;
-    PRINT_DEBUG("client init end\n");
+    PRINT_DEBUG("Steam_Client init end ----------\n");
 }
 
 Steam_Client::~Steam_Client()
@@ -177,6 +179,8 @@ Steam_Client::~Steam_Client()
     delete steam_friends;
     delete steam_user;
     delete steam_overlay;
+
+    delete ugc_bridge;
 
     delete run_every_runcb;
     delete callbacks_server;

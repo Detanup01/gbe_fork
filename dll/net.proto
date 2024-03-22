@@ -216,8 +216,8 @@ message Steam_Messages {
 }
 
 message Common_Message {
-    uint64 source_id = 1;
-    uint64 dest_id = 2;
+    uint64 source_id = 1; // SteamID64 of the sender
+    uint64 dest_id = 2; // SteamID64 of the target receiver
     oneof messages {
         Announce announce = 3;
         Low_Level low_level = 4;

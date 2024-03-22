@@ -104,13 +104,17 @@ unsigned int find_leaderboard(std::string name)
 
 nlohmann::detail::iter_impl<nlohmann::json> defined_achievements_find(const std::string &key)
 {
-    return std::find_if(defined_achievements.begin(), defined_achievements.end(), [&key](nlohmann::json& item) {
-        std::string name = static_cast<const std::string &>( item.value("name", std::string()) );
-        return key.size() == name.size() && std::equal(
-            name.begin(), name.end(), key.begin(),
-            [](char a, char b) { return std::tolower(a) == std::tolower(b); }
-        );
-    });
+    return std::find_if(
+        defined_achievements.begin(), defined_achievements.end(),
+        [&key](const nlohmann::json& item) {
+            const std::string &name = static_cast<const std::string &>( item.value("name", std::string()) );
+            return key.size() == name.size() &&
+                std::equal(
+                    name.begin(), name.end(), key.begin(),
+                    [](char a, char b) { return std::tolower(a) == std::tolower(b); }
+                );
+        }
+    );
 }
 
 void load_achievements_db()
@@ -298,17 +302,17 @@ bool GetStat( const char *pchName, int32 *pData )
     PRINT_DEBUG("Steam_User_Stats::GetStat <int32> '%s' %p\n", pchName, pData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    if (!pchName || !pData) return false;
+    if (!pchName) return false;
     std::string stat_name = common_helpers::ascii_to_lowercase(pchName);
 
-    auto stats_config = settings->getStats();
+    const auto &stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
     if (stats_config.end() == stats_data) return false;
     if (stats_data->second.type != Stat_Type::STAT_TYPE_INT) return false;
 
     auto cached_stat = stats_cache_int.find(stat_name);
     if (cached_stat != stats_cache_int.end()) {
-        *pData = cached_stat->second;
+        if (pData) *pData = cached_stat->second;
         return true;
     }
 
@@ -316,12 +320,12 @@ bool GetStat( const char *pchName, int32 *pData )
     int read_data = local_storage->get_data(Local_Storage::stats_storage_folder, stat_name, (char* )&output, sizeof(output));
     if (read_data == sizeof(int32)) {
         stats_cache_int[stat_name] = output;
-        *pData = output;
+        if (pData) *pData = output;
         return true;
     }
 
     stats_cache_int[stat_name] = stats_data->second.default_value_int;
-    *pData = stats_data->second.default_value_int;
+    if (pData) *pData = stats_data->second.default_value_int;
     return true;
 }
 
@@ -330,17 +334,17 @@ bool GetStat( const char *pchName, float *pData )
     PRINT_DEBUG("Steam_User_Stats::GetStat <float> '%s' %p\n", pchName, pData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    if (!pchName || !pData) return false;
+    if (!pchName) return false;
     std::string stat_name = common_helpers::ascii_to_lowercase(pchName);
 
-    auto stats_config = settings->getStats();
+    const auto &stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
     if (stats_config.end() == stats_data) return false;
     if (stats_data->second.type == Stat_Type::STAT_TYPE_INT) return false;
 
     auto cached_stat = stats_cache_float.find(stat_name);
     if (cached_stat != stats_cache_float.end()) {
-        *pData = cached_stat->second;
+        if (pData) *pData = cached_stat->second;
         return true;
     }
 
@@ -348,12 +352,12 @@ bool GetStat( const char *pchName, float *pData )
     int read_data = local_storage->get_data(Local_Storage::stats_storage_folder, stat_name, (char* )&output, sizeof(output));
     if (read_data == sizeof(float)) {
         stats_cache_float[stat_name] = output;
-        *pData = output;
+        if (pData) *pData = output;
         return true;
     }
 
     stats_cache_float[stat_name] = stats_data->second.default_value_float;
-    *pData = stats_data->second.default_value_float;
+    if (pData) *pData = stats_data->second.default_value_float;
     return true;
 }
 
@@ -367,7 +371,7 @@ bool SetStat( const char *pchName, int32 nData )
     if (!pchName) return false;
     std::string stat_name = common_helpers::ascii_to_lowercase(pchName);
 
-    auto stats_config = settings->getStats();
+    const auto &stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
     if (stats_config.end() == stats_data) return false;
     if (stats_data->second.type != Stat_Type::STAT_TYPE_INT) return false;
@@ -402,7 +406,7 @@ bool SetStat( const char *pchName, float fData )
     if (!pchName) return false;
     std::string stat_name = common_helpers::ascii_to_lowercase(pchName);
 
-    auto stats_config = settings->getStats();
+    const auto &stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
     if (stats_config.end() == stats_data) return false;
     if (stats_data->second.type == Stat_Type::STAT_TYPE_INT) return false;
@@ -437,7 +441,7 @@ bool UpdateAvgRateStat( const char *pchName, float flCountThisSession, double dS
     if (!pchName) return false;
     std::string stat_name = common_helpers::ascii_to_lowercase(pchName);
 
-    auto stats_config = settings->getStats();
+    const auto &stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
     if (stats_config.end() == stats_data) return false;
     if (stats_data->second.type == Stat_Type::STAT_TYPE_INT) return false;
@@ -830,7 +834,7 @@ bool GetUserAchievement( CSteamID steamIDUser, const char *pchName, bool *pbAchi
     PRINT_DEBUG("Steam_User_Stats::GetUserAchievement %s\n", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    if (pchName == nullptr) return false;
+    if (!pchName) return false;
 
     if (steamIDUser == settings->get_local_steam_id()) {
         return GetAchievement(pchName, pbAchieved);

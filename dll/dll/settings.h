@@ -88,7 +88,7 @@ struct Stat_config {
     enum Stat_Type type;
     union {
         float default_value_float;
-        uint32 default_value_int;
+        int32 default_value_int;
     };
 };
 
@@ -244,7 +244,7 @@ public:
     std::set<IP_PORT> custom_broadcasts;
 
     //stats
-    std::map<std::string, Stat_config> getStats() { return stats; }
+    const std::map<std::string, Stat_config>& getStats() { return stats; }
     void setStatDefiniton(std::string name, struct Stat_config stat_config) {stats[common_helpers::ascii_to_lowercase(name)] = stat_config; }
     // bypass to make SetAchievement() always return true, prevent some games from breaking
     bool achievement_bypass = false;

@@ -536,52 +536,52 @@ std::set<IP_PORT> Networking::resolve_ip(std::string dns)
 void Networking::do_callbacks_message(Common_Message *msg)
 {
     if (msg->has_network() || msg->has_network_old()) {
-        PRINT_DEBUG("has_network\n");
+        PRINT_DEBUG("Networking has_network\n");
         run_callbacks(CALLBACK_ID_NETWORKING, msg);
     }
 
     if (msg->has_lobby()) {
-        PRINT_DEBUG("has_lobby\n");
+        PRINT_DEBUG("Networking has_lobby\n");
         run_callbacks(CALLBACK_ID_LOBBY, msg);
     }
 
     if (msg->has_lobby_messages()) {
-        PRINT_DEBUG("has_lobby_messages\n");
+        PRINT_DEBUG("Networking has_lobby_messages\n");
         run_callbacks(CALLBACK_ID_LOBBY, msg);
     }
 
     if (msg->has_gameserver()) {
-        PRINT_DEBUG("has_gameserver\n");
+        PRINT_DEBUG("Networking has_gameserver\n");
         run_callbacks(CALLBACK_ID_GAMESERVER, msg);
     }
 
     if (msg->has_friend_()) {
-        PRINT_DEBUG("has_friend_\n");
+        PRINT_DEBUG("Networking has_friend_\n");
         run_callbacks(CALLBACK_ID_FRIEND, msg);
     }
 
     if (msg->has_auth_ticket()) {
-        PRINT_DEBUG("has_auth_ticket\n");
+        PRINT_DEBUG("Networking has_auth_ticket\n");
         run_callbacks(CALLBACK_ID_AUTH_TICKET, msg);
     }
 
     if (msg->has_friend_messages()) {
-        PRINT_DEBUG("has_friend_messages\n");
+        PRINT_DEBUG("Networking has_friend_messages\n");
         run_callbacks(CALLBACK_ID_FRIEND_MESSAGES, msg);
     }
 
     if (msg->has_networking_sockets()) {
-        PRINT_DEBUG("has_networking_sockets\n");
+        PRINT_DEBUG("Networking has_networking_sockets\n");
         run_callbacks(CALLBACK_ID_NETWORKING_SOCKETS, msg);
     }
 
     if (msg->has_steam_messages()) {
-        PRINT_DEBUG("has_steam_messages\n");
+        PRINT_DEBUG("Networking has_steam_messages\n");
         run_callbacks(CALLBACK_ID_STEAM_MESSAGES, msg);
     }
 
     if (msg->has_networking_messages()) {
-        PRINT_DEBUG("has_networking_messages\n");
+        PRINT_DEBUG("Networking has_networking_messages\n");
         run_callbacks(CALLBACK_ID_NETWORKING_MESSAGES, msg);
     }
 }
