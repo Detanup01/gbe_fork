@@ -133,7 +133,8 @@ Steam_Networking_Sockets(class Settings *settings, class Networking *network, cl
 
 ~Steam_Networking_Sockets()
 {
-    //TODO rm network callbacks
+    this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_Networking_Sockets::steam_callback, this);
+    this->network->rmCallback(CALLBACK_ID_NETWORKING_SOCKETS, settings->get_local_steam_id(), &Steam_Networking_Sockets::steam_callback, this);
     this->run_every_runcb->remove(&Steam_Networking_Sockets::steam_run_every_runcb, this);
     if (this->s->used) {
         this->s->used -= 1;

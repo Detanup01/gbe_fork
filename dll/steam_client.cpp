@@ -133,61 +133,61 @@ Steam_Client::Steam_Client()
 
 Steam_Client::~Steam_Client()
 {
-    delete steam_gameserver;
-    delete steam_gameserver_utils;
-    delete steam_gameserverstats;
-    delete steam_gameserver_networking;
-    delete steam_gameserver_http;
-    delete steam_gameserver_inventory;
-    delete steam_gameserver_ugc;
-    delete steam_gameserver_apps;
-    delete steam_gameserver_networking_sockets;
-    delete steam_gameserver_networking_sockets_serialized;
-    delete steam_gameserver_networking_messages;
-    delete steam_gameserver_game_coordinator;
-    delete steam_masterserver_updater;
+    delete steam_gameserver; steam_gameserver = nullptr;
+    delete steam_gameserver_utils; steam_gameserver_utils = nullptr;
+    delete steam_gameserverstats; steam_gameserverstats = nullptr;
+    delete steam_gameserver_networking; steam_gameserver_networking = nullptr;
+    delete steam_gameserver_http; steam_gameserver_http = nullptr;
+    delete steam_gameserver_inventory; steam_gameserver_inventory = nullptr;
+    delete steam_gameserver_ugc; steam_gameserver_ugc = nullptr;
+    delete steam_gameserver_apps; steam_gameserver_apps = nullptr;
+    delete steam_gameserver_networking_sockets; steam_gameserver_networking_sockets = nullptr;
+    delete steam_gameserver_networking_sockets_serialized; steam_gameserver_networking_sockets_serialized = nullptr;
+    delete steam_gameserver_networking_messages; steam_gameserver_networking_messages = nullptr;
+    delete steam_gameserver_game_coordinator; steam_gameserver_game_coordinator = nullptr;
+    delete steam_masterserver_updater; steam_masterserver_updater = nullptr;
 
-    delete steam_matchmaking;
-    delete steam_matchmaking_servers;
-    delete steam_user_stats;
-    delete steam_apps;
-    delete steam_networking;
-    delete steam_remote_storage;
-    delete steam_screenshots;
-    delete steam_http;
-    delete steam_controller;
-    delete steam_ugc;
-    delete steam_applist;
-    delete steam_music;
-    delete steam_musicremote;
-    delete steam_HTMLsurface;
-    delete steam_inventory;
-    delete steam_video;
-    delete steam_parental;
-    delete steam_networking_sockets;
-    delete steam_networking_sockets_serialized;
-    delete steam_networking_messages;
-    delete steam_game_coordinator;
-    delete steam_networking_utils;
-    delete steam_unified_messages;
-    delete steam_game_search;
-    delete steam_parties;
-    delete steam_remoteplay;
-    delete steam_tv;
+    delete steam_matchmaking; steam_matchmaking = nullptr;
+    delete steam_matchmaking_servers; steam_matchmaking_servers = nullptr;
+    delete steam_user_stats; steam_user_stats = nullptr;
+    delete steam_apps; steam_apps = nullptr;
+    delete steam_networking; steam_networking = nullptr;
+    delete steam_remote_storage; steam_remote_storage = nullptr;
+    delete steam_screenshots; steam_screenshots = nullptr;
+    delete steam_http; steam_http = nullptr;
+    delete steam_controller; steam_controller = nullptr;
+    delete steam_ugc; steam_ugc = nullptr;
+    delete steam_applist; steam_applist = nullptr;
+    delete steam_music; steam_music = nullptr;
+    delete steam_musicremote; steam_musicremote = nullptr;
+    delete steam_HTMLsurface; steam_HTMLsurface = nullptr;
+    delete steam_inventory; steam_inventory = nullptr;
+    delete steam_video; steam_video = nullptr;
+    delete steam_parental; steam_parental = nullptr;
+    delete steam_networking_sockets; steam_networking_sockets = nullptr;
+    delete steam_networking_sockets_serialized; steam_networking_sockets_serialized = nullptr;
+    delete steam_networking_messages; steam_networking_messages = nullptr;
+    delete steam_game_coordinator; steam_game_coordinator = nullptr;
+    delete steam_networking_utils; steam_networking_utils = nullptr;
+    delete steam_unified_messages; steam_unified_messages = nullptr;
+    delete steam_game_search; steam_game_search = nullptr;
+    delete steam_parties; steam_parties = nullptr;
+    delete steam_remoteplay; steam_remoteplay = nullptr;
+    delete steam_tv; steam_tv = nullptr;
 
-    delete steam_utils;
-    delete steam_friends;
-    delete steam_user;
-    delete steam_overlay;
+    delete steam_utils; steam_utils = nullptr;
+    delete steam_friends; steam_friends = nullptr;
+    delete steam_user; steam_user = nullptr;
+    delete steam_overlay; steam_overlay = nullptr;
 
-    delete ugc_bridge;
+    delete ugc_bridge; ugc_bridge = nullptr;
 
-    delete run_every_runcb;
-    delete callbacks_server;
-    delete callbacks_client;
-    delete callback_results_server;
-    delete callback_results_client;
-    delete network;
+    delete run_every_runcb; run_every_runcb = nullptr;
+    delete callbacks_server; callbacks_server = nullptr;
+    delete callbacks_client; callbacks_client = nullptr;
+    delete callback_results_server; callback_results_server = nullptr;
+    delete callback_results_client; callback_results_client = nullptr;
+    delete network; network = nullptr;
 }
 
 void Steam_Client::userLogIn()

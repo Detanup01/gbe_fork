@@ -48,8 +48,8 @@ Steam_Unified_Messages(class Settings *settings, class Networking *network, clas
     this->settings = settings;
     this->network = network;
     this->run_every_runcb = run_every_runcb;
-//    this->network->setCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_Unified_Messages::steam_callback, this);
-//    this->run_every_runcb->add(&Steam_Unified_Messages::steam_run_every_runcb, this);
+    // this->network->setCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_Unified_Messages::steam_callback, this);
+    // this->run_every_runcb->add(&Steam_Unified_Messages::steam_run_every_runcb, this);
 
     this->callback_results = callback_results;
     this->callbacks = callbacks;
@@ -57,8 +57,8 @@ Steam_Unified_Messages(class Settings *settings, class Networking *network, clas
 
 ~Steam_Unified_Messages()
 {
-    //TODO rm network callbacks
-//    this->run_every_runcb->remove(&Steam_Unified_Messages::steam_run_every_runcb, this);
+    // this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_Unified_Messages::steam_callback, this);
+    // this->run_every_runcb->remove(&Steam_Unified_Messages::steam_run_every_runcb, this);
 }
 
 // Sends a service method (in binary serialized form) using the Steam Client.

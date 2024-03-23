@@ -238,7 +238,9 @@ Steam_Friends(Settings* settings, Networking* network, SteamCallResults* callbac
 
 ~Steam_Friends()
 {
-	//TODO rm network callbacks
+    this->network->rmCallback(CALLBACK_ID_FRIEND, settings->get_local_steam_id(), &Steam_Friends::steam_friends_callback, this);
+    this->network->rmCallback(CALLBACK_ID_FRIEND_MESSAGES, settings->get_local_steam_id(), &Steam_Friends::steam_friends_callback, this);
+    this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_Friends::steam_friends_callback, this);
 	this->run_every_runcb->remove(&Steam_Friends::steam_friends_run_every_runcb, this);
 }
 

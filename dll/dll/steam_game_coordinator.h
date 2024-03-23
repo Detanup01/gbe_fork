@@ -69,7 +69,7 @@ Steam_Game_Coordinator(class Settings *settings, class Networking *network, clas
 
 ~Steam_Game_Coordinator()
 {
-    //TODO rm network callbacks
+    //this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_Game_Coordinator::steam_callback, this);
     this->run_every_runcb->remove(&Steam_Game_Coordinator::steam_run_every_runcb, this);
 }
 

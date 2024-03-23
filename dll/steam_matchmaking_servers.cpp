@@ -33,6 +33,11 @@ Steam_Matchmaking_Servers::Steam_Matchmaking_Servers(class Settings *settings, c
     this->network->setCallback(CALLBACK_ID_GAMESERVER, (uint64) 0, &network_callback, this);
 }
 
+Steam_Matchmaking_Servers::~Steam_Matchmaking_Servers()
+{
+    this->network->rmCallback(CALLBACK_ID_GAMESERVER, (uint64) 0, &network_callback, this);
+}
+
 static int server_list_request = 0;
 
 HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, ISteamMatchmakingServerListResponse *pRequestServersResponse, EMatchMakingType type)

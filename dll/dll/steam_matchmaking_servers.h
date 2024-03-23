@@ -69,6 +69,8 @@ public ISteamMatchmakingServers001
 	void RequestOldServerList(AppId_t iApp, ISteamMatchmakingServerListResponse001 *pRequestServersResponse, EMatchMakingType type);
 public:
     Steam_Matchmaking_Servers(class Settings *settings, class Networking *network);
+	~Steam_Matchmaking_Servers();
+	
 	// Request a new list of servers of a particular type.  These calls each correspond to one of the EMatchMakingType values.
 	// Each call allocates a new asynchronous request object.
 	// Request object must be released by calling ReleaseRequest( hServerListRequest )

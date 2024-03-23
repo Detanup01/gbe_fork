@@ -41,11 +41,17 @@ Auth_Manager::Auth_Manager(class Settings *settings, class Networking *network, 
     this->network->setCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &steam_auth_manager_ticket_callback, this);
 }
 
+Auth_Manager::~Auth_Manager()
+{
+    this->network->rmCallback(CALLBACK_ID_AUTH_TICKET, settings->get_local_steam_id(), &steam_auth_manager_ticket_callback, this);
+    this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &steam_auth_manager_ticket_callback, this);
+}
+
 #define STEAM_TICKET_PROCESS_TIME 0.03
 
 void Auth_Manager::launch_callback(CSteamID id, EAuthSessionResponse resp, double delay)
 {
-    ValidateAuthTicketResponse_t data;
+    ValidateAuthTicketResponse_t data{};
     data.m_SteamID = id;
     data.m_eAuthSessionResponse = resp;
     data.m_OwnerSteamID = id;
@@ -55,11 +61,11 @@ void Auth_Manager::launch_callback(CSteamID id, EAuthSessionResponse resp, doubl
 void Auth_Manager::launch_callback_gs(CSteamID id, bool approved)
 {
     if (approved) {
-        GSClientApprove_t data;
+        GSClientApprove_t data{};
         data.m_SteamID = data.m_OwnerSteamID = id;
         callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
     } else {
-        GSClientDeny_t data;
+        GSClientDeny_t data{};
         data.m_SteamID = id;
         data.m_eDenyReason = k_EDenyNotLoggedOn; //TODO: other reasons?
         callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));

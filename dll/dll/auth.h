@@ -643,6 +643,7 @@ class Auth_Manager {
     std::vector<struct Auth_Data> outbound;
 public:
     Auth_Manager(class Settings *settings, class Networking *network, class SteamCallBacks *callbacks);
+    ~Auth_Manager();
 
     void Callback(Common_Message *msg);
     uint32 getTicket( void *pTicket, int cbMaxTicket, uint32 *pcbTicket );

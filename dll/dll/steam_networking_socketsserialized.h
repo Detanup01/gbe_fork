@@ -60,7 +60,7 @@ Steam_Networking_Sockets_Serialized(class Settings *settings, class Networking *
 
 ~Steam_Networking_Sockets_Serialized()
 {
-    //TODO rm network callbacks
+    this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_Networking_Sockets_Serialized::steam_callback, this);
     this->run_every_runcb->remove(&Steam_Networking_Sockets_Serialized::steam_run_every_runcb, this);
 }
 

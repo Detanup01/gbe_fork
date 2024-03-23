@@ -251,7 +251,8 @@ Steam_Networking(class Settings *settings, class Networking *network, class Stea
 
 ~Steam_Networking()
 {
-    //TODO rm network callbacks
+    this->network->rmCallback(CALLBACK_ID_NETWORKING, settings->get_local_steam_id(), &Steam_Networking::steam_networking_callback, this);
+    this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_Networking::steam_networking_callback, this);
     this->run_every_runcb->remove(&Steam_Networking::steam_networking_run_every_runcp, this);
 }
 

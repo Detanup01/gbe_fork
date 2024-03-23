@@ -59,7 +59,7 @@ Steam_TV(class Settings *settings, class Networking *network, class SteamCallRes
 
 ~Steam_TV()
 {
-    //TODO rm network callbacks
+    //this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_TV::steam_callback, this);
     //this->run_every_runcb->remove(&Steam_TV::steam_run_every_runcb, this);
 }
 

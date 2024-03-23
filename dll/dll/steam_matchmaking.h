@@ -325,7 +325,8 @@ Steam_Matchmaking(class Settings *settings, class Networking *network, class Ste
 
 ~Steam_Matchmaking()
 {
-    //TODO rm network callbacks
+    this->network->rmCallback(CALLBACK_ID_LOBBY, settings->get_local_steam_id(), &Steam_Matchmaking::steam_matchmaking_callback, this);
+    this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_Matchmaking::steam_matchmaking_callback, this);
     this->run_every_runcb->remove(&Steam_Matchmaking::steam_matchmaking_run_every_runcb, this);
 }
 

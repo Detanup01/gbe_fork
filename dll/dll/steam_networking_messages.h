@@ -82,7 +82,8 @@ Steam_Networking_Messages(class Settings *settings, class Networking *network, c
 
 ~Steam_Networking_Messages()
 {
-    //TODO rm network callbacks
+    this->network->rmCallback(CALLBACK_ID_NETWORKING_MESSAGES, settings->get_local_steam_id(), &Steam_Networking_Messages::steam_callback, this);
+    this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_Networking_Messages::steam_callback, this);
     this->run_every_runcb->remove(&Steam_Networking_Messages::steam_run_every_runcb, this);
 }
 
