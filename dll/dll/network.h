@@ -62,12 +62,13 @@ enum Callback_Ids {
     CALLBACK_ID_NETWORKING_SOCKETS,
     CALLBACK_ID_STEAM_MESSAGES,
     CALLBACK_ID_NETWORKING_MESSAGES,
+    CALLBACK_ID_GAMESERVER_STATS,
 
     CALLBACK_IDS_MAX
 };
 
 struct Network_Callback_Container {
-    std::vector<struct Network_Callback> callbacks;
+    std::vector<struct Network_Callback> callbacks{};
 };
 
 struct TCP_Socket {
@@ -131,12 +132,23 @@ public:
     void addListenId(CSteamID id);
     void setAppID(uint32 appid);
     void Run();
+
+    // send to a specific user, if 0 was passed to set_dest_id() then this will be broadcasted to all users on the network
     bool sendTo(Common_Message *msg, bool reliable, Connection *conn = NULL);
+    
+    // send to all users whose account type is Individual, no need to call set_dest_id(), this is done automatically 
     bool sendToAllIndividuals(Common_Message *msg, bool reliable);
+
+    // send to all active/current connections, no need to call set_dest_id(), this is done automatically
     bool sendToAll(Common_Message *msg, bool reliable);
+    
+    // send to active/current connections with specific ip/port, no need to call set_dest_id(), this is done automatically
+    //TODO: actually send to ip/port
     bool sendToIPPort(Common_Message *msg, uint32 ip, uint16 port, bool reliable);
 
     bool setCallback(Callback_Ids id, CSteamID steam_id, void (*message_callback)(void *object, Common_Message *msg), void *object);
+    void rmCallback(Callback_Ids id, CSteamID steam_id, void (*message_callback)(void *object, Common_Message *msg), void *object);
+
     uint32 getIP(CSteamID id);
     uint32 getOwnIP();
 

@@ -81,7 +81,7 @@ Steam_Client::Steam_Client()
 
     steam_matchmaking = new Steam_Matchmaking(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
     steam_matchmaking_servers = new Steam_Matchmaking_Servers(settings_client, network);
-    steam_user_stats = new Steam_User_Stats(settings_client, local_storage, callback_results_client, callbacks_client, steam_overlay);
+    steam_user_stats = new Steam_User_Stats(settings_client, network, local_storage, callback_results_client, callbacks_client, run_every_runcb, steam_overlay);
     steam_apps = new Steam_Apps(settings_client, callback_results_client);
     steam_networking = new Steam_Networking(settings_client, network, callbacks_client, run_every_runcb);
     steam_remote_storage = new Steam_Remote_Storage(settings_client, ugc_bridge, local_storage, callback_results_client);
@@ -110,7 +110,7 @@ Steam_Client::Steam_Client()
     PRINT_DEBUG("client init gameserver\n");
     steam_gameserver = new Steam_GameServer(settings_server, network, callbacks_server);
     steam_gameserver_utils = new Steam_Utils(settings_server, callback_results_server, steam_overlay);
-    steam_gameserverstats = new Steam_GameServerStats(settings_server, network, callback_results_server, callbacks_server);
+    steam_gameserverstats = new Steam_GameServerStats(settings_server, network, callback_results_server, callbacks_server, run_every_runcb);
     steam_gameserver_networking = new Steam_Networking(settings_server, network, callbacks_server, run_every_runcb);
     steam_gameserver_http = new Steam_HTTP(settings_server, network, callback_results_server, callbacks_server);
     steam_gameserver_inventory = new Steam_Inventory(settings_server, callback_results_server, callbacks_server, run_every_runcb, local_storage);
@@ -128,7 +128,7 @@ Steam_Client::Steam_Client()
     gameserver_has_ipv6_functions = false;
 
     last_cb_run = 0;
-    PRINT_DEBUG("Steam_Client init end ----------\n");
+    PRINT_DEBUG("Steam_Client init end *********\n");
 }
 
 Steam_Client::~Steam_Client()
@@ -1914,7 +1914,7 @@ void Steam_Client::RunCallbacks(bool runClientCB, bool runGameserverCB, bool run
     callbacks_client->runCallBacks();
 
     last_cb_run = std::chrono::duration_cast<std::chrono::duration<unsigned long long>>(std::chrono::system_clock::now().time_since_epoch()).count();
-    PRINT_DEBUG("Steam_Client::RunCallbacks done ------------------------------------------------------\n");
+    PRINT_DEBUG("Steam_Client::RunCallbacks done ******************************************************\n");
 }
 
 void Steam_Client::DestroyAllInterfaces()

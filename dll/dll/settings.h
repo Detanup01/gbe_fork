@@ -78,14 +78,8 @@ struct Leaderboard_config {
     enum ELeaderboardDisplayType display_type;
 };
 
-enum Stat_Type {
-    STAT_TYPE_INT,
-    STAT_TYPE_FLOAT,
-    STAT_TYPE_AVGRATE
-};
-
 struct Stat_config {
-    enum Stat_Type type;
+    GameServerStats_Messages::StatInfo::Stat_Type type;
     union {
         float default_value_float;
         int32 default_value_int;

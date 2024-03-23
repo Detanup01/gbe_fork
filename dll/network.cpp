@@ -584,6 +584,12 @@ void Networking::do_callbacks_message(Common_Message *msg)
         PRINT_DEBUG("Networking has_networking_messages\n");
         run_callbacks(CALLBACK_ID_NETWORKING_MESSAGES, msg);
     }
+
+    if (msg->has_gameserver_stats_messages()) {
+        PRINT_DEBUG("Networking has_gameserver_stats\n");
+        run_callbacks(CALLBACK_ID_GAMESERVER_STATS, msg);
+    }
+    
 }
 
 bool Networking::handle_tcp(Common_Message *msg, struct TCP_Socket &socket)
@@ -1181,7 +1187,7 @@ bool Networking::sendToIPPort(Common_Message *msg, uint32 ip, uint16 port, bool 
 {
     bool is_local_ip = ((ip >> 24) == 0x7F);
     uint32_t local_ip = getIP(ids.front());
-    PRINT_DEBUG("sendToIPPort %X %u %X\n", ip, is_local_ip, local_ip);
+    PRINT_DEBUG("Networking::sendToIPPort %X %u %X\n", ip, is_local_ip, local_ip);
     //TODO: actually send to ip/port
     for (auto &conn: connections) {
         if (ntohl(conn.tcp_ip_port.ip) == ip || (is_local_ip && ntohl(conn.tcp_ip_port.ip) == local_ip)) {
@@ -1215,9 +1221,9 @@ bool Networking::sendTo(Common_Message *msg, bool reliable, Connection *conn)
     bool ret = false;
     CSteamID dest_id((uint64)msg->dest_id());
     if (std::find(ids.begin(), ids.end(), dest_id) != ids.end()) {
-        PRINT_DEBUG("Sending to self\n");
+        PRINT_DEBUG("Networking sending to self\n");
         if (!conn) {
-            PRINT_DEBUG("local send\n");
+            PRINT_DEBUG("Networking local send\n");
             local_send.push_back(*msg);
             ret = true;
         }
@@ -1278,7 +1284,11 @@ bool Networking::sendToAll(Common_Message *msg, bool reliable)
 void Networking::run_callbacks(Callback_Ids id, Common_Message *msg)
 {
     for (auto &cb : callbacks[id].callbacks) {
-        if (cb.steam_id.ConvertToUint64() == 0 || msg->dest_id() == 0 || cb.steam_id.ConvertToUint64() == msg->dest_id()) {
+        uint64 callback_allowed_steamid = cb.steam_id.ConvertToUint64();
+        uint64 message_destination_steamid = msg->dest_id();
+        if (callback_allowed_steamid == 0 || // callback wants to receive all messages (callback for broadcast)
+            message_destination_steamid == 0 || // message was broadcasted to all (broadcast message)
+            callback_allowed_steamid == message_destination_steamid) { // callback destination is the same as the message destination
             cb.message_callback(cb.object, msg);
         }
     }
@@ -1305,13 +1315,31 @@ bool Networking::setCallback(Callback_Ids id, CSteamID steam_id, void (*message_
 {
     if (id >= CALLBACK_IDS_MAX) return false;
 
-    struct Network_Callback nc;
+    struct Network_Callback nc{};
     nc.message_callback = message_callback;
     nc.object = object;
     nc.steam_id = steam_id;
 
     callbacks[id].callbacks.push_back(nc);
     return true;
+}
+
+void Networking::rmCallback(Callback_Ids id, CSteamID steam_id, void (*message_callback)(void *object, Common_Message *msg), void *object)
+{
+    if (id >= CALLBACK_IDS_MAX) return;
+
+    auto &target_cb = callbacks[id].callbacks;
+    auto itrm = std::remove_if(
+        target_cb.begin(),
+        target_cb.end(),
+        [=, &steam_id](const struct Network_Callback &item) {
+            return item.message_callback == message_callback &&
+                   item.object == object &&
+                   item.steam_id == steam_id;
+        }
+    );
+
+    target_cb.erase(itrm, target_cb.end());
 }
 
 uint32 Networking::getOwnIP()

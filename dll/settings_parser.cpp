@@ -666,13 +666,13 @@ static void parse_stats(class Settings *settings_client, Settings *settings_serv
 
             try {
                 if (stat_type == "float") {
-                    config.type = Stat_Type::STAT_TYPE_FLOAT;
+                    config.type = GameServerStats_Messages::StatInfo::STAT_TYPE_FLOAT;
                     config.default_value_float = std::stof(stat_default_value);
                 } else if (stat_type == "int") {
-                    config.type = Stat_Type::STAT_TYPE_INT;
+                    config.type = GameServerStats_Messages::StatInfo::STAT_TYPE_INT;
                     config.default_value_int = std::stol(stat_default_value);
                 } else if (stat_type == "avgrate") {
-                    config.type = Stat_Type::STAT_TYPE_AVGRATE;
+                    config.type = GameServerStats_Messages::StatInfo::STAT_TYPE_AVGRATE;
                     config.default_value_float = std::stof(stat_default_value);
                 } else {
                     PRINT_DEBUG("Error adding stat %s, type %s isn't valid\n", stat_name.c_str(), stat_type.c_str());

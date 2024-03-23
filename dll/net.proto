@@ -215,6 +215,59 @@ message Steam_Messages {
 	}
 }
 
+message GameServerStats_Messages {
+    // --- baisc definitions
+    message StatInfo {
+        enum Stat_Type {
+            STAT_TYPE_INT = 0;
+            STAT_TYPE_FLOAT = 1;
+            STAT_TYPE_AVGRATE = 2;
+        }
+        message AvgStatInfo {
+            float count_this_session = 1;
+            double session_length = 2;
+        }
+
+        Stat_Type stat_type = 1;
+        oneof stat_value {
+            float value_float = 2;
+            int32 value_int = 3;
+        }
+        optional AvgStatInfo value_avg = 4; // only set when type != INT
+    }
+    message AchievementInfo {
+        bool achieved = 1;
+    }
+
+    // --- requests & responses objects
+    // this is used when updating stats, from server or user, bi-directional
+    message AllStats {
+        map<string, StatInfo> user_stats = 1;
+        map<string, AchievementInfo> user_achievements = 2;
+    }
+    // sent from server as a request, response sent by the user
+    message InitialAllStats {
+        uint64 steam_api_call = 1;
+        
+        // optional because the server send doesn't send any data, just steam api call id
+        optional AllStats all_data = 2;
+    }
+    // Request_: from Steam_GameServerStats
+    // Response_: from Steam_User_Stats
+    enum Types {
+        Request_AllUserStats = 0;
+        Response_AllUserStats = 1;
+
+        UpdateUserStats = 2; // sent by both sides
+    }
+
+	Types type = 1;
+    oneof data_messages {
+        InitialAllStats initial_user_stats = 2;
+        AllStats update_user_stats = 3;
+    }
+}
+
 message Common_Message {
     uint64 source_id = 1; // SteamID64 of the sender
     uint64 dest_id = 2; // SteamID64 of the target receiver
@@ -232,6 +285,7 @@ message Common_Message {
         Networking_Sockets networking_sockets = 13;
         Steam_Messages steam_messages = 14;
         Networking_Messages networking_messages = 15;
+        GameServerStats_Messages gameserver_stats_messages = 16;
     }
 
     uint32 source_ip = 128;

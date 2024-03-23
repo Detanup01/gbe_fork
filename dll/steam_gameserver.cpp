@@ -56,8 +56,12 @@ bool Steam_GameServer::InitGameServer( uint32 unIP, uint16 usGamePort, uint16 us
     std::string version(pchVersionString);
     version.erase(std::remove(version.begin(), version.end(), ' '), version.end());
     version.erase(std::remove(version.begin(), version.end(), '.'), version.end());
+    PRINT_DEBUG("Steam_GameServer::InitGameServer version trimmed '%s'\n", version.c_str());
+
     try {
-        server_data.set_version(std::stoi(version));
+        auto ver = std::stoul(version);
+        server_data.set_version(ver);
+        PRINT_DEBUG("Steam_GameServer::InitGameServer set version to %lu\n", ver);
     } catch (...) {
         PRINT_DEBUG("Steam_GameServer::InitGameServer: not a number: %s\n", pchVersionString);
         server_data.set_version(0);

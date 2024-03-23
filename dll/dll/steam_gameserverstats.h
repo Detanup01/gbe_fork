@@ -26,8 +26,52 @@ class Steam_GameServerStats : public ISteamGameServerStats
     class Networking *network;
     class SteamCallResults *callback_results;
     class SteamCallBacks *callbacks;
+    class RunEveryRunCB *run_every_runcb;
+	
+	struct RequestAllStats {
+		std::chrono::high_resolution_clock::time_point created{};
+		SteamAPICall_t steamAPICall{};
+		CSteamID steamIDUser{};
+
+		bool timeout = false;
+	};
+
+	struct CachedStat {
+		bool dirty = false; // true means it was changed on the server and should be sent to the user
+		GameServerStats_Messages::StatInfo stat{};
+	};
+	struct CachedAchievement {
+		bool dirty = false; // true means it was changed on the server and should be sent to the user
+		GameServerStats_Messages::AchievementInfo ach{};
+	};
+
+	struct UserData {
+		std::map<std::string, CachedStat> stats{};
+		std::map<std::string, CachedAchievement> achievements{};
+	};
+
+	std::vector<RequestAllStats> pending_RequestUserStats{};
+	std::map<uint64, UserData> all_users_data{};
+
+	CachedStat* find_stat(CSteamID steamIDUser, const std::string &key);
+	CachedAchievement* find_ach(CSteamID steamIDUser, const std::string &key);
+
+	void remove_timedout_userstats_requests();
+	void collect_and_send_updated_user_stats();
+	void steam_run_callback();
+
+	// reponses from player
+	void network_callback_initial_stats(Common_Message *msg);
+	void network_callback_updated_stats(Common_Message *msg);
+	void network_callback(Common_Message *msg);
+
+	static void steam_gameserverstats_network_callback(void *object, Common_Message *msg);
+	static void steam_gameserverstats_run_every_runcb(void *object);
+
 public:
-	Steam_GameServerStats(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks);
+	Steam_GameServerStats(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, class RunEveryRunCB *run_every_runcb);
+	~Steam_GameServerStats();
+	
 	// downloads stats for the user
 	// returns a GSStatsReceived_t callback when completed
 	// if the user has no stats, GSStatsReceived_t.m_eResult will be set to k_EResultFail
