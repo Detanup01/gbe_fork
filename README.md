@@ -169,6 +169,11 @@ Arguments you can pass to this script:
 * `+lib-netsockets-32` *(experimental)*: build a standalone networking sockets library (32-bit)
 * `+lib-netsockets-64` *(experimental)*: build a standalone networking sockets library (64-bit)
 
+>>>>>>>>>  ___
+
+* `+lib-gameoverlay-32` *(experimental)*: build a standalone stub/mock GameOverlayRenderer.dll library (32-bit)
+* `+lib-gameoverlay-64` *(experimental)*: build a standalone stub/mock GameOverlayRenderer64.dll library (64-bit)
+
 <br/>
 
 ### On Linux:
