@@ -682,7 +682,7 @@ STEAMAPI_API ISteamClient *SteamGameServerClient();
 
 STEAMAPI_API steam_bool S_CALLTYPE SteamInternal_GameServer_Init( uint32 unIP, uint16 usPort, uint16 usGamePort, uint16 usQueryPort, EServerMode eServerMode, const char *pchVersionString )
 {
-    PRINT_DEBUG("SteamInternal_GameServer_Init %u %hu %hu %hu %u %s\n", unIP, usPort, usGamePort, usQueryPort, eServerMode, pchVersionString);
+    PRINT_DEBUG("SteamInternal_GameServer_Init %X %hu %hu %hu %u %s\n", unIP, usPort, usGamePort, usQueryPort, eServerMode, pchVersionString);
     if (!server_steam_pipe) {
         load_old_interface_versions();
         get_steam_client()->CreateLocalUser(&server_steam_pipe, k_EAccountTypeGameServer);

@@ -139,7 +139,7 @@ void ClearAllKeyValues()
 // Call this to add/update a key/value pair.
 void SetKeyValue( const char *pKey, const char *pValue )
 {
-    PRINT_DEBUG("Steam_Masterserver_Updater::SetKeyValue\n");
+    PRINT_DEBUG("Steam_Masterserver_Updater::SetKeyValue '%s'='%s'\n", pKey, pValue);
 }
 
 
