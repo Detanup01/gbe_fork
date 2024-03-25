@@ -1837,7 +1837,9 @@ void Steam_Overlay::FriendConnect(Friend _friend)
 {
     PRINT_DEBUG("Steam_Overlay::FriendConnect " "%" PRIu64 "\n", _friend.id());
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (!Ready()) return;
+    // players connections might happen earlier before the overlay is ready
+    // we don't want to miss them
+    //if (!Ready()) return;
     
     int id = find_free_friend_id(friends);
     if (id != 0) {
@@ -1856,7 +1858,9 @@ void Steam_Overlay::FriendDisconnect(Friend _friend)
 {
     PRINT_DEBUG("Steam_Overlay::FriendDisconnect " "%" PRIu64 "\n", _friend.id());
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (!Ready()) return;
+    // players connections might happen earlier before the overlay is ready
+    // we don't want to miss them
+    //if (!Ready()) return;
     
     auto it = friends.find(_friend);
     if (it != friends.end())
