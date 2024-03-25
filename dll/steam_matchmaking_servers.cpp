@@ -350,7 +350,10 @@ void Steam_Matchmaking_Servers::ReleaseRequest( HServerListRequest hServerListRe
 
 void Steam_Matchmaking_Servers::server_details(Gameserver *g, gameserveritem_t *server)
 {
-    int latency = 10;
+    PRINT_DEBUG("Steam_Matchmaking_Servers::server_details\n");
+    constexpr const static int MIN_LATENCY = 2;
+
+    int latency = MIN_LATENCY;
 
     if (settings->matchmaking_server_details_via_source_query && !(g->ip() < 0) && !(g->query_port() < 0)) {
         unsigned char ip[4]{};
@@ -371,7 +374,9 @@ void Steam_Matchmaking_Servers::server_details(Gameserver *g, gameserveritem_t *
             A2S_INFO *ssq_a2s_info = ssq_info(ssq);
             std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
             latency = (int)std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-            if (latency < 10) latency = 10; // TODO I don't know if low latency is problematic or not
+
+            // TODO I don't know if low latency is problematic or not, hence this artificial latency
+            if (latency < MIN_LATENCY) latency = MIN_LATENCY;
 
             if (ssq_server_eok(ssq)) {
                 PRINT_DEBUG("  Steam_Matchmaking_Servers::server_details ssq server info ok\n");
