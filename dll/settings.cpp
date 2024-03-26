@@ -75,11 +75,8 @@ Settings::Settings(CSteamID steam_id, CGameID game_id, const std::string &name, 
     std::transform(lang.begin(), lang.end(), lang.begin(), ::tolower);
     lang.erase(std::remove(lang.begin(), lang.end(), ' '), lang.end());
     this->language = lang;
-    this->lobby_id = k_steamIDNil;
-    this->unlockAllDLCs = true;
 
     this->offline = offline;
-    this->create_unknown_leaderboards = true;
 }
 
 CSteamID Settings::get_local_steam_id()
@@ -125,6 +122,21 @@ void Settings::set_lobby(CSteamID lobby_id)
 CSteamID Settings::get_lobby()
 {
     return this->lobby_id;
+}
+
+bool Settings::is_offline()
+{
+    return offline;
+}
+
+uint16 Settings::get_port()
+{
+    return port;
+}
+
+void Settings::set_port(uint16 port)
+{
+    this->port = port;
 }
 
 void Settings::unlockAllDLC(bool value)
@@ -274,6 +286,22 @@ void Settings::setLeaderboard(std::string leaderboard, enum ELeaderboardSortMeth
 
     leaderboards[leaderboard] = leader;
 }
+
+std::map<std::string, Leaderboard_config> Settings::getLeaderboards()
+{
+    return leaderboards;
+}
+
+const std::map<std::string, Stat_config>& Settings::getStats()
+{
+    return stats;
+}
+
+void Settings::setStatDefiniton(const std::string &name, const struct Stat_config &stat_config)
+{
+    stats[common_helpers::ascii_to_lowercase(name)] = stat_config;
+}
+
 
 int Settings::add_image(const std::string &data, uint32 width, uint32 height)
 {

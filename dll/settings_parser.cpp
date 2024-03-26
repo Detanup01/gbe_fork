@@ -388,7 +388,7 @@ uint16 parse_listen_port(class Local_Storage *local_storage)
     char array_port[10] = {};
     array_port[0] = '0';
     local_storage->get_data_settings("listen_port.txt", array_port, sizeof(array_port) - 1);
-    uint16 port = std::stoi(array_port);
+    uint16 port = (uint16)std::stoi(array_port);
     if (port == 0) {
         port = DEFAULT_PORT;
         snprintf(array_port, sizeof(array_port), "%hu", port);
@@ -589,8 +589,6 @@ static void parse_leaderboards(class Settings *settings_client, Settings *settin
     std::ifstream input( utf8_decode(dlc_config_path) );
     if (input.is_open()) {
         common_helpers::consume_bom(input);
-        settings_client->setCreateUnknownLeaderboards(false);
-        settings_server->setCreateUnknownLeaderboards(false);
 
         for( std::string line; getline( input, line ); ) {
             if (!line.empty() && line[line.length()-1] == '\n') {
@@ -1131,7 +1129,7 @@ static void parse_ip_country(class Settings *settings_client, Settings *settings
         line = common_helpers::string_strip(line);
         // ISO 3166-1-alpha-2 format is 2 chars only
         if (line.size() == 2) {
-            std::transform(line.begin(), line.end(), line.begin(), [](char c) { return std::toupper(c); });
+            std::transform(line.begin(), line.end(), line.begin(), [](char c){ return std::toupper(c); } );
             settings_client->ip_country = line;
             settings_server->ip_country = line;
             PRINT_DEBUG("Setting IP country to: '%s'\n", line.c_str());
@@ -1239,6 +1237,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     bool disable_account_avatar = false;
     bool achievement_bypass = false;
     bool is_beta_branch = false;
+    bool disable_leaderboards_create_unknown = false;
     bool use_gc_token = false;
     bool enable_new_app_ticket = false;
     int build_id = 10;
@@ -1284,6 +1283,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
                 disable_source_query = true;
             } else if (p == "disable_account_avatar.txt") {
                 disable_account_avatar = true;
+            } else if (p == "disable_leaderboards_create_unknown.txt") {
+                disable_leaderboards_create_unknown = true;
             } else if (p == "achievements_bypass.txt") {
                 achievement_bypass = true;
             } else if (p == "is_beta_branch.txt") {
@@ -1354,14 +1355,20 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     settings_server->supported_languages = supported_languages;
     settings_client->steam_deck = steam_deck_mode;
     settings_server->steam_deck = steam_deck_mode;
+
     settings_client->download_steamhttp_requests = download_steamhttp_requests;
     settings_server->download_steamhttp_requests = download_steamhttp_requests;
     settings_client->force_steamhttp_success = force_steamhttp_success;
     settings_server->force_steamhttp_success = force_steamhttp_success;
+
     settings_client->achievement_bypass = achievement_bypass;
     settings_server->achievement_bypass = achievement_bypass;
     settings_client->is_beta_branch = is_beta_branch;
     settings_server->is_beta_branch = is_beta_branch;
+
+    settings_client->disable_leaderboards_create_unknown = disable_leaderboards_create_unknown;
+    settings_server->disable_leaderboards_create_unknown = disable_leaderboards_create_unknown;
+
     settings_client->enable_new_app_ticket = enable_new_app_ticket;
     settings_server->enable_new_app_ticket = enable_new_app_ticket;
     settings_client->use_gc_token = use_gc_token;

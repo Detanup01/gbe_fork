@@ -440,7 +440,7 @@ void Steam_GameServerStats::network_callback_initial_stats(Common_Message *msg)
                 item.steamIDUser == user_steamid;
         }
     );
-    if (pending_RequestUserStats.end()  == it) { // timeout and already removed
+    if (pending_RequestUserStats.end() == it) { // timeout and already removed
         PRINT_DEBUG("Steam_GameServerStats::network_callback_initial_stats error got all player stats but pending request timedout and removed\n");
         return;
     }

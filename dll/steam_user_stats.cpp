@@ -18,7 +18,6 @@
 #include "dll/steam_user_stats.h"
 
 
-
 unsigned int Steam_User_Stats::find_leaderboard(std::string name)
 {
     unsigned index = 1;
@@ -1017,10 +1016,10 @@ SteamAPICall_t Steam_User_Stats::FindLeaderboard( const char *pchLeaderboardName
     if (settings_Leaderboards.count(pchLeaderboardName)) {
         auto config = settings_Leaderboards[pchLeaderboardName];
         return FindOrCreateLeaderboard(pchLeaderboardName, config.sort_method, config.display_type);
-    } else if (settings->createUnknownLeaderboards()) {
+    } else if (!settings->disable_leaderboards_create_unknown) {
         return FindOrCreateLeaderboard(pchLeaderboardName, k_ELeaderboardSortMethodDescending, k_ELeaderboardDisplayTypeNumeric);
     } else {
-        LeaderboardFindResult_t data;
+        LeaderboardFindResult_t data{};
         data.m_hSteamLeaderboard = find_leaderboard(pchLeaderboardName);;
         data.m_bLeaderboardFound = !!data.m_hSteamLeaderboard;
         return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));

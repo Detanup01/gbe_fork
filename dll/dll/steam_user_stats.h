@@ -103,6 +103,7 @@ private:
     GameServerStats_Messages::AllStats pending_server_updates{};
 
 
+    // returns a value 1 -> leaderboards.size(), inclusize
     unsigned int find_leaderboard(std::string name);
 
     nlohmann::detail::iter_impl<nlohmann::json> defined_achievements_find(const std::string &key);

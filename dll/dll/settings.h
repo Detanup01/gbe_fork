@@ -162,108 +162,28 @@ struct Overlay_Appearance {
 };
 
 class Settings {
-    CSteamID steam_id;
+    CSteamID steam_id; // user id
     CGameID game_id;
-    std::string name, language;
-    CSteamID lobby_id;
+    std::string name{};
+    std::string language{}; // default "english"
+    CSteamID lobby_id = k_steamIDNil;
 
-    bool unlockAllDLCs;
-    bool offline;
-    std::vector<struct DLC_entry> DLCs;
-    std::vector<struct Mod_entry> mods;
-    std::map<AppId_t, std::string> app_paths;
-    std::map<std::string, Leaderboard_config> leaderboards;
-    std::map<std::string, Stat_config> stats;
-    bool create_unknown_leaderboards;
-    uint16 port;
-
-    // whether to auto accept any overlay invites
-    bool auto_accept_any_overlay_invites = false;
-    // list of user steam IDs to auto-accept invites from
-    std::set<uint64_t> auto_accept_overlay_invites_friends{};
+    bool unlockAllDLCs = true;
+    bool offline = false;
+    std::vector<struct DLC_entry> DLCs{};
+    std::vector<struct Mod_entry> mods{};
+    std::map<AppId_t, std::string> app_paths{};
+    std::map<std::string, Leaderboard_config> leaderboards{};
+    std::map<std::string, Stat_config> stats{};
+    uint16 port{}; // Listen port, default 47584
 
 public:
 
-#ifdef LOBBY_CONNECT
-    static const bool is_lobby_connect = true;
-#else
-    static const bool is_lobby_connect = false;
-#endif
-
-    static std::string sanitize(const std::string &name);
-    Settings(CSteamID steam_id, CGameID game_id, const std::string &name, const std::string &language, bool offline);
-    CSteamID get_local_steam_id();
-    CGameID get_local_game_id();
-    const char *get_local_name();
-    void set_local_name(const char *name);
-    const char *get_language();
-    void set_language(const char *language);
-
-    void set_game_id(CGameID game_id);
-    void set_lobby(CSteamID lobby_id);
-    CSteamID get_lobby();
-    bool is_offline() {return offline; }
-    uint16 get_port() {return port;}
-    void set_port(uint16 port) { this->port = port;}
-
-    //DLC stuff
-    void unlockAllDLC(bool value);
-    void addDLC(AppId_t appID, std::string name, bool available);
-    unsigned int DLCCount();
-    bool hasDLC(AppId_t appID);
-    bool getDLC(unsigned int index, AppId_t &appID, bool &available, std::string &name);
-    bool allDLCUnlocked() const;
-
     //Depots
-    std::vector<DepotId_t> depots;
-
-    //App Install paths
-    void setAppInstallPath(AppId_t appID, const std::string &path);
-    std::string getAppInstallPath(AppId_t appID);
-
-    //mod stuff
-    void addMod(PublishedFileId_t id, const std::string &title, const std::string &path);
-    void addModDetails(PublishedFileId_t id, const Mod_entry &details);
-    Mod_entry getMod(PublishedFileId_t id);
-    bool isModInstalled(PublishedFileId_t id);
-    std::set<PublishedFileId_t> modSet();
-
-    //leaderboards
-    void setLeaderboard(std::string leaderboard, enum ELeaderboardSortMethod sort_method, enum ELeaderboardDisplayType display_type);
-    std::map<std::string, Leaderboard_config> getLeaderboards() { return leaderboards; }
-    void setCreateUnknownLeaderboards(bool enable) {create_unknown_leaderboards = enable;}
-    bool createUnknownLeaderboards() { return create_unknown_leaderboards; }
+    std::vector<DepotId_t> depots{};
 
     //custom broadcasts
-    std::set<IP_PORT> custom_broadcasts;
-
-    //stats
-    const std::map<std::string, Stat_config>& getStats() { return stats; }
-    void setStatDefiniton(std::string name, struct Stat_config stat_config) {stats[common_helpers::ascii_to_lowercase(name)] = stat_config; }
-    // bypass to make SetAchievement() always return true, prevent some games from breaking
-    bool achievement_bypass = false;
-
-    //subscribed lobby/group ids
-    std::set<uint64> subscribed_groups;
-    std::vector<Group_Clans> subscribed_groups_clans;
-
-    //images
-    std::map<int, struct Image_Data> images;
-    int add_image(const std::string &data, uint32 width, uint32 height);
-    bool disable_account_avatar = false;
-
-    //installed app ids, Steam_Apps::BIsAppInstalled()
-    std::set<AppId_t> installed_app_ids;
-    bool assume_any_app_installed = true;
-    bool appIsInstalled(AppId_t appID);
-
-    //is playing on beta branch + current/forced branch name
-    bool is_beta_branch = false;
-    std::string current_branch_name = "public";
-
-    //controller
-    struct Controller_Settings controller_settings;
-    std::string glyphs_directory;
+    std::set<IP_PORT> custom_broadcasts{};
 
     //networking
     bool disable_networking = false;
@@ -274,6 +194,59 @@ public:
     //matchmaking server list & server details
     bool matchmaking_server_list_always_lan_type = true;
     bool matchmaking_server_details_via_source_query = false;
+
+    //app build id
+    int build_id = 10;
+
+    //supported languages
+    std::set<std::string> supported_languages{};
+
+    //make lobby creation fail in the matchmaking interface
+    bool disable_lobby_creation = false;
+
+    // path to local save
+    std::string local_save{};
+
+    //steamhttp external download support
+    bool download_steamhttp_requests = false;
+    bool force_steamhttp_success = false;
+
+    //steam deck flag
+    bool steam_deck = false;
+    
+    // use new app_ticket auth instead of old one
+    bool enable_new_app_ticket = false;
+    // can use GC token for generation
+    bool use_gc_token = false;
+
+    // bypass to make SetAchievement() always return true, prevent some games from breaking
+    bool achievement_bypass = false;
+
+    bool disable_account_avatar = false;
+
+    std::map<int, struct Image_Data> images{};
+
+    //subscribed lobby/group ids
+    std::set<uint64> subscribed_groups{};
+    std::vector<Group_Clans> subscribed_groups_clans{};
+
+    // get the alpha-2 code from: https://www.iban.com/country-codes 
+    std::string ip_country = "US";
+
+    //is playing on beta branch + current/forced branch name
+    bool is_beta_branch = false;
+    std::string current_branch_name = "public";
+
+    //controller
+    struct Controller_Settings controller_settings{};
+    std::string glyphs_directory{};
+
+    //installed app ids, Steam_Apps::BIsAppInstalled()
+    std::set<AppId_t> installed_app_ids{};
+    bool assume_any_app_installed = true;
+
+    // allow Steam_User_Stats::FindLeaderboard() to always succeed and create the given unknown leaderboard
+    bool disable_leaderboards_create_unknown = false;
 
     //overlay
     bool disable_overlay = false;
@@ -294,30 +267,65 @@ public:
     // disable all overlay warnings
     bool disable_overlay_warning_any = false;
     Overlay_Appearance overlay_appearance{};
+    // whether to auto accept any overlay invites
+    bool auto_accept_any_overlay_invites = false;
+    // list of user steam IDs to auto-accept invites from
+    std::set<uint64_t> auto_accept_overlay_invites_friends{};
 
-    //app build id
-    int build_id = 10;
 
-    //supported languages
-    std::set<std::string> supported_languages;
+#ifdef LOBBY_CONNECT
+    static const bool is_lobby_connect = true;
+#else
+    static const bool is_lobby_connect = false;
+#endif
 
-    //make lobby creation fail in the matchmaking interface
-    bool disable_lobby_creation = false;
+    static std::string sanitize(const std::string &name);
+    Settings(CSteamID steam_id, CGameID game_id, const std::string &name, const std::string &language, bool offline);
+    CSteamID get_local_steam_id();
+    CGameID get_local_game_id();
+    const char *get_local_name();
+    void set_local_name(const char *name);
+    const char *get_language();
+    void set_language(const char *language);
 
-    // path to local save
-    std::string local_save;
+    void set_game_id(CGameID game_id);
+    void set_lobby(CSteamID lobby_id);
+    CSteamID get_lobby();
+    bool is_offline();
+    uint16 get_port();
+    void set_port(uint16 port);
 
-    //steamhttp external download support
-    bool download_steamhttp_requests = false;
-    bool force_steamhttp_success = false;
+    //DLC stuff
+    void unlockAllDLC(bool value);
+    void addDLC(AppId_t appID, std::string name, bool available);
+    unsigned int DLCCount();
+    bool hasDLC(AppId_t appID);
+    bool getDLC(unsigned int index, AppId_t &appID, bool &available, std::string &name);
+    bool allDLCUnlocked() const;
 
-    //steam deck flag
-    bool steam_deck = false;
-    
-    // use new app_ticket auth instead of old one
-    bool enable_new_app_ticket = false;
-    // can use GC token for generation
-    bool use_gc_token = false;
+    //App Install paths
+    void setAppInstallPath(AppId_t appID, const std::string &path);
+    std::string getAppInstallPath(AppId_t appID);
+
+    //mod stuff
+    void addMod(PublishedFileId_t id, const std::string &title, const std::string &path);
+    void addModDetails(PublishedFileId_t id, const Mod_entry &details);
+    Mod_entry getMod(PublishedFileId_t id);
+    bool isModInstalled(PublishedFileId_t id);
+    std::set<PublishedFileId_t> modSet();
+
+    //leaderboards
+    void setLeaderboard(std::string leaderboard, enum ELeaderboardSortMethod sort_method, enum ELeaderboardDisplayType display_type);
+    std::map<std::string, Leaderboard_config> getLeaderboards();
+
+    //stats
+    const std::map<std::string, Stat_config>& getStats();
+    void setStatDefiniton(const std::string &name, const struct Stat_config &stat_config);
+
+    //images
+    int add_image(const std::string &data, uint32 width, uint32 height);
+
+    bool appIsInstalled(AppId_t appID);
 
     // overlay auto accept stuff
     void acceptAnyOverlayInvites(bool value);
@@ -325,8 +333,6 @@ public:
     bool hasOverlayAutoAcceptInviteFromFriend(uint64_t friend_id) const;
     size_t overlayAutoAcceptInvitesCount() const;
 
-    // get the alpha-2 code from: https://www.iban.com/country-codes 
-    std::string ip_country = "US";
 };
 
 #endif
