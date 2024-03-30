@@ -22,17 +22,26 @@
 #include "base.h"
 #include "overlay/steam_overlay.h"
 
-struct Steam_Leaderboard_Score {
-    CSteamID steam_id;
-    int32 score;
-    std::vector<int32> score_details;
+struct Steam_Leaderboard_Entry {
+    CSteamID steam_id{};
+    int32 score{};
+    std::vector<int32> score_details{};
 };
 
 struct Steam_Leaderboard {
-    std::string name;
-    ELeaderboardSortMethod sort_method;
-    ELeaderboardDisplayType display_type;
-    Steam_Leaderboard_Score self_score;
+    std::string name{};
+    ELeaderboardSortMethod sort_method = k_ELeaderboardSortMethodNone;
+    ELeaderboardDisplayType display_type = k_ELeaderboardDisplayTypeNone;
+    std::vector<Steam_Leaderboard_Entry> entries{};
+
+    Steam_Leaderboard_Entry* find_recent_entry(const CSteamID &steamid) const;
+    void remove_entries(const CSteamID &steamid);
+
+    // remove entries with the same steamid, keeping only most recent one
+    void remove_duplicate_entries();
+
+    void sort_entries();
+
 };
 
 struct achievement_trigger {
@@ -90,7 +99,7 @@ private:
     class RunEveryRunCB *run_every_runcb{};
     class Steam_Overlay* overlay{};
 
-    std::vector<struct Steam_Leaderboard> leaderboards{};
+    std::vector<struct Steam_Leaderboard> cached_leaderboards{};
 
     nlohmann::json defined_achievements{};
     nlohmann::json user_achievements{};
@@ -103,22 +112,23 @@ private:
     GameServerStats_Messages::AllStats pending_server_updates{};
 
 
-    // returns a value 1 -> leaderboards.size(), inclusize
-    unsigned int find_leaderboard(std::string name);
-
-    nlohmann::detail::iter_impl<nlohmann::json> defined_achievements_find(const std::string &key);
-
     void load_achievements_db();
-
     void load_achievements();
-
     void save_achievements();
 
-    void save_leaderboard_score(Steam_Leaderboard *leaderboard);
-
-    std::vector<Steam_Leaderboard_Score> load_leaderboard_scores(std::string name);
-
+    nlohmann::detail::iter_impl<nlohmann::json> defined_achievements_find(const std::string &key);
     std::string get_value_for_language(nlohmann::json &json, std::string key, std::string language);
+
+    std::vector<Steam_Leaderboard_Entry> load_leaderboard_entries(const std::string &name);
+    void save_my_leaderboard_entry(const Steam_Leaderboard &leaderboard);
+    Steam_Leaderboard_Entry* update_leaderboard_entry(Steam_Leaderboard &leaderboard, const Steam_Leaderboard_Entry &entry, bool overwrite = true);
+
+    // returns a value 1 -> leaderboards.size(), inclusive
+    unsigned int find_cached_leaderboard(const std::string &name);
+    unsigned int cache_leaderboard_ifneeded(const std::string &name, ELeaderboardSortMethod eLeaderboardSortMethod, ELeaderboardDisplayType eLeaderboardDisplayType);
+    // null steamid means broadcast to all
+    void send_my_leaderboard_score(const Steam_Leaderboard &board, const CSteamID *steamid = nullptr, bool want_scores_back = false);
+    void request_user_leaderboard_entry(const Steam_Leaderboard &board, const CSteamID &steamid);
 
     // change stats/achievements without sending back to server
     InternalSetResult<int32> set_stat_internal( const char *pchName, int32 nData );
@@ -127,16 +137,25 @@ private:
     InternalSetResult<bool> set_achievement_internal( const char *pchName );
     InternalSetResult<bool> clear_achievement_internal( const char *pchName );
 
-
     void send_updated_stats();
     void steam_run_callback();
 
     // requests from server
-    void network_callback_initial_stats(Common_Message *msg);
-    void network_callback_updated_stats(Common_Message *msg);
-    void network_callback(Common_Message *msg);
+    void network_stats_initial(Common_Message *msg);
+    void network_stats_updated(Common_Message *msg);
+    void network_callback_stats(Common_Message *msg);
 
-    static void steam_user_stats_network_callback(void *object, Common_Message *msg);
+    // requests from other users to share leaderboards
+    void network_leaderboard_update_score(Common_Message *msg, Steam_Leaderboard &board, bool send_score_back);
+    void network_leaderboard_send_my_score(Common_Message *msg, const Steam_Leaderboard &board);
+    void network_callback_leaderboards(Common_Message *msg);
+    
+    // user connect/disconnect
+    void network_callback_low_level(Common_Message *msg);
+
+    static void steam_user_stats_network_low_level(void *object, Common_Message *msg);
+    static void steam_user_stats_network_stats(void *object, Common_Message *msg);
+    static void steam_user_stats_network_leaderboards(void *object, Common_Message *msg);
     static void steam_user_stats_run_every_runcb(void *object);
 
 public:

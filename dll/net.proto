@@ -268,6 +268,30 @@ message GameServerStats_Messages {
     }
 }
 
+message Leaderboards_Messages {
+    message LeaderboardInfo {
+        string board_name = 1;
+        int32 sort_method = 2;
+        int32 display_type = 3;
+    }
+    message UserScoreEntry {
+        int32 score = 1;
+        repeated int32 score_details = 2;
+    }
+
+    enum Types {
+        UpdateUserScore = 0; // notify others on the network that our score was updated
+        UpdateUserScoreMutual = 1; // notify others on the network that our score was updated, and request theirs
+        RequestUserScore = 2; // request score data from a single user
+    }
+
+	Types type = 1;
+    LeaderboardInfo leaderboard_info = 2;
+    oneof data_messages {
+        UserScoreEntry user_score_entry = 3;
+    }
+}
+
 message Common_Message {
     uint64 source_id = 1; // SteamID64 of the sender
     uint64 dest_id = 2; // SteamID64 of the target receiver
@@ -286,6 +310,7 @@ message Common_Message {
         Steam_Messages steam_messages = 14;
         Networking_Messages networking_messages = 15;
         GameServerStats_Messages gameserver_stats_messages = 16;
+        Leaderboards_Messages leaderboards_messages = 17;
     }
 
     uint32 source_ip = 128;

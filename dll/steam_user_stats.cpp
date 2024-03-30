@@ -16,33 +16,57 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "dll/steam_user_stats.h"
+#include <random>
 
 
-unsigned int Steam_User_Stats::find_leaderboard(std::string name)
+// --- Steam_Leaderboard ---
+
+Steam_Leaderboard_Entry* Steam_Leaderboard::find_recent_entry(const CSteamID &steamid) const
 {
-    unsigned index = 1;
-    for (auto &leaderboard : leaderboards) {
-        if (leaderboard.name == name) return index;
-        ++index;
-    }
-
-    return 0;
+    auto my_it = std::find_if(entries.begin(), entries.end(), [&steamid](const Steam_Leaderboard_Entry &item) {
+        return item.steam_id == steamid;
+    });
+    if (entries.end() == my_it) return nullptr;
+    return const_cast<Steam_Leaderboard_Entry*>(&*my_it);
 }
 
-nlohmann::detail::iter_impl<nlohmann::json> Steam_User_Stats::defined_achievements_find(const std::string &key)
+void Steam_Leaderboard::remove_entries(const CSteamID &steamid)
 {
-    return std::find_if(
-        defined_achievements.begin(), defined_achievements.end(),
-        [&key](const nlohmann::json& item) {
-            const std::string &name = static_cast<const std::string &>( item.value("name", std::string()) );
-            return key.size() == name.size() &&
-                std::equal(
-                    name.begin(), name.end(), key.begin(),
-                    [](char a, char b) { return std::tolower(a) == std::tolower(b); }
-                );
+    auto rm_it = std::remove_if(entries.begin(), entries.end(), [&](const Steam_Leaderboard_Entry &item){
+        return item.steam_id == steamid;
+    });
+    if (entries.end() != rm_it) entries.erase(rm_it, entries.end());
+}
+
+void Steam_Leaderboard::remove_duplicate_entries()
+{
+    if (entries.size() <= 1) return;
+
+    auto rm = std::remove_if(entries.begin(), entries.end(), [&](const Steam_Leaderboard_Entry& item) {
+        auto recent = find_recent_entry(item.steam_id);
+        return &item != recent;
+    });
+    if (entries.end() != rm) entries.erase(rm, entries.end());
+}
+
+void Steam_Leaderboard::sort_entries()
+{
+    if (sort_method == k_ELeaderboardSortMethodNone) return;
+    if (entries.size() <= 1) return;
+
+    std::sort(entries.begin(), entries.end(), [this](const Steam_Leaderboard_Entry &item1, const Steam_Leaderboard_Entry &item2) {
+        if (sort_method == k_ELeaderboardSortMethodAscending) {
+            return item1.score < item2.score;
+        } else { // k_ELeaderboardSortMethodDescending
+            return item1.score > item2.score;
         }
-    );
+    });
+
 }
+
+// --- Steam_Leaderboard ---
+
+
 
 void Steam_User_Stats::load_achievements_db()
 {
@@ -60,58 +84,16 @@ void Steam_User_Stats::save_achievements()
     local_storage->write_json_file("", achievements_user_file, user_achievements);
 }
 
-void Steam_User_Stats::save_leaderboard_score(Steam_Leaderboard *leaderboard)
+
+nlohmann::detail::iter_impl<nlohmann::json> Steam_User_Stats::defined_achievements_find(const std::string &key)
 {
-    std::vector<uint32_t> output;
-    uint64_t steam_id = leaderboard->self_score.steam_id.ConvertToUint64();
-    output.push_back(steam_id & 0xFFFFFFFF);
-    output.push_back(steam_id >> 32);
-
-    output.push_back(leaderboard->self_score.score);
-    output.push_back(leaderboard->self_score.score_details.size());
-    for (auto &s : leaderboard->self_score.score_details) {
-        output.push_back(s);
-    }
-
-    std::string leaderboard_name = common_helpers::ascii_to_lowercase(leaderboard->name);
-    local_storage->store_data(Local_Storage::leaderboard_storage_folder, leaderboard_name, (char* )output.data(), sizeof(uint32_t) * output.size());
-}
-
-std::vector<Steam_Leaderboard_Score> Steam_User_Stats::load_leaderboard_scores(std::string name)
-{
-    std::vector<Steam_Leaderboard_Score> out;
-
-    std::string leaderboard_name = common_helpers::ascii_to_lowercase(name);
-    unsigned size = local_storage->file_size(Local_Storage::leaderboard_storage_folder, leaderboard_name);
-    if (size == 0 || (size % sizeof(uint32_t)) != 0) return out;
-
-    std::vector<uint32_t> output(size / sizeof(uint32_t));
-    if (local_storage->get_data(Local_Storage::leaderboard_storage_folder, leaderboard_name, (char* )output.data(), size) != size) return out;
-
-    unsigned i = 0;
-    while (true) {
-        if ((i + 4) > output.size()) break;
-
-        Steam_Leaderboard_Score score;
-        score.steam_id = CSteamID((uint64)output[i] + (((uint64)output[i + 1]) << 32));
-        i += 2;
-        score.score = output[i];
-        i += 1;
-        unsigned count = output[i];
-        i += 1;
-
-        if ((i + count) > output.size()) break;
-
-        for (unsigned j = 0; j < count; ++j) {
-            score.score_details.push_back(output[i]);
-            i += 1;
+    return std::find_if(
+        defined_achievements.begin(), defined_achievements.end(),
+        [&key](const nlohmann::json& item) {
+            const std::string &name = static_cast<const std::string &>( item.value("name", std::string()) );
+            return common_helpers::str_cmp_insensitive(key, name);
         }
-
-        PRINT_DEBUG("Steam_User_Stats::loaded leaderboard score %llu %u\n", score.steam_id.ConvertToUint64(), score.score);
-        out.push_back(score);
-    }
-
-    return out;
+    );
 }
 
 std::string Steam_User_Stats::get_value_for_language(nlohmann::json &json, std::string key, std::string language)
@@ -148,6 +130,193 @@ std::string Steam_User_Stats::get_value_for_language(nlohmann::json &json, std::
     }
 
     return "";
+}
+
+
+/*
+layout of each item in the leaderboard file
+| steamid - lower 32-bits | steamid - higher 32-bits | score (4 bytes) | score details count (4 bytes) | score details array (4 bytes each) ...
+  [0]                     | [1]                      | [2]             | [3]                            | [4]
+  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ main header ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+*/
+
+std::vector<Steam_Leaderboard_Entry> Steam_User_Stats::load_leaderboard_entries(const std::string &name)
+{
+    constexpr const static unsigned int MAIN_HEADER_ELEMENTS_COUNT = 4;
+    constexpr const static unsigned int ELEMENT_SIZE = (unsigned int)sizeof(uint32_t);
+
+    std::vector<Steam_Leaderboard_Entry> out{};
+
+    std::string leaderboard_name(common_helpers::ascii_to_lowercase(name));
+    unsigned read_bytes = local_storage->file_size(Local_Storage::leaderboard_storage_folder, leaderboard_name);
+    if ((read_bytes == 0) ||
+        (read_bytes < (ELEMENT_SIZE * MAIN_HEADER_ELEMENTS_COUNT)) ||
+        (read_bytes % ELEMENT_SIZE) != 0) {
+        return out;
+    }
+
+    std::vector<uint32_t> output(read_bytes / ELEMENT_SIZE);
+    if (local_storage->get_data(Local_Storage::leaderboard_storage_folder, leaderboard_name, (char* )output.data(), read_bytes) != read_bytes) return out;
+
+    unsigned int i = 0;
+    while (true) {
+        if ((i + MAIN_HEADER_ELEMENTS_COUNT) > output.size()) break; // invalid main header, or end of buffer
+
+        Steam_Leaderboard_Entry new_entry{};
+        new_entry.steam_id = CSteamID((uint64)output[i] + (((uint64)output[i + 1]) << 32));
+        new_entry.score = (int32)output[i + 2];
+        uint32_t details_count = output[i + 3];
+        i += MAIN_HEADER_ELEMENTS_COUNT; // skip main header
+
+        if ((i + details_count) > output.size()) break; // invalid score details count
+
+        for (uint32_t j = 0; j < details_count; ++j) {
+            new_entry.score_details.push_back(output[i]);
+            ++i; // move past this score detail
+        }
+
+        PRINT_DEBUG(
+            "Steam_User_Stats::load_leaderboard_entries '%s': user %llu, score %i, details count = %zu\n",
+            name.c_str(), new_entry.steam_id.ConvertToUint64(), new_entry.score, new_entry.score_details.size()
+        );
+        out.push_back(new_entry);
+    }
+
+    PRINT_DEBUG("Steam_User_Stats::load_leaderboard_entries '%s' total entries = %zu\n", name.c_str(), out.size());
+    return out;
+}
+
+void Steam_User_Stats::save_my_leaderboard_entry(const Steam_Leaderboard &leaderboard)
+{
+    PRINT_DEBUG("Steam_User_Stats::save_my_leaderboard_entry saving entries for leaderboard '%s'\n", leaderboard.name.c_str());
+
+    const auto &my_entry = *leaderboard.find_recent_entry(settings->get_local_steam_id());
+    std::vector<uint32_t> output{};
+
+    uint64_t steam_id = my_entry.steam_id.ConvertToUint64();
+    output.push_back((uint32_t)(steam_id & 0xFFFFFFFF)); // lower 4 bytes
+    output.push_back((uint32_t)(steam_id >> 32)); // higher 4 bytes
+
+    output.push_back(my_entry.score);
+    output.push_back((uint32_t)my_entry.score_details.size());
+    for (const auto &detail : my_entry.score_details) {
+        output.push_back(detail);
+    }
+
+    std::string leaderboard_name(common_helpers::ascii_to_lowercase(leaderboard.name));
+    local_storage->store_data(Local_Storage::leaderboard_storage_folder, leaderboard_name, (char* )&output[0], output.size() * sizeof(output[0]));
+}
+
+Steam_Leaderboard_Entry* Steam_User_Stats::update_leaderboard_entry(Steam_Leaderboard &leaderboard, const Steam_Leaderboard_Entry &entry, bool overwrite)
+{
+    bool added = false;
+    auto user_entry = leaderboard.find_recent_entry(entry.steam_id);
+    if (!user_entry) { // user doesn't have an entry yet, create one
+        added = true;
+        leaderboard.entries.push_back(entry);
+        user_entry = &leaderboard.entries.back();
+    } else if (overwrite) {
+        added = true;
+        *user_entry = entry;
+    }
+
+    if (added) { // if we added a new entry then we have to sort and find the target entry again
+        leaderboard.sort_entries();
+        user_entry = leaderboard.find_recent_entry(entry.steam_id);
+        PRINT_DEBUG("Steam_User_Stats::update_leaderboard_entry added/updated entry for user %llu\n", entry.steam_id.ConvertToUint64());
+    }
+    
+    return user_entry;
+}
+
+
+unsigned int Steam_User_Stats::find_cached_leaderboard(const std::string &name)
+{
+    unsigned index = 1;
+    for (const auto &leaderboard : cached_leaderboards) {
+        if (common_helpers::str_cmp_insensitive(leaderboard.name, name)) return index;
+
+        ++index;
+    }
+
+    return 0;
+}
+
+unsigned int Steam_User_Stats::cache_leaderboard_ifneeded(const std::string &name, ELeaderboardSortMethod eLeaderboardSortMethod, ELeaderboardDisplayType eLeaderboardDisplayType)
+{
+    unsigned int board_handle = find_cached_leaderboard(name);
+    if (board_handle) return board_handle;
+    // PRINT_DEBUG("Steam_User_Stats::cache_leaderboard_ifneeded cache miss '%s'\n", name.c_str());
+
+    // create a new entry in-memory and try reading the entries from disk
+    struct Steam_Leaderboard new_board{};
+    new_board.name = common_helpers::ascii_to_lowercase(name);
+    new_board.sort_method = eLeaderboardSortMethod;
+    new_board.display_type = eLeaderboardDisplayType;
+    new_board.entries = load_leaderboard_entries(name);
+    new_board.sort_entries();
+    new_board.remove_duplicate_entries();
+
+    Steam_Leaderboard_Entry my_new_entry{};
+    my_new_entry.steam_id = settings->get_local_steam_id();
+    auto my_entry = update_leaderboard_entry(new_board, my_new_entry, false);
+
+    // save it in memory for later
+    cached_leaderboards.push_back(new_board);
+    board_handle = cached_leaderboards.size();
+
+    PRINT_DEBUG(
+        "Steam_User_Stats::cache_leaderboard_ifneeded cached a new leaderboard '%s' %i %i\n",
+        new_board.name.c_str(), (int)eLeaderboardSortMethod, (int)eLeaderboardDisplayType
+    );
+    return board_handle;
+}
+
+void Steam_User_Stats::send_my_leaderboard_score(const Steam_Leaderboard &board, const CSteamID *steamid, bool want_scores_back)
+{
+    const auto &my_entry = *board.find_recent_entry(settings->get_local_steam_id());
+
+    auto score_entry_msg = new Leaderboards_Messages::UserScoreEntry();
+    score_entry_msg->set_score(my_entry.score);
+    score_entry_msg->mutable_score_details()->Assign(my_entry.score_details.begin(), my_entry.score_details.end());
+
+    auto board_info_msg = new Leaderboards_Messages::LeaderboardInfo();
+    board_info_msg->set_allocated_board_name(new std::string(board.name));
+    board_info_msg->set_sort_method(board.sort_method);
+    board_info_msg->set_display_type(board.display_type);
+
+    auto board_msg = new Leaderboards_Messages();
+    if (want_scores_back) board_msg->set_type(Leaderboards_Messages::UpdateUserScoreMutual);
+    else board_msg->set_type(Leaderboards_Messages::UpdateUserScore);
+    board_msg->set_allocated_leaderboard_info(board_info_msg);
+    board_msg->set_allocated_user_score_entry(score_entry_msg);
+
+    auto common_msg = new Common_Message();
+    common_msg->set_source_id(settings->get_local_steam_id().ConvertToUint64());
+    if (steamid) common_msg->set_dest_id(steamid->ConvertToUint64());
+    common_msg->set_allocated_leaderboards_messages(board_msg);
+
+    if (steamid) network->sendTo(common_msg, true);
+    else network->sendToAll(common_msg, true);
+}
+
+void Steam_User_Stats::request_user_leaderboard_entry(const Steam_Leaderboard &board, const CSteamID &steamid)
+{
+    auto board_info_msg = new Leaderboards_Messages::LeaderboardInfo();
+    board_info_msg->set_allocated_board_name(new std::string(board.name));
+    board_info_msg->set_sort_method(board.sort_method);
+    board_info_msg->set_display_type(board.display_type);
+
+    auto board_msg = new Leaderboards_Messages();
+    board_msg->set_type(Leaderboards_Messages::RequestUserScore);
+    board_msg->set_allocated_leaderboard_info(board_info_msg);
+
+    auto common_msg = new Common_Message();
+    common_msg->set_source_id(settings->get_local_steam_id().ConvertToUint64());
+    common_msg->set_dest_id(steamid.ConvertToUint64());
+    common_msg->set_allocated_leaderboards_messages(board_msg);
+
+    network->sendTo(common_msg, true);
 }
 
 
@@ -376,20 +545,36 @@ Steam_User_Stats::InternalSetResult<bool> Steam_User_Stats::clear_achievement_in
 }
 
 
-void Steam_User_Stats::steam_user_stats_network_callback(void *object, Common_Message *msg)
+void Steam_User_Stats::steam_user_stats_network_low_level(void *object, Common_Message *msg)
 {
-    // PRINT_DEBUG("Steam_GameServerStats::steam_gameserverstats_network_callback\n");
+    // PRINT_DEBUG("Steam_User_Stats::steam_user_stats_network_low_level\n");
 
-    auto steam_gameserverstats = (Steam_User_Stats *)object;
-    steam_gameserverstats->network_callback(msg);
+    auto inst = (Steam_User_Stats *)object;
+    inst->network_callback_low_level(msg);
+}
+
+void Steam_User_Stats::steam_user_stats_network_stats(void *object, Common_Message *msg)
+{
+    // PRINT_DEBUG("Steam_User_Stats::steam_user_stats_network_stats\n");
+
+    auto inst = (Steam_User_Stats *)object;
+    inst->network_callback_stats(msg);
+}
+
+void Steam_User_Stats::steam_user_stats_network_leaderboards(void *object, Common_Message *msg)
+{
+    // PRINT_DEBUG("Steam_User_Stats::steam_user_stats_network_leaderboards\n");
+
+    auto inst = (Steam_User_Stats *)object;
+    inst->network_callback_leaderboards(msg);
 }
 
 void Steam_User_Stats::steam_user_stats_run_every_runcb(void *object)
 {
-    // PRINT_DEBUG("Steam_GameServerStats::steam_gameserverstats_run_every_runcb\n");
+    // PRINT_DEBUG("Steam_User_Stats::steam_user_stats_run_every_runcb\n");
 
-    auto steam_gameserverstats = (Steam_User_Stats *)object;
-    steam_gameserverstats->steam_run_callback();
+    auto inst = (Steam_User_Stats *)object;
+    inst->steam_run_callback();
 }
 
 
@@ -409,7 +594,6 @@ Steam_User_Stats::Steam_User_Stats(Settings *settings, class Networking *network
 
     auto x = defined_achievements.begin();
     while (x != defined_achievements.end()) {
-
         if (!x->contains("name")) {
             x = defined_achievements.erase(x);
         } else {
@@ -450,13 +634,17 @@ Steam_User_Stats::Steam_User_Stats(Settings *settings, class Networking *network
         return result.second != rhs.cend() && (result.first == lhs.cend() || std::tolower(*result.first) < std::tolower(*result.second));}
     );
     
-    this->network->setCallback(CALLBACK_ID_GAMESERVER_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_callback, this);
+    this->network->setCallback(CALLBACK_ID_GAMESERVER_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_stats, this);
+    this->network->setCallback(CALLBACK_ID_LEADERBOARDS_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_leaderboards, this);
+    this->network->setCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_low_level, this);
     this->run_every_runcb->add(&Steam_User_Stats::steam_user_stats_run_every_runcb, this);
 }
 
 Steam_User_Stats::~Steam_User_Stats()
 {
-    this->network->rmCallback(CALLBACK_ID_GAMESERVER_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_callback, this);
+    this->network->rmCallback(CALLBACK_ID_GAMESERVER_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_stats, this);
+    this->network->rmCallback(CALLBACK_ID_LEADERBOARDS_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_leaderboards, this);
+    this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_low_level, this);
     this->run_every_runcb->remove(&Steam_User_Stats::steam_user_stats_run_every_runcb, this);
 }
 
@@ -963,38 +1151,22 @@ bool Steam_User_Stats::ResetAllStats( bool bAchievementsToo )
 STEAM_CALL_RESULT(LeaderboardFindResult_t)
 SteamAPICall_t Steam_User_Stats::FindOrCreateLeaderboard( const char *pchLeaderboardName, ELeaderboardSortMethod eLeaderboardSortMethod, ELeaderboardDisplayType eLeaderboardDisplayType )
 {
-    PRINT_DEBUG("Steam_User_Stats::FindOrCreateLeaderboard %s\n", pchLeaderboardName);
+    PRINT_DEBUG("Steam_User_Stats::FindOrCreateLeaderboard '%s'\n", pchLeaderboardName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!pchLeaderboardName) {
-        LeaderboardFindResult_t data;
+        LeaderboardFindResult_t data{};
         data.m_hSteamLeaderboard = 0;
         data.m_bLeaderboardFound = 0;
         return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
     }
 
-    unsigned int leader = find_leaderboard(pchLeaderboardName);
-    if (!leader) {
-        struct Steam_Leaderboard leaderboard;
-        leaderboard.name = std::string(pchLeaderboardName);
-        leaderboard.sort_method = eLeaderboardSortMethod;
-        leaderboard.display_type = eLeaderboardDisplayType;
-        leaderboard.self_score.score = eLeaderboardSortMethod == k_ELeaderboardSortMethodAscending ? INT_MAX : INT_MIN;
+    unsigned int board_handle = cache_leaderboard_ifneeded(pchLeaderboardName, eLeaderboardSortMethod, eLeaderboardDisplayType);
+    send_my_leaderboard_score(cached_leaderboards[board_handle - 1], nullptr, true);
 
-        std::vector<Steam_Leaderboard_Score> scores = load_leaderboard_scores(pchLeaderboardName);
-        for (auto &s : scores) {
-            if (s.steam_id == settings->get_local_steam_id()) {
-                leaderboard.self_score = s;
-            }
-        }
-
-        leaderboards.push_back(leaderboard);
-        leader = leaderboards.size();
-    }
-
-    LeaderboardFindResult_t data;
-    data.m_hSteamLeaderboard = leader;
+    LeaderboardFindResult_t data{};
+    data.m_hSteamLeaderboard = board_handle;
     data.m_bLeaderboardFound = 1;
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1); // TODO is the timing ok?
 }
 
 
@@ -1003,24 +1175,29 @@ SteamAPICall_t Steam_User_Stats::FindOrCreateLeaderboard( const char *pchLeaderb
 STEAM_CALL_RESULT( LeaderboardFindResult_t )
 SteamAPICall_t Steam_User_Stats::FindLeaderboard( const char *pchLeaderboardName )
 {
-    PRINT_DEBUG("Steam_User_Stats::FindLeaderboard %s\n", pchLeaderboardName);
+    PRINT_DEBUG("Steam_User_Stats::FindLeaderboard '%s'\n", pchLeaderboardName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!pchLeaderboardName) {
-        LeaderboardFindResult_t data;
+        LeaderboardFindResult_t data{};
         data.m_hSteamLeaderboard = 0;
         data.m_bLeaderboardFound = 0;
         return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
     }
 
-    auto settings_Leaderboards = settings->getLeaderboards();
-    if (settings_Leaderboards.count(pchLeaderboardName)) {
-        auto config = settings_Leaderboards[pchLeaderboardName];
+    std::string name_lower(common_helpers::ascii_to_lowercase(pchLeaderboardName));
+    const auto &settings_Leaderboards = settings->getLeaderboards();
+    auto it = settings_Leaderboards.begin();
+    for (;  settings_Leaderboards.end() != it; ++it) {
+        if (common_helpers::str_cmp_insensitive(it->first, name_lower)) break;
+    }
+    if (settings_Leaderboards.end() != it) {
+        auto &config = it->second;
         return FindOrCreateLeaderboard(pchLeaderboardName, config.sort_method, config.display_type);
     } else if (!settings->disable_leaderboards_create_unknown) {
         return FindOrCreateLeaderboard(pchLeaderboardName, k_ELeaderboardSortMethodDescending, k_ELeaderboardDisplayTypeNumeric);
     } else {
         LeaderboardFindResult_t data{};
-        data.m_hSteamLeaderboard = find_leaderboard(pchLeaderboardName);;
+        data.m_hSteamLeaderboard = find_cached_leaderboard(name_lower);
         data.m_bLeaderboardFound = !!data.m_hSteamLeaderboard;
         return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
     }
@@ -1030,39 +1207,44 @@ SteamAPICall_t Steam_User_Stats::FindLeaderboard( const char *pchLeaderboardName
 // returns the name of a leaderboard
 const char * Steam_User_Stats::GetLeaderboardName( SteamLeaderboard_t hSteamLeaderboard )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetLeaderboardName\n");
+    PRINT_DEBUG("Steam_User_Stats::GetLeaderboardName %llu\n", hSteamLeaderboard);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return "";
 
-    if (hSteamLeaderboard > leaderboards.size() || hSteamLeaderboard <= 0) return "";
-    return leaderboards[hSteamLeaderboard - 1].name.c_str();
+    return cached_leaderboards[hSteamLeaderboard - 1].name.c_str();
 }
 
 
 // returns the total number of entries in a leaderboard, as of the last request
 int Steam_User_Stats::GetLeaderboardEntryCount( SteamLeaderboard_t hSteamLeaderboard )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetLeaderboardEntryCount\n");
-    return 0;
+    PRINT_DEBUG("Steam_User_Stats::GetLeaderboardEntryCount %llu\n", hSteamLeaderboard);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return 0;
+
+    return (int)cached_leaderboards[hSteamLeaderboard - 1].entries.size();
 }
 
 
 // returns the sort method of the leaderboard
 ELeaderboardSortMethod Steam_User_Stats::GetLeaderboardSortMethod( SteamLeaderboard_t hSteamLeaderboard )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetLeaderboardSortMethod\n");
+    PRINT_DEBUG("Steam_User_Stats::GetLeaderboardSortMethod %llu\n", hSteamLeaderboard);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (hSteamLeaderboard > leaderboards.size() || hSteamLeaderboard <= 0) return k_ELeaderboardSortMethodNone;
-    return leaderboards[hSteamLeaderboard - 1].sort_method; 
+    if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return k_ELeaderboardSortMethodNone;
+
+    return cached_leaderboards[hSteamLeaderboard - 1].sort_method; 
 }
 
 
 // returns the display type of the leaderboard
 ELeaderboardDisplayType Steam_User_Stats::GetLeaderboardDisplayType( SteamLeaderboard_t hSteamLeaderboard )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetLeaderboardDisplayType\n");
+    PRINT_DEBUG("Steam_User_Stats::GetLeaderboardDisplayType %llu\n", hSteamLeaderboard);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (hSteamLeaderboard > leaderboards.size() || hSteamLeaderboard <= 0) return k_ELeaderboardDisplayTypeNone;
-    return leaderboards[hSteamLeaderboard - 1].display_type; 
+    if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return k_ELeaderboardDisplayTypeNone;
+
+    return cached_leaderboards[hSteamLeaderboard - 1].display_type; 
 }
 
 
@@ -1077,15 +1259,23 @@ ELeaderboardDisplayType Steam_User_Stats::GetLeaderboardDisplayType( SteamLeader
 STEAM_CALL_RESULT( LeaderboardScoresDownloaded_t )
 SteamAPICall_t Steam_User_Stats::DownloadLeaderboardEntries( SteamLeaderboard_t hSteamLeaderboard, ELeaderboardDataRequest eLeaderboardDataRequest, int nRangeStart, int nRangeEnd )
 {
-    PRINT_DEBUG("Steam_User_Stats::DownloadLeaderboardEntries %llu %i %i %i\n", hSteamLeaderboard, eLeaderboardDataRequest, nRangeStart, nRangeEnd);
+    PRINT_DEBUG("Steam_User_Stats::DownloadLeaderboardEntries %llu %i [%i, %i]\n", hSteamLeaderboard, eLeaderboardDataRequest, nRangeStart, nRangeEnd);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (hSteamLeaderboard > leaderboards.size() || hSteamLeaderboard <= 0) return k_uAPICallInvalid; //might return callresult even if hSteamLeaderboard is invalid
+    if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return k_uAPICallInvalid; //might return callresult even if hSteamLeaderboard is invalid
 
-    LeaderboardScoresDownloaded_t data;
+    int entries_count = (int)cached_leaderboards[hSteamLeaderboard - 1].entries.size();
+    // https://partner.steamgames.com/doc/api/ISteamUserStats#ELeaderboardDataRequest
+    if (eLeaderboardDataRequest != k_ELeaderboardDataRequestFriends) {
+        int required_count = nRangeEnd - nRangeStart + 1;
+        if (required_count < 0) required_count = 0;
+        
+        if (required_count < entries_count) entries_count = required_count;
+    }
+    LeaderboardScoresDownloaded_t data{};
     data.m_hSteamLeaderboard = hSteamLeaderboard;
     data.m_hSteamLeaderboardEntries = hSteamLeaderboard;
-    data.m_cEntryCount = leaderboards[hSteamLeaderboard - 1].self_score.steam_id.IsValid();
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    data.m_cEntryCount = entries_count;
+    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1); // TODO is this timing ok?
 }
 
 // as above, but downloads leaderboard entries for an arbitrary set of users - ELeaderboardDataRequest is k_ELeaderboardDataRequestUsers
@@ -1098,20 +1288,34 @@ SteamAPICall_t Steam_User_Stats::DownloadLeaderboardEntriesForUsers( SteamLeader
 {
     PRINT_DEBUG("Steam_User_Stats::DownloadLeaderboardEntriesForUsers %i %llu\n", cUsers, cUsers > 0 ? prgUsers[0].ConvertToUint64() : 0);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (hSteamLeaderboard > leaderboards.size() || hSteamLeaderboard <= 0) return k_uAPICallInvalid; //might return callresult even if hSteamLeaderboard is invalid
+    if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return k_uAPICallInvalid; //might return callresult even if hSteamLeaderboard is invalid
 
-    bool get_for_current_id = false;
-    for (int i = 0; i < cUsers; ++i) {
-        if (prgUsers[i] == settings->get_local_steam_id()) {
-            get_for_current_id = true;
+    auto &board = cached_leaderboards[hSteamLeaderboard - 1];
+    bool ok = true;
+    int total_count = 0;
+    if (prgUsers && cUsers > 0) {
+        for (int i = 0; i < cUsers; ++i) {
+            const auto &user_steamid = prgUsers[i];
+            if (!user_steamid.IsValid()) {
+                ok = false;
+                PRINT_DEBUG("Steam_User_Stats::DownloadLeaderboardEntriesForUsers bad userid %llu\n", user_steamid.ConvertToUint64());
+                break;
+            }
+            if (board.find_recent_entry(user_steamid)) ++total_count;
+
+            request_user_leaderboard_entry(board, user_steamid);
         }
     }
 
-    LeaderboardScoresDownloaded_t data;
+    PRINT_DEBUG("Steam_User_Stats::DownloadLeaderboardEntriesForUsers total count %i\n", total_count);
+    // https://partner.steamgames.com/doc/api/ISteamUserStats#DownloadLeaderboardEntriesForUsers
+    if (!ok || total_count > 100) return k_uAPICallInvalid;
+
+    LeaderboardScoresDownloaded_t data{};
     data.m_hSteamLeaderboard = hSteamLeaderboard;
     data.m_hSteamLeaderboardEntries = hSteamLeaderboard;
-    data.m_cEntryCount = get_for_current_id && leaderboards[hSteamLeaderboard - 1].self_score.steam_id.IsValid();
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    data.m_cEntryCount = total_count;
+    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1); // TODO is this timing ok?
 }
 
 
@@ -1133,18 +1337,28 @@ bool Steam_User_Stats::GetDownloadedLeaderboardEntry( SteamLeaderboardEntries_t 
 {
     PRINT_DEBUG("Steam_User_Stats::GetDownloadedLeaderboardEntry\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (hSteamLeaderboardEntries > leaderboards.size() || hSteamLeaderboardEntries <= 0) return false;
-    if (index > 0) return false;
+    if (hSteamLeaderboardEntries > cached_leaderboards.size() || hSteamLeaderboardEntries <= 0) return false;
+    
+    const auto &board = cached_leaderboards[hSteamLeaderboardEntries - 1];
+    if (index < 0 || index >= board.entries.size()) return false;
 
-    LeaderboardEntry_t entry = {};
-    entry.m_steamIDUser = leaderboards[hSteamLeaderboardEntries - 1].self_score.steam_id;
-    entry.m_nGlobalRank = 1;
-    entry.m_nScore = leaderboards[hSteamLeaderboardEntries - 1].self_score.score;
-    for (int i = 0; i < leaderboards[hSteamLeaderboardEntries - 1].self_score.score_details.size() && i < cDetailsMax; ++i) {
-        pDetails[i] = leaderboards[hSteamLeaderboardEntries - 1].self_score.score_details[i];
+    const auto &target_entry = board.entries[index];
+    
+    if (pLeaderboardEntry) {
+        LeaderboardEntry_t entry{};
+        entry.m_steamIDUser = target_entry.steam_id;
+        entry.m_nGlobalRank = 1 + (int)(&target_entry - &board.entries[0]);
+        entry.m_nScore = target_entry.score;
+        
+        *pLeaderboardEntry = entry;
+    }
+    
+    if (pDetails && cDetailsMax > 0) {
+        for (int i = 0; i < target_entry.score_details.size() && i < cDetailsMax; ++i) {
+            pDetails[i] = target_entry.score_details[i];
+        }
     }
 
-    *pLeaderboardEntry = entry;
     return true;
 }
 
@@ -1156,43 +1370,60 @@ bool Steam_User_Stats::GetDownloadedLeaderboardEntry( SteamLeaderboardEntries_t 
 STEAM_CALL_RESULT( LeaderboardScoreUploaded_t )
 SteamAPICall_t Steam_User_Stats::UploadLeaderboardScore( SteamLeaderboard_t hSteamLeaderboard, ELeaderboardUploadScoreMethod eLeaderboardUploadScoreMethod, int32 nScore, const int32 *pScoreDetails, int cScoreDetailsCount )
 {
-    PRINT_DEBUG("Steam_User_Stats::UploadLeaderboardScore %i\n", nScore);
+    PRINT_DEBUG("Steam_User_Stats::UploadLeaderboardScore %llu %i\n", hSteamLeaderboard, nScore);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (hSteamLeaderboard > leaderboards.size() || hSteamLeaderboard <= 0) return k_uAPICallInvalid; //TODO: might return callresult even if hSteamLeaderboard is invalid
+    if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return k_uAPICallInvalid; //TODO: might return callresult even if hSteamLeaderboard is invalid
 
-    Steam_Leaderboard_Score score;
-    score.score = nScore;
-    score.steam_id = settings->get_local_steam_id();
-    for (int i = 0; i < cScoreDetailsCount; ++i) {
-        score.score_details.push_back(pScoreDetails[i]);
-    }
+    auto &board = cached_leaderboards[hSteamLeaderboard - 1];
+    auto &my_entry = *board.find_recent_entry(settings->get_local_steam_id());
+    int current_rank = (int)(&my_entry - &board.entries[0]);
+    int new_rank = current_rank;
 
-    bool changed = false;
-    if (eLeaderboardUploadScoreMethod == k_ELeaderboardUploadScoreMethodKeepBest) {
-        if (leaderboards[hSteamLeaderboard - 1].sort_method == k_ELeaderboardSortMethodAscending
-            ? leaderboards[hSteamLeaderboard - 1].self_score.score >= score.score
-            : leaderboards[hSteamLeaderboard - 1].self_score.score <= score.score) {
-            leaderboards[hSteamLeaderboard - 1].self_score = score;
-            changed = true;
+    bool score_updated = false;
+    switch (eLeaderboardUploadScoreMethod)
+    {
+    case k_ELeaderboardUploadScoreMethodKeepBest: { // keep user's best score
+        if (board.sort_method == k_ELeaderboardSortMethodAscending) { // keep user's lowest score
+            score_updated = nScore < my_entry.score;
+        } else { // keep user's highest score
+            score_updated = nScore > my_entry.score;
         }
-    } else {
-        if (leaderboards[hSteamLeaderboard - 1].self_score.score != score.score) changed = true;
-        leaderboards[hSteamLeaderboard - 1].self_score = score;
+    }
+    break;
+
+    case k_ELeaderboardUploadScoreMethodForceUpdate: { // always replace score with specified
+        score_updated = my_entry.score != nScore;
+    }
+    break;
+    
+    default: break;
     }
 
-    if (changed) {
-        save_leaderboard_score(&(leaderboards[hSteamLeaderboard - 1]));
+    if (score_updated || (eLeaderboardUploadScoreMethod == k_ELeaderboardUploadScoreMethodForceUpdate)) {
+        Steam_Leaderboard_Entry new_entry{};
+        new_entry.steam_id = settings->get_local_steam_id();
+        new_entry.score = nScore;
+        if (pScoreDetails && cScoreDetailsCount  > 0) {
+            for (int i = 0; i < cScoreDetailsCount; ++i) {
+                new_entry.score_details.push_back(pScoreDetails[i]);
+            }
+        }
+        update_leaderboard_entry(board, new_entry);
+        // check again in case this was a forced update
+        if (score_updated) save_my_leaderboard_entry(board);
+        send_my_leaderboard_score(board);
+            
+        new_rank = (int)(board.find_recent_entry(settings->get_local_steam_id()) - &board.entries[0]);
     }
 
-    LeaderboardScoreUploaded_t data;
+    LeaderboardScoreUploaded_t data{};
     data.m_bSuccess = 1; //needs to be success or DOA6 freezes when uploading score.
-    //data.m_bSuccess = 0;
     data.m_hSteamLeaderboard = hSteamLeaderboard;
     data.m_nScore = nScore;
-    data.m_bScoreChanged = changed;
-    data.m_nGlobalRankNew = 1;
-    data.m_nGlobalRankPrevious = 0;
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    data.m_bScoreChanged = score_updated;
+    data.m_nGlobalRankNew = 1 + new_rank;
+    data.m_nGlobalRankPrevious = 1 + current_rank;
+    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1); // TODO is this timing ok?
 }
 
 SteamAPICall_t Steam_User_Stats::UploadLeaderboardScore( SteamLeaderboard_t hSteamLeaderboard, int32 nScore, int32 *pScoreDetails, int cScoreDetailsCount )
@@ -1210,8 +1441,8 @@ SteamAPICall_t Steam_User_Stats::AttachLeaderboardUGC( SteamLeaderboard_t hSteam
 {
     PRINT_DEBUG("Steam_User_Stats::AttachLeaderboardUGC\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    LeaderboardUGCSet_t data = {};
-    if (hSteamLeaderboard > leaderboards.size() || hSteamLeaderboard <= 0) {
+    LeaderboardUGCSet_t data{};
+    if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) {
         data.m_eResult = k_EResultFail;
     } else {
         data.m_eResult = k_EResultOK;
@@ -1229,9 +1460,14 @@ SteamAPICall_t Steam_User_Stats::GetNumberOfCurrentPlayers()
 {
     PRINT_DEBUG("Steam_User_Stats::GetNumberOfCurrentPlayers\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    NumberOfCurrentPlayers_t data;
+    
+    std::random_device rd{};
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int32> distrib(117, 1017);
+ 
+    NumberOfCurrentPlayers_t data{};
     data.m_bSuccess = 1;
-    data.m_cPlayers = 69;
+    data.m_cPlayers = distrib(gen);
     return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
 }
 
@@ -1243,7 +1479,12 @@ STEAM_CALL_RESULT( GlobalAchievementPercentagesReady_t )
 SteamAPICall_t Steam_User_Stats::RequestGlobalAchievementPercentages()
 {
     PRINT_DEBUG("Steam_User_Stats::RequestGlobalAchievementPercentages\n");
-    return 0;
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    GlobalAchievementPercentagesReady_t data{};
+    data.m_eResult = EResult::k_EResultOK;
+    data.m_nGameID = settings->get_local_game_id().ToUint64();
+    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
 }
 
 
@@ -1253,7 +1494,25 @@ SteamAPICall_t Steam_User_Stats::RequestGlobalAchievementPercentages()
 int Steam_User_Stats::GetMostAchievedAchievementInfo( char *pchName, uint32 unNameBufLen, float *pflPercent, bool *pbAchieved )
 {
     PRINT_DEBUG("Steam_User_Stats::GetMostAchievedAchievementInfo\n");
-    return -1;
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (!pchName) return -1;
+
+    std::string name(GetAchievementName(0));
+    if (name.empty()) return -1;
+
+    if (pchName && unNameBufLen) {
+        memset(pchName, 0, unNameBufLen);
+        name.copy(pchName, unNameBufLen - 1);
+    }
+
+    if (pflPercent) *pflPercent = 90;
+    if (pbAchieved) {
+        bool achieved = false;
+        GetAchievement(name.c_str(), &achieved);
+        *pbAchieved = achieved;
+    }
+
+    return 0;
 }
 
 
@@ -1263,15 +1522,48 @@ int Steam_User_Stats::GetMostAchievedAchievementInfo( char *pchName, uint32 unNa
 int Steam_User_Stats::GetNextMostAchievedAchievementInfo( int iIteratorPrevious, char *pchName, uint32 unNameBufLen, float *pflPercent, bool *pbAchieved )
 {
     PRINT_DEBUG("Steam_User_Stats::GetNextMostAchievedAchievementInfo\n");
-    return -1;
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (iIteratorPrevious < 0) return -1;
+    
+    int iIteratorCurrent = iIteratorPrevious + 1;
+    if (iIteratorCurrent >= defined_achievements.size()) return -1;
+
+    std::string name(GetAchievementName(iIteratorCurrent));
+    if (name.empty()) return -1;
+
+    if (pchName && unNameBufLen) {
+        memset(pchName, 0, unNameBufLen);
+        name.copy(pchName, unNameBufLen - 1);
+    }
+
+    if (pflPercent) {
+        *pflPercent = (float)(90 * (defined_achievements.size() - iIteratorCurrent) / defined_achievements.size());
+    }
+    if (pbAchieved) {
+        bool achieved = false;
+        GetAchievement(name.c_str(), &achieved);
+        *pbAchieved = achieved;
+    }
+
+    return iIteratorCurrent;
 }
 
 
 // Returns the percentage of users who have achieved the specified achievement.
 bool Steam_User_Stats::GetAchievementAchievedPercent( const char *pchName, float *pflPercent )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetAchievementAchievedPercent\n");
-    return false;
+    PRINT_DEBUG("Steam_User_Stats::GetAchievementAchievedPercent '%s'\n", pchName);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    auto it = defined_achievements_find(pchName);
+    if (defined_achievements.end() == it) return false;
+
+    size_t idx = it - defined_achievements.begin();
+    if (pflPercent) {
+        *pflPercent = (float)(90 * (defined_achievements.size() - idx) / defined_achievements.size());
+    }
+    
+    return true;
 }
 
 
@@ -1374,11 +1666,12 @@ void Steam_User_Stats::steam_run_callback()
 
 
 // --- networking callbacks
+// only triggered when we have a message
 
-void Steam_User_Stats::network_callback_initial_stats(Common_Message *msg)
+void Steam_User_Stats::network_stats_initial(Common_Message *msg)
 {
     if (!msg->gameserver_stats_messages().has_initial_user_stats()) {
-        PRINT_DEBUG("Steam_User_Stats::network_callback_initial_stats error empty msg\n");
+        PRINT_DEBUG("Steam_User_Stats::network_stats_initial error empty msg\n");
         return;
     }
 
@@ -1410,7 +1703,7 @@ void Steam_User_Stats::network_callback_initial_stats(Common_Message *msg)
         break;
         
         default:
-            PRINT_DEBUG("Steam_User_Stats::network_callback_initial_stats Request_AllUserStats unhandled stat type %i\n", (int)stat.second.type);
+            PRINT_DEBUG("Steam_User_Stats::network_stats_initial Request_AllUserStats unhandled stat type %i\n", (int)stat.second.type);
         break;
         }
     }
@@ -1443,17 +1736,17 @@ void Steam_User_Stats::network_callback_initial_stats(Common_Message *msg)
     network->sendTo(&new_msg, true);
 
     PRINT_DEBUG(
-        "Steam_User_Stats::network_callback_initial_stats server requested all stats, sent %zu stats, %zu achievements\n",
+        "Steam_User_Stats::network_stats_initial server requested all stats, sent %zu stats, %zu achievements\n",
         initial_stats_msg->all_data().user_stats().size(), initial_stats_msg->all_data().user_achievements().size()
     );
 
 
 }
 
-void Steam_User_Stats::network_callback_updated_stats(Common_Message *msg)
+void Steam_User_Stats::network_stats_updated(Common_Message *msg)
 {
     if (!msg->gameserver_stats_messages().has_update_user_stats()) {
-        PRINT_DEBUG("Steam_User_Stats::network_callback_updated_stats error empty msg\n");
+        PRINT_DEBUG("Steam_User_Stats::network_stats_updated error empty msg\n");
         return;
     }
 
@@ -1482,7 +1775,7 @@ void Steam_User_Stats::network_callback_updated_stats(Common_Message *msg)
         break;
         
         default:
-            PRINT_DEBUG("Steam_User_Stats::network_callback_updated_stats UpdateUserStats unhandled stat type %i\n", (int)new_stat.second.stat_type());
+            PRINT_DEBUG("Steam_User_Stats::network_stats_updated UpdateUserStats unhandled stat type %i\n", (int)new_stat.second.stat_type());
         break;
         }
     }
@@ -1497,30 +1790,144 @@ void Steam_User_Stats::network_callback_updated_stats(Common_Message *msg)
     }
     
     PRINT_DEBUG(
-        "Steam_User_Stats::network_callback_updated_stats server sent updated user stats, %zu stats, %zu achievements\n",
+        "Steam_User_Stats::network_stats_updated server sent updated user stats, %zu stats, %zu achievements\n",
         new_user_data.user_stats().size(), new_user_data.user_achievements().size()
     );
 }
 
-// only triggered when we have a message
-void Steam_User_Stats::network_callback(Common_Message *msg)
+void Steam_User_Stats::network_callback_stats(Common_Message *msg)
 {
+    // network->sendToAll() sends to current user also
+    if (msg->source_id() == settings->get_local_steam_id().ConvertToUint64()) return; 
+
     uint64 server_steamid = msg->source_id();
 
     switch (msg->gameserver_stats_messages().type())
     {
     // server wants all stats
     case GameServerStats_Messages::Request_AllUserStats:
-        network_callback_initial_stats(msg);
+        network_stats_initial(msg);
     break;
 
     // server has updated/new stats
     case GameServerStats_Messages::UpdateUserStats:
-        network_callback_updated_stats(msg);
+        network_stats_updated(msg);
     break;
     
     default:
-        PRINT_DEBUG("Steam_GameServerStats::network_callback unhandled type %i\n", (int)msg->gameserver_stats_messages().type());
+        PRINT_DEBUG("Steam_User_Stats::network_callback_stats unhandled type %i\n", (int)msg->gameserver_stats_messages().type());
+    break;
+    }
+}
+
+
+// someone updated their score
+void Steam_User_Stats::network_leaderboard_update_score(Common_Message *msg, Steam_Leaderboard &board, bool send_score_back)
+{
+    if (!msg->leaderboards_messages().has_user_score_entry()) {
+        PRINT_DEBUG("Steam_User_Stats::network_leaderboard_update_score error empty msg\n");
+        return;
+    }
+
+    CSteamID sender_steamid(msg->source_id());
+    PRINT_DEBUG(
+        "Steam_User_Stats::network_leaderboard_update_score got score for user %llu on leaderboard '%s' (send our score back=%i)\n",
+        (uint64)msg->source_id(), board.name.c_str(), (int)send_score_back
+    );
+    
+    const auto &user_score_msg = msg->leaderboards_messages().user_score_entry();
+
+    Steam_Leaderboard_Entry updated_entry{};
+    updated_entry.steam_id = sender_steamid;
+    updated_entry.score = user_score_msg.score();
+    updated_entry.score_details.reserve(user_score_msg.score_details().size());
+    updated_entry.score_details.assign(user_score_msg.score_details().begin(), user_score_msg.score_details().end());
+    update_leaderboard_entry(board, updated_entry);
+
+    // if the sender wants back our score, send it to all, not just them
+    // in case we have 3 or more players and none of them have our data
+    if (send_score_back) send_my_leaderboard_score(board);
+}
+
+// someone is requesting our score on a leaderboard
+void Steam_User_Stats::network_leaderboard_send_my_score(Common_Message *msg, const Steam_Leaderboard &board)
+{
+    CSteamID sender_steamid(msg->source_id());
+    PRINT_DEBUG(
+        "Steam_User_Stats::network_leaderboard_send_my_score user %llu requested our score for leaderboard '%s'\n",
+        (uint64)msg->source_id(), board.name.c_str()
+    );
+
+    send_my_leaderboard_score(board, &sender_steamid);
+}
+
+void Steam_User_Stats::network_callback_leaderboards(Common_Message *msg)
+{
+    // network->sendToAll() sends to current user also
+    if (msg->source_id() == settings->get_local_steam_id().ConvertToUint64()) return; 
+
+    if (!msg->leaderboards_messages().has_leaderboard_info()) {
+        PRINT_DEBUG("Steam_User_Stats::network_callback_leaderboards error empty leaderboard msg\n");
+        return;
+    }
+
+    const auto &board_info_msg = msg->leaderboards_messages().leaderboard_info();
+    PRINT_DEBUG("Steam_User_Stats::network_callback_leaderboards attempting to cache leaderboard '%s'\n", board_info_msg.board_name().c_str());
+    unsigned int board_handle = cache_leaderboard_ifneeded(
+        board_info_msg.board_name(),
+        (ELeaderboardSortMethod)board_info_msg.sort_method(),
+        (ELeaderboardDisplayType)board_info_msg.display_type()
+    );
+
+    switch (msg->leaderboards_messages().type()) {
+        // someone updated their score
+        case Leaderboards_Messages::UpdateUserScore:
+            network_leaderboard_update_score(msg, cached_leaderboards[board_handle - 1], false);
+        break;
+
+        // someone updated their score and wants us to share back ours
+        case Leaderboards_Messages::UpdateUserScoreMutual:
+            network_leaderboard_update_score(msg, cached_leaderboards[board_handle - 1], true);
+        break;
+
+        // someone is requesting our score on a leaderboard
+        case Leaderboards_Messages::RequestUserScore:
+            network_leaderboard_send_my_score(msg, cached_leaderboards[board_handle - 1]);
+        break;
+        
+        default:
+            PRINT_DEBUG("Steam_User_Stats::network_callback_leaderboards unhandled type %i\n", (int)msg->leaderboards_messages().type());
+        break;
+    }
+
+}
+
+
+// user connect/disconnect
+void Steam_User_Stats::network_callback_low_level(Common_Message *msg)
+{
+    CSteamID steamid(msg->source_id());
+    // this should never happen, but just in case
+    if (steamid == settings->get_local_steam_id()) return;
+
+
+    switch (msg->low_level().type())
+    {
+    case Low_Level::CONNECT:
+        // nothing
+    break;
+    
+    case Low_Level::DISCONNECT: {
+        for (auto &board : cached_leaderboards) {
+            board.remove_entries(steamid);
+        }
+        
+        // PRINT_DEBUG("Steam_User_Stats::network_callback_low_level removed user %llu\n", (uint64)steamid.ConvertToUint64());
+    }
+    break;
+    
+    default:
+        PRINT_DEBUG("Steam_User_Stats::network_callback_low_level unknown type %i\n", (int)msg->low_level().type());
     break;
     }
 }

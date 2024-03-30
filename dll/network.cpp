@@ -590,6 +590,11 @@ void Networking::do_callbacks_message(Common_Message *msg)
         run_callbacks(CALLBACK_ID_GAMESERVER_STATS, msg);
     }
     
+    if (msg->has_leaderboards_messages()) {
+        PRINT_DEBUG("Networking has_leaderboards_messages\n");
+        run_callbacks(CALLBACK_ID_LEADERBOARDS_STATS, msg);
+    }
+    
 }
 
 bool Networking::handle_tcp(Common_Message *msg, struct TCP_Socket &socket)

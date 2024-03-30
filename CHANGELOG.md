@@ -4,19 +4,23 @@
   - the above command introduced the ability to run without root
   - if the script was ran without root, and `-packages_skip` wasn't specified,  
     the script will attempt to detect and use the built-in tool `sudo` if it was available
+* share leaderboards scores with connected players, adjust players ranks locally, and sort entries as needed by the game, suggested by **[M4RCK5]**
 * implemented the missing interface `ISteamGameServerStats`, allowing game servers to exchange user stats & achievements with players
 * for windows: updated stub drm patterns and added a workaround for older variants,  
   this increases the compatibility, but makes it easier to be detected
-* new stub dll `GameOverlayRenderer` for the experiemntal steamclient setup,  
+* new stub/mock dll `GameOverlayRenderer` for the experiemntal steamclient setup,  
   some apps verify the existence of this dll, either on disk, or inside their memory space.  
   **not recommended** to ignore it
 * separate the config file `disable_leaderboards_create_unknown.txt`, previously it was tied to `leaderboards.txt`,  
-  by default the emu will create any unknown leaderboards, you can disable this behavior with this file
+  by default the emu will create any unknown leaderboards, you can disable this behavior with this file  
+  **not recommended** to disable this behavior
 * added missing example file `disable_lobby_creation.txt` in `steam_settings` folder + updated release `README`
 * set the minimum game server latency/ping to 2ms
 * added new function `rmCallbacks()` for the networking, to be able to cleanup callbacks on object destruction
 * for windows build script: prevent permissive language extensions via the compiler flag `/permissive-`
+* missing `delete` for ugc_bridge + reset pointers on client objects destruction
 * allow overlay invitations to obscure game input to be able to accept/reject the request
+* fixed a problem in the overlay where players connected on the same network might be missed during startup, resulting in an empty friend list
 
 ---
 
