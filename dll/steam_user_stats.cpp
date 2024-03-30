@@ -288,6 +288,7 @@ void Steam_User_Stats::send_my_leaderboard_score(const Steam_Leaderboard &board,
     auto board_msg = new Leaderboards_Messages();
     if (want_scores_back) board_msg->set_type(Leaderboards_Messages::UpdateUserScoreMutual);
     else board_msg->set_type(Leaderboards_Messages::UpdateUserScore);
+    board_msg->set_appid(settings->get_local_game_id().AppID());
     board_msg->set_allocated_leaderboard_info(board_info_msg);
     board_msg->set_allocated_user_score_entry(score_entry_msg);
 
@@ -309,6 +310,7 @@ void Steam_User_Stats::request_user_leaderboard_entry(const Steam_Leaderboard &b
 
     auto board_msg = new Leaderboards_Messages();
     board_msg->set_type(Leaderboards_Messages::RequestUserScore);
+    board_msg->set_appid(settings->get_local_game_id().AppID());
     board_msg->set_allocated_leaderboard_info(board_info_msg);
 
     auto common_msg = new Common_Message();
@@ -1863,6 +1865,7 @@ void Steam_User_Stats::network_callback_leaderboards(Common_Message *msg)
 {
     // network->sendToAll() sends to current user also
     if (msg->source_id() == settings->get_local_steam_id().ConvertToUint64()) return; 
+    if (settings->get_local_game_id().AppID() != msg->leaderboards_messages().appid()) return;
 
     if (!msg->leaderboards_messages().has_leaderboard_info()) {
         PRINT_DEBUG("Steam_User_Stats::network_callback_leaderboards error empty leaderboard msg\n");

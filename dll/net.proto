@@ -287,9 +287,10 @@ message Leaderboards_Messages {
     }
 
 	Types type = 1;
-    LeaderboardInfo leaderboard_info = 2;
+    uint32 appid = 2;
+    LeaderboardInfo leaderboard_info = 3;
     oneof data_messages {
-        UserScoreEntry user_score_entry = 3;
+        UserScoreEntry user_score_entry = 4;
     }
 }
 
