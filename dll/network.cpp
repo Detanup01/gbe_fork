@@ -672,7 +672,7 @@ bool Networking::handle_announce(Common_Message *msg, IP_PORT ip_port)
         conn = new_connection((uint64)msg->source_id(), msg->announce().appid());
         if (!conn) return false;
         PRINT_DEBUG(
-            "Networking::handle_announce new connection created: user %llu, appid %lu\n",
+            "Networking::handle_announce new connection created: user %llu, appid %u\n",
             (uint64)msg->source_id(), msg->announce().appid()
         );
     }
