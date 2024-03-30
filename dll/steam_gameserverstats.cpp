@@ -21,6 +21,14 @@
 #define PENDING_RequestUserStats_TIMEOUT 7.0
 
 
+void Steam_GameServerStats::steam_gameserverstats_network_low_level(void *object, Common_Message *msg)
+{
+    // PRINT_DEBUG("Steam_GameServerStats::steam_gameserverstats_network_low_level\n");
+
+    auto inst = (Steam_GameServerStats *)object;
+    inst->network_callback_low_level(msg);
+}
+
 void Steam_GameServerStats::steam_gameserverstats_network_callback(void *object, Common_Message *msg)
 {
     // PRINT_DEBUG("Steam_GameServerStats::steam_gameserverstats_network_callback\n");
@@ -82,6 +90,7 @@ Steam_GameServerStats::Steam_GameServerStats(class Settings *settings, class Net
     this->run_every_runcb = run_every_runcb;
 
     this->network->setCallback(CALLBACK_ID_GAMESERVER_STATS, settings->get_local_steam_id(), &Steam_GameServerStats::steam_gameserverstats_network_callback, this);
+    this->network->setCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_GameServerStats::steam_gameserverstats_network_low_level, this);
     this->run_every_runcb->add(&Steam_GameServerStats::steam_gameserverstats_run_every_runcb, this);
 
 }
@@ -89,6 +98,7 @@ Steam_GameServerStats::Steam_GameServerStats(class Settings *settings, class Net
 Steam_GameServerStats::~Steam_GameServerStats()
 {
     this->network->rmCallback(CALLBACK_ID_GAMESERVER_STATS, settings->get_local_steam_id(), &Steam_GameServerStats::steam_gameserverstats_network_callback, this);
+    this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_GameServerStats::steam_gameserverstats_network_low_level, this);
     this->run_every_runcb->remove(&Steam_GameServerStats::steam_gameserverstats_run_every_runcb, this);
 }
 
@@ -517,6 +527,49 @@ void Steam_GameServerStats::network_callback(Common_Message *msg)
     
     default:
         PRINT_DEBUG("Steam_GameServerStats::network_callback unhandled type %i\n", (int)msg->gameserver_stats_messages().type());
+    break;
+    }
+}
+
+
+// user connect/disconnect
+void Steam_GameServerStats::network_callback_low_level(Common_Message *msg)
+{
+    uint64 steamid = msg->source_id();
+    // this should never happen, but just in case
+    if (steamid == settings->get_local_steam_id().ConvertToUint64()) return;
+
+    switch (msg->low_level().type())
+    {
+    case Low_Level::CONNECT:
+        // nothing
+    break;
+    
+    case Low_Level::DISCONNECT: {
+        all_users_data.erase(steamid);
+        auto it_rm = std::remove_if(
+            pending_RequestUserStats.begin(), pending_RequestUserStats.end(),
+            [=](const RequestAllStats &item) { return item.steamIDUser.ConvertToUint64() == steamid; }
+        );
+        while (pending_RequestUserStats.end() != it_rm) {
+            GSStatsReceived_t data{};
+            data.m_eResult = k_EResultTimeout;
+            data.m_steamIDUser = it_rm->steamIDUser;
+            callback_results->addCallResult(it_rm->steamAPICall, data.k_iCallback, &data, sizeof(data));
+            
+            PRINT_DEBUG(
+                "Steam_GameServerStats::network_callback_low_level RequestUserStats timeout, %llu\n",
+                it_rm->steamIDUser.ConvertToUint64()
+            );
+            it_rm = pending_RequestUserStats.erase(it_rm);
+        }
+        
+        // PRINT_DEBUG("Steam_GameServerStats::network_callback_low_level removed user %llu\n", steamid);
+    }
+    break;
+    
+    default:
+        PRINT_DEBUG("Steam_GameServerStats::network_callback_low_level unknown type %i\n", (int)msg->low_level().type());
     break;
     }
 }

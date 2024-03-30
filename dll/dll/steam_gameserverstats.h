@@ -65,6 +65,10 @@ class Steam_GameServerStats : public ISteamGameServerStats
 	void network_callback_updated_stats(Common_Message *msg);
 	void network_callback(Common_Message *msg);
 
+	// user connect/disconnect
+	void network_callback_low_level(Common_Message *msg);
+
+	static void steam_gameserverstats_network_low_level(void *object, Common_Message *msg);
 	static void steam_gameserverstats_network_callback(void *object, Common_Message *msg);
 	static void steam_gameserverstats_run_every_runcb(void *object);
 
