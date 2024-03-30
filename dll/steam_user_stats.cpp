@@ -273,6 +273,8 @@ unsigned int Steam_User_Stats::cache_leaderboard_ifneeded(const std::string &nam
 
 void Steam_User_Stats::send_my_leaderboard_score(const Steam_Leaderboard &board, const CSteamID *steamid, bool want_scores_back)
 {
+    if (settings->disable_sharing_leaderboards) return;
+
     const auto my_entry = board.find_recent_entry(settings->get_local_steam_id());
     Leaderboards_Messages::UserScoreEntry *score_entry_msg = nullptr;
     
@@ -306,6 +308,8 @@ void Steam_User_Stats::send_my_leaderboard_score(const Steam_Leaderboard &board,
 
 void Steam_User_Stats::request_user_leaderboard_entry(const Steam_Leaderboard &board, const CSteamID &steamid)
 {
+    if (settings->disable_sharing_leaderboards) return;
+
     auto board_info_msg = new Leaderboards_Messages::LeaderboardInfo();
     board_info_msg->set_allocated_board_name(new std::string(board.name));
     board_info_msg->set_sort_method(board.sort_method);
@@ -363,7 +367,7 @@ Steam_User_Stats::InternalSetResult<int32> Steam_User_Stats::set_stat_internal( 
     if (local_storage->store_data(Local_Storage::stats_storage_folder, stat_name, (char* )&nData, sizeof(nData)) == sizeof(nData)) {
         stats_cache_int[stat_name] = nData;
         result.success = true;
-        result.notify_server = true;
+        result.notify_server = !settings->disable_sharing_stats_with_gameserver;
         return result;
     }
 
@@ -408,7 +412,7 @@ Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo
     if (local_storage->store_data(Local_Storage::stats_storage_folder, stat_name, (char* )&fData, sizeof(fData)) == sizeof(fData)) {
         stats_cache_float[stat_name] = fData;
         result.success = true;
-        result.notify_server = true;
+        result.notify_server = !settings->disable_sharing_stats_with_gameserver;
         return result;
     }
 
@@ -454,7 +458,7 @@ Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo
     if (local_storage->store_data(Local_Storage::stats_storage_folder, stat_name, data, sizeof(data)) == sizeof(data)) {
         stats_cache_float[stat_name] = average;
         result.success = true;
-        result.notify_server = true;
+        result.notify_server = !settings->disable_sharing_stats_with_gameserver;
         return result;
     }
 
@@ -497,7 +501,7 @@ Steam_User_Stats::InternalSetResult<bool> Steam_User_Stats::set_achievement_inte
 
             save_achievements();
 
-            result.notify_server = true;
+            result.notify_server = !settings->disable_sharing_stats_with_gameserver;
 
             if(!settings->disable_overlay) overlay->AddAchievementNotification(it.value());
 
@@ -541,7 +545,7 @@ Steam_User_Stats::InternalSetResult<bool> Steam_User_Stats::clear_achievement_in
             user_achievements[pch_name]["earned_time"] = static_cast<uint32>(0);
             save_achievements();
 
-            result.notify_server = true;
+            result.notify_server = !settings->disable_sharing_stats_with_gameserver;
 
         }
     } catch (...) {}
@@ -639,16 +643,24 @@ Steam_User_Stats::Steam_User_Stats(Settings *settings, class Networking *network
         return result.second != rhs.cend() && (result.first == lhs.cend() || std::tolower(*result.first) < std::tolower(*result.second));}
     );
     
-    this->network->setCallback(CALLBACK_ID_GAMESERVER_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_stats, this);
-    this->network->setCallback(CALLBACK_ID_LEADERBOARDS_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_leaderboards, this);
+    if (!settings->disable_sharing_stats_with_gameserver) {
+        this->network->setCallback(CALLBACK_ID_GAMESERVER_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_stats, this);
+    }
+    if (!settings->disable_sharing_leaderboards) {
+        this->network->setCallback(CALLBACK_ID_LEADERBOARDS_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_leaderboards, this);
+    }
     this->network->setCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_low_level, this);
     this->run_every_runcb->add(&Steam_User_Stats::steam_user_stats_run_every_runcb, this);
 }
 
 Steam_User_Stats::~Steam_User_Stats()
 {
-    this->network->rmCallback(CALLBACK_ID_GAMESERVER_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_stats, this);
-    this->network->rmCallback(CALLBACK_ID_LEADERBOARDS_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_leaderboards, this);
+    if (!settings->disable_sharing_stats_with_gameserver) {
+        this->network->rmCallback(CALLBACK_ID_GAMESERVER_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_stats, this);
+    }
+    if (!settings->disable_sharing_leaderboards) {
+        this->network->rmCallback(CALLBACK_ID_LEADERBOARDS_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_leaderboards, this);
+    }
     this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_low_level, this);
     this->run_every_runcb->remove(&Steam_User_Stats::steam_user_stats_run_every_runcb, this);
 }
@@ -1649,6 +1661,7 @@ bool Steam_User_Stats::GetAchievementProgressLimits( const char *pchName, float 
 void Steam_User_Stats::send_updated_stats()
 {
     if (pending_server_updates.user_stats().empty() && pending_server_updates.user_achievements().empty()) return;
+    if (settings->disable_sharing_stats_with_gameserver) return;
 
     auto new_updates_msg = new GameServerStats_Messages::AllStats(pending_server_updates);
     pending_server_updates.clear_user_stats();

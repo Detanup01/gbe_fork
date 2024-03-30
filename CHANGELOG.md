@@ -5,8 +5,10 @@
   - if the script was ran without root, and `-packages_skip` wasn't specified,  
     the script will attempt to detect and use the built-in tool `sudo` if it was available
 * share leaderboards scores with connected players, adjust players ranks locally, and sort entries as needed by the game, suggested by **[M4RCK5]**  
-  this will only work when people connected on the same network are playing the same game, once they disconnect their leaderboard entry will be lost (no data persistence for other players)
-* implemented the missing interface `ISteamGameServerStats`, allowing game servers to exchange user stats & achievements with players
+  this will only work when people connected on the same network are playing the same game, once they disconnect their leaderboard entry will be lost (no data persistence for other players), also doesn't work well with VPN clients.  
+  could be disabled via `disable_sharing_leaderboards.txt`
+* implemented the missing interface `ISteamGameServerStats`, allowing game servers to exchange user stats & achievements with players  
+  could be disabled via `disable_sharing_stats_with_gameserver.txt`
 * for windows: updated stub drm patterns and added a workaround for older variants,  
   this increases the compatibility, but makes it easier to be detected
 * new stub/mock dll `GameOverlayRenderer` for the experiemntal steamclient setup,  

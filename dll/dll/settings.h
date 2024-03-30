@@ -247,6 +247,11 @@ public:
 
     // allow Steam_User_Stats::FindLeaderboard() to always succeed and create the given unknown leaderboard
     bool disable_leaderboards_create_unknown = false;
+    // don't share leaderboards with other players playing the same game on the same network
+    bool disable_sharing_leaderboards = false;
+
+    // don't share stats and achievements with the game server
+    bool disable_sharing_stats_with_gameserver = false;
 
     //overlay
     bool disable_overlay = false;

@@ -488,9 +488,8 @@ EXTRA_FEATURES: list[tuple[str, str]] = [
     ("disable_account_avatar.txt",                   "disable avatar functionality."),
     ("disable_networking.txt",                       "disable all networking functionality."),
     ("disable_overlay.txt",                          "disable the overlay."),
-    ("disable_overlay_achievement_notification.txt", "disable the achievement notifications."),
-    ("disable_overlay_friend_notification.txt",      "disable the friend invite and message notifications."),
-    ("disable_source_query.txt",                     "Do not send server details for the server browser. Only works for game servers."),
+    ("disable_source_query.txt",                     "do not send server details for the server browser. Only works for game servers."),
+    ("disable_sharing_leaderboards.txt",             "disable sharing leaderboards scroes with people playing the same game on the same network."),
 ]
 
 def disable_all_extra_features(emu_settings_dir : str) -> None:

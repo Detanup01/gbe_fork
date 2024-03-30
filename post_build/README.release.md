@@ -542,6 +542,24 @@ Check the example file.
 
 ---
 
+## Sharing leaderboards scores over LAN:
+
+By default the emu will mutually share leaderboards scores with people playing the same game on the same network, you can disable this option by adding the config file `disable_sharing_leaderboards.txt` inside your `steam_settings` folder.  
+
+This works best with real LAN, latency from VPN clients might break it.  
+
+Check the example file in the `steam_settings` folder
+
+---
+
+## Sharing stats and achievements with game servers:
+
+By default the emu will share stats with game servers, you can disable this option by adding the config file `disable_sharing_stats_with_gameserver.txt` inside your `steam_settings` folder, this also disables the interface `ISteamGameServerStats`.  
+
+Check the example file in the `steam_settings` folder
+
+---
+
 ## More configurations:
 Due to the various changes and additions, it became tedious to document everything,  
 so it is recommended to check each example file in the `steam_settings` folder.

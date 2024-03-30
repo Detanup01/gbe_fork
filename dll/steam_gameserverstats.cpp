@@ -88,18 +88,22 @@ Steam_GameServerStats::Steam_GameServerStats(class Settings *settings, class Net
     this->callback_results = callback_results;
     this->callbacks = callbacks;
     this->run_every_runcb = run_every_runcb;
-
-    this->network->setCallback(CALLBACK_ID_GAMESERVER_STATS, settings->get_local_steam_id(), &Steam_GameServerStats::steam_gameserverstats_network_callback, this);
-    this->network->setCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_GameServerStats::steam_gameserverstats_network_low_level, this);
-    this->run_every_runcb->add(&Steam_GameServerStats::steam_gameserverstats_run_every_runcb, this);
+    
+    if (!settings->disable_sharing_stats_with_gameserver) {
+        this->network->setCallback(CALLBACK_ID_GAMESERVER_STATS, settings->get_local_steam_id(), &Steam_GameServerStats::steam_gameserverstats_network_callback, this);
+        this->network->setCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_GameServerStats::steam_gameserverstats_network_low_level, this);
+        this->run_every_runcb->add(&Steam_GameServerStats::steam_gameserverstats_run_every_runcb, this);
+    }
 
 }
 
 Steam_GameServerStats::~Steam_GameServerStats()
 {
-    this->network->rmCallback(CALLBACK_ID_GAMESERVER_STATS, settings->get_local_steam_id(), &Steam_GameServerStats::steam_gameserverstats_network_callback, this);
-    this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_GameServerStats::steam_gameserverstats_network_low_level, this);
-    this->run_every_runcb->remove(&Steam_GameServerStats::steam_gameserverstats_run_every_runcb, this);
+    if (!settings->disable_sharing_stats_with_gameserver) {
+        this->network->rmCallback(CALLBACK_ID_GAMESERVER_STATS, settings->get_local_steam_id(), &Steam_GameServerStats::steam_gameserverstats_network_callback, this);
+        this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_GameServerStats::steam_gameserverstats_network_low_level, this);
+        this->run_every_runcb->remove(&Steam_GameServerStats::steam_gameserverstats_run_every_runcb, this);
+    }
 }
 
 
@@ -113,6 +117,12 @@ SteamAPICall_t Steam_GameServerStats::RequestUserStats( CSteamID steamIDUser )
 {
     PRINT_DEBUG("Steam_GameServerStats::RequestUserStats %llu\n", (uint64)steamIDUser.ConvertToUint64());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->disable_sharing_stats_with_gameserver) {
+        GSStatsReceived_t data_bad{};
+        data_bad.m_eResult = EResult::k_EResultFail;
+        data_bad.m_steamIDUser = steamIDUser;
+        return callback_results->addCallResult(data_bad.k_iCallback, &data_bad, sizeof(data_bad));
+    }
 
     struct RequestAllStats new_request{};
     new_request.created = std::chrono::high_resolution_clock::now();
@@ -145,6 +155,7 @@ bool Steam_GameServerStats::GetUserStat( CSteamID steamIDUser, const char *pchNa
 {
     PRINT_DEBUG("Steam_GameServerStats::GetUserStat <int32> %llu '%s' %p\n", (uint64)steamIDUser.ConvertToUint64(), pchName, pData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->disable_sharing_stats_with_gameserver) return false;
 
     if (!pchName) return false;
 
@@ -160,6 +171,7 @@ bool Steam_GameServerStats::GetUserStat( CSteamID steamIDUser, const char *pchNa
 {
     PRINT_DEBUG("Steam_GameServerStats::GetUserStat <float> %llu '%s' %p\n", (uint64)steamIDUser.ConvertToUint64(), pchName, pData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->disable_sharing_stats_with_gameserver) return false;
 
     if (!pchName) return false;
 
@@ -175,6 +187,7 @@ bool Steam_GameServerStats::GetUserAchievement( CSteamID steamIDUser, const char
 {
     PRINT_DEBUG("Steam_GameServerStats::GetUserAchievement %llu '%s' %p\n", (uint64)steamIDUser.ConvertToUint64(), pchName, pbAchieved);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->disable_sharing_stats_with_gameserver) return false;
 
     if (!pchName) return false;
 
@@ -194,6 +207,7 @@ bool Steam_GameServerStats::SetUserStat( CSteamID steamIDUser, const char *pchNa
 {
     PRINT_DEBUG("Steam_GameServerStats::SetUserStat <int32> %llu '%s'=%i\n", (uint64)steamIDUser.ConvertToUint64(), pchName, nData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->disable_sharing_stats_with_gameserver) return false;
 
     if (!pchName) return false;
 
@@ -211,6 +225,7 @@ bool Steam_GameServerStats::SetUserStat( CSteamID steamIDUser, const char *pchNa
 {
     PRINT_DEBUG("Steam_GameServerStats::SetUserStat <float> %llu '%s'=%f\n", (uint64)steamIDUser.ConvertToUint64(), pchName, fData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->disable_sharing_stats_with_gameserver) return false;
 
     if (!pchName) return false;
 
@@ -228,6 +243,7 @@ bool Steam_GameServerStats::UpdateUserAvgRateStat( CSteamID steamIDUser, const c
 {
     PRINT_DEBUG("Steam_GameServerStats::UpdateUserAvgRateStat %llu '%s'\n", (uint64)steamIDUser.ConvertToUint64(), pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->disable_sharing_stats_with_gameserver) return false;
 
     if (!pchName) return false;
 
@@ -258,6 +274,7 @@ bool Steam_GameServerStats::SetUserAchievement( CSteamID steamIDUser, const char
 {
     PRINT_DEBUG("Steam_GameServerStats::SetUserAchievement %llu '%s'\n", (uint64)steamIDUser.ConvertToUint64(), pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->disable_sharing_stats_with_gameserver) return false;
 
     if (!pchName) return false;
 
@@ -274,6 +291,7 @@ bool Steam_GameServerStats::ClearUserAchievement( CSteamID steamIDUser, const ch
 {
     PRINT_DEBUG("Steam_GameServerStats::ClearUserAchievement %llu '%s'\n", (uint64)steamIDUser.ConvertToUint64(), pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->disable_sharing_stats_with_gameserver) return false;
 
     if (!pchName) return false;
 
@@ -299,6 +317,12 @@ SteamAPICall_t Steam_GameServerStats::StoreUserStats( CSteamID steamIDUser )
     // it's not necessary to send all data here
     PRINT_DEBUG("Steam_GameServerStats::StoreUserStats\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->disable_sharing_stats_with_gameserver) {
+        GSStatsStored_t data_bad{};
+        data_bad.m_eResult = EResult::k_EResultFail;
+        data_bad.m_steamIDUser = steamIDUser;
+        return callback_results->addCallResult(data_bad.k_iCallback, &data_bad, sizeof(data_bad));
+    }
 
     GSStatsStored_t data{};
 
