@@ -192,7 +192,7 @@ bool Steam_GameServerStats::GetUserAchievement( CSteamID steamIDUser, const char
 // Set the IP range of your official servers on the Steamworks page
 bool Steam_GameServerStats::SetUserStat( CSteamID steamIDUser, const char *pchName, int32 nData )
 {
-    PRINT_DEBUG("Steam_GameServerStats::SetUserStat <int32> %llu '%s' %i\n", (uint64)steamIDUser.ConvertToUint64(), pchName, nData);
+    PRINT_DEBUG("Steam_GameServerStats::SetUserStat <int32> %llu '%s'=%i\n", (uint64)steamIDUser.ConvertToUint64(), pchName, nData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName) return false;
@@ -209,7 +209,7 @@ bool Steam_GameServerStats::SetUserStat( CSteamID steamIDUser, const char *pchNa
 
 bool Steam_GameServerStats::SetUserStat( CSteamID steamIDUser, const char *pchName, float fData )
 {
-    PRINT_DEBUG("Steam_GameServerStats::SetUserStat <float> %llu '%s' %f\n", (uint64)steamIDUser.ConvertToUint64(), pchName, fData);
+    PRINT_DEBUG("Steam_GameServerStats::SetUserStat <float> %llu '%s'=%f\n", (uint64)steamIDUser.ConvertToUint64(), pchName, fData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName) return false;

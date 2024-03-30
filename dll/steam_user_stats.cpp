@@ -188,18 +188,20 @@ std::vector<Steam_Leaderboard_Entry> Steam_User_Stats::load_leaderboard_entries(
 
 void Steam_User_Stats::save_my_leaderboard_entry(const Steam_Leaderboard &leaderboard)
 {
+     auto my_entry = leaderboard.find_recent_entry(settings->get_local_steam_id());
+     if (!my_entry) return; // we don't have a score entry
+
     PRINT_DEBUG("Steam_User_Stats::save_my_leaderboard_entry saving entries for leaderboard '%s'\n", leaderboard.name.c_str());
 
-    const auto &my_entry = *leaderboard.find_recent_entry(settings->get_local_steam_id());
     std::vector<uint32_t> output{};
 
-    uint64_t steam_id = my_entry.steam_id.ConvertToUint64();
+    uint64_t steam_id = my_entry->steam_id.ConvertToUint64();
     output.push_back((uint32_t)(steam_id & 0xFFFFFFFF)); // lower 4 bytes
     output.push_back((uint32_t)(steam_id >> 32)); // higher 4 bytes
 
-    output.push_back(my_entry.score);
-    output.push_back((uint32_t)my_entry.score_details.size());
-    for (const auto &detail : my_entry.score_details) {
+    output.push_back(my_entry->score);
+    output.push_back((uint32_t)my_entry->score_details.size());
+    for (const auto &detail : my_entry->score_details) {
         output.push_back(detail);
     }
 
@@ -254,12 +256,9 @@ unsigned int Steam_User_Stats::cache_leaderboard_ifneeded(const std::string &nam
     new_board.sort_method = eLeaderboardSortMethod;
     new_board.display_type = eLeaderboardDisplayType;
     new_board.entries = load_leaderboard_entries(name);
+
     new_board.sort_entries();
     new_board.remove_duplicate_entries();
-
-    Steam_Leaderboard_Entry my_new_entry{};
-    my_new_entry.steam_id = settings->get_local_steam_id();
-    auto my_entry = update_leaderboard_entry(new_board, my_new_entry, false);
 
     // save it in memory for later
     cached_leaderboards.push_back(new_board);
@@ -274,11 +273,14 @@ unsigned int Steam_User_Stats::cache_leaderboard_ifneeded(const std::string &nam
 
 void Steam_User_Stats::send_my_leaderboard_score(const Steam_Leaderboard &board, const CSteamID *steamid, bool want_scores_back)
 {
-    const auto &my_entry = *board.find_recent_entry(settings->get_local_steam_id());
-
-    auto score_entry_msg = new Leaderboards_Messages::UserScoreEntry();
-    score_entry_msg->set_score(my_entry.score);
-    score_entry_msg->mutable_score_details()->Assign(my_entry.score_details.begin(), my_entry.score_details.end());
+    const auto my_entry = board.find_recent_entry(settings->get_local_steam_id());
+    Leaderboards_Messages::UserScoreEntry *score_entry_msg = nullptr;
+    
+    if (my_entry) {
+        score_entry_msg = new Leaderboards_Messages::UserScoreEntry();
+        score_entry_msg->set_score(my_entry->score);
+        score_entry_msg->mutable_score_details()->Assign(my_entry->score_details.begin(), my_entry->score_details.end());
+    }
 
     auto board_info_msg = new Leaderboards_Messages::LeaderboardInfo();
     board_info_msg->set_allocated_board_name(new std::string(board.name));
@@ -290,7 +292,8 @@ void Steam_User_Stats::send_my_leaderboard_score(const Steam_Leaderboard &board,
     else board_msg->set_type(Leaderboards_Messages::UpdateUserScore);
     board_msg->set_appid(settings->get_local_game_id().AppID());
     board_msg->set_allocated_leaderboard_info(board_info_msg);
-    board_msg->set_allocated_user_score_entry(score_entry_msg);
+    // if we have an entry
+    if (score_entry_msg) board_msg->set_allocated_user_score_entry(score_entry_msg);
 
     Common_Message common_msg{};
     common_msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
@@ -1337,7 +1340,7 @@ SteamAPICall_t Steam_User_Stats::DownloadLeaderboardEntriesForUsers( SteamLeader
 // once you've accessed all the entries, the data will be free'd, and the SteamLeaderboardEntries_t handle will become invalid
 bool Steam_User_Stats::GetDownloadedLeaderboardEntry( SteamLeaderboardEntries_t hSteamLeaderboardEntries, int index, LeaderboardEntry_t *pLeaderboardEntry, int32 *pDetails, int cDetailsMax )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetDownloadedLeaderboardEntry\n");
+    PRINT_DEBUG("Steam_User_Stats::GetDownloadedLeaderboardEntry [%i] (%i) %llu %p %p\n", index, cDetailsMax, hSteamLeaderboardEntries, pLeaderboardEntry, pDetails);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboardEntries > cached_leaderboards.size() || hSteamLeaderboardEntries <= 0) return false;
     
@@ -1377,28 +1380,34 @@ SteamAPICall_t Steam_User_Stats::UploadLeaderboardScore( SteamLeaderboard_t hSte
     if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return k_uAPICallInvalid; //TODO: might return callresult even if hSteamLeaderboard is invalid
 
     auto &board = cached_leaderboards[hSteamLeaderboard - 1];
-    auto &my_entry = *board.find_recent_entry(settings->get_local_steam_id());
-    int current_rank = (int)(&my_entry - &board.entries[0]);
+    auto my_entry = board.find_recent_entry(settings->get_local_steam_id());
+    int current_rank = my_entry
+        ? 1 + (int)(my_entry - &board.entries[0])
+        : 0;
     int new_rank = current_rank;
 
     bool score_updated = false;
-    switch (eLeaderboardUploadScoreMethod)
-    {
-    case k_ELeaderboardUploadScoreMethodKeepBest: { // keep user's best score
-        if (board.sort_method == k_ELeaderboardSortMethodAscending) { // keep user's lowest score
-            score_updated = nScore < my_entry.score;
-        } else { // keep user's highest score
-            score_updated = nScore > my_entry.score;
+    if (my_entry) {
+        switch (eLeaderboardUploadScoreMethod)
+        {
+        case k_ELeaderboardUploadScoreMethodKeepBest: { // keep user's best score
+            if (board.sort_method == k_ELeaderboardSortMethodAscending) { // keep user's lowest score
+                score_updated = nScore < my_entry->score;
+            } else { // keep user's highest score
+                score_updated = nScore > my_entry->score;
+            }
         }
-    }
-    break;
+        break;
 
-    case k_ELeaderboardUploadScoreMethodForceUpdate: { // always replace score with specified
-        score_updated = my_entry.score != nScore;
-    }
-    break;
-    
-    default: break;
+        case k_ELeaderboardUploadScoreMethodForceUpdate: { // always replace score with specified
+            score_updated = my_entry->score != nScore;
+        }
+        break;
+        
+        default: break;
+        }
+    } else { // no entry yet for us
+        score_updated = true;
     }
 
     if (score_updated || (eLeaderboardUploadScoreMethod == k_ELeaderboardUploadScoreMethodForceUpdate)) {
@@ -1410,12 +1419,15 @@ SteamAPICall_t Steam_User_Stats::UploadLeaderboardScore( SteamLeaderboard_t hSte
                 new_entry.score_details.push_back(pScoreDetails[i]);
             }
         }
+        
         update_leaderboard_entry(board, new_entry);
+        new_rank = 1 + (int)(board.find_recent_entry(settings->get_local_steam_id()) - &board.entries[0]);
+
         // check again in case this was a forced update
+        // avoid disk write if score is the same
         if (score_updated) save_my_leaderboard_entry(board);
         send_my_leaderboard_score(board);
             
-        new_rank = (int)(board.find_recent_entry(settings->get_local_steam_id()) - &board.entries[0]);
     }
 
     LeaderboardScoreUploaded_t data{};
@@ -1423,8 +1435,8 @@ SteamAPICall_t Steam_User_Stats::UploadLeaderboardScore( SteamLeaderboard_t hSte
     data.m_hSteamLeaderboard = hSteamLeaderboard;
     data.m_nScore = nScore;
     data.m_bScoreChanged = score_updated;
-    data.m_nGlobalRankNew = 1 + new_rank;
-    data.m_nGlobalRankPrevious = 1 + current_rank;
+    data.m_nGlobalRankNew = new_rank;
+    data.m_nGlobalRankPrevious = current_rank;
     return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1); // TODO is this timing ok?
 }
 
@@ -1814,6 +1826,11 @@ void Steam_User_Stats::network_callback_stats(Common_Message *msg)
         network_stats_updated(msg);
     break;
     
+    // a user has updated/new stats
+    case GameServerStats_Messages::UpdateUserStatsFromUser:
+        // nothing
+    break;
+    
     default:
         PRINT_DEBUG("Steam_User_Stats::network_callback_stats unhandled type %i\n", (int)msg->gameserver_stats_messages().type());
     break;
@@ -1824,25 +1841,24 @@ void Steam_User_Stats::network_callback_stats(Common_Message *msg)
 // someone updated their score
 void Steam_User_Stats::network_leaderboard_update_score(Common_Message *msg, Steam_Leaderboard &board, bool send_score_back)
 {
-    if (!msg->leaderboards_messages().has_user_score_entry()) {
-        PRINT_DEBUG("Steam_User_Stats::network_leaderboard_update_score error empty msg\n");
-        return;
-    }
-
     CSteamID sender_steamid((uint64)msg->source_id());
     PRINT_DEBUG(
         "Steam_User_Stats::network_leaderboard_update_score got score for user %llu on leaderboard '%s' (send our score back=%i)\n",
         (uint64)msg->source_id(), board.name.c_str(), (int)send_score_back
     );
     
-    const auto &user_score_msg = msg->leaderboards_messages().user_score_entry();
+    // when players initally load a board, and they don't have an entry in it,
+    // they send this msg but without their user score entry
+    if (msg->leaderboards_messages().has_user_score_entry()) {
+        const auto &user_score_msg = msg->leaderboards_messages().user_score_entry();
 
-    Steam_Leaderboard_Entry updated_entry{};
-    updated_entry.steam_id = sender_steamid;
-    updated_entry.score = user_score_msg.score();
-    updated_entry.score_details.reserve(user_score_msg.score_details().size());
-    updated_entry.score_details.assign(user_score_msg.score_details().begin(), user_score_msg.score_details().end());
-    update_leaderboard_entry(board, updated_entry);
+        Steam_Leaderboard_Entry updated_entry{};
+        updated_entry.steam_id = sender_steamid;
+        updated_entry.score = user_score_msg.score();
+        updated_entry.score_details.reserve(user_score_msg.score_details().size());
+        updated_entry.score_details.assign(user_score_msg.score_details().begin(), user_score_msg.score_details().end());
+        update_leaderboard_entry(board, updated_entry);
+    }
 
     // if the sender wants back our score, send it to all, not just them
     // in case we have 3 or more players and none of them have our data
