@@ -292,13 +292,13 @@ void Steam_User_Stats::send_my_leaderboard_score(const Steam_Leaderboard &board,
     board_msg->set_allocated_leaderboard_info(board_info_msg);
     board_msg->set_allocated_user_score_entry(score_entry_msg);
 
-    auto common_msg = new Common_Message();
-    common_msg->set_source_id(settings->get_local_steam_id().ConvertToUint64());
-    if (steamid) common_msg->set_dest_id(steamid->ConvertToUint64());
-    common_msg->set_allocated_leaderboards_messages(board_msg);
+    Common_Message common_msg{};
+    common_msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
+    if (steamid) common_msg.set_dest_id(steamid->ConvertToUint64());
+    common_msg.set_allocated_leaderboards_messages(board_msg);
 
-    if (steamid) network->sendTo(common_msg, true);
-    else network->sendToAll(common_msg, true);
+    if (steamid) network->sendTo(&common_msg, true);
+    else network->sendToAll(&common_msg, true);
 }
 
 void Steam_User_Stats::request_user_leaderboard_entry(const Steam_Leaderboard &board, const CSteamID &steamid)
@@ -313,12 +313,12 @@ void Steam_User_Stats::request_user_leaderboard_entry(const Steam_Leaderboard &b
     board_msg->set_appid(settings->get_local_game_id().AppID());
     board_msg->set_allocated_leaderboard_info(board_info_msg);
 
-    auto common_msg = new Common_Message();
-    common_msg->set_source_id(settings->get_local_steam_id().ConvertToUint64());
-    common_msg->set_dest_id(steamid.ConvertToUint64());
-    common_msg->set_allocated_leaderboards_messages(board_msg);
+    Common_Message common_msg{};
+    common_msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
+    common_msg.set_dest_id(steamid.ConvertToUint64());
+    common_msg.set_allocated_leaderboards_messages(board_msg);
 
-    network->sendTo(common_msg, true);
+    network->sendTo(&common_msg, true);
 }
 
 
