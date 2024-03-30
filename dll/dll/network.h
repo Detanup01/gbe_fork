@@ -133,10 +133,10 @@ public:
     void setAppID(uint32 appid);
     void Run();
 
-    // send to a specific user, if 0 was passed to set_dest_id() then this will be broadcasted to all users on the network
+    // send to a specific user, set_dest_id() must be called
     bool sendTo(Common_Message *msg, bool reliable, Connection *conn = NULL);
     
-    // send to all users whose account type is Individual, no need to call set_dest_id(), this is done automatically 
+    // send to all users whose account type is Individual, no need to call set_dest_id(), this is done automatically
     bool sendToAllIndividuals(Common_Message *msg, bool reliable);
 
     // send to all active/current connections, no need to call set_dest_id(), this is done automatically

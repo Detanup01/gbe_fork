@@ -3,6 +3,7 @@
 #include <cwchar>
 #include <algorithm>
 #include <thread>
+#include <cctype>
 
 static bool create_dir_impl(std::filesystem::path &dirpath)
 {
@@ -142,9 +143,18 @@ std::string common_helpers::uint8_vector_to_hex_string(const std::vector<uint8_t
     return result;
 }
 
+bool common_helpers::str_cmp_insensitive(const std::string &str1, const std::string &str2)
+{
+    if (str1.size() != str2.size()) return false;
+
+    return std::equal(str1.begin(), str1.end(), str2.begin(), [](const char c1, const char c2){
+        return std::toupper(c1) == std::toupper(c2);
+    });
+}
+
 std::string common_helpers::ascii_to_lowercase(std::string data) {
     std::transform(data.begin(), data.end(), data.begin(),
-        [](unsigned char c){ return std::tolower(c); });
+        [](char c){ return std::tolower(c); });
     return data;
 }
 

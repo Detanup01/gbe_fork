@@ -599,7 +599,7 @@ static void parse_leaderboards(class Settings *settings_client, Settings *settin
                 line.pop_back();
             }
 
-            std::string leaderboard;
+            std::string leaderboard{};
             unsigned int sort_method = 0;
             unsigned int display_type = 0;
 
@@ -618,7 +618,7 @@ static void parse_leaderboards(class Settings *settings_client, Settings *settin
                 settings_client->setLeaderboard(leaderboard, (ELeaderboardSortMethod)sort_method, (ELeaderboardDisplayType)display_type);
                 settings_server->setLeaderboard(leaderboard, (ELeaderboardSortMethod)sort_method, (ELeaderboardDisplayType)display_type);
             } else {
-                PRINT_DEBUG("Error adding leaderboard for: %s, are sort method %u or display type %u valid?\n", leaderboard.c_str(), sort_method, display_type);
+                PRINT_DEBUG("Error adding leaderboard for: '%s', are sort method %u or display type %u valid?\n", leaderboard.c_str(), sort_method, display_type);
             }
         }
     }

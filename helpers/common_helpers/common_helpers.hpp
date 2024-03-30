@@ -31,6 +31,8 @@ std::string string_strip(const std::string& str);
 
 std::string uint8_vector_to_hex_string(const std::vector<uint8_t>& v);
 
+bool str_cmp_insensitive(const std::string &str1, const std::string &str2);
+
 std::string ascii_to_lowercase(std::string data);
 
 void thisThreadYieldFor(std::chrono::microseconds u);

@@ -315,11 +315,11 @@ public:
     std::set<PublishedFileId_t> modSet();
 
     //leaderboards
-    void setLeaderboard(std::string leaderboard, enum ELeaderboardSortMethod sort_method, enum ELeaderboardDisplayType display_type);
-    std::map<std::string, Leaderboard_config> getLeaderboards();
+    void setLeaderboard(const std::string &leaderboard, enum ELeaderboardSortMethod sort_method, enum ELeaderboardDisplayType display_type);
+    const std::map<std::string, Leaderboard_config>& getLeaderboards() const;
 
     //stats
-    const std::map<std::string, Stat_config>& getStats();
+    const std::map<std::string, Stat_config>& getStats() const;
     void setStatDefiniton(const std::string &name, const struct Stat_config &stat_config);
 
     //images

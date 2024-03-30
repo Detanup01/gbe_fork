@@ -79,11 +79,13 @@ Settings::Settings(CSteamID steam_id, CGameID game_id, const std::string &name, 
     this->offline = offline;
 }
 
+// user id
 CSteamID Settings::get_local_steam_id()
 {
     return steam_id;
 }
 
+// game id
 CGameID Settings::get_local_game_id()
 {
     return game_id;
@@ -278,21 +280,21 @@ std::string Settings::getAppInstallPath(AppId_t appID)
     return app_paths[appID];
 }
 
-void Settings::setLeaderboard(std::string leaderboard, enum ELeaderboardSortMethod sort_method, enum ELeaderboardDisplayType display_type)
+void Settings::setLeaderboard(const std::string &leaderboard, enum ELeaderboardSortMethod sort_method, enum ELeaderboardDisplayType display_type)
 {
-    Leaderboard_config leader;
+    Leaderboard_config leader{};
     leader.sort_method = sort_method;
     leader.display_type = display_type;
 
     leaderboards[leaderboard] = leader;
 }
 
-std::map<std::string, Leaderboard_config> Settings::getLeaderboards()
+const std::map<std::string, Leaderboard_config>& Settings::getLeaderboards() const
 {
     return leaderboards;
 }
 
-const std::map<std::string, Stat_config>& Settings::getStats()
+const std::map<std::string, Stat_config>& Settings::getStats() const
 {
     return stats;
 }

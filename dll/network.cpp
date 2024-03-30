@@ -612,28 +612,11 @@ bool Networking::handle_tcp(Common_Message *msg, struct TCP_Socket &socket)
 
 struct Connection *Networking::find_connection(CSteamID search_id, uint32 appid)
 {
-    if (appid) {
-        auto conn = std::find_if(connections.begin(), connections.end(), [&search_id, &appid](struct Connection const& conn) { 
-            if (conn.appid != appid) return false;
+    auto conn = std::find_if(connections.begin(), connections.end(), [&search_id, appid](struct Connection const& conn) { 
+        if (appid && (conn.appid != appid)) return false;
 
-            for (auto &id: conn.ids) {
-                if (search_id == id) {
-                    return true;
-                }
-            }
-
-            return false;
-        });
-
-        if (connections.end() != conn)
-            return &(*conn);
-    }
-
-    auto conn = std::find_if(connections.begin(), connections.end(), [&search_id](struct Connection const& conn) { 
-        for (auto &id: conn.ids) {
-            if (search_id == id) {
-                return true;
-            }
+        for (const auto &id: conn.ids) {
+            if (search_id == id) return true;
         }
 
         return false;
@@ -642,7 +625,7 @@ struct Connection *Networking::find_connection(CSteamID search_id, uint32 appid)
     if (connections.end() != conn)
         return &(*conn);
 
-    return NULL;
+    return nullptr;
 }
 
 bool Networking::add_id_connection(struct Connection *connection, CSteamID steam_id)
@@ -653,6 +636,7 @@ bool Networking::add_id_connection(struct Connection *connection, CSteamID steam
     if (id != connection->ids.end())
         return false;
 
+    PRINT_DEBUG("Networking::add_id_connection ADDED ID %llu\n", (uint64)steam_id.ConvertToUint64());
     connection->ids.push_back(steam_id);
     if (connection->connected) {
         run_callback_user(steam_id, true, connection->appid);
@@ -671,6 +655,7 @@ struct Connection *Networking::new_connection(CSteamID search_id, uint32 appid)
     connection.appid = appid;
     connection.last_received = std::chrono::high_resolution_clock::now();
 
+    PRINT_DEBUG("Networking::new_connection ADDED ID %llu\n", (uint64)search_id.ConvertToUint64());
     connections.push_back(connection);
     return &(connections[connections.size() - 1]);
 }
@@ -681,7 +666,10 @@ bool Networking::handle_announce(Common_Message *msg, IP_PORT ip_port)
     if (!conn || conn->appid != msg->announce().appid()) {
         conn = new_connection((uint64)msg->source_id(), msg->announce().appid());
         if (!conn) return false;
-        PRINT_DEBUG("New Connection Created\n");
+        PRINT_DEBUG(
+            "Networking::handle_announce new connection created: user %llu, appid %lu\n",
+            (uint64)msg->source_id(), msg->announce().appid()
+        );
     }
 
     PRINT_DEBUG("Handle Announce: %u, " "%" PRIu64 ", %u, %u\n", conn->appid, msg->source_id(), msg->announce().appid(), msg->announce().type());
@@ -860,6 +848,7 @@ Networking::Networking(CSteamID id, uint32 appid, uint16 port, std::set<IP_PORT>
         enabled = true;
     }
 
+    PRINT_DEBUG("Networking::Networking ADDED ID %llu\n", (uint64)id.ConvertToUint64());
     ids.push_back(id);
 
     reset_last_error();
@@ -1172,7 +1161,7 @@ void Networking::addListenId(CSteamID id)
         return;
     }
 
-    PRINT_DEBUG("ADDED ID\n");
+    PRINT_DEBUG("Networking::addListenId ADDED ID %llu\n", (uint64)id.ConvertToUint64());
     ids.push_back(id);
     send_announce_broadcasts();
     return;
@@ -1243,10 +1232,9 @@ bool Networking::sendTo(Common_Message *msg, bool reliable, Connection *conn)
                 ret = true;
             }
         } else {
-            char *buffer = new char[size];
-            msg->SerializeToArray(buffer, size);
-            send_packet_to(udp_socket, conn->udp_ip_port, buffer, size);
-            delete[] buffer;
+            std::vector<char> buffer(size, 0);
+            msg->SerializeToArray(&buffer[0], size);
+            send_packet_to(udp_socket, conn->udp_ip_port, &buffer[0], size);
             ret = true;
         }
     }
@@ -1299,7 +1287,7 @@ void Networking::run_callback_user(CSteamID steam_id, bool online, uint32 appid)
     //only give callbacks for right game accounts
     if (steam_id.BIndividualAccount() && appid != this->appid && appid != LOBBY_CONNECT_APPID) return;
 
-    Common_Message msg;
+    Common_Message msg{};
     msg.set_source_id(steam_id.ConvertToUint64());
     msg.set_allocated_low_level(new Low_Level());
     if (online) {

@@ -216,7 +216,7 @@ message Steam_Messages {
 }
 
 message GameServerStats_Messages {
-    // --- baisc definitions
+    // --- basic definitions
     message StatInfo {
         enum Stat_Type {
             STAT_TYPE_INT = 0;

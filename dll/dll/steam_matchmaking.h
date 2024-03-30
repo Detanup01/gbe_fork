@@ -100,12 +100,9 @@ google::protobuf::Map<std::string,std::string>::const_iterator caseinsensitive_f
 {
     auto x = map.begin();
     while (x != map.end()) {
-        if (key.size() == x->first.size() && std::equal(x->first.begin(), x->first.end(), key.begin(),
-                      [](char a, char b) {
-                          return tolower(a) == tolower(b);
-                      })) {
-                          break;
-                      }
+        if (common_helpers::str_cmp_insensitive(key, x->first)) {
+            break;
+        }
         ++x;
     }
 

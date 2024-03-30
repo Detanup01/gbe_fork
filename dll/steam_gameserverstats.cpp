@@ -25,16 +25,16 @@ void Steam_GameServerStats::steam_gameserverstats_network_callback(void *object,
 {
     // PRINT_DEBUG("Steam_GameServerStats::steam_gameserverstats_network_callback\n");
 
-    auto steam_gameserverstats = (Steam_GameServerStats *)object;
-    steam_gameserverstats->network_callback(msg);
+    auto inst = (Steam_GameServerStats *)object;
+    inst->network_callback(msg);
 }
 
 void Steam_GameServerStats::steam_gameserverstats_run_every_runcb(void *object)
 {
     // PRINT_DEBUG("Steam_GameServerStats::steam_gameserverstats_run_every_runcb\n");
 
-    auto steam_gameserverstats = (Steam_GameServerStats *)object;
-    steam_gameserverstats->steam_run_callback();
+    auto inst = (Steam_GameServerStats *)object;
+    inst->steam_run_callback();
 }
 
 Steam_GameServerStats::CachedStat* Steam_GameServerStats::find_stat(CSteamID steamIDUser, const std::string &key)
@@ -46,11 +46,7 @@ Steam_GameServerStats::CachedStat* Steam_GameServerStats::find_stat(CSteamID ste
         it_data->second.stats.begin(), it_data->second.stats.end(),
         [&key](std::pair<const std::string, CachedStat> &item) {
             const std::string &name = item.first;
-            return key.size() == name.size() &&
-                std::equal(
-                    name.begin(), name.end(), key.begin(),
-                    [](char a, char b) { return std::tolower(a) == std::tolower(b); }
-                );
+            return common_helpers::str_cmp_insensitive(key, name);
         }
     );
 
@@ -68,11 +64,7 @@ Steam_GameServerStats::CachedAchievement* Steam_GameServerStats::find_ach(CSteam
         it_data->second.achievements.begin(), it_data->second.achievements.end(),
         [&key](std::pair<const std::string, CachedAchievement> &item) {
             const std::string &name = item.first;
-            return key.size() == name.size() &&
-                std::equal(
-                    name.begin(), name.end(), key.begin(),
-                    [](char a, char b) { return std::tolower(a) == std::tolower(b); }
-                );
+            return common_helpers::str_cmp_insensitive(key, name);
         }
     );
 
