@@ -258,7 +258,8 @@ message GameServerStats_Messages {
         Request_AllUserStats = 0;
         Response_AllUserStats = 1;
 
-        UpdateUserStats = 2; // sent by both sides
+        UpdateUserStatsFromServer = 2; // sent by Steam_GameServerStats
+        UpdateUserStatsFromUser = 3; // sent by Steam_User_Stats
     }
 
 	Types type = 1;

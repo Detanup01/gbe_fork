@@ -392,7 +392,7 @@ void Steam_GameServerStats::collect_and_send_updated_user_stats()
         }
         
         auto gameserverstats_msg = new GameServerStats_Messages();
-        gameserverstats_msg->set_type(GameServerStats_Messages::UpdateUserStats);
+        gameserverstats_msg->set_type(GameServerStats_Messages::UpdateUserStatsFromServer);
         gameserverstats_msg->set_allocated_update_user_stats(updated_stats_msg);
         
         Common_Message msg{};
@@ -521,7 +521,7 @@ void Steam_GameServerStats::network_callback(Common_Message *msg)
     break;
 
     // user has updated/new stats
-    case GameServerStats_Messages::UpdateUserStats:
+    case GameServerStats_Messages::UpdateUserStatsFromUser:
         network_callback_updated_stats(msg);
     break;
     

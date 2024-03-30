@@ -1641,7 +1641,7 @@ void Steam_User_Stats::send_updated_stats()
     pending_server_updates.clear_user_achievements();
 
     auto gameserverstats_msg = new GameServerStats_Messages();
-    gameserverstats_msg->set_type(GameServerStats_Messages::UpdateUserStats);
+    gameserverstats_msg->set_type(GameServerStats_Messages::UpdateUserStatsFromUser);
     gameserverstats_msg->set_allocated_update_user_stats(new_updates_msg);
     
     Common_Message msg{};
@@ -1750,8 +1750,6 @@ void Steam_User_Stats::network_stats_updated(Common_Message *msg)
         return;
     }
 
-    uint64 server_steamid = msg->source_id();
-
     auto &new_user_data = msg->gameserver_stats_messages().update_user_stats();
 
     // update our stats
@@ -1810,7 +1808,7 @@ void Steam_User_Stats::network_callback_stats(Common_Message *msg)
     break;
 
     // server has updated/new stats
-    case GameServerStats_Messages::UpdateUserStats:
+    case GameServerStats_Messages::UpdateUserStatsFromServer:
         network_stats_updated(msg);
     break;
     
@@ -1829,7 +1827,7 @@ void Steam_User_Stats::network_leaderboard_update_score(Common_Message *msg, Ste
         return;
     }
 
-    CSteamID sender_steamid(msg->source_id());
+    CSteamID sender_steamid((uint64)msg->source_id());
     PRINT_DEBUG(
         "Steam_User_Stats::network_leaderboard_update_score got score for user %llu on leaderboard '%s' (send our score back=%i)\n",
         (uint64)msg->source_id(), board.name.c_str(), (int)send_score_back
@@ -1852,7 +1850,7 @@ void Steam_User_Stats::network_leaderboard_update_score(Common_Message *msg, Ste
 // someone is requesting our score on a leaderboard
 void Steam_User_Stats::network_leaderboard_send_my_score(Common_Message *msg, const Steam_Leaderboard &board)
 {
-    CSteamID sender_steamid(msg->source_id());
+    CSteamID sender_steamid((uint64)msg->source_id());
     PRINT_DEBUG(
         "Steam_User_Stats::network_leaderboard_send_my_score user %llu requested our score for leaderboard '%s'\n",
         (uint64)msg->source_id(), board.name.c_str()
@@ -1872,6 +1870,7 @@ void Steam_User_Stats::network_callback_leaderboards(Common_Message *msg)
     }
 
     const auto &board_info_msg = msg->leaderboards_messages().leaderboard_info();
+    
     PRINT_DEBUG("Steam_User_Stats::network_callback_leaderboards attempting to cache leaderboard '%s'\n", board_info_msg.board_name().c_str());
     unsigned int board_handle = cache_leaderboard_ifneeded(
         board_info_msg.board_name(),
@@ -1906,10 +1905,9 @@ void Steam_User_Stats::network_callback_leaderboards(Common_Message *msg)
 // user connect/disconnect
 void Steam_User_Stats::network_callback_low_level(Common_Message *msg)
 {
-    CSteamID steamid(msg->source_id());
+    CSteamID steamid((uint64)msg->source_id());
     // this should never happen, but just in case
     if (steamid == settings->get_local_steam_id()) return;
-
 
     switch (msg->low_level().type())
     {
