@@ -537,6 +537,9 @@ void Steam_GameServerStats::network_callback_updated_stats(Common_Message *msg)
 // only triggered when we have a message
 void Steam_GameServerStats::network_callback(Common_Message *msg)
 {
+    // this should never happen, but just in case
+    if (msg->source_id() == settings->get_local_steam_id().ConvertToUint64()) return; 
+
     switch (msg->gameserver_stats_messages().type())
     {
     // user sent all their stats
