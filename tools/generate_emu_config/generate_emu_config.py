@@ -484,26 +484,41 @@ def get_dlc(raw_infos):
         print("could not get dlc infos, are there any dlcs ?")
         return (set(), set(), set())
 
-EXTRA_FEATURES: list[tuple[str, str]] = [
+EXTRA_FEATURES_DISABLE: list[tuple[str, str]] = [
     ("disable_account_avatar.txt",                   "disable avatar functionality."),
-    ("disable_networking.txt",                       "disable all networking functionality."),
+    ("disable_networking.txt",                       "disable all networking functionality of the emu."),
     ("disable_overlay.txt",                          "disable the overlay."),
     ("disable_source_query.txt",                     "do not send server details for the server browser. Only works for game servers."),
-    ("disable_sharing_leaderboards.txt",             "disable sharing leaderboards scroes with people playing the same game on the same network."),
+    ("disable_sharing_stats_with_gameserver.txt",    "prevent sharing stats and achievements with any game server, this also disables the interface ISteamGameServerStats."),
+]
+
+EXTRA_FEATURES_CONVENIENT: list[tuple[str, str]] = [
+    ("disable_lan_only.txt",                        "don't hook OS networking APIs and allow all external requests."),
+    ("disable_overlay_warning_any.txt",             "disable all overlay warnings and allow modifying locked settings, if any."),
+    ("download_steamhttp_requests.txt",             "try to download all requests made via the Steam HTTP interface locally."),
+    ("new_app_ticket.txt",                          "generate new app ticket."),
+    ("gc_token.txt",                                "generate GC inside new App Ticket."),
+    ("share_leaderboards_over_network.txt",         "enable sharing Leaderboards scores with people playing the same game on the same network."),
 ]
 
 def disable_all_extra_features(emu_settings_dir : str) -> None:
-    for item in EXTRA_FEATURES:
+    for item in EXTRA_FEATURES_DISABLE:
+        with open(os.path.join(emu_settings_dir, item[0]), 'wt', encoding='utf-8') as f:
+            f.write(item[1])
+
+def enable_convenient_extra_features(emu_settings_dir : str) -> None:
+    for item in EXTRA_FEATURES_CONVENIENT:
         with open(os.path.join(emu_settings_dir, item[0]), 'wt', encoding='utf-8') as f:
             f.write(item[1])
 
 
 def help():
     exe_name = os.path.basename(sys.argv[0])
-    print(f"\nUsage: {exe_name} [-shots] [-thumbs] [-vid] [-imgs] [-name] [-cdx] [-aw] [-clean] appid appid appid ... ")
+    print(f"\nUsage: {exe_name} [Switches] appid appid appid ... ")
     print(f" Example: {exe_name} 421050 420 480")
-    print(f" Example: {exe_name} -shots -thumbs -vid -imgs -name -cdx -aw -clean -nd 421050")
-    print(f" Example: {exe_name} -shots -thumbs -vid -imgs -name -cdx -aw -clean 421050")
+    print(f" Example: {exe_name} -shots -thumbs -vid -imgs -name -cdx -aw -clean -de 421050 480")
+    print(f" Example: {exe_name} -shots -thumbs -vid -imgs -name -cdx -aw -clean -de -cve 421050")
+    print(f" Example: {exe_name} -shots -thumbs -vid -imgs -name -cdx -aw -clean -cve 421050")
     print("\nSwitches:")
     print(" -shots:  download screenshots for each app if they're available")
     print(" -thumbs: download screenshots thumbnails for each app if they're available")
@@ -514,7 +529,8 @@ def help():
     print(" -aw:     generate schemas of all possible languages for Achievement Watcher")
     print(" -clean:  delete any folder/file with the same name as the output before generating any data")
     print(" -anon:   login as an anonymous account, these have very limited access and cannot get all app details")
-    print(" -nd:     not making predeterminated disable files")
+    print(" -de:     disable some extra features by generating the corresponding config files in steam_settings folder")
+    print(" -cve:    enable some convenient extra features by generating the corresponding config files in steam_settings folder")
     print(" -reldir: generate temp files/folders, and expect input files, relative to the current working directory")
     print("\nAll switches are optional except app id, at least 1 app id must be provided\n")
 
@@ -522,7 +538,8 @@ def main():
     USERNAME = ""
     PASSWORD = ""
 
-    NODISABLE = False
+    DISABLE_EXTRA = False
+    CONVENIENT_EXTRA = False
     DOWNLOAD_SCREESHOTS = False
     DOWNLOAD_THUMBNAILS = False
     DOWNLOAD_VIDEOS = False
@@ -562,8 +579,10 @@ def main():
             CLEANUP_BEFORE_GENERATING = True
         elif f'{appid}'.lower() == '-anon':
             ANON_LOGIN = True
-        elif f'{appid}'.lower() == '-nd':
-            NODISABLE = True
+        elif f'{appid}'.lower() == '-de':
+            DISABLE_EXTRA = True
+        elif f'{appid}'.lower() == '-cve':
+            CONVENIENT_EXTRA = True
         elif f'{appid}'.lower() == '-reldir':
             RELATIVE_DIR = True
         else:
@@ -872,8 +891,11 @@ def main():
                 logo,
                 logo_small)
             
-        if not NODISABLE:
+        if DISABLE_EXTRA:
             disable_all_extra_features(emu_settings_dir)
+ 
+        if CONVENIENT_EXTRA:
+            enable_convenient_extra_features(emu_settings_dir)
 
         inventory_data = generate_inventory(client, appid)
         if inventory_data is not None:

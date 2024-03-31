@@ -1,1 +1,1 @@
-Rename this to: disable_networking.txt to disable all networking functionality.
+Rename this to: disable_networking.txt to disable all networking functionality of the emu.

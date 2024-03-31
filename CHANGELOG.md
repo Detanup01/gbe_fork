@@ -17,6 +17,11 @@
 * separate the config file `disable_leaderboards_create_unknown.txt`, previously it was tied to `leaderboards.txt`,  
   by default the emu will create any unknown leaderboards, you can disable this behavior with this file  
   **not recommended** to disable this behavior
+* for the tool `generate_emu_confog`:
+  - don't generate `disable_xxx` config files by default
+  - new option `-de`: generate config files inside `steam_settings` folder to disable some extra features of the emu  
+    note that this option deprecates the option `-nd`
+  - new option `-cve`: generate config files inside `steam_settings` folder to enable some convenient extra features of the emu  
 * added missing example file `disable_lobby_creation.txt` in `steam_settings` folder + updated release `README`
 * set the minimum game server latency/ping to 2ms
 * added new function `rmCallbacks()` for the networking, to be able to cleanup callbacks on object destruction
