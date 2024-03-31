@@ -1729,6 +1729,7 @@ void Steam_Overlay::SetNotificationPosition(ENotificationPosition eNotificationP
 {
     PRINT_DEBUG("TODO Steam_Overlay::SetNotificationPosition %i\n", (int)eNotificationPosition);
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (settings->disable_overlay) return;
 
     notif_position = eNotificationPosition;
 }
@@ -1737,6 +1738,7 @@ void Steam_Overlay::SetNotificationInset(int nHorizontalInset, int nVerticalInse
 {
     PRINT_DEBUG("TODO Steam_Overlay::SetNotificationInset x=%i y=%i\n", nHorizontalInset, nVerticalInset);
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (settings->disable_overlay) return;
 
     h_inset = nHorizontalInset;
     v_inset = nVerticalInset;
@@ -1838,6 +1840,8 @@ void Steam_Overlay::FriendConnect(Friend _friend)
 {
     PRINT_DEBUG("Steam_Overlay::FriendConnect " "%" PRIu64 "\n", _friend.id());
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (settings->disable_overlay) return;
+
     // players connections might happen earlier before the overlay is ready
     // we don't want to miss them
     //if (!Ready()) return;
@@ -1859,6 +1863,8 @@ void Steam_Overlay::FriendDisconnect(Friend _friend)
 {
     PRINT_DEBUG("Steam_Overlay::FriendDisconnect " "%" PRIu64 "\n", _friend.id());
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (settings->disable_overlay) return;
+    
     // players connections might happen earlier before the overlay is ready
     // we don't want to miss them
     //if (!Ready()) return;
