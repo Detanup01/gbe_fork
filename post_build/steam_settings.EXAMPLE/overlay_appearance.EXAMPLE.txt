@@ -1,5 +1,6 @@
 ; global font size
-Font_Size 13.5
+; multiples of 16 is recommended, e.g. 16 32...
+Font_Size 16.0
 ; achievement icon size
 Icon_Size 64.0
 

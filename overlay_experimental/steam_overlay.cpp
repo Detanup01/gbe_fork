@@ -23,12 +23,7 @@
 #include "InGameOverlay/RendererDetector.h"
 
 // fonts
-#include "fonts/NotoSansJP_SemiBold.hpp" // japanese
-#include "fonts/NotoSansKR_SemiBold.hpp" // korean
-#include "fonts/NotoSansSC_SemiBold.hpp" // simplified chinese
-#include "fonts/NotoSansTC_SemiBold.hpp" // traditional chinese
-#include "fonts/NotoSansThai_SemiBold.hpp" // Thai
-#include "fonts/Roboto_Medium.hpp"
+#include "fonts/unifont.hpp"
 
 #define URL_WINDOW_NAME "URL Window"
 
@@ -300,13 +295,7 @@ void Steam_Overlay::create_fonts()
     font_cfg.GlyphRanges = ranges.Data;
 
     fonts_atlas.AddFontDefault(&font_cfg);
-    font_cfg.MergeMode = true; // merge next fonts into the first one, as if they were all just 1 font file
-    fonts_atlas.AddFontFromMemoryCompressedTTF(NotoSansJP_SemiBold_compressed_data, NotoSansJP_SemiBold_compressed_size, font_size, &font_cfg);
-    fonts_atlas.AddFontFromMemoryCompressedTTF(NotoSansKR_SemiBold_compressed_data, NotoSansKR_SemiBold_compressed_size, font_size, &font_cfg);
-    fonts_atlas.AddFontFromMemoryCompressedTTF(NotoSansSC_SemiBold_compressed_data, NotoSansSC_SemiBold_compressed_size, font_size, &font_cfg);
-    fonts_atlas.AddFontFromMemoryCompressedTTF(NotoSansTC_SemiBold_compressed_data, NotoSansTC_SemiBold_compressed_size, font_size, &font_cfg);
-    fonts_atlas.AddFontFromMemoryCompressedTTF(NotoSansThai_SemiBold_compressed_data, NotoSansThai_SemiBold_compressed_size, font_size, &font_cfg);
-    ImFont *font = fonts_atlas.AddFontFromMemoryCompressedTTF(Roboto_Medium_compressed_data, Roboto_Medium_compressed_size, font_size, &font_cfg);
+    ImFont *font = fonts_atlas.AddFontFromMemoryCompressedTTF(unifont_compressed_data, unifont_compressed_size, font_size, &font_cfg);
     font_notif = font_default = font;
     
     bool res = fonts_atlas.Build();
