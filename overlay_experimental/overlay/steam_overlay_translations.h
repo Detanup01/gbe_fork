@@ -110,7 +110,7 @@ const char translationCopyId[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"复制 ID",
 
 	// 4 - Traditional Chinese
-  u8"Copy ID",
+  u8"複製 ID",
 
 	// 5 - Czech
   u8"Kopírovat ID",
@@ -296,7 +296,7 @@ const char translationInviteAll[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUF
   u8"邀请全部",
 
 	// 4 - Traditional Chinese
-  u8"Invite all",
+  u8"邀請全部",
 
 	// 5 - Czech
   u8"Pozvat všechny",
@@ -952,7 +952,7 @@ const char translationUserPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
   u8"用户名：%s(%llu) 正在玩 %u",
 
 	// 4 - Traditional Chinese
-  u8"Username: %s(%llu) playing %u",
+  u8"使用者名稱：%s(%llu) 正在玩 %u",
 
 	// 5 - Czech
   u8"Uživatel: %s(%llu) hraje %u",
@@ -1044,7 +1044,7 @@ const char translationRenderer[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"渲染器：%s",
 
 	// 4 - Traditional Chinese
-  u8"Renderer: %s",
+  u8"渲染器：%s",
 
 	// 5 - Czech
   u8"Vykreslovač: %s",
@@ -1136,7 +1136,7 @@ const char translationShowAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
   u8"显示成就",
 
 	// 4 - Traditional Chinese
-  u8"Show Achievements",
+  u8"顯示成就",
 
 	// 5 - Czech
   u8"Zobrazit achievementy",
@@ -1417,7 +1417,7 @@ const char translationAchievementWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"成就窗口",
 
 	// 4 - Traditional Chinese
-  u8"Achievement Window",
+  u8"成就視窗",
 
 	// 5 - Czech
   u8"Okno achievementů",
@@ -1509,7 +1509,7 @@ const char translationListOfAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSL
   u8"成就列表",
 
 	// 4 - Traditional Chinese
-  u8"List of achievements",
+  u8"成就列表",
 
 	// 5 - Czech
   u8"Seznam achievementů",
@@ -1601,7 +1601,7 @@ const char translationAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_
   u8"成就",
 
 	// 4 - Traditional Chinese
-  u8"Achievements",
+  u8"成就",
 
 	// 5 - Czech
   u8"Achievementy",
@@ -1693,7 +1693,7 @@ const char translationHiddenAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"隐藏成就",
 
 	// 4 - Traditional Chinese
-  u8"hidden achievement",
+  u8"隱藏成就",
 
 	// 5 - Czech
   u8"Skrytý achievement",
@@ -1785,7 +1785,7 @@ const char translationAchievedOn[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BU
   u8"获得于 %s",
 
 	// 4 - Traditional Chinese
-  u8"achieved on %s",
+  u8"獲得於 %s",
 
 	// 5 - Czech
   u8"odemčeno %s",
@@ -1877,7 +1877,7 @@ const char translationNotAchieved[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
   u8"未获得",
 
 	// 4 - Traditional Chinese
-  u8"not achieved",
+  u8"未獲得",
 
 	// 5 - Czech
   u8"uzamčeno",
@@ -1969,7 +1969,7 @@ const char translationGlobalSettingsWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRAN
   u8"全局设置窗口",
 
 	// 4 - Traditional Chinese
-  u8"Global Settings Window",
+  u8"全域性設定視窗",
 
 	// 5 - Czech
   u8"Okno globálních nastavení",
@@ -2061,7 +2061,7 @@ const char translationGlobalSettingsWindowDescription[TRANSLATION_NUMBER_OF_LANG
   u8"这些是会应用到所有游戏的全局模拟器设置。",
 
 	// 4 - Traditional Chinese
-  u8"These are global emulator settings and will apply to all games.",
+  u8"這些是會應用到所有遊戲的全域性模擬器設定。",
 
 	// 5 - Czech
   u8"Toto jsou globální nastavení emulátoru a budou platit pro všechny hry.",
@@ -2153,7 +2153,7 @@ const char translationUsername[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"用户名：",
 
 	// 4 - Traditional Chinese
-  u8"Username:",
+  u8"使用者名稱：",
 
 	// 5 - Czech
   u8"Uživatelské jméno:",
@@ -2245,7 +2245,7 @@ const char translationLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"语言：",
 
 	// 4 - Traditional Chinese
-  u8"Language:",
+  u8"語言：",
 
 	// 5 - Czech
   u8"Jazyk:",
@@ -2337,7 +2337,7 @@ const char translationSelectedLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
   u8"选择的语言：%s",
 
 	// 4 - Traditional Chinese
-  u8"Selected Language: %s",
+  u8"選擇的語言：%s",
 
 	// 5 - Czech
   u8"Zvolený jazyk: %s",
@@ -2429,7 +2429,7 @@ const char translationRestartTheGameToApply[TRANSLATION_NUMBER_OF_LANGUAGES][TRA
   u8"您可能需要重新启动游戏以应用设置。",
 
 	// 4 - Traditional Chinese
-  u8"You may have to restart the game for these to apply.",
+  u8"您可能需要重新啟動遊戲以應用設定。",
 
 	// 5 - Czech
   u8"Pro uplatnění změn může být nutné restartovat hru.",
@@ -2521,7 +2521,7 @@ const char translationSave[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"保存",
 
 	// 4 - Traditional Chinese
-  u8"Save",
+  u8"儲存",
 
 	// 5 - Czech
   u8"Uložit",
@@ -2613,7 +2613,7 @@ const char translationWarning[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8"警告",
 
 	// 4 - Traditional Chinese
-  u8"WARNING",
+  u8"警告",
 
 	// 5 - Czech
   u8"VAROVÁNÍ",
@@ -2705,7 +2705,7 @@ const char translationWarningWarningWarning[TRANSLATION_NUMBER_OF_LANGUAGES][TRA
   u8"警告 警告 警告",
 
 	// 4 - Traditional Chinese
-  u8"WARNING WARNING WARNING",
+  u8"警告 警告 警告",
 
 	// 5 - Czech
   u8"VAROVÁNÍ VAROVÁNÍ VAROVÁNÍ",
@@ -2797,7 +2797,7 @@ const char translationWarningDescription1[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
   u8"检测到一些 steam_settings/force_*.txt 文件。如果您想让这个菜单工作，请删除它们。",
 
 	// 4 - Traditional Chinese
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"檢測到一些 steam_settings/force_*.txt 檔案。如果您想讓這個選單工作，請刪除它們。",
 
 	// 5 - Czech
   u8"Byly zjištěny soubory steam_settings/force_*.txt. Pokud chcete, aby toto menu fungovalo, odstraňte je.",
@@ -2889,7 +2889,7 @@ const char translationWarningDescription2[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
   u8"AppID 为 0 ，请创建一个具有正确 AppID 的 steam_appid.txt 文件然后重启游戏。",
 
 	// 4 - Traditional Chinese
-  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID 為 0 ，請建立一個具有正確 AppID 的 steam_appid.txt 檔案然後重啟遊戲。",
 
 	// 5 - Czech
   u8"AppID je 0, vytvořte, prosím, steam_appid.txt se správným appid a restartujte hru.",
@@ -2981,7 +2981,7 @@ const char translationWarningDescription3[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
   u8"检测到 local_save.txt ，模拟器数据将保存到本地游戏文件夹。如果不想要此行为请删除该文件。",
 
 	// 4 - Traditional Chinese
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"檢測到 local_save.txt ，模擬器資料將儲存到本地遊戲資料夾。如果不想要此行為請刪除該檔案。",
 
 	// 5 - Czech
   u8"Zjištěn local_save.txt, emulátor ukládá lokálně do složky hry. Pokud to nechcete, odstraňte ho.",
@@ -3073,7 +3073,7 @@ const char translationWarningDescription4[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
   u8"检测到一些 steam_settings/force_*.txt 文件。您将无法保存某些设置。",
 
 	// 4 - Traditional Chinese
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"檢測到一些 steam_settings/force_*.txt 檔案。您將無法儲存某些設定。",
 
 	// 5 - Czech
   u8"Byly zjištěny soubory steam_settings/force_*.txt. Některá nastavení nebude možné uložit.",
@@ -3165,7 +3165,7 @@ const char translationSteamOverlayURL[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"此游戏尝试使用蒸汽界面打开这个链接：",
 
 	// 4 - Traditional Chinese
-  u8"The game tried to get the steam overlay to open this url:",
+  u8"此遊戲嘗試使用 Steam 內嵌介面開啟這個連結：",
 
 	// 5 - Czech
   u8"Hra se pokusila otevřít v rozhraní překrytí služby Steam tuto webovou adresu:",
@@ -3351,7 +3351,7 @@ const char translationPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8" 正在玩 ",
 
 	// 4 - Traditional Chinese
-  u8" playing ",
+  u8" 正在玩 ",
 
 	// 5 - Czech
   u8" hraje ",
@@ -3443,7 +3443,7 @@ const char translationAutoAcceptFriendInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TR
   u8"邀请正由 auto_accept_invite.txt 控制！",
 
 	// 4 - Traditional Chinese
-  u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"邀請正由 auto_accept_invite.txt 控制！",
 
 	// 5 - Czech
   u8"Pozvánky se řídí podle auto_accept_invite.txt!",
