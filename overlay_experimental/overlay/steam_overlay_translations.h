@@ -107,7 +107,7 @@ const char translationCopyId[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"Copy ID",
 
 	// 3 - Simplified Chinese
-  u8"Copy ID",
+  u8"复制 ID",
 
 	// 4 - Traditional Chinese
   u8"Copy ID",
@@ -293,7 +293,7 @@ const char translationInviteAll[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUF
   u8"Invite all",
 
 	// 3 - Simplified Chinese
-  u8"Invite all",
+  u8"邀请全部",
 
 	// 4 - Traditional Chinese
   u8"Invite all",
@@ -857,7 +857,7 @@ const char translationSteamOverlay[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_
   u8"Steam слой",
 
 	// 3 - Simplified Chinese
-	u8"Steam 界面",
+  u8"蒸汽界面",
 
 	// 4 - Traditional Chinese
   u8"Steam 內嵌介面",
@@ -949,7 +949,7 @@ const char translationUserPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
   u8"Username: %s(%llu) playing %u",
 
 	// 3 - Simplified Chinese
-  u8"Username: %s(%llu) playing %u",
+  u8"用户名：%s(%llu) 正在玩 %u",
 
 	// 4 - Traditional Chinese
   u8"Username: %s(%llu) playing %u",
@@ -1041,7 +1041,7 @@ const char translationRenderer[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Renderer: %s",
 
 	// 3 - Simplified Chinese
-  u8"Renderer: %s",
+  u8"渲染器：%s",
 
 	// 4 - Traditional Chinese
   u8"Renderer: %s",
@@ -1133,7 +1133,7 @@ const char translationShowAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
   u8"Show Achievements",
 
 	// 3 - Simplified Chinese
-  u8"Show Achievements",
+  u8"显示成就",
 
 	// 4 - Traditional Chinese
   u8"Show Achievements",
@@ -1414,7 +1414,7 @@ const char translationAchievementWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"Achievement Window",
 
 	// 3 - Simplified Chinese
-  u8"Achievement Window",
+  u8"成就窗口",
 
 	// 4 - Traditional Chinese
   u8"Achievement Window",
@@ -1506,7 +1506,7 @@ const char translationListOfAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSL
   u8"List of achievements",
 
 	// 3 - Simplified Chinese
-  u8"List of achievements",
+  u8"成就列表",
 
 	// 4 - Traditional Chinese
   u8"List of achievements",
@@ -1598,7 +1598,7 @@ const char translationAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_
   u8"Achievements",
 
 	// 3 - Simplified Chinese
-  u8"Achievements",
+  u8"成就",
 
 	// 4 - Traditional Chinese
   u8"Achievements",
@@ -1690,7 +1690,7 @@ const char translationHiddenAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"hidden achievement",
 
 	// 3 - Simplified Chinese
-  u8"hidden achievement",
+  u8"隐藏成就",
 
 	// 4 - Traditional Chinese
   u8"hidden achievement",
@@ -1782,7 +1782,7 @@ const char translationAchievedOn[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BU
   u8"achieved on %s",
 
 	// 3 - Simplified Chinese
-  u8"achieved on %s",
+  u8"获得于 %s",
 
 	// 4 - Traditional Chinese
   u8"achieved on %s",
@@ -1874,7 +1874,7 @@ const char translationNotAchieved[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
   u8"not achieved",
 
 	// 3 - Simplified Chinese
-  u8"not achieved",
+  u8"未获得",
 
 	// 4 - Traditional Chinese
   u8"not achieved",
@@ -1966,7 +1966,7 @@ const char translationGlobalSettingsWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRAN
   u8"Global Settings Window",
 
 	// 3 - Simplified Chinese
-  u8"Global Settings Window",
+  u8"全局设置窗口",
 
 	// 4 - Traditional Chinese
   u8"Global Settings Window",
@@ -2058,7 +2058,7 @@ const char translationGlobalSettingsWindowDescription[TRANSLATION_NUMBER_OF_LANG
   u8"These are global emulator settings and will apply to all games.",
 
 	// 3 - Simplified Chinese
-  u8"These are global emulator settings and will apply to all games.",
+  u8"这些是会应用到所有游戏的全局模拟器设置。",
 
 	// 4 - Traditional Chinese
   u8"These are global emulator settings and will apply to all games.",
@@ -2150,7 +2150,7 @@ const char translationUsername[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Username:",
 
 	// 3 - Simplified Chinese
-  u8"Username:",
+  u8"用户名：",
 
 	// 4 - Traditional Chinese
   u8"Username:",
@@ -2242,7 +2242,7 @@ const char translationLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Language:",
 
 	// 3 - Simplified Chinese
-  u8"Language:",
+  u8"语言：",
 
 	// 4 - Traditional Chinese
   u8"Language:",
@@ -2334,7 +2334,7 @@ const char translationSelectedLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
   u8"Selected Language: %s",
 
 	// 3 - Simplified Chinese
-  u8"Selected Language: %s",
+  u8"选择的语言：%s",
 
 	// 4 - Traditional Chinese
   u8"Selected Language: %s",
@@ -2426,7 +2426,7 @@ const char translationRestartTheGameToApply[TRANSLATION_NUMBER_OF_LANGUAGES][TRA
   u8"You may have to restart the game for these to apply.",
 
 	// 3 - Simplified Chinese
-  u8"You may have to restart the game for these to apply.",
+  u8"您可能需要重新启动游戏以应用设置。",
 
 	// 4 - Traditional Chinese
   u8"You may have to restart the game for these to apply.",
@@ -2518,7 +2518,7 @@ const char translationSave[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"Save",
 
 	// 3 - Simplified Chinese
-  u8"Save",
+  u8"保存",
 
 	// 4 - Traditional Chinese
   u8"Save",
@@ -2610,7 +2610,7 @@ const char translationWarning[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8"WARNING",
 
 	// 3 - Simplified Chinese
-  u8"WARNING",
+  u8"警告",
 
 	// 4 - Traditional Chinese
   u8"WARNING",
@@ -2702,7 +2702,7 @@ const char translationWarningWarningWarning[TRANSLATION_NUMBER_OF_LANGUAGES][TRA
   u8"WARNING WARNING WARNING",
 
 	// 3 - Simplified Chinese
-  u8"WARNING WARNING WARNING",
+  u8"警告 警告 警告",
 
 	// 4 - Traditional Chinese
   u8"WARNING WARNING WARNING",
@@ -2794,7 +2794,7 @@ const char translationWarningDescription1[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
   u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 3 - Simplified Chinese
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"检测到一些 steam_settings/force_*.txt 文件。如果您想让这个菜单工作，请删除它们。",
 
 	// 4 - Traditional Chinese
   u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
@@ -2886,7 +2886,7 @@ const char translationWarningDescription2[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
   u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 3 - Simplified Chinese
-  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID 为 0 ，请创建一个具有正确 AppID 的 steam_appid.txt 文件然后重启游戏。",
 
 	// 4 - Traditional Chinese
   u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
@@ -2978,7 +2978,7 @@ const char translationWarningDescription3[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
   u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 3 - Simplified Chinese
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"检测到 local_save.txt ，模拟器数据将保存到本地游戏文件夹。如果不想要此行为请删除该文件。",
 
 	// 4 - Traditional Chinese
   u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
@@ -3070,7 +3070,7 @@ const char translationWarningDescription4[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
   u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 3 - Simplified Chinese
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"检测到一些 steam_settings/force_*.txt 文件。您将无法保存某些设置。",
 
 	// 4 - Traditional Chinese
   u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
@@ -3162,7 +3162,7 @@ const char translationSteamOverlayURL[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"The game tried to get the steam overlay to open this url:",
 
 	// 3 - Simplified Chinese
-  u8"The game tried to get the steam overlay to open this url:",
+  u8"此游戏尝试使用蒸汽界面打开这个链接：",
 
 	// 4 - Traditional Chinese
   u8"The game tried to get the steam overlay to open this url:",
@@ -3348,7 +3348,7 @@ const char translationPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8" playing ",
 
 	// 3 - Simplified Chinese
-  u8" playing ",
+  u8" 正在玩 ",
 
 	// 4 - Traditional Chinese
   u8" playing ",
@@ -3440,7 +3440,7 @@ const char translationAutoAcceptFriendInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TR
   u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 3 - Simplified Chinese
-  u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"邀请正由 auto_accept_invite.txt 控制！",
 
 	// 4 - Traditional Chinese
   u8"Invitations are controlled by auto_accept_invite.txt!",
