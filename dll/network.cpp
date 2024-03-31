@@ -1262,6 +1262,20 @@ bool Networking::sendToAllIndividuals(Common_Message *msg, bool reliable)
     return true;
 }
 
+bool Networking::sendToAllGameservers(Common_Message *msg, bool reliable)
+{
+    for (auto &conn: connections) {
+        for (auto &steam_id : conn.ids) {
+            if (steam_id.BGameServerAccount()) {
+                msg->set_dest_id(steam_id.ConvertToUint64());
+                sendTo(msg, reliable, &conn);
+            }
+        }
+    }
+
+    return true;
+}
+
 bool Networking::sendToAll(Common_Message *msg, bool reliable)
 {
     for (auto &conn: connections) {

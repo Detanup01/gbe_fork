@@ -140,6 +140,9 @@ public:
     // send to all users whose account type is Individual, no need to call set_dest_id(), this is done automatically
     bool sendToAllIndividuals(Common_Message *msg, bool reliable);
 
+    // send to all users whose account type is GameServer, no need to call set_dest_id(), this is done automatically
+    bool sendToAllGameservers(Common_Message *msg, bool reliable);
+
     // send to all active/current connections, no need to call set_dest_id(), this is done automatically
     bool sendToAll(Common_Message *msg, bool reliable);
     

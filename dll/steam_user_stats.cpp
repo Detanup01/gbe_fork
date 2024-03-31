@@ -1676,8 +1676,8 @@ void Steam_User_Stats::send_updated_stats()
     // set_allocated_xxx() takes ownership of the allocated object, no need to delete
     msg.set_allocated_gameserver_stats_messages(gameserverstats_msg);
     msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
-    // here we send to all users on the network because we don't know the server steamid
-    network->sendToAll(&msg, true);
+    // here we send to all gameservers on the network because we don't know the server steamid
+    network->sendToAllGameservers(&msg, true);
 
     PRINT_DEBUG(
         "Steam_User_Stats::send_updated_stats sent updated stats: %zu stats, %zu achievements\n",
