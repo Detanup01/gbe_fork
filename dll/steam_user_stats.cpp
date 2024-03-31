@@ -302,8 +302,8 @@ void Steam_User_Stats::send_my_leaderboard_score(const Steam_Leaderboard &board,
     if (steamid) common_msg.set_dest_id(steamid->ConvertToUint64());
     common_msg.set_allocated_leaderboards_messages(board_msg);
 
-    if (steamid) network->sendTo(&common_msg, true);
-    else network->sendToAll(&common_msg, true);
+    if (steamid) network->sendTo(&common_msg, false);
+    else network->sendToAll(&common_msg, false);
 }
 
 void Steam_User_Stats::request_user_leaderboard_entry(const Steam_Leaderboard &board, const CSteamID &steamid)
@@ -325,7 +325,7 @@ void Steam_User_Stats::request_user_leaderboard_entry(const Steam_Leaderboard &b
     common_msg.set_dest_id(steamid.ConvertToUint64());
     common_msg.set_allocated_leaderboards_messages(board_msg);
 
-    network->sendTo(&common_msg, true);
+    network->sendTo(&common_msg, false);
 }
 
 
