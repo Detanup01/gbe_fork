@@ -273,7 +273,7 @@ unsigned int Steam_User_Stats::cache_leaderboard_ifneeded(const std::string &nam
 
 void Steam_User_Stats::send_my_leaderboard_score(const Steam_Leaderboard &board, const CSteamID *steamid, bool want_scores_back)
 {
-    if (settings->disable_sharing_leaderboards) return;
+    if (!settings->share_leaderboards_over_network) return;
 
     const auto my_entry = board.find_recent_entry(settings->get_local_steam_id());
     Leaderboards_Messages::UserScoreEntry *score_entry_msg = nullptr;
@@ -308,7 +308,7 @@ void Steam_User_Stats::send_my_leaderboard_score(const Steam_Leaderboard &board,
 
 void Steam_User_Stats::request_user_leaderboard_entry(const Steam_Leaderboard &board, const CSteamID &steamid)
 {
-    if (settings->disable_sharing_leaderboards) return;
+    if (!settings->share_leaderboards_over_network) return;
 
     auto board_info_msg = new Leaderboards_Messages::LeaderboardInfo();
     board_info_msg->set_allocated_board_name(new std::string(board.name));
@@ -646,7 +646,7 @@ Steam_User_Stats::Steam_User_Stats(Settings *settings, class Networking *network
     if (!settings->disable_sharing_stats_with_gameserver) {
         this->network->setCallback(CALLBACK_ID_GAMESERVER_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_stats, this);
     }
-    if (!settings->disable_sharing_leaderboards) {
+    if (settings->share_leaderboards_over_network) {
         this->network->setCallback(CALLBACK_ID_LEADERBOARDS_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_leaderboards, this);
     }
     this->network->setCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_low_level, this);
@@ -658,7 +658,7 @@ Steam_User_Stats::~Steam_User_Stats()
     if (!settings->disable_sharing_stats_with_gameserver) {
         this->network->rmCallback(CALLBACK_ID_GAMESERVER_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_stats, this);
     }
-    if (!settings->disable_sharing_leaderboards) {
+    if (settings->share_leaderboards_over_network) {
         this->network->rmCallback(CALLBACK_ID_LEADERBOARDS_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_leaderboards, this);
     }
     this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_low_level, this);

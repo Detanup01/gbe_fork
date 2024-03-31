@@ -1,1 +1,0 @@
-Rename this file to disable_sharing_leaderboards.txt to disable sharing Leaderboards scroes with people playing the same game on the same network

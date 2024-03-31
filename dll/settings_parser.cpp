@@ -1238,7 +1238,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     bool achievement_bypass = false;
     bool is_beta_branch = false;
     bool disable_leaderboards_create_unknown = false;
-    bool disable_sharing_leaderboards = false;
+    bool share_leaderboards_over_network = false;
     bool disable_sharing_stats_with_gameserver = false;
     bool use_gc_token = false;
     bool enable_new_app_ticket = false;
@@ -1287,8 +1287,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
                 disable_account_avatar = true;
             } else if (p == "disable_leaderboards_create_unknown.txt") {
                 disable_leaderboards_create_unknown = true;
-            } else if (p == "disable_sharing_leaderboards.txt") {
-                disable_sharing_leaderboards = true;
+            } else if (p == "share_leaderboards_over_network.txt") {
+                share_leaderboards_over_network = true;
             } else if (p == "disable_sharing_stats_with_gameserver.txt") {
                 disable_sharing_stats_with_gameserver = true;
             } else if (p == "achievements_bypass.txt") {
@@ -1375,8 +1375,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     settings_client->disable_leaderboards_create_unknown = disable_leaderboards_create_unknown;
     settings_server->disable_leaderboards_create_unknown = disable_leaderboards_create_unknown;
 
-    settings_client->disable_sharing_leaderboards = disable_sharing_leaderboards;
-    settings_server->disable_sharing_leaderboards = disable_sharing_leaderboards;
+    settings_client->share_leaderboards_over_network = share_leaderboards_over_network;
+    settings_server->share_leaderboards_over_network = share_leaderboards_over_network;
 
     settings_client->disable_sharing_stats_with_gameserver = disable_sharing_stats_with_gameserver;
     settings_server->disable_sharing_stats_with_gameserver = disable_sharing_stats_with_gameserver;

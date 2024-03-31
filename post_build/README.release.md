@@ -544,7 +544,7 @@ Check the example file.
 
 ## Sharing leaderboards scores over LAN:
 
-By default the emu will mutually share leaderboards scores with people playing the same game on the same network, you can disable this option by adding the config file `disable_sharing_leaderboards.txt` inside your `steam_settings` folder.  
+You can allow the emu to mutually share leaderboards scores with people playing the same game on the same network, by adding the config file `share_leaderboards_over_network.txt` inside your `steam_settings` folder.  
 
 This works best with real LAN, latency from VPN clients might break it.  
 
