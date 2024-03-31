@@ -1240,6 +1240,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     bool disable_leaderboards_create_unknown = false;
     bool share_leaderboards_over_network = false;
     bool disable_sharing_stats_with_gameserver = false;
+    bool immediate_gameserver_stats = false;
     bool use_gc_token = false;
     bool enable_new_app_ticket = false;
     int build_id = 10;
@@ -1291,6 +1292,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
                 share_leaderboards_over_network = true;
             } else if (p == "disable_sharing_stats_with_gameserver.txt") {
                 disable_sharing_stats_with_gameserver = true;
+            } else if (p == "immediate_gameserver_stats.txt") {
+                immediate_gameserver_stats = true;
             } else if (p == "achievements_bypass.txt") {
                 achievement_bypass = true;
             } else if (p == "is_beta_branch.txt") {
@@ -1380,6 +1383,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
 
     settings_client->disable_sharing_stats_with_gameserver = disable_sharing_stats_with_gameserver;
     settings_server->disable_sharing_stats_with_gameserver = disable_sharing_stats_with_gameserver;
+    settings_client->immediate_gameserver_stats = immediate_gameserver_stats;
+    settings_server->immediate_gameserver_stats = immediate_gameserver_stats;
 
     settings_client->enable_new_app_ticket = enable_new_app_ticket;
     settings_server->enable_new_app_ticket = enable_new_app_ticket;

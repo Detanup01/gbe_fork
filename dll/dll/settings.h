@@ -252,6 +252,8 @@ public:
 
     // don't share stats and achievements with the game server
     bool disable_sharing_stats_with_gameserver = false;
+    // send user stats/achievements as soon as possible instead of caching them
+    bool immediate_gameserver_stats = false;
 
     //overlay
     bool disable_overlay = false;

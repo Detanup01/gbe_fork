@@ -218,6 +218,9 @@ bool Steam_GameServerStats::SetUserStat( CSteamID steamIDUser, const char *pchNa
 
     stat->dirty = true;
     stat->stat.set_value_int(nData);
+
+    if (settings->immediate_gameserver_stats) collect_and_send_updated_user_stats();
+
     return true;
 }
 
@@ -236,6 +239,9 @@ bool Steam_GameServerStats::SetUserStat( CSteamID steamIDUser, const char *pchNa
 
     stat->dirty = true;
     stat->stat.set_value_float(fData); // we set the float field in case it's float or avg
+
+    if (settings->immediate_gameserver_stats) collect_and_send_updated_user_stats();
+    
     return true;
 }
 
@@ -266,6 +272,8 @@ bool Steam_GameServerStats::UpdateUserAvgRateStat( CSteamID steamIDUser, const c
     avg_info->set_session_length(dSessionLength);
     stat->stat.set_allocated_value_avg(avg_info);
 
+    if (settings->immediate_gameserver_stats) collect_and_send_updated_user_stats();
+
     return true;
 }
 
@@ -284,6 +292,9 @@ bool Steam_GameServerStats::SetUserAchievement( CSteamID steamIDUser, const char
     
     ach->dirty = true;
     ach->ach.set_achieved(true);
+
+    if (settings->immediate_gameserver_stats) collect_and_send_updated_user_stats();
+    
     return true;
 }
 
@@ -301,6 +312,9 @@ bool Steam_GameServerStats::ClearUserAchievement( CSteamID steamIDUser, const ch
     
     ach->dirty = true;
     ach->ach.set_achieved(false);
+
+    if (settings->immediate_gameserver_stats) collect_and_send_updated_user_stats();
+    
     return true;
 }
 
@@ -314,7 +328,7 @@ bool Steam_GameServerStats::ClearUserAchievement( CSteamID steamIDUser, const ch
 STEAM_CALL_RESULT( GSStatsStored_t )
 SteamAPICall_t Steam_GameServerStats::StoreUserStats( CSteamID steamIDUser )
 {
-    // it's not necessary to send all data here
+    // it's not necessary to send all data here, we already do that in run_callback() and on each API function call (immediate mode)
     PRINT_DEBUG("Steam_GameServerStats::StoreUserStats\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (settings->disable_sharing_stats_with_gameserver) {
