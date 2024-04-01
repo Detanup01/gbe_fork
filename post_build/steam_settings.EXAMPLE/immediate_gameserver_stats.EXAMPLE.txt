@@ -1,1 +1,1 @@
-Rename this file to immediate_gameserver_stats.txt to make the gameserver send user stats/achievements as soon as possible instead of caching them.
+Rename this file to: immediate_gameserver_stats.txt to synchronize user stats/achievements with game servers as soon as possible instead of caching them.

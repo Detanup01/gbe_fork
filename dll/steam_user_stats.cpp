@@ -337,7 +337,7 @@ Steam_User_Stats::InternalSetResult<int32> Steam_User_Stats::set_stat_internal( 
     Steam_User_Stats::InternalSetResult<int32> result{};
 
     if (!pchName) return result;
-    std::string stat_name = common_helpers::ascii_to_lowercase(pchName);
+    std::string stat_name(common_helpers::ascii_to_lowercase(pchName));
 
     const auto &stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
@@ -381,7 +381,7 @@ Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo
     Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo::Stat_Type, float>> result{};
 
     if (!pchName) return result;
-    std::string stat_name = common_helpers::ascii_to_lowercase(pchName);
+    std::string stat_name(common_helpers::ascii_to_lowercase(pchName));
 
     const auto &stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
@@ -426,7 +426,7 @@ Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo
     Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo::Stat_Type, float>> result{};
 
     if (!pchName) return result;
-    std::string stat_name = common_helpers::ascii_to_lowercase(pchName);
+    std::string stat_name(common_helpers::ascii_to_lowercase(pchName));
 
     const auto &stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
@@ -758,6 +758,8 @@ bool Steam_User_Stats::SetStat( const char *pchName, int32 nData )
         auto &new_stat = (*pending_server_updates.mutable_user_stats())[ret.internal_name];
         new_stat.set_stat_type(GameServerStats_Messages::StatInfo::STAT_TYPE_INT);
         new_stat.set_value_int(ret.current_val);
+
+        if (settings->immediate_gameserver_stats) send_updated_stats();
     }
 
     return ret.success;
@@ -773,6 +775,8 @@ bool Steam_User_Stats::SetStat( const char *pchName, float fData )
         auto &new_stat = (*pending_server_updates.mutable_user_stats())[ret.internal_name];
         new_stat.set_stat_type(ret.current_val.first);
         new_stat.set_value_float(ret.current_val.second);
+
+        if (settings->immediate_gameserver_stats) send_updated_stats();
     }
     
     return ret.success;
@@ -788,6 +792,8 @@ bool Steam_User_Stats::UpdateAvgRateStat( const char *pchName, float flCountThis
         auto &new_stat = (*pending_server_updates.mutable_user_stats())[ret.internal_name];
         new_stat.set_stat_type(ret.current_val.first);
         new_stat.set_value_float(ret.current_val.second);
+
+        if (settings->immediate_gameserver_stats) send_updated_stats();
     }
     
     return ret.success;
@@ -833,6 +839,8 @@ bool Steam_User_Stats::SetAchievement( const char *pchName )
     if (ret.success && ret.notify_server) {
         auto &new_ach = (*pending_server_updates.mutable_user_achievements())[ret.internal_name];
         new_ach.set_achieved(ret.current_val);
+
+        if (settings->immediate_gameserver_stats) send_updated_stats();
     }
     
     return ret.success;
@@ -847,6 +855,8 @@ bool Steam_User_Stats::ClearAchievement( const char *pchName )
     if (ret.success && ret.notify_server) {
         auto &new_ach = (*pending_server_updates.mutable_user_achievements())[ret.internal_name];
         new_ach.set_achieved(ret.current_val);
+
+        if (settings->immediate_gameserver_stats) send_updated_stats();
     }
     
     return ret.success;
@@ -894,6 +904,7 @@ bool Steam_User_Stats::GetAchievementAndUnlockTime( const char *pchName, bool *p
 // The stats should be re-iterated to keep in sync.
 bool Steam_User_Stats::StoreStats()
 {
+    // no need to exchange data with gameserver, we already do that in run_callback() and on each stat/ach update (immediate mode)
     PRINT_DEBUG("Steam_User_Stats::StoreStats\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 

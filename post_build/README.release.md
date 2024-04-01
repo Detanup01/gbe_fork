@@ -556,9 +556,8 @@ Check the example file in the `steam_settings` folder
 
 By default the emu will mutually share stats with game servers, you can disable this behavior by adding the config file `disable_sharing_stats_with_gameserver.txt` inside your `steam_settings` folder, this also disables the interface `ISteamGameServerStats`.  
 
-Game servers will not immediately send user stats/achievements whey they're changed,  
-they'll wait for the next call to `Steam_RunCallbacks()`.  
-You can make the server eager to send its updated data by creating the config file `immediate_gameserver_stats.txt` inside your `steam_settings` folder.  
+Game servers and players will not immediately synchronize stats/achievements whey they're changed, they'll wait for the next call to `Steam_RunCallbacks()`.  
+You can change this behavior and make them eager to send updated data by creating the config file `immediate_gameserver_stats.txt` inside your `steam_settings` folder.  
 
 Check the example files in the `steam_settings` folder
 
