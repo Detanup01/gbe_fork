@@ -1716,7 +1716,7 @@ void Steam_Overlay::UnSetupOverlay()
 
 bool Steam_Overlay::Ready() const
 {
-    return is_ready && late_init_imgui && late_init_ach_icons;
+    return !settings->disable_overlay && is_ready && late_init_imgui && late_init_ach_icons;
 }
 
 bool Steam_Overlay::NeedPresent() const
