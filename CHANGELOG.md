@@ -8,7 +8,8 @@
   this will only work when people connected on the same network are playing the same game, once they disconnect their leaderboard entry will be lost (no data persistence for other players), also doesn't work well with VPN clients.  
   this behavior could be enabled via `share_leaderboards_over_network.txt`
 * implemented the missing interface `ISteamGameServerStats`, allowing game servers to exchange user stats & achievements with players  
-  could be disabled via `disable_sharing_stats_with_gameserver.txt`
+  could be disabled via `disable_sharing_stats_with_gameserver.txt`,  
+  you can also create `immediate_gameserver_stats.txt` to sync data immediately but **not recommended**  
 * for windows: updated stub drm patterns and added a workaround for older variants,  
   this increases the compatibility, but makes it easier to be detected
 * new stub/mock dll `GameOverlayRenderer` for the experiemntal steamclient setup,  
@@ -22,6 +23,7 @@
   - new option `-de`: generate config files inside `steam_settings` folder to disable some extra features of the emu  
     note that this option deprecates the option `-nd`
   - new option `-cve`: generate config files inside `steam_settings` folder to enable some convenient extra features of the emu  
+* properly implement `Steam_User_Stats::ResetAllStats()`
 * added missing example file `disable_lobby_creation.txt` in `steam_settings` folder + updated release `README`
 * set the minimum game server latency/ping to 2ms
 * added new function `rmCallbacks()` for the networking, to be able to cleanup callbacks on object destruction
