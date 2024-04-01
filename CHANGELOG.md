@@ -31,6 +31,7 @@
 * missing `delete` for ugc_bridge + reset pointers on client objects destruction
 * allow overlay invitations to obscure game input to be able to accept/reject the request
 * fixed a problem in the overlay where players connected on the same network might be missed during startup, resulting in an empty friend list
+* Added Steamwork SDK version 159
 
 ---
 

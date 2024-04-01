@@ -39,6 +39,13 @@
 	#endif // STEAM_API_EXPORTS
 #endif
 
+
+#if defined( __cplusplus ) && ( __cplusplus >= 201103L )
+	#define S_OVERRIDE override
+#else
+	#define S_OVERRIDE
+#endif
+
 #ifdef STEAM_API_EXPORTS
 #ifdef STEAM_API_FUNCTIONS_IMPL
 #ifdef STEAMCLIENT_DLL
@@ -174,9 +181,9 @@ public:
 
 protected:
 	friend class CCallbackMgr;
-	virtual void Run( void *pvParam ) = 0;
-	virtual void Run( void *pvParam, bool /*bIOFailure*/, SteamAPICall_t /*hSteamAPICall*/ ) { Run( pvParam ); }
-	virtual int GetCallbackSizeBytes() { return sizeof_P; }
+	virtual void Run( void *pvParam ) S_OVERRIDE = 0;
+	virtual void Run( void *pvParam, bool /*bIOFailure*/, SteamAPICall_t /*hSteamAPICall*/ ) S_OVERRIDE { Run( pvParam ); }
+	virtual int GetCallbackSizeBytes() S_OVERRIDE { return sizeof_P; }
 };
 
 
@@ -199,9 +206,9 @@ public:
 
 	void SetGameserverFlag() { m_nCallbackFlags |= k_ECallbackFlagsGameServer; }
 private:
-	virtual void Run( void *pvParam );
-	virtual void Run( void *pvParam, bool bIOFailure, SteamAPICall_t hSteamAPICall );
-	virtual int GetCallbackSizeBytes() { return sizeof( P ); }
+	virtual void Run( void *pvParam ) S_OVERRIDE;
+	virtual void Run( void *pvParam, bool bIOFailure, SteamAPICall_t hSteamAPICall ) S_OVERRIDE;
+	virtual int GetCallbackSizeBytes() S_OVERRIDE { return sizeof( P ); }
 
 	SteamAPICall_t m_hAPICall;
 	T *m_pObj;
@@ -229,7 +236,7 @@ public:
 	void Unregister();
 
 protected:
-	virtual void Run( void *pvParam );
+	virtual void Run( void *pvParam ) S_OVERRIDE;
 	
 	T *m_pObj;
 	func_t m_Func;

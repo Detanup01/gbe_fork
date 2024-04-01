@@ -1,12 +1,24 @@
 ================================================================
 
-Copyright © 1996-2022, Valve Corporation, All rights reserved.
+Copyright ¬© 1996-2022, Valve Corporation, All rights reserved.
 
 ================================================================
 
 
 Welcome to the Steamworks SDK.  For documentation please see our partner 
 website at: http://partner.steamgames.com
+
+----------------------------------------------------------------
+v1.59 9th February 2024
+----------------------------------------------------------------
+General
+* Added new initialization method, SteamAPI_InitFlat
+
+ISteamUtils
+* Added DismissGamepadTextInput
+
+ISteamAppList
+* This interface has been removed from the SDK
 
 ----------------------------------------------------------------
 v1.58a 26th October 2023
@@ -25,7 +37,7 @@ ISteamUGC
 
 Misc.
 * Added SteamAPI_InitEx and SteamGameServer_InitEx, which will return k_ESteamAPIInitResult_OK upon success or an error code specified in in ESteamAPIInitResult. An optional, non-localized error message can also be returned.
-* SteamAPI_Init() will now return false if the installed Steam client needs to be updated to support the gameís version of the SDK
+* SteamAPI_Init() will now return false if the installed Steam client needs to be updated to support the game‚Äôs version of the SDK
 * Improved handling of corrupted tickets via updated sdkencryptedappticket.lib
 
 ----------------------------------------------------------------
@@ -57,10 +69,10 @@ v1.54 16th June 2022
 
 ISteamFriends
 * Added various functions to retrieve equipped Steam Community profile items and their properties
-** RequestEquippedProfileItems ñ requests information on what Steam Community profile items a user has equipped.  Will send callback EquippedProfileItems_t.
-** BHasEquippedProfileItem ñ after calling RequestEquippedProfileItems, returns true/false depending on whether a user has a ECommunityProfileItemType equipped or not
-** GetProfileItemPropertyString ñ returns a string property given a ECommunityProfileItemType and ECommunityProfileItemProperty
-** GetProfileItemPropertyUint ñ returns an unsigned integer property given a ECommunityProfileItemType and ECommunityProfileItemProperty
+** RequestEquippedProfileItems ‚Äì requests information on what Steam Community profile items a user has equipped.  Will send callback EquippedProfileItems_t.
+** BHasEquippedProfileItem ‚Äì after calling RequestEquippedProfileItems, returns true/false depending on whether a user has a ECommunityProfileItemType equipped or not
+** GetProfileItemPropertyString ‚Äì returns a string property given a ECommunityProfileItemType and ECommunityProfileItemProperty
+** GetProfileItemPropertyUint ‚Äì returns an unsigned integer property given a ECommunityProfileItemType and ECommunityProfileItemProperty
 * Added callback EquippedProfileItemsChanged_t for when a user's equipped Steam Community profile items have changed.  This will be sent for the current user and for their friends.
 
 Spacewar example:
@@ -187,7 +199,7 @@ v1.50 29th August 2020
 * Added ISteamNetworkingMessages, a new non-connection-oriented API, similar to UDP.  This interface is intended to make it easy to port existing UDP code while taking advantage of the features provided by ISteamNetworkingSockets, especially Steam Datagram Relay (SDR).
 * Added poll groups to ISteamNetworkingSockets.  Poll groups are a way to receive messages from many different connections at a time.
 * ISteamNetworkingSockets::ReceiveMessagesOnListenSocket has been removed.  (Use poll groups instead.)
-* Added symmetric connect mode to ISteamNetworkingSockets.  This can be used to solve the coordination problem of establishing a single connection between two peers, when both peers may initiating the connection at the same time and neither peer is the ìserverî or ìclientî.
+* Added symmetric connect mode to ISteamNetworkingSockets.  This can be used to solve the coordination problem of establishing a single connection between two peers, when both peers may initiating the connection at the same time and neither peer is the ‚Äúserver‚Äù or ‚Äúclient‚Äù.
 * ISteamNetworking is deprecated and may be removed in a future version of the SDK.  Please use ISteamNetworkingSockets or ISteamNetworkingMessages instead.
 
 
@@ -195,8 +207,8 @@ v1.50 29th August 2020
 v1.49 12th June 2020
 ----------------------------------------------------------------
 * Added ISteamApps::BIsTimedTrial() which allows a game to check if user only has limited playtime
-* Added ISteamFriends::RegisterProtocolInOverlayBrowser() which will enable dispatching callbacks when the overlay web browser navigates to a registered custom protocol, such as ìmygame://<callback data>î
-* Added ISteamuserStats::GetAchievementProgressLimits() which lets the game query at run-time the progress-based achievementís bounds as set by the developers in the Steamworks application settings
+* Added ISteamFriends::RegisterProtocolInOverlayBrowser() which will enable dispatching callbacks when the overlay web browser navigates to a registered custom protocol, such as ‚Äúmygame://<callback data>‚Äù
+* Added ISteamuserStats::GetAchievementProgressLimits() which lets the game query at run-time the progress-based achievement‚Äôs bounds as set by the developers in the Steamworks application settings
 * Added tool to demonstrate processing the steam.signatures file that comes in the steam client package.
 
 
@@ -280,30 +292,30 @@ v1.43 20th February 2019
 ----------------------------------------------------------------
 
 ISteamParties 
-* This API can be used to selectively advertise your multiplayer game session in a Steam chat room group. Tell Steam the number of player spots that are available for your party, and a join-game string, and it will show a beacon in the selected group and allow that many users to ìfollowî the beacon to your party. Adjust the number of open slots if other players join through alternate matchmaking methods.  
+* This API can be used to selectively advertise your multiplayer game session in a Steam chat room group. Tell Steam the number of player spots that are available for your party, and a join-game string, and it will show a beacon in the selected group and allow that many users to ‚Äúfollow‚Äù the beacon to your party. Adjust the number of open slots if other players join through alternate matchmaking methods.  
 
 ISteamController
 * This interface will be deprecated and replaced with ISteamInput. For ease in upgrading the SDK ISteamController currently has feature parity with ISteamInput, but future features may not be ported back. Please use ISteamInput for new projects.
-* Added GetActionOriginFromXboxOrigin, GetStringForXboxOrigin and GetGlyphForXboxOrigin to allow Xinput games to easily query glyphs for devices coming in through Steam Inputís Xinput emulation, ex: ìA buttonî->îCross buttonî on a PS4 controller. This is a simple translation of the button and does not take user remapping into account ñ the full action based API is required for that.
+* Added GetActionOriginFromXboxOrigin, GetStringForXboxOrigin and GetGlyphForXboxOrigin to allow Xinput games to easily query glyphs for devices coming in through Steam Input‚Äôs Xinput emulation, ex: ‚ÄúA button‚Äù->‚ÄùCross button‚Äù on a PS4 controller. This is a simple translation of the button and does not take user remapping into account ‚Äì the full action based API is required for that.
 * Added TranslateActionOrigin which allows Steam Input API games to which are using look up tables to translate action origins from an recognized device released after the game was last built into origins they recognize.
 * Added count and max_possible fields to current enums to make using lookup tables easier
 
 ISteamInput
-* This new interface replaces ISteamController to better reflect the fact this API supports not just the Steam Controller but every controller connected to Steam ñ including Xbox Controllers, Playstation Controllers and Nintendo Switch controllers. ISteamController currently has feature parity with the new features added in ISteamInput but new feature may not be ported back. Please use this interface instead of ISteamController for any new projects.
+* This new interface replaces ISteamController to better reflect the fact this API supports not just the Steam Controller but every controller connected to Steam ‚Äì including Xbox Controllers, Playstation Controllers and Nintendo Switch controllers. ISteamController currently has feature parity with the new features added in ISteamInput but new feature may not be ported back. Please use this interface instead of ISteamController for any new projects.
 * Migrating to ISteamInput from ISteamController should mostly be a search-replace operation but any action origin look up tables will need to be adjusted as some of the enum orders have changed.
-* Added GetActionOriginFromXboxOrigin, GetStringForXboxOrigin and GetGlyphForXboxOrigin to allow Xinput games to easily query glyphs for devices coming in through Steam Inputís Xinput emulation, ex: ìA buttonî->îCross buttonî on a PS4 controller. This is a simple translation of the button and does not take user remapping into account ñ the full action based API is required for that.
+* Added GetActionOriginFromXboxOrigin, GetStringForXboxOrigin and GetGlyphForXboxOrigin to allow Xinput games to easily query glyphs for devices coming in through Steam Input‚Äôs Xinput emulation, ex: ‚ÄúA button‚Äù->‚ÄùCross button‚Äù on a PS4 controller. This is a simple translation of the button and does not take user remapping into account ‚Äì the full action based API is required for that.
 * Added TranslateActionOrigin which allows Steam Input API games to which are using look up tables to translate action origins from an recognized device released after the game was last built into origins they recognize.
 * Added count and max_possible fields to current enums to make using lookup tables easier
 
 ISteamFriends
-* ActivateGameOverlayToWebPage ñ Added a new parameter to control how the created web browser window is displayed within the Steam Overlay. The default mode will create a new browser tab next to all other overlay windows that the user already has open. The new modal mode will create a new browser window and activate the Steam Overlay, showing only that window. When the browser window is closed, the Steam Overlay is automatically closed as well.
+* ActivateGameOverlayToWebPage ‚Äì Added a new parameter to control how the created web browser window is displayed within the Steam Overlay. The default mode will create a new browser tab next to all other overlay windows that the user already has open. The new modal mode will create a new browser window and activate the Steam Overlay, showing only that window. When the browser window is closed, the Steam Overlay is automatically closed as well.
 
 ISteamInventory
-* GetItemsWithPrices and GetItemPrice - Added the ability to get the ìbase priceî for a set of items, which you can use to markup in your own UI that items are ìon saleî 
+* GetItemsWithPrices and GetItemPrice - Added the ability to get the ‚Äúbase price‚Äù for a set of items, which you can use to markup in your own UI that items are ‚Äúon sale‚Äù 
 
 ISteamUGC
 * SetAllowLegacyUpload - Call to force the use of Steam Cloud for back-end storage (instead of Steam Pipe), which is faster and more efficient for uploading and downloading small files (less than 100MB).
-* CreateQueryAllUGCRequest - Added ability to page through query results using a ìcursorî instead of a page number.  This is more efficient and supports ìdeep pagingî beyond page 1000.  The old version of CreateQueryAllUGCRequest() that takes a page parameter is deprecated and cannot query beyond page 1000.  Note that you will need to keep track of the ìpreviousî cursor in order to go to a previous page.
+* CreateQueryAllUGCRequest - Added ability to page through query results using a ‚Äúcursor‚Äù instead of a page number.  This is more efficient and supports ‚Äúdeep paging‚Äù beyond page 1000.  The old version of CreateQueryAllUGCRequest() that takes a page parameter is deprecated and cannot query beyond page 1000.  Note that you will need to keep track of the ‚Äúprevious‚Äù cursor in order to go to a previous page.
 
 ISteamApps
 * GetLaunchCommandLine - Get command line if game was launched via Steam URL, e.g. steam://run/<appid>//<command line>/. If you get NewUrlLaunchParameters_t callback while running, call again to get new command line
@@ -326,11 +338,11 @@ ISteamInventory
 * Deprecated TradeItems
 
 ISteamController
-* Added Action Set Layers ñ Action Set Layers are optional sets of action bindings which can be overlaid upon an existing set of controls.  In contrast to Action Sets, layers draw their actions from the Action Set they exist within and do not wholesale replace what is already active when applied, but apply small modifications.  These can consist of setting changes as well as adding or removing bindings from the base action set.  More than one layer can be applied at a time and will be applied consecutively, so an example might be the Sniper Class layer which includes tweaks or bindings specific to snipers in addition to the Scoped-In layer which alters look sensitivity.
-* Added ActivateActionSetLayer ñ Activates the specified Layer.
-* Added DeactivateActionSetLayer ñ Deactivates the specified Layer.
-* Added DeactivateAllActionSetLayers ñ Deactivates all layers, resetting the mapping to the action base Action Set.
-* Added GetActiveActionSetLayers ñ Returns all currently active Action Set Layers.
+* Added Action Set Layers ‚Äì Action Set Layers are optional sets of action bindings which can be overlaid upon an existing set of controls.  In contrast to Action Sets, layers draw their actions from the Action Set they exist within and do not wholesale replace what is already active when applied, but apply small modifications.  These can consist of setting changes as well as adding or removing bindings from the base action set.  More than one layer can be applied at a time and will be applied consecutively, so an example might be the Sniper Class layer which includes tweaks or bindings specific to snipers in addition to the Scoped-In layer which alters look sensitivity.
+* Added ActivateActionSetLayer ‚Äì Activates the specified Layer.
+* Added DeactivateActionSetLayer ‚Äì Deactivates the specified Layer.
+* Added DeactivateAllActionSetLayers ‚Äì Deactivates all layers, resetting the mapping to the action base Action Set.
+* Added GetActiveActionSetLayers ‚Äì Returns all currently active Action Set Layers.
 * Added GetInputTypeForHandle - Returns the input type for a particular handle, such as Steam Controller, PS4 Controller, Xbox One or 360.
 
 ISteamHTMLSurface
@@ -645,7 +657,7 @@ User:
 * Added ISteamUser::GetBadgeLevel and ISteamUser::GetPlayerSteamLevel functions
 
 Friends:
-* Games can now initiate Steam Friend requests, removals, request -accepts and request-ignores via ISteamFriendsí ActivateGameOverlayToUser API. This prompts the user for confirmation before action is taken.
+* Games can now initiate Steam Friend requests, removals, request -accepts and request-ignores via ISteamFriends‚Äô ActivateGameOverlayToUser API. This prompts the user for confirmation before action is taken.
 
 Mac:
 * Updated the OS X Content Prep tool and game wrapper for improved compatibility with OS X 10.8 (Mountain Lion).
@@ -794,7 +806,7 @@ User
 
 Friends
 * Added ISteamFriends::RequestFriendRichPresence, which allows requesting rich presence keys for any Steam user playing the same game as you
-* Added a set of functions to ISteamFriends which allow games to integrate with Steam Chat. Games can both join group chats, as well as get friends chats and show them in-line in the game. This API isnít currently used in a game, so there may be some rough edges around the user experience to work out, and some experimentation is required.
+* Added a set of functions to ISteamFriends which allow games to integrate with Steam Chat. Games can both join group chats, as well as get friends chats and show them in-line in the game. This API isn‚Äôt currently used in a game, so there may be some rough edges around the user experience to work out, and some experimentation is required.
 
 Game Servers
 * Removed the ISteamMasterServerUpdater interface.  It has been merged into the ISteamGameServer interface, which is used to communicate all game server state changes.

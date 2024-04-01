@@ -227,6 +227,8 @@ static void *create_client_interface(const char *ver)
             steam_client = (ISteamClient018 *)get_steam_client();
         } else if (strcmp(ver, "SteamClient019") == 0) {
             steam_client = (ISteamClient019 *)get_steam_client();
+        } else if (strcmp(ver, "SteamClient020") == 0) {
+            steam_client = (ISteamClient020 *)get_steam_client();
         } else if (strcmp(ver, STEAMCLIENT_INTERFACE_VERSION) == 0) {
             steam_client = (ISteamClient *)get_steam_client();
             steamclient_has_ipv6_functions_flag = true;
@@ -279,6 +281,21 @@ STEAMAPI_API void * S_CALLTYPE SteamInternal_ContextInit( void *pContextInitData
 STEAMAPI_API ESteamAPIInitResult S_CALLTYPE SteamInternal_SteamAPI_Init( const char *pszInternalCheckInterfaceVersions, SteamErrMsg *pOutErrMsg )
 {
     PRINT_DEBUG("SteamInternal_SteamAPI_Init: %s\n", pszInternalCheckInterfaceVersions);
+    if (SteamAPI_Init()) {
+        return ESteamAPIInitResult::k_ESteamAPIInitResult_OK;
+    }
+
+    if (pOutErrMsg) {
+        memcpy(*pOutErrMsg, "SteamInitEx failed", 18);
+        (*pOutErrMsg)[18] = 0;
+        (*pOutErrMsg)[19] = 0;
+    }
+    return ESteamAPIInitResult::k_ESteamAPIInitResult_FailedGeneric;
+}
+
+STEAMAPI_API ESteamAPIInitResult S_CALLTYPE SteamAPI_InitFlat( SteamErrMsg *pOutErrMsg )
+{
+    PRINT_DEBUG("SteamAPI_InitFlat\n");
     if (SteamAPI_Init()) {
         return ESteamAPIInitResult::k_ESteamAPIInitResult_OK;
     }

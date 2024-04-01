@@ -60,6 +60,7 @@ S_API void S_CALLTYPE SteamAPI_UnregisterCallResult( class CCallbackBase *pCallb
 #pragma warning( disable: 4355 )	// 'this' : used in base member initializer list
 #endif
 
+#define _STEAM_CALLBACK_OFFSETOF( type, member ) ( (size_t)( (char *)&( (type *)0 )->member ) )
 #define _STEAM_CALLBACK_AUTO_HOOK( thisclass, func, param )
 #define _STEAM_CALLBACK_HELPER( _1, _2, SELECTED, ... )		_STEAM_CALLBACK_##SELECTED
 #define _STEAM_CALLBACK_SELECT( X, Y )						_STEAM_CALLBACK_HELPER X Y
@@ -68,8 +69,8 @@ S_API void S_CALLTYPE SteamAPI_UnregisterCallResult( class CCallbackBase *pCallb
 		CCallbackInternal_ ## func () { extra_code SteamAPI_RegisterCallback( this, param::k_iCallback ); } \
 		CCallbackInternal_ ## func ( const CCallbackInternal_ ## func & ) { extra_code SteamAPI_RegisterCallback( this, param::k_iCallback ); } \
 		CCallbackInternal_ ## func & operator=( const CCallbackInternal_ ## func & ) { return *this; } \
-		private: virtual void Run( void *pvParam ) { _STEAM_CALLBACK_AUTO_HOOK( thisclass, func, param ) \
-			thisclass *pOuter = reinterpret_cast<thisclass*>( reinterpret_cast<char*>(this) - offsetof( thisclass, m_steamcallback_ ## func ) ); \
+		private: virtual void Run( void *pvParam ) S_OVERRIDE { _STEAM_CALLBACK_AUTO_HOOK( thisclass, func, param ) \
+			thisclass *pOuter = reinterpret_cast<thisclass*>( reinterpret_cast<char*>(this) - _STEAM_CALLBACK_OFFSETOF( thisclass, m_steamcallback_ ## func ) ); \
 			pOuter->func( reinterpret_cast<param*>( pvParam ) ); \
 		} \
 	} m_steamcallback_ ## func ; void func( param *pParam )

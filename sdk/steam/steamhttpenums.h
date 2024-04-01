@@ -97,4 +97,10 @@ enum EHTTPStatusCode
 	k_EHTTPStatusCode5xxUnknown =				599,
 };
 
+
+inline bool BIsHTTPStatusSuccess( EHTTPStatusCode eStatus )
+{
+	return eStatus >= 200 && eStatus <= 299;
+}
+
 #endif // STEAMHTTPENUMS_H

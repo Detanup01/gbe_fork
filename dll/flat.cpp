@@ -1285,6 +1285,17 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUtils_DismissFloatingGamepadTextInput( IS
     }
 
     return (ptr)->DismissFloatingGamepadTextInput();
+
+    STEAMAPI_API steam_bool SteamAPI_ISteamUtils_DismissGamepadTextInput( ISteamUtils* self )
+{
+    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    auto ptr = get_steam_client()->steam_gameserver_utils;
+    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+        ptr = get_steam_client()->steam_utils;
+    }
+
+    return (ptr)->DismissGamepadTextInput();
 }
 
 STEAMAPI_API ISteamMatchmaking *SteamAPI_SteamMatchmaking_v009()

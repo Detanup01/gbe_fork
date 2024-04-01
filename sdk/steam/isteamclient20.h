@@ -1,30 +1,11 @@
-﻿//====== Copyright Valve Corporation, All rights reserved. ====================
-//
-// Internal low-level access to Steamworks interfaces.
-//
-// Most users of the Steamworks SDK do not need to include this file.
-// You should only include this if you are doing something special.
-//=============================================================================
 
-#ifndef ISTEAMCLIENT_H
-#define ISTEAMCLIENT_H
+#ifndef ISTEAMCLIENT020_H
+#define ISTEAMCLIENT020_H
 #ifdef STEAM_WIN32
 #pragma once
 #endif
 
-#include "steam_api_common.h"
-
-//-----------------------------------------------------------------------------
-// Purpose: Interface to creating a new steam instance, or to
-//			connect to an existing steam instance, whether it's in a
-//			different process or is local.
-//
-//			For most scenarios this is all handled automatically via SteamAPI_Init().
-//			You'll only need these APIs if you have a more complex versioning scheme,
-//			or if you want to implement a multiplexed gameserver where a single process
-//			is handling multiple games at once with independent gameserver SteamIDs.
-//-----------------------------------------------------------------------------
-class ISteamClient
+class ISteamClient020
 {
 public:
 	// Creates a communication pipe to the Steam client.
@@ -115,12 +96,18 @@ public:
 	// Expose HTTP interface
 	virtual ISteamHTTP *GetISteamHTTP( HSteamUser hSteamuser, HSteamPipe hSteamPipe, const char *pchVersion ) = 0;
 
+	// Deprecated - the ISteamUnifiedMessages interface is no longer intended for public consumption.
+	STEAM_PRIVATE_API( virtual void *DEPRECATED_GetISteamUnifiedMessages( HSteamUser hSteamuser, HSteamPipe hSteamPipe, const char *pchVersion ) = 0 ; )
+
 	// Exposes the ISteamController interface - deprecated in favor of Steam Input
 	virtual ISteamController *GetISteamController( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion ) = 0;
 
 	// Exposes the ISteamUGC interface
 	virtual ISteamUGC *GetISteamUGC( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion ) = 0;
 
+	// returns app list interface, only available on specially registered apps
+	virtual ISteamAppList *GetISteamAppList( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion ) = 0;
+	
 	// Music Player
 	virtual ISteamMusic *GetISteamMusic( HSteamUser hSteamuser, HSteamPipe hSteamPipe, const char *pchVersion ) = 0;
 
@@ -154,20 +141,6 @@ public:
 	virtual ISteamRemotePlay *GetISteamRemotePlay( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion ) = 0;
 
 	STEAM_PRIVATE_API( virtual void DestroyAllInterfaces() = 0; )
-
 };
-#define STEAMCLIENT_INTERFACE_VERSION		"SteamClient021"
 
-#ifndef STEAM_API_EXPORTS
-
-// Global ISteamClient interface accessor
-inline ISteamClient *SteamClient();
-STEAM_DEFINE_INTERFACE_ACCESSOR( ISteamClient *, SteamClient, SteamInternal_CreateInterface( STEAMCLIENT_INTERFACE_VERSION ), "global", STEAMCLIENT_INTERFACE_VERSION );
-
-// The internal ISteamClient used for the gameserver interface.
-// (This is actually the same thing.  You really shouldn't need to access any of this stuff directly.)
-inline ISteamClient *SteamGameServerClient() { return SteamClient(); }
-
-#endif
-
-#endif // ISTEAMCLIENT_H
+#endif // ISTEAMCLIENT020_H

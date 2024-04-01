@@ -461,3 +461,10 @@ bool Steam_Utils::DismissFloatingGamepadTextInput()
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return true;
 }
+
+bool Steam_Utils::DismissGamepadTextInput()
+{
+    PRINT_DEBUG("Steam_Utils::%s\n", __FUNCTION__);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    return true;
+}
