@@ -330,6 +330,78 @@ void Steam_User_Stats::request_user_leaderboard_entry(const Steam_Leaderboard &b
 
 
 // change stats/achievements without sending back to server
+bool Steam_User_Stats::clear_stats_internal()
+{
+    PRINT_DEBUG("Steam_User_Stats::clear_stats_internal\n");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    bool notify_server = false;
+    
+    stats_cache_int.clear();
+    stats_cache_float.clear();
+
+    for (const auto &stat : settings->getStats()) {
+        std::string stat_name(common_helpers::ascii_to_lowercase(stat.first));
+
+        switch (stat.second.type)
+        {
+        case GameServerStats_Messages::StatInfo::STAT_TYPE_INT: {
+            auto data = stat.second.default_value_int;
+
+            bool needs_disk_write = false;
+            auto it_res = stats_cache_int.find(stat_name);
+            if (stats_cache_int.end() == it_res || it_res->second != data) {
+                needs_disk_write = true;
+                notify_server = true;
+            }
+
+            stats_cache_int[stat_name] = data;
+            
+            auto stat_trigger = achievement_stat_trigger.find(stat_name);
+            if (stat_trigger != achievement_stat_trigger.end()) {
+                for (auto &t : stat_trigger->second) {
+                    if (t.check_triggered(data)) {
+                        set_achievement_internal(t.name.c_str());
+                    }
+                }
+            }
+            
+            if (needs_disk_write) local_storage->store_data(Local_Storage::stats_storage_folder, stat_name, (char *)&data, sizeof(data));
+        }
+        break;
+
+        case GameServerStats_Messages::StatInfo::STAT_TYPE_FLOAT:
+        case GameServerStats_Messages::StatInfo::STAT_TYPE_AVGRATE: {
+            auto data = stat.second.default_value_float;
+
+            bool needs_disk_write = false;
+            auto it_res = stats_cache_float.find(stat_name);
+            if (stats_cache_float.end() == it_res || it_res->second != data) {
+                needs_disk_write = true;
+                notify_server = true;
+            }
+
+            stats_cache_float[stat_name] = data;
+            
+            auto stat_trigger = achievement_stat_trigger.find(stat_name);
+            if (stat_trigger != achievement_stat_trigger.end()) {
+                for (auto &t : stat_trigger->second) {
+                    if (t.check_triggered(data)) {
+                        set_achievement_internal(t.name.c_str());
+                    }
+                }
+            }
+            
+            if (needs_disk_write) local_storage->store_data(Local_Storage::stats_storage_folder, stat_name, (char *)&data, sizeof(data));
+        }
+        break;
+        
+        default: PRINT_DEBUG("Steam_User_Stats::clear_stats_internal unhandled type %i\n", (int)stat.second.type); break;
+        }
+    }
+
+    return notify_server;
+}
+
 Steam_User_Stats::InternalSetResult<int32> Steam_User_Stats::set_stat_internal( const char *pchName, int32 nData )
 {
     PRINT_DEBUG("Steam_User_Stats::set_stat_internal <int32> '%s' = %i\n", pchName, nData);
@@ -1160,13 +1232,51 @@ bool Steam_User_Stats::ResetAllStats( bool bAchievementsToo )
 {
     PRINT_DEBUG("Steam_User_Stats::ResetAllStats\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    //TODO
-    if (bAchievementsToo) {
-        std::for_each(user_achievements.begin(), user_achievements.end(), [](nlohmann::json& v) {
-            v["earned"] = false;
-            v["earned_time"] = 0;
-        });
+    
+    clear_stats_internal();
+    if (!settings->disable_sharing_stats_with_gameserver) {
+        for (const auto &stat : settings->getStats()) {
+            std::string stat_name(common_helpers::ascii_to_lowercase(stat.first));
+
+            auto &new_stat = (*pending_server_updates.mutable_user_stats())[stat_name];
+            new_stat.set_stat_type(stat.second.type);
+
+            switch (stat.second.type)
+            {
+            case GameServerStats_Messages::StatInfo::STAT_TYPE_INT:
+                new_stat.set_value_int(stat.second.default_value_int);
+            break;
+
+            case GameServerStats_Messages::StatInfo::STAT_TYPE_AVGRATE:
+            case GameServerStats_Messages::StatInfo::STAT_TYPE_FLOAT:
+                new_stat.set_value_float(stat.second.default_value_float);
+            break;
+            
+            default: PRINT_DEBUG("Steam_User_Stats::ResetAllStats unhandled type %i\n", (int)stat.second.type); break;
+            }
+        }
     }
+
+    if (bAchievementsToo) {
+        bool needs_disk_write = false;
+        for (auto &item : user_achievements) {
+            // assume "earned" is true in case the json obj exists, but the key is absent
+            if (item.value("earned", true) == true) needs_disk_write = true;
+
+            item["earned"] = false;
+            item["earned_time"] = 0;
+        }
+        if (needs_disk_write) save_achievements();
+
+        if (!settings->disable_sharing_stats_with_gameserver) {
+            for (const auto &item : user_achievements.items()) {
+                auto &new_ach = (*pending_server_updates.mutable_user_achievements())[item.key()];
+                new_ach.set_achieved(false);
+            }
+        }
+    }
+
+    if (!settings->disable_sharing_stats_with_gameserver && settings->immediate_gameserver_stats) send_updated_stats();
 
     return true;
 }

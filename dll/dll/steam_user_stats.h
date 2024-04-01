@@ -131,6 +131,7 @@ private:
     void request_user_leaderboard_entry(const Steam_Leaderboard &board, const CSteamID &steamid);
 
     // change stats/achievements without sending back to server
+    bool clear_stats_internal();
     InternalSetResult<int32> set_stat_internal( const char *pchName, int32 nData );
     InternalSetResult<std::pair<GameServerStats_Messages::StatInfo::Stat_Type, float>> set_stat_internal( const char *pchName, float fData );
     InternalSetResult<std::pair<GameServerStats_Messages::StatInfo::Stat_Type, float>> update_avg_rate_stat_internal( const char *pchName, float flCountThisSession, double dSessionLength );
