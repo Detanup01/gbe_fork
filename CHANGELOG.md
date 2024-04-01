@@ -4,6 +4,8 @@
   - the above command introduced the ability to run without root
   - if the script was ran without root, and `-packages_skip` wasn't specified,  
     the script will attempt to detect and use the built-in tool `sudo` if it was available
+* **[Detanup01]** Added Steamwork SDK version 159
+* **[detiam]** added schinese and tchinese translations to the overlay strings
 * share leaderboards scores with connected players, adjust players ranks locally, and sort entries as needed by the game, suggested by **[M4RCK5]**  
   this will only work when people connected on the same network are playing the same game, once they disconnect their leaderboard entry will be lost (no data persistence for other players), also doesn't work well with VPN clients.  
   this behavior could be enabled via `share_leaderboards_over_network.txt`
@@ -31,7 +33,6 @@
 * missing `delete` for ugc_bridge + reset pointers on client objects destruction
 * allow overlay invitations to obscure game input to be able to accept/reject the request
 * fixed a problem in the overlay where players connected on the same network might be missed during startup, resulting in an empty friend list
-* Added Steamwork SDK version 159
 
 ---
 
