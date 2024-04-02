@@ -434,7 +434,7 @@ ESteamIPv6ConnectivityState Steam_Utils::GetIPv6ConnectivityState( ESteamIPv6Con
 // returns true if currently running on the Steam Deck device
 bool Steam_Utils::IsSteamRunningOnSteamDeck()
 {
-    PRINT_DEBUG("Steam_Utils::%s %i\n", __FUNCTION__, (int)settings->steam_deck);
+    PRINT_DEBUG("Steam_Utils::IsSteamRunningOnSteamDeck %i\n", (int)settings->steam_deck);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return settings->steam_deck;
 }
@@ -443,7 +443,7 @@ bool Steam_Utils::IsSteamRunningOnSteamDeck()
 // The text field position is specified in pixels relative the origin of the game window and is used to position the floating keyboard in a way that doesn't cover the text field
 bool Steam_Utils::ShowFloatingGamepadTextInput( EFloatingGamepadTextInputMode eKeyboardMode, int nTextFieldXPosition, int nTextFieldYPosition, int nTextFieldWidth, int nTextFieldHeight )
 {
-    PRINT_DEBUG("Steam_Utils::%s\n", __FUNCTION__);
+    PRINT_DEBUG("Steam_Utils::ShowFloatingGamepadTextInput\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
@@ -451,20 +451,20 @@ bool Steam_Utils::ShowFloatingGamepadTextInput( EFloatingGamepadTextInputMode eK
 // In game launchers that don't have controller support you can call this to have Steam Input translate the controller input into mouse/kb to navigate the launcher
 void Steam_Utils::SetGameLauncherMode( bool bLauncherMode )
 {
-    PRINT_DEBUG("Steam_Utils::%s\n", __FUNCTION__);
+    PRINT_DEBUG("Steam_Utils::SetGameLauncherMode\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 bool Steam_Utils::DismissFloatingGamepadTextInput()
 {
-    PRINT_DEBUG("Steam_Utils::%s\n", __FUNCTION__);
+    PRINT_DEBUG("Steam_Utils::DismissFloatingGamepadTextInput\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return true;
 }
 
 bool Steam_Utils::DismissGamepadTextInput()
 {
-    PRINT_DEBUG("Steam_Utils::%s\n", __FUNCTION__);
+    PRINT_DEBUG("Steam_Utils::DismissGamepadTextInput\n");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return true;
 }

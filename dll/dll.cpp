@@ -286,9 +286,8 @@ STEAMAPI_API ESteamAPIInitResult S_CALLTYPE SteamInternal_SteamAPI_Init( const c
     }
 
     if (pOutErrMsg) {
-        memcpy(*pOutErrMsg, "SteamInitEx failed", 18);
-        (*pOutErrMsg)[18] = 0;
-        (*pOutErrMsg)[19] = 0;
+        constexpr const static char err[] = "SteamInitEx failed";
+        memcpy(*pOutErrMsg, err, sizeof(err));
     }
     return ESteamAPIInitResult::k_ESteamAPIInitResult_FailedGeneric;
 }
@@ -301,9 +300,8 @@ STEAMAPI_API ESteamAPIInitResult S_CALLTYPE SteamAPI_InitFlat( SteamErrMsg *pOut
     }
 
     if (pOutErrMsg) {
-        memcpy(*pOutErrMsg, "SteamInitEx failed", 18);
-        (*pOutErrMsg)[18] = 0;
-        (*pOutErrMsg)[19] = 0;
+        constexpr const static char err[] = "SteamAPI_InitFlat failed";
+        memcpy(*pOutErrMsg, err, sizeof(err));
     }
     return ESteamAPIInitResult::k_ESteamAPIInitResult_FailedGeneric;
 }
