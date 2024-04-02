@@ -5,34 +5,36 @@
   - if the script was ran without root, and `-packages_skip` wasn't specified,  
     the script will attempt to detect and use the built-in tool `sudo` if it was available
 * **[Detanup01]** Added Steamwork SDK version 159
-* **[detiam]** added schinese and tchinese translations to the overlay strings
-* share leaderboards scores with connected players, adjust players ranks locally, and sort entries as needed by the game, suggested by **[M4RCK5]**  
-  this will only work when people connected on the same network are playing the same game, once they disconnect their leaderboard entry will be lost (no data persistence for other players), also doesn't work well with VPN clients.  
+* **[detiam]** added schinese and tchinese translations to the overlay
+* allow sharing leaderboards scores with connected players, adjust players ranks locally, and sort entries as needed by the game, suggested by **[M4RCK5]**  
+  this will only work when people connected on the same network are playing the same game, once they disconnect their leaderboard entry will be lost (no data persistence for other players), also it doesn't work well with VPN clients.  
   this behavior could be enabled via `share_leaderboards_over_network.txt`
 * implemented the missing interface `ISteamGameServerStats`, allowing game servers to exchange user stats & achievements with players  
   could be disabled via `disable_sharing_stats_with_gameserver.txt`,  
-  you can also create `immediate_gameserver_stats.txt` to sync data immediately but **not recommended**  
+  you can also create `immediate_gameserver_stats.txt` to sync data immediately, but **not recommended**  
 * for windows: updated stub drm patterns and added a workaround for older variants,  
   this increases the compatibility, but makes it easier to be detected
-* new stub/mock dll `GameOverlayRenderer` for the experiemntal steamclient setup,  
+* for windows: new stub/mock dll `GameOverlayRenderer(64).dll` for the experiemntal cold client setup,  
   some apps verify the existence of this dll, either on disk, or inside their memory space.  
   **not recommended** to ignore it
-* separate the config file `disable_leaderboards_create_unknown.txt`, previously it was tied to `leaderboards.txt`,  
+* separated the config file `disable_leaderboards_create_unknown.txt`, previously it was tied to `leaderboards.txt`,  
   by default the emu will create any unknown leaderboards, you can disable this behavior with this file  
   **not recommended** to disable this behavior
-* for the tool `generate_emu_confog`:
+* for the tool `generate_emu_config`:
   - don't generate `disable_xxx` config files by default
   - new option `-de`: generate config files inside `steam_settings` folder to disable some extra features of the emu  
     note that this option deprecates the option `-nd`
   - new option `-cve`: generate config files inside `steam_settings` folder to enable some convenient extra features of the emu  
+  - allow specifying the username and password via the environment variables `GSE_CFG_USERNAME` and `GSE_CFG_PASSWORD`,  
+  this will override the data specified in `my_login.txt`
 * properly implement `Steam_User_Stats::ResetAllStats()`
 * added missing example file `disable_lobby_creation.txt` in `steam_settings` folder + updated release `README`
-* set the minimum game server latency/ping to 2ms
-* added new function `rmCallbacks()` for the networking, to be able to cleanup callbacks on object destruction
-* for windows build script: prevent permissive language extensions via the compiler flag `/permissive-`
-* missing `delete` for ugc_bridge + reset pointers on client objects destruction
 * allow overlay invitations to obscure game input to be able to accept/reject the request
-* fixed a problem in the overlay where players connected on the same network might be missed during startup, resulting in an empty friend list
+* fixed a problem in the overlay where players connected on the same network might be ignored during startup, resulting in an empty friend list
+* set the minimum game server latency/ping to `2ms`
+* added new function `rmCallbacks()` for the networking, to be able to cleanup callbacks on object destruction
+* missing `delete` (cleanup) for `ugc_bridge` instance + reset pointers on client objects destruction
+* for windows build script: prevent permissive language extensions via the compiler flag `/permissive-`
 
 ---
 

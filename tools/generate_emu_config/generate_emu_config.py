@@ -532,7 +532,15 @@ def help():
     print(" -de:     disable some extra features by generating the corresponding config files in steam_settings folder")
     print(" -cve:    enable some convenient extra features by generating the corresponding config files in steam_settings folder")
     print(" -reldir: generate temp files/folders, and expect input files, relative to the current working directory")
-    print("\nAll switches are optional except app id, at least 1 app id must be provided\n")
+    print("\nAll switches are optional except app id, at least 1 app id must be provided")
+    print("\nAutomate the login prompt:")
+    print(" * You can create a file called 'my_login.txt' beside the script, then add your username on the first line")
+    print("   and your password on the second line.")
+    print(" * You can set these 2 environment variables (will override 'my_login.txt'):")
+    print("   GSE_CFG_USERNAME")
+    print("   GSE_CFG_PASSWORD")
+    print("")
+
 
 def main():
     USERNAME = ""
@@ -601,6 +609,7 @@ def main():
         os.makedirs(login_tmp_folder)
     client.set_credential_location(login_tmp_folder)
 
+    # first read the 'my_login.txt' file
     my_login_file = os.path.join(get_exe_dir(RELATIVE_DIR), "my_login.txt")
     if not ANON_LOGIN and os.path.isfile(my_login_file):
         filedata = ['']
@@ -611,6 +620,15 @@ def main():
         if len(filedata) == 2:
             USERNAME = filedata[0]
             PASSWORD = filedata[1]
+    
+    # then allow the env vars to override the login details
+    env_username = os.environ.get('GSE_CFG_USERNAME', None)
+    env_password = os.environ.get('GSE_CFG_PASSWORD', None)
+    if env_username:
+        USERNAME = env_username
+    if env_password:
+        PASSWORD = env_password
+
 
     if ANON_LOGIN:
         result = client.anonymous_login()
