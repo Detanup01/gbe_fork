@@ -829,10 +829,10 @@ STEAMAPI_API ISteamUtils *SteamAPI_SteamGameServerUtils_v009()
 
 STEAMAPI_API uint32 SteamAPI_ISteamUtils_GetSecondsSinceAppActive( ISteamUtils* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -841,10 +841,10 @@ STEAMAPI_API uint32 SteamAPI_ISteamUtils_GetSecondsSinceAppActive( ISteamUtils* 
 
 STEAMAPI_API uint32 SteamAPI_ISteamUtils_GetSecondsSinceComputerActive( ISteamUtils* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -853,10 +853,10 @@ STEAMAPI_API uint32 SteamAPI_ISteamUtils_GetSecondsSinceComputerActive( ISteamUt
 
 STEAMAPI_API EUniverse SteamAPI_ISteamUtils_GetConnectedUniverse( ISteamUtils* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -865,10 +865,10 @@ STEAMAPI_API EUniverse SteamAPI_ISteamUtils_GetConnectedUniverse( ISteamUtils* s
 
 STEAMAPI_API uint32 SteamAPI_ISteamUtils_GetServerRealTime( ISteamUtils* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -877,10 +877,10 @@ STEAMAPI_API uint32 SteamAPI_ISteamUtils_GetServerRealTime( ISteamUtils* self )
 
 STEAMAPI_API const char * SteamAPI_ISteamUtils_GetIPCountry( ISteamUtils* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -889,10 +889,10 @@ STEAMAPI_API const char * SteamAPI_ISteamUtils_GetIPCountry( ISteamUtils* self )
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_GetImageSize( ISteamUtils* self, int iImage, uint32 * pnWidth, uint32 * pnHeight )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -901,10 +901,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUtils_GetImageSize( ISteamUtils* self, in
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_GetImageRGBA( ISteamUtils* self, int iImage, uint8 * pubDest, int nDestBufferSize )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -913,10 +913,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUtils_GetImageRGBA( ISteamUtils* self, in
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_GetCSERIPPort( ISteamUtils* self, uint32 * unIP, uint16 * usPort )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -925,10 +925,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUtils_GetCSERIPPort( ISteamUtils* self, u
 
 STEAMAPI_API uint8 SteamAPI_ISteamUtils_GetCurrentBatteryPower( ISteamUtils* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -937,10 +937,10 @@ STEAMAPI_API uint8 SteamAPI_ISteamUtils_GetCurrentBatteryPower( ISteamUtils* sel
 
 STEAMAPI_API uint32 SteamAPI_ISteamUtils_GetAppID( ISteamUtils* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -949,10 +949,10 @@ STEAMAPI_API uint32 SteamAPI_ISteamUtils_GetAppID( ISteamUtils* self )
 
 STEAMAPI_API void SteamAPI_ISteamUtils_SetOverlayNotificationPosition( ISteamUtils* self, ENotificationPosition eNotificationPosition )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -961,10 +961,10 @@ STEAMAPI_API void SteamAPI_ISteamUtils_SetOverlayNotificationPosition( ISteamUti
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_IsAPICallCompleted( ISteamUtils* self, SteamAPICall_t hSteamAPICall, bool * pbFailed )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -973,10 +973,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUtils_IsAPICallCompleted( ISteamUtils* se
 
 STEAMAPI_API ESteamAPICallFailure SteamAPI_ISteamUtils_GetAPICallFailureReason( ISteamUtils* self, SteamAPICall_t hSteamAPICall )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -985,10 +985,10 @@ STEAMAPI_API ESteamAPICallFailure SteamAPI_ISteamUtils_GetAPICallFailureReason( 
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_GetAPICallResult( ISteamUtils* self, SteamAPICall_t hSteamAPICall, void * pCallback, int cubCallback, int iCallbackExpected, bool * pbFailed )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -997,10 +997,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUtils_GetAPICallResult( ISteamUtils* self
 
 STEAMAPI_API uint32 SteamAPI_ISteamUtils_GetIPCCallCount( ISteamUtils* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1009,10 +1009,10 @@ STEAMAPI_API uint32 SteamAPI_ISteamUtils_GetIPCCallCount( ISteamUtils* self )
 
 STEAMAPI_API void SteamAPI_ISteamUtils_SetWarningMessageHook( ISteamUtils* self, SteamAPIWarningMessageHook_t pFunction )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1021,10 +1021,10 @@ STEAMAPI_API void SteamAPI_ISteamUtils_SetWarningMessageHook( ISteamUtils* self,
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_IsOverlayEnabled( ISteamUtils* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1033,10 +1033,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUtils_IsOverlayEnabled( ISteamUtils* self
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_BOverlayNeedsPresent( ISteamUtils* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1045,10 +1045,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUtils_BOverlayNeedsPresent( ISteamUtils* 
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUtils_CheckFileSignature( ISteamUtils* self, const char * szFileName )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1057,10 +1057,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUtils_CheckFileSignature( ISteamUtils
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_ShowGamepadTextInput( ISteamUtils* self, EGamepadTextInputMode eInputMode, EGamepadTextInputLineMode eLineInputMode, const char * pchDescription, uint32 unCharMax, const char * pchExistingText )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1069,10 +1069,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUtils_ShowGamepadTextInput( ISteamUtils* 
 
 STEAMAPI_API uint32 SteamAPI_ISteamUtils_GetEnteredGamepadTextLength( ISteamUtils* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1081,10 +1081,10 @@ STEAMAPI_API uint32 SteamAPI_ISteamUtils_GetEnteredGamepadTextLength( ISteamUtil
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_GetEnteredGamepadTextInput( ISteamUtils* self, char * pchText, uint32 cchText )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1093,10 +1093,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUtils_GetEnteredGamepadTextInput( ISteamU
 
 STEAMAPI_API const char * SteamAPI_ISteamUtils_GetSteamUILanguage( ISteamUtils* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1105,10 +1105,10 @@ STEAMAPI_API const char * SteamAPI_ISteamUtils_GetSteamUILanguage( ISteamUtils* 
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_IsSteamRunningInVR( ISteamUtils* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1117,10 +1117,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUtils_IsSteamRunningInVR( ISteamUtils* se
 
 STEAMAPI_API void SteamAPI_ISteamUtils_SetOverlayNotificationInset( ISteamUtils* self, int nHorizontalInset, int nVerticalInset )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1129,10 +1129,10 @@ STEAMAPI_API void SteamAPI_ISteamUtils_SetOverlayNotificationInset( ISteamUtils*
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_IsSteamInBigPictureMode( ISteamUtils* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1141,10 +1141,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUtils_IsSteamInBigPictureMode( ISteamUtil
 
 STEAMAPI_API void SteamAPI_ISteamUtils_StartVRDashboard( ISteamUtils* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1153,10 +1153,10 @@ STEAMAPI_API void SteamAPI_ISteamUtils_StartVRDashboard( ISteamUtils* self )
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_IsVRHeadsetStreamingEnabled( ISteamUtils* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1165,10 +1165,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUtils_IsVRHeadsetStreamingEnabled( ISteam
 
 STEAMAPI_API void SteamAPI_ISteamUtils_SetVRHeadsetStreamingEnabled( ISteamUtils* self, bool bEnabled )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1177,10 +1177,10 @@ STEAMAPI_API void SteamAPI_ISteamUtils_SetVRHeadsetStreamingEnabled( ISteamUtils
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_IsSteamChinaLauncher( ISteamUtils* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1190,10 +1190,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUtils_IsSteamChinaLauncher( ISteamUtils* 
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_InitFilterText( ISteamUtils* self, uint32 unFilterOptions )
 {
     //Note: older function only has less arguments
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1203,10 +1203,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUtils_InitFilterText( ISteamUtils* self, 
 STEAMAPI_API int SteamAPI_ISteamUtils_FilterText( ISteamUtils* self, ETextFilteringContext eContext, uint64_steamid sourceSteamID, const char * pchInputMessage, char * pchOutFilteredText, uint32 nByteSizeOutFilteredText )
 {
     //Note: older function only has less arguments
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1215,10 +1215,10 @@ STEAMAPI_API int SteamAPI_ISteamUtils_FilterText( ISteamUtils* self, ETextFilter
 
 STEAMAPI_API ESteamIPv6ConnectivityState SteamAPI_ISteamUtils_GetIPv6ConnectivityState( ISteamUtils* self, ESteamIPv6ConnectivityProtocol eProtocol )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1227,10 +1227,10 @@ STEAMAPI_API ESteamIPv6ConnectivityState SteamAPI_ISteamUtils_GetIPv6Connectivit
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_IsSteamRunningOnSteamDeck( ISteamUtils* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1239,10 +1239,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUtils_IsSteamRunningOnSteamDeck( ISteamUt
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_ShowModalGamepadTextInput( ISteamUtils* self, EGamepadTextInputLineMode eLineInputMode )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1252,10 +1252,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUtils_ShowModalGamepadTextInput( ISteamUt
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_ShowFloatingGamepadTextInput( ISteamUtils* self, EFloatingGamepadTextInputMode eKeyboardMode, int nTextFieldXPosition, int nTextFieldYPosition, int nTextFieldWidth, int nTextFieldHeight )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1265,10 +1265,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUtils_ShowFloatingGamepadTextInput( IStea
 
 STEAMAPI_API void SteamAPI_ISteamUtils_SetGameLauncherMode( ISteamUtils* self, bool bLauncherMode )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1277,10 +1277,10 @@ STEAMAPI_API void SteamAPI_ISteamUtils_SetGameLauncherMode( ISteamUtils* self, b
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_DismissFloatingGamepadTextInput( ISteamUtils* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -1289,10 +1289,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUtils_DismissFloatingGamepadTextInput( IS
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_DismissGamepadTextInput( ISteamUtils* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_utils);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
     auto ptr = get_steam_client()->steam_gameserver_utils;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_utils;
     }
 
@@ -3557,10 +3557,10 @@ STEAMAPI_API ISteamUGC *SteamAPI_SteamGameServerUGC_v018()
 
 STEAMAPI_API UGCQueryHandle_t SteamAPI_ISteamUGC_CreateQueryUserUGCRequest( ISteamUGC* self, AccountID_t unAccountID, EUserUGCList eListType, EUGCMatchingUGCType eMatchingUGCType, EUserUGCListSortOrder eSortOrder, AppId_t nCreatorAppID, AppId_t nConsumerAppID, uint32 unPage )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3569,10 +3569,10 @@ STEAMAPI_API UGCQueryHandle_t SteamAPI_ISteamUGC_CreateQueryUserUGCRequest( ISte
 
 STEAMAPI_API UGCQueryHandle_t SteamAPI_ISteamUGC_CreateQueryAllUGCRequest(intptr_t instancePtr, EUGCQuery eQueryType, EUGCMatchingUGCType eMatchingeMatchingUGCTypeFileType, AppId_t nCreatorAppID, AppId_t nConsumerAppID, uint32 unPage)
 {
-    long long test1 = ((char *)instancePtr - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)instancePtr - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)instancePtr - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)instancePtr - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3581,10 +3581,10 @@ STEAMAPI_API UGCQueryHandle_t SteamAPI_ISteamUGC_CreateQueryAllUGCRequest(intptr
 
 STEAMAPI_API UGCQueryHandle_t SteamAPI_ISteamUGC_CreateQueryAllUGCRequest0(intptr_t instancePtr, EUGCQuery eQueryType, EUGCMatchingUGCType eMatchingeMatchingUGCTypeFileType, AppId_t nCreatorAppID, AppId_t nConsumerAppID, const char * pchCursor)
 {
-    long long test1 = ((char *)instancePtr - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)instancePtr - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)instancePtr - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)instancePtr - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3593,10 +3593,10 @@ STEAMAPI_API UGCQueryHandle_t SteamAPI_ISteamUGC_CreateQueryAllUGCRequest0(intpt
 
 STEAMAPI_API UGCQueryHandle_t SteamAPI_ISteamUGC_CreateQueryAllUGCRequestPage( ISteamUGC* self, EUGCQuery eQueryType, EUGCMatchingUGCType eMatchingeMatchingUGCTypeFileType, AppId_t nCreatorAppID, AppId_t nConsumerAppID, uint32 unPage )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3605,10 +3605,10 @@ STEAMAPI_API UGCQueryHandle_t SteamAPI_ISteamUGC_CreateQueryAllUGCRequestPage( I
 
 STEAMAPI_API UGCQueryHandle_t SteamAPI_ISteamUGC_CreateQueryAllUGCRequestCursor( ISteamUGC* self, EUGCQuery eQueryType, EUGCMatchingUGCType eMatchingeMatchingUGCTypeFileType, AppId_t nCreatorAppID, AppId_t nConsumerAppID, const char * pchCursor )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3617,10 +3617,10 @@ STEAMAPI_API UGCQueryHandle_t SteamAPI_ISteamUGC_CreateQueryAllUGCRequestCursor(
 
 STEAMAPI_API UGCQueryHandle_t SteamAPI_ISteamUGC_CreateQueryUGCDetailsRequest( ISteamUGC* self, PublishedFileId_t * pvecPublishedFileID, uint32 unNumPublishedFileIDs )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3629,10 +3629,10 @@ STEAMAPI_API UGCQueryHandle_t SteamAPI_ISteamUGC_CreateQueryUGCDetailsRequest( I
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_SendQueryUGCRequest( ISteamUGC* self, UGCQueryHandle_t handle )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3641,10 +3641,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_SendQueryUGCRequest( ISteamUGC* s
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryUGCResult( ISteamUGC* self, UGCQueryHandle_t handle, uint32 index, SteamUGCDetails_t * pDetails )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3653,10 +3653,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryUGCResult( ISteamUGC* self, U
 
 STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetQueryUGCNumTags( ISteamUGC* self, UGCQueryHandle_t handle, uint32 index )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3665,10 +3665,10 @@ STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetQueryUGCNumTags( ISteamUGC* self, UGCQ
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryUGCTag( ISteamUGC* self, UGCQueryHandle_t handle, uint32 index, uint32 indexTag, char * pchValue, uint32 cchValueSize )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3677,10 +3677,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryUGCTag( ISteamUGC* self, UGCQ
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryUGCTagDisplayName( ISteamUGC* self, UGCQueryHandle_t handle, uint32 index, uint32 indexTag, char * pchValue, uint32 cchValueSize )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3689,10 +3689,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryUGCTagDisplayName( ISteamUGC*
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryUGCPreviewURL( ISteamUGC* self, UGCQueryHandle_t handle, uint32 index, char * pchURL, uint32 cchURLSize )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3701,10 +3701,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryUGCPreviewURL( ISteamUGC* sel
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryUGCMetadata( ISteamUGC* self, UGCQueryHandle_t handle, uint32 index, char * pchMetadata, uint32 cchMetadatasize )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3713,10 +3713,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryUGCMetadata( ISteamUGC* self,
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryUGCChildren( ISteamUGC* self, UGCQueryHandle_t handle, uint32 index, PublishedFileId_t * pvecPublishedFileID, uint32 cMaxEntries )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3725,10 +3725,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryUGCChildren( ISteamUGC* self,
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryUGCStatistic( ISteamUGC* self, UGCQueryHandle_t handle, uint32 index, EItemStatistic eStatType, uint64 * pStatValue )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3737,10 +3737,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryUGCStatistic( ISteamUGC* self
 
 STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetQueryUGCNumAdditionalPreviews( ISteamUGC* self, UGCQueryHandle_t handle, uint32 index )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3749,10 +3749,10 @@ STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetQueryUGCNumAdditionalPreviews( ISteamU
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryUGCAdditionalPreview( ISteamUGC* self, UGCQueryHandle_t handle, uint32 index, uint32 previewIndex, char * pchURLOrVideoID, uint32 cchURLSize, char * pchOriginalFileName, uint32 cchOriginalFileNameSize, EItemPreviewType * pPreviewType )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3761,10 +3761,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryUGCAdditionalPreview( ISteamU
 
 STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetQueryUGCNumKeyValueTags( ISteamUGC* self, UGCQueryHandle_t handle, uint32 index )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3773,10 +3773,10 @@ STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetQueryUGCNumKeyValueTags( ISteamUGC* se
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryUGCKeyValueTag( ISteamUGC* self, UGCQueryHandle_t handle, uint32 index, uint32 keyValueTagIndex, char * pchKey, uint32 cchKeySize, char * pchValue, uint32 cchValueSize )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3785,10 +3785,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryUGCKeyValueTag( ISteamUGC* se
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryUGCKeyValueTag0(intptr_t instancePtr, UGCQueryHandle_t handle, uint32 index, const char * pchKey, char * pchValue, uint32 cchValueSize)
 {
-    long long test1 = ((char *)instancePtr - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)instancePtr - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)instancePtr - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)instancePtr - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3797,10 +3797,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryUGCKeyValueTag0(intptr_t inst
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryFirstUGCKeyValueTag( ISteamUGC* self, UGCQueryHandle_t handle, uint32 index, const char * pchKey, char * pchValue, uint32 cchValueSize )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3809,10 +3809,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryFirstUGCKeyValueTag( ISteamUG
 
 STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetQueryUGCContentDescriptors( ISteamUGC* self, UGCQueryHandle_t handle, uint32 index, EUGCContentDescriptorID * pvecDescriptors, uint32 cMaxEntries )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3821,10 +3821,10 @@ STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetQueryUGCContentDescriptors( ISteamUGC*
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_ReleaseQueryUGCRequest( ISteamUGC* self, UGCQueryHandle_t handle )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3833,10 +3833,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_ReleaseQueryUGCRequest( ISteamUGC* se
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_AddRequiredTag( ISteamUGC* self, UGCQueryHandle_t handle, const char * pTagName )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3845,10 +3845,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_AddRequiredTag( ISteamUGC* self, UGCQ
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_AddRequiredTagGroup( ISteamUGC* self, UGCQueryHandle_t handle, const SteamParamStringArray_t * pTagGroups )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3857,10 +3857,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_AddRequiredTagGroup( ISteamUGC* self,
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_AddExcludedTag( ISteamUGC* self, UGCQueryHandle_t handle, const char * pTagName )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3869,10 +3869,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_AddExcludedTag( ISteamUGC* self, UGCQ
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetReturnOnlyIDs( ISteamUGC* self, UGCQueryHandle_t handle, bool bReturnOnlyIDs )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3881,10 +3881,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetReturnOnlyIDs( ISteamUGC* self, UG
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetReturnKeyValueTags( ISteamUGC* self, UGCQueryHandle_t handle, bool bReturnKeyValueTags )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3893,10 +3893,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetReturnKeyValueTags( ISteamUGC* sel
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetReturnLongDescription( ISteamUGC* self, UGCQueryHandle_t handle, bool bReturnLongDescription )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3905,10 +3905,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetReturnLongDescription( ISteamUGC* 
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetReturnMetadata( ISteamUGC* self, UGCQueryHandle_t handle, bool bReturnMetadata )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3917,10 +3917,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetReturnMetadata( ISteamUGC* self, U
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetReturnChildren( ISteamUGC* self, UGCQueryHandle_t handle, bool bReturnChildren )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3929,10 +3929,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetReturnChildren( ISteamUGC* self, U
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetReturnAdditionalPreviews( ISteamUGC* self, UGCQueryHandle_t handle, bool bReturnAdditionalPreviews )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3941,10 +3941,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetReturnAdditionalPreviews( ISteamUG
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetReturnTotalOnly( ISteamUGC* self, UGCQueryHandle_t handle, bool bReturnTotalOnly )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3953,10 +3953,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetReturnTotalOnly( ISteamUGC* self, 
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetReturnPlaytimeStats( ISteamUGC* self, UGCQueryHandle_t handle, uint32 unDays )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3965,10 +3965,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetReturnPlaytimeStats( ISteamUGC* se
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetLanguage( ISteamUGC* self, UGCQueryHandle_t handle, const char * pchLanguage )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3977,10 +3977,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetLanguage( ISteamUGC* self, UGCQuer
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetAllowCachedResponse( ISteamUGC* self, UGCQueryHandle_t handle, uint32 unMaxAgeSeconds )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -3989,10 +3989,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetAllowCachedResponse( ISteamUGC* se
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetCloudFileNameFilter( ISteamUGC* self, UGCQueryHandle_t handle, const char * pMatchCloudFileName )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4001,10 +4001,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetCloudFileNameFilter( ISteamUGC* se
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetMatchAnyTag( ISteamUGC* self, UGCQueryHandle_t handle, bool bMatchAnyTag )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4013,10 +4013,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetMatchAnyTag( ISteamUGC* self, UGCQ
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetSearchText( ISteamUGC* self, UGCQueryHandle_t handle, const char * pSearchText )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4025,10 +4025,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetSearchText( ISteamUGC* self, UGCQu
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetRankedByTrendDays( ISteamUGC* self, UGCQueryHandle_t handle, uint32 unDays )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4037,10 +4037,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetRankedByTrendDays( ISteamUGC* self
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetTimeCreatedDateRange( ISteamUGC* self, UGCQueryHandle_t handle, RTime32 rtStart, RTime32 rtEnd )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4049,10 +4049,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetTimeCreatedDateRange( ISteamUGC* s
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetTimeUpdatedDateRange( ISteamUGC* self, UGCQueryHandle_t handle, RTime32 rtStart, RTime32 rtEnd )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4061,10 +4061,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetTimeUpdatedDateRange( ISteamUGC* s
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_AddRequiredKeyValueTag( ISteamUGC* self, UGCQueryHandle_t handle, const char * pKey, const char * pValue )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4073,10 +4073,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_AddRequiredKeyValueTag( ISteamUGC* se
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_RequestUGCDetails( ISteamUGC* self, PublishedFileId_t nPublishedFileID, uint32 unMaxAgeSeconds )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4085,10 +4085,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_RequestUGCDetails( ISteamUGC* sel
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_CreateItem( ISteamUGC* self, AppId_t nConsumerAppId, EWorkshopFileType eFileType )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4097,10 +4097,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_CreateItem( ISteamUGC* self, AppI
 
 STEAMAPI_API UGCUpdateHandle_t SteamAPI_ISteamUGC_StartItemUpdate( ISteamUGC* self, AppId_t nConsumerAppId, PublishedFileId_t nPublishedFileID )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4109,10 +4109,10 @@ STEAMAPI_API UGCUpdateHandle_t SteamAPI_ISteamUGC_StartItemUpdate( ISteamUGC* se
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetItemTitle( ISteamUGC* self, UGCUpdateHandle_t handle, const char * pchTitle )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4121,10 +4121,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetItemTitle( ISteamUGC* self, UGCUpd
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetItemDescription( ISteamUGC* self, UGCUpdateHandle_t handle, const char * pchDescription )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4133,10 +4133,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetItemDescription( ISteamUGC* self, 
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetItemUpdateLanguage( ISteamUGC* self, UGCUpdateHandle_t handle, const char * pchLanguage )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4145,10 +4145,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetItemUpdateLanguage( ISteamUGC* sel
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetItemMetadata( ISteamUGC* self, UGCUpdateHandle_t handle, const char * pchMetaData )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4157,10 +4157,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetItemMetadata( ISteamUGC* self, UGC
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetItemVisibility( ISteamUGC* self, UGCUpdateHandle_t handle, ERemoteStoragePublishedFileVisibility eVisibility )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4170,10 +4170,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetItemVisibility( ISteamUGC* self, U
 //STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetItemTags( ISteamUGC* self, UGCUpdateHandle_t updateHandle, const SteamParamStringArray_t * pTags )
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetItemTags( ISteamUGC* self, UGCUpdateHandle_t updateHandle, const SteamParamStringArray_t * pTags, bool bAllowAdminTags )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4183,10 +4183,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetItemTags( ISteamUGC* self, UGCUpda
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetItemContent( ISteamUGC* self, UGCUpdateHandle_t handle, const char * pszContentFolder )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4195,10 +4195,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetItemContent( ISteamUGC* self, UGCU
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetItemPreview( ISteamUGC* self, UGCUpdateHandle_t handle, const char * pszPreviewFile )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4207,10 +4207,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetItemPreview( ISteamUGC* self, UGCU
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetAllowLegacyUpload( ISteamUGC* self, UGCUpdateHandle_t handle, bool bAllowLegacyUpload )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4219,10 +4219,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetAllowLegacyUpload( ISteamUGC* self
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_RemoveAllItemKeyValueTags( ISteamUGC* self, UGCUpdateHandle_t handle )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4231,10 +4231,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_RemoveAllItemKeyValueTags( ISteamUGC*
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_RemoveItemKeyValueTags( ISteamUGC* self, UGCUpdateHandle_t handle, const char * pchKey )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4243,10 +4243,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_RemoveItemKeyValueTags( ISteamUGC* se
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_AddItemKeyValueTag( ISteamUGC* self, UGCUpdateHandle_t handle, const char * pchKey, const char * pchValue )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4255,10 +4255,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_AddItemKeyValueTag( ISteamUGC* self, 
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_AddItemPreviewFile( ISteamUGC* self, UGCUpdateHandle_t handle, const char * pszPreviewFile, EItemPreviewType type )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4267,10 +4267,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_AddItemPreviewFile( ISteamUGC* self, 
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_AddItemPreviewVideo( ISteamUGC* self, UGCUpdateHandle_t handle, const char * pszVideoID )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4279,10 +4279,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_AddItemPreviewVideo( ISteamUGC* self,
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_UpdateItemPreviewFile( ISteamUGC* self, UGCUpdateHandle_t handle, uint32 index, const char * pszPreviewFile )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4291,10 +4291,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_UpdateItemPreviewFile( ISteamUGC* sel
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_UpdateItemPreviewVideo( ISteamUGC* self, UGCUpdateHandle_t handle, uint32 index, const char * pszVideoID )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4303,10 +4303,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_UpdateItemPreviewVideo( ISteamUGC* se
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_RemoveItemPreview( ISteamUGC* self, UGCUpdateHandle_t handle, uint32 index )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4315,10 +4315,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_RemoveItemPreview( ISteamUGC* self, U
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_AddContentDescriptor( ISteamUGC* self, UGCUpdateHandle_t handle, EUGCContentDescriptorID descid )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4327,10 +4327,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_AddContentDescriptor( ISteamUGC* self
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_RemoveContentDescriptor( ISteamUGC* self, UGCUpdateHandle_t handle, EUGCContentDescriptorID descid )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4339,10 +4339,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_RemoveContentDescriptor( ISteamUGC* s
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_SubmitItemUpdate( ISteamUGC* self, UGCUpdateHandle_t handle, const char * pchChangeNote )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4351,10 +4351,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_SubmitItemUpdate( ISteamUGC* self
 
 STEAMAPI_API EItemUpdateStatus SteamAPI_ISteamUGC_GetItemUpdateProgress( ISteamUGC* self, UGCUpdateHandle_t handle, uint64 * punBytesProcessed, uint64 * punBytesTotal )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4363,10 +4363,10 @@ STEAMAPI_API EItemUpdateStatus SteamAPI_ISteamUGC_GetItemUpdateProgress( ISteamU
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_SetUserItemVote( ISteamUGC* self, PublishedFileId_t nPublishedFileID, bool bVoteUp )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4375,10 +4375,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_SetUserItemVote( ISteamUGC* self,
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_GetUserItemVote( ISteamUGC* self, PublishedFileId_t nPublishedFileID )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4387,10 +4387,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_GetUserItemVote( ISteamUGC* self,
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_AddItemToFavorites( ISteamUGC* self, AppId_t nAppId, PublishedFileId_t nPublishedFileID )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4399,10 +4399,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_AddItemToFavorites( ISteamUGC* se
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_RemoveItemFromFavorites( ISteamUGC* self, AppId_t nAppId, PublishedFileId_t nPublishedFileID )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4411,10 +4411,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_RemoveItemFromFavorites( ISteamUG
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_SubscribeItem( ISteamUGC* self, PublishedFileId_t nPublishedFileID )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4423,10 +4423,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_SubscribeItem( ISteamUGC* self, P
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_UnsubscribeItem( ISteamUGC* self, PublishedFileId_t nPublishedFileID )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4435,10 +4435,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_UnsubscribeItem( ISteamUGC* self,
 
 STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetNumSubscribedItems( ISteamUGC* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4447,10 +4447,10 @@ STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetNumSubscribedItems( ISteamUGC* self )
 
 STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetSubscribedItems( ISteamUGC* self, PublishedFileId_t * pvecPublishedFileID, uint32 cMaxEntries )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4459,10 +4459,10 @@ STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetSubscribedItems( ISteamUGC* self, Publ
 
 STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetItemState( ISteamUGC* self, PublishedFileId_t nPublishedFileID )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4471,10 +4471,10 @@ STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetItemState( ISteamUGC* self, PublishedF
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetItemInstallInfo( ISteamUGC* self, PublishedFileId_t nPublishedFileID, uint64 * punSizeOnDisk, char * pchFolder, uint32 cchFolderSize, uint32 * punTimeStamp )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4483,10 +4483,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetItemInstallInfo( ISteamUGC* self, 
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetItemDownloadInfo( ISteamUGC* self, PublishedFileId_t nPublishedFileID, uint64 * punBytesDownloaded, uint64 * punBytesTotal )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4495,10 +4495,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetItemDownloadInfo( ISteamUGC* self,
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_DownloadItem( ISteamUGC* self, PublishedFileId_t nPublishedFileID, bool bHighPriority )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4507,10 +4507,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_DownloadItem( ISteamUGC* self, Publis
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_BInitWorkshopForGameServer( ISteamUGC* self, DepotId_t unWorkshopDepotID, const char * pszFolder )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4519,10 +4519,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_BInitWorkshopForGameServer( ISteamUGC
 
 STEAMAPI_API void SteamAPI_ISteamUGC_SuspendDownloads( ISteamUGC* self, bool bSuspend )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4531,10 +4531,10 @@ STEAMAPI_API void SteamAPI_ISteamUGC_SuspendDownloads( ISteamUGC* self, bool bSu
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_StartPlaytimeTracking( ISteamUGC* self, PublishedFileId_t * pvecPublishedFileID, uint32 unNumPublishedFileIDs )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4543,10 +4543,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_StartPlaytimeTracking( ISteamUGC*
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_StopPlaytimeTracking( ISteamUGC* self, PublishedFileId_t * pvecPublishedFileID, uint32 unNumPublishedFileIDs )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4555,10 +4555,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_StopPlaytimeTracking( ISteamUGC* 
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_StopPlaytimeTrackingForAllItems( ISteamUGC* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4567,10 +4567,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_StopPlaytimeTrackingForAllItems( 
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_AddDependency( ISteamUGC* self, PublishedFileId_t nParentPublishedFileID, PublishedFileId_t nChildPublishedFileID )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4579,10 +4579,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_AddDependency( ISteamUGC* self, P
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_RemoveDependency( ISteamUGC* self, PublishedFileId_t nParentPublishedFileID, PublishedFileId_t nChildPublishedFileID )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4591,10 +4591,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_RemoveDependency( ISteamUGC* self
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_AddAppDependency( ISteamUGC* self, PublishedFileId_t nPublishedFileID, AppId_t nAppID )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4603,10 +4603,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_AddAppDependency( ISteamUGC* self
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_RemoveAppDependency( ISteamUGC* self, PublishedFileId_t nPublishedFileID, AppId_t nAppID )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4615,10 +4615,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_RemoveAppDependency( ISteamUGC* s
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_GetAppDependencies( ISteamUGC* self, PublishedFileId_t nPublishedFileID )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4627,10 +4627,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_GetAppDependencies( ISteamUGC* se
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_DeleteItem( ISteamUGC* self, PublishedFileId_t nPublishedFileID )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4639,10 +4639,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_DeleteItem( ISteamUGC* self, Publ
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_ShowWorkshopEULA( ISteamUGC* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4651,10 +4651,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_ShowWorkshopEULA( ISteamUGC* self )
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_GetWorkshopEULAStatus( ISteamUGC* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4663,10 +4663,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_GetWorkshopEULAStatus( ISteamUGC*
 
 STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetUserContentDescriptorPreferences( ISteamUGC* self, EUGCContentDescriptorID * pvecDescriptors, uint32 cMaxEntries )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
     auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_ugc;
     }
 
@@ -4911,10 +4911,10 @@ STEAMAPI_API ISteamInventory *SteamAPI_SteamGameServerInventory_v003()
 
 STEAMAPI_API EResult SteamAPI_ISteamInventory_GetResultStatus( ISteamInventory* self, SteamInventoryResult_t resultHandle )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -4923,10 +4923,10 @@ STEAMAPI_API EResult SteamAPI_ISteamInventory_GetResultStatus( ISteamInventory* 
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_GetResultItems( ISteamInventory* self, SteamInventoryResult_t resultHandle, SteamItemDetails_t * pOutItemsArray, uint32 * punOutItemsArraySize )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -4935,10 +4935,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_GetResultItems( ISteamInventory
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_GetResultItemProperty( ISteamInventory* self, SteamInventoryResult_t resultHandle, uint32 unItemIndex, const char * pchPropertyName, char * pchValueBuffer, uint32 * punValueBufferSizeOut )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -4947,10 +4947,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_GetResultItemProperty( ISteamIn
 
 STEAMAPI_API uint32 SteamAPI_ISteamInventory_GetResultTimestamp( ISteamInventory* self, SteamInventoryResult_t resultHandle )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -4959,10 +4959,10 @@ STEAMAPI_API uint32 SteamAPI_ISteamInventory_GetResultTimestamp( ISteamInventory
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_CheckResultSteamID( ISteamInventory* self, SteamInventoryResult_t resultHandle, uint64_steamid steamIDExpected )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -4971,10 +4971,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_CheckResultSteamID( ISteamInven
 
 STEAMAPI_API void SteamAPI_ISteamInventory_DestroyResult( ISteamInventory* self, SteamInventoryResult_t resultHandle )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -4983,10 +4983,10 @@ STEAMAPI_API void SteamAPI_ISteamInventory_DestroyResult( ISteamInventory* self,
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_GetAllItems( ISteamInventory* self, SteamInventoryResult_t * pResultHandle )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -4995,10 +4995,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_GetAllItems( ISteamInventory* s
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_GetItemsByID( ISteamInventory* self, SteamInventoryResult_t * pResultHandle, const SteamItemInstanceID_t * pInstanceIDs, uint32 unCountInstanceIDs )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5007,10 +5007,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_GetItemsByID( ISteamInventory* 
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_SerializeResult( ISteamInventory* self, SteamInventoryResult_t resultHandle, void * pOutBuffer, uint32 * punOutBufferSize )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5019,10 +5019,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_SerializeResult( ISteamInventor
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_DeserializeResult( ISteamInventory* self, SteamInventoryResult_t * pOutResultHandle, const void * pBuffer, uint32 unBufferSize, bool bRESERVED_MUST_BE_FALSE )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5031,10 +5031,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_DeserializeResult( ISteamInvent
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_GenerateItems( ISteamInventory* self, SteamInventoryResult_t * pResultHandle, const SteamItemDef_t * pArrayItemDefs, const uint32 * punArrayQuantity, uint32 unArrayLength )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5043,10 +5043,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_GenerateItems( ISteamInventory*
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_GrantPromoItems( ISteamInventory* self, SteamInventoryResult_t * pResultHandle )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5055,10 +5055,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_GrantPromoItems( ISteamInventor
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_AddPromoItem( ISteamInventory* self, SteamInventoryResult_t * pResultHandle, SteamItemDef_t itemDef )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5067,10 +5067,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_AddPromoItem( ISteamInventory* 
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_AddPromoItems( ISteamInventory* self, SteamInventoryResult_t * pResultHandle, const SteamItemDef_t * pArrayItemDefs, uint32 unArrayLength )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5079,10 +5079,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_AddPromoItems( ISteamInventory*
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_ConsumeItem( ISteamInventory* self, SteamInventoryResult_t * pResultHandle, SteamItemInstanceID_t itemConsume, uint32 unQuantity )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5091,10 +5091,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_ConsumeItem( ISteamInventory* s
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_ExchangeItems( ISteamInventory* self, SteamInventoryResult_t * pResultHandle, const SteamItemDef_t * pArrayGenerate, const uint32 * punArrayGenerateQuantity, uint32 unArrayGenerateLength, const SteamItemInstanceID_t * pArrayDestroy, const uint32 * punArrayDestroyQuantity, uint32 unArrayDestroyLength )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5103,10 +5103,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_ExchangeItems( ISteamInventory*
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_TransferItemQuantity( ISteamInventory* self, SteamInventoryResult_t * pResultHandle, SteamItemInstanceID_t itemIdSource, uint32 unQuantity, SteamItemInstanceID_t itemIdDest )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5115,10 +5115,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_TransferItemQuantity( ISteamInv
 
 STEAMAPI_API void SteamAPI_ISteamInventory_SendItemDropHeartbeat( ISteamInventory* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5127,10 +5127,10 @@ STEAMAPI_API void SteamAPI_ISteamInventory_SendItemDropHeartbeat( ISteamInventor
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_TriggerItemDrop( ISteamInventory* self, SteamInventoryResult_t * pResultHandle, SteamItemDef_t dropListDefinition )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5139,10 +5139,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_TriggerItemDrop( ISteamInventor
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_TradeItems( ISteamInventory* self, SteamInventoryResult_t * pResultHandle, uint64_steamid steamIDTradePartner, const SteamItemInstanceID_t * pArrayGive, const uint32 * pArrayGiveQuantity, uint32 nArrayGiveLength, const SteamItemInstanceID_t * pArrayGet, const uint32 * pArrayGetQuantity, uint32 nArrayGetLength )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5151,10 +5151,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_TradeItems( ISteamInventory* se
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_LoadItemDefinitions( ISteamInventory* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5163,10 +5163,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_LoadItemDefinitions( ISteamInve
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_GetItemDefinitionIDs( ISteamInventory* self, SteamItemDef_t * pItemDefIDs, uint32 * punItemDefIDsArraySize )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5175,10 +5175,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_GetItemDefinitionIDs( ISteamInv
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_GetItemDefinitionProperty( ISteamInventory* self, SteamItemDef_t iDefinition, const char * pchPropertyName, char * pchValueBuffer, uint32 * punValueBufferSizeOut )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5187,10 +5187,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_GetItemDefinitionProperty( ISte
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamInventory_RequestEligiblePromoItemDefinitionsIDs( ISteamInventory* self, uint64_steamid steamID )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5199,10 +5199,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamInventory_RequestEligiblePromoItemDef
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_GetEligiblePromoItemDefinitionIDs( ISteamInventory* self, uint64_steamid steamID, SteamItemDef_t * pItemDefIDs, uint32 * punItemDefIDsArraySize )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5211,10 +5211,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_GetEligiblePromoItemDefinitionI
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamInventory_StartPurchase( ISteamInventory* self, const SteamItemDef_t * pArrayItemDefs, const uint32 * punArrayQuantity, uint32 unArrayLength )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5223,10 +5223,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamInventory_StartPurchase( ISteamInvent
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamInventory_RequestPrices( ISteamInventory* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5235,10 +5235,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamInventory_RequestPrices( ISteamInvent
 
 STEAMAPI_API uint32 SteamAPI_ISteamInventory_GetNumItemsWithPrices( ISteamInventory* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5247,10 +5247,10 @@ STEAMAPI_API uint32 SteamAPI_ISteamInventory_GetNumItemsWithPrices( ISteamInvent
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_GetItemsWithPrices( ISteamInventory* self, SteamItemDef_t * pArrayItemDefs, uint64 * pCurrentPrices, uint64 * pBasePrices, uint32 unArrayLength )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5259,10 +5259,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_GetItemsWithPrices( ISteamInven
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_GetItemPrice( ISteamInventory* self, SteamItemDef_t iDefinition, uint64 * pCurrentPrice, uint64 * pBasePrice )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5271,10 +5271,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_GetItemPrice( ISteamInventory* 
 
 STEAMAPI_API SteamInventoryUpdateHandle_t SteamAPI_ISteamInventory_StartUpdateProperties( ISteamInventory* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5283,10 +5283,10 @@ STEAMAPI_API SteamInventoryUpdateHandle_t SteamAPI_ISteamInventory_StartUpdatePr
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_RemoveProperty( ISteamInventory* self, SteamInventoryUpdateHandle_t handle, SteamItemInstanceID_t nItemID, const char * pchPropertyName )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5295,10 +5295,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_RemoveProperty( ISteamInventory
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_SetProperty(intptr_t instancePtr, SteamInventoryUpdateHandle_t handle, SteamItemInstanceID_t nItemID, const char * pchPropertyName, const char * pchPropertyValue)
 {
-    long long test1 = ((char *)instancePtr - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)instancePtr - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)instancePtr - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)instancePtr - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5307,10 +5307,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_SetProperty(intptr_t instancePt
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_SetProperty0(intptr_t instancePtr, SteamInventoryUpdateHandle_t handle, SteamItemInstanceID_t nItemID, const char * pchPropertyName, bool bValue)
 {
-    long long test1 = ((char *)instancePtr - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)instancePtr - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)instancePtr - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)instancePtr - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5319,10 +5319,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_SetProperty0(intptr_t instanceP
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_SetProperty1(intptr_t instancePtr, SteamInventoryUpdateHandle_t handle, SteamItemInstanceID_t nItemID, const char * pchPropertyName, int64 nValue)
 {
-    long long test1 = ((char *)instancePtr - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)instancePtr - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)instancePtr - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)instancePtr - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5331,10 +5331,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_SetProperty1(intptr_t instanceP
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_SetProperty2(intptr_t instancePtr, SteamInventoryUpdateHandle_t handle, SteamItemInstanceID_t nItemID, const char * pchPropertyName, float flValue)
 {
-    long long test1 = ((char *)instancePtr - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)instancePtr - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)instancePtr - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)instancePtr - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5343,10 +5343,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_SetProperty2(intptr_t instanceP
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_SetPropertyString( ISteamInventory* self, SteamInventoryUpdateHandle_t handle, SteamItemInstanceID_t nItemID, const char * pchPropertyName, const char * pchPropertyValue )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5355,10 +5355,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_SetPropertyString( ISteamInvent
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_SetPropertyBool( ISteamInventory* self, SteamInventoryUpdateHandle_t handle, SteamItemInstanceID_t nItemID, const char * pchPropertyName, bool bValue )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5367,10 +5367,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_SetPropertyBool( ISteamInventor
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_SetPropertyInt64( ISteamInventory* self, SteamInventoryUpdateHandle_t handle, SteamItemInstanceID_t nItemID, const char * pchPropertyName, int64 nValue )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5379,10 +5379,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_SetPropertyInt64( ISteamInvento
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_SetPropertyFloat( ISteamInventory* self, SteamInventoryUpdateHandle_t handle, SteamItemInstanceID_t nItemID, const char * pchPropertyName, float flValue )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5391,10 +5391,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_SetPropertyFloat( ISteamInvento
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_SubmitUpdateProperties( ISteamInventory* self, SteamInventoryUpdateHandle_t handle, SteamInventoryResult_t * pResultHandle )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5403,10 +5403,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_SubmitUpdateProperties( ISteamI
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInventory_InspectItem( ISteamInventory* self, SteamInventoryResult_t * pResultHandle, const char * pchItemToken )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_inventory);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_inventory);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_inventory);
     auto ptr = get_steam_client()->steam_gameserver_inventory;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_inventory;
     }
 
@@ -5665,10 +5665,10 @@ STEAMAPI_API ISteamNetworkingSockets *SteamAPI_SteamGameServerNetworkingSockets_
 
 STEAMAPI_API HSteamListenSocket SteamAPI_ISteamNetworkingSockets_CreateListenSocketIP( ISteamNetworkingSockets* self, const SteamNetworkingIPAddr & localAddress, int nOptions, const SteamNetworkingConfigValue_t * pOptions )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5677,10 +5677,10 @@ STEAMAPI_API HSteamListenSocket SteamAPI_ISteamNetworkingSockets_CreateListenSoc
 
 STEAMAPI_API HSteamNetConnection SteamAPI_ISteamNetworkingSockets_ConnectByIPAddress( ISteamNetworkingSockets* self, const SteamNetworkingIPAddr & address, int nOptions, const SteamNetworkingConfigValue_t * pOptions )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5689,10 +5689,10 @@ STEAMAPI_API HSteamNetConnection SteamAPI_ISteamNetworkingSockets_ConnectByIPAdd
 
 STEAMAPI_API HSteamListenSocket SteamAPI_ISteamNetworkingSockets_CreateListenSocketP2P( ISteamNetworkingSockets* self, int nLocalVirtualPort, int nOptions, const SteamNetworkingConfigValue_t * pOptions )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5701,10 +5701,10 @@ STEAMAPI_API HSteamListenSocket SteamAPI_ISteamNetworkingSockets_CreateListenSoc
 
 STEAMAPI_API HSteamNetConnection SteamAPI_ISteamNetworkingSockets_ConnectP2P( ISteamNetworkingSockets* self, const SteamNetworkingIdentity & identityRemote, int nRemoteVirtualPort, int nOptions, const SteamNetworkingConfigValue_t * pOptions )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5713,10 +5713,10 @@ STEAMAPI_API HSteamNetConnection SteamAPI_ISteamNetworkingSockets_ConnectP2P( IS
 
 STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_AcceptConnection( ISteamNetworkingSockets* self, HSteamNetConnection hConn )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5725,10 +5725,10 @@ STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_AcceptConnection( ISteamNe
 
 STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_CloseConnection( ISteamNetworkingSockets* self, HSteamNetConnection hPeer, int nReason, const char * pszDebug, bool bEnableLinger )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5737,10 +5737,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_CloseConnection( ISteam
 
 STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_CloseListenSocket( ISteamNetworkingSockets* self, HSteamListenSocket hSocket )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5749,10 +5749,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_CloseListenSocket( ISte
 
 STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_SetConnectionUserData( ISteamNetworkingSockets* self, HSteamNetConnection hPeer, int64 nUserData )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5761,10 +5761,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_SetConnectionUserData( 
 
 STEAMAPI_API int64 SteamAPI_ISteamNetworkingSockets_GetConnectionUserData( ISteamNetworkingSockets* self, HSteamNetConnection hPeer )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5773,10 +5773,10 @@ STEAMAPI_API int64 SteamAPI_ISteamNetworkingSockets_GetConnectionUserData( IStea
 
 STEAMAPI_API void SteamAPI_ISteamNetworkingSockets_SetConnectionName( ISteamNetworkingSockets* self, HSteamNetConnection hPeer, const char * pszName )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5785,10 +5785,10 @@ STEAMAPI_API void SteamAPI_ISteamNetworkingSockets_SetConnectionName( ISteamNetw
 
 STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_GetConnectionName( ISteamNetworkingSockets* self, HSteamNetConnection hPeer, char * pszName, int nMaxLen )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5797,10 +5797,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_GetConnectionName( ISte
 
 STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_SendMessageToConnection( ISteamNetworkingSockets* self, HSteamNetConnection hConn, const void * pData, uint32 cbData, int nSendFlags, int64 * pOutMessageNumber )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5809,10 +5809,10 @@ STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_SendMessageToConnection( I
 
 STEAMAPI_API void SteamAPI_ISteamNetworkingSockets_SendMessages( ISteamNetworkingSockets* self, int nMessages, SteamNetworkingMessage_t *const * pMessages, int64 * pOutMessageNumberOrResult )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5821,10 +5821,10 @@ STEAMAPI_API void SteamAPI_ISteamNetworkingSockets_SendMessages( ISteamNetworkin
 
 STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_FlushMessagesOnConnection( ISteamNetworkingSockets* self, HSteamNetConnection hConn )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5833,10 +5833,10 @@ STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_FlushMessagesOnConnection(
 
 STEAMAPI_API int SteamAPI_ISteamNetworkingSockets_ReceiveMessagesOnConnection( ISteamNetworkingSockets* self, HSteamNetConnection hConn, SteamNetworkingMessage_t ** ppOutMessages, int nMaxMessages )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5845,10 +5845,10 @@ STEAMAPI_API int SteamAPI_ISteamNetworkingSockets_ReceiveMessagesOnConnection( I
 
 STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_GetConnectionInfo( ISteamNetworkingSockets* self, HSteamNetConnection hConn, SteamNetConnectionInfo_t * pInfo )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5857,10 +5857,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_GetConnectionInfo( ISte
 
 STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_GetQuickConnectionStatus( ISteamNetworkingSockets009* self, HSteamNetConnection hConn, SteamNetworkingQuickConnectionStatus * pStats )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5869,10 +5869,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_GetQuickConnectionStatu
 
 STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_GetConnectionRealTimeStatus( ISteamNetworkingSockets* self, HSteamNetConnection hConn, SteamNetConnectionRealTimeStatus_t * pStatus, int nLanes, SteamNetConnectionRealTimeLaneStatus_t * pLanes )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5881,10 +5881,10 @@ STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_GetConnectionRealTimeStatu
 
 STEAMAPI_API int SteamAPI_ISteamNetworkingSockets_GetDetailedConnectionStatus( ISteamNetworkingSockets* self, HSteamNetConnection hConn, char * pszBuf, int cbBuf )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5893,10 +5893,10 @@ STEAMAPI_API int SteamAPI_ISteamNetworkingSockets_GetDetailedConnectionStatus( I
 
 STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_GetListenSocketAddress( ISteamNetworkingSockets* self, HSteamListenSocket hSocket, SteamNetworkingIPAddr * address )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5905,10 +5905,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_GetListenSocketAddress(
 
 STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_CreateSocketPair( ISteamNetworkingSockets* self, HSteamNetConnection * pOutConnection1, HSteamNetConnection * pOutConnection2, bool bUseNetworkLoopback, const SteamNetworkingIdentity * pIdentity1, const SteamNetworkingIdentity * pIdentity2 )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5917,10 +5917,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_CreateSocketPair( IStea
 
 STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_ConfigureConnectionLanes( ISteamNetworkingSockets* self, HSteamNetConnection hConn, int nNumLanes, const int * pLanePriorities, const uint16 * pLaneWeights )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5929,10 +5929,10 @@ STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_ConfigureConnectionLanes( 
 
 STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_GetIdentity( ISteamNetworkingSockets* self, SteamNetworkingIdentity * pIdentity )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5941,10 +5941,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_GetIdentity( ISteamNetw
 
 STEAMAPI_API ESteamNetworkingAvailability SteamAPI_ISteamNetworkingSockets_InitAuthentication( ISteamNetworkingSockets* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5953,10 +5953,10 @@ STEAMAPI_API ESteamNetworkingAvailability SteamAPI_ISteamNetworkingSockets_InitA
 
 STEAMAPI_API ESteamNetworkingAvailability SteamAPI_ISteamNetworkingSockets_GetAuthenticationStatus( ISteamNetworkingSockets* self, SteamNetAuthenticationStatus_t * pDetails )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5965,10 +5965,10 @@ STEAMAPI_API ESteamNetworkingAvailability SteamAPI_ISteamNetworkingSockets_GetAu
 
 STEAMAPI_API HSteamNetPollGroup SteamAPI_ISteamNetworkingSockets_CreatePollGroup( ISteamNetworkingSockets* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5977,10 +5977,10 @@ STEAMAPI_API HSteamNetPollGroup SteamAPI_ISteamNetworkingSockets_CreatePollGroup
 
 STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_DestroyPollGroup( ISteamNetworkingSockets* self, HSteamNetPollGroup hPollGroup )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -5989,10 +5989,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_DestroyPollGroup( IStea
 
 STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_SetConnectionPollGroup( ISteamNetworkingSockets* self, HSteamNetConnection hConn, HSteamNetPollGroup hPollGroup )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -6001,10 +6001,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_SetConnectionPollGroup(
 
 STEAMAPI_API int SteamAPI_ISteamNetworkingSockets_ReceiveMessagesOnPollGroup( ISteamNetworkingSockets* self, HSteamNetPollGroup hPollGroup, SteamNetworkingMessage_t ** ppOutMessages, int nMaxMessages )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -6013,10 +6013,10 @@ STEAMAPI_API int SteamAPI_ISteamNetworkingSockets_ReceiveMessagesOnPollGroup( IS
 
 STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_ReceivedRelayAuthTicket( ISteamNetworkingSockets* self, const void * pvTicket, int cbTicket, SteamDatagramRelayAuthTicket * pOutParsedTicket )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -6025,10 +6025,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_ReceivedRelayAuthTicket
 
 STEAMAPI_API int SteamAPI_ISteamNetworkingSockets_FindRelayAuthTicketForServer( ISteamNetworkingSockets* self, const SteamNetworkingIdentity & identityGameServer, int nRemoteVirtualPort, SteamDatagramRelayAuthTicket * pOutParsedTicket )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -6037,10 +6037,10 @@ STEAMAPI_API int SteamAPI_ISteamNetworkingSockets_FindRelayAuthTicketForServer( 
 
 STEAMAPI_API HSteamNetConnection SteamAPI_ISteamNetworkingSockets_ConnectToHostedDedicatedServer( ISteamNetworkingSockets* self, const SteamNetworkingIdentity & identityTarget, int nRemoteVirtualPort, int nOptions, const SteamNetworkingConfigValue_t * pOptions )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -6049,10 +6049,10 @@ STEAMAPI_API HSteamNetConnection SteamAPI_ISteamNetworkingSockets_ConnectToHoste
 
 STEAMAPI_API uint16 SteamAPI_ISteamNetworkingSockets_GetHostedDedicatedServerPort( ISteamNetworkingSockets* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -6061,10 +6061,10 @@ STEAMAPI_API uint16 SteamAPI_ISteamNetworkingSockets_GetHostedDedicatedServerPor
 
 STEAMAPI_API SteamNetworkingPOPID SteamAPI_ISteamNetworkingSockets_GetHostedDedicatedServerPOPID( ISteamNetworkingSockets* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -6073,10 +6073,10 @@ STEAMAPI_API SteamNetworkingPOPID SteamAPI_ISteamNetworkingSockets_GetHostedDedi
 
 STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_GetHostedDedicatedServerAddress( ISteamNetworkingSockets* self, SteamDatagramHostedAddress * pRouting )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -6085,10 +6085,10 @@ STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_GetHostedDedicatedServerAd
 
 STEAMAPI_API HSteamListenSocket SteamAPI_ISteamNetworkingSockets_CreateHostedDedicatedServerListenSocket( ISteamNetworkingSockets* self, int nLocalVirtualPort, int nOptions, const SteamNetworkingConfigValue_t * pOptions )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -6097,10 +6097,10 @@ STEAMAPI_API HSteamListenSocket SteamAPI_ISteamNetworkingSockets_CreateHostedDed
 
 STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_GetGameCoordinatorServerLogin( ISteamNetworkingSockets* self, SteamDatagramGameCoordinatorServerLogin * pLoginInfo, int * pcbSignedBlob, void * pBlob )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -6113,10 +6113,10 @@ STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_GetGameCoordinatorServerLo
 //STEAMAPI_API HSteamNetConnection SteamAPI_ISteamNetworkingSockets_ConnectP2PCustomSignaling( ISteamNetworkingSockets* self, ISteamNetworkingConnectionCustomSignaling * pSignaling, const SteamNetworkingIdentity * pPeerIdentity, int nRemoteVirtualPort, int nOptions, const SteamNetworkingConfigValue_t * pOptions )
 STEAMAPI_API HSteamNetConnection SteamAPI_ISteamNetworkingSockets_ConnectP2PCustomSignaling( ISteamNetworkingSockets* self, ISteamNetworkingConnectionSignaling * pSignaling, const SteamNetworkingIdentity * pPeerIdentity, int nRemoteVirtualPort, int nOptions, const SteamNetworkingConfigValue_t * pOptions )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -6126,10 +6126,10 @@ STEAMAPI_API HSteamNetConnection SteamAPI_ISteamNetworkingSockets_ConnectP2PCust
 //STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_ReceivedP2PCustomSignal( ISteamNetworkingSockets* self, const void * pMsg, int cbMsg, ISteamNetworkingCustomSignalingRecvContext * pContext )
 STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_ReceivedP2PCustomSignal( ISteamNetworkingSockets* self, const void * pMsg, int cbMsg, ISteamNetworkingSignalingRecvContext * pContext )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -6138,10 +6138,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_ReceivedP2PCustomSignal
 
 STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_GetCertificateRequest( ISteamNetworkingSockets* self, int * pcbBlob, void * pBlob, SteamNetworkingErrMsg & errMsg )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -6150,10 +6150,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_GetCertificateRequest( 
 
 STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_SetCertificate( ISteamNetworkingSockets* self, const void * pCertificate, int cbCertificate, SteamNetworkingErrMsg & errMsg )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -6162,10 +6162,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_SetCertificate( ISteamN
 
 STEAMAPI_API void SteamAPI_ISteamNetworkingSockets_ResetIdentity( ISteamNetworkingSockets* self, const SteamNetworkingIdentity * pIdentity )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -6174,10 +6174,10 @@ STEAMAPI_API void SteamAPI_ISteamNetworkingSockets_ResetIdentity( ISteamNetworki
 
 STEAMAPI_API void SteamAPI_ISteamNetworkingSockets_RunCallbacks( ISteamNetworkingSockets* self )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -6186,10 +6186,10 @@ STEAMAPI_API void SteamAPI_ISteamNetworkingSockets_RunCallbacks( ISteamNetworkin
 
 STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_BeginAsyncRequestFakeIP( ISteamNetworkingSockets* self, int nNumPorts )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -6198,10 +6198,10 @@ STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_BeginAsyncRequestFakeIP
 
 STEAMAPI_API void SteamAPI_ISteamNetworkingSockets_GetFakeIP( ISteamNetworkingSockets* self, int idxFirstPort, SteamNetworkingFakeIPResult_t * pInfo )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -6210,10 +6210,10 @@ STEAMAPI_API void SteamAPI_ISteamNetworkingSockets_GetFakeIP( ISteamNetworkingSo
 
 STEAMAPI_API HSteamListenSocket SteamAPI_ISteamNetworkingSockets_CreateListenSocketP2PFakeIP( ISteamNetworkingSockets* self, int idxFakePort, int nOptions, const SteamNetworkingConfigValue_t * pOptions )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -6222,10 +6222,10 @@ STEAMAPI_API HSteamListenSocket SteamAPI_ISteamNetworkingSockets_CreateListenSoc
 
 STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_GetRemoteFakeIPForConnection( ISteamNetworkingSockets* self, HSteamNetConnection hConn, SteamNetworkingIPAddr * pOutAddr )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
@@ -6234,10 +6234,10 @@ STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_GetRemoteFakeIPForConnecti
 
 STEAMAPI_API ISteamNetworkingFakeUDPPort * SteamAPI_ISteamNetworkingSockets_CreateFakeUDPPort( ISteamNetworkingSockets* self, int idxFakeServerPort )
 {
-    long long test1 = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
-    long long test2 = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
     auto ptr = get_steam_client()->steam_gameserver_networking_sockets;
-    if (test1 >= 0 && (test2 < 0 || test1 < test2)) {
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
