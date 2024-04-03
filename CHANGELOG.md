@@ -6,6 +6,9 @@
     the script will attempt to detect and use the built-in tool `sudo` if it was available
 * **[Detanup01]** Added Steamwork SDK version 159
 * **[detiam]** added schinese and tchinese translations to the overlay
+* **[detiam]** enhanced the overlay font
+  - replace the builtin font with `Unifont`
+  - allow loading a custom font whose location is defined in `overlay_appearance.txt`
 * allow sharing leaderboards scores with connected players, adjust players ranks locally, and sort entries as needed by the game, suggested by **[M4RCK5]**  
   this will only work when people connected on the same network are playing the same game, once they disconnect their leaderboard entry will be lost (no data persistence for other players), also it doesn't work well with VPN clients.  
   this behavior could be enabled via `share_leaderboards_over_network.txt`
