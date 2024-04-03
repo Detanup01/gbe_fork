@@ -71,7 +71,7 @@ static void load_subscribed_groups_clans(std::string clans_filepath, Settings *s
     }
 }
 
-static void load_overlay_appearance(std::string appearance_filepath, Settings *settings_client, Settings *settings_server)
+static void load_overlay_appearance(std::string appearance_filepath, Settings *settings_client, Settings *settings_server, std::string &program_path)
 {
     std::ifstream appearance_file(utf8_decode(appearance_filepath));
     if (appearance_file.is_open()) {
@@ -101,7 +101,13 @@ static void load_overlay_appearance(std::string appearance_filepath, Settings *s
 
             PRINT_DEBUG("  Overlay appearance line '%s' = '%s'\n", name.c_str(), value.c_str());
             try {
-                if (name.compare("Font_Size") == 0) {
+                if (name.compare("Font_Override") == 0) {
+                    std::filesystem::path nfont_override = value;
+                    if (nfont_override.is_relative())
+                        nfont_override = program_path / nfont_override;
+                    settings_client->overlay_appearance.font_override = nfont_override;
+                    settings_server->overlay_appearance.font_override = nfont_override;
+                } else if (name.compare("Font_Size") == 0) {
                     float nfont_size = std::stof(value, NULL);
                     settings_client->overlay_appearance.font_size = nfont_size;
                     settings_server->overlay_appearance.font_size = nfont_size;
@@ -1413,8 +1419,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     load_subscribed_groups_clans(local_storage->get_global_settings_path() + "subscribed_groups_clans.txt", settings_client, settings_server);
     load_subscribed_groups_clans(Local_Storage::get_game_settings_path() + "subscribed_groups_clans.txt", settings_client, settings_server);
 
-    load_overlay_appearance(local_storage->get_global_settings_path() + "overlay_appearance.txt", settings_client, settings_server);
-    load_overlay_appearance(Local_Storage::get_game_settings_path() + "overlay_appearance.txt", settings_client, settings_server);
+    load_overlay_appearance(local_storage->get_global_settings_path() + "overlay_appearance.txt", settings_client, settings_server, program_path);
+    load_overlay_appearance(Local_Storage::get_game_settings_path() + "overlay_appearance.txt", settings_client, settings_server, program_path);
 
     parse_mods_folder(settings_client, settings_server, local_storage);
     load_gamecontroller_settings(settings_client);

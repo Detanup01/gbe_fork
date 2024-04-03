@@ -232,7 +232,7 @@ void Steam_Overlay::create_fonts()
     fonts_atlas.Flags |= ImFontAtlasFlags_NoPowerOfTwoHeight;
 
     float font_size = settings->overlay_appearance.font_size;
-    
+
     static ImFontConfig font_cfg{};
     font_cfg.FontDataOwnedByAtlas = false; // https://github.com/ocornut/imgui/blob/master/docs/FONTS.md#loading-font-data-from-memory
     font_cfg.PixelSnapH = true;
@@ -294,7 +294,14 @@ void Steam_Overlay::create_fonts()
     font_builder.BuildRanges(&ranges);
     font_cfg.GlyphRanges = ranges.Data;
 
-    fonts_atlas.AddFontDefault(&font_cfg);
+    std::filesystem::path font_override = settings->overlay_appearance.font_override;
+    if (std::filesystem::exists(font_override)) {
+        fonts_atlas.AddFontFromFileTTF(font_override.string().c_str(), font_size, &font_cfg);
+        font_cfg.MergeMode = true; // merge next fonts into the first one, as if they were all just 1 font file
+    } else {
+        PRINT_DEBUG("Steam_Overlay::create_fonts override font not exists. %s\n", font_override.c_str());
+    }
+
     ImFont *font = fonts_atlas.AddFontFromMemoryCompressedTTF(unifont_compressed_data, unifont_compressed_size, font_size, &font_cfg);
     font_notif = font_default = font;
     

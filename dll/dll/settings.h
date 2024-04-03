@@ -112,6 +112,8 @@ struct Overlay_Appearance {
 
     constexpr const static NotificationPosition default_pos = NotificationPosition::top_right;
 
+    std::filesystem::path font_override;
+    
     float font_size = 16.0f;
     float icon_size = 64.0f;
 
