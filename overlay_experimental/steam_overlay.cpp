@@ -244,9 +244,9 @@ void Steam_Overlay::create_fonts()
     font_cfg.GlyphExtraSpacing.y = settings->overlay_appearance.font_glyph_extra_spacing_y;
 
     static ImFontGlyphRangesBuilder font_builder{};
-    for (auto &x : achievements) {
-        font_builder.AddText(x.title.c_str());
-        font_builder.AddText(x.description.c_str());
+    for (const auto &ach : achievements) {
+        font_builder.AddText(ach.title.c_str());
+        font_builder.AddText(ach.description.c_str());
     }
     for (int i = 0; i < TRANSLATION_NUMBER_OF_LANGUAGES; i++) {
         font_builder.AddText(translationChat[i]);
@@ -294,14 +294,12 @@ void Steam_Overlay::create_fonts()
     font_builder.BuildRanges(&ranges);
     font_cfg.GlyphRanges = ranges.Data;
 
-    std::filesystem::path font_override = settings->overlay_appearance.font_override;
-    if (std::filesystem::exists(font_override)) {
-        fonts_atlas.AddFontFromFileTTF(font_override.string().c_str(), font_size, &font_cfg);
+    if (settings->overlay_appearance.font_override.size()) {
+        fonts_atlas.AddFontFromFileTTF(settings->overlay_appearance.font_override.c_str(), font_size, &font_cfg);
         font_cfg.MergeMode = true; // merge next fonts into the first one, as if they were all just 1 font file
-    } else {
-        PRINT_DEBUG("Steam_Overlay::create_fonts override font not exists. %s\n", font_override.c_str());
     }
 
+    // note: base85 compressed arrays caused a compiler heap allocation error, regular compression is more guaranteed
     ImFont *font = fonts_atlas.AddFontFromMemoryCompressedTTF(unifont_compressed_data, unifont_compressed_size, font_size, &font_cfg);
     font_notif = font_default = font;
     

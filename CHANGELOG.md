@@ -1,3 +1,5 @@
+# 2024/4/3
+
 * **[detiam]** fix linking errors when building on archlinux
 * **[detiam]** optimize Linux deps build script:
   - new argument `-packages_skip`: allows skipping installation of distro packages, such as `build-essential`, `gcc-multilib`, etc...
@@ -8,7 +10,8 @@
 * **[detiam]** added schinese and tchinese translations to the overlay
 * **[detiam]** enhanced the overlay font
   - replace the builtin font with `Unifont`
-  - allow loading a custom font whose location is defined in `overlay_appearance.txt`
+  - allow loading a custom font whose location is defined in `overlay_appearance.txt`  
+    fonts with relative paths will be loaded from `steam_settings\fonts`
 * allow sharing leaderboards scores with connected players, adjust players ranks locally, and sort entries as needed by the game, suggested by **[M4RCK5]**  
   this will only work when people connected on the same network are playing the same game, once they disconnect their leaderboard entry will be lost (no data persistence for other players), also it doesn't work well with VPN clients.  
   this behavior could be enabled via `share_leaderboards_over_network.txt`
@@ -17,7 +20,7 @@
   you can also create `immediate_gameserver_stats.txt` to sync data immediately, but **not recommended**  
 * for windows: updated stub drm patterns and added a workaround for older variants,  
   this increases the compatibility, but makes it easier to be detected
-* for windows: new stub/mock dll `GameOverlayRenderer(64).dll` for the experiemntal cold client setup,  
+* for windows: new stub/mock dll `GameOverlayRenderer(64).dll` for the experimental cold client setup,  
   some apps verify the existence of this dll, either on disk, or inside their memory space.  
   **not recommended** to ignore it
 * separated the config file `disable_leaderboards_create_unknown.txt`, previously it was tied to `leaderboards.txt`,  
