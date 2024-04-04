@@ -202,9 +202,11 @@ void Steam_Overlay::renderer_hook_init_thread()
     // std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     _renderer = future_renderer.get();
     PRINT_DEBUG("Steam_Overlay::renderer_hook_init_thread got renderer %p\n", _renderer);
-    create_fonts();
-    load_audio();
+    
+    // note: make sure to load all relevant strings before creating the font(s), otherwise some glyphs ranges will be missing
     load_achievements_data();
+    load_audio();
+    create_fonts();
     
     // setup renderer callbacks
     const static std::set<InGameOverlay::ToggleKey> overlay_toggle_keys = {
@@ -221,6 +223,7 @@ void Steam_Overlay::renderer_hook_init_thread()
     PRINT_DEBUG("Steam_Overlay::renderer_hook_init_thread started renderer hook (result=%i)\n", (int)started);
 }
 
+// note: make sure to load all relevant strings before creating the font(s), otherwise some glyphs ranges will be missing
 void Steam_Overlay::create_fonts()
 {
     static std::atomic<bool> create_fonts_called = false;

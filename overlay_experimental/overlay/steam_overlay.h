@@ -196,6 +196,7 @@ class Steam_Overlay
     void renderer_detector_delay_thread();
     void renderer_hook_init_thread();
     
+    // note: make sure to load all relevant strings before creating the font(s), otherwise some glyphs ranges will be missing
     void create_fonts();
     void load_audio();
     void load_achievements_data();

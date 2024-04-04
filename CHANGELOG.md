@@ -1,3 +1,8 @@
+# 2024/4/3 (hotfix 1)
+* load achievements strings before creating fonts, so that their glyphs ranges are taken into consideration
+
+---
+
 # 2024/4/3
 
 * **[detiam]** fix linking errors when building on archlinux
