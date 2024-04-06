@@ -1,3 +1,13 @@
+* properly implement `Steam_Apps::GetAvailableGameLanguages()`
+* ensure current emu language is inside `supported_languages` list
+* run the background thread for callbacks earlier inside `Steam_Client::ConnectToGlobalUser()`  
+  since some games don't call `SteamAPI_RunCallbacks()` or `SteamAPI_ManualDispatch_RunFrame()` or `Steam_BGetCallback()`  
+  hence all run_callbacks() will never run, also networking callbacks won't run
+* decrease the periodicity of the background thread to `~100ms`, also prevent it from running if the callbacks are already running
+* output function name in debug log
+
+---
+
 # 2024/4/3 (hotfix 1)
 * load achievements strings before creating fonts, so that their glyphs ranges are taken into consideration
 
