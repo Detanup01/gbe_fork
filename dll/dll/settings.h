@@ -158,7 +158,7 @@ struct Overlay_Appearance {
         else if (str == "bot_center") return NotificationPosition::bot_center;
         else if (str == "bot_right") return NotificationPosition::bot_right;
 
-        PRINT_DEBUG("Invalid position '%s'\n", str.c_str());
+        PRINT_DEBUG("Invalid position '%s'", str.c_str());
         return default_pos;
     }
 };
@@ -178,6 +178,10 @@ class Settings {
     std::map<std::string, Leaderboard_config> leaderboards{};
     std::map<std::string, Stat_config> stats{};
     uint16 port{}; // Listen port, default 47584
+
+    //supported languages
+    std::set<std::string> supported_languages_set{};
+    std::string supported_languages{};
 
 public:
 
@@ -199,9 +203,6 @@ public:
 
     //app build id
     int build_id = 10;
-
-    //supported languages
-    std::set<std::string> supported_languages{};
 
     //make lobby creation fail in the matchmaking interface
     bool disable_lobby_creation = false;
@@ -296,6 +297,10 @@ public:
     void set_local_name(const char *name);
     const char *get_language();
     void set_language(const char *language);
+
+    void set_supported_languages(const std::set<std::string> &langs);
+    const std::set<std::string>& get_supported_languages_set() const;
+    const std::string& get_supported_languages() const;
 
     void set_game_id(CGameID game_id);
     void set_lobby(CSteamID lobby_id);

@@ -19,7 +19,7 @@
 
 static void load_custom_broadcasts(std::string broadcasts_filepath, std::set<IP_PORT> &custom_broadcasts)
 {
-    PRINT_DEBUG("Broadcasts file path: %s\n", broadcasts_filepath.c_str());
+    PRINT_DEBUG("loading broadcasts file '%s'", broadcasts_filepath.c_str());
     std::ifstream broadcasts_file(utf8_decode(broadcasts_filepath));
     common_helpers::consume_bom(broadcasts_file);
     if (broadcasts_file.is_open()) {
@@ -33,13 +33,13 @@ static void load_custom_broadcasts(std::string broadcasts_filepath, std::set<IP_
 
 static void load_subscribed_groups_clans(std::string clans_filepath, Settings *settings_client, Settings *settings_server)
 {
-    PRINT_DEBUG("Group clans file path: %s\n", clans_filepath.c_str());
+    PRINT_DEBUG("loading group clans file '%s'", clans_filepath.c_str());
     std::ifstream clans_file(utf8_decode(clans_filepath));
     if (clans_file.is_open()) {
         common_helpers::consume_bom(clans_file);
         std::string line;
         while (std::getline(clans_file, line)) {
-            if (line.length() < 0) continue;
+            if (line.length() <= 0) continue;
 
             std::size_t seperator1 = line.find("\t\t");
             std::size_t seperator2 = line.rfind("\t\t");
@@ -65,7 +65,7 @@ static void load_subscribed_groups_clans(std::string clans_filepath, Settings *s
             try {
                 settings_client->subscribed_groups_clans.push_back(nclan);
                 settings_server->subscribed_groups_clans.push_back(nclan);
-                PRINT_DEBUG("Added clan %s\n", clan_name.c_str());
+                PRINT_DEBUG("Added clan %s", clan_name.c_str());
             } catch (...) {}
         }
     }
@@ -75,7 +75,7 @@ static void load_overlay_appearance(std::string appearance_filepath, Settings *s
 {
     std::ifstream appearance_file(utf8_decode(appearance_filepath));
     if (appearance_file.is_open()) {
-        PRINT_DEBUG("Parsing overlay appearance file: '%s'\n", appearance_filepath.c_str());
+        PRINT_DEBUG("Parsing overlay appearance file '%s'", appearance_filepath.c_str());
         common_helpers::consume_bom(appearance_file);
         std::string line{};
         while (std::getline(appearance_file, line)) {
@@ -99,7 +99,7 @@ static void load_overlay_appearance(std::string appearance_filepath, Settings *s
                 continue;
             }
 
-            PRINT_DEBUG("  Overlay appearance line '%s'='%s'\n", name.c_str(), value.c_str());
+            PRINT_DEBUG("  Overlay appearance line '%s'='%s'", name.c_str(), value.c_str());
             try {
                 if (name.compare("Font_Override") == 0) {
                     std::string nfont_override(common_helpers::to_absolute(value, Local_Storage::get_game_settings_path() + "fonts"));
@@ -107,7 +107,7 @@ static void load_overlay_appearance(std::string appearance_filepath, Settings *s
                         settings_client->overlay_appearance.font_override = nfont_override;
                         settings_server->overlay_appearance.font_override = nfont_override;
                     } else {
-                        PRINT_DEBUG("  ERROR font file '%s' doesn't exist and will be ignored\n", nfont_override.c_str());
+                        PRINT_DEBUG("  ERROR font file '%s' doesn't exist and will be ignored", nfont_override.c_str());
                     }
                 } else if (name.compare("Font_Size") == 0) {
                     float nfont_size = std::stof(value, NULL);
@@ -246,7 +246,7 @@ static void load_gamecontroller_settings(Settings *settings)
         if ( std::toupper(p[length - 3]) != 'T') continue;
         if (p[length - 4] != '.') continue;
 
-        PRINT_DEBUG("controller config %s\n", p.c_str());
+        PRINT_DEBUG("controller config %s", p.c_str());
         std::string action_set_name = p.substr(0, length - 4);
         std::transform(action_set_name.begin(), action_set_name.end(), action_set_name.begin(),[](unsigned char c){ return std::toupper(c); });
 
@@ -288,11 +288,11 @@ static void load_gamecontroller_settings(Settings *settings)
                 std::pair<std::set<std::string>, std::string> button_config = {{}, source_mode};
                 split_string(button_name, ',', std::inserter(button_config.first, button_config.first.begin()));
                 button_pairs[action_name] = button_config;
-                PRINT_DEBUG("Added %s %s %s\n", action_name.c_str(), button_name.c_str(), source_mode.c_str());
+                PRINT_DEBUG("Added %s %s %s", action_name.c_str(), button_name.c_str(), source_mode.c_str());
             }
 
             settings->controller_settings.action_sets[action_set_name] = button_pairs;
-            PRINT_DEBUG("Added %zu action names to %s\n", button_pairs.size(), action_set_name.c_str());
+            PRINT_DEBUG("Added %zu action names to %s", button_pairs.size(), action_set_name.c_str());
         }
     }
 
@@ -331,7 +331,7 @@ uint32 parse_steam_app_id(std::string &program_path)
         std::string str_gameid = get_env_variable("SteamGameId");
         std::string str_overlay_gameid = get_env_variable("SteamOverlayGameId");
         
-        PRINT_DEBUG("str_appid %s str_gameid: %s str_overlay_gameid: %s\n", str_appid.c_str(), str_gameid.c_str(), str_overlay_gameid.c_str());
+        PRINT_DEBUG("str_appid %s str_gameid: %s str_overlay_gameid: %s", str_appid.c_str(), str_gameid.c_str(), str_overlay_gameid.c_str());
         uint32 appid_env = 0;
         uint32 gameid_env = 0;
         uint32 overlay_gameid = 0;
@@ -360,7 +360,7 @@ uint32 parse_steam_app_id(std::string &program_path)
             }
         }
 
-        PRINT_DEBUG("appid_env %u gameid_env: %u overlay_gameid: %u\n", appid_env, gameid_env, overlay_gameid);
+        PRINT_DEBUG("appid_env %u gameid_env: %u overlay_gameid: %u", appid_env, gameid_env, overlay_gameid);
         if (appid_env) {
             appid = appid_env;
         }
@@ -457,6 +457,7 @@ CSteamID parse_user_steam_id(class Local_Storage *local_storage)
 }
 
 // language.txt
+// valid list: https://partner.steamgames.com/doc/store/localization/languages
 std::string parse_current_language(class Local_Storage *local_storage)
 {
     char language[64] = {};
@@ -465,18 +466,19 @@ std::string parse_current_language(class Local_Storage *local_storage)
         local_storage->store_data_settings("language.txt", language, strlen(language));
     }
 
-    return std::string(language);
+    return common_helpers::to_lower(std::string(language));
 }
 
 // supported_languages.txt
+// valid list: https://partner.steamgames.com/doc/store/localization/languages
 std::set<std::string> parse_supported_languages(class Local_Storage *local_storage, std::string &language)
 {
-    std::set<std::string> supported_languages;
+    std::set<std::string> supported_languages{};
 
     std::string lang_config_path = Local_Storage::get_game_settings_path() + "supported_languages.txt";
     std::ifstream input( utf8_decode(lang_config_path) );
 
-    std::string first_language;
+    std::string first_language{};
     if (input.is_open()) {
         common_helpers::consume_bom(input);
         for( std::string line; getline( input, line ); ) {
@@ -489,19 +491,21 @@ std::set<std::string> parse_supported_languages(class Local_Storage *local_stora
             }
 
             try {
-                std::string lang = line;
+                std::string lang = common_helpers::to_lower(line);
                 if (!first_language.size()) first_language = lang;
                 supported_languages.insert(lang);
-                PRINT_DEBUG("Added supported_language %s\n", lang.c_str());
+                PRINT_DEBUG("Added supported_language %s", lang.c_str());
             } catch (...) {}
         }
     }
 
     // if the current emu language is not in the supported languages list
     if (!supported_languages.count(language)) {
-        // and the supported languages list wasn't empty
-        if (first_language.size()) {
+        if (first_language.size()) { // get the first supported language if the list wasn't empty
             language = first_language;
+        } else { // otherwise just lie and add it then!
+            supported_languages.insert(language);
+            PRINT_DEBUG("Forced current language '%s' into supported_languages", language.c_str());
         }
     }
 
@@ -517,7 +521,7 @@ static void parse_dlc(class Settings *settings_client, Settings *settings_server
         common_helpers::consume_bom(input);
         settings_client->unlockAllDLC(false);
         settings_server->unlockAllDLC(false);
-        PRINT_DEBUG("Locking all DLC\n");
+        PRINT_DEBUG("Locking all DLC");
 
         for( std::string line; std::getline( input, line ); ) {
             if (!line.empty() && line.front() == '#') {
@@ -538,7 +542,7 @@ static void parse_dlc(class Settings *settings_client, Settings *settings_server
                 bool available = true;
 
                 if (appid) {
-                    PRINT_DEBUG("Adding DLC: %u|%s| %u\n", appid, name.c_str(), available);
+                    PRINT_DEBUG("Adding DLC: %u|%s| %u", appid, name.c_str(), available);
                     settings_client->addDLC(appid, name, available);
                     settings_server->addDLC(appid, name, available);
                 }
@@ -546,7 +550,7 @@ static void parse_dlc(class Settings *settings_client, Settings *settings_server
         }
     } else {
         //unlock all DLC
-        PRINT_DEBUG("Unlocking all DLC\n");
+        PRINT_DEBUG("Unlocking all DLC");
         settings_client->unlockAllDLC(true);
         settings_server->unlockAllDLC(true);
     }
@@ -577,11 +581,11 @@ static void parse_app_paths(class Settings *settings_client, Settings *settings_
 
                 if (appid) {
                     if (path.size()) {
-                        PRINT_DEBUG("Adding app path: %u|%s|\n", appid, path.c_str());
+                        PRINT_DEBUG("Adding app path: %u|%s|", appid, path.c_str());
                         settings_client->setAppInstallPath(appid, path);
                         settings_server->setAppInstallPath(appid, path);
                     } else {
-                        PRINT_DEBUG("Error adding app path for: %u does this path exist? |%s|\n", appid, rel_path.c_str());
+                        PRINT_DEBUG("Error adding app path for: %u does this path exist? |%s|", appid, rel_path.c_str());
                     }
                 }
             }
@@ -622,11 +626,11 @@ static void parse_leaderboards(class Settings *settings_client, Settings *settin
             }
 
             if (leaderboard.size() && sort_method <= k_ELeaderboardSortMethodDescending && display_type <= k_ELeaderboardDisplayTypeTimeMilliSeconds) {
-                PRINT_DEBUG("Adding leaderboard: %s|%u|%u\n", leaderboard.c_str(), sort_method, display_type);
+                PRINT_DEBUG("Adding leaderboard: %s|%u|%u", leaderboard.c_str(), sort_method, display_type);
                 settings_client->setLeaderboard(leaderboard, (ELeaderboardSortMethod)sort_method, (ELeaderboardDisplayType)display_type);
                 settings_server->setLeaderboard(leaderboard, (ELeaderboardSortMethod)sort_method, (ELeaderboardDisplayType)display_type);
             } else {
-                PRINT_DEBUG("Error adding leaderboard for: '%s', are sort method %u or display type %u valid?\n", leaderboard.c_str(), sort_method, display_type);
+                PRINT_DEBUG("Error adding leaderboard for: '%s', are sort method %u or display type %u valid?", leaderboard.c_str(), sort_method, display_type);
             }
         }
     }
@@ -681,20 +685,20 @@ static void parse_stats(class Settings *settings_client, Settings *settings_serv
                     config.type = GameServerStats_Messages::StatInfo::STAT_TYPE_AVGRATE;
                     config.default_value_float = std::stof(stat_default_value);
                 } else {
-                    PRINT_DEBUG("Error adding stat %s, type %s isn't valid\n", stat_name.c_str(), stat_type.c_str());
+                    PRINT_DEBUG("Error adding stat %s, type %s isn't valid", stat_name.c_str(), stat_type.c_str());
                     continue;
                 }
             } catch (...) {
-                PRINT_DEBUG("Error adding stat %s, default value %s isn't valid\n", stat_name.c_str(), stat_default_value.c_str());
+                PRINT_DEBUG("Error adding stat %s, default value %s isn't valid", stat_name.c_str(), stat_default_value.c_str());
                 continue;
             }
 
             if (stat_name.size()) {
-                PRINT_DEBUG("Adding stat type: %s|%u|%f|%i\n", stat_name.c_str(), config.type, config.default_value_float, config.default_value_int);
+                PRINT_DEBUG("Adding stat type: %s|%u|%f|%i", stat_name.c_str(), config.type, config.default_value_float, config.default_value_int);
                 settings_client->setStatDefiniton(stat_name, config);
                 settings_server->setStatDefiniton(stat_name, config);
             } else {
-                PRINT_DEBUG("Error adding stat for: %s, empty name\n", stat_name.c_str());
+                PRINT_DEBUG("Error adding stat for: %s, empty name", stat_name.c_str());
             }
         }
     }
@@ -721,7 +725,7 @@ static void parse_depots(class Settings *settings_client, Settings *settings_ser
                 DepotId_t depot_id = std::stoul(line);
                 settings_client->depots.push_back(depot_id);
                 settings_server->depots.push_back(depot_id);
-                PRINT_DEBUG("Added depot %u\n", depot_id);
+                PRINT_DEBUG("Added depot %u", depot_id);
             } catch (...) {}
         }
     }
@@ -748,7 +752,7 @@ static void parse_subscribed_groups(class Settings *settings_client, Settings *s
                 uint64 source_id = std::stoull(line);
                 settings_client->subscribed_groups.insert(source_id);
                 settings_server->subscribed_groups.insert(source_id);
-                PRINT_DEBUG("Added source %llu\n", source_id);
+                PRINT_DEBUG("Added source %llu", source_id);
             } catch (...) {}
         }
     }
@@ -763,7 +767,7 @@ static void parse_installed_app_Ids(class Settings *settings_client, Settings *s
     if (input.is_open()) {
         settings_client->assume_any_app_installed = false;
         settings_server->assume_any_app_installed = false;
-        PRINT_DEBUG("Limiting/Locking installed apps\n");
+        PRINT_DEBUG("Limiting/Locking installed apps");
         common_helpers::consume_bom(input);
         for( std::string line; getline( input, line ); ) {
             if (!line.empty() && line[line.length()-1] == '\n') {
@@ -778,13 +782,13 @@ static void parse_installed_app_Ids(class Settings *settings_client, Settings *s
                 AppId_t app_id = std::stoul(line);
                 settings_client->installed_app_ids.insert(app_id);
                 settings_server->installed_app_ids.insert(app_id);
-                PRINT_DEBUG("Added installed app with ID %u\n", app_id);
+                PRINT_DEBUG("Added installed app with ID %u", app_id);
             } catch (...) {}
         }
     } else {
         settings_client->assume_any_app_installed = true;
         settings_server->assume_any_app_installed = true;
-        PRINT_DEBUG("Assuming any app is installed\n");
+        PRINT_DEBUG("Assuming any app is installed");
     }
 
 }
@@ -802,7 +806,7 @@ static void parse_force_branch_name(class Settings *settings_client, Settings *s
         if (!line.empty()) {
             settings_client->current_branch_name = line;
             settings_server->current_branch_name = line;
-            PRINT_DEBUG("Forcing current branch name to '%s'\n", line.c_str());
+            PRINT_DEBUG("Forcing current branch name to '%s'", line.c_str());
         }
     }
 }
@@ -905,19 +909,19 @@ static void try_parse_mods_file(class Settings *settings_client, Settings *setti
             settings_client->addModDetails(newMod.id, newMod);
             settings_server->addModDetails(newMod.id, newMod);
             
-            PRINT_DEBUG("  parsed mod '%s':\n", std::string(mod.key()).c_str());
-            PRINT_DEBUG("    path (will be used for primary file): '%s'\n", newMod.path.c_str());
-            PRINT_DEBUG("    images path (will be used for preview file): '%s'\n", mod_images_fullpath.c_str());
-            PRINT_DEBUG("    primary_filename: '%s'\n", newMod.primaryFileName.c_str());
-            PRINT_DEBUG("    primary_filesize: %i bytes\n", newMod.primaryFileSize);
-            PRINT_DEBUG("    primary file handle: %llu\n", settings_client->getMod(newMod.id).handleFile);
-            PRINT_DEBUG("    preview_filename: '%s'\n", newMod.previewFileName.c_str());
-            PRINT_DEBUG("    preview_filesize: %i bytes\n", newMod.previewFileSize);
-            PRINT_DEBUG("    preview file handle: %llu\n", settings_client->getMod(newMod.id).handlePreviewFile);
-            PRINT_DEBUG("    workshop_item_url: '%s'\n", newMod.workshopItemURL.c_str());
-            PRINT_DEBUG("    preview_url: '%s'\n", newMod.previewURL.c_str());
+            PRINT_DEBUG("  parsed mod '%s':", std::string(mod.key()).c_str());
+            PRINT_DEBUG("    path (will be used for primary file): '%s'", newMod.path.c_str());
+            PRINT_DEBUG("    images path (will be used for preview file): '%s'", mod_images_fullpath.c_str());
+            PRINT_DEBUG("    primary_filename: '%s'", newMod.primaryFileName.c_str());
+            PRINT_DEBUG("    primary_filesize: %i bytes", newMod.primaryFileSize);
+            PRINT_DEBUG("    primary file handle: %llu", settings_client->getMod(newMod.id).handleFile);
+            PRINT_DEBUG("    preview_filename: '%s'", newMod.previewFileName.c_str());
+            PRINT_DEBUG("    preview_filesize: %i bytes", newMod.previewFileSize);
+            PRINT_DEBUG("    preview file handle: %llu", settings_client->getMod(newMod.id).handlePreviewFile);
+            PRINT_DEBUG("    workshop_item_url: '%s'", newMod.workshopItemURL.c_str());
+            PRINT_DEBUG("    preview_url: '%s'", newMod.previewURL.c_str());
         } catch (std::exception& e) {
-            PRINT_DEBUG("MODLOADER ERROR: %s\n", e.what());
+            PRINT_DEBUG("MODLOADER ERROR: %s", e.what());
         }
     }
 }
@@ -967,17 +971,17 @@ static void try_detect_mods_folder(class Settings *settings_client, Settings *se
             settings_server->addMod(newMod.id, newMod.title, newMod.path);
             settings_client->addModDetails(newMod.id, newMod);
             settings_server->addModDetails(newMod.id, newMod);
-            PRINT_DEBUG("  detected mod '%s':\n", mod_folder.c_str());
-            PRINT_DEBUG("    path (will be used for primary file): '%s'\n", newMod.path.c_str());
-            PRINT_DEBUG("    images path (will be used for preview file): '%s'\n", mod_images_fullpath.c_str());
-            PRINT_DEBUG("    primary_filename: '%s'\n", newMod.primaryFileName.c_str());
-            PRINT_DEBUG("    primary_filesize: %i bytes\n", newMod.primaryFileSize);
-            PRINT_DEBUG("    primary file handle: %llu\n", settings_client->getMod(newMod.id).handleFile);
-            PRINT_DEBUG("    preview_filename: '%s'\n", newMod.previewFileName.c_str());
-            PRINT_DEBUG("    preview_filesize: %i bytes\n", newMod.previewFileSize);
-            PRINT_DEBUG("    preview file handle: %llu\n", settings_client->getMod(newMod.id).handlePreviewFile);
-            PRINT_DEBUG("    workshop_item_url: '%s'\n", newMod.workshopItemURL.c_str());
-            PRINT_DEBUG("    preview_url: '%s'\n", newMod.previewURL.c_str());
+            PRINT_DEBUG("  detected mod '%s':", mod_folder.c_str());
+            PRINT_DEBUG("    path (will be used for primary file): '%s'", newMod.path.c_str());
+            PRINT_DEBUG("    images path (will be used for preview file): '%s'", mod_images_fullpath.c_str());
+            PRINT_DEBUG("    primary_filename: '%s'", newMod.primaryFileName.c_str());
+            PRINT_DEBUG("    primary_filesize: %i bytes", newMod.primaryFileSize);
+            PRINT_DEBUG("    primary file handle: %llu", settings_client->getMod(newMod.id).handleFile);
+            PRINT_DEBUG("    preview_filename: '%s'", newMod.previewFileName.c_str());
+            PRINT_DEBUG("    preview_filesize: %i bytes", newMod.previewFileSize);
+            PRINT_DEBUG("    preview file handle: %llu", settings_client->getMod(newMod.id).handlePreviewFile);
+            PRINT_DEBUG("    workshop_item_url: '%s'", newMod.workshopItemURL.c_str());
+            PRINT_DEBUG("    preview_url: '%s'", newMod.previewURL.c_str());
         } catch (...) {}
     }
 }
@@ -989,10 +993,10 @@ static void parse_mods_folder(class Settings *settings_client, Settings *setting
     static constexpr auto mods_json_file = "mods.json";
     std::string mods_json_path = Local_Storage::get_game_settings_path() + mods_json_file;
     if (local_storage->load_json(mods_json_path, mod_items)) {
-        PRINT_DEBUG("Attempting to parse mods.json\n");
+        PRINT_DEBUG("Attempting to parse mods.json");
         try_parse_mods_file(settings_client, settings_server, mod_items, mods_folder);
     } else { // invalid mods.json or doesn't exist
-        PRINT_DEBUG("Failed to load mods.json, attempting to auto detect mods folder\n");
+        PRINT_DEBUG("Failed to load mods.json, attempting to auto detect mods folder");
         try_detect_mods_folder(settings_client, settings_server, mods_folder);
     }
 
@@ -1085,9 +1089,9 @@ static void parse_crash_printer_location()
         if (!line.empty()) {
             auto crash_path = utf8_decode(get_full_program_path() + line);
             if (crash_printer::init(crash_path)) {
-                PRINT_DEBUG("Unhandled crashes will be saved to '%s'\n", line.c_str());
+                PRINT_DEBUG("Unhandled crashes will be saved to '%s'", line.c_str());
             } else {
-                PRINT_DEBUG("Failed to setup unhandled crash printer with path: '%s'\n", line.c_str());
+                PRINT_DEBUG("Failed to setup unhandled crash printer with path: '%s'", line.c_str());
             }
         }
     }
@@ -1109,13 +1113,13 @@ static void parse_auto_accept_invite(class Settings *settings_client, Settings *
                     auto friend_id = std::stoull(line);
                     settings_client->addFriendToOverlayAutoAccept((uint64_t)friend_id);
                     settings_server->addFriendToOverlayAutoAccept((uint64_t)friend_id);
-                    PRINT_DEBUG("Auto accepting overlay invitations from user with ID (SteamID64) = %llu\n", friend_id);
+                    PRINT_DEBUG("Auto accepting overlay invitations from user with ID (SteamID64) = %llu", friend_id);
                 } catch (...) {}
             }
         }
 
         if (accept_any_invite) {
-            PRINT_DEBUG("Auto accepting any overlay invitation\n");
+            PRINT_DEBUG("Auto accepting any overlay invitation");
             settings_client->acceptAnyOverlayInvites(true);
             settings_server->acceptAnyOverlayInvites(true);
         } else {
@@ -1140,7 +1144,7 @@ static void parse_ip_country(class Settings *settings_client, Settings *settings
             std::transform(line.begin(), line.end(), line.begin(), [](char c){ return std::toupper(c); } );
             settings_client->ip_country = line;
             settings_server->ip_country = line;
-            PRINT_DEBUG("Setting IP country to: '%s'\n", line.c_str());
+            PRINT_DEBUG("Setting IP country to: '%s'", line.c_str());
         }
     }
 }
@@ -1161,7 +1165,7 @@ static void parse_overlay_hook_delay_sec(class Settings *settings_client, Settin
                 if (delay_sec >= 0) {
                     settings_client->overlay_hook_delay_sec = delay_sec;
                     settings_server->overlay_hook_delay_sec = delay_sec;
-                    PRINT_DEBUG("Setting overlay hook delay to %i seconds\n", delay_sec);
+                    PRINT_DEBUG("Setting overlay hook delay to %i seconds", delay_sec);
                 }
             } catch (...) {}
         }
@@ -1184,7 +1188,7 @@ static void parse_overlay_renderer_detector_timeout_sec(class Settings *settings
                 if (timeout_sec > 0) {
                     settings_client->overlay_renderer_detector_timeout_sec = timeout_sec;
                     settings_server->overlay_renderer_detector_timeout_sec = timeout_sec;
-                    PRINT_DEBUG("Setting overlay renderer detector timeout to %i seconds\n", timeout_sec);
+                    PRINT_DEBUG("Setting overlay renderer detector timeout to %i seconds", timeout_sec);
                 }
             } catch (...) {}
         }
@@ -1196,7 +1200,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     std::string program_path = Local_Storage::get_program_path();
     std::string save_path = Local_Storage::get_user_appdata_path();
 
-    PRINT_DEBUG("Current Path %s save_path: %s\n", program_path.c_str(), save_path.c_str());
+    PRINT_DEBUG("Current Path %s save_path: %s", program_path.c_str(), save_path.c_str());
 
     parse_crash_printer_location();
 
@@ -1204,7 +1208,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
 
     bool local_save = parse_local_save(program_path, save_path);
 
-    PRINT_DEBUG("Set save_path: %s\n", save_path.c_str());
+    PRINT_DEBUG("Set save_path: %s", save_path.c_str());
     Local_Storage *local_storage = new Local_Storage(save_path);
     local_storage->setAppId(appid);
 
@@ -1263,7 +1267,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
 
         std::vector<std::string> paths = Local_Storage::get_filenames_path(steam_settings_path);
         for (auto & p: paths) {
-            PRINT_DEBUG("steam settings path %s\n", p.c_str());
+            PRINT_DEBUG("steam settings path %s", p.c_str());
             if (p == "offline.txt") {
                 steam_offline_mode = true;
             } else if (p == "steam_deck.txt") {
@@ -1368,8 +1372,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     settings_server->disable_account_avatar = disable_account_avatar;
     settings_client->build_id = build_id;
     settings_server->build_id = build_id;
-    settings_client->supported_languages = supported_languages;
-    settings_server->supported_languages = supported_languages;
+    settings_client->set_supported_languages(supported_languages);
+    settings_server->set_supported_languages(supported_languages);
     settings_client->steam_deck = steam_deck_mode;
     settings_server->steam_deck = steam_deck_mode;
 

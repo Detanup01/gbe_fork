@@ -111,6 +111,29 @@ void Settings::set_language(const char *language)
     this->language = language;
 }
 
+void Settings::set_supported_languages(const std::set<std::string> &langs)
+{
+    this->supported_languages_set = langs;
+    
+    this->supported_languages.clear();
+    auto lang_it = langs.cbegin();
+    while (langs.cend() != lang_it) {
+        if (langs.cbegin() == lang_it) this->supported_languages = *lang_it;
+        else this->supported_languages.append(",").append(*lang_it); // this isn't C#, .append() will change the string!
+        ++lang_it;
+    }
+}
+
+const std::set<std::string>& Settings::get_supported_languages_set() const
+{
+    return this->supported_languages_set;
+}
+
+const std::string& Settings::get_supported_languages() const
+{
+    return this->supported_languages;
+}
+
 void Settings::set_game_id(CGameID game_id)
 {
     this->game_id = game_id;

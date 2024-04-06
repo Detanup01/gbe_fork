@@ -25,7 +25,11 @@ public:
 	bool BIsLowViolence();
 	bool BIsCybercafe();
 	bool BIsVACBanned();
+	
+	// valid list: https://partner.steamgames.com/doc/store/localization/languages
 	const char *GetCurrentGameLanguage();
+	
+	// valid list: https://partner.steamgames.com/doc/store/localization/languages
 	const char *GetAvailableGameLanguages();
 
 	// only use this member if you need to check ownership of another game related to yours, a demo for example
