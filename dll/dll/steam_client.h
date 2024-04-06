@@ -140,7 +140,8 @@ public:
     bool server_init = false;
     std::thread background_keepalive;
     bool steamclient_server_inited = false;
-    std::atomic<unsigned long long> last_cb_run;
+    std::atomic<unsigned long long> last_cb_run{};
+    std::atomic_bool cb_run_active = false;
 
     unsigned steam_pipe_counter = 1;
     std::map<HSteamPipe, enum Steam_Pipe> steam_pipes;
@@ -299,7 +300,7 @@ public:
     void RegisterCallResult( class CCallbackBase *pCallback, SteamAPICall_t hAPICall);
     void UnregisterCallResult( class CCallbackBase *pCallback, SteamAPICall_t hAPICall);
     
-    void RunCallbacks(bool runClientCB, bool runGameserverCB, bool runBackgroundThread=true);
+    void RunCallbacks(bool runClientCB, bool runGameserverCB);
     void setAppID(uint32 appid);
     void userLogIn();
     void serverInit();

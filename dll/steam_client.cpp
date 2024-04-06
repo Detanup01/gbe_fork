@@ -23,34 +23,58 @@ static std::condition_variable kill_background_thread_cv;
 static bool kill_background_thread;
 static void background_thread(Steam_Client *client)
 {
-    PRINT_DEBUG("background thread starting\n");
+    // duration allowed in which the thread might get a kill signal, before running its code
+    constexpr const static auto kill_thread_allowed_duration = std::chrono::milliseconds(100);
+    // max allowed time in which RunCallbacks() might not be called
+    constexpr const static auto max_stall_ms = 100ull;
 
+    static unsigned long long last_cooldown_time = 0;
+
+    // wait 1 sec
+    {
+        std::unique_lock<std::mutex> lck(kill_background_thread_mutex);
+        if (kill_background_thread || kill_background_thread_cv.wait_for(lck, std::chrono::seconds(1)) != std::cv_status::timeout) {
+            if (kill_background_thread) {
+                PRINT_DEBUG("early exit");
+                return;
+            }
+        }
+    }
+
+    PRINT_DEBUG("starting");
+
+    last_cooldown_time = (unsigned long long)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
     while (1) {
         {
-            std::unique_lock<std::mutex> lck(kill_background_thread_mutex);
-            if (kill_background_thread || kill_background_thread_cv.wait_for(lck, std::chrono::seconds(1)) != std::cv_status::timeout) {
+            std::unique_lock lck(kill_background_thread_mutex);
+            if (kill_background_thread || kill_background_thread_cv.wait_for(lck, kill_thread_allowed_duration) != std::cv_status::timeout) {
                 if (kill_background_thread) {
-                    PRINT_DEBUG("background thread exit\n");
+                    PRINT_DEBUG("exit");
                     return;
                 }
             }
         }
 
-        unsigned long long time = std::chrono::duration_cast<std::chrono::duration<unsigned long long>>(std::chrono::system_clock::now().time_since_epoch()).count();
+        auto now_ms = (unsigned long long)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
 
-        if (time > client->last_cb_run + 1) {
-            global_mutex.lock();
-            PRINT_DEBUG("background thread run\n");
-            client->network->Run();
-            client->run_every_runcb->run();
-            global_mutex.unlock();
+        if (now_ms > (last_cooldown_time + max_stall_ms)) { // if our cooldown time elapsed
+            last_cooldown_time = now_ms;
+            
+            // if our time exceeds last run time of callbacks and it wasn't processing already
+            if (!client->cb_run_active && (now_ms > (client->last_cb_run + max_stall_ms))) {
+                global_mutex.lock();
+                PRINT_DEBUG("run @@@@@@@@@@@@@@@@@@@@@@@@@@@");
+                client->network->Run(); // networking must run first since it receives messages use by each run_callback()
+                client->run_every_runcb->run(); // call each run_callback()
+                global_mutex.unlock();
+            }
         }
     }
 }
 
 Steam_Client::Steam_Client()
 {
-    PRINT_DEBUG("Steam_Client init start ----------\n");
+    PRINT_DEBUG("start ----------");
     uint32 appid = create_localstorage_settings(&settings_client, &settings_server, &local_storage);
     local_storage->update_save_filenames(Local_Storage::remote_storage_folder);
 
@@ -62,7 +86,7 @@ Steam_Client::Steam_Client()
     callbacks_server = new SteamCallBacks(callback_results_server);
     run_every_runcb = new RunEveryRunCB();
 
-    PRINT_DEBUG("Steam_Client init: id: %llu server id: %llu, appid: %u, port: %u\n", settings_client->get_local_steam_id().ConvertToUint64(), settings_server->get_local_steam_id().ConvertToUint64(), appid, settings_server->get_port());
+    PRINT_DEBUG("init: id: %llu server id: %llu, appid: %u, port: %u", settings_client->get_local_steam_id().ConvertToUint64(), settings_server->get_local_steam_id().ConvertToUint64(), appid, settings_server->get_port());
 
     if (appid) {
         auto appid_str = std::to_string(appid);
@@ -107,7 +131,7 @@ Steam_Client::Steam_Client()
     steam_remoteplay = new Steam_RemotePlay(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
     steam_tv = new Steam_TV(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
 
-    PRINT_DEBUG("client init gameserver\n");
+    PRINT_DEBUG("init gameserver");
     steam_gameserver = new Steam_GameServer(settings_server, network, callbacks_server);
     steam_gameserver_utils = new Steam_Utils(settings_server, callback_results_server, steam_overlay);
     steam_gameserverstats = new Steam_GameServerStats(settings_server, network, callback_results_server, callbacks_server, run_every_runcb);
@@ -122,13 +146,13 @@ Steam_Client::Steam_Client()
     steam_gameserver_game_coordinator = new Steam_Game_Coordinator(settings_server, network, callback_results_server, callbacks_server, run_every_runcb);
     steam_masterserver_updater = new Steam_Masterserver_Updater(settings_server, network, callback_results_server, callbacks_server, run_every_runcb);
 
-    PRINT_DEBUG("Steam_Client init AppTicket\n");
+    PRINT_DEBUG("init AppTicket");
     steam_app_ticket = new Steam_AppTicket(settings_client);
 
     gameserver_has_ipv6_functions = false;
 
     last_cb_run = 0;
-    PRINT_DEBUG("Steam_Client init end *********\n");
+    PRINT_DEBUG("end *********");
 }
 
 Steam_Client::~Steam_Client()
@@ -241,9 +265,9 @@ void Steam_Client::setAppID(uint32 appid)
 // NOT THREADSAFE - ensure that no other threads are accessing Steamworks API when calling
 HSteamPipe Steam_Client::CreateSteamPipe()
 {
-    PRINT_DEBUG("CreateSteamPipe\n");
+    PRINT_DEBUG_ENTRY();
     HSteamPipe pipe = steam_pipe_counter++;
-    PRINT_DEBUG("creating pipe %i\n", pipe);
+    PRINT_DEBUG("  pipe handle %i", pipe);
 
     steam_pipes[pipe] = Steam_Pipe::NO_USER;
     return pipe;
@@ -255,7 +279,7 @@ HSteamPipe Steam_Client::CreateSteamPipe()
 // https://partner.steamgames.com/doc/api/ISteamClient
 bool Steam_Client::BReleaseSteamPipe( HSteamPipe hSteamPipe )
 {
-    PRINT_DEBUG("BReleaseSteamPipe %i\n", hSteamPipe);
+    PRINT_DEBUG("%i", hSteamPipe);
     if (steam_pipes.count(hSteamPipe)) {
         return steam_pipes.erase(hSteamPipe) > 0;
     }
@@ -268,7 +292,7 @@ bool Steam_Client::BReleaseSteamPipe( HSteamPipe hSteamPipe )
 // NOT THREADSAFE - ensure that no other threads are accessing Steamworks API when calling
 HSteamUser Steam_Client::ConnectToGlobalUser( HSteamPipe hSteamPipe )
 {
-    PRINT_DEBUG("ConnectToGlobalUser %i\n", hSteamPipe);
+    PRINT_DEBUG("%i", hSteamPipe);
     if (!steam_pipes.count(hSteamPipe)) {
         return 0;
     }
@@ -276,6 +300,15 @@ HSteamUser Steam_Client::ConnectToGlobalUser( HSteamPipe hSteamPipe )
     userLogIn();
     
     if (!settings_client->disable_overlay) steam_overlay->SetupOverlay();
+    
+    // games like appid 1740720 and 2379780 do not call SteamAPI_RunCallbacks() or SteamAPI_ManualDispatch_RunFrame() or Steam_BGetCallback()
+    // hence all run_callbacks() will never run, which might break the assumption that these callbacks are always run
+    // also networking callbacks won't run
+    // hence we spawn the background thread here which trigger all run_callbacks() and run networking callbacks
+    if (!background_keepalive.joinable()) {
+        background_keepalive = std::thread(background_thread, this);
+        PRINT_DEBUG("spawned background thread *********");
+    }
 
     steam_pipes[hSteamPipe] = Steam_Pipe::CLIENT;
     return CLIENT_HSTEAMUSER;
@@ -285,7 +318,7 @@ HSteamUser Steam_Client::ConnectToGlobalUser( HSteamPipe hSteamPipe )
 // NOT THREADSAFE - ensure that no other threads are accessing Steamworks API when calling
 HSteamUser Steam_Client::CreateLocalUser( HSteamPipe *phSteamPipe, EAccountType eAccountType )
 {
-    PRINT_DEBUG("CreateLocalUser %p %i\n", phSteamPipe, eAccountType);
+    PRINT_DEBUG("%p %i", phSteamPipe, eAccountType);
     //if (eAccountType == k_EAccountTypeIndividual) {
         //Is this actually used?
         //if (phSteamPipe) *phSteamPipe = CLIENT_STEAM_PIPE;
@@ -310,7 +343,7 @@ HSteamUser Steam_Client::CreateLocalUser( HSteamPipe *phSteamPipe )
 // NOT THREADSAFE - ensure that no other threads are accessing Steamworks API when calling
 void Steam_Client::ReleaseUser( HSteamPipe hSteamPipe, HSteamUser hUser )
 {
-    PRINT_DEBUG("ReleaseUser\n");
+    PRINT_DEBUG_ENTRY();
     if (hUser == SERVER_HSTEAMUSER && steam_pipes.count(hSteamPipe)) {
         steamclient_server_inited = false;
     }
@@ -319,7 +352,7 @@ void Steam_Client::ReleaseUser( HSteamPipe hSteamPipe, HSteamUser hUser )
 // retrieves the ISteamUser interface associated with the handle
 ISteamUser *Steam_Client::GetISteamUser( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamUser %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
     if (strcmp(pchVersion, "SteamUser009") == 0) {
@@ -362,7 +395,7 @@ ISteamUser *Steam_Client::GetISteamUser( HSteamUser hSteamUser, HSteamPipe hStea
 // retrieves the ISteamGameServer interface associated with the handle
 ISteamGameServer *Steam_Client::GetISteamGameServer( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamGameServer %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
     if (strcmp(pchVersion, "SteamGameServer004") == 0) {
@@ -404,18 +437,18 @@ ISteamGameServer *Steam_Client::GetISteamGameServer( HSteamUser hSteamUser, HSte
 // this must be set before CreateLocalUser()
 void Steam_Client::SetLocalIPBinding( uint32 unIP, uint16 usPort )
 {
-    PRINT_DEBUG("SetLocalIPBinding old %u %hu\n", unIP, usPort);
+    PRINT_DEBUG("old %u %hu", unIP, usPort);
 }
 
 void Steam_Client::SetLocalIPBinding( const SteamIPAddress_t &unIP, uint16 usPort )
 {
-    PRINT_DEBUG("SetLocalIPBinding %i %u %hu\n", unIP.m_eType, unIP.m_unIPv4, usPort);
+    PRINT_DEBUG("%i %u %hu", unIP.m_eType, unIP.m_unIPv4, usPort);
 }
 
 // returns the ISteamFriends interface
 ISteamFriends *Steam_Client::GetISteamFriends( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamFriends %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
     if (strcmp(pchVersion, "SteamFriends003") == 0) {
@@ -453,14 +486,14 @@ ISteamFriends *Steam_Client::GetISteamFriends( HSteamUser hSteamUser, HSteamPipe
     }
     
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamFriends *)(void *)(ISteamFriends *)steam_friends;
 }
 
 // returns the ISteamUtils interface
 ISteamUtils *Steam_Client::GetISteamUtils( HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamUtils %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe)) return NULL;
 
     Steam_Utils *steam_utils_temp;
@@ -494,14 +527,14 @@ ISteamUtils *Steam_Client::GetISteamUtils( HSteamPipe hSteamPipe, const char *pc
     }
     
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamUtils *)(void *)(ISteamUtils *)steam_utils_temp;
 }
 
 // returns the ISteamMatchmaking interface
 ISteamMatchmaking *Steam_Client::GetISteamMatchmaking( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamMatchmaking %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
     if (strcmp(pchVersion, "SteamMatchMaking001") == 0) {
@@ -528,14 +561,14 @@ ISteamMatchmaking *Steam_Client::GetISteamMatchmaking( HSteamUser hSteamUser, HS
     }
     
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamMatchmaking *)(void *)(ISteamMatchmaking *)steam_matchmaking;
 }
 
 // returns the ISteamMatchmakingServers interface
 ISteamMatchmakingServers *Steam_Client::GetISteamMatchmakingServers( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamMatchmakingServers %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
     if (strcmp(pchVersion, "SteamMatchMakingServers001") == 0) {
@@ -547,14 +580,14 @@ ISteamMatchmakingServers *Steam_Client::GetISteamMatchmakingServers( HSteamUser 
     }
     
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamMatchmakingServers *)(void *)(ISteamMatchmakingServers *)steam_matchmaking_servers;
 }
 
 // returns the a generic interface
 void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamGenericInterface %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe)) return NULL;
 
     bool server = false;
@@ -717,20 +750,20 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
     } else if (strstr(pchVersion, "STEAMAPPTICKET_INTERFACE_VERSION") == pchVersion) {
         return GetAppTicket(hSteamUser, hSteamPipe, pchVersion);
     } else {
-        PRINT_DEBUG("No interface: %s\n", pchVersion);
+        PRINT_DEBUG("No interface: %s", pchVersion);
         //TODO: all the interfaces
         return NULL;
     }
     
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Invalid handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Invalid handling for interface: %s", pchVersion);
     return NULL;
 }
 
 // returns the ISteamUserStats interface
 ISteamUserStats *Steam_Client::GetISteamUserStats( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamUserStats %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
     if (strcmp(pchVersion, "STEAMUSERSTATS_INTERFACE_VERSION001") == 0) {
@@ -764,14 +797,14 @@ ISteamUserStats *Steam_Client::GetISteamUserStats( HSteamUser hSteamUser, HSteam
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamUserStats *)(void *)(ISteamUserStats *)steam_user_stats;
 }
 
 // returns the ISteamGameServerStats interface
 ISteamGameServerStats *Steam_Client::GetISteamGameServerStats( HSteamUser hSteamuser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamGameServerStats %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
     
     if (strcmp(pchVersion, STEAMGAMESERVERSTATS_INTERFACE_VERSION) == 0) {
@@ -781,14 +814,14 @@ ISteamGameServerStats *Steam_Client::GetISteamGameServerStats( HSteamUser hSteam
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamGameServerStats *)(void *)(ISteamGameServerStats *)steam_gameserverstats;
 }
 
 // returns apps interface
 ISteamApps *Steam_Client::GetISteamApps( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamApps %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
     Steam_Apps *steam_apps_temp;
@@ -819,14 +852,14 @@ ISteamApps *Steam_Client::GetISteamApps( HSteamUser hSteamUser, HSteamPipe hStea
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamApps *)(void *)(ISteamApps *)steam_apps_temp;
 }
 
 // networking
 ISteamNetworking *Steam_Client::GetISteamNetworking( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamNetworking %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
     Steam_Networking *steam_networking_temp;
@@ -854,14 +887,14 @@ ISteamNetworking *Steam_Client::GetISteamNetworking( HSteamUser hSteamUser, HSte
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamNetworking *)(void *)(ISteamNetworking *)steam_networking_temp;
 }
 
 // remote storage
 ISteamRemoteStorage *Steam_Client::GetISteamRemoteStorage( HSteamUser hSteamuser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamRemoteStorage %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
 
     if (strcmp(pchVersion, "STEAMREMOTESTORAGE_INTERFACE_VERSION001") == 0) {
@@ -899,14 +932,14 @@ ISteamRemoteStorage *Steam_Client::GetISteamRemoteStorage( HSteamUser hSteamuser
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamRemoteStorage *)(void *)(ISteamRemoteStorage *)steam_remote_storage;
 }
 
 // user screenshots
 ISteamScreenshots *Steam_Client::GetISteamScreenshots( HSteamUser hSteamuser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamScreenshots %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
 
 
@@ -917,7 +950,7 @@ ISteamScreenshots *Steam_Client::GetISteamScreenshots( HSteamUser hSteamuser, HS
     }
     
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamScreenshots *)(void *)(ISteamScreenshots *)steam_screenshots;
 }
 
@@ -925,7 +958,7 @@ ISteamScreenshots *Steam_Client::GetISteamScreenshots( HSteamUser hSteamuser, HS
 // Deprecated. Applications should use SteamAPI_RunCallbacks() or SteamGameServer_RunCallbacks() instead.
 void Steam_Client::RunFrame()
 {
-    PRINT_DEBUG("Steam_Client::RunFrame\n");
+    PRINT_DEBUG_TODO();
 }
 
 // returns the number of IPC calls made since the last time this function was called
@@ -934,7 +967,7 @@ void Steam_Client::RunFrame()
 // control how often you do them.
 uint32 Steam_Client::GetIPCCallCount()
 {
-    PRINT_DEBUG("Steam_Client::GetIPCCallCount\n");
+    PRINT_DEBUG_ENTRY();
     return steam_utils->GetIPCCallCount();
 }
 
@@ -944,41 +977,40 @@ uint32 Steam_Client::GetIPCCallCount()
 // callbacks will occur directly after the API function is called that generated the warning or message.
 void Steam_Client::SetWarningMessageHook( SteamAPIWarningMessageHook_t pFunction )
 {
-    PRINT_DEBUG("Steam_Client::SetWarningMessageHook, %p\n", pFunction);
+    PRINT_DEBUG("%p", pFunction);
 }
 
 // Trigger global shutdown for the DLL
 bool Steam_Client::BShutdownIfAllPipesClosed()
 {
-    PRINT_DEBUG("Steam_Client::BShutdownIfAllPipesClosed\n");
-    if (!steam_pipes.size()) {
-        bool joinable = background_keepalive.joinable();
-        if (joinable) {
-            kill_background_thread_mutex.lock();
+    PRINT_DEBUG_ENTRY();
+    if (steam_pipes.size()) return false; // not all pipes are released via BReleaseSteamPipe() yet
+    
+    bool joinable = background_keepalive.joinable();
+    if (joinable) {
+        {
+            std::lock_guard lk(kill_background_thread_mutex);
             kill_background_thread = true;
-            kill_background_thread_mutex.unlock();
-            kill_background_thread_cv.notify_one();
         }
-
-        steam_controller->Shutdown();
-
-        if(!settings_client->disable_overlay) steam_overlay->UnSetupOverlay();
-
-        if (joinable) {
-            background_keepalive.join();
-        }
-
-        PRINT_DEBUG("all pipes closed\n");
-        return true;
+        kill_background_thread_cv.notify_one();
     }
 
-    return false;
+    steam_controller->Shutdown();
+
+    if(!settings_client->disable_overlay) steam_overlay->UnSetupOverlay();
+
+    if (joinable) {
+        background_keepalive.join();
+    }
+
+    PRINT_DEBUG("all pipes closed");
+    return true;
 }
 
 // Expose HTTP interface
 ISteamHTTP *Steam_Client::GetISteamHTTP( HSteamUser hSteamuser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamHTTP %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
     Steam_HTTP *steam_http_temp;
 
@@ -999,14 +1031,14 @@ ISteamHTTP *Steam_Client::GetISteamHTTP( HSteamUser hSteamuser, HSteamPipe hStea
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamHTTP *)(void *)(ISteamHTTP *)steam_http_temp;
 }
 
 // Deprecated - the ISteamUnifiedMessages interface is no longer intended for public consumption.
 void *Steam_Client::DEPRECATED_GetISteamUnifiedMessages( HSteamUser hSteamuser, HSteamPipe hSteamPipe, const char *pchVersion ) 
 {
-    PRINT_DEBUG("DEPRECATED_GetISteamUnifiedMessages %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
 
     if (strcmp(pchVersion, STEAMUNIFIEDMESSAGES_INTERFACE_VERSION) == 0) {
@@ -1016,13 +1048,13 @@ void *Steam_Client::DEPRECATED_GetISteamUnifiedMessages( HSteamUser hSteamuser, 
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (void *)(ISteamUnifiedMessages *)steam_unified_messages;
 }
 
 ISteamUnifiedMessages *Steam_Client::GetISteamUnifiedMessages( HSteamUser hSteamuser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamUnifiedMessages %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
 
     if (strcmp(pchVersion, STEAMUNIFIEDMESSAGES_INTERFACE_VERSION) == 0) {
@@ -1032,14 +1064,14 @@ ISteamUnifiedMessages *Steam_Client::GetISteamUnifiedMessages( HSteamUser hSteam
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return steam_unified_messages;
 }
 
 // Exposes the ISteamController interface
 ISteamController *Steam_Client::GetISteamController( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamController %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
     if (strcmp(pchVersion, "STEAMCONTROLLER_INTERFACE_VERSION") == 0) {
@@ -1064,14 +1096,14 @@ ISteamController *Steam_Client::GetISteamController( HSteamUser hSteamUser, HSte
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamController *)(void *)(ISteamController *)steam_controller;
 }
 
 // Exposes the ISteamUGC interface
 ISteamUGC *Steam_Client::GetISteamUGC( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamUGC %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
     Steam_UGC *steam_ugc_temp;
 
@@ -1126,14 +1158,14 @@ ISteamUGC *Steam_Client::GetISteamUGC( HSteamUser hSteamUser, HSteamPipe hSteamP
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamUGC *)(void *)(ISteamUGC *)steam_ugc_temp;
 }
 
 // returns app list interface, only available on specially registered apps
 ISteamAppList *Steam_Client::GetISteamAppList( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamAppList %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
     
     if (strcmp(pchVersion, STEAMAPPLIST_INTERFACE_VERSION) == 0) {
@@ -1143,14 +1175,14 @@ ISteamAppList *Steam_Client::GetISteamAppList( HSteamUser hSteamUser, HSteamPipe
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamAppList *)(void *)(ISteamAppList *)steam_applist;
 }
 
 // Music Player
 ISteamMusic *Steam_Client::GetISteamMusic( HSteamUser hSteamuser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamMusic %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
 
     if (strcmp(pchVersion, STEAMMUSIC_INTERFACE_VERSION) == 0) {
@@ -1160,14 +1192,14 @@ ISteamMusic *Steam_Client::GetISteamMusic( HSteamUser hSteamuser, HSteamPipe hSt
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamMusic *)(void *)(ISteamMusic *)steam_music;
 }
 
 // Music Player Remote
 ISteamMusicRemote *Steam_Client::GetISteamMusicRemote(HSteamUser hSteamuser, HSteamPipe hSteamPipe, const char *pchVersion)
 {
-    PRINT_DEBUG("GetISteamMusicRemote %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
     
     if (strcmp(pchVersion, STEAMMUSICREMOTE_INTERFACE_VERSION) == 0) {
@@ -1177,14 +1209,14 @@ ISteamMusicRemote *Steam_Client::GetISteamMusicRemote(HSteamUser hSteamuser, HSt
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamMusicRemote *)(void *)(ISteamMusicRemote *)steam_musicremote;
 }
 
 // html page display
 ISteamHTMLSurface *Steam_Client::GetISteamHTMLSurface(HSteamUser hSteamuser, HSteamPipe hSteamPipe, const char *pchVersion)
 {
-    PRINT_DEBUG("GetISteamHTMLSurface %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
 
     if (strcmp(pchVersion, "STEAMHTMLSURFACE_INTERFACE_VERSION_001") == 0) {
@@ -1202,41 +1234,41 @@ ISteamHTMLSurface *Steam_Client::GetISteamHTMLSurface(HSteamUser hSteamuser, HSt
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamHTMLSurface *)(void *)(ISteamHTMLSurface *)steam_HTMLsurface;
 }
 
 // Helper functions for internal Steam usage
 void Steam_Client::DEPRECATED_Set_SteamAPI_CPostAPIResultInProcess( void (*)() )
 {
-    PRINT_DEBUG("DEPRECATED_Set_SteamAPI_CPostAPIResultInProcess\n");
+    PRINT_DEBUG_ENTRY();
 }
 
 void Steam_Client::DEPRECATED_Remove_SteamAPI_CPostAPIResultInProcess( void (*)() )
 {
-    PRINT_DEBUG("DEPRECATED_Remove_SteamAPI_CPostAPIResultInProcess\n");
+    PRINT_DEBUG_ENTRY();
 }
 
 void Steam_Client::Set_SteamAPI_CCheckCallbackRegisteredInProcess( SteamAPI_CheckCallbackRegistered_t func )
 {
-    PRINT_DEBUG("Set_SteamAPI_CCheckCallbackRegisteredInProcess %p\n", func);
+    PRINT_DEBUG("%p", func);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 void Steam_Client::Set_SteamAPI_CPostAPIResultInProcess( SteamAPI_PostAPIResultInProcess_t func )
 {
-    PRINT_DEBUG("Set_SteamAPI_CPostAPIResultInProcess\n");
+    PRINT_DEBUG_ENTRY();
 }
 
 void Steam_Client::Remove_SteamAPI_CPostAPIResultInProcess( SteamAPI_PostAPIResultInProcess_t func )
 {
-    PRINT_DEBUG("Remove_SteamAPI_CPostAPIResultInProcess\n");
+    PRINT_DEBUG_ENTRY();
 }
 
 // inventory
 ISteamInventory *Steam_Client::GetISteamInventory( HSteamUser hSteamuser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamInventory %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
     Steam_Inventory *steam_inventory_temp;
     Settings *settings_temp;
@@ -1260,14 +1292,14 @@ ISteamInventory *Steam_Client::GetISteamInventory( HSteamUser hSteamuser, HSteam
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamInventory *)(void *)(ISteamInventory *)steam_inventory_temp;
 }
 
 // Video
 ISteamVideo *Steam_Client::GetISteamVideo( HSteamUser hSteamuser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamVideo %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
     
     if (strcmp(pchVersion, STEAMVIDEO_INTERFACE_VERSION) == 0) {
@@ -1277,14 +1309,14 @@ ISteamVideo *Steam_Client::GetISteamVideo( HSteamUser hSteamuser, HSteamPipe hSt
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamVideo *)(void *)(ISteamVideo *)steam_video;
 }
 
 // Parental controls
 ISteamParentalSettings *Steam_Client::GetISteamParentalSettings( HSteamUser hSteamuser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamParentalSettings %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
     
     if (strcmp(pchVersion, STEAMPARENTALSETTINGS_INTERFACE_VERSION) == 0) {
@@ -1294,13 +1326,13 @@ ISteamParentalSettings *Steam_Client::GetISteamParentalSettings( HSteamUser hSte
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamParentalSettings *)(void *)(ISteamParentalSettings *)steam_parental;
 }
 
 ISteamMasterServerUpdater *Steam_Client::GetISteamMasterServerUpdater( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamMasterServerUpdater %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
     
     if (strcmp(pchVersion, STEAMMASTERSERVERUPDATER_INTERFACE_VERSION) == 0) {
@@ -1310,13 +1342,13 @@ ISteamMasterServerUpdater *Steam_Client::GetISteamMasterServerUpdater( HSteamUse
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamMasterServerUpdater *)(void *)(ISteamMasterServerUpdater *)steam_masterserver_updater;
 }
 
 ISteamContentServer *Steam_Client::GetISteamContentServer( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamContentServer %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
     return NULL;
 }
@@ -1324,7 +1356,7 @@ ISteamContentServer *Steam_Client::GetISteamContentServer( HSteamUser hSteamUser
 // game search
 ISteamGameSearch *Steam_Client::GetISteamGameSearch( HSteamUser hSteamuser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamGameSearch %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
     
     if (strcmp(pchVersion, STEAMGAMESEARCH_INTERFACE_VERSION) == 0) {
@@ -1334,14 +1366,14 @@ ISteamGameSearch *Steam_Client::GetISteamGameSearch( HSteamUser hSteamuser, HSte
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamGameSearch *)(void *)(ISteamGameSearch *)steam_game_search;
 }
 
 // Exposes the Steam Input interface for controller support
 ISteamInput *Steam_Client::GetISteamInput( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamInput %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
     if (strcmp(pchVersion, "SteamInput001") == 0) {
@@ -1357,14 +1389,14 @@ ISteamInput *Steam_Client::GetISteamInput( HSteamUser hSteamUser, HSteamPipe hSt
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamInput *)(void *)(ISteamInput *)steam_controller;
 }
 
 // Steam Parties interface
 ISteamParties *Steam_Client::GetISteamParties( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamParties %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
     
     if (strcmp(pchVersion, STEAMPARTIES_INTERFACE_VERSION) == 0) {
@@ -1374,13 +1406,13 @@ ISteamParties *Steam_Client::GetISteamParties( HSteamUser hSteamUser, HSteamPipe
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamParties *)(void *)(ISteamParties *)steam_parties;
 }
 
 ISteamRemotePlay *Steam_Client::GetISteamRemotePlay( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetISteamRemotePlay %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
     if (strcmp(pchVersion, "STEAMREMOTEPLAY_INTERFACE_VERSION001") == 0) {
@@ -1392,13 +1424,13 @@ ISteamRemotePlay *Steam_Client::GetISteamRemotePlay( HSteamUser hSteamUser, HSte
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamRemotePlay *)(void *)(ISteamRemotePlay *)steam_remoteplay;
 }
 
 ISteamAppTicket *Steam_Client::GetAppTicket( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("GetAppTicket %s\n", pchVersion);
+    PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
     if (strcmp(pchVersion, STEAMAPPTICKET_INTERFACE_VERSION) == 0) {
@@ -1408,7 +1440,7 @@ ISteamAppTicket *Steam_Client::GetAppTicket( HSteamUser hSteamUser, HSteamPipe h
     }
 
     // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s\n", pchVersion);
+    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
     return (ISteamAppTicket *)(void *)(ISteamAppTicket *)steam_app_ticket;
 }
 
@@ -1417,215 +1449,215 @@ void Steam_Client::RegisterCallback( class CCallbackBase *pCallback, int iCallba
     int base_callback = (iCallback / 100) * 100;
     int callback_id = iCallback % 100;
     bool isGameServer = CCallbackMgr::isServer(pCallback);
-    PRINT_DEBUG("Steam_Client::RegisterCallback isGameServer %u %i %i\n", isGameServer, iCallback, base_callback);
+    PRINT_DEBUG("isGameServer %u %i %i", isGameServer, iCallback, base_callback);
 
     switch (base_callback) {
         case k_iSteamUserCallbacks:
-            PRINT_DEBUG("k_iSteamUserCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamUserCallbacks %i", callback_id);
             break;
 
         case k_iSteamGameServerCallbacks:
-            PRINT_DEBUG("k_iSteamGameServerCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamGameServerCallbacks %i", callback_id);
             break;
 
         case k_iSteamFriendsCallbacks:
-            PRINT_DEBUG("k_iSteamFriendsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamFriendsCallbacks %i", callback_id);
             break;
 
         case k_iSteamBillingCallbacks:
-            PRINT_DEBUG("k_iSteamBillingCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamBillingCallbacks %i", callback_id);
             break;
 
         case k_iSteamMatchmakingCallbacks:
-            PRINT_DEBUG("k_iSteamMatchmakingCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamMatchmakingCallbacks %i", callback_id);
             break;
 
         case k_iSteamContentServerCallbacks:
-            PRINT_DEBUG("k_iSteamContentServerCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamContentServerCallbacks %i", callback_id);
             break;
 
         case k_iSteamUtilsCallbacks:
-            PRINT_DEBUG("k_iSteamUtilsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamUtilsCallbacks %i", callback_id);
             break;
 
         case k_iClientFriendsCallbacks:
-            PRINT_DEBUG("k_iClientFriendsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientFriendsCallbacks %i", callback_id);
             break;
 
         case k_iClientUserCallbacks:
-            PRINT_DEBUG("k_iClientUserCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientUserCallbacks %i", callback_id);
             break;
 
         case k_iSteamAppsCallbacks:
-            PRINT_DEBUG("k_iSteamAppsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamAppsCallbacks %i", callback_id);
             break;
 
         case k_iSteamUserStatsCallbacks:
-            PRINT_DEBUG("k_iSteamUserStatsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamUserStatsCallbacks %i", callback_id);
             break;
 
         case k_iSteamNetworkingCallbacks:
-            PRINT_DEBUG("k_iSteamNetworkingCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamNetworkingCallbacks %i", callback_id);
             break;
 
         case k_iClientRemoteStorageCallbacks:
-            PRINT_DEBUG("k_iClientRemoteStorageCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientRemoteStorageCallbacks %i", callback_id);
             break;
 
         case k_iClientDepotBuilderCallbacks:
-            PRINT_DEBUG("k_iClientDepotBuilderCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientDepotBuilderCallbacks %i", callback_id);
             break;
 
         case k_iSteamGameServerItemsCallbacks:
-            PRINT_DEBUG("k_iSteamGameServerItemsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamGameServerItemsCallbacks %i", callback_id);
             break;
 
         case k_iClientUtilsCallbacks:
-            PRINT_DEBUG("k_iClientUtilsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientUtilsCallbacks %i", callback_id);
             break;
 
         case k_iSteamGameCoordinatorCallbacks:
-            PRINT_DEBUG("k_iSteamGameCoordinatorCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamGameCoordinatorCallbacks %i", callback_id);
             break;
 
         case k_iSteamGameServerStatsCallbacks:
-            PRINT_DEBUG("k_iSteamGameServerStatsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamGameServerStatsCallbacks %i", callback_id);
             break;
 
         case k_iSteam2AsyncCallbacks:
-            PRINT_DEBUG("k_iSteam2AsyncCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteam2AsyncCallbacks %i", callback_id);
             break;
 
         case k_iSteamGameStatsCallbacks:
-            PRINT_DEBUG("k_iSteamGameStatsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamGameStatsCallbacks %i", callback_id);
             break;
 
         case k_iClientHTTPCallbacks:
-            PRINT_DEBUG("k_iClientHTTPCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientHTTPCallbacks %i", callback_id);
             break;
 
         case k_iClientScreenshotsCallbacks:
-            PRINT_DEBUG("k_iClientScreenshotsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientScreenshotsCallbacks %i", callback_id);
             break;
 
         case k_iSteamScreenshotsCallbacks:
-            PRINT_DEBUG("k_iSteamScreenshotsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamScreenshotsCallbacks %i", callback_id);
             break;
 
         case k_iClientAudioCallbacks:
-            PRINT_DEBUG("k_iClientAudioCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientAudioCallbacks %i", callback_id);
             break;
 
         case k_iClientUnifiedMessagesCallbacks:
-            PRINT_DEBUG("k_iClientUnifiedMessagesCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientUnifiedMessagesCallbacks %i", callback_id);
             break;
 
         case k_iSteamStreamLauncherCallbacks:
-            PRINT_DEBUG("k_iSteamStreamLauncherCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamStreamLauncherCallbacks %i", callback_id);
             break;
 
         case k_iClientControllerCallbacks:
-            PRINT_DEBUG("k_iClientControllerCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientControllerCallbacks %i", callback_id);
             break;
 
         case k_iSteamControllerCallbacks:
-            PRINT_DEBUG("k_iSteamControllerCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamControllerCallbacks %i", callback_id);
             break;
 
         case k_iClientParentalSettingsCallbacks:
-            PRINT_DEBUG("k_iClientParentalSettingsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientParentalSettingsCallbacks %i", callback_id);
             break;
 
         case k_iClientDeviceAuthCallbacks:
-            PRINT_DEBUG("k_iClientDeviceAuthCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientDeviceAuthCallbacks %i", callback_id);
             break;
 
         case k_iClientNetworkDeviceManagerCallbacks:
-            PRINT_DEBUG("k_iClientNetworkDeviceManagerCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientNetworkDeviceManagerCallbacks %i", callback_id);
             break;
 
         case k_iClientMusicCallbacks:
-            PRINT_DEBUG("k_iClientMusicCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientMusicCallbacks %i", callback_id);
             break;
 
         case k_iClientRemoteClientManagerCallbacks:
-            PRINT_DEBUG("k_iClientRemoteClientManagerCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientRemoteClientManagerCallbacks %i", callback_id);
             break;
 
         case k_iClientUGCCallbacks:
-            PRINT_DEBUG("k_iClientUGCCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientUGCCallbacks %i", callback_id);
             break;
 
         case k_iSteamStreamClientCallbacks:
-            PRINT_DEBUG("k_iSteamStreamClientCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamStreamClientCallbacks %i", callback_id);
             break;
 
         case k_IClientProductBuilderCallbacks:
-            PRINT_DEBUG("k_IClientProductBuilderCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_IClientProductBuilderCallbacks %i", callback_id);
             break;
 
         case k_iClientShortcutsCallbacks:
-            PRINT_DEBUG("k_iClientShortcutsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientShortcutsCallbacks %i", callback_id);
             break;
 
         case k_iClientRemoteControlManagerCallbacks:
-            PRINT_DEBUG("k_iClientRemoteControlManagerCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientRemoteControlManagerCallbacks %i", callback_id);
             break;
 
         case k_iSteamAppListCallbacks:
-            PRINT_DEBUG("k_iSteamAppListCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamAppListCallbacks %i", callback_id);
             break;
 
         case k_iSteamMusicCallbacks:
-            PRINT_DEBUG("k_iSteamMusicCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamMusicCallbacks %i", callback_id);
             break;
 
         case k_iSteamMusicRemoteCallbacks:
-            PRINT_DEBUG("k_iSteamMusicRemoteCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamMusicRemoteCallbacks %i", callback_id);
             break;
 
         case k_iClientVRCallbacks:
-            PRINT_DEBUG("k_iClientVRCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientVRCallbacks %i", callback_id);
             break;
 
         case k_iClientGameNotificationCallbacks:
-            PRINT_DEBUG("k_iClientGameNotificationCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientGameNotificationCallbacks %i", callback_id);
             break;
  
         case k_iSteamGameNotificationCallbacks:
-            PRINT_DEBUG("k_iSteamGameNotificationCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamGameNotificationCallbacks %i", callback_id);
             break;
  
         case k_iSteamHTMLSurfaceCallbacks:
-            PRINT_DEBUG("k_iSteamHTMLSurfaceCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamHTMLSurfaceCallbacks %i", callback_id);
             break;
 
         case k_iClientVideoCallbacks:
-            PRINT_DEBUG("k_iClientVideoCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientVideoCallbacks %i", callback_id);
             break;
 
         case k_iClientInventoryCallbacks:
-            PRINT_DEBUG("k_iClientInventoryCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientInventoryCallbacks %i", callback_id);
             break;
 
         case k_iClientBluetoothManagerCallbacks:
-            PRINT_DEBUG("k_iClientBluetoothManagerCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientBluetoothManagerCallbacks %i", callback_id);
             break;
 
         case k_iClientSharedConnectionCallbacks:
-            PRINT_DEBUG("k_iClientSharedConnectionCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientSharedConnectionCallbacks %i", callback_id);
             break;
 
         case k_ISteamParentalSettingsCallbacks:
-            PRINT_DEBUG("k_ISteamParentalSettingsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_ISteamParentalSettingsCallbacks %i", callback_id);
             break;
 
         case k_iClientShaderCallbacks:
-            PRINT_DEBUG("k_iClientShaderCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientShaderCallbacks %i", callback_id);
             break;
         
         default:
-            PRINT_DEBUG("Unknown callback base %i\n", base_callback);
+            PRINT_DEBUG("Unknown callback base %i", base_callback);
     };
 
     if (isGameServer) {
@@ -1641,215 +1673,215 @@ void Steam_Client::UnregisterCallback( class CCallbackBase *pCallback)
     int base_callback = (iCallback / 100) * 100;
     int callback_id = iCallback % 100;
     bool isGameServer = CCallbackMgr::isServer(pCallback);
-    PRINT_DEBUG("Steam_Client::UnregisterCallback isGameServer %u %i\n", isGameServer, base_callback);
+    PRINT_DEBUG("isGameServer %u %i", isGameServer, base_callback);
 
     switch (base_callback) {
         case k_iSteamUserCallbacks:
-            PRINT_DEBUG("k_iSteamUserCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamUserCallbacks %i", callback_id);
             break;
 
         case k_iSteamGameServerCallbacks:
-            PRINT_DEBUG("k_iSteamGameServerCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamGameServerCallbacks %i", callback_id);
             break;
 
         case k_iSteamFriendsCallbacks:
-            PRINT_DEBUG("k_iSteamFriendsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamFriendsCallbacks %i", callback_id);
             break;
 
         case k_iSteamBillingCallbacks:
-            PRINT_DEBUG("k_iSteamBillingCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamBillingCallbacks %i", callback_id);
             break;
 
         case k_iSteamMatchmakingCallbacks:
-            PRINT_DEBUG("k_iSteamMatchmakingCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamMatchmakingCallbacks %i", callback_id);
             break;
 
         case k_iSteamContentServerCallbacks:
-            PRINT_DEBUG("k_iSteamContentServerCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamContentServerCallbacks %i", callback_id);
             break;
 
         case k_iSteamUtilsCallbacks:
-            PRINT_DEBUG("k_iSteamUtilsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamUtilsCallbacks %i", callback_id);
             break;
 
         case k_iClientFriendsCallbacks:
-            PRINT_DEBUG("k_iClientFriendsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientFriendsCallbacks %i", callback_id);
             break;
 
         case k_iClientUserCallbacks:
-            PRINT_DEBUG("k_iClientUserCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientUserCallbacks %i", callback_id);
             break;
 
         case k_iSteamAppsCallbacks:
-            PRINT_DEBUG("k_iSteamAppsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamAppsCallbacks %i", callback_id);
             break;
 
         case k_iSteamUserStatsCallbacks:
-            PRINT_DEBUG("k_iSteamUserStatsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamUserStatsCallbacks %i", callback_id);
             break;
 
         case k_iSteamNetworkingCallbacks:
-            PRINT_DEBUG("k_iSteamNetworkingCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamNetworkingCallbacks %i", callback_id);
             break;
 
         case k_iClientRemoteStorageCallbacks:
-            PRINT_DEBUG("k_iClientRemoteStorageCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientRemoteStorageCallbacks %i", callback_id);
             break;
 
         case k_iClientDepotBuilderCallbacks:
-            PRINT_DEBUG("k_iClientDepotBuilderCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientDepotBuilderCallbacks %i", callback_id);
             break;
 
         case k_iSteamGameServerItemsCallbacks:
-            PRINT_DEBUG("k_iSteamGameServerItemsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamGameServerItemsCallbacks %i", callback_id);
             break;
 
         case k_iClientUtilsCallbacks:
-            PRINT_DEBUG("k_iClientUtilsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientUtilsCallbacks %i", callback_id);
             break;
 
         case k_iSteamGameCoordinatorCallbacks:
-            PRINT_DEBUG("k_iSteamGameCoordinatorCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamGameCoordinatorCallbacks %i", callback_id);
             break;
 
         case k_iSteamGameServerStatsCallbacks:
-            PRINT_DEBUG("k_iSteamGameServerStatsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamGameServerStatsCallbacks %i", callback_id);
             break;
 
         case k_iSteam2AsyncCallbacks:
-            PRINT_DEBUG("k_iSteam2AsyncCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteam2AsyncCallbacks %i", callback_id);
             break;
 
         case k_iSteamGameStatsCallbacks:
-            PRINT_DEBUG("k_iSteamGameStatsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamGameStatsCallbacks %i", callback_id);
             break;
 
         case k_iClientHTTPCallbacks:
-            PRINT_DEBUG("k_iClientHTTPCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientHTTPCallbacks %i", callback_id);
             break;
 
         case k_iClientScreenshotsCallbacks:
-            PRINT_DEBUG("k_iClientScreenshotsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientScreenshotsCallbacks %i", callback_id);
             break;
 
         case k_iSteamScreenshotsCallbacks:
-            PRINT_DEBUG("k_iSteamScreenshotsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamScreenshotsCallbacks %i", callback_id);
             break;
 
         case k_iClientAudioCallbacks:
-            PRINT_DEBUG("k_iClientAudioCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientAudioCallbacks %i", callback_id);
             break;
 
         case k_iClientUnifiedMessagesCallbacks:
-            PRINT_DEBUG("k_iClientUnifiedMessagesCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientUnifiedMessagesCallbacks %i", callback_id);
             break;
 
         case k_iSteamStreamLauncherCallbacks:
-            PRINT_DEBUG("k_iSteamStreamLauncherCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamStreamLauncherCallbacks %i", callback_id);
             break;
 
         case k_iClientControllerCallbacks:
-            PRINT_DEBUG("k_iClientControllerCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientControllerCallbacks %i", callback_id);
             break;
 
         case k_iSteamControllerCallbacks:
-            PRINT_DEBUG("k_iSteamControllerCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamControllerCallbacks %i", callback_id);
             break;
 
         case k_iClientParentalSettingsCallbacks:
-            PRINT_DEBUG("k_iClientParentalSettingsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientParentalSettingsCallbacks %i", callback_id);
             break;
 
         case k_iClientDeviceAuthCallbacks:
-            PRINT_DEBUG("k_iClientDeviceAuthCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientDeviceAuthCallbacks %i", callback_id);
             break;
 
         case k_iClientNetworkDeviceManagerCallbacks:
-            PRINT_DEBUG("k_iClientNetworkDeviceManagerCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientNetworkDeviceManagerCallbacks %i", callback_id);
             break;
 
         case k_iClientMusicCallbacks:
-            PRINT_DEBUG("k_iClientMusicCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientMusicCallbacks %i", callback_id);
             break;
 
         case k_iClientRemoteClientManagerCallbacks:
-            PRINT_DEBUG("k_iClientRemoteClientManagerCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientRemoteClientManagerCallbacks %i", callback_id);
             break;
 
         case k_iClientUGCCallbacks:
-            PRINT_DEBUG("k_iClientUGCCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientUGCCallbacks %i", callback_id);
             break;
 
         case k_iSteamStreamClientCallbacks:
-            PRINT_DEBUG("k_iSteamStreamClientCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamStreamClientCallbacks %i", callback_id);
             break;
 
         case k_IClientProductBuilderCallbacks:
-            PRINT_DEBUG("k_IClientProductBuilderCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_IClientProductBuilderCallbacks %i", callback_id);
             break;
 
         case k_iClientShortcutsCallbacks:
-            PRINT_DEBUG("k_iClientShortcutsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientShortcutsCallbacks %i", callback_id);
             break;
 
         case k_iClientRemoteControlManagerCallbacks:
-            PRINT_DEBUG("k_iClientRemoteControlManagerCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientRemoteControlManagerCallbacks %i", callback_id);
             break;
 
         case k_iSteamAppListCallbacks:
-            PRINT_DEBUG("k_iSteamAppListCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamAppListCallbacks %i", callback_id);
             break;
 
         case k_iSteamMusicCallbacks:
-            PRINT_DEBUG("k_iSteamMusicCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamMusicCallbacks %i", callback_id);
             break;
 
         case k_iSteamMusicRemoteCallbacks:
-            PRINT_DEBUG("k_iSteamMusicRemoteCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamMusicRemoteCallbacks %i", callback_id);
             break;
 
         case k_iClientVRCallbacks:
-            PRINT_DEBUG("k_iClientVRCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientVRCallbacks %i", callback_id);
             break;
 
         case k_iClientGameNotificationCallbacks:
-            PRINT_DEBUG("k_iClientGameNotificationCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientGameNotificationCallbacks %i", callback_id);
             break;
  
         case k_iSteamGameNotificationCallbacks:
-            PRINT_DEBUG("k_iSteamGameNotificationCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamGameNotificationCallbacks %i", callback_id);
             break;
  
         case k_iSteamHTMLSurfaceCallbacks:
-            PRINT_DEBUG("k_iSteamHTMLSurfaceCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iSteamHTMLSurfaceCallbacks %i", callback_id);
             break;
 
         case k_iClientVideoCallbacks:
-            PRINT_DEBUG("k_iClientVideoCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientVideoCallbacks %i", callback_id);
             break;
 
         case k_iClientInventoryCallbacks:
-            PRINT_DEBUG("k_iClientInventoryCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientInventoryCallbacks %i", callback_id);
             break;
 
         case k_iClientBluetoothManagerCallbacks:
-            PRINT_DEBUG("k_iClientBluetoothManagerCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientBluetoothManagerCallbacks %i", callback_id);
             break;
 
         case k_iClientSharedConnectionCallbacks:
-            PRINT_DEBUG("k_iClientSharedConnectionCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientSharedConnectionCallbacks %i", callback_id);
             break;
 
         case k_ISteamParentalSettingsCallbacks:
-            PRINT_DEBUG("k_ISteamParentalSettingsCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_ISteamParentalSettingsCallbacks %i", callback_id);
             break;
 
         case k_iClientShaderCallbacks:
-            PRINT_DEBUG("k_iClientShaderCallbacks %i\n", callback_id);
+            PRINT_DEBUG("k_iClientShaderCallbacks %i", callback_id);
             break;
         
         default:
-            PRINT_DEBUG("Unknown callback base %i\n", base_callback);
+            PRINT_DEBUG("Unknown callback base %i", base_callback);
     };
 
     if (isGameServer) {
@@ -1861,7 +1893,7 @@ void Steam_Client::UnregisterCallback( class CCallbackBase *pCallback)
 
 void Steam_Client::RegisterCallResult( class CCallbackBase *pCallback, SteamAPICall_t hAPICall)
 {
-    PRINT_DEBUG("Steam_Client::RegisterCallResult %llu %i\n", hAPICall, pCallback->GetICallback());
+    PRINT_DEBUG("%llu %i", hAPICall, pCallback->GetICallback());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     callback_results_client->addCallBack(hAPICall, pCallback);
     callback_results_server->addCallBack(hAPICall, pCallback);
@@ -1870,54 +1902,52 @@ void Steam_Client::RegisterCallResult( class CCallbackBase *pCallback, SteamAPIC
 
 void Steam_Client::UnregisterCallResult( class CCallbackBase *pCallback, SteamAPICall_t hAPICall)
 {
-    PRINT_DEBUG("Steam_Client::UnregisterCallResult %llu %i\n", hAPICall, pCallback->GetICallback());
+    PRINT_DEBUG("%llu %i", hAPICall, pCallback->GetICallback());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     callback_results_client->rmCallBack(hAPICall, pCallback);
     callback_results_server->rmCallBack(hAPICall, pCallback);
 }
 
-void Steam_Client::RunCallbacks(bool runClientCB, bool runGameserverCB, bool runBackgroundThread)
+void Steam_Client::RunCallbacks(bool runClientCB, bool runGameserverCB)
 {
-    PRINT_DEBUG("Steam_Client::RunCallbacks begin ------------------------------------------------------\n");
+    PRINT_DEBUG("begin ------------------------------------------------------");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (runBackgroundThread && !background_keepalive.joinable()) {
-        background_keepalive = std::thread(background_thread, this);
-        PRINT_DEBUG("Steam_Client::RunCallbacks spawned background thread *********\n");
-    }
+    cb_run_active = true;
 
-    // PRINT_DEBUG("Steam_Client::RunCallbacks network *********\n");
-    network->Run();
+    // PRINT_DEBUG("network *********");
+    network->Run(); // networking must run first since it receives messages use by each run_callback()
 
-    // PRINT_DEBUG("Steam_Client::RunCallbacks steam_matchmaking_servers *********\n");
+    // PRINT_DEBUG("steam_matchmaking_servers *********");
     steam_matchmaking_servers->RunCallbacks();
     
-    // PRINT_DEBUG("Steam_Client::RunCallbacks run_every_runcb *********\n");
+    // PRINT_DEBUG("run_every_runcb *********");
     run_every_runcb->run();
 
-    // PRINT_DEBUG("Steam_Client::RunCallbacks steam_gameserver *********\n");
+    // PRINT_DEBUG("steam_gameserver *********");
     steam_gameserver->RunCallbacks();
 
     if (runClientCB) {
-        // PRINT_DEBUG("Steam_Client::RunCallbacks callback_results_client *********\n");
+        // PRINT_DEBUG("callback_results_client *********");
         callback_results_client->runCallResults();
     }
 
     if (runGameserverCB) {
-        // PRINT_DEBUG("Steam_Client::RunCallbacks callback_results_server *********\n");
+        // PRINT_DEBUG("callback_results_server *********");
         callback_results_server->runCallResults();
     }
 
-    // PRINT_DEBUG("Steam_Client::RunCallbacks callbacks_server *********\n");
+    // PRINT_DEBUG("callbacks_server *********");
     callbacks_server->runCallBacks();
 
-    // PRINT_DEBUG("Steam_Client::RunCallbacks callbacks_client *********\n");
+    // PRINT_DEBUG("callbacks_client *********");
     callbacks_client->runCallBacks();
 
-    last_cb_run = std::chrono::duration_cast<std::chrono::duration<unsigned long long>>(std::chrono::system_clock::now().time_since_epoch()).count();
-    PRINT_DEBUG("Steam_Client::RunCallbacks done ******************************************************\n");
+    last_cb_run = (unsigned long long)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+    cb_run_active = false;
+    PRINT_DEBUG("done ******************************************************");
 }
 
 void Steam_Client::DestroyAllInterfaces()
 {
-    PRINT_DEBUG("Steam_Client::DestroyAllInterfaces\n");
+    PRINT_DEBUG_ENTRY();
 }
