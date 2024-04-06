@@ -255,6 +255,7 @@ public:
 #endif
 
         PRINT_DEBUG(
+            "\n"
             "  GCToken: " "%" PRIu64 "\n"
             "  user steam_id: " "%" PRIu64 "\n"
             "  ticketGenDate: %u\n"
@@ -320,12 +321,13 @@ struct AppTicket {
         const uint64_t steam_id = id.ConvertToUint64();
 
         PRINT_DEBUG(
+            "\n"
             "  Version: %u\n"
             "  user steam_id: " "%" PRIu64 "\n"
             "  AppId: %u\n"
             "  ExternalIP: 0x%08X, InternalIP: 0x%08X\n"
             "  TicketGeneratedDate: %u, TicketGeneratedExpireDate: %u\n"
-            "  Licenses count: %zu, DLCs count: %zu\n",
+            "  Licenses count: %zu, DLCs count: %zu",
 
             Version,
             steam_id,
@@ -510,9 +512,10 @@ struct Auth_Data {
         const uint64_t steam_id = id.ConvertToUint64();
 
         PRINT_DEBUG(
+            "\n"
             "  HasGC: %u\n"
             "  user steam_id: " "%" PRIu64 "\n"
-            "  number: " "%" PRIu64 "\n",
+            "  number: " "%" PRIu64 ,
 
             (int)HasGC,
             steam_id,
