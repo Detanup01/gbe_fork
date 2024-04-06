@@ -29,7 +29,7 @@ public ISteamUnifiedMessages
 public:
 static void steam_callback(void *object, Common_Message *msg)
 {
-    // PRINT_DEBUG("steam_steamunifiedmessages_callback\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Unified_Messages *steam_steamunifiedmessages = (Steam_Unified_Messages *)object;
     steam_steamunifiedmessages->Callback(msg);
@@ -37,7 +37,7 @@ static void steam_callback(void *object, Common_Message *msg)
 
 static void steam_run_every_runcb(void *object)
 {
-    // PRINT_DEBUG("steam_steamunifiedmessages_run_every_runcb\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Unified_Messages *steam_steamunifiedmessages = (Steam_Unified_Messages *)object;
     steam_steamunifiedmessages->RunCallbacks();
@@ -65,7 +65,8 @@ Steam_Unified_Messages(class Settings *settings, class Networking *network, clas
 // Returns a unified message handle (k_InvalidUnifiedMessageHandle if could not send the message).
 ClientUnifiedMessageHandle SendMethod( const char *pchServiceMethod, const void *pRequestBuffer, uint32 unRequestBufferSize, uint64 unContext )
 {
-    PRINT_DEBUG("Steam_Unified_Messages::SendMethod\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return ISteamUnifiedMessages::k_InvalidUnifiedMessageHandle;
 }
 
@@ -73,7 +74,8 @@ ClientUnifiedMessageHandle SendMethod( const char *pchServiceMethod, const void 
 // Gets the size of the response and the EResult. Returns false if the response is not ready yet.
 bool GetMethodResponseInfo( ClientUnifiedMessageHandle hHandle, uint32 *punResponseSize, EResult *peResult )
 {
-    PRINT_DEBUG("Steam_Unified_Messages::GetMethodResponseInfo\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -81,7 +83,8 @@ bool GetMethodResponseInfo( ClientUnifiedMessageHandle hHandle, uint32 *punRespo
 // Gets a response in binary serialized form (and optionally release the corresponding allocated memory).
 bool GetMethodResponseData( ClientUnifiedMessageHandle hHandle, void *pResponseBuffer, uint32 unResponseBufferSize, bool bAutoRelease )
 {
-    PRINT_DEBUG("Steam_Unified_Messages::GetMethodResponseData\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -89,7 +92,8 @@ bool GetMethodResponseData( ClientUnifiedMessageHandle hHandle, void *pResponseB
 // Releases the message and its corresponding allocated memory.
 bool ReleaseMethod( ClientUnifiedMessageHandle hHandle )
 {
-    PRINT_DEBUG("Steam_Unified_Messages::ReleaseMethod\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -98,7 +102,8 @@ bool ReleaseMethod( ClientUnifiedMessageHandle hHandle )
 // Returns true if the notification was sent successfully.
 bool SendNotification( const char *pchServiceNotification, const void *pNotificationBuffer, uint32 unNotificationBufferSize )
 {
-    PRINT_DEBUG("Steam_Unified_Messages::SendNotification\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 

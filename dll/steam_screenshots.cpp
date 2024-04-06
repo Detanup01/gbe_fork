@@ -25,15 +25,20 @@ Steam_Screenshots::Steam_Screenshots(class Local_Storage* local_storage, class S
 
 ScreenshotHandle Steam_Screenshots::create_screenshot_handle()
 {
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     static ScreenshotHandle handle = 100;
-    return handle++;
+
+    ++handle;
+    if (handle < 100) handle = 100;
+    return handle;
 }
 
 // Writes a screenshot to the user's screenshot library given the raw image data, which must be in RGB format.
 // The return value is a handle that is valid for the duration of the game process and can be used to apply tags.
 ScreenshotHandle Steam_Screenshots::WriteScreenshot( void *pubRGB, uint32 cubRGB, int nWidth, int nHeight )
 {
-    PRINT_DEBUG("Steam_Screenshots::WriteScreenshot\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     char buff[128];
     auto now = std::chrono::system_clock::now();
@@ -60,7 +65,8 @@ ScreenshotHandle Steam_Screenshots::WriteScreenshot( void *pubRGB, uint32 cubRGB
 // JPEG, TGA, and PNG formats are supported.
 ScreenshotHandle Steam_Screenshots::AddScreenshotToLibrary( const char *pchFilename, const char *pchThumbnailFilename, int nWidth, int nHeight )
 {
-    PRINT_DEBUG("Steam_Screenshots::AddScreenshotToLibrary\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     if (pchFilename == nullptr)
         return INVALID_SCREENSHOT_HANDLE;
@@ -91,15 +97,13 @@ ScreenshotHandle Steam_Screenshots::AddScreenshotToLibrary( const char *pchFilen
 // Causes the Steam overlay to take a screenshot.  If screenshots are being hooked by the game then a ScreenshotRequested_t callback is sent back to the game instead. 
 void Steam_Screenshots::TriggerScreenshot()
 {
-    PRINT_DEBUG("Steam_Screenshots::TriggerScreenshot\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    if (hooked)
-    {
+    if (hooked) {
         ScreenshotRequested_t data;
         callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
-    }
-    else
-    {
+    } else {
         PRINT_DEBUG("  TODO: Make the overlay take a screenshot");
     }
 }
@@ -110,7 +114,8 @@ void Steam_Screenshots::TriggerScreenshot()
 // in response.
 void Steam_Screenshots::HookScreenshots( bool bHook )
 {
-    PRINT_DEBUG("Steam_Screenshots::HookScreenshots\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     hooked = bHook;
 }
 
@@ -118,11 +123,11 @@ void Steam_Screenshots::HookScreenshots( bool bHook )
 // Sets metadata about a screenshot's location (for example, the name of the map)
 bool Steam_Screenshots::SetLocation( ScreenshotHandle hScreenshot, const char *pchLocation )
 {
-    PRINT_DEBUG("Steam_Screenshots::SetLocation\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     auto it = _screenshots.find(hScreenshot);
-    if (it == _screenshots.end())
-        return false;
+    if (it == _screenshots.end()) return false;
 
     it->second.metadatas["locations"].push_back(pchLocation);
     local_storage->write_json_file(Local_Storage::screenshots_folder, it->second.screenshot_name + ".json", it->second.metadatas);
@@ -134,11 +139,11 @@ bool Steam_Screenshots::SetLocation( ScreenshotHandle hScreenshot, const char *p
 // Tags a user as being visible in the screenshot
 bool Steam_Screenshots::TagUser( ScreenshotHandle hScreenshot, CSteamID steamID )
 {
-    PRINT_DEBUG("Steam_Screenshots::TagUser\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     auto it = _screenshots.find(hScreenshot);
-    if (it == _screenshots.end())
-        return false;
+    if (it == _screenshots.end()) return false;
 
     it->second.metadatas["users"].push_back(uint64_t(steamID.ConvertToUint64()));
     local_storage->write_json_file(Local_Storage::screenshots_folder, it->second.screenshot_name + ".json", it->second.metadatas);
@@ -150,11 +155,11 @@ bool Steam_Screenshots::TagUser( ScreenshotHandle hScreenshot, CSteamID steamID 
 // Tags a published file as being visible in the screenshot
 bool Steam_Screenshots::TagPublishedFile( ScreenshotHandle hScreenshot, PublishedFileId_t unPublishedFileID )
 {
-    PRINT_DEBUG("Steam_Screenshots::TagPublishedFile\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     auto it = _screenshots.find(hScreenshot);
-    if (it == _screenshots.end())
-        return false;
+    if (it == _screenshots.end()) return false;
 
     it->second.metadatas["published_files"].push_back(uint64_t(unPublishedFileID));
     local_storage->write_json_file(Local_Storage::screenshots_folder, it->second.screenshot_name + ".json", it->second.metadatas);
@@ -166,7 +171,9 @@ bool Steam_Screenshots::TagPublishedFile( ScreenshotHandle hScreenshot, Publishe
 // Returns true if the app has hooked the screenshot
 bool Steam_Screenshots::IsScreenshotsHooked()
 {
-    PRINT_DEBUG("Steam_Screenshots::IsScreenshotsHooked\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return hooked;
 }
 
@@ -178,7 +185,9 @@ bool Steam_Screenshots::IsScreenshotsHooked()
 // JPEG, TGA, and PNG formats are supported.
 ScreenshotHandle Steam_Screenshots::AddVRScreenshotToLibrary( EVRScreenshotType eType, const char *pchFilename, const char *pchVRFilename )
 {
-    PRINT_DEBUG("Steam_Screenshots::AddVRScreenshotToLibrary\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
     return INVALID_SCREENSHOT_HANDLE;
 }
 

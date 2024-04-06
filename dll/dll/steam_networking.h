@@ -221,7 +221,7 @@ void remove_killed_connection_sockets()
 public:
 static void steam_networking_callback(void *object, Common_Message *msg)
 {
-    // PRINT_DEBUG("steam_networking_callback\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Networking *steam_networking = (Steam_Networking *)object;
     steam_networking->Callback(msg);
@@ -229,7 +229,7 @@ static void steam_networking_callback(void *object, Common_Message *msg)
 
 static void steam_networking_run_every_runcp(void *object)
 {
-    // PRINT_DEBUG("steam_networking_run_every_runcp\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Networking *steam_networking = (Steam_Networking *)object;
     steam_networking->RunCallbacks();
@@ -246,7 +246,7 @@ Steam_Networking(class Settings *settings, class Networking *network, class Stea
 
     this->callbacks = callbacks;
 
-    PRINT_DEBUG("steam_networking_contructor %llu messages: %p\n", settings->get_local_steam_id().ConvertToUint64(), &messages);
+    PRINT_DEBUG("steam_networking_contructor %llu messages: %p", settings->get_local_steam_id().ConvertToUint64(), &messages);
 }
 
 ~Steam_Networking()
@@ -271,7 +271,7 @@ Steam_Networking(class Settings *settings, class Networking *network, class Stea
 // using different channels to talk to the same user will still use the same underlying p2p connection, saving on resources
 bool SendP2PPacket( CSteamID steamIDRemote, const void *pubData, uint32 cubData, EP2PSend eP2PSendType, int nChannel)
 {
-    PRINT_DEBUG("Steam_Networking::SendP2PPacket len %u sendtype: %u channel: %u to: %llu\n", cubData, eP2PSendType, nChannel, steamIDRemote.ConvertToUint64());
+    PRINT_DEBUG("len %u sendtype: %u channel: %u to: %llu", cubData, eP2PSendType, nChannel, steamIDRemote.ConvertToUint64());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     bool reliable = false;
     if (eP2PSendType == k_EP2PSendReliable || eP2PSendType == k_EP2PSendReliableWithBuffering) reliable = true;
@@ -294,43 +294,43 @@ bool SendP2PPacket( CSteamID steamIDRemote, const void *pubData, uint32 cubData,
 
     conn->open_channels.insert(nChannel);
     bool ret = network->sendTo(&msg, reliable);
-    PRINT_DEBUG("Sent message with size: %zu %u\n", msg.network().data().size(), ret);
+    PRINT_DEBUG("Sent message with size: %zu %u", msg.network().data().size(), ret);
     return ret;
 }
 
 bool SendP2PPacket( CSteamID steamIDRemote, const void *pubData, uint32 cubData, EP2PSend eP2PSendType ) {
-    PRINT_DEBUG("Steam_Networking::SendP2PPacket old\n");
+    PRINT_DEBUG("old");
     return SendP2PPacket(steamIDRemote, pubData, cubData, eP2PSendType, OLD_CHANNEL_NUMBER);
 }
 
 // returns true if any data is available for read, and the amount of data that will need to be read
 bool IsP2PPacketAvailable( uint32 *pcubMsgSize, int nChannel)
 {
-    PRINT_DEBUG("Steam_Networking::IsP2PPacketAvailable channel: %i\n", nChannel);
+    PRINT_DEBUG("channel: %i", nChannel);
     std::lock_guard<std::recursive_mutex> lock(messages_mutex);
     //Not sure if this should be here because it slightly screws up games that don't like such low "pings"
     //Commenting it out for now because it looks like it causes a bug where 20xx gets stuck in an infinite receive packet loop
     //this->network->Run();
     //RunCallbacks();
 
-    PRINT_DEBUG("Steam_Networking::IsP2PPacketAvailable Messages %zu %p\n", messages.size(), &messages);
+    PRINT_DEBUG("Messages %zu %p", messages.size(), &messages);
     for (auto &msg : messages) {
         if (connection_exists((uint64)msg.source_id()) && msg.mutable_network()->channel() == nChannel && msg.network().processed()) {
             uint32 size = msg.mutable_network()->data().size();
             if (pcubMsgSize) *pcubMsgSize = size;
-            PRINT_DEBUG("Steam_Networking::IsP2PPacketAvailable available with size: %u\n", size);
+            PRINT_DEBUG("available with size: %u", size);
             return true;
         }
     }
 
-    PRINT_DEBUG("Steam_Networking::IsP2PPacketAvailable (not available)\n");
+    PRINT_DEBUG("(not available)");
     if (pcubMsgSize) *pcubMsgSize = 0;
     return false;
 }
 
 bool IsP2PPacketAvailable( uint32 *pcubMsgSize)
 {
-    PRINT_DEBUG("Steam_Networking::IsP2PPacketAvailable old\n");
+    PRINT_DEBUG("old");
     return IsP2PPacketAvailable(pcubMsgSize, OLD_CHANNEL_NUMBER);
 }
 
@@ -340,7 +340,7 @@ bool IsP2PPacketAvailable( uint32 *pcubMsgSize)
 // this call is not blocking, and will return false if no data is available
 bool ReadP2PPacket( void *pubDest, uint32 cubDest, uint32 *pcubMsgSize, CSteamID *psteamIDRemote, int nChannel)
 {
-    PRINT_DEBUG("Steam_Networking::ReadP2PPacket %u %i\n", cubDest, nChannel);
+    PRINT_DEBUG("%u %i", cubDest, nChannel);
     std::lock_guard<std::recursive_mutex> lock(messages_mutex);
     //Not sure if this should be here because it slightly screws up games that don't like such low "pings"
     //Commenting it out for now because it looks like it causes a bug where 20xx gets stuck in an infinite receive packet loop
@@ -348,7 +348,7 @@ bool ReadP2PPacket( void *pubDest, uint32 cubDest, uint32 *pcubMsgSize, CSteamID
     //RunCallbacks();
 
     bool read = false;
-    PRINT_DEBUG("Number messages %zu\n", messages.size());
+    PRINT_DEBUG("Number messages %zu", messages.size());
     auto msg = std::begin(messages);
     while (msg != std::end(messages)) {
         if (connection_exists((uint64)msg->source_id()) && msg->network().channel() == nChannel && msg->network().processed()) {
@@ -357,13 +357,11 @@ bool ReadP2PPacket( void *pubDest, uint32 cubDest, uint32 *pcubMsgSize, CSteamID
             if (pcubMsgSize) *pcubMsgSize = msg_size;
             memcpy(pubDest, msg->network().data().data(), msg_size);
 
-#ifndef EMU_RELEASE_BUILD
-            for (int i = 0; i < msg_size; ++i) {
-                PRINT_DEBUG("%02hhX", ((char*)pubDest)[i]);
-            }PRINT_DEBUG("\n");
-#endif
+            PRINT_DEBUG("%s",
+                common_helpers::uint8_vector_to_hex_string(std::vector<uint8_t>((uint8_t*)pubDest, (uint8_t*)pubDest + msg_size)).c_str());
+            
             *psteamIDRemote = CSteamID((uint64)msg->source_id());
-            PRINT_DEBUG("Steam_Networking::ReadP2PPacket len %u channel: %u from: " "%" PRIu64 "\n", msg_size, nChannel, msg->source_id());
+            PRINT_DEBUG("len %u channel: %u from: " "%" PRIu64 "", msg_size, nChannel, msg->source_id());
             msg = messages.erase(msg);
             return true;
         }
@@ -378,7 +376,7 @@ bool ReadP2PPacket( void *pubDest, uint32 cubDest, uint32 *pcubMsgSize, CSteamID
 
 bool ReadP2PPacket( void *pubDest, uint32 cubDest, uint32 *pcubMsgSize, CSteamID *psteamIDRemote)
 {
-    PRINT_DEBUG("Steam_Networking::ReadP2PPacket old\n");
+    PRINT_DEBUG("old");
     return ReadP2PPacket(pubDest, cubDest, pcubMsgSize, psteamIDRemote, OLD_CHANNEL_NUMBER);
 }
 
@@ -390,7 +388,7 @@ bool ReadP2PPacket( void *pubDest, uint32 cubDest, uint32 *pcubMsgSize, CSteamID
 // (if you've called SendP2PPacket() on the other user, this implicitly accepts the session request)
 bool AcceptP2PSessionWithUser( CSteamID steamIDRemote )
 {
-    PRINT_DEBUG("Steam_Networking::AcceptP2PSessionWithUser %llu\n", steamIDRemote.ConvertToUint64());
+    PRINT_DEBUG("%llu", steamIDRemote.ConvertToUint64());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     struct Steam_Networking_Connection *conn = get_or_create_connection(steamIDRemote);
     if (conn) new_connection_times.erase(steamIDRemote);
@@ -402,7 +400,7 @@ bool AcceptP2PSessionWithUser( CSteamID steamIDRemote )
 // if the remote user tries to send data to you again, another P2PSessionRequest_t callback will be posted
 bool CloseP2PSessionWithUser( CSteamID steamIDRemote )
 {
-    PRINT_DEBUG("Steam_Networking::CloseP2PSessionWithUser %llu\n", steamIDRemote.ConvertToUint64());
+    PRINT_DEBUG("%llu", steamIDRemote.ConvertToUint64());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!connection_exists(steamIDRemote)) {
         
@@ -420,7 +418,7 @@ bool CloseP2PSessionWithUser( CSteamID steamIDRemote )
 // user will trigger a P2PSessionRequest_t callback
 bool CloseP2PChannelWithUser( CSteamID steamIDRemote, int nChannel )
 {
-    PRINT_DEBUG("Steam_Networking::CloseP2PChannelWithUser\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!connection_exists(steamIDRemote)) {
         return false;
@@ -442,7 +440,7 @@ bool CloseP2PChannelWithUser( CSteamID steamIDRemote, int nChannel )
 // returns false if no connection exists to the specified user
 bool GetP2PSessionState( CSteamID steamIDRemote, P2PSessionState_t *pConnectionState )
 {
-    PRINT_DEBUG("Steam_Networking::GetP2PSessionState %llu\n", steamIDRemote.ConvertToUint64());
+    PRINT_DEBUG("%llu", steamIDRemote.ConvertToUint64());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!connection_exists(steamIDRemote) && (steamIDRemote != settings->get_local_steam_id())) {
         if (pConnectionState) {
@@ -456,7 +454,7 @@ bool GetP2PSessionState( CSteamID steamIDRemote, P2PSessionState_t *pConnectionS
             pConnectionState->m_nRemotePort = 0;
         }
 
-        PRINT_DEBUG("No Connection\n");
+        PRINT_DEBUG("No Connection");
         return false;
     }
 
@@ -471,7 +469,7 @@ bool GetP2PSessionState( CSteamID steamIDRemote, P2PSessionState_t *pConnectionS
         pConnectionState->m_nRemotePort = 12345;
     }
 
-    PRINT_DEBUG("Connection\n");
+    PRINT_DEBUG("Connection");
     return true;
 }
 
@@ -483,7 +481,7 @@ bool GetP2PSessionState( CSteamID steamIDRemote, P2PSessionState_t *pConnectionS
 // P2P packet relay is allowed by default
 bool AllowP2PPacketRelay( bool bAllow )
 {
-    PRINT_DEBUG("Steam_Networking::AllowP2PPacketRelay %u\n", bAllow);
+    PRINT_DEBUG("%u", bAllow);
     return true;
 }
 
@@ -509,7 +507,7 @@ SNetListenSocket_t socket_number = 0;
 //		pass in 0 if you don't want users to be able to connect via IP/Port, but expect to be always peer-to-peer connections only
 SNetListenSocket_t CreateListenSocket( int nVirtualP2PPort, uint32 nIP, uint16 nPort, bool bAllowUseOfPacketRelay )
 {
-    PRINT_DEBUG("Steam_Networking::CreateListenSocket old %i %u %hu %u\n", nVirtualP2PPort, nIP, nPort, bAllowUseOfPacketRelay);
+    PRINT_DEBUG("old %i %u %hu %u", nVirtualP2PPort, nIP, nPort, bAllowUseOfPacketRelay);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     for (auto & c : listen_sockets) {
         if (c.nVirtualP2PPort == nVirtualP2PPort || c.nPort == nPort)
@@ -530,14 +528,14 @@ SNetListenSocket_t CreateListenSocket( int nVirtualP2PPort, uint32 nIP, uint16 n
 
 SNetListenSocket_t CreateListenSocket( int nVirtualP2PPort, SteamIPAddress_t nIP, uint16 nPort, bool bAllowUseOfPacketRelay )
 {
-    PRINT_DEBUG("Steam_Networking::CreateListenSocket %i %i %u %hu %u\n", nVirtualP2PPort, nIP.m_eType, nIP.m_unIPv4, nPort, bAllowUseOfPacketRelay);
+    PRINT_DEBUG("%i %i %u %hu %u", nVirtualP2PPort, nIP.m_eType, nIP.m_unIPv4, nPort, bAllowUseOfPacketRelay);
     //TODO: ipv6
     return CreateListenSocket(nVirtualP2PPort, nIP.m_unIPv4, nPort, bAllowUseOfPacketRelay);
 }
 
 SNetListenSocket_t CreateListenSocket( int nVirtualP2PPort, uint32 nIP, uint16 nPort )
 {
-    PRINT_DEBUG("Steam_Networking::CreateListenSocket old\n");
+    PRINT_DEBUG("old");
     return CreateListenSocket(nVirtualP2PPort, nIP, nPort, true);
 }
 
@@ -547,7 +545,7 @@ SNetListenSocket_t CreateListenSocket( int nVirtualP2PPort, uint32 nIP, uint16 n
 // on failure or timeout will trigger a SocketStatusCallback_t callback with a failure code in m_eSNetSocketState
 SNetSocket_t CreateP2PConnectionSocket( CSteamID steamIDTarget, int nVirtualPort, int nTimeoutSec, bool bAllowUseOfPacketRelay )
 {
-    PRINT_DEBUG("Steam_Networking::CreateP2PConnectionSocket %llu %i %i %u\n", steamIDTarget.ConvertToUint64(), nVirtualPort, nTimeoutSec, bAllowUseOfPacketRelay);
+    PRINT_DEBUG("%llu %i %i %u", steamIDTarget.ConvertToUint64(), nVirtualPort, nTimeoutSec, bAllowUseOfPacketRelay);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     //TODO: nTimeoutSec
     return create_connection_socket(steamIDTarget, nVirtualPort, 0, 0);
@@ -555,13 +553,13 @@ SNetSocket_t CreateP2PConnectionSocket( CSteamID steamIDTarget, int nVirtualPort
 
 SNetSocket_t CreateP2PConnectionSocket( CSteamID steamIDTarget, int nVirtualPort, int nTimeoutSec )
 {
-    PRINT_DEBUG("Steam_Networking::CreateP2PConnectionSocket old\n");
+    PRINT_DEBUG("old");
     return CreateP2PConnectionSocket(steamIDTarget, nVirtualPort, nTimeoutSec, true);
 }
 
 SNetSocket_t CreateConnectionSocket( uint32 nIP, uint16 nPort, int nTimeoutSec )
 {
-    PRINT_DEBUG("Steam_Networking::CreateConnectionSocket_old %u %hu %i\n", nIP, nPort, nTimeoutSec);
+    PRINT_DEBUG("%u %hu %i", nIP, nPort, nTimeoutSec);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     //TODO: nTimeoutSec
     return create_connection_socket((uint64)0, 0, nIP, nPort);
@@ -569,7 +567,7 @@ SNetSocket_t CreateConnectionSocket( uint32 nIP, uint16 nPort, int nTimeoutSec )
 
 SNetSocket_t CreateConnectionSocket( SteamIPAddress_t nIP, uint16 nPort, int nTimeoutSec )
 {
-    PRINT_DEBUG("Steam_Networking::CreateConnectionSocket %i %u %hu %i\n", nIP.m_eType, nIP.m_unIPv4, nPort, nTimeoutSec);
+    PRINT_DEBUG("%i %u %hu %i", nIP.m_eType, nIP.m_unIPv4, nPort, nTimeoutSec);
     //TODO: ipv6
     return CreateConnectionSocket(nIP.m_unIPv4, nPort, nTimeoutSec);
 }
@@ -579,7 +577,7 @@ SNetSocket_t CreateConnectionSocket( SteamIPAddress_t nIP, uint16 nPort, int nTi
 // if bNotifyRemoteEnd is set, socket will not be completely destroyed until the remote end acknowledges the disconnect
 bool DestroySocket( SNetSocket_t hSocket, bool bNotifyRemoteEnd )
 {
-    PRINT_DEBUG("Steam_Networking::DestroySocket\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     struct steam_connection_socket *socket = get_connection_socket(hSocket);
     if (!socket || socket->status == SOCKET_KILLED) return false;
@@ -590,7 +588,7 @@ bool DestroySocket( SNetSocket_t hSocket, bool bNotifyRemoteEnd )
 // destroying a listen socket will automatically kill all the regular sockets generated from it
 bool DestroyListenSocket( SNetListenSocket_t hSocket, bool bNotifyRemoteEnd )
 {
-    PRINT_DEBUG("Steam_Networking::DestroyListenSocket\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     auto c = std::begin(listen_sockets);
     while (c != std::end(listen_sockets)) {
@@ -618,7 +616,7 @@ bool DestroyListenSocket( SNetListenSocket_t hSocket, bool bNotifyRemoteEnd )
 // it can still cause stalls in receiving data (like TCP)
 bool SendDataOnSocket( SNetSocket_t hSocket, void *pubData, uint32 cubData, bool bReliable )
 {
-    PRINT_DEBUG("Steam_Networking::SendDataOnSocket\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     struct steam_connection_socket *socket = get_connection_socket(hSocket);
     if (!socket || socket->status != SOCKET_CONNECTED) return false;
@@ -639,7 +637,7 @@ bool SendDataOnSocket( SNetSocket_t hSocket, void *pubData, uint32 cubData, bool
 // fills out *pcubMsgSize with the size of the next message, in bytes
 bool IsDataAvailableOnSocket( SNetSocket_t hSocket, uint32 *pcubMsgSize )
 {
-    PRINT_DEBUG("Steam_Networking::IsDataAvailableOnSocket\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     struct steam_connection_socket *socket = get_connection_socket(hSocket);
     if (!socket) {
@@ -659,7 +657,7 @@ bool IsDataAvailableOnSocket( SNetSocket_t hSocket, uint32 *pcubMsgSize )
 // returns false if no data is available
 bool RetrieveDataFromSocket( SNetSocket_t hSocket, void *pubDest, uint32 cubDest, uint32 *pcubMsgSize )
 {
-    PRINT_DEBUG("Steam_Networking::RetrieveDataFromSocket\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     struct steam_connection_socket *socket = get_connection_socket(hSocket);
     if (!socket || socket->data_packets.size() == 0) return false;
@@ -684,7 +682,7 @@ bool RetrieveDataFromSocket( SNetSocket_t hSocket, void *pubDest, uint32 cubDest
 // fills out *phSocket with the socket that data is available on
 bool IsDataAvailable( SNetListenSocket_t hListenSocket, uint32 *pcubMsgSize, SNetSocket_t *phSocket )
 {
-    PRINT_DEBUG("Steam_Networking::IsDataAvailable\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!hListenSocket) return false;
 
@@ -708,7 +706,7 @@ bool IsDataAvailable( SNetListenSocket_t hListenSocket, uint32 *pcubMsgSize, SNe
 // fills out *phSocket with the socket that data is available on
 bool RetrieveData( SNetListenSocket_t hListenSocket, void *pubDest, uint32 cubDest, uint32 *pcubMsgSize, SNetSocket_t *phSocket )
 {
-    PRINT_DEBUG("Steam_Networking::RetrieveData\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!hListenSocket) return false;
 
@@ -734,7 +732,7 @@ bool RetrieveData( SNetListenSocket_t hListenSocket, void *pubDest, uint32 cubDe
 // returns information about the specified socket, filling out the contents of the pointers
 bool GetSocketInfo( SNetSocket_t hSocket, CSteamID *pSteamIDRemote, int *peSocketStatus, uint32 *punIPRemote, uint16 *punPortRemote )
 {
-    PRINT_DEBUG("Steam_Networking::GetSocketInfo_old\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     struct steam_connection_socket *socket = get_connection_socket(hSocket);
     if (!socket) return false;
@@ -761,7 +759,7 @@ bool GetSocketInfo( SNetSocket_t hSocket, CSteamID *pSteamIDRemote, int *peSocke
 
 bool GetSocketInfo( SNetSocket_t hSocket, CSteamID *pSteamIDRemote, int *peSocketStatus, SteamIPAddress_t *punIPRemote, uint16 *punPortRemote )
 {
-    PRINT_DEBUG("Steam_Networking::GetSocketInfo\n");
+    PRINT_DEBUG_ENTRY();
     //TODO: ipv6
     uint32 *ip_remote = NULL;
     if (punIPRemote) {
@@ -780,7 +778,7 @@ bool GetSocketInfo( SNetSocket_t hSocket, CSteamID *pSteamIDRemote, int *peSocke
 // *pnIP and *pnPort will be 0 if the socket is set to listen for P2P connections only
 bool GetListenSocketInfo( SNetListenSocket_t hListenSocket, uint32 *pnIP, uint16 *pnPort )
 {
-    PRINT_DEBUG("Steam_Networking::GetListenSocketInfo_old\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     auto conn = std::find_if(listen_sockets.begin(), listen_sockets.end(), [&hListenSocket](struct steam_listen_socket const& conn) { return conn.id == hListenSocket;});
     if (conn == listen_sockets.end()) return false;
@@ -791,7 +789,7 @@ bool GetListenSocketInfo( SNetListenSocket_t hListenSocket, uint32 *pnIP, uint16
 
 bool GetListenSocketInfo( SNetListenSocket_t hListenSocket, SteamIPAddress_t *pnIP, uint16 *pnPort )
 {
-    PRINT_DEBUG("Steam_Networking::GetListenSocketInfo\n");
+    PRINT_DEBUG_ENTRY();
     //TODO: ipv6
     uint32 *ip = NULL;
     if (pnIP) {
@@ -809,7 +807,7 @@ bool GetListenSocketInfo( SNetListenSocket_t hListenSocket, SteamIPAddress_t *pn
 // returns true to describe how the socket ended up connecting
 ESNetSocketConnectionType GetSocketConnectionType( SNetSocket_t hSocket )
 {
-    PRINT_DEBUG("Steam_Networking::GetSocketConnectionType\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     struct steam_connection_socket *socket = get_connection_socket(hSocket);
     if (!socket || socket->status != SOCKET_CONNECTED) return k_ESNetSocketConnectionTypeNotConnected;
@@ -820,7 +818,7 @@ ESNetSocketConnectionType GetSocketConnectionType( SNetSocket_t hSocket )
 // max packet size, in bytes
 int GetMaxPacketSize( SNetSocket_t hSocket )
 {
-    PRINT_DEBUG("Steam_Networking::GetMaxPacketSize\n");
+    PRINT_DEBUG_ENTRY();
     return 1500;
 }
 
@@ -907,11 +905,11 @@ void RunCallbacks()
 void Callback(Common_Message *msg)
 {
     if (msg->has_network()) {
-        PRINT_DEBUG(
-            "Steam_Networking: got msg from: " "%" PRIu64 " to: " "%" PRIu64 " size %zu type %u | messages %p: %zu\n",
+        PRINT_DEBUG("got msg from: " "%" PRIu64 " to: " "%" PRIu64 " size %zu type %u | messages %p: %zu",
             msg->source_id(), msg->dest_id(), msg->network().data().size(), msg->network().type(), &messages, messages.size()
         );
-        PRINT_DEBUG("Steam_Networking msg data: '%s'\n", common_helpers::uint8_vector_to_hex_string( std::vector<uint8_t>(msg->network().data().begin(), msg->network().data().end()) ).c_str());
+        PRINT_DEBUG("msg data: '%s'",
+            common_helpers::uint8_vector_to_hex_string(std::vector<uint8_t>(msg->network().data().begin(), msg->network().data().end())).c_str());
 
         if (msg->network().type() == Network_pb::DATA) {
             unprocessed_messages.push_back(Common_Message(*msg));
@@ -932,7 +930,7 @@ void Callback(Common_Message *msg)
     }
 
     if (msg->has_network_old()) {
-        PRINT_DEBUG("Steam_Networking: got network socket msg %u\n", msg->network_old().type());
+        PRINT_DEBUG("got network socket msg %u", msg->network_old().type());
         if (msg->network_old().type() == Network_Old::CONNECTION_REQUEST_IP) {
             for (auto & listen : listen_sockets) {
                 if (listen.nPort == msg->network_old().port()) {

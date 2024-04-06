@@ -31,7 +31,7 @@ public ISteamParties
 public:
 static void steam_callback(void *object, Common_Message *msg)
 {
-    // PRINT_DEBUG("steam_parties_callback\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Parties *steam_parties = (Steam_Parties *)object;
     steam_parties->Callback(msg);
@@ -39,7 +39,7 @@ static void steam_callback(void *object, Common_Message *msg)
 
 static void steam_run_every_runcb(void *object)
 {
-    // PRINT_DEBUG("steam_parties_run_every_runcb\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Parties *steam_parties = (Steam_Parties *)object;
     steam_parties->RunCallbacks();
@@ -70,19 +70,22 @@ Steam_Parties(class Settings *settings, class Networking *network, class SteamCa
 // Enumerate any active beacons for parties you may wish to join
 uint32 GetNumActiveBeacons()
 {
-    PRINT_DEBUG("Steam_Parties::GetNumActiveBeacons\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 PartyBeaconID_t GetBeaconByIndex( uint32 unIndex )
 {
-    PRINT_DEBUG("Steam_Parties::GetBeaconByIndex\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_ulPartyBeaconIdInvalid;
 }
 
 bool GetBeaconDetails( PartyBeaconID_t ulBeaconID, CSteamID *pSteamIDBeaconOwner, STEAM_OUT_STRUCT() SteamPartyBeaconLocation_t *pLocation, STEAM_OUT_STRING_COUNT(cchMetadata) char *pchMetadata, int cchMetadata )
 {
-    PRINT_DEBUG("Steam_Parties::GetBeaconDetails\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -92,7 +95,8 @@ bool GetBeaconDetails( PartyBeaconID_t ulBeaconID, CSteamID *pSteamIDBeaconOwner
 STEAM_CALL_RESULT( JoinPartyCallback_t )
 SteamAPICall_t JoinParty( PartyBeaconID_t ulBeaconID )
 {
-    PRINT_DEBUG("Steam_Parties::JoinParty\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
@@ -103,13 +107,15 @@ SteamAPICall_t JoinParty( PartyBeaconID_t ulBeaconID )
 // Get a list of possible beacon locations
 bool GetNumAvailableBeaconLocations( uint32 *puNumLocations )
 {
-    PRINT_DEBUG("Steam_Parties::GetNumAvailableBeaconLocations\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
 bool GetAvailableBeaconLocations( SteamPartyBeaconLocation_t *pLocationList, uint32 uMaxNumLocations )
 {
-    PRINT_DEBUG("Steam_Parties::GetAvailableBeaconLocations\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -121,7 +127,8 @@ bool GetAvailableBeaconLocations( SteamPartyBeaconLocation_t *pLocationList, uin
 STEAM_CALL_RESULT( CreateBeaconCallback_t )
 SteamAPICall_t CreateBeacon( uint32 unOpenSlots, SteamPartyBeaconLocation_t *pBeaconLocation, const char *pchConnectString, const char *pchMetadata )
 {
-    PRINT_DEBUG("Steam_Parties::CreateBeacon\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
@@ -131,7 +138,8 @@ SteamAPICall_t CreateBeacon( uint32 unOpenSlots, SteamPartyBeaconLocation_t *pBe
 // Steam will manage the remaining open slots automatically.
 void OnReservationCompleted( PartyBeaconID_t ulBeacon, CSteamID steamIDUser )
 {
-    PRINT_DEBUG("Steam_Parties::OnReservationCompleted\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 
@@ -140,7 +148,8 @@ void OnReservationCompleted( PartyBeaconID_t ulBeacon, CSteamID steamIDUser )
 // Note: The user may already be in-flight to your game, so it's possible they will still connect and try to join your party.
 void CancelReservation( PartyBeaconID_t ulBeacon, CSteamID steamIDUser )
 {
-    PRINT_DEBUG("Steam_Parties::CancelReservation\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 
@@ -149,7 +158,8 @@ void CancelReservation( PartyBeaconID_t ulBeacon, CSteamID steamIDUser )
 STEAM_CALL_RESULT( ChangeNumOpenSlotsCallback_t )
 SteamAPICall_t ChangeNumOpenSlots( PartyBeaconID_t ulBeacon, uint32 unOpenSlots )
 {
-    PRINT_DEBUG("Steam_Parties::ChangeNumOpenSlots\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
@@ -157,7 +167,8 @@ SteamAPICall_t ChangeNumOpenSlots( PartyBeaconID_t ulBeacon, uint32 unOpenSlots 
 // Turn off the beacon. 
 bool DestroyBeacon( PartyBeaconID_t ulBeacon )
 {
-    PRINT_DEBUG("Steam_Parties::DestroyBeacon\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -165,7 +176,8 @@ bool DestroyBeacon( PartyBeaconID_t ulBeacon )
 // Utils
 bool GetBeaconLocationData( SteamPartyBeaconLocation_t BeaconLocation, ESteamPartyBeaconLocationData eData, STEAM_OUT_STRING_COUNT(cchDataStringOut) char *pchDataStringOut, int cchDataStringOut )
 {
-    PRINT_DEBUG("Steam_Parties::GetBeaconLocationData\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 

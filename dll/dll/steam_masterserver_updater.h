@@ -29,7 +29,7 @@ public ISteamMasterServerUpdater
 public:
 static void steam_callback(void *object, Common_Message *msg)
 {
-    // PRINT_DEBUG("steam_masterserverupdater_callback\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Masterserver_Updater *steam_masterserverupdater = (Steam_Masterserver_Updater *)object;
     steam_masterserverupdater->Callback(msg);
@@ -37,7 +37,7 @@ static void steam_callback(void *object, Common_Message *msg)
 
 static void steam_run_every_runcb(void *object)
 {
-    // PRINT_DEBUG("steam_masterserverupdater_run_every_runcb\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Masterserver_Updater *steam_masterserverupdater = (Steam_Masterserver_Updater *)object;
     steam_masterserverupdater->RunCallbacks();
@@ -65,7 +65,8 @@ Steam_Masterserver_Updater(class Settings *settings, class Networking *network, 
 // you want it to be active (default: off).
 void SetActive( bool bActive )
 {
-    PRINT_DEBUG("Steam_Masterserver_Updater::SetActive\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 
@@ -74,7 +75,8 @@ void SetActive( bool bActive )
 // Some mods change this.
 void SetHeartbeatInterval( int iHeartbeatInterval )
 {
-    PRINT_DEBUG("Steam_Masterserver_Updater::SetHeartbeatInterval\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 
@@ -96,7 +98,8 @@ void SetHeartbeatInterval( int iHeartbeatInterval )
 // it's for us.
 bool HandleIncomingPacket( const void *pData, int cbData, uint32 srcIP, uint16 srcPort )
 {
-    PRINT_DEBUG("Steam_Masterserver_Updater::HandleIncomingPacket\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return true;
 }
 
@@ -107,7 +110,8 @@ bool HandleIncomingPacket( const void *pData, int cbData, uint32 srcIP, uint16 s
 // Call this each frame until it returns 0.
 int GetNextOutgoingPacket( void *pOut, int cbMaxOut, uint32 *pNetAdr, uint16 *pPort )
 {
-    PRINT_DEBUG("Steam_Masterserver_Updater::GetNextOutgoingPacket\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
@@ -125,21 +129,24 @@ void SetBasicServerData(
     bool bPasswordProtected,
     const char *pGameDescription )
 {
-    PRINT_DEBUG("Steam_Masterserver_Updater::SetBasicServerData\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 
 // Call this to clear the whole list of key/values that are sent in rules queries.
 void ClearAllKeyValues()
 {
-    PRINT_DEBUG("Steam_Masterserver_Updater::ClearAllKeyValues\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 
 // Call this to add/update a key/value pair.
 void SetKeyValue( const char *pKey, const char *pValue )
 {
-    PRINT_DEBUG("Steam_Masterserver_Updater::SetKeyValue '%s'='%s'\n", pKey, pValue);
+    PRINT_DEBUG("TODO '%s'='%s'", pKey, pValue);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 
@@ -148,7 +155,8 @@ void SetKeyValue( const char *pKey, const char *pValue )
 // to tell the master servers that this server is going away.
 void NotifyShutdown()
 {
-    PRINT_DEBUG("Steam_Masterserver_Updater::NotifyShutdown\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 
@@ -156,7 +164,8 @@ void NotifyShutdown()
 // Only returns true once per request.
 bool WasRestartRequested()
 {
-    PRINT_DEBUG("Steam_Masterserver_Updater::WasRestartRequested\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -164,7 +173,8 @@ bool WasRestartRequested()
 // Force it to request a heartbeat from the master servers.
 void ForceHeartbeat()
 {
-    PRINT_DEBUG("Steam_Masterserver_Updater::ForceHeartbeat\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 
@@ -172,20 +182,23 @@ void ForceHeartbeat()
 // It will provide name resolution and use the default master server port if none is provided.
 bool AddMasterServer( const char *pServerAddress )
 {
-    PRINT_DEBUG("Steam_Masterserver_Updater::AddMasterServer\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return true;
 }
 
 bool RemoveMasterServer( const char *pServerAddress )
 {
-    PRINT_DEBUG("Steam_Masterserver_Updater::RemoveMasterServer\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return true;
 }
 
 
 int GetNumMasterServers()
 {
-    PRINT_DEBUG("Steam_Masterserver_Updater::GetNumMasterServers\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
@@ -193,7 +206,8 @@ int GetNumMasterServers()
 // Returns the # of bytes written to pOut.
 int GetMasterServerAddress( int iServer, char *pOut, int outBufferSize )
 {
-    PRINT_DEBUG("Steam_Masterserver_Updater::GetMasterServerAddress\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 

@@ -734,7 +734,7 @@ bool Local_Storage::update_save_filenames(std::string folder)
 
     for (auto &f : files) {
         std::string path = f.name;
-        PRINT_DEBUG("Local_Storage:: remote file %s\n", path.c_str());
+        PRINT_DEBUG("remote file '%s'", path.c_str());
         std::string to = sanitize_file_name(desanitize_file_name(path));
         if (path != to && !file_exists(folder, to)) {
             //create the folder
@@ -743,9 +743,9 @@ bool Local_Storage::update_save_filenames(std::string folder)
 
             std::string from = (save_directory + appid + folder + PATH_SEPARATOR + path);
             to = (save_directory + appid + folder + PATH_SEPARATOR + to);
-            PRINT_DEBUG("Local_Storage::update_save_filenames renaming %s to %s\n", from.c_str(), to.c_str());
+            PRINT_DEBUG("renaming '%s' to '%s'", from.c_str(), to.c_str());
             if (std::rename(from.c_str(), to.c_str()) < 0) {
-                PRINT_DEBUG("ERROR RENAMING\n");
+                PRINT_DEBUG("ERROR RENAMING");
             }
         }
     }
@@ -757,8 +757,7 @@ bool Local_Storage::load_json(std::string full_path, nlohmann::json& json)
 {
     std::ifstream inventory_file(utf8_decode(full_path));
     // If there is a file and we opened it
-    if (inventory_file)
-    {
+    if (inventory_file) {
         inventory_file.seekg(0, std::ios::end);
         size_t size = inventory_file.tellg();
         std::string buffer(size, '\0');
@@ -770,15 +769,13 @@ bool Local_Storage::load_json(std::string full_path, nlohmann::json& json)
 
         try {
             json = std::move(nlohmann::json::parse(buffer));
-            PRINT_DEBUG("Loaded json \"%s\". Loaded %zu items.\n", full_path.c_str(), json.size());
+            PRINT_DEBUG("Loaded json '%s' (%zu items)", full_path.c_str(), json.size());
             return true;
         } catch (std::exception& e) {
-            PRINT_DEBUG("Error while parsing \"%s\" json: %s\n", full_path.c_str(), e.what());
+            PRINT_DEBUG("Error while parsing '%s' json error: %s", full_path.c_str(), e.what());
         }
-    }
-    else
-    {
-        PRINT_DEBUG("Couldn't open file \"%s\" to read json\n", full_path.c_str());
+    } else {
+        PRINT_DEBUG("Couldn't open file '%s' to read json", full_path.c_str());
     }
 
     reset_LastError();
@@ -807,13 +804,12 @@ bool Local_Storage::write_json_file(std::string folder, std::string const&file, 
     create_directory(inv_path);
 
     std::ofstream inventory_file(utf8_decode(full_path), std::ios::trunc | std::ios::out);
-    if (inventory_file)
-    {
+    if (inventory_file) {
         inventory_file << std::setw(2) << json;
         return true;
     }
     
-    PRINT_DEBUG("Couldn't open file \"%s\" to write json\n", full_path.c_str());
+    PRINT_DEBUG("Couldn't open file '%s' to write json", full_path.c_str());
 
     reset_LastError();
     return false;
@@ -845,7 +841,7 @@ std::string Local_Storage::load_image_resized(std::string const& image_path, std
         int width = 0;
         int height = 0;
         unsigned char *img = stbi_load(image_path.c_str(), &width, &height, nullptr, 4);
-        PRINT_DEBUG("Local_Storage::load_image_resized: stbi_load  %s '%s'\n", (img == nullptr ? stbi_failure_reason() : "loaded"), image_path.c_str());
+        PRINT_DEBUG("stbi_load('%s') -> %s", image_path.c_str(), (img == nullptr ? stbi_failure_reason() : "loaded"));
         if (img != nullptr) {
             std::vector<char> out_resized(resized_img_size);
             stbir_resize_uint8(img, width, height, 0, (unsigned char*)&out_resized[0], resolution, resolution, 0, 4);

@@ -52,7 +52,7 @@ static std::vector<uint8_t> sign_auth_data(const std::string &private_key_conten
         // we nedd a live object until the printf does its job, hence this special handling
         std::string err_msg(256, 0);
         mbedtls_strerror(result, &err_msg[0], err_msg.size());
-        PRINT_DEBUG("sign_auth_data failed to hash the data via SHA1: %s\n", err_msg.c_str());
+        PRINT_DEBUG("failed to hash the data via SHA1: %s", err_msg.c_str());
 #endif
 
         return signature;
@@ -75,7 +75,7 @@ static std::vector<uint8_t> sign_auth_data(const std::string &private_key_conten
         // we nedd a live object until the printf does its job, hence this special handling
         std::string err_msg(256, 0);
         mbedtls_strerror(result, &err_msg[0], err_msg.size());
-        PRINT_DEBUG("sign_auth_data failed to seed the CTR-DRBG context: %s\n", err_msg.c_str());
+        PRINT_DEBUG("failed to seed the CTR-DRBG context: %s", err_msg.c_str());
 #endif
 
         return signature;
@@ -102,7 +102,7 @@ static std::vector<uint8_t> sign_auth_data(const std::string &private_key_conten
         // we nedd a live object until the printf does its job, hence this special handling
         std::string err_msg(256, 0);
         mbedtls_strerror(result, &err_msg[0], err_msg.size());
-        PRINT_DEBUG("sign_auth_data failed to parse private key: %s\n", err_msg.c_str());
+        PRINT_DEBUG("failed to parse private key: %s", err_msg.c_str());
 #endif
 
         return signature;
@@ -116,7 +116,7 @@ static std::vector<uint8_t> sign_auth_data(const std::string &private_key_conten
         mbedtls_ctr_drbg_free(&ctr_drbg_ctx);
         mbedtls_entropy_free(&entropy_ctx);
 
-        PRINT_DEBUG("sign_auth_data parsed key is not a valid RSA private key\n");
+        PRINT_DEBUG("parsed key is not a valid RSA private key");
         return signature;
     }
 
@@ -131,11 +131,11 @@ static std::vector<uint8_t> sign_auth_data(const std::string &private_key_conten
         mbedtls_ctr_drbg_free(&ctr_drbg_ctx);
         mbedtls_entropy_free(&entropy_ctx);
 
-        PRINT_DEBUG("sign_auth_data failed to get private key (final buffer) length\n");
+        PRINT_DEBUG("failed to get private key (final buffer) length");
         return signature;
     }
 
-    PRINT_DEBUG("sign_auth_data computed private key (final buffer) length = %zu\n", private_key_len);
+    PRINT_DEBUG("computed private key (final buffer) length = %zu", private_key_len);
     signature.resize(private_key_len);
 
     // finally sign the computed hash using RSA and PKCS#1 padding
@@ -159,14 +159,14 @@ static std::vector<uint8_t> sign_auth_data(const std::string &private_key_conten
         // we nedd a live object until the printf does its job, hence this special handling
         std::string err_msg(256, 0);
         mbedtls_strerror(result, &err_msg[0], err_msg.size());
-        PRINT_DEBUG("sign_auth_data RSA signing failed: %s\n", err_msg.c_str());
+        PRINT_DEBUG("RSA signing failed: %s", err_msg.c_str());
 #endif
     }
 
 #ifndef EMU_RELEASE_BUILD
         // we nedd a live object until the printf does its job, hence this special handling
         auto str = common_helpers::uint8_vector_to_hex_string(signature);
-        PRINT_DEBUG("sign_auth_data final signature [%zu bytes]:\n  %s\n", signature.size(), str.c_str());
+        PRINT_DEBUG("final signature [%zu bytes]:\n  %s", signature.size(), str.c_str());
 #endif
 
     return signature;
@@ -179,7 +179,7 @@ struct DLC {
 
     std::vector<uint8_t> Serialize()
     {
-        PRINT_DEBUG("AUTH::DLC::SER AppId = %u, Licenses count = %zu\n", AppId, Licenses.size());
+        PRINT_DEBUG("AppId = %u, Licenses count = %zu", AppId, Licenses.size());
 
         // we need this variable because we depend on the sizeof, must be 2 bytes
         const uint16_t dlcs_licenses_count = (uint16_t)Licenses.size();
@@ -209,7 +209,7 @@ struct DLC {
 
 #undef SER_VAR
 
-        PRINT_DEBUG("AUTH::DLC::SER final size = %zu\n", buffer.size());
+        PRINT_DEBUG("final size = %zu", buffer.size());
         return buffer;
     }
 };
@@ -255,13 +255,12 @@ public:
 #endif
 
         PRINT_DEBUG(
-            "AUTH::AppTicketGC::SER Token:\n"
             "  GCToken: " "%" PRIu64 "\n"
             "  user steam_id: " "%" PRIu64 "\n"
             "  ticketGenDate: %u\n"
             "  ExternalIP: 0x%08X, InternalIP: 0x%08X\n"
             "  TimeSinceStartup: %u, TicketGeneratedCount: %u\n"
-            "  SER size = %zu\n",
+            "  SER size = %zu",
 
             GCToken,
             steam_id,
@@ -297,7 +296,7 @@ public:
 #ifndef EMU_RELEASE_BUILD
         // we nedd a live object until the printf does its job, hence this special handling
         auto str = common_helpers::uint8_vector_to_hex_string(buffer);
-        PRINT_DEBUG("AUTH::AppTicketGC::SER final data [%zu bytes]:\n  %s\n", buffer.size(), str.c_str());
+        PRINT_DEBUG("final data [%zu bytes]:\n  %s", buffer.size(), str.c_str());
 #endif
 
         return buffer;
@@ -321,7 +320,6 @@ struct AppTicket {
         const uint64_t steam_id = id.ConvertToUint64();
 
         PRINT_DEBUG(
-            "AUTH::AppTicket::SER:\n"
             "  Version: %u\n"
             "  user steam_id: " "%" PRIu64 "\n"
             "  AppId: %u\n"
@@ -385,7 +383,7 @@ struct AppTicket {
             licenses_total_size +
             dlcs_total_size;
 
-        PRINT_DEBUG("AUTH::AppTicket::SER final size = %zu\n", total_size);
+        PRINT_DEBUG("final size = %zu", total_size);
 
         std::vector<uint8_t> buffer;
         buffer.resize(total_size);
@@ -408,7 +406,7 @@ struct AppTicket {
         {
             // we nedd a live object until the printf does its job, hence this special handling
             auto str = common_helpers::uint8_vector_to_hex_string(buffer);
-            PRINT_DEBUG("AUTH::AppTicket::SER (before licenses + DLCs):\n  %s\n", str.c_str());
+            PRINT_DEBUG("(before licenses + DLCs):\n  %s", str.c_str());
         }
 #endif
 
@@ -461,7 +459,7 @@ struct AppTicket {
         {
             // we nedd a live object until the printf does its job, hence this special handling
             auto str = common_helpers::uint8_vector_to_hex_string(buffer);
-            PRINT_DEBUG("AUTH::AppTicket::SER final data [%zu bytes]:\n  %s\n", buffer.size(), str.c_str());
+            PRINT_DEBUG("final data [%zu bytes]:\n  %s", buffer.size(), str.c_str());
         }
 #endif
 
@@ -512,7 +510,6 @@ struct Auth_Data {
         const uint64_t steam_id = id.ConvertToUint64();
 
         PRINT_DEBUG(
-            "AUTH::Auth_Data::SER:\n"
             "  HasGC: %u\n"
             "  user steam_id: " "%" PRIu64 "\n"
             "  number: " "%" PRIu64 "\n",
@@ -563,8 +560,7 @@ struct Auth_Data {
         }
 
         const size_t final_buffer_size = total_size_without_siglen + STEAM_APPTICKET_SIGLEN;
-        PRINT_DEBUG(
-            "AUTH::Auth_Data::SER size without sig len = %zu, size with sig len (final size) = %zu\n",
+        PRINT_DEBUG("size without sig len = %zu, size with sig len (final size) = %zu",
             total_size_without_siglen,
             final_buffer_size
         );
@@ -603,7 +599,7 @@ struct Auth_Data {
         {
             // we nedd a live object until the printf does its job, hence this special handling
             auto str = common_helpers::uint8_vector_to_hex_string(buffer);
-            PRINT_DEBUG("AUTH::Auth_Data::SER final data (before signature) [%zu bytes]:\n  %s\n", buffer.size(), str.c_str());
+            PRINT_DEBUG("final data (before signature) [%zu bytes]:\n  %s", buffer.size(), str.c_str());
         }
 #endif
 
@@ -616,12 +612,12 @@ struct Auth_Data {
         {
             // we nedd a live object until the printf does its job, hence this special handling
             auto str = common_helpers::uint8_vector_to_hex_string(buffer);
-            PRINT_DEBUG("AUTH::Auth_Data::SER final data (after signature) [%zu bytes]:\n  %s\n", buffer.size(), str.c_str());
+            PRINT_DEBUG("final data (after signature) [%zu bytes]:\n  %s", buffer.size(), str.c_str());
         }
 #endif
 
         } else {
-            PRINT_DEBUG("AUTH::Auth_Data::SER signature size [%zu] is invalid\n", signature.size());
+            PRINT_DEBUG("signature size [%zu] is invalid", signature.size());
         }
 
 #undef SER_VAR

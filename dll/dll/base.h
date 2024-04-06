@@ -186,7 +186,7 @@ public:
     }
 
     SteamAPICall_t addCallResult(SteamAPICall_t api_call, int iCallback, void *result, unsigned int size, double timeout=DEFAULT_CB_TIMEOUT, bool run_call_completed_cb=true) {
-        PRINT_DEBUG("addCallResult %i\n", iCallback);
+        PRINT_DEBUG("%i", iCallback);
         auto cb_result = std::find_if(callresults.begin(), callresults.end(), [api_call](struct Steam_Call_Result const& item) { return item.api_call == api_call; });
         if (cb_result != callresults.end()) {
             if (cb_result->reserved) {
@@ -203,7 +203,7 @@ public:
             return callresults.back().api_call;
         }
 
-        PRINT_DEBUG("addCallResult ERROR\n");
+        PRINT_DEBUG("ERROR");
         return k_uAPICallInvalid;
     }
 
@@ -241,7 +241,7 @@ public:
                     if (callresults[index].has_cb()) {
                         std::vector<class CCallbackBase *> temp_cbs = callresults[index].callbacks;
                         for (auto & cb : temp_cbs) {
-                            PRINT_DEBUG("Calling callresult %p %i\n", cb, cb->GetICallback());
+                            PRINT_DEBUG("Calling callresult %p %i", cb, cb->GetICallback());
                             global_mutex.unlock();
                             //TODO: unlock relock doesn't work if mutex was locked more than once.
                             if (run_call_completed_cb) { //run the right function depending on if it's a callback or a call result.
@@ -251,7 +251,7 @@ public:
                             }
                             //COULD BE DELETED SO DON'T TOUCH CB
                             global_mutex.lock();
-                            PRINT_DEBUG("callresult done\n");
+                            PRINT_DEBUG("callresult done");
                         }
                     }
 
@@ -264,7 +264,7 @@ public:
                         data.m_cubParam = result.size();
 
                         for (auto & cb: callbacks) {
-                            PRINT_DEBUG("Call complete cb %i %p %llu\n", iCallback, cb, api_call);
+                            PRINT_DEBUG("Call complete cb %i %p %llu", iCallback, cb, api_call);
                             //TODO: check if this is a problem or not.
                             SteamAPICallCompleted_t temp = data;
                             global_mutex.unlock();
@@ -291,12 +291,12 @@ public:
             }
         }
 
-        PRINT_DEBUG("runCallResults erase to_delete\n");
+        PRINT_DEBUG("erase to_delete");
         auto c = std::begin(callresults);
         while (c != std::end(callresults)) {
             if (c->to_delete) {
                 if (c->timed_out()) {
-                    PRINT_DEBUG("runCallResults removed callresult %i\n", c->iCallback);
+                    PRINT_DEBUG("removed callresult %i", c->iCallback);
                     c = callresults.erase(c);
                 } else {
                     ++c;
@@ -322,7 +322,7 @@ public:
     }
 
     void addCallBack(int iCallback, class CCallbackBase *cb) {
-        PRINT_DEBUG("addCallBack %i\n", iCallback);
+        PRINT_DEBUG("%i", iCallback);
         if (iCallback == SteamAPICallCompleted_t::k_iCallback) {
             results->addCallCompleted(cb);
             CCallbackMgr::SetRegister(cb, iCallback);

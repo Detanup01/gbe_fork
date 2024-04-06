@@ -175,14 +175,13 @@ std::vector<Steam_Leaderboard_Entry> Steam_User_Stats::load_leaderboard_entries(
             ++i; // move past this score detail
         }
 
-        PRINT_DEBUG(
-            "Steam_User_Stats::load_leaderboard_entries '%s': user %llu, score %i, details count = %zu\n",
+        PRINT_DEBUG("'%s': user %llu, score %i, details count = %zu",
             name.c_str(), new_entry.steam_id.ConvertToUint64(), new_entry.score, new_entry.score_details.size()
         );
         out.push_back(new_entry);
     }
 
-    PRINT_DEBUG("Steam_User_Stats::load_leaderboard_entries '%s' total entries = %zu\n", name.c_str(), out.size());
+    PRINT_DEBUG("'%s' total entries = %zu", name.c_str(), out.size());
     return out;
 }
 
@@ -191,7 +190,7 @@ void Steam_User_Stats::save_my_leaderboard_entry(const Steam_Leaderboard &leader
      auto my_entry = leaderboard.find_recent_entry(settings->get_local_steam_id());
      if (!my_entry) return; // we don't have a score entry
 
-    PRINT_DEBUG("Steam_User_Stats::save_my_leaderboard_entry saving entries for leaderboard '%s'\n", leaderboard.name.c_str());
+    PRINT_DEBUG("saving entries for leaderboard '%s'", leaderboard.name.c_str());
 
     std::vector<uint32_t> output{};
 
@@ -225,7 +224,7 @@ Steam_Leaderboard_Entry* Steam_User_Stats::update_leaderboard_entry(Steam_Leader
     if (added) { // if we added a new entry then we have to sort and find the target entry again
         leaderboard.sort_entries();
         user_entry = leaderboard.find_recent_entry(entry.steam_id);
-        PRINT_DEBUG("Steam_User_Stats::update_leaderboard_entry added/updated entry for user %llu\n", entry.steam_id.ConvertToUint64());
+        PRINT_DEBUG("added/updated entry for user %llu", entry.steam_id.ConvertToUint64());
     }
     
     return user_entry;
@@ -248,7 +247,7 @@ unsigned int Steam_User_Stats::cache_leaderboard_ifneeded(const std::string &nam
 {
     unsigned int board_handle = find_cached_leaderboard(name);
     if (board_handle) return board_handle;
-    // PRINT_DEBUG("Steam_User_Stats::cache_leaderboard_ifneeded cache miss '%s'\n", name.c_str());
+    // PRINT_DEBUG("cache miss '%s'", name.c_str());
 
     // create a new entry in-memory and try reading the entries from disk
     struct Steam_Leaderboard new_board{};
@@ -264,8 +263,7 @@ unsigned int Steam_User_Stats::cache_leaderboard_ifneeded(const std::string &nam
     cached_leaderboards.push_back(new_board);
     board_handle = cached_leaderboards.size();
 
-    PRINT_DEBUG(
-        "Steam_User_Stats::cache_leaderboard_ifneeded cached a new leaderboard '%s' %i %i\n",
+    PRINT_DEBUG("cached a new leaderboard '%s' %i %i",
         new_board.name.c_str(), (int)eLeaderboardSortMethod, (int)eLeaderboardDisplayType
     );
     return board_handle;
@@ -332,7 +330,7 @@ void Steam_User_Stats::request_user_leaderboard_entry(const Steam_Leaderboard &b
 // change stats/achievements without sending back to server
 bool Steam_User_Stats::clear_stats_internal()
 {
-    PRINT_DEBUG("Steam_User_Stats::clear_stats_internal\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     bool notify_server = false;
     
@@ -395,7 +393,7 @@ bool Steam_User_Stats::clear_stats_internal()
         }
         break;
         
-        default: PRINT_DEBUG("Steam_User_Stats::clear_stats_internal unhandled type %i\n", (int)stat.second.type); break;
+        default: PRINT_DEBUG("unhandled type %i", (int)stat.second.type); break;
         }
     }
 
@@ -404,7 +402,7 @@ bool Steam_User_Stats::clear_stats_internal()
 
 Steam_User_Stats::InternalSetResult<int32> Steam_User_Stats::set_stat_internal( const char *pchName, int32 nData )
 {
-    PRINT_DEBUG("Steam_User_Stats::set_stat_internal <int32> '%s' = %i\n", pchName, nData);
+    PRINT_DEBUG("<int32> '%s' = %i", pchName, nData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     Steam_User_Stats::InternalSetResult<int32> result{};
 
@@ -448,7 +446,7 @@ Steam_User_Stats::InternalSetResult<int32> Steam_User_Stats::set_stat_internal( 
 
 Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo::Stat_Type, float>> Steam_User_Stats::set_stat_internal( const char *pchName, float fData )
 {
-    PRINT_DEBUG("Steam_User_Stats::set_stat_internal <float> '%s' = %f\n", pchName, fData);
+    PRINT_DEBUG("<float> '%s' = %f", pchName, fData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo::Stat_Type, float>> result{};
 
@@ -493,7 +491,7 @@ Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo
 
 Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo::Stat_Type, float>> Steam_User_Stats::update_avg_rate_stat_internal( const char *pchName, float flCountThisSession, double dSessionLength )
 {
-    PRINT_DEBUG("Steam_User_Stats::update_avg_rate_stat_internal %s\n", pchName);
+    PRINT_DEBUG("%s", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo::Stat_Type, float>> result{};
 
@@ -539,7 +537,7 @@ Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo
 
 Steam_User_Stats::InternalSetResult<bool> Steam_User_Stats::set_achievement_internal( const char *pchName )
 {
-    PRINT_DEBUG("Steam_User_Stats::set_achievement_internal '%s'\n", pchName);
+    PRINT_DEBUG("'%s'", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     Steam_User_Stats::InternalSetResult<bool> result{};
 
@@ -585,7 +583,7 @@ Steam_User_Stats::InternalSetResult<bool> Steam_User_Stats::set_achievement_inte
 
 Steam_User_Stats::InternalSetResult<bool> Steam_User_Stats::clear_achievement_internal( const char *pchName )
 {
-    PRINT_DEBUG("Steam_User_Stats::clear_achievement_internal '%s'\n", pchName);
+    PRINT_DEBUG("'%s'", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     Steam_User_Stats::InternalSetResult<bool> result{};
 
@@ -628,7 +626,7 @@ Steam_User_Stats::InternalSetResult<bool> Steam_User_Stats::clear_achievement_in
 
 void Steam_User_Stats::steam_user_stats_network_low_level(void *object, Common_Message *msg)
 {
-    // PRINT_DEBUG("Steam_User_Stats::steam_user_stats_network_low_level\n");
+    // PRINT_DEBUG_ENTRY();
 
     auto inst = (Steam_User_Stats *)object;
     inst->network_callback_low_level(msg);
@@ -636,7 +634,7 @@ void Steam_User_Stats::steam_user_stats_network_low_level(void *object, Common_M
 
 void Steam_User_Stats::steam_user_stats_network_stats(void *object, Common_Message *msg)
 {
-    // PRINT_DEBUG("Steam_User_Stats::steam_user_stats_network_stats\n");
+    // PRINT_DEBUG_ENTRY();
 
     auto inst = (Steam_User_Stats *)object;
     inst->network_callback_stats(msg);
@@ -644,7 +642,7 @@ void Steam_User_Stats::steam_user_stats_network_stats(void *object, Common_Messa
 
 void Steam_User_Stats::steam_user_stats_network_leaderboards(void *object, Common_Message *msg)
 {
-    // PRINT_DEBUG("Steam_User_Stats::steam_user_stats_network_leaderboards\n");
+    // PRINT_DEBUG_ENTRY();
 
     auto inst = (Steam_User_Stats *)object;
     inst->network_callback_leaderboards(msg);
@@ -652,7 +650,7 @@ void Steam_User_Stats::steam_user_stats_network_leaderboards(void *object, Commo
 
 void Steam_User_Stats::steam_user_stats_run_every_runcb(void *object)
 {
-    // PRINT_DEBUG("Steam_User_Stats::steam_user_stats_run_every_runcb\n");
+    // PRINT_DEBUG_ENTRY();
 
     auto inst = (Steam_User_Stats *)object;
     inst->steam_run_callback();
@@ -741,7 +739,7 @@ Steam_User_Stats::~Steam_User_Stats()
 STEAM_CALL_BACK( UserStatsReceived_t )
 bool Steam_User_Stats::RequestCurrentStats()
 {
-    PRINT_DEBUG("Steam_User_Stats::RequestCurrentStats\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     UserStatsReceived_t data{};
@@ -756,7 +754,7 @@ bool Steam_User_Stats::RequestCurrentStats()
 // Data accessors
 bool Steam_User_Stats::GetStat( const char *pchName, int32 *pData )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetStat <int32> '%s' %p\n", pchName, pData);
+    PRINT_DEBUG("<int32> '%s' %p", pchName, pData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName) return false;
@@ -788,7 +786,7 @@ bool Steam_User_Stats::GetStat( const char *pchName, int32 *pData )
 
 bool Steam_User_Stats::GetStat( const char *pchName, float *pData )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetStat <float> '%s' %p\n", pchName, pData);
+    PRINT_DEBUG("<float> '%s' %p", pchName, pData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName) return false;
@@ -822,7 +820,7 @@ bool Steam_User_Stats::GetStat( const char *pchName, float *pData )
 // Set / update data
 bool Steam_User_Stats::SetStat( const char *pchName, int32 nData )
 {
-    PRINT_DEBUG("Steam_User_Stats::SetStat <int32> '%s' = %i\n", pchName, nData);
+    PRINT_DEBUG("<int32> '%s' = %i", pchName, nData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     auto ret = set_stat_internal(pchName, nData );
@@ -839,7 +837,7 @@ bool Steam_User_Stats::SetStat( const char *pchName, int32 nData )
 
 bool Steam_User_Stats::SetStat( const char *pchName, float fData )
 {
-    PRINT_DEBUG("Steam_User_Stats::SetStat <float> '%s' = %f\n", pchName, fData);
+    PRINT_DEBUG("<float> '%s' = %f", pchName, fData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     auto ret = set_stat_internal(pchName, fData);
@@ -856,7 +854,7 @@ bool Steam_User_Stats::SetStat( const char *pchName, float fData )
 
 bool Steam_User_Stats::UpdateAvgRateStat( const char *pchName, float flCountThisSession, double dSessionLength )
 {
-    PRINT_DEBUG("Steam_User_Stats::UpdateAvgRateStat '%s'\n", pchName);
+    PRINT_DEBUG("'%s'", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     auto ret = update_avg_rate_stat_internal(pchName, flCountThisSession, dSessionLength);
@@ -875,7 +873,7 @@ bool Steam_User_Stats::UpdateAvgRateStat( const char *pchName, float flCountThis
 // Achievement flag accessors
 bool Steam_User_Stats::GetAchievement( const char *pchName, bool *pbAchieved )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetAchievement '%s'\n", pchName);
+    PRINT_DEBUG("'%s'", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName) return false;
@@ -904,7 +902,7 @@ bool Steam_User_Stats::GetAchievement( const char *pchName, bool *pbAchieved )
 
 bool Steam_User_Stats::SetAchievement( const char *pchName )
 {
-    PRINT_DEBUG("Steam_User_Stats::SetAchievement '%s'\n", pchName);
+    PRINT_DEBUG("'%s'", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     auto ret = set_achievement_internal(pchName);
@@ -920,7 +918,7 @@ bool Steam_User_Stats::SetAchievement( const char *pchName )
 
 bool Steam_User_Stats::ClearAchievement( const char *pchName )
 {
-    PRINT_DEBUG("Steam_User_Stats::ClearAchievement '%s'\n", pchName);
+    PRINT_DEBUG("'%s'", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     auto ret = clear_achievement_internal(pchName);
@@ -940,7 +938,7 @@ bool Steam_User_Stats::ClearAchievement( const char *pchName )
 // began tracking achievement unlock times (December 2009). Time is seconds since January 1, 1970.
 bool Steam_User_Stats::GetAchievementAndUnlockTime( const char *pchName, bool *pbAchieved, uint32 *punUnlockTime )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetAchievementAndUnlockTime\n");
+    PRINT_DEBUG("'%s'", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName) return false;
@@ -977,7 +975,7 @@ bool Steam_User_Stats::GetAchievementAndUnlockTime( const char *pchName, bool *p
 bool Steam_User_Stats::StoreStats()
 {
     // no need to exchange data with gameserver, we already do that in run_callback() and on each stat/ach update (immediate mode)
-    PRINT_DEBUG("Steam_User_Stats::StoreStats\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     UserStatsStored_t data{};
@@ -997,7 +995,7 @@ bool Steam_User_Stats::StoreStats()
 // specified achievement.
 int Steam_User_Stats::GetAchievementIcon( const char *pchName )
 {
-    PRINT_DEBUG("TODO Steam_User_Stats::GetAchievementIcon\n");
+    PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!pchName) return 0;
 
@@ -1032,7 +1030,7 @@ std::string Steam_User_Stats::get_achievement_icon_name( const char *pchName, bo
 // - "hidden" for retrieving if an achievement is hidden (returns "0" when not hidden, "1" when hidden)
 const char * Steam_User_Stats::GetAchievementDisplayAttribute( const char *pchName, const char *pchKey )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetAchievementDisplayAttribute [%s] [%s]\n", pchName, pchKey);
+    PRINT_DEBUG("[%s] [%s]", pchName, pchKey);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName || !pchKey || !pchKey[0]) return "";
@@ -1065,7 +1063,7 @@ const char * Steam_User_Stats::GetAchievementDisplayAttribute( const char *pchNa
 // Calling this w/ N out of N progress will NOT set the achievement, the game must still do that.
 bool Steam_User_Stats::IndicateAchievementProgress( const char *pchName, uint32 nCurProgress, uint32 nMaxProgress )
 {
-    PRINT_DEBUG("Steam_User_Stats::IndicateAchievementProgress %s\n", pchName);
+    PRINT_DEBUG("%s", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName) return false;
@@ -1121,7 +1119,7 @@ bool Steam_User_Stats::IndicateAchievementProgress( const char *pchName, uint32 
 // list of existing achievements compiled into them
 uint32 Steam_User_Stats::GetNumAchievements()
 {
-    PRINT_DEBUG("Steam_User_Stats::GetNumAchievements\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return (uint32)defined_achievements.size();
 }
@@ -1129,7 +1127,7 @@ uint32 Steam_User_Stats::GetNumAchievements()
 // Get achievement name iAchievement in [0,GetNumAchievements)
 const char * Steam_User_Stats::GetAchievementName( uint32 iAchievement )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetAchievementName\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (iAchievement >= sorted_achievement_names.size()) {
         return "";
@@ -1148,7 +1146,7 @@ const char * Steam_User_Stats::GetAchievementName( uint32 iAchievement )
 STEAM_CALL_RESULT( UserStatsReceived_t )
 SteamAPICall_t Steam_User_Stats::RequestUserStats( CSteamID steamIDUser )
 {
-    PRINT_DEBUG("Steam_User_Stats::RequestUserStats %llu\n", steamIDUser.ConvertToUint64());
+    PRINT_DEBUG("%llu", steamIDUser.ConvertToUint64());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     // Enable this to allow hot reload achievements status
@@ -1168,7 +1166,7 @@ SteamAPICall_t Steam_User_Stats::RequestUserStats( CSteamID steamIDUser )
 // requests stat information for a user, usable after a successful call to RequestUserStats()
 bool Steam_User_Stats::GetUserStat( CSteamID steamIDUser, const char *pchName, int32 *pData )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetUserStat %s %llu\n", pchName, steamIDUser.ConvertToUint64());
+    PRINT_DEBUG("%s %llu", pchName, steamIDUser.ConvertToUint64());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName) return false;
@@ -1184,7 +1182,7 @@ bool Steam_User_Stats::GetUserStat( CSteamID steamIDUser, const char *pchName, i
 
 bool Steam_User_Stats::GetUserStat( CSteamID steamIDUser, const char *pchName, float *pData )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetUserStat %s %llu\n", pchName, steamIDUser.ConvertToUint64());
+    PRINT_DEBUG("%s %llu", pchName, steamIDUser.ConvertToUint64());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName) return false;
@@ -1200,7 +1198,7 @@ bool Steam_User_Stats::GetUserStat( CSteamID steamIDUser, const char *pchName, f
 
 bool Steam_User_Stats::GetUserAchievement( CSteamID steamIDUser, const char *pchName, bool *pbAchieved )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetUserAchievement %s\n", pchName);
+    PRINT_DEBUG("%s", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     if (!pchName) return false;
@@ -1215,7 +1213,7 @@ bool Steam_User_Stats::GetUserAchievement( CSteamID steamIDUser, const char *pch
 // See notes for GetAchievementAndUnlockTime above
 bool Steam_User_Stats::GetUserAchievementAndUnlockTime( CSteamID steamIDUser, const char *pchName, bool *pbAchieved, uint32 *punUnlockTime )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetUserAchievementAndUnlockTime %s\n", pchName);
+    PRINT_DEBUG("%s", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName) return false;
@@ -1230,7 +1228,7 @@ bool Steam_User_Stats::GetUserAchievementAndUnlockTime( CSteamID steamIDUser, co
 // Reset stats 
 bool Steam_User_Stats::ResetAllStats( bool bAchievementsToo )
 {
-    PRINT_DEBUG("Steam_User_Stats::ResetAllStats\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     clear_stats_internal();
@@ -1252,7 +1250,7 @@ bool Steam_User_Stats::ResetAllStats( bool bAchievementsToo )
                 new_stat.set_value_float(stat.second.default_value_float);
             break;
             
-            default: PRINT_DEBUG("Steam_User_Stats::ResetAllStats unhandled type %i\n", (int)stat.second.type); break;
+            default: PRINT_DEBUG("unhandled type %i", (int)stat.second.type); break;
             }
         }
     }
@@ -1289,7 +1287,7 @@ bool Steam_User_Stats::ResetAllStats( bool bAchievementsToo )
 STEAM_CALL_RESULT(LeaderboardFindResult_t)
 SteamAPICall_t Steam_User_Stats::FindOrCreateLeaderboard( const char *pchLeaderboardName, ELeaderboardSortMethod eLeaderboardSortMethod, ELeaderboardDisplayType eLeaderboardDisplayType )
 {
-    PRINT_DEBUG("Steam_User_Stats::FindOrCreateLeaderboard '%s'\n", pchLeaderboardName);
+    PRINT_DEBUG("'%s'", pchLeaderboardName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!pchLeaderboardName) {
         LeaderboardFindResult_t data{};
@@ -1313,7 +1311,7 @@ SteamAPICall_t Steam_User_Stats::FindOrCreateLeaderboard( const char *pchLeaderb
 STEAM_CALL_RESULT( LeaderboardFindResult_t )
 SteamAPICall_t Steam_User_Stats::FindLeaderboard( const char *pchLeaderboardName )
 {
-    PRINT_DEBUG("Steam_User_Stats::FindLeaderboard '%s'\n", pchLeaderboardName);
+    PRINT_DEBUG("'%s'", pchLeaderboardName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!pchLeaderboardName) {
         LeaderboardFindResult_t data{};
@@ -1345,7 +1343,7 @@ SteamAPICall_t Steam_User_Stats::FindLeaderboard( const char *pchLeaderboardName
 // returns the name of a leaderboard
 const char * Steam_User_Stats::GetLeaderboardName( SteamLeaderboard_t hSteamLeaderboard )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetLeaderboardName %llu\n", hSteamLeaderboard);
+    PRINT_DEBUG("%llu", hSteamLeaderboard);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return "";
 
@@ -1356,7 +1354,7 @@ const char * Steam_User_Stats::GetLeaderboardName( SteamLeaderboard_t hSteamLead
 // returns the total number of entries in a leaderboard, as of the last request
 int Steam_User_Stats::GetLeaderboardEntryCount( SteamLeaderboard_t hSteamLeaderboard )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetLeaderboardEntryCount %llu\n", hSteamLeaderboard);
+    PRINT_DEBUG("%llu", hSteamLeaderboard);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return 0;
 
@@ -1367,7 +1365,7 @@ int Steam_User_Stats::GetLeaderboardEntryCount( SteamLeaderboard_t hSteamLeaderb
 // returns the sort method of the leaderboard
 ELeaderboardSortMethod Steam_User_Stats::GetLeaderboardSortMethod( SteamLeaderboard_t hSteamLeaderboard )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetLeaderboardSortMethod %llu\n", hSteamLeaderboard);
+    PRINT_DEBUG("%llu", hSteamLeaderboard);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return k_ELeaderboardSortMethodNone;
 
@@ -1378,7 +1376,7 @@ ELeaderboardSortMethod Steam_User_Stats::GetLeaderboardSortMethod( SteamLeaderbo
 // returns the display type of the leaderboard
 ELeaderboardDisplayType Steam_User_Stats::GetLeaderboardDisplayType( SteamLeaderboard_t hSteamLeaderboard )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetLeaderboardDisplayType %llu\n", hSteamLeaderboard);
+    PRINT_DEBUG("%llu", hSteamLeaderboard);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return k_ELeaderboardDisplayTypeNone;
 
@@ -1397,7 +1395,7 @@ ELeaderboardDisplayType Steam_User_Stats::GetLeaderboardDisplayType( SteamLeader
 STEAM_CALL_RESULT( LeaderboardScoresDownloaded_t )
 SteamAPICall_t Steam_User_Stats::DownloadLeaderboardEntries( SteamLeaderboard_t hSteamLeaderboard, ELeaderboardDataRequest eLeaderboardDataRequest, int nRangeStart, int nRangeEnd )
 {
-    PRINT_DEBUG("Steam_User_Stats::DownloadLeaderboardEntries %llu %i [%i, %i]\n", hSteamLeaderboard, eLeaderboardDataRequest, nRangeStart, nRangeEnd);
+    PRINT_DEBUG("%llu %i [%i, %i]", hSteamLeaderboard, eLeaderboardDataRequest, nRangeStart, nRangeEnd);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return k_uAPICallInvalid; //might return callresult even if hSteamLeaderboard is invalid
 
@@ -1424,7 +1422,7 @@ STEAM_CALL_RESULT( LeaderboardScoresDownloaded_t )
 SteamAPICall_t Steam_User_Stats::DownloadLeaderboardEntriesForUsers( SteamLeaderboard_t hSteamLeaderboard,
                                                             STEAM_ARRAY_COUNT_D(cUsers, Array of users to retrieve) CSteamID *prgUsers, int cUsers )
 {
-    PRINT_DEBUG("Steam_User_Stats::DownloadLeaderboardEntriesForUsers %i %llu\n", cUsers, cUsers > 0 ? prgUsers[0].ConvertToUint64() : 0);
+    PRINT_DEBUG("%i %llu", cUsers, cUsers > 0 ? prgUsers[0].ConvertToUint64() : 0);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return k_uAPICallInvalid; //might return callresult even if hSteamLeaderboard is invalid
 
@@ -1436,7 +1434,7 @@ SteamAPICall_t Steam_User_Stats::DownloadLeaderboardEntriesForUsers( SteamLeader
             const auto &user_steamid = prgUsers[i];
             if (!user_steamid.IsValid()) {
                 ok = false;
-                PRINT_DEBUG("Steam_User_Stats::DownloadLeaderboardEntriesForUsers bad userid %llu\n", user_steamid.ConvertToUint64());
+                PRINT_DEBUG("bad userid %llu", user_steamid.ConvertToUint64());
                 break;
             }
             if (board.find_recent_entry(user_steamid)) ++total_count;
@@ -1445,7 +1443,7 @@ SteamAPICall_t Steam_User_Stats::DownloadLeaderboardEntriesForUsers( SteamLeader
         }
     }
 
-    PRINT_DEBUG("Steam_User_Stats::DownloadLeaderboardEntriesForUsers total count %i\n", total_count);
+    PRINT_DEBUG("total count %i", total_count);
     // https://partner.steamgames.com/doc/api/ISteamUserStats#DownloadLeaderboardEntriesForUsers
     if (!ok || total_count > 100) return k_uAPICallInvalid;
 
@@ -1473,7 +1471,7 @@ SteamAPICall_t Steam_User_Stats::DownloadLeaderboardEntriesForUsers( SteamLeader
 // once you've accessed all the entries, the data will be free'd, and the SteamLeaderboardEntries_t handle will become invalid
 bool Steam_User_Stats::GetDownloadedLeaderboardEntry( SteamLeaderboardEntries_t hSteamLeaderboardEntries, int index, LeaderboardEntry_t *pLeaderboardEntry, int32 *pDetails, int cDetailsMax )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetDownloadedLeaderboardEntry [%i] (%i) %llu %p %p\n", index, cDetailsMax, hSteamLeaderboardEntries, pLeaderboardEntry, pDetails);
+    PRINT_DEBUG("[%i] (%i) %llu %p %p", index, cDetailsMax, hSteamLeaderboardEntries, pLeaderboardEntry, pDetails);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboardEntries > cached_leaderboards.size() || hSteamLeaderboardEntries <= 0) return false;
     
@@ -1508,7 +1506,7 @@ bool Steam_User_Stats::GetDownloadedLeaderboardEntry( SteamLeaderboardEntries_t 
 STEAM_CALL_RESULT( LeaderboardScoreUploaded_t )
 SteamAPICall_t Steam_User_Stats::UploadLeaderboardScore( SteamLeaderboard_t hSteamLeaderboard, ELeaderboardUploadScoreMethod eLeaderboardUploadScoreMethod, int32 nScore, const int32 *pScoreDetails, int cScoreDetailsCount )
 {
-    PRINT_DEBUG("Steam_User_Stats::UploadLeaderboardScore %llu %i\n", hSteamLeaderboard, nScore);
+    PRINT_DEBUG("%llu %i", hSteamLeaderboard, nScore);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return k_uAPICallInvalid; //TODO: might return callresult even if hSteamLeaderboard is invalid
 
@@ -1575,7 +1573,7 @@ SteamAPICall_t Steam_User_Stats::UploadLeaderboardScore( SteamLeaderboard_t hSte
 
 SteamAPICall_t Steam_User_Stats::UploadLeaderboardScore( SteamLeaderboard_t hSteamLeaderboard, int32 nScore, int32 *pScoreDetails, int cScoreDetailsCount )
 {
-	PRINT_DEBUG("UploadLeaderboardScore old\n");
+	PRINT_DEBUG("old");
 	return UploadLeaderboardScore(hSteamLeaderboard, k_ELeaderboardUploadScoreMethodKeepBest, nScore, pScoreDetails, cScoreDetailsCount);
 }
 
@@ -1586,7 +1584,7 @@ SteamAPICall_t Steam_User_Stats::UploadLeaderboardScore( SteamLeaderboard_t hSte
 STEAM_CALL_RESULT( LeaderboardUGCSet_t )
 SteamAPICall_t Steam_User_Stats::AttachLeaderboardUGC( SteamLeaderboard_t hSteamLeaderboard, UGCHandle_t hUGC )
 {
-    PRINT_DEBUG("Steam_User_Stats::AttachLeaderboardUGC\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     LeaderboardUGCSet_t data{};
     if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) {
@@ -1605,7 +1603,7 @@ SteamAPICall_t Steam_User_Stats::AttachLeaderboardUGC( SteamLeaderboard_t hSteam
 STEAM_CALL_RESULT( NumberOfCurrentPlayers_t )
 SteamAPICall_t Steam_User_Stats::GetNumberOfCurrentPlayers()
 {
-    PRINT_DEBUG("Steam_User_Stats::GetNumberOfCurrentPlayers\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     std::random_device rd{};
@@ -1625,7 +1623,7 @@ SteamAPICall_t Steam_User_Stats::GetNumberOfCurrentPlayers()
 STEAM_CALL_RESULT( GlobalAchievementPercentagesReady_t )
 SteamAPICall_t Steam_User_Stats::RequestGlobalAchievementPercentages()
 {
-    PRINT_DEBUG("Steam_User_Stats::RequestGlobalAchievementPercentages\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     GlobalAchievementPercentagesReady_t data{};
@@ -1640,7 +1638,7 @@ SteamAPICall_t Steam_User_Stats::RequestGlobalAchievementPercentages()
 // percentages (ie, you haven't called RequestGlobalAchievementPercentages and waited on the callback).
 int Steam_User_Stats::GetMostAchievedAchievementInfo( char *pchName, uint32 unNameBufLen, float *pflPercent, bool *pbAchieved )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetMostAchievedAchievementInfo\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!pchName) return -1;
 
@@ -1668,7 +1666,7 @@ int Steam_User_Stats::GetMostAchievedAchievementInfo( char *pchName, uint32 unNa
 // achievement has been iterated.
 int Steam_User_Stats::GetNextMostAchievedAchievementInfo( int iIteratorPrevious, char *pchName, uint32 unNameBufLen, float *pflPercent, bool *pbAchieved )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetNextMostAchievedAchievementInfo\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (iIteratorPrevious < 0) return -1;
     
@@ -1699,7 +1697,7 @@ int Steam_User_Stats::GetNextMostAchievedAchievementInfo( int iIteratorPrevious,
 // Returns the percentage of users who have achieved the specified achievement.
 bool Steam_User_Stats::GetAchievementAchievedPercent( const char *pchName, float *pflPercent )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetAchievementAchievedPercent '%s'\n", pchName);
+    PRINT_DEBUG("'%s'", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     auto it = defined_achievements_find(pchName);
@@ -1721,7 +1719,7 @@ bool Steam_User_Stats::GetAchievementAchievedPercent( const char *pchName, float
 STEAM_CALL_RESULT( GlobalStatsReceived_t )
 SteamAPICall_t Steam_User_Stats::RequestGlobalStats( int nHistoryDays )
 {
-    PRINT_DEBUG("Steam_User_Stats::RequestGlobalStats %i\n", nHistoryDays);
+    PRINT_DEBUG("%i", nHistoryDays);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     GlobalStatsReceived_t data{};
     data.m_nGameID = settings->get_local_game_id().ToUint64();
@@ -1733,13 +1731,15 @@ SteamAPICall_t Steam_User_Stats::RequestGlobalStats( int nHistoryDays )
 // Gets the lifetime totals for an aggregated stat
 bool Steam_User_Stats::GetGlobalStat( const char *pchStatName, int64 *pData )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetGlobalStat %s\n", pchStatName);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
 bool Steam_User_Stats::GetGlobalStat( const char *pchStatName, double *pData )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetGlobalStat %s\n", pchStatName);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -1750,13 +1750,15 @@ bool Steam_User_Stats::GetGlobalStat( const char *pchStatName, double *pData )
 // elements actually set.
 int32 Steam_User_Stats::GetGlobalStatHistory( const char *pchStatName, STEAM_ARRAY_COUNT(cubData) int64 *pData, uint32 cubData )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetGlobalStatHistory int64 %s\n", pchStatName);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 int32 Steam_User_Stats::GetGlobalStatHistory( const char *pchStatName, STEAM_ARRAY_COUNT(cubData) double *pData, uint32 cubData )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetGlobalStatHistory double %s\n", pchStatName);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
@@ -1765,13 +1767,15 @@ int32 Steam_User_Stats::GetGlobalStatHistory( const char *pchStatName, STEAM_ARR
 // have been made, to show a progress notification to the user.
 bool Steam_User_Stats::GetAchievementProgressLimits( const char *pchName, int32 *pnMinProgress, int32 *pnMaxProgress )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetAchievementProgressLimits int\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
 bool Steam_User_Stats::GetAchievementProgressLimits( const char *pchName, float *pfMinProgress, float *pfMaxProgress )
 {
-    PRINT_DEBUG("Steam_User_Stats::GetAchievementProgressLimits float\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -1800,8 +1804,7 @@ void Steam_User_Stats::send_updated_stats()
     // here we send to all gameservers on the network because we don't know the server steamid
     network->sendToAllGameservers(&msg, true);
 
-    PRINT_DEBUG(
-        "Steam_User_Stats::send_updated_stats sent updated stats: %zu stats, %zu achievements\n",
+    PRINT_DEBUG("sent updated stats: %zu stats, %zu achievements",
         new_updates_msg->user_stats().size(), new_updates_msg->user_achievements().size()
     );
 }
@@ -1819,7 +1822,7 @@ void Steam_User_Stats::steam_run_callback()
 void Steam_User_Stats::network_stats_initial(Common_Message *msg)
 {
     if (!msg->gameserver_stats_messages().has_initial_user_stats()) {
-        PRINT_DEBUG("Steam_User_Stats::network_stats_initial error empty msg\n");
+        PRINT_DEBUG("error empty msg");
         return;
     }
 
@@ -1851,7 +1854,7 @@ void Steam_User_Stats::network_stats_initial(Common_Message *msg)
         break;
         
         default:
-            PRINT_DEBUG("Steam_User_Stats::network_stats_initial Request_AllUserStats unhandled stat type %i\n", (int)stat.second.type);
+            PRINT_DEBUG("Request_AllUserStats unhandled stat type %i", (int)stat.second.type);
         break;
         }
     }
@@ -1883,8 +1886,7 @@ void Steam_User_Stats::network_stats_initial(Common_Message *msg)
     new_msg.set_dest_id(server_steamid);
     network->sendTo(&new_msg, true);
 
-    PRINT_DEBUG(
-        "Steam_User_Stats::network_stats_initial server requested all stats, sent %zu stats, %zu achievements\n",
+    PRINT_DEBUG("server requested all stats, sent %zu stats, %zu achievements",
         initial_stats_msg->all_data().user_stats().size(), initial_stats_msg->all_data().user_achievements().size()
     );
 
@@ -1894,7 +1896,7 @@ void Steam_User_Stats::network_stats_initial(Common_Message *msg)
 void Steam_User_Stats::network_stats_updated(Common_Message *msg)
 {
     if (!msg->gameserver_stats_messages().has_update_user_stats()) {
-        PRINT_DEBUG("Steam_User_Stats::network_stats_updated error empty msg\n");
+        PRINT_DEBUG("error empty msg");
         return;
     }
 
@@ -1921,7 +1923,7 @@ void Steam_User_Stats::network_stats_updated(Common_Message *msg)
         break;
         
         default:
-            PRINT_DEBUG("Steam_User_Stats::network_stats_updated UpdateUserStats unhandled stat type %i\n", (int)new_stat.second.stat_type());
+            PRINT_DEBUG("UpdateUserStats unhandled stat type %i", (int)new_stat.second.stat_type());
         break;
         }
     }
@@ -1935,8 +1937,7 @@ void Steam_User_Stats::network_stats_updated(Common_Message *msg)
         }
     }
     
-    PRINT_DEBUG(
-        "Steam_User_Stats::network_stats_updated server sent updated user stats, %zu stats, %zu achievements\n",
+    PRINT_DEBUG("server sent updated user stats, %zu stats, %zu achievements",
         new_user_data.user_stats().size(), new_user_data.user_achievements().size()
     );
 }
@@ -1966,7 +1967,7 @@ void Steam_User_Stats::network_callback_stats(Common_Message *msg)
     break;
     
     default:
-        PRINT_DEBUG("Steam_User_Stats::network_callback_stats unhandled type %i\n", (int)msg->gameserver_stats_messages().type());
+        PRINT_DEBUG("unhandled type %i", (int)msg->gameserver_stats_messages().type());
     break;
     }
 }
@@ -1976,8 +1977,7 @@ void Steam_User_Stats::network_callback_stats(Common_Message *msg)
 void Steam_User_Stats::network_leaderboard_update_score(Common_Message *msg, Steam_Leaderboard &board, bool send_score_back)
 {
     CSteamID sender_steamid((uint64)msg->source_id());
-    PRINT_DEBUG(
-        "Steam_User_Stats::network_leaderboard_update_score got score for user %llu on leaderboard '%s' (send our score back=%i)\n",
+    PRINT_DEBUG("got score for user %llu on leaderboard '%s' (send our score back=%i)",
         (uint64)msg->source_id(), board.name.c_str(), (int)send_score_back
     );
     
@@ -2003,10 +2003,7 @@ void Steam_User_Stats::network_leaderboard_update_score(Common_Message *msg, Ste
 void Steam_User_Stats::network_leaderboard_send_my_score(Common_Message *msg, const Steam_Leaderboard &board)
 {
     CSteamID sender_steamid((uint64)msg->source_id());
-    PRINT_DEBUG(
-        "Steam_User_Stats::network_leaderboard_send_my_score user %llu requested our score for leaderboard '%s'\n",
-        (uint64)msg->source_id(), board.name.c_str()
-    );
+    PRINT_DEBUG("user %llu requested our score for leaderboard '%s'", (uint64)msg->source_id(), board.name.c_str());
 
     send_my_leaderboard_score(board, &sender_steamid);
 }
@@ -2018,13 +2015,13 @@ void Steam_User_Stats::network_callback_leaderboards(Common_Message *msg)
     if (settings->get_local_game_id().AppID() != msg->leaderboards_messages().appid()) return;
 
     if (!msg->leaderboards_messages().has_leaderboard_info()) {
-        PRINT_DEBUG("Steam_User_Stats::network_callback_leaderboards error empty leaderboard msg\n");
+        PRINT_DEBUG("error empty leaderboard msg");
         return;
     }
 
     const auto &board_info_msg = msg->leaderboards_messages().leaderboard_info();
     
-    PRINT_DEBUG("Steam_User_Stats::network_callback_leaderboards attempting to cache leaderboard '%s'\n", board_info_msg.board_name().c_str());
+    PRINT_DEBUG("attempting to cache leaderboard '%s'", board_info_msg.board_name().c_str());
     unsigned int board_handle = cache_leaderboard_ifneeded(
         board_info_msg.board_name(),
         (ELeaderboardSortMethod)board_info_msg.sort_method(),
@@ -2048,7 +2045,7 @@ void Steam_User_Stats::network_callback_leaderboards(Common_Message *msg)
         break;
         
         default:
-            PRINT_DEBUG("Steam_User_Stats::network_callback_leaderboards unhandled type %i\n", (int)msg->leaderboards_messages().type());
+            PRINT_DEBUG("unhandled type %i", (int)msg->leaderboards_messages().type());
         break;
     }
 
@@ -2073,12 +2070,12 @@ void Steam_User_Stats::network_callback_low_level(Common_Message *msg)
             board.remove_entries(steamid);
         }
         
-        // PRINT_DEBUG("Steam_User_Stats::network_callback_low_level removed user %llu\n", (uint64)steamid.ConvertToUint64());
+        // PRINT_DEBUG("removed user %llu", (uint64)steamid.ConvertToUint64());
     }
     break;
     
     default:
-        PRINT_DEBUG("Steam_User_Stats::network_callback_low_level unknown type %i\n", (int)msg->low_level().type());
+        PRINT_DEBUG("unknown type %i", (int)msg->low_level().type());
     break;
     }
 }

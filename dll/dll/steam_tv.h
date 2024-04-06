@@ -31,7 +31,7 @@ public ISteamTV
 public:
 static void steam_callback(void *object, Common_Message *msg)
 {
-    // PRINT_DEBUG("TODO Steam_TV::steam_tv_callback\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_TV *steam_parties = (Steam_TV *)object;
     steam_parties->Callback(msg);
@@ -39,7 +39,7 @@ static void steam_callback(void *object, Common_Message *msg)
 
 static void steam_run_every_runcb(void *object)
 {
-    // PRINT_DEBUG("steam_tv_run_every_runcb\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_TV *steam_parties = (Steam_TV *)object;
     steam_parties->RunCallbacks();
@@ -65,39 +65,46 @@ Steam_TV(class Settings *settings, class Networking *network, class SteamCallRes
 
 bool IsBroadcasting(int *pnNumViewers)
 {
-    PRINT_DEBUG("TODO Steam_TV::%s\n", __FUNCTION__);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
 void AddBroadcastGameData(const char * pchKey, const char * pchValue)
 {
-    PRINT_DEBUG("TODO Steam_TV::%s\n", __FUNCTION__);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 void RemoveBroadcastGameData(const char * pchKey)
 {
-    PRINT_DEBUG("TODO Steam_TV::%s\n", __FUNCTION__);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 void AddTimelineMarker(const char * pchTemplateName, bool bPersistent, uint8 nColorR, uint8 nColorG, uint8 nColorB)
 {
-    PRINT_DEBUG("TODO Steam_TV::%s\n", __FUNCTION__);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 void RemoveTimelineMarker()
 {
-    PRINT_DEBUG("TODO Steam_TV::%s\n", __FUNCTION__);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 uint32 AddRegion(const char * pchElementName, const char * pchTimelineDataSection, const SteamTVRegion_t * pSteamTVRegion, ESteamTVRegionBehavior eSteamTVRegionBehavior)
 {
-    PRINT_DEBUG("TODO Steam_TV::%s\n", __FUNCTION__);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 void RemoveRegion(uint32 unRegionHandle)
 {
-    PRINT_DEBUG("TODO Steam_TV::%s\n", __FUNCTION__);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 void RunCallbacks()

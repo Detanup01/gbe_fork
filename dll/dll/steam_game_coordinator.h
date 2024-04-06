@@ -41,7 +41,7 @@ void push_incoming(std::string message)
 public:
 static void steam_callback(void *object, Common_Message *msg)
 {
-    // PRINT_DEBUG("steam_gamecoordinator_callback\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Game_Coordinator *steam_gamecoordinator = (Steam_Game_Coordinator *)object;
     steam_gamecoordinator->Callback(msg);
@@ -49,7 +49,7 @@ static void steam_callback(void *object, Common_Message *msg)
 
 static void steam_run_every_runcb(void *object)
 {
-    // PRINT_DEBUG("steam_gamecoordinator_run_every_runcb\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Game_Coordinator *steam_gamecoordinator = (Steam_Game_Coordinator *)object;
     steam_gamecoordinator->RunCallbacks();
@@ -76,7 +76,8 @@ Steam_Game_Coordinator(class Settings *settings, class Networking *network, clas
 // sends a message to the Game Coordinator
 EGCResults SendMessage_( uint32 unMsgType, const void *pubData, uint32 cubData )
 {
-    PRINT_DEBUG("Steam_Game_Coordinator::SendMessage %X %u len %u\n", unMsgType, (~protobuf_mask) & unMsgType, cubData);
+    PRINT_DEBUG("%X %u len %u", unMsgType, (~protobuf_mask) & unMsgType, cubData);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (protobuf_mask & unMsgType) {
         uint32 message_type = (~protobuf_mask) & unMsgType;
         if (message_type == 4006) { //client hello
@@ -95,7 +96,8 @@ EGCResults SendMessage_( uint32 unMsgType, const void *pubData, uint32 cubData )
 // returns true if there is a message waiting from the game coordinator
 bool IsMessageAvailable( uint32 *pcubMsgSize )
 {
-    PRINT_DEBUG("Steam_Game_Coordinator::IsMessageAvailable\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (outgoing_messages.size()) {
         if (pcubMsgSize) *pcubMsgSize = outgoing_messages.front().size();
         return true;
@@ -110,7 +112,8 @@ bool IsMessageAvailable( uint32 *pcubMsgSize )
 // and the message remains at the head of the queue.
 EGCResults RetrieveMessage( uint32 *punMsgType, void *pubDest, uint32 cubDest, uint32 *pcubMsgSize )
 {
-    PRINT_DEBUG("Steam_Game_Coordinator::RetrieveMessage\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (outgoing_messages.size()) {
         if (outgoing_messages.front().size() > cubDest) {
             return k_EGCResultBufferTooSmall;

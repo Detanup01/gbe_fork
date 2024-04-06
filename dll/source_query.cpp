@@ -157,7 +157,7 @@ std::vector<uint8_t> Source_Query::handle_source_query(const void* buffer, size_
     switch (query.header)
     {
     case source_query_header::A2S_INFO:
-        PRINT_DEBUG("Source_Query::handle_source_query got request for server info\n");
+        PRINT_DEBUG("got request for server info");
         if (len >= a2s_query_info_size && !strncmp(query.a2s_info_payload, a2s_info_payload, a2s_info_payload_size))
         {
             std::vector<std::pair<CSteamID, Gameserver_Player_Info_t>> const& players = *get_steam_client()->steam_gameserver->get_players();
@@ -213,7 +213,7 @@ std::vector<uint8_t> Source_Query::handle_source_query(const void* buffer, size_
         break;
 
     case source_query_header::A2S_PLAYER:
-        PRINT_DEBUG("Source_Query::handle_source_query got request for player info\n");
+        PRINT_DEBUG("got request for player info");
         if (len >= a2s_query_challenge_size)
         {
             if (query.challenge == 0xFFFFFFFFul)
@@ -241,7 +241,7 @@ std::vector<uint8_t> Source_Query::handle_source_query(const void* buffer, size_
         break;
 
     case source_query_header::A2S_RULES:
-        PRINT_DEBUG("Source_Query::handle_source_query got request for rules info\n");
+        PRINT_DEBUG("got request for rules info");
         if (len >= a2s_query_challenge_size)
         {
             if (query.challenge == 0xFFFFFFFFul)
@@ -266,7 +266,7 @@ std::vector<uint8_t> Source_Query::handle_source_query(const void* buffer, size_
         break;
 
     default:
-        PRINT_DEBUG("Source_Query::handle_source_query got unknown request\n");
+        PRINT_DEBUG("got unknown request");
         break;
     }
     return output_buffer;

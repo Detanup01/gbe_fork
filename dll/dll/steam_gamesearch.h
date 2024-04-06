@@ -31,7 +31,7 @@ public ISteamGameSearch
 public:
 static void steam_callback(void *object, Common_Message *msg)
 {
-    // PRINT_DEBUG("steam_gamesearch_callback\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Game_Search *steam_gamesearch = (Steam_Game_Search *)object;
     steam_gamesearch->Callback(msg);
@@ -39,7 +39,7 @@ static void steam_callback(void *object, Common_Message *msg)
 
 static void steam_run_every_runcb(void *object)
 {
-    // PRINT_DEBUG("steam_gamesearch_run_every_runcb\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Game_Search *steam_gamesearch = (Steam_Game_Search *)object;
     steam_gamesearch->RunCallbacks();
@@ -70,7 +70,8 @@ Steam_Game_Search(class Settings *settings, class Networking *network, class Ste
 // fails if a search is currently in progress
 EGameSearchErrorCode_t AddGameSearchParams( const char *pchKeyToFind, const char *pchValuesToFind )
 {
-    PRINT_DEBUG("Steam_Game_Search::AddGameSearchParams\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_EGameSearchErrorCode_Failed_Offline;
 }
 
@@ -80,7 +81,8 @@ EGameSearchErrorCode_t AddGameSearchParams( const char *pchKeyToFind, const char
 // periodic callbacks will be sent as queue time estimates change
 EGameSearchErrorCode_t SearchForGameWithLobby( CSteamID steamIDLobby, int nPlayerMin, int nPlayerMax )
 {
-    PRINT_DEBUG("Steam_Game_Search::SearchForGameWithLobby\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_EGameSearchErrorCode_Failed_Offline;
 }
 
@@ -89,7 +91,8 @@ EGameSearchErrorCode_t SearchForGameWithLobby( CSteamID steamIDLobby, int nPlaye
 // periodic callbacks will be sent as queue time estimates change
 EGameSearchErrorCode_t SearchForGameSolo( int nPlayerMin, int nPlayerMax )
 {
-    PRINT_DEBUG("Steam_Game_Search::SearchForGameSolo\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_EGameSearchErrorCode_Failed_Offline;
 }
 
@@ -98,13 +101,15 @@ EGameSearchErrorCode_t SearchForGameSolo( int nPlayerMin, int nPlayerMax )
 // multiple SearchForGameResultCallback_t will follow as players accept game until the host starts or cancels the game
 EGameSearchErrorCode_t AcceptGame()
 {
-    PRINT_DEBUG("Steam_Game_Search::AcceptGame\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_EGameSearchErrorCode_Failed_Offline;
 }
 
 EGameSearchErrorCode_t DeclineGame()
 {
-    PRINT_DEBUG("Steam_Game_Search::DeclineGame\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_EGameSearchErrorCode_Failed_Offline;
 }
 
@@ -112,7 +117,8 @@ EGameSearchErrorCode_t DeclineGame()
 // after receiving GameStartedByHostCallback_t get connection details to server
 EGameSearchErrorCode_t RetrieveConnectionDetails( CSteamID steamIDHost, char *pchConnectionDetails, int cubConnectionDetails )
 {
-    PRINT_DEBUG("Steam_Game_Search::RetrieveConnectionDetails\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_EGameSearchErrorCode_Failed_Offline;
 }
 
@@ -120,7 +126,8 @@ EGameSearchErrorCode_t RetrieveConnectionDetails( CSteamID steamIDHost, char *pc
 // leaves queue if still waiting
 EGameSearchErrorCode_t EndGameSearch()
 {
-    PRINT_DEBUG("Steam_Game_Search::EndGameSearch\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_EGameSearchErrorCode_Failed_Offline;
 }
 
@@ -131,7 +138,8 @@ EGameSearchErrorCode_t EndGameSearch()
 // a keyname and a list of comma separated values: all the values you allow
 EGameSearchErrorCode_t SetGameHostParams( const char *pchKey, const char *pchValue )
 {
-    PRINT_DEBUG("Steam_Game_Search::SetGameHostParams\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_EGameSearchErrorCode_Failed_Offline;
 }
 
@@ -139,7 +147,8 @@ EGameSearchErrorCode_t SetGameHostParams( const char *pchKey, const char *pchVal
 // set connection details for players once game is found so they can connect to this server
 EGameSearchErrorCode_t SetConnectionDetails( const char *pchConnectionDetails, int cubConnectionDetails )
 {
-    PRINT_DEBUG("Steam_Game_Search::SetConnectionDetails\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_EGameSearchErrorCode_Failed_Offline;
 }
 
@@ -151,7 +160,8 @@ EGameSearchErrorCode_t SetConnectionDetails( const char *pchConnectionDetails, i
 // multple RequestPlayersForGameResultCallback_t callbacks will follow when players are found
 EGameSearchErrorCode_t RequestPlayersForGame( int nPlayerMin, int nPlayerMax, int nMaxTeamSize )
 {
-    PRINT_DEBUG("Steam_Game_Search::RequestPlayersForGame\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_EGameSearchErrorCode_Failed_Offline;
 }
 
@@ -161,7 +171,8 @@ EGameSearchErrorCode_t RequestPlayersForGame( int nPlayerMin, int nPlayerMax, in
 // ( allows host to accept after all players confirm, some confirm, or none confirm. decision is entirely up to the host )
 EGameSearchErrorCode_t HostConfirmGameStart( uint64 ullUniqueGameID )
 {
-    PRINT_DEBUG("Steam_Game_Search::HostConfirmGameStart\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_EGameSearchErrorCode_Failed_Offline;
 }
 
@@ -170,7 +181,8 @@ EGameSearchErrorCode_t HostConfirmGameStart( uint64 ullUniqueGameID )
 // if a set of players has already been sent to host, all players will receive SearchForGameHostFailedToConfirm_t
 EGameSearchErrorCode_t CancelRequestPlayersForGame()
 {
-    PRINT_DEBUG("Steam_Game_Search::CancelRequestPlayersForGame\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_EGameSearchErrorCode_Failed_Offline;
 }
 
@@ -178,7 +190,8 @@ EGameSearchErrorCode_t CancelRequestPlayersForGame()
 // submit a result for one player. does not end the game. ullUniqueGameID continues to describe this game
 EGameSearchErrorCode_t SubmitPlayerResult( uint64 ullUniqueGameID, CSteamID steamIDPlayer, EPlayerResult_t EPlayerResult )
 {
-    PRINT_DEBUG("Steam_Game_Search::SubmitPlayerResult\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_EGameSearchErrorCode_Failed_Offline;
 }
 
@@ -187,7 +200,8 @@ EGameSearchErrorCode_t SubmitPlayerResult( uint64 ullUniqueGameID, CSteamID stea
 // any future requests will provide a new ullUniqueGameID
 EGameSearchErrorCode_t EndGame( uint64 ullUniqueGameID )
 {
-    PRINT_DEBUG("Steam_Game_Search::EndGame\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_EGameSearchErrorCode_Failed_Offline;
 }
 

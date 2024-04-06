@@ -251,7 +251,7 @@ static void run_at_startup()
 #if defined(STEAM_WIN32)
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != NO_ERROR) {
-        PRINT_DEBUG("Networking WSAStartup error\n");
+        PRINT_DEBUG("Networking WSAStartup error");
         return;
     }
 
@@ -286,7 +286,7 @@ static void reset_last_error()
 
 static int send_packet_to(sock_t sock, IP_PORT ip_port, char *data, unsigned long length)
 {
-    PRINT_DEBUG("send: %lu %hhu.%hhu.%hhu.%hhu:%hu\n\n", length, ((unsigned char *)&ip_port.ip)[0], ((unsigned char *)&ip_port.ip)[1], ((unsigned char *)&ip_port.ip)[2], ((unsigned char *)&ip_port.ip)[3], htons(ip_port.port));
+    PRINT_DEBUG("send: %lu %hhu.%hhu.%hhu.%hhu:%hu", length, ((unsigned char *)&ip_port.ip)[0], ((unsigned char *)&ip_port.ip)[1], ((unsigned char *)&ip_port.ip)[2], ((unsigned char *)&ip_port.ip)[3], htons(ip_port.port));
     struct sockaddr_storage addr;
     size_t addrsize = 0;
     struct sockaddr_in *addr4 = (struct sockaddr_in *)&addr;
@@ -322,7 +322,7 @@ static bool send_broadcasts(sock_t sock, uint16 port, char *data, unsigned long 
 {
     static std::chrono::high_resolution_clock::time_point last_get_broadcast_info;
     if (number_broadcasts < 0 || check_timedout(last_get_broadcast_info, 60.0)) {
-        PRINT_DEBUG("get_broadcast_info\n");
+        PRINT_DEBUG("get_broadcast_info");
         get_broadcast_info(port);
         std::vector<uint32_t> lower_range(lower_range_ips, lower_range_ips + number_broadcasts), upper_range(upper_range_ips, upper_range_ips + number_broadcasts);
         for(auto &addr : *custom_broadcasts) {
@@ -353,12 +353,11 @@ static bool send_broadcasts(sock_t sock, uint16 port, char *data, unsigned long 
      * Sends to custom IPs the broadcast packet
      * This is useful in cases of undetected network interfaces
      */
-    PRINT_DEBUG("start custom broadcasts\n");
+    PRINT_DEBUG("start custom broadcasts");
     for(auto &addr : *custom_broadcasts) {
         send_packet_to(sock, addr, data, length);
     }
-
-    PRINT_DEBUG("end custom broadcasts\n");
+    PRINT_DEBUG("end custom broadcasts");
 
     return true;
 }
@@ -461,7 +460,7 @@ static bool unbuffer_tcp(struct TCP_Socket &socket, Common_Message *msg)
         socket.recv_buffer.erase(socket.recv_buffer.begin(), socket.recv_buffer.begin() + sizeof(l) + l);
         return true;
     } else {
-        PRINT_DEBUG("BAD TCP DATA %u %zu %zu %hhu\n", l, socket.recv_buffer.size(), sizeof(uint32), *((char *)&(socket.recv_buffer[sizeof(uint32)])));
+        PRINT_DEBUG("BAD TCP DATA %u %zu %zu %hhu", l, socket.recv_buffer.size(), sizeof(uint32), *((char *)&(socket.recv_buffer[sizeof(uint32)])));
         kill_tcp_socket(socket);
     }
 
@@ -496,7 +495,7 @@ static void socket_timeouts(struct TCP_Socket &socket, double extra_time)
 
     if (check_timedout(socket.last_heartbeat_received, HEARTBEAT_TIMEOUT + extra_time)) {
         kill_tcp_socket(socket);
-        PRINT_DEBUG("TCP SOCKET HEARTBEAT TIMEOUT\n");
+        PRINT_DEBUG("TCP SOCKET HEARTBEAT TIMEOUT");
     }
 }
 
@@ -517,7 +516,7 @@ std::set<IP_PORT> Networking::resolve_ip(std::string dns)
     if (getaddrinfo(dns.c_str(), NULL, NULL, &result) == 0) {
         for (struct addrinfo *res = result; res != NULL; res = res->ai_next) {
             // cast to size_t because on Linux 'ai_addrlen' is defined as unsigned int and clang complains
-            PRINT_DEBUG("%zu %u\n", (size_t)res->ai_addrlen, res->ai_family);
+            PRINT_DEBUG("%zu %u", (size_t)res->ai_addrlen, res->ai_family);
             if (res->ai_family == AF_INET) {
                 struct sockaddr_in *ipv4 = (struct sockaddr_in *)res->ai_addr;
                 uint32 ip;
@@ -536,62 +535,62 @@ std::set<IP_PORT> Networking::resolve_ip(std::string dns)
 void Networking::do_callbacks_message(Common_Message *msg)
 {
     if (msg->has_network() || msg->has_network_old()) {
-        PRINT_DEBUG("Networking has_network\n");
+        PRINT_DEBUG("has_network");
         run_callbacks(CALLBACK_ID_NETWORKING, msg);
     }
 
     if (msg->has_lobby()) {
-        PRINT_DEBUG("Networking has_lobby\n");
+        PRINT_DEBUG("has_lobby");
         run_callbacks(CALLBACK_ID_LOBBY, msg);
     }
 
     if (msg->has_lobby_messages()) {
-        PRINT_DEBUG("Networking has_lobby_messages\n");
+        PRINT_DEBUG("has_lobby_messages");
         run_callbacks(CALLBACK_ID_LOBBY, msg);
     }
 
     if (msg->has_gameserver()) {
-        PRINT_DEBUG("Networking has_gameserver\n");
+        PRINT_DEBUG("has_gameserver");
         run_callbacks(CALLBACK_ID_GAMESERVER, msg);
     }
 
     if (msg->has_friend_()) {
-        PRINT_DEBUG("Networking has_friend_\n");
+        PRINT_DEBUG("has_friend_");
         run_callbacks(CALLBACK_ID_FRIEND, msg);
     }
 
     if (msg->has_auth_ticket()) {
-        PRINT_DEBUG("Networking has_auth_ticket\n");
+        PRINT_DEBUG("has_auth_ticket");
         run_callbacks(CALLBACK_ID_AUTH_TICKET, msg);
     }
 
     if (msg->has_friend_messages()) {
-        PRINT_DEBUG("Networking has_friend_messages\n");
+        PRINT_DEBUG("has_friend_messages");
         run_callbacks(CALLBACK_ID_FRIEND_MESSAGES, msg);
     }
 
     if (msg->has_networking_sockets()) {
-        PRINT_DEBUG("Networking has_networking_sockets\n");
+        PRINT_DEBUG("has_networking_sockets");
         run_callbacks(CALLBACK_ID_NETWORKING_SOCKETS, msg);
     }
 
     if (msg->has_steam_messages()) {
-        PRINT_DEBUG("Networking has_steam_messages\n");
+        PRINT_DEBUG("has_steam_messages");
         run_callbacks(CALLBACK_ID_STEAM_MESSAGES, msg);
     }
 
     if (msg->has_networking_messages()) {
-        PRINT_DEBUG("Networking has_networking_messages\n");
+        PRINT_DEBUG("has_networking_messages");
         run_callbacks(CALLBACK_ID_NETWORKING_MESSAGES, msg);
     }
 
     if (msg->has_gameserver_stats_messages()) {
-        PRINT_DEBUG("Networking has_gameserver_stats\n");
+        PRINT_DEBUG("has_gameserver_stats");
         run_callbacks(CALLBACK_ID_GAMESERVER_STATS, msg);
     }
     
     if (msg->has_leaderboards_messages()) {
-        PRINT_DEBUG("Networking has_leaderboards_messages\n");
+        PRINT_DEBUG("has_leaderboards_messages");
         run_callbacks(CALLBACK_ID_LEADERBOARDS_STATS, msg);
     }
     
@@ -641,7 +640,7 @@ bool Networking::add_id_connection(struct Connection *connection, CSteamID steam
     if (id != connection->ids.end())
         return false;
 
-    PRINT_DEBUG("Networking::add_id_connection ADDED ID %llu\n", (uint64)steam_id.ConvertToUint64());
+    PRINT_DEBUG("ADDED ID %llu", (uint64)steam_id.ConvertToUint64());
     connection->ids.push_back(steam_id);
     if (connection->connected) {
         run_callback_user(steam_id, true, connection->appid);
@@ -660,7 +659,7 @@ struct Connection *Networking::new_connection(CSteamID search_id, uint32 appid)
     connection.appid = appid;
     connection.last_received = std::chrono::high_resolution_clock::now();
 
-    PRINT_DEBUG("Networking::new_connection ADDED ID %llu\n", (uint64)search_id.ConvertToUint64());
+    PRINT_DEBUG("ADDED ID %llu", (uint64)search_id.ConvertToUint64());
     connections.push_back(connection);
     return &(connections[connections.size() - 1]);
 }
@@ -671,13 +670,10 @@ bool Networking::handle_announce(Common_Message *msg, IP_PORT ip_port)
     if (!conn || conn->appid != msg->announce().appid()) {
         conn = new_connection((uint64)msg->source_id(), msg->announce().appid());
         if (!conn) return false;
-        PRINT_DEBUG(
-            "Networking::handle_announce new connection created: user %llu, appid %u\n",
-            (uint64)msg->source_id(), msg->announce().appid()
-        );
+        PRINT_DEBUG("new connection created: user %llu, appid %u", (uint64)msg->source_id(), msg->announce().appid());
     }
 
-    PRINT_DEBUG("Handle Announce: %u, " "%" PRIu64 ", %u, %u\n", conn->appid, msg->source_id(), msg->announce().appid(), msg->announce().type());
+    PRINT_DEBUG("Handle Announce: %u, " "%" PRIu64 ", %u, %u", conn->appid, msg->source_id(), msg->announce().appid(), msg->announce().type());
     conn->tcp_ip_port = ip_port;
     conn->tcp_ip_port.port = htons(msg->announce().tcp_port());
     conn->appid = msg->announce().appid();
@@ -694,7 +690,7 @@ bool Networking::handle_announce(Common_Message *msg, IP_PORT ip_port)
         }
 
         Connection *conn = find_connection((uint64)msg->announce().peers(i).id(), msg->announce().peers(i).appid());
-        PRINT_DEBUG("%p %u %u " "%" PRIu64 "\n", conn, conn ? conn->appid : (uint32)0, msg->announce().peers(i).appid(), msg->announce().peers(i).id());
+        PRINT_DEBUG("%p %u %u " "%" PRIu64 "", conn, conn ? conn->appid : (uint32)0, msg->announce().peers(i).appid(), msg->announce().peers(i).id());
         if (!conn || conn->appid != msg->announce().peers(i).appid()) {
             Common_Message msg_ = create_announce(true);
 
@@ -781,7 +777,7 @@ Networking::Networking(CSteamID id, uint32 appid, uint16 port, std::set<IP_PORT>
 
     run_at_startup();
     sock_t sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    PRINT_DEBUG("UDP socket: %u\n", sock);
+    PRINT_DEBUG("UDP socket: %u", sock);
     if (is_socket_valid(sock) && set_socket_nonblocking(sock)) {
         int broadcast = 1;
         setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (char *)&broadcast, sizeof(broadcast));
@@ -791,7 +787,7 @@ Networking::Networking(CSteamID id, uint32 appid, uint16 port, std::set<IP_PORT>
         for (unsigned i = 0; i < 1000; ++i) {
             udp_port = port + i;
             if (bind_socket(sock, udp_port)) {
-                PRINT_DEBUG("UDP successful\n");
+                PRINT_DEBUG("UDP successful");
                 udp_socket = sock;
                 break;
             } else {
@@ -803,14 +799,14 @@ Networking::Networking(CSteamID id, uint32 appid, uint16 port, std::set<IP_PORT>
         }
 
         if (!is_socket_valid(udp_socket)) {
-            PRINT_DEBUG("UDP: could not bind socket\n");
+            PRINT_DEBUG("UDP: could not bind socket");
         }
     } else {
-        PRINT_DEBUG("UDP: could not initialize %i\n", get_last_error());
+        PRINT_DEBUG("UDP: could not initialize %i", get_last_error());
     }
 
     sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    PRINT_DEBUG("TCP socket: %u\n", sock);
+    PRINT_DEBUG("TCP socket: %u", sock);
     if (is_socket_valid(sock) && set_socket_nonblocking(sock)) {
         buffers_set(sock);
         //socket_reuseaddr(sock);
@@ -819,14 +815,14 @@ Networking::Networking(CSteamID id, uint32 appid, uint16 port, std::set<IP_PORT>
             tcp_port = port + i;
             if (bind_socket(sock, tcp_port)) {
                 if ((listen(sock, NUM_TCP_WAITING) == 0)) {
-                    PRINT_DEBUG("TCP successful\n");
+                    PRINT_DEBUG("TCP successful");
                     tcp_socket = sock;
                     break;
                 } else {
                     int error = 0;
                     socklen_t len = sizeof(error);
                     getsockopt(sock, SOL_SOCKET, SO_ERROR, (char *)&error, &len);
-                    PRINT_DEBUG("TCP listen error %i\n", error);
+                    PRINT_DEBUG("TCP listen error %i", error);
                 }
             } else {
                 int error = 0;
@@ -836,24 +832,24 @@ Networking::Networking(CSteamID id, uint32 appid, uint16 port, std::set<IP_PORT>
         }
 
         if (!is_socket_valid(udp_socket)) {
-            PRINT_DEBUG("TCP: could not bind or listen\n");
+            PRINT_DEBUG("TCP: could not bind or listen");
         }
     } else {
-        PRINT_DEBUG("TCP: could not initialize %i\n", get_last_error());
+        PRINT_DEBUG("TCP: could not initialize %i", get_last_error());
     }
 
     if (curl_global_init(CURL_GLOBAL_ALL) == 0) {
-        PRINT_DEBUG("CURL successful\n");
+        PRINT_DEBUG("CURL successful");
     } else {
-        PRINT_DEBUG("CURL: could not initialize\n");
+        PRINT_DEBUG("CURL: could not initialize");
     }
  
     if (is_socket_valid(udp_socket) && is_socket_valid(tcp_socket)) {
-        PRINT_DEBUG("Networking initialized successfully on udp: %u tcp: %u \n", udp_port, tcp_port);
+        PRINT_DEBUG("Networking initialized successfully on udp: %u tcp: %u", udp_port, tcp_port);
         enabled = true;
     }
 
-    PRINT_DEBUG("Networking::Networking ADDED ID %llu\n", (uint64)id.ConvertToUint64());
+    PRINT_DEBUG("ADDED ID %llu", (uint64)id.ConvertToUint64());
     ids.push_back(id);
 
     reset_last_error();
@@ -879,13 +875,13 @@ Networking::~Networking()
 Common_Message Networking::create_announce(bool request)
 {
     Announce *announce = new Announce();
-    PRINT_DEBUG("Networking:: ids length %zu\n", ids.size());
+    PRINT_DEBUG("ids length %zu", ids.size());
     if (request) {
         announce->set_type(Announce::PING);
     } else {
         announce->set_type(Announce::PONG);
         for (auto &conn: connections) {
-            PRINT_DEBUG("Connection %u %llu %u\n", conn.udp_pinged, conn.ids[0].ConvertToUint64(), conn.appid);
+            PRINT_DEBUG("Connection %u %llu %u", conn.udp_pinged, conn.ids[0].ConvertToUint64(), conn.appid);
             if (conn.udp_pinged) {
                 Announce_Other_Peers *peer = announce->add_peers();
                 peer->set_id(conn.ids[0].ConvertToUint64());
@@ -910,16 +906,15 @@ void Networking::send_announce_broadcasts()
     Common_Message msg = create_announce(true);
 
     size_t size = msg.ByteSizeLong(); 
-    char *buffer = new char[size];
-    msg.SerializeToArray(buffer, size);
-    send_broadcasts(udp_socket, htons(DEFAULT_PORT), buffer, size, &this->custom_broadcasts);
+    std::vector<char> buffer(size);
+    msg.SerializeToArray(&buffer[0], size);
+    send_broadcasts(udp_socket, htons(DEFAULT_PORT), &buffer[0], size, &this->custom_broadcasts);
     if (udp_port != DEFAULT_PORT) {
-        send_broadcasts(udp_socket, htons(udp_port), buffer, size, &this->custom_broadcasts);
+        send_broadcasts(udp_socket, htons(udp_port), &buffer[0], size, &this->custom_broadcasts);
     }
 
-    delete[] buffer;
     last_broadcast = std::chrono::high_resolution_clock::now();
-    PRINT_DEBUG("Networking:: sent broadcasts\n");
+    PRINT_DEBUG("sent broadcasts");
 }
 
 void Networking::Run()
@@ -932,8 +927,8 @@ void Networking::Run()
         return;
     }
 
-    //PRINT_DEBUG("Networking::Run() %lf\n", time_extra);
-    // PRINT_DEBUG("Networking::Run()\n");
+    //PRINT_DEBUG("%lf", time_extra);
+    // PRINT_DEBUG_ENTRY();
     if (check_timedout(last_broadcast, BROADCAST_INTERVAL)) {
         send_announce_broadcasts();
     }
@@ -943,38 +938,35 @@ void Networking::Run()
     int len;
 
     if (query_alive && is_socket_valid(query_socket)) {
-        PRINT_DEBUG("Networking::Run RECV Source Query\n");
+        PRINT_DEBUG("RECV Source Query");
         Steam_Client* client = get_steam_client();
         sockaddr_in addr;
         addr.sin_family = AF_INET;
 
         while ((len = receive_packet(query_socket, &ip_port, data, sizeof(data))) >= 0) {
-            PRINT_DEBUG("Networking::Run requesting Source Query server info from Steam_GameServer\n");
+            PRINT_DEBUG("requesting Source Query server info from Steam_GameServer");
             client->steam_gameserver->HandleIncomingPacket(data, len, htonl(ip_port.ip), htons(ip_port.port));
             len = client->steam_gameserver->GetNextOutgoingPacket(data, sizeof(data), &ip_port.ip, &ip_port.port);
 
-            PRINT_DEBUG("Networking::Run sending Source Query server info\n");
+            PRINT_DEBUG("sending Source Query server info");
             addr.sin_addr.s_addr = htonl(ip_port.ip);
             addr.sin_port        = htons(ip_port.port);
             sendto(query_socket, data, len, 0, (sockaddr*)&addr, sizeof(addr));
         }
     }
 
-    PRINT_DEBUG("Networking::Run RECV UDP\n");
+    PRINT_DEBUG("RECV UDP");
     while((len = receive_packet(udp_socket, &ip_port, data, sizeof(data))) >= 0) {
-        PRINT_DEBUG("recv %i %hhu.%hhu.%hhu.%hhu:%hu\n", len, ((unsigned char *)&ip_port.ip)[0], ((unsigned char *)&ip_port.ip)[1], ((unsigned char *)&ip_port.ip)[2], ((unsigned char *)&ip_port.ip)[3], htons(ip_port.port));
+        PRINT_DEBUG("recv %i %hhu.%hhu.%hhu.%hhu:%hu", len,
+            ((unsigned char *)&ip_port.ip)[0], ((unsigned char *)&ip_port.ip)[1], ((unsigned char *)&ip_port.ip)[2], ((unsigned char *)&ip_port.ip)[3], htons(ip_port.port));
         Common_Message msg;
         if (msg.ParseFromArray(data, len)) {
             if (msg.source_id()) {
                 if (msg.has_announce()) {
                     handle_announce(&msg, ip_port);
-                } else
-
-                if (msg.has_low_level()) {
+                } else if (msg.has_low_level()) {
                     handle_low_level_udp(&msg, ip_port);
-                } else
-
-                {
+                } else {
                     msg.set_source_ip(ntohl(ip_port.ip));
                     msg.set_source_port(ntohs(ip_port.port));
                     do_callbacks_message(&msg);
@@ -983,7 +975,7 @@ void Networking::Run()
         }
     }
 
-    PRINT_DEBUG("Networking::Run RECV LOCAL\n");
+    PRINT_DEBUG("RECV LOCAL %zu", local_send.size());
     std::vector<Common_Message> local_send_copy = local_send;
     local_send.clear();
 
@@ -1000,9 +992,9 @@ void Networking::Run()
     socklen_t addrlen = sizeof(addr);
 #endif
     sock_t sock;
-    PRINT_DEBUG("ACCEPTING\n");
+    PRINT_DEBUG("ACCEPTING");
     while (is_socket_valid(sock = accept(tcp_socket, (struct sockaddr *)&addr, &addrlen))) {
-        PRINT_DEBUG("ACCEPT SOCKET %u\n", sock);
+        PRINT_DEBUG("ACCEPT SOCKET %u", sock);
         struct sockaddr_storage addr;
     #if defined(STEAM_WIN32)
         int addrlen = sizeof(addr);
@@ -1014,17 +1006,17 @@ void Networking::Run()
         ip_port.port = addr_in->sin_port;
         struct TCP_Socket socket;
         if (set_socket_nonblocking(sock)) {
-            PRINT_DEBUG("SET NONBLOCK\n");
+            PRINT_DEBUG("SET NONBLOCK");
             disable_nagle(sock);
             socket.sock = sock;
             socket.received_data = true;
             socket.last_heartbeat_received = std::chrono::high_resolution_clock::now();
             accepted.push_back(socket);
-            PRINT_DEBUG("TCP ACCEPTED %u\n", sock);
+            PRINT_DEBUG("TCP ACCEPTED %u", sock);
         }
     }
 
-    PRINT_DEBUG("ACCEPTED %zu\n", accepted.size());
+    PRINT_DEBUG("ACCEPTED %zu", accepted.size());
     auto conn = std::begin(accepted);
     while (conn != std::end(accepted)) {
         bool deleted = false;
@@ -1038,7 +1030,7 @@ void Networking::Run()
                     connection->tcp_socket_incoming = *conn;
                     conn = accepted.erase(conn);
                     deleted = true;
-                    PRINT_DEBUG("TCP REPLACED\n");
+                    PRINT_DEBUG("TCP REPLACED");
                     //TODO: add other ids?
                 } else {
                     //Don't allow connection from unknown
@@ -1046,7 +1038,7 @@ void Networking::Run()
                     kill_tcp_socket(*conn);
                     conn = accepted.erase(conn);
                     deleted = true;
-                    PRINT_DEBUG("TCP UNKNOWN\n");
+                    PRINT_DEBUG("TCP UNKNOWN");
                 }
             }
         }
@@ -1055,7 +1047,7 @@ void Networking::Run()
             kill_tcp_socket(*conn);
             conn = accepted.erase(conn);
             deleted = true;
-            PRINT_DEBUG("TCP TIMEOUT\n");
+            PRINT_DEBUG("TCP TIMEOUT");
         }
         
         if (!deleted){
@@ -1063,12 +1055,12 @@ void Networking::Run()
         }
     }
 
-    PRINT_DEBUG("CONNECTIONS %zu\n", connections.size());
+    PRINT_DEBUG("CONNECTIONS %zu", connections.size());
     for (auto &conn: connections) {
         if (!is_tcp_socket_valid(conn.tcp_socket_outgoing)) {
             sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
             if (is_socket_valid(sock) && set_socket_nonblocking(sock)) {
-                PRINT_DEBUG("NEW SOCKET %u %u\n", sock, conn.tcp_socket_outgoing.sock);
+                PRINT_DEBUG("NEW SOCKET %u %u", sock, conn.tcp_socket_outgoing.sock);
                 disable_nagle(sock);
                 connect_socket(sock, conn.tcp_ip_port);
                 conn.tcp_socket_outgoing.sock = sock;
@@ -1079,7 +1071,7 @@ void Networking::Run()
             }
         }
 
-        PRINT_DEBUG("RUN SOCKET1 %u %u\n", conn.tcp_socket_outgoing.sock, conn.tcp_socket_incoming.sock);
+        PRINT_DEBUG("RUN SOCKET1 %u %u", conn.tcp_socket_outgoing.sock, conn.tcp_socket_incoming.sock);
         recv_tcp(conn.tcp_socket_outgoing);
         recv_tcp(conn.tcp_socket_incoming);
 
@@ -1095,7 +1087,7 @@ void Networking::Run()
                             if (i != c.ids.end()) {
                                 c.ids.erase(i);
                                 run_callback_user(steam_id, false, c.appid);
-                                PRINT_DEBUG("REMOVE OLD CONNECTION ID\n");
+                                PRINT_DEBUG("REMOVE OLD CONNECTION ID");
                             }
                         }
                     }
@@ -1107,27 +1099,27 @@ void Networking::Run()
             }
         }
 
-        PRINT_DEBUG("RUN SOCKET2 %u %u\n", conn.tcp_socket_outgoing.sock, conn.tcp_socket_incoming.sock);
+        PRINT_DEBUG("RUN SOCKET2 %u %u", conn.tcp_socket_outgoing.sock, conn.tcp_socket_incoming.sock);
         send_tcp_pending(conn.tcp_socket_outgoing);
         send_tcp_pending(conn.tcp_socket_incoming);
 
-        PRINT_DEBUG("RUN SOCKET3 %u %u\n", conn.tcp_socket_outgoing.sock, conn.tcp_socket_incoming.sock);
+        PRINT_DEBUG("RUN SOCKET3 %u %u", conn.tcp_socket_outgoing.sock, conn.tcp_socket_incoming.sock);
         Common_Message msg;
         while (unbuffer_tcp(conn.tcp_socket_outgoing, &msg)) {
-            PRINT_DEBUG("UNBUFFER SOCKET\n");
+            PRINT_DEBUG("UNBUFFER SOCKET");
             msg.set_source_ip(ntohl(conn.tcp_ip_port.ip)); //TODO: get from tcp socket
             handle_tcp(&msg, conn.tcp_socket_outgoing);
             conn.last_received = std::chrono::high_resolution_clock::now();
         }
 
         while (unbuffer_tcp(conn.tcp_socket_incoming, &msg)) {
-            PRINT_DEBUG("UNBUFFER SOCKET\n");
+            PRINT_DEBUG("UNBUFFER SOCKET");
             msg.set_source_ip(ntohl(conn.tcp_ip_port.ip)); //TODO: get from tcp socket
             handle_tcp(&msg, conn.tcp_socket_incoming);
             conn.last_received = std::chrono::high_resolution_clock::now();
         }
 
-        PRINT_DEBUG("RUN SOCKET4 %u %u\n", conn.tcp_socket_outgoing.sock, conn.tcp_socket_incoming.sock);
+        PRINT_DEBUG("RUN SOCKET4 %u %u", conn.tcp_socket_outgoing.sock, conn.tcp_socket_incoming.sock);
         socket_timeouts(conn.tcp_socket_outgoing, time_extra);
         socket_timeouts(conn.tcp_socket_incoming, time_extra);
 
@@ -1141,7 +1133,7 @@ void Networking::Run()
                 kill_tcp_socket(conn->tcp_socket_outgoing);
                 kill_tcp_socket(conn->tcp_socket_incoming);
                 conn = connections.erase(conn);
-                PRINT_DEBUG("USER TIMEOUT\n");
+                PRINT_DEBUG("USER TIMEOUT");
             } else {
                 ++conn;
             }
@@ -1166,7 +1158,7 @@ void Networking::addListenId(CSteamID id)
         return;
     }
 
-    PRINT_DEBUG("Networking::addListenId ADDED ID %llu\n", (uint64)id.ConvertToUint64());
+    PRINT_DEBUG("ADDED ID %llu", (uint64)id.ConvertToUint64());
     ids.push_back(id);
     send_announce_broadcasts();
     return;
@@ -1181,7 +1173,7 @@ bool Networking::sendToIPPort(Common_Message *msg, uint32 ip, uint16 port, bool 
 {
     bool is_local_ip = ((ip >> 24) == 0x7F);
     uint32_t local_ip = getIP(ids.front());
-    PRINT_DEBUG("Networking::sendToIPPort %X %u %X\n", ip, is_local_ip, local_ip);
+    PRINT_DEBUG("%X %u %X", ip, is_local_ip, local_ip);
     //TODO: actually send to ip/port
     for (auto &conn: connections) {
         if (ntohl(conn.tcp_ip_port.ip) == ip || (is_local_ip && ntohl(conn.tcp_ip_port.ip) == local_ip)) {
@@ -1215,9 +1207,9 @@ bool Networking::sendTo(Common_Message *msg, bool reliable, Connection *conn)
     bool ret = false;
     CSteamID dest_id((uint64)msg->dest_id());
     if (std::find(ids.begin(), ids.end(), dest_id) != ids.end()) {
-        PRINT_DEBUG("Networking sending to self\n");
+        PRINT_DEBUG("sending to self");
         if (!conn) {
-            PRINT_DEBUG("Networking local send\n");
+            PRINT_DEBUG("local send");
             local_send.push_back(*msg);
             ret = true;
         }
@@ -1363,7 +1355,7 @@ void Networking::startQuery(IP_PORT ip_port)
     {
         if (ip_port.port == MASTERSERVERUPDATERPORT_USEGAMESOCKETSHARE)
         {
-            PRINT_DEBUG("Source Query in Shared Mode\n");
+            PRINT_DEBUG("Source Query in Shared Mode");
             return;
         }
 
@@ -1409,7 +1401,7 @@ void Networking::startQuery(IP_PORT ip_port)
         char str_ip[16]{};
         inet_ntop(AF_INET, &(addr.sin_addr), str_ip, 16);
 
-        PRINT_DEBUG("Started query server on %s:%d\n", str_ip, htons(addr.sin_port));
+        PRINT_DEBUG("Started query server on %s:%d", str_ip, htons(addr.sin_port));
     }
     query_alive = true;
 }

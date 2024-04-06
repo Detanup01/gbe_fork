@@ -51,7 +51,7 @@ public:
 
 static void steam_callback(void *object, Common_Message *msg)
 {
-    // PRINT_DEBUG("steam_networking_messages_callback\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Networking_Messages *steam_networking_messages = (Steam_Networking_Messages *)object;
     steam_networking_messages->Callback(msg);
@@ -59,7 +59,7 @@ static void steam_callback(void *object, Common_Message *msg)
 
 static void steam_run_every_runcb(void *object)
 {
-    // PRINT_DEBUG("steam_networking_messages_run_every_runcb\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Networking_Messages *steam_networking_messages = (Steam_Networking_Messages *)object;
     steam_networking_messages->RunCallbacks();
@@ -170,7 +170,7 @@ std::map<CSteamID, Steam_Message_Connection>::iterator find_or_create_message_co
 /// - See SendMessageToConnection::SendMessageToConnection for more
 EResult SendMessageToUser( const SteamNetworkingIdentity &identityRemote, const void *pubData, uint32 cubData, int nSendFlags, int nRemoteChannel )
 {
-    PRINT_DEBUG("Steam_Networking_Messages::SendMessageToUser\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     const SteamNetworkingIPAddr *ip = identityRemote.GetIPAddr();
     bool reliable = false;
@@ -184,10 +184,10 @@ EResult SendMessageToUser( const SteamNetworkingIdentity &identityRemote, const 
     }
 
     if (identityRemote.m_eType == k_ESteamNetworkingIdentityType_SteamID) {
-        PRINT_DEBUG("Steam_Networking_Messages::SendMessageToUser %llu\n", identityRemote.GetSteamID64());
+        PRINT_DEBUG("%llu", identityRemote.GetSteamID64());
         //steam id identity
     } else if (ip) {
-        PRINT_DEBUG("Steam_Networking_Messages::SendMessageToUser %u:%u ipv4? %u\n", ip->GetIPv4(), ip->m_port, ip->IsIPv4());
+        PRINT_DEBUG("%u:%u ipv4? %u", ip->GetIPv4(), ip->m_port, ip->IsIPv4());
         //ip addr
         return k_EResultNoConnection; //TODO
     } else {
@@ -230,7 +230,7 @@ static void delete_steam_message(SteamNetworkingMessage_t *pMsg)
 /// When you're done with the message object(s), make sure and call Release()!
 int ReceiveMessagesOnChannel( int nLocalChannel, SteamNetworkingMessage_t **ppOutMessages, int nMaxMessages )
 {
-    PRINT_DEBUG("Steam_Networking_Messages::ReceiveMessagesOnChannel\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     int message_counter = 0;
 
@@ -265,7 +265,7 @@ int ReceiveMessagesOnChannel( int nLocalChannel, SteamNetworkingMessage_t **ppOu
         }
     }
 
-    PRINT_DEBUG("Steam_Networking_Messages::ReceiveMessagesOnChannel got %u\n", message_counter);
+    PRINT_DEBUG("got %u", message_counter);
     return message_counter;
 }
 
@@ -278,7 +278,7 @@ int ReceiveMessagesOnChannel( int nLocalChannel, SteamNetworkingMessage_t **ppOu
 /// Calling SendMessage() on the other user, this implicitly accepts any pending session request.
 bool AcceptSessionWithUser( const SteamNetworkingIdentity &identityRemote )
 {
-    PRINT_DEBUG("Steam_Networking_Messages::AcceptSessionWithUser\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     auto conn = connections.find(identityRemote.GetSteamID());
     if (conn == connections.end()) {
@@ -296,7 +296,7 @@ bool AcceptSessionWithUser( const SteamNetworkingIdentity &identityRemote )
 /// Note that sessions that go unused for a few minutes are automatically timed out.
 bool CloseSessionWithUser( const SteamNetworkingIdentity &identityRemote )
 {
-    PRINT_DEBUG("Steam_Networking_Messages::CloseSessionWithUser\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     auto conn = connections.find(identityRemote.GetSteamID());
     if (conn == connections.end()) {
@@ -322,7 +322,7 @@ bool CloseSessionWithUser( const SteamNetworkingIdentity &identityRemote )
 /// callback
 bool CloseChannelWithUser( const SteamNetworkingIdentity &identityRemote, int nLocalChannel )
 {
-    PRINT_DEBUG("Steam_Networking_Messages::CloseChannelWithUser\n");
+    PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     //TODO
     return false;
@@ -339,7 +339,7 @@ bool CloseChannelWithUser( const SteamNetworkingIdentity &identityRemote, int nL
 /// indefinitely to obtain the reason for failure.
 ESteamNetworkingConnectionState GetSessionConnectionInfo( const SteamNetworkingIdentity &identityRemote, SteamNetConnectionInfo_t *pConnectionInfo, SteamNetConnectionRealTimeStatus_t *pQuickStatus )
 {
-    PRINT_DEBUG("Steam_Networking_Messages::GetSessionConnectionInfo\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     auto conn = connections.find(identityRemote.GetSteamID());
     if (conn == connections.end()) {
@@ -418,7 +418,7 @@ void Callback(Common_Message *msg)
     }
 
     if (msg->has_networking_messages()) {
-        PRINT_DEBUG("Steam_Networking_Messages: got network socket msg %u\n", msg->networking_messages().type());
+        PRINT_DEBUG("got network socket msg %u", msg->networking_messages().type());
         if (msg->networking_messages().type() == Networking_Messages::CONNECTION_NEW) {
             SteamNetworkingIdentity identity;
             identity.SetSteamID64(msg->source_id());

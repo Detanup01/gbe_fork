@@ -26,7 +26,7 @@ static uint32_t get_ticket_count() {
 
 static void steam_auth_manager_ticket_callback(void *object, Common_Message *msg)
 {
-    PRINT_DEBUG("steam_auth_manager_ticket_callback\n");
+    // PRINT_DEBUG_ENTRY();
 
     Auth_Manager *auth_manager = (Auth_Manager *)object;
     auth_manager->Callback(msg);
@@ -301,7 +301,7 @@ void Auth_Manager::Callback(Common_Message *msg)
         }
 
         if (msg->low_level().type() == Low_Level::DISCONNECT) {
-            PRINT_DEBUG("TICKET DISCONNECT\n");
+            PRINT_DEBUG("TICKET DISCONNECT");
             auto t = std::begin(inbound);
             while (t != std::end(inbound)) {
                 if (t->id.ConvertToUint64() == msg->source_id()) {
@@ -316,12 +316,12 @@ void Auth_Manager::Callback(Common_Message *msg)
 
     if (msg->has_auth_ticket()) {
         if (msg->auth_ticket().type() == Auth_Ticket::CANCEL) {
-            PRINT_DEBUG("TICKET CANCEL " "%" PRIu64 "\n", msg->source_id());
+            PRINT_DEBUG("TICKET CANCEL " "%" PRIu64, msg->source_id());
             uint32 number = msg->auth_ticket().number();
             auto t = std::begin(inbound);
             while (t != std::end(inbound)) {
                 if (t->id.ConvertToUint64() == msg->source_id() && t->number == number) {
-                    PRINT_DEBUG("TICKET CANCELED\n");
+                    PRINT_DEBUG("TICKET CANCELED");
                     launch_callback(t->id, k_EAuthSessionResponseAuthTicketCanceled);
                     t = inbound.erase(t);
                 } else {

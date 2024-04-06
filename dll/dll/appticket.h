@@ -337,7 +337,7 @@ public:
 
     virtual uint32 GetAppOwnershipTicketData( uint32 nAppID, void *pvBuffer, uint32 cbBufferLength, uint32 *piAppId, uint32 *piSteamId, uint32 *piSignature, uint32 *pcbSignature )
     {
-        PRINT_DEBUG("TODO GetAppOwnershipTicketData: %u, %p, %u, %p, %p, %p, %p\n", nAppID, pvBuffer, cbBufferLength, piAppId, piSteamId, piSignature, pcbSignature);
+        PRINT_DEBUG("TODO %u, %p, %u, %p, %p, %p, %p", nAppID, pvBuffer, cbBufferLength, piAppId, piSteamId, piSignature, pcbSignature);
         std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
         return 0;

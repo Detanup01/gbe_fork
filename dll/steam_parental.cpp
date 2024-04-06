@@ -19,38 +19,38 @@
 
 bool Steam_Parental::BIsParentalLockEnabled()
 {
-    PRINT_DEBUG("TODO Steam_Parental::BIsParentalLockEnabled\n");
+    PRINT_DEBUG_TODO();
     return false;
 }
 
 bool Steam_Parental::BIsParentalLockLocked()
 {
-    PRINT_DEBUG("TODO Steam_Parental::BIsParentalLockLocked\n");
+    PRINT_DEBUG_TODO();
     return false;
 }
 
 
 bool Steam_Parental::BIsAppBlocked( AppId_t nAppID )
 {
-    PRINT_DEBUG("TODO Steam_Parental::BIsAppBlocked\n");
+    PRINT_DEBUG_TODO();
     return false;
 }
 
 bool Steam_Parental::BIsAppInBlockList( AppId_t nAppID )
 {
-    PRINT_DEBUG("TODO Steam_Parental::BIsAppInBlockList\n");
+    PRINT_DEBUG_TODO();
     return false;
 }
 
 
 bool Steam_Parental::BIsFeatureBlocked( EParentalFeature eFeature )
 {
-    PRINT_DEBUG("TODO Steam_Parental::BIsFeatureBlocked\n");
+    PRINT_DEBUG_TODO();
     return false;
 }
 
 bool Steam_Parental::BIsFeatureInBlockList( EParentalFeature eFeature )
 {
-    PRINT_DEBUG("TODO Steam_Parental::BIsFeatureInBlockList\n");
+    PRINT_DEBUG_TODO();
     return false;
 }

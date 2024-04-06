@@ -36,7 +36,7 @@ public ISteamNetworkingUtils
 public:
 static void steam_callback(void *object, Common_Message *msg)
 {
-    // PRINT_DEBUG("steam_networkingutils_callback\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Networking_Utils *steam_networkingutils = (Steam_Networking_Utils *)object;
     steam_networkingutils->Callback(msg);
@@ -44,7 +44,7 @@ static void steam_callback(void *object, Common_Message *msg)
 
 static void steam_run_every_runcb(void *object)
 {
-    // PRINT_DEBUG("steam_networkingutils_run_every_runcb\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Networking_Utils *steam_networkingutils = (Steam_Networking_Utils *)object;
     steam_networkingutils->RunCallbacks();
@@ -101,7 +101,8 @@ static void delete_steam_message(SteamNetworkingMessage_t *pMsg)
 /// counting and ownership.
 SteamNetworkingMessage_t *AllocateMessage( int cbAllocateBuffer )
 {
-    PRINT_DEBUG("Steam_Networking_Utils::AllocateMessage\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     SteamNetworkingMessage_t *pMsg = new SteamNetworkingMessage_t();
     pMsg->m_pfnFreeData = &free_steam_message_data;
     pMsg->m_pfnRelease = &delete_steam_message;
@@ -117,7 +118,8 @@ SteamNetworkingMessage_t *AllocateMessage( int cbAllocateBuffer )
 
 bool InitializeRelayAccess()
 {
-    PRINT_DEBUG("Steam_Networking_Utils::InitializeRelayAccess\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     init_relay = true;
     return relay_initialized;
 }
@@ -143,7 +145,7 @@ SteamRelayNetworkStatus_t get_network_status()
 /// more details, you can pass a non-NULL value.
 ESteamNetworkingAvailability GetRelayNetworkStatus( SteamRelayNetworkStatus_t *pDetails )
 {
-    PRINT_DEBUG("Steam_Networking_Utils::GetRelayNetworkStatus %p\n", pDetails);
+    PRINT_DEBUG("TODO %p", pDetails);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     //TODO: check if this is how real steam returns it
@@ -161,7 +163,8 @@ ESteamNetworkingAvailability GetRelayNetworkStatus( SteamRelayNetworkStatus_t *p
 
 float GetLocalPingLocation( SteamNetworkPingLocation_t &result )
 {
-    PRINT_DEBUG("Steam_Networking_Utils::GetLocalPingLocation\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (relay_initialized) {
         result.m_data[2] = 123;
         result.m_data[8] = 67;
@@ -173,36 +176,40 @@ float GetLocalPingLocation( SteamNetworkPingLocation_t &result )
 
 int EstimatePingTimeBetweenTwoLocations( const SteamNetworkPingLocation_t &location1, const SteamNetworkPingLocation_t &location2 )
 {
-    PRINT_DEBUG("Steam_Networking_Utils::EstimatePingTimeBetweenTwoLocations\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     //return k_nSteamNetworkingPing_Unknown;
-    return 10;
+    return 2;
 }
 
 
 int EstimatePingTimeFromLocalHost( const SteamNetworkPingLocation_t &remoteLocation )
 {
-    PRINT_DEBUG("Steam_Networking_Utils::EstimatePingTimeFromLocalHost\n");
-    return 10;
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    return 2;
 }
 
 
 void ConvertPingLocationToString( const SteamNetworkPingLocation_t &location, char *pszBuf, int cchBufSize )
 {
-    PRINT_DEBUG("Steam_Networking_Utils::ConvertPingLocationToString\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     strncpy(pszBuf, "fra=10+2", cchBufSize);
 }
 
 
 bool ParsePingLocationString( const char *pszString, SteamNetworkPingLocation_t &result )
 {
-    PRINT_DEBUG("Steam_Networking_Utils::ParsePingLocationString\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return true;
 }
 
 
 bool CheckPingDataUpToDate( float flMaxAgeSeconds )
 {
-    PRINT_DEBUG("Steam_Networking_Utils::CheckPingDataUpToDate %f\n", flMaxAgeSeconds);
+    PRINT_DEBUG("TODO %f", flMaxAgeSeconds);
     init_relay = true;
     return relay_initialized;
 }
@@ -210,35 +217,40 @@ bool CheckPingDataUpToDate( float flMaxAgeSeconds )
 
 bool IsPingMeasurementInProgress()
 {
-    PRINT_DEBUG("Steam_Networking_Utils::IsPingMeasurementInProgress\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
 
 int GetPingToDataCenter( SteamNetworkingPOPID popID, SteamNetworkingPOPID *pViaRelayPoP )
 {
-    PRINT_DEBUG("Steam_Networking_Utils::GetPingToDataCenter\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 
 int GetDirectPingToPOP( SteamNetworkingPOPID popID )
 {
-    PRINT_DEBUG("Steam_Networking_Utils::GetDirectPingToPOP\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 
 int GetPOPCount()
 {
-    PRINT_DEBUG("Steam_Networking_Utils::GetPOPCount\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 
 int GetPOPList( SteamNetworkingPOPID *list, int nListSz )
 {
-    PRINT_DEBUG("Steam_Networking_Utils::GetPOPList\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
@@ -266,7 +278,8 @@ int GetPOPList( SteamNetworkingPOPID *list, int nListSz )
 /// it to values obtained on another computer, or other runs of the same process.
 SteamNetworkingMicroseconds GetLocalTimestamp()
 {
-    PRINT_DEBUG("Steam_Networking_Utils::GetLocalTimestamp\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - initialized_time).count() + (SteamNetworkingMicroseconds)24*3600*30*1e6;
 }
 
@@ -291,7 +304,8 @@ SteamNetworkingMicroseconds GetLocalTimestamp()
 /// Steamworks calls from within the handler.
 void SetDebugOutputFunction( ESteamNetworkingSocketsDebugOutputType eDetailLevel, FSteamNetworkingSocketsDebugOutput pfnFunc )
 {
-    PRINT_DEBUG("Steam_Networking_Utils::SetDebugOutputFunction %i\n", eDetailLevel);
+    PRINT_DEBUG("%i", eDetailLevel);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (eDetailLevel != k_ESteamNetworkingSocketsDebugOutputType_None) {
         debug_function = pfnFunc;
     }
@@ -309,7 +323,8 @@ void SetDebugOutputFunction( ESteamNetworkingSocketsDebugOutputType eDetailLevel
 // inline bool IsFakeIPv4( uint32 nIPv4 ) { return GetIPv4FakeIPType( nIPv4 ) > k_ESteamNetworkingFakeIPType_NotFake; }
 ESteamNetworkingFakeIPType GetIPv4FakeIPType( uint32 nIPv4 )
 {
-    PRINT_DEBUG("TODO: %s\n", __FUNCTION__);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_ESteamNetworkingFakeIPType_NotFake;
 }
 
@@ -327,7 +342,8 @@ ESteamNetworkingFakeIPType GetIPv4FakeIPType( uint32 nIPv4 )
 /// indefinitely.
 EResult GetRealIdentityForFakeIP( const SteamNetworkingIPAddr &fakeIP, SteamNetworkingIdentity *pOutRealIdentity )
 {
-    PRINT_DEBUG("TODO: %s\n", __FUNCTION__);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_EResultNoMatch;
 }
 
@@ -358,7 +374,8 @@ bool SetConnectionConfigValueString( HSteamNetConnection hConn, ESteamNetworking
 bool SetConfigValue( ESteamNetworkingConfigValue eValue, ESteamNetworkingConfigScope eScopeType, intptr_t scopeObj,
     ESteamNetworkingConfigDataType eDataType, const void *pArg )
 {
-    PRINT_DEBUG("Steam_Networking_Utils::SetConfigValue %i %i " "%" PRIdPTR " %i %p\n", eValue, eScopeType, scopeObj, eDataType, pArg);
+    PRINT_DEBUG("TODO %i %i " "%" PRIdPTR " %i %p", eValue, eScopeType, scopeObj, eDataType, pArg);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return true;
 }
 
@@ -373,7 +390,8 @@ bool SetConfigValue( ESteamNetworkingConfigValue eValue, ESteamNetworkingConfigS
 ESteamNetworkingGetConfigValueResult GetConfigValue( ESteamNetworkingConfigValue eValue, ESteamNetworkingConfigScope eScopeType, intptr_t scopeObj,
     ESteamNetworkingConfigDataType *pOutDataType, void *pResult, size_t *cbResult )
 {
-    PRINT_DEBUG("Steam_Networking_Utils::GetConfigValue\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_ESteamNetworkingGetConfigValue_BadValue;
 }
 
@@ -384,7 +402,8 @@ ESteamNetworkingGetConfigValueResult GetConfigValue( ESteamNetworkingConfigValue
 /// Any of the output parameters can be NULL if you do not need that information.
 bool GetConfigValueInfo( ESteamNetworkingConfigValue eValue, const char **pOutName, ESteamNetworkingConfigDataType *pOutDataType, ESteamNetworkingConfigScope *pOutScope, ESteamNetworkingConfigValue *pOutNextValue )
 {
-    PRINT_DEBUG("TODO: Steam_Networking_Utils::GetConfigValueInfo old\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     //TODO flat api
     return false;
 }
@@ -394,7 +413,8 @@ bool GetConfigValueInfo( ESteamNetworkingConfigValue eValue, const char **pOutNa
 /// if you do not need them.
 const char *GetConfigValueInfo( ESteamNetworkingConfigValue eValue, ESteamNetworkingConfigDataType *pOutDataType, ESteamNetworkingConfigScope *pOutScope )
 {
-    PRINT_DEBUG("TODO: %s\n", __FUNCTION__);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     //TODO flat api
     return NULL;
 }
@@ -402,7 +422,8 @@ const char *GetConfigValueInfo( ESteamNetworkingConfigValue eValue, ESteamNetwor
 /// Return the lowest numbered configuration value available in the current environment.
 ESteamNetworkingConfigValue GetFirstConfigValue()
 {
-    PRINT_DEBUG("Steam_Networking_Utils::GetFirstConfigValue\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_ESteamNetworkingConfig_Invalid;
 }
 
@@ -416,7 +437,8 @@ ESteamNetworkingConfigValue GetFirstConfigValue()
 /// shown in a retail environment where a malicious local user might use this to cheat.
 ESteamNetworkingConfigValue IterateGenericEditableConfigValues( ESteamNetworkingConfigValue eCurrent, bool bEnumerateDevVars )
 {
-    PRINT_DEBUG("TODO: %s\n", __FUNCTION__);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_ESteamNetworkingConfig_Invalid;
 }
 
@@ -425,47 +447,36 @@ ESteamNetworkingConfigValue IterateGenericEditableConfigValues( ESteamNetworking
 // inline methods.
 void SteamNetworkingIPAddr_ToString( const SteamNetworkingIPAddr &addr, char *buf, size_t cbBuf, bool bWithPort )
 {
-    PRINT_DEBUG("Steam_Networking_Utils::SteamNetworkingIPAddr_ToString\n");
-    if (buf == nullptr || cbBuf == 0)
-        return;
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (buf == nullptr || cbBuf == 0) return;
 
-    char buffer[64]; // Its enought for ipv4 & ipv6 + port
-    std::string str_addr;
-    if (addr.IsIPv4())
-    {
+    char buffer[64]{}; // enough for ipv4 & ipv6 + port
+    std::string str_addr{};
+    if (addr.IsIPv4()) {
         in_addr ipv4_addr;
         ipv4_addr.s_addr = htonl(addr.GetIPv4());
 
-        if (inet_ntop(AF_INET, &ipv4_addr, buffer, sizeof(buffer) / sizeof(*buffer)) != nullptr)
-        {
-            if (bWithPort)
-            {
+        if (inet_ntop(AF_INET, &ipv4_addr, buffer, sizeof(buffer) / sizeof(*buffer)) != nullptr) {
+            if (bWithPort) {
                 str_addr = buffer;
                 str_addr += ':';
                 str_addr += std::to_string(addr.m_port);
-            }
-            else
-            {
+            } else {
                 str_addr = buffer;
             }
         }
-    }
-    else
-    {
-        in6_addr ipv6_addr;
+    } else {
+        in6_addr ipv6_addr{};
         memcpy(ipv6_addr.s6_addr, addr.m_ipv6, sizeof(addr.m_ipv6));
 
-        if (inet_ntop(AF_INET6, &ipv6_addr, buffer, sizeof(buffer) / sizeof(*buffer)) != nullptr)
-        {
-            if (bWithPort)
-            {
+        if (inet_ntop(AF_INET6, &ipv6_addr, buffer, sizeof(buffer) / sizeof(*buffer)) != nullptr) {
+            if (bWithPort) {
                 str_addr = '[';
                 str_addr += buffer;
                 str_addr += "]:";
                 str_addr += std::to_string(addr.m_port);
-            }
-            else
-            {
+            } else {
                 str_addr = buffer;
             }
         }
@@ -478,18 +489,17 @@ void SteamNetworkingIPAddr_ToString( const SteamNetworkingIPAddr &addr, char *bu
 
 bool SteamNetworkingIPAddr_ParseString( SteamNetworkingIPAddr *pAddr, const char *pszStr )
 {
-    PRINT_DEBUG("Steam_Networking_Utils::SteamNetworkingIPAddr_ParseString\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     bool valid = false;
 
-    if (pAddr == nullptr || pszStr == nullptr)
-        return valid;
+    if (pAddr == nullptr || pszStr == nullptr) return valid;
 
     std::string str(pszStr);
     size_t pos = str.find(':');
 
-    if (pos != std::string::npos)
-    {// Try ipv4 with port
+    if (pos != std::string::npos) {// Try ipv4 with port
         in_addr ipv4_addr;
         std::string tmp(str);
         tmp[pos] = 0;
@@ -501,9 +511,7 @@ bool SteamNetworkingIPAddr_ParseString( SteamNetworkingIPAddr *pAddr, const char
             valid = true;
             pAddr->SetIPv4(ntohl(ipv4_addr.s_addr), strtoul(port, nullptr, 10));
         }
-    }
-    else
-    {// Try ipv4 without port
+    } else {// Try ipv4 without port
         in_addr ipv4_addr;
         if (inet_pton(AF_INET, str.c_str(), &ipv4_addr) == 1)
         {
@@ -512,8 +520,7 @@ bool SteamNetworkingIPAddr_ParseString( SteamNetworkingIPAddr *pAddr, const char
         }
     }
 
-    if (!valid)
-    {// Try ipv6
+    if (!valid) {// Try ipv6
         addrinfo* info = nullptr;
         addrinfo hints = {};
         hints.ai_family = AF_INET6;
@@ -523,58 +530,46 @@ bool SteamNetworkingIPAddr_ParseString( SteamNetworkingIPAddr *pAddr, const char
         size_t sep_pos = 0;
         std::string ip;
         int sep_count = 0;
-        for (int i = 0; i < str.length(); ++i)
-        {
-            if (str[i] == ':')
-            {
+        for (int i = 0; i < str.length(); ++i) {
+            if (str[i] == ':') {
                 sep_pos = i;
                 ++sep_count;
             }
         }
-        if (sep_count == 8)
-        {
+
+        if (sep_count == 8) {
             ip = std::move(std::string(str.begin(), str.begin() + sep_pos));
-        }
-        else
-        {
+        } else {
             ip = str;
         }
 
-        if (getaddrinfo(ip.c_str(), nullptr, &hints, &info) == 0)
-        {
+        if (getaddrinfo(ip.c_str(), nullptr, &hints, &info) == 0) {
             sockaddr_in6* maddr = (sockaddr_in6*)info->ai_addr;
 
             size_t pos = str.find(']');
             std::string str_port("0");
-            if (pos != std::string::npos)
-            {
+            if (pos != std::string::npos) {
                 str_port = std::move(std::string(str.begin() + pos + 2, str.end()));
-            }
-            else if (sep_count == 8)
-            {
+            } else if (sep_count == 8) {
                 str_port = std::move(std::string(str.begin() + sep_pos + 1, str.end()));
             }
-            try
-            {
+
+            try {
                 int port = std::stoi(str_port);
-                if (port >= 0 && port <= 65535)
-                {
+                if (port >= 0 && port <= 65535) {
                     pAddr->SetIPv6(maddr->sin6_addr.s6_addr, port);
                     valid = true;
                 }
             }
-            catch(...)
-            { }
+            catch(...) { }
         }
 
-        if (info)
-        {
+        if (info) {
             freeaddrinfo(info);
         }
     }
 
-    if (!valid)
-    {
+    if (!valid) {
         pAddr->Clear();
     }
 
@@ -583,14 +578,16 @@ bool SteamNetworkingIPAddr_ParseString( SteamNetworkingIPAddr *pAddr, const char
 
 ESteamNetworkingFakeIPType SteamNetworkingIPAddr_GetFakeIPType( const SteamNetworkingIPAddr &addr )
 {
-    PRINT_DEBUG("TODO: %s\n", __FUNCTION__);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_ESteamNetworkingFakeIPType_NotFake;
 }
 
 
 void SteamNetworkingIdentity_ToString( const SteamNetworkingIdentity &identity, char *buf, size_t cbBuf )
 {
-    PRINT_DEBUG("Steam_Networking_Utils::SteamNetworkingIdentity_ToString\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (buf == nullptr)
         return;
 
@@ -654,7 +651,8 @@ void SteamNetworkingIdentity_ToString( const SteamNetworkingIdentity &identity, 
 
 bool SteamNetworkingIdentity_ParseString( SteamNetworkingIdentity *pIdentity, const char *pszStr )
 {
-    PRINT_DEBUG("Steam_Networking_Utils::SteamNetworkingIdentity_ParseString\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     bool valid = false;
     if (pIdentity == nullptr)
     {

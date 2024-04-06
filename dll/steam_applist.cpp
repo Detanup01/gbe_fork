@@ -19,33 +19,33 @@
 
 uint32 Steam_Applist::GetNumInstalledApps()
 {
-    PRINT_DEBUG("TODO Steam_Applist::GetNumInstalledApps\n");
+    PRINT_DEBUG_TODO();
     return 0;
 }
 
 uint32 Steam_Applist::GetInstalledApps( AppId_t *pvecAppID, uint32 unMaxAppIDs )
 {
-    PRINT_DEBUG("TODO Steam_Applist::GetInstalledApps\n");
+    PRINT_DEBUG_TODO();
     return 0;
 }
 
 // returns -1 if no name was found
 int  Steam_Applist::GetAppName( AppId_t nAppID, STEAM_OUT_STRING() char *pchName, int cchNameMax )
 {
-    PRINT_DEBUG("TODO Steam_Applist::GetAppName\n");
+    PRINT_DEBUG_TODO();
     return -1;
 }
 
 // returns -1 if no dir was found
 int  Steam_Applist::GetAppInstallDir( AppId_t nAppID, char *pchDirectory, int cchNameMax )
 {
-    PRINT_DEBUG("TODO Steam_Applist::GetAppInstallDir\n");
+    PRINT_DEBUG_TODO();
     return -1;
 }
 
 // return the buildid of this app, may change at any time based on backend updates to the game
 int Steam_Applist::GetAppBuildId( AppId_t nAppID )
 {
-    PRINT_DEBUG("TODO Steam_Applist::GetAppBuildId\n");
+    PRINT_DEBUG_TODO();
     return 10;
 }

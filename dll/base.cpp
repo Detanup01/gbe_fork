@@ -23,7 +23,7 @@ void randombytes(char *buf, size_t size)
 {
     // NT_SUCCESS is: return value >= 0, including Ntdef.h causes so many errors
     while (BCryptGenRandom(NULL, (PUCHAR) buf, (ULONG) size, BCRYPT_USE_SYSTEM_PREFERRED_RNG) < 0) {
-        PRINT_DEBUG("BCryptGenRandom ERROR\n");
+        PRINT_DEBUG("ERROR");
         Sleep(100);
     }
     
@@ -313,13 +313,13 @@ void set_whitelist_ips(uint32_t *from, uint32_t *to, unsigned num_ips)
     whitelist_ips.clear();
     for (unsigned i = 0; i < num_ips; ++i) {
         struct ips_test ip_a;
-        PRINT_DEBUG("from: %hhu.%hhu.%hhu.%hhu\n", ((unsigned char *)&from[i])[0], ((unsigned char *)&from[i])[1], ((unsigned char *)&from[i])[2], ((unsigned char *)&from[i])[3]);
-        PRINT_DEBUG("to: %hhu.%hhu.%hhu.%hhu\n", ((unsigned char *)&to[i])[0], ((unsigned char *)&to[i])[1], ((unsigned char *)&to[i])[2], ((unsigned char *)&to[i])[3]);
+        PRINT_DEBUG("from: %hhu.%hhu.%hhu.%hhu", ((unsigned char *)&from[i])[0], ((unsigned char *)&from[i])[1], ((unsigned char *)&from[i])[2], ((unsigned char *)&from[i])[3]);
+        PRINT_DEBUG("to: %hhu.%hhu.%hhu.%hhu", ((unsigned char *)&to[i])[0], ((unsigned char *)&to[i])[1], ((unsigned char *)&to[i])[2], ((unsigned char *)&to[i])[3]);
         ip_a.ip_from = ntohl(from[i]);
         ip_a.ip_to = ntohl(to[i]);
         if (ip_a.ip_to < ip_a.ip_from) continue;
         if ((ip_a.ip_to - ip_a.ip_from) > (1 << 25)) continue;
-        PRINT_DEBUG("added\n");
+        PRINT_DEBUG("added ip to whitelist");
         whitelist_ips.push_back(ip_a);
     }
 }
@@ -332,7 +332,7 @@ static bool is_whitelist_ip(unsigned char *ip)
 
     for (auto &i : whitelist_ips) {
         if (i.ip_from <= ip_temp && ip_temp <= i.ip_to) {
-            PRINT_DEBUG("WHITELISTED IP %hhu.%hhu.%hhu.%hhu\n", ip[0], ip[1], ip[2], ip[3]);
+            PRINT_DEBUG("IP IS WHITELISTED %hhu.%hhu.%hhu.%hhu", ip[0], ip[1], ip[2], ip[3]);
             return true;
         }
     }
@@ -342,7 +342,7 @@ static bool is_whitelist_ip(unsigned char *ip)
 
 static bool is_lan_ipv4(unsigned char *ip)
 {
-    PRINT_DEBUG("CHECK LAN IP %hhu.%hhu.%hhu.%hhu\n", ip[0], ip[1], ip[2], ip[3]);
+    PRINT_DEBUG("CHECK LAN IP %hhu.%hhu.%hhu.%hhu", ip[0], ip[1], ip[2], ip[3]);
     if (is_whitelist_ip(ip)) return true;
     if (ip[0] == 127) return true;
     if (ip[0] == 10) return true;
@@ -371,7 +371,7 @@ static bool is_lan_ip(const sockaddr *addr, int namelen)
         unsigned char ip[16];
         unsigned char zeroes[16] = {};
         memcpy(ip, &addr_in6->sin6_addr, sizeof(ip));
-        PRINT_DEBUG("CHECK LAN IP6 %hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu\n", ip[0], ip[1], ip[2], ip[3], ip[4], ip[5], ip[6], ip[7], ip[8], ip[9], ip[10], ip[11], ip[12], ip[13], ip[14], ip[15]);
+        PRINT_DEBUG("CHECK LAN IP6 %hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu", ip[0], ip[1], ip[2], ip[3], ip[4], ip[5], ip[6], ip[7], ip[8], ip[9], ip[10], ip[11], ip[12], ip[13], ip[14], ip[15]);
         if (((ip[0] == 0xFF) && (ip[1] < 3) && (ip[15] == 1)) ||
         ((ip[0] == 0xFE) && ((ip[1] & 0xC0) == 0x80))) return true;
         if (memcmp(zeroes, ip, sizeof(ip)) == 0) return true;
@@ -388,7 +388,7 @@ static bool is_lan_ip(const sockaddr *addr, int namelen)
         }
     }
 
-    PRINT_DEBUG("NOT LAN IP\n");
+    PRINT_DEBUG("NOT LAN IP");
     return false;
 }
 
@@ -396,8 +396,9 @@ int ( WINAPI *Real_SendTo )( SOCKET s, const char *buf, int len, int flags, cons
 int ( WINAPI *Real_Connect )( SOCKET s, const sockaddr *addr, int namelen ) = connect;
 int ( WINAPI *Real_WSAConnect )( SOCKET s, const sockaddr *addr, int namelen, LPWSABUF lpCallerData, LPWSABUF lpCalleeData, LPQOS lpSQOS, LPQOS lpGQOS) = WSAConnect;
 
-static int WINAPI Mine_SendTo( SOCKET s, const char *buf, int len, int flags, const sockaddr *to, int tolen) {
-    PRINT_DEBUG("Mine_SendTo\n");
+static int WINAPI Mine_SendTo( SOCKET s, const char *buf, int len, int flags, const sockaddr *to, int tolen)
+{
+    PRINT_DEBUG_ENTRY();
     if (is_lan_ip(to, tolen)) {
         return Real_SendTo( s, buf, len, flags, to, tolen );
     } else {
@@ -407,7 +408,7 @@ static int WINAPI Mine_SendTo( SOCKET s, const char *buf, int len, int flags, co
 
 static int WINAPI Mine_Connect( SOCKET s, const sockaddr *addr, int namelen )
 {
-    PRINT_DEBUG("Mine_Connect\n");
+    PRINT_DEBUG_ENTRY();
     if (is_lan_ip(addr, namelen)) {
         return Real_Connect(s, addr, namelen);
     } else {
@@ -418,7 +419,7 @@ static int WINAPI Mine_Connect( SOCKET s, const sockaddr *addr, int namelen )
 
 static int WINAPI Mine_WSAConnect( SOCKET s, const sockaddr *addr, int namelen, LPWSABUF lpCallerData, LPWSABUF lpCalleeData, LPQOS lpSQOS, LPQOS lpGQOS)
 {
-    PRINT_DEBUG("Mine_WSAConnect\n");
+    PRINT_DEBUG_ENTRY();
     if (is_lan_ip(addr, namelen)) {
         return Real_WSAConnect(s, addr, namelen, lpCallerData, lpCalleeData, lpSQOS, lpGQOS);
     } else {
@@ -441,7 +442,7 @@ inline bool file_exists (const std::string& name) {
 HMODULE (WINAPI *Real_GetModuleHandleA)(LPCSTR lpModuleName) = GetModuleHandleA;
 HMODULE WINAPI Mine_GetModuleHandleA(LPCSTR lpModuleName)
 {
-    PRINT_DEBUG("Mine_GetModuleHandleA %s\n", lpModuleName);
+    PRINT_DEBUG("%s", lpModuleName);
     if (!lpModuleName) return Real_GetModuleHandleA(lpModuleName);
     std::string in(lpModuleName);
     if (in == std::string(DLL_NAME)) {
@@ -474,12 +475,12 @@ static void load_dll()
     path += "crack";
     //path += PATH_SEPARATOR;
     path += DLL_NAME;
-    PRINT_DEBUG("Crack file %s\n", path.c_str());
+    PRINT_DEBUG("Crack file %s", path.c_str());
     if (file_exists(path)) {
         redirect_crackdll();
         crack_dll_handle = LoadLibraryW(utf8_decode(path).c_str());
         unredirect_crackdll();
-        PRINT_DEBUG("Loaded crack file\n");
+        PRINT_DEBUG("Loaded crack file");
     }
 }
 
@@ -500,9 +501,9 @@ static void load_dlls()
         if (std::toupper(full_path[length - 3]) != 'D') continue;
         if (full_path[length - 4] != '.') continue;
 
-        PRINT_DEBUG("Trying to load %s\n", full_path.c_str());
+        PRINT_DEBUG("Trying to load %s", full_path.c_str());
         if (LoadLibraryW(utf8_decode(full_path).c_str())) {
-            PRINT_DEBUG("LOADED %s\n", full_path.c_str());
+            PRINT_DEBUG("LOADED %s", full_path.c_str());
         }
     }
 }
@@ -514,7 +515,7 @@ bool crack_SteamAPI_RestartAppIfNecessary(uint32 unOwnAppID)
     if (crack_dll_handle) {
         bool (__stdcall* restart_app)(uint32) = (bool (__stdcall *)(uint32))GetProcAddress(crack_dll_handle, "SteamAPI_RestartAppIfNecessary");
         if (restart_app) {
-            PRINT_DEBUG("Call crack SteamAPI_RestartAppIfNecessary\n");
+            PRINT_DEBUG("Calling crack SteamAPI_RestartAppIfNecessary");
             redirect_crackdll();
             bool ret = restart_app(unOwnAppID);
             unredirect_crackdll();
@@ -531,7 +532,7 @@ bool crack_SteamAPI_Init()
     if (crack_dll_handle) {
         bool (__stdcall* init_app)() = (bool (__stdcall *)())GetProcAddress(crack_dll_handle, "SteamAPI_Init");
         if (init_app) {
-            PRINT_DEBUG("Call crack SteamAPI_Init\n");
+            PRINT_DEBUG("Calling crack SteamAPI_Init");
             redirect_crackdll();
             bool ret = init_app();
             unredirect_crackdll();
@@ -555,7 +556,7 @@ HINTERNET WINAPI Mine_WinHttpConnect(
   IN INTERNET_PORT nServerPort,
   IN DWORD         dwReserved
 ) {
-    PRINT_DEBUG("Mine_WinHttpConnect %ls %u\n", pswzServerName, nServerPort);
+    PRINT_DEBUG("%ls %u", pswzServerName, nServerPort);
     struct sockaddr_in ip4;
     struct sockaddr_in6 ip6;
     ip4.sin_family = AF_INET;
@@ -587,7 +588,7 @@ HINTERNET WINAPI Mine_WinHttpOpenRequest(
   IN LPCWSTR   *ppwszAcceptTypes,
   IN DWORD     dwFlags
 ) {
-    PRINT_DEBUG("Mine_WinHttpOpenRequest %ls %ls %ls %ls %i\n", pwszVerb, pwszObjectName, pwszVersion, pwszReferrer, dwFlags);
+    PRINT_DEBUG("%ls %ls %ls %ls %i", pwszVerb, pwszObjectName, pwszVersion, pwszReferrer, dwFlags);
     if (dwFlags & WINHTTP_FLAG_SECURE) {
         dwFlags ^= WINHTTP_FLAG_SECURE;
     }
@@ -602,7 +603,7 @@ BOOL WINAPI DllMain( HINSTANCE, DWORD dwReason, LPVOID ) {
     switch ( dwReason ) {
         case DLL_PROCESS_ATTACH:
             if (!file_exists(get_full_program_path() + "disable_lan_only.txt") && !file_exists(get_full_program_path() + "\\steam_settings\\disable_lan_only.txt")) {
-                PRINT_DEBUG("Hooking lan only functions\n");
+                PRINT_DEBUG("Hooking lan only functions");
                 DetourTransactionBegin();
                 DetourUpdateThread( GetCurrentThread() );
                 DetourAttach( &(PVOID &)Real_SendTo, Mine_SendTo );

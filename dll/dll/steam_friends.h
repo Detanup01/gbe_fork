@@ -202,7 +202,7 @@ struct Avatar_Numbers add_friend_avatars(CSteamID id)
 public:
 static void steam_friends_callback(void *object, Common_Message *msg)
 {
-    // PRINT_DEBUG("Steam_Friends::steam_friends_callback\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Friends *steam_friends = (Steam_Friends *)object;
     steam_friends->Callback(msg);
@@ -210,7 +210,7 @@ static void steam_friends_callback(void *object, Common_Message *msg)
 
 static void steam_friends_run_every_runcb(void *object)
 {
-    // PRINT_DEBUG("Steam_Friends::steam_friends_run_every_runcb\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Friends *steam_friends = (Steam_Friends *)object;
     steam_friends->RunCallbacks();
@@ -258,7 +258,7 @@ static bool ok_friend_flags(int iFriendFlags)
 // off; it will eventually be free'd or re-allocated
 const char *GetPersonaName()
 {
-    PRINT_DEBUG("Steam_Friends::GetPersonaName\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     const char *local_name = settings->get_local_name();
     
@@ -275,7 +275,7 @@ const char *GetPersonaName()
 STEAM_CALL_RESULT( SetPersonaNameResponse_t )
 SteamAPICall_t SetPersonaName( const char *pchPersonaName )
 {
-    PRINT_DEBUG("Steam_Friends::SetPersonaName\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     SetPersonaNameResponse_t data;
     data.m_bSuccess = true;
@@ -288,14 +288,16 @@ SteamAPICall_t SetPersonaName( const char *pchPersonaName )
 
 void SetPersonaName_old( const char *pchPersonaName )
 {
-	PRINT_DEBUG("Steam_Friends::SetPersonaName old\n");
+	PRINT_DEBUG("old");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 	SetPersonaName(pchPersonaName);
 }
 
 // gets the status of the current user
 EPersonaState GetPersonaState()
 {
-    PRINT_DEBUG("Steam_Friends::GetPersonaState\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_EPersonaStateOnline;
 }
 
@@ -305,17 +307,18 @@ EPersonaState GetPersonaState()
 // then GetFriendByIndex() can then be used to return the id's of each of those users
 int GetFriendCount( int iFriendFlags )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendCount %i\n", iFriendFlags);
+    PRINT_DEBUG("%i", iFriendFlags);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     int count = 0;
     if (ok_friend_flags(iFriendFlags)) count = friends.size();
-    PRINT_DEBUG("count %i\n", count);
+    PRINT_DEBUG("count %i", count);
     return count;
 }
 
 int GetFriendCount( EFriendFlags eFriendFlags )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendCount old\n");
+    PRINT_DEBUG("old");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 	return GetFriendCount((int)eFriendFlags);
 }
 
@@ -325,7 +328,7 @@ int GetFriendCount( EFriendFlags eFriendFlags )
 // the returned CSteamID can then be used by all the functions below to access details about the user
 CSteamID GetFriendByIndex( int iFriend, int iFriendFlags )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendByIndex\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     CSteamID id = k_steamIDNil;
     if (ok_friend_flags(iFriendFlags)) if (iFriend < friends.size()) id = CSteamID((uint64)friends[iFriend].id());
@@ -335,14 +338,15 @@ CSteamID GetFriendByIndex( int iFriend, int iFriendFlags )
 
 CSteamID GetFriendByIndex( int iFriend, EFriendFlags eFriendFlags )
 {
-	PRINT_DEBUG("Steam_Friends::GetFriendByIndex old\n");
+	PRINT_DEBUG("old");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 	return GetFriendByIndex(iFriend, (int)eFriendFlags );
 }
 
 // returns a relationship to a user
 EFriendRelationship GetFriendRelationship( CSteamID steamIDFriend )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendRelationship %llu\n", steamIDFriend.ConvertToUint64());
+    PRINT_DEBUG("%llu", steamIDFriend.ConvertToUint64());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (steamIDFriend == settings->get_local_steam_id()) return k_EFriendRelationshipNone; //Real steam behavior
     if (find_friend(steamIDFriend)) return k_EFriendRelationshipFriend;
@@ -355,7 +359,7 @@ EFriendRelationship GetFriendRelationship( CSteamID steamIDFriend )
 // this will only be known by the local user if steamIDFriend is in their friends list; on the same game server; in a chat room or lobby; or in a small group with the local user
 EPersonaState GetFriendPersonaState( CSteamID steamIDFriend )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendPersonaState %llu\n", steamIDFriend.ConvertToUint64());
+    PRINT_DEBUG("%llu", steamIDFriend.ConvertToUint64());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     EPersonaState state = k_EPersonaStateOffline;
     if (steamIDFriend == settings->get_local_steam_id() || find_friend(steamIDFriend)) {
@@ -373,7 +377,7 @@ EPersonaState GetFriendPersonaState( CSteamID steamIDFriend )
 // 
 const char *GetFriendPersonaName( CSteamID steamIDFriend )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendPersonaName %llu\n", steamIDFriend.ConvertToUint64());
+    PRINT_DEBUG("%llu", steamIDFriend.ConvertToUint64());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     const char *name = "Unknown User";
     if (steamIDFriend == settings->get_local_steam_id()) {
@@ -383,7 +387,7 @@ const char *GetFriendPersonaName( CSteamID steamIDFriend )
         if (f) name = f->name().c_str();
     }
 
-    PRINT_DEBUG("Steam_Friends::GetFriendPersonaName returned '%s'\n", name);
+    PRINT_DEBUG("returned '%s'", name);
     return name;
 }
 
@@ -391,12 +395,12 @@ const char *GetFriendPersonaName( CSteamID steamIDFriend )
 // returns true if the friend is actually in a game, and fills in pFriendGameInfo with an extra details 
 bool GetFriendGamePlayed( CSteamID steamIDFriend, STEAM_OUT_STRUCT() FriendGameInfo_t *pFriendGameInfo )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendGamePlayed %llu %p\n", steamIDFriend.ConvertToUint64(), pFriendGameInfo);
+    PRINT_DEBUG("%llu %p", steamIDFriend.ConvertToUint64(), pFriendGameInfo);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     bool ret = false;
 
     if (steamIDFriend == settings->get_local_steam_id()) {
-        PRINT_DEBUG("Steam_Friends::GetFriendGamePlayed found myself! %llu %llu\n", settings->get_local_game_id().ToUint64(), settings->get_lobby().ConvertToUint64());
+        PRINT_DEBUG("found myself! %llu %llu", settings->get_local_game_id().ToUint64(), settings->get_lobby().ConvertToUint64());
         if (pFriendGameInfo) {
             pFriendGameInfo->m_gameID = settings->get_local_game_id();
             pFriendGameInfo->m_unGameIP = 0;
@@ -409,7 +413,7 @@ bool GetFriendGamePlayed( CSteamID steamIDFriend, STEAM_OUT_STRUCT() FriendGameI
     } else {
         Friend *f = find_friend(steamIDFriend);
         if (f) {
-            PRINT_DEBUG("Steam_Friends::GetFriendGamePlayed found someone %u " "%" PRIu64 "\n", f->appid(), f->lobby_id());
+            PRINT_DEBUG("found someone %u " "%" PRIu64 "", f->appid(), f->lobby_id());
             if (pFriendGameInfo) {
                 pFriendGameInfo->m_gameID = CGameID(f->appid());
                 pFriendGameInfo->m_unGameIP = 0;
@@ -427,7 +431,7 @@ bool GetFriendGamePlayed( CSteamID steamIDFriend, STEAM_OUT_STRUCT() FriendGameI
 
 bool GetFriendGamePlayed( CSteamID steamIDFriend, uint64 *pulGameID, uint32 *punGameIP, uint16 *pusGamePort, uint16 *pusQueryPort )
 {
-	PRINT_DEBUG("Steam_Friends::GetFriendGamePlayed old\n");
+	PRINT_DEBUG("old");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 	FriendGameInfo_t info;
 	bool ret = GetFriendGamePlayed(steamIDFriend, &info);
@@ -444,7 +448,7 @@ bool GetFriendGamePlayed( CSteamID steamIDFriend, uint64 *pulGameID, uint32 *pun
 // accesses old friends names - returns an empty string when their are no more items in the history
 const char *GetFriendPersonaNameHistory( CSteamID steamIDFriend, int iPersonaName )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendPersonaNameHistory\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     const char *ret = "";
     if (iPersonaName == 0) ret = GetFriendPersonaName(steamIDFriend);
@@ -456,7 +460,8 @@ const char *GetFriendPersonaNameHistory( CSteamID steamIDFriend, int iPersonaNam
 // friends steam level
 int GetFriendSteamLevel( CSteamID steamIDFriend )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendSteamLevel\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 100;
 }
 
@@ -464,7 +469,8 @@ int GetFriendSteamLevel( CSteamID steamIDFriend )
 // Returns nickname the current user has set for the specified player. Returns NULL if the no nickname has been set for that player.
 const char *GetPlayerNickname( CSteamID steamIDPlayer )
 {
-    PRINT_DEBUG("Steam_Friends::GetPlayerNickname\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return NULL;
 }
 
@@ -473,35 +479,40 @@ const char *GetPlayerNickname( CSteamID steamIDPlayer )
 // returns the number of friends groups
 int GetFriendsGroupCount()
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendsGroupCount\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 // returns the friends group ID for the given index (invalid indices return k_FriendsGroupID_Invalid)
 FriendsGroupID_t GetFriendsGroupIDByIndex( int iFG )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendsGroupIDByIndex\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_FriendsGroupID_Invalid;
 }
 
 // returns the name for the given friends group (NULL in the case of invalid friends group IDs)
 const char *GetFriendsGroupName( FriendsGroupID_t friendsGroupID )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendsGroupName\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return NULL;
 }
 
 // returns the number of members in a given friends group
 int GetFriendsGroupMembersCount( FriendsGroupID_t friendsGroupID )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendsGroupMembersCount\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 // gets up to nMembersCount members of the given friends group, if fewer exist than requested those positions' SteamIDs will be invalid
 void GetFriendsGroupMembersList( FriendsGroupID_t friendsGroupID, STEAM_OUT_ARRAY_CALL(nMembersCount, GetFriendsGroupMembersCount, friendsGroupID ) CSteamID *pOutSteamIDMembers, int nMembersCount )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendsGroupMembersList\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 
@@ -509,9 +520,9 @@ void GetFriendsGroupMembersList( FriendsGroupID_t friendsGroupID, STEAM_OUT_ARRA
 // iFriendFlags can be the union (binary or, |) of one or more k_EFriendFlags values
 bool HasFriend( CSteamID steamIDFriend, int iFriendFlags )
 {
-    PRINT_DEBUG("Steam_Friends::HasFriend\n");
-    bool ret = false;
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    bool ret = false;
     if (ok_friend_flags(iFriendFlags)) if (find_friend(steamIDFriend)) ret = true;
     
     return ret;
@@ -519,14 +530,16 @@ bool HasFriend( CSteamID steamIDFriend, int iFriendFlags )
 
 bool HasFriend( CSteamID steamIDFriend, EFriendFlags eFriendFlags ) 
 {
-    PRINT_DEBUG("Steam_Friends::HasFriend old\n");
+    PRINT_DEBUG("old");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 	return HasFriend(steamIDFriend, (int)eFriendFlags );
 }
 
 // clan (group) iteration and access functions
 int GetClanCount()
 {
-    PRINT_DEBUG("Steam_Friends::GetClanCount\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     int counter = 0;
     for (auto &c : settings->subscribed_groups_clans) counter++;
     return counter;
@@ -534,7 +547,8 @@ int GetClanCount()
 
 CSteamID GetClanByIndex( int iClan )
 {
-    PRINT_DEBUG("Steam_Friends::GetClanByIndex\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     int counter = 0;
     for (auto &c : settings->subscribed_groups_clans) {
         if (counter == iClan) return c.id;
@@ -545,7 +559,8 @@ CSteamID GetClanByIndex( int iClan )
 
 const char *GetClanName( CSteamID steamIDClan )
 {
-    PRINT_DEBUG("Steam_Friends::GetClanName\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     for (auto &c : settings->subscribed_groups_clans) {
         if (c.id.ConvertToUint64() == steamIDClan.ConvertToUint64()) return c.name.c_str();
     }
@@ -554,7 +569,8 @@ const char *GetClanName( CSteamID steamIDClan )
 
 const char *GetClanTag( CSteamID steamIDClan )
 {
-    PRINT_DEBUG("Steam_Friends::GetClanTag\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     for (auto &c : settings->subscribed_groups_clans) {
         if (c.id.ConvertToUint64() == steamIDClan.ConvertToUint64()) return c.tag.c_str();
     }
@@ -564,14 +580,16 @@ const char *GetClanTag( CSteamID steamIDClan )
 // returns the most recent information we have about what's happening in a clan
 bool GetClanActivityCounts( CSteamID steamIDClan, int *pnOnline, int *pnInGame, int *pnChatting )
 {
-    PRINT_DEBUG("Steam_Friends::GetClanActivityCounts %llu\n", steamIDClan.ConvertToUint64());
+    PRINT_DEBUG("TODO %llu", steamIDClan.ConvertToUint64());
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
 // for clans a user is a member of, they will have reasonably up-to-date information, but for others you'll have to download the info to have the latest
 SteamAPICall_t DownloadClanActivityCounts( STEAM_ARRAY_COUNT(cClansToRequest) CSteamID *psteamIDClans, int cClansToRequest )
 {
-    PRINT_DEBUG("Steam_Friends::DownloadClanActivityCounts\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
@@ -582,14 +600,16 @@ SteamAPICall_t DownloadClanActivityCounts( STEAM_ARRAY_COUNT(cClansToRequest) CS
 // steamIDSource can be the steamID of a group, game server, lobby or chat room
 int GetFriendCountFromSource( CSteamID steamIDSource )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendCountFromSource %llu\n", steamIDSource.ConvertToUint64());
+    PRINT_DEBUG("TODO %llu", steamIDSource.ConvertToUint64());
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     //TODO
     return 0;
 }
 
 CSteamID GetFriendFromSourceByIndex( CSteamID steamIDSource, int iFriend )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendFromSourceByIndex\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_steamIDNil;
 }
 
@@ -597,7 +617,7 @@ CSteamID GetFriendFromSourceByIndex( CSteamID steamIDSource, int iFriend )
 // returns true if the local user can see that steamIDUser is a member or in steamIDSource
 bool IsUserInSource( CSteamID steamIDUser, CSteamID steamIDSource )
 {
-    PRINT_DEBUG("Steam_Friends::IsUserInSource %llu %llu\n", steamIDUser.ConvertToUint64(), steamIDSource.ConvertToUint64());
+    PRINT_DEBUG("%llu %llu", steamIDUser.ConvertToUint64(), steamIDSource.ConvertToUint64());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (steamIDUser == settings->get_local_steam_id()) {
         if (settings->get_lobby() == steamIDSource) {
@@ -620,7 +640,8 @@ bool IsUserInSource( CSteamID steamIDUser, CSteamID steamIDSource )
 // User is in a game pressing the talk button (will suppress the microphone for all voice comms from the Steam friends UI)
 void SetInGameVoiceSpeaking( CSteamID steamIDUser, bool bSpeaking )
 {
-    PRINT_DEBUG("Steam_Friends::SetInGameVoiceSpeaking\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 
@@ -628,7 +649,8 @@ void SetInGameVoiceSpeaking( CSteamID steamIDUser, bool bSpeaking )
 // valid options are "Friends", "Community", "Players", "Settings", "OfficialGameGroup", "Stats", "Achievements"
 void ActivateGameOverlay( const char *pchDialog )
 {
-    PRINT_DEBUG("Steam_Friends::ActivateGameOverlay %s\n", pchDialog);
+    PRINT_DEBUG("%s", pchDialog);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     overlay->OpenOverlay(pchDialog);
 }
 
@@ -646,7 +668,8 @@ void ActivateGameOverlay( const char *pchDialog )
 //		"friendrequestignore" - opens the overlay in minimal mode prompting the user to ignore an incoming friend invite
 void ActivateGameOverlayToUser( const char *pchDialog, CSteamID steamID )
 {
-    PRINT_DEBUG("Steam_Friends::ActivateGameOverlayToUser %s %llu\n", pchDialog, steamID.ConvertToUint64());
+    PRINT_DEBUG("TODO %s %llu", pchDialog, steamID.ConvertToUint64());
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 
@@ -654,46 +677,52 @@ void ActivateGameOverlayToUser( const char *pchDialog, CSteamID steamID )
 // full address with protocol type is required, e.g. http://www.steamgames.com/
 void ActivateGameOverlayToWebPage( const char *pchURL, EActivateGameOverlayToWebPageMode eMode = k_EActivateGameOverlayToWebPageMode_Default )
 {
-    PRINT_DEBUG("Steam_Friends::ActivateGameOverlayToWebPage %s %u\n", pchURL, eMode);
+    PRINT_DEBUG("TODO %s %u", pchURL, eMode);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     overlay->OpenOverlayWebpage(pchURL);
 }
 
 void ActivateGameOverlayToWebPage( const char *pchURL )
 {
-    PRINT_DEBUG("Steam_Friends::ActivateGameOverlayToWebPage old\n");
+    PRINT_DEBUG("old");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     ActivateGameOverlayToWebPage( pchURL, k_EActivateGameOverlayToWebPageMode_Default );
 }
 
 // activates game overlay to store page for app
 void ActivateGameOverlayToStore( AppId_t nAppID, EOverlayToStoreFlag eFlag )
 {
-    PRINT_DEBUG("Steam_Friends::ActivateGameOverlayToStore\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 void ActivateGameOverlayToStore( AppId_t nAppID)
 {
-    PRINT_DEBUG("Steam_Friends::ActivateGameOverlayToStore old\n");
+    PRINT_DEBUG("old");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 // Mark a target user as 'played with'. This is a client-side only feature that requires that the calling user is 
 // in game 
 void SetPlayedWith( CSteamID steamIDUserPlayedWith )
 {
-    PRINT_DEBUG("Steam_Friends::SetPlayedWith\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 
 // activates game overlay to open the invite dialog. Invitations will be sent for the provided lobby.
 void ActivateGameOverlayInviteDialog( CSteamID steamIDLobby )
 {
-    PRINT_DEBUG("Steam_Friends::ActivateGameOverlayInviteDialog\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     overlay->OpenOverlayInvite(steamIDLobby);
 }
 
 // gets the small (32x32) avatar of the current user, which is a handle to be used in IClientUtils::GetImageRGBA(), or 0 if none set
 int GetSmallFriendAvatar( CSteamID steamIDFriend )
 {
-    PRINT_DEBUG("Steam_Friends::GetSmallFriendAvatar\n");
+    PRINT_DEBUG_ENTRY();
     //IMPORTANT NOTE: don't change friend avatar numbers for the same friend or else some games endlessly allocate stuff.
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     struct Avatar_Numbers numbers = add_friend_avatars(steamIDFriend);
@@ -704,7 +733,7 @@ int GetSmallFriendAvatar( CSteamID steamIDFriend )
 // gets the medium (64x64) avatar of the current user, which is a handle to be used in IClientUtils::GetImageRGBA(), or 0 if none set
 int GetMediumFriendAvatar( CSteamID steamIDFriend )
 {
-    PRINT_DEBUG("Steam_Friends::GetMediumFriendAvatar\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     struct Avatar_Numbers numbers = add_friend_avatars(steamIDFriend);
     return numbers.medium;
@@ -715,7 +744,7 @@ int GetMediumFriendAvatar( CSteamID steamIDFriend )
 // returns -1 if this image has yet to be loaded, in this case wait for a AvatarImageLoaded_t callback and then call this again
 int GetLargeFriendAvatar( CSteamID steamIDFriend )
 {
-    PRINT_DEBUG("Steam_Friends::GetLargeFriendAvatar\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     struct Avatar_Numbers numbers = add_friend_avatars(steamIDFriend);
     return numbers.large;
@@ -723,7 +752,8 @@ int GetLargeFriendAvatar( CSteamID steamIDFriend )
 
 int GetFriendAvatar( CSteamID steamIDFriend, int eAvatarSize )
 {
-	PRINT_DEBUG("Steam_Friends::GetFriendAvatar\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 	if (eAvatarSize == k_EAvatarSize32x32) {
 		return GetSmallFriendAvatar(steamIDFriend);
 	} else if (eAvatarSize == k_EAvatarSize64x64) {
@@ -737,7 +767,8 @@ int GetFriendAvatar( CSteamID steamIDFriend, int eAvatarSize )
 
 int GetFriendAvatar(CSteamID steamIDFriend)
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendAvatar old\n");
+    PRINT_DEBUG("old");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return GetFriendAvatar(steamIDFriend, k_EAvatarSize32x32);
 }
 
@@ -748,7 +779,7 @@ int GetFriendAvatar(CSteamID steamIDFriend)
 // if returns false, it means that we already have all the details about that user, and functions can be called immediately
 bool RequestUserInformation( CSteamID steamIDUser, bool bRequireNameOnly )
 {
-    PRINT_DEBUG("Steam_Friends::RequestUserInformation\n");
+    PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     //persona_change(steamIDUser, k_EPersonaChangeName);
     //We already know everything
@@ -765,7 +796,8 @@ bool RequestUserInformation( CSteamID steamIDUser, bool bRequireNameOnly )
 STEAM_CALL_RESULT( ClanOfficerListResponse_t )
 SteamAPICall_t RequestClanOfficerList( CSteamID steamIDClan )
 {
-    PRINT_DEBUG("Steam_Friends::RequestClanOfficerList\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
@@ -775,21 +807,24 @@ SteamAPICall_t RequestClanOfficerList( CSteamID steamIDClan )
 // returns the steamID of the clan owner
 CSteamID GetClanOwner( CSteamID steamIDClan )
 {
-    PRINT_DEBUG("Steam_Friends::GetClanOwner\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_steamIDNil;
 }
 
 // returns the number of officers in a clan (including the owner)
 int GetClanOfficerCount( CSteamID steamIDClan )
 {
-    PRINT_DEBUG("Steam_Friends::GetClanOfficerCount\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 // returns the steamID of a clan officer, by index, of range [0,GetClanOfficerCount)
 CSteamID GetClanOfficerByIndex( CSteamID steamIDClan, int iOfficer )
 {
-    PRINT_DEBUG("Steam_Friends::GetClanOfficerByIndex\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_steamIDNil;
 }
 
@@ -798,13 +833,15 @@ CSteamID GetClanOfficerByIndex( CSteamID steamIDClan, int iOfficer )
 // a chat restricted user can't add friends or join any groups.
 uint32 GetUserRestrictions()
 {
-    PRINT_DEBUG("Steam_Friends::GetUserRestrictions\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_nUserRestrictionNone;
 }
 
 EUserRestriction GetUserRestrictions_old()
 {
-    PRINT_DEBUG("Steam_Friends::GetUserRestrictions old\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_nUserRestrictionNone;
 }
 
@@ -820,7 +857,7 @@ EUserRestriction GetUserRestrictions_old()
 // and GetFriendRichPresenceKeyByIndex() (typically only used for debugging)
 bool SetRichPresence( const char *pchKey, const char *pchValue )
 {
-    PRINT_DEBUG("Steam_Friends::SetRichPresence %s %s\n", pchKey, pchValue ? pchValue : "NULL");
+    PRINT_DEBUG("%s %s", pchKey, pchValue ? pchValue : "NULL");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (pchValue) {
         auto prev_value = (*us.mutable_rich_presence()).find(pchKey);
@@ -841,7 +878,7 @@ bool SetRichPresence( const char *pchKey, const char *pchValue )
 
 void ClearRichPresence()
 {
-    PRINT_DEBUG("Steam_Friends::ClearRichPresence\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     us.mutable_rich_presence()->clear();
     resend_friend_data();
@@ -850,7 +887,7 @@ void ClearRichPresence()
 
 const char *GetFriendRichPresence( CSteamID steamIDFriend, const char *pchKey )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendRichPresence %llu '%s'\n", steamIDFriend.ConvertToUint64(), pchKey);
+    PRINT_DEBUG("%llu '%s'", steamIDFriend.ConvertToUint64(), pchKey);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     const char *value = "";
 
@@ -866,13 +903,13 @@ const char *GetFriendRichPresence( CSteamID steamIDFriend, const char *pchKey )
         if (result != f->rich_presence().end()) value = result->second.c_str();
     }
 
-    PRINT_DEBUG("Steam_Friends::GetFriendRichPresence returned '%s'\n", value);
+    PRINT_DEBUG("returned '%s'", value);
     return value;
 }
 
 int GetFriendRichPresenceKeyCount( CSteamID steamIDFriend )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendRichPresenceKeyCount\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     int num = 0;
 
@@ -890,7 +927,7 @@ int GetFriendRichPresenceKeyCount( CSteamID steamIDFriend )
 
 const char *GetFriendRichPresenceKeyByIndex( CSteamID steamIDFriend, int iKey )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendRichPresenceKeyByIndex\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     const char *key = "";
 
@@ -914,7 +951,7 @@ const char *GetFriendRichPresenceKeyByIndex( CSteamID steamIDFriend, int iKey )
 // Requests rich presence for a specific user.
 void RequestFriendRichPresence( CSteamID steamIDFriend )
 {
-    PRINT_DEBUG("Steam_Friends::RequestFriendRichPresence\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     Friend *f = find_friend(steamIDFriend);
     if (f) rich_presence_updated(steamIDFriend, settings->get_local_game_id().AppID());
@@ -928,7 +965,7 @@ void RequestFriendRichPresence( CSteamID steamIDFriend )
 // invites can only be sent to friends
 bool InviteUserToGame( CSteamID steamIDFriend, const char *pchConnectString )
 {
-    PRINT_DEBUG("Steam_Friends::InviteUserToGame\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     Friend *f = find_friend(steamIDFriend);
     if (!f) return false;
@@ -949,25 +986,29 @@ bool InviteUserToGame( CSteamID steamIDFriend, const char *pchConnectString )
 // GetFriendCoplayTime() returns as a unix time
 int GetCoplayFriendCount()
 {
-    PRINT_DEBUG("Steam_Friends::GetCoplayFriendCount\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 CSteamID GetCoplayFriend( int iCoplayFriend )
 {
-    PRINT_DEBUG("Steam_Friends::GetCoplayFriend\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_steamIDNil;
 }
 
 int GetFriendCoplayTime( CSteamID steamIDFriend )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendCoplayTime\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 AppId_t GetFriendCoplayGame( CSteamID steamIDFriend )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendCoplayGame\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
@@ -979,7 +1020,7 @@ AppId_t GetFriendCoplayGame( CSteamID steamIDFriend )
 STEAM_CALL_RESULT( JoinClanChatRoomCompletionResult_t )
 SteamAPICall_t JoinClanChatRoom( CSteamID steamIDClan )
 {
-    PRINT_DEBUG("Steam_Friends::JoinClanChatRoom %llu\n", steamIDClan.ConvertToUint64());
+    PRINT_DEBUG("TODO %llu", steamIDClan.ConvertToUint64());
     //TODO actually join a room
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     JoinClanChatRoomCompletionResult_t data;
@@ -990,37 +1031,43 @@ SteamAPICall_t JoinClanChatRoom( CSteamID steamIDClan )
 
 bool LeaveClanChatRoom( CSteamID steamIDClan )
 {
-    PRINT_DEBUG("Steam_Friends::LeaveClanChatRoom\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
 int GetClanChatMemberCount( CSteamID steamIDClan )
 {
-    PRINT_DEBUG("Steam_Friends::GetClanChatMemberCount\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 CSteamID GetChatMemberByIndex( CSteamID steamIDClan, int iUser )
 {
-    PRINT_DEBUG("Steam_Friends::GetChatMemberByIndex\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_steamIDNil;
 }
 
 bool SendClanChatMessage( CSteamID steamIDClanChat, const char *pchText )
 {
-    PRINT_DEBUG("Steam_Friends::SendClanChatMessage\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
 int GetClanChatMessage( CSteamID steamIDClanChat, int iMessage, void *prgchText, int cchTextMax, EChatEntryType *peChatEntryType, STEAM_OUT_STRUCT() CSteamID *psteamidChatter )
 {
-    PRINT_DEBUG("Steam_Friends::GetClanChatMessage\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 bool IsClanChatAdmin( CSteamID steamIDClanChat, CSteamID steamIDUser )
 {
-    PRINT_DEBUG("Steam_Friends::IsClanChatAdmin\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -1028,19 +1075,22 @@ bool IsClanChatAdmin( CSteamID steamIDClanChat, CSteamID steamIDUser )
 // interact with the Steam (game overlay / desktop)
 bool IsClanChatWindowOpenInSteam( CSteamID steamIDClanChat )
 {
-    PRINT_DEBUG("Steam_Friends::IsClanChatWindowOpenInSteam\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
 bool OpenClanChatWindowInSteam( CSteamID steamIDClanChat )
 {
-    PRINT_DEBUG("Steam_Friends::OpenClanChatWindowInSteam\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return true;
 }
 
 bool CloseClanChatWindowInSteam( CSteamID steamIDClanChat )
 {
-    PRINT_DEBUG("Steam_Friends::CloseClanChatWindowInSteam\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return true;
 }
 
@@ -1049,19 +1099,22 @@ bool CloseClanChatWindowInSteam( CSteamID steamIDClanChat )
 // this is so you can show P2P chats inline in the game
 bool SetListenForFriendsMessages( bool bInterceptEnabled )
 {
-    PRINT_DEBUG("Steam_Friends::SetListenForFriendsMessages\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return true;
 }
 
 bool ReplyToFriendMessage( CSteamID steamIDFriend, const char *pchMsgToSend )
 {
-    PRINT_DEBUG("Steam_Friends::ReplyToFriendMessage\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
 int GetFriendMessage( CSteamID steamIDFriend, int iMessageID, void *pvData, int cubData, EChatEntryType *peChatEntryType )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendMessage\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
@@ -1070,46 +1123,52 @@ int GetFriendMessage( CSteamID steamIDFriend, int iMessageID, void *pvData, int 
 STEAM_CALL_RESULT( FriendsGetFollowerCount_t )
 SteamAPICall_t GetFollowerCount( CSteamID steamID )
 {
-    PRINT_DEBUG("Steam_Friends::GetFollowerCount\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 STEAM_CALL_RESULT( FriendsIsFollowing_t )
 SteamAPICall_t IsFollowing( CSteamID steamID )
 {
-    PRINT_DEBUG("Steam_Friends::IsFollowing\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 STEAM_CALL_RESULT( FriendsEnumerateFollowingList_t )
 SteamAPICall_t EnumerateFollowingList( uint32 unStartIndex )
 {
-    PRINT_DEBUG("Steam_Friends::EnumerateFollowingList\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 
 bool IsClanPublic( CSteamID steamIDClan )
 {
-    PRINT_DEBUG("Steam_Friends::IsClanPublic\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
 bool IsClanOfficialGameGroup( CSteamID steamIDClan )
 {
-    PRINT_DEBUG("Steam_Friends::IsClanOfficialGameGroup\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
 int GetNumChatsWithUnreadPriorityMessages()
 {
-    PRINT_DEBUG("Steam_Friends::GetNumChatsWithUnreadPriorityMessages\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 void ActivateGameOverlayRemotePlayTogetherInviteDialog( CSteamID steamIDLobby )
 {
-    PRINT_DEBUG("Steam_Friends::ActivateGameOverlayRemotePlayTogetherInviteDialog\n");
+    PRINT_DEBUG_ENTRY();
 }
 
 // Call this before calling ActivateGameOverlayToWebPage() to have the Steam Overlay Browser block navigations
@@ -1117,14 +1176,16 @@ void ActivateGameOverlayRemotePlayTogetherInviteDialog( CSteamID steamIDLobby )
 // ActivateGameOverlayToWebPage() must have been called with k_EActivateGameOverlayToWebPageMode_Modal
 bool RegisterProtocolInOverlayBrowser( const char *pchProtocol )
 {
-    PRINT_DEBUG("Steam_Friends::RegisterProtocolInOverlayBrowser\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
 // Activates the game overlay to open an invite dialog that will send the provided Rich Presence connect string to selected friends
 void ActivateGameOverlayInviteDialogConnectString( const char *pchConnectString )
 {
-    PRINT_DEBUG("Steam_Friends::ActivateGameOverlayInviteDialogConnectString\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 // Steam Community items equipped by a user on their profile
@@ -1132,38 +1193,42 @@ void ActivateGameOverlayInviteDialogConnectString( const char *pchConnectString 
 STEAM_CALL_RESULT( EquippedProfileItems_t )
 SteamAPICall_t RequestEquippedProfileItems( CSteamID steamID )
 {
-    PRINT_DEBUG("Steam_Friends::RequestEquippedProfileItems\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 bool BHasEquippedProfileItem( CSteamID steamID, ECommunityProfileItemType itemType )
 {
-    PRINT_DEBUG("Steam_Friends::BHasEquippedProfileItem\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
 const char *GetProfileItemPropertyString( CSteamID steamID, ECommunityProfileItemType itemType, ECommunityProfileItemProperty prop )
 {
-    PRINT_DEBUG("Steam_Friends::GetProfileItemPropertyString\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return "";
 }
 
 uint32 GetProfileItemPropertyUint( CSteamID steamID, ECommunityProfileItemType itemType, ECommunityProfileItemProperty prop )
 {
-    PRINT_DEBUG("Steam_Friends::GetProfileItemPropertyUint\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 void RunCallbacks()
 {
-	// PRINT_DEBUG("Steam_Friends::RunCallbacks\n");
+	// PRINT_DEBUG_ENTRY();
     if (settings->get_lobby() != lobby_id) {
         lobby_id = settings->get_lobby();
         resend_friend_data();
     }
 
     if (modified) {
-	    PRINT_DEBUG("Steam_Friends::RunCallbacks sending modified data\n");
+	    PRINT_DEBUG("sending modified data");
         Common_Message msg;
         msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
         Friend *f = new Friend(us);
@@ -1182,7 +1247,7 @@ void Callback(Common_Message *msg)
 {
     if (msg->has_low_level()) {
         if (msg->low_level().type() == Low_Level::DISCONNECT) {
-            PRINT_DEBUG("Steam_Friends Disconnect\n");
+            PRINT_DEBUG("Disconnect");
             uint64 id = msg->source_id();
             auto f = std::find_if(friends.begin(), friends.end(), [&id](Friend const& item) { return item.id() == id; });
             if (friends.end() != f) {
@@ -1193,7 +1258,7 @@ void Callback(Common_Message *msg)
         }
 
         if (msg->low_level().type() == Low_Level::CONNECT) {
-            PRINT_DEBUG("Steam_Friends Connect\n");
+            PRINT_DEBUG("Connect %llu", (uint64)msg->source_id());
             Common_Message msg_;
             msg_.set_source_id(settings->get_local_steam_id().ConvertToUint64());
             msg_.set_dest_id(msg->source_id());
@@ -1211,7 +1276,7 @@ void Callback(Common_Message *msg)
     }
 
     if (msg->has_friend_()) {
-        PRINT_DEBUG("Steam_Friends Friend " "%" PRIu64 " " "%" PRIu64 "\n", msg->friend_().id(), msg->friend_().lobby_id());
+        PRINT_DEBUG("Friend " "%" PRIu64 " " "%" PRIu64 "", msg->friend_().id(), msg->friend_().lobby_id());
         Friend *f = find_friend((uint64)msg->friend_().id());
         if (!f) {
             if (msg->friend_().id() != settings->get_local_steam_id().ConvertToUint64()) {
@@ -1237,7 +1302,7 @@ void Callback(Common_Message *msg)
 
     if (msg->has_friend_messages()) {
         if (msg->friend_messages().type() == Friend_Messages::LOBBY_INVITE) {
-            PRINT_DEBUG("Steam_Friends Got Lobby Invite\n");
+            PRINT_DEBUG("Got Lobby Invite");
             Friend *f = find_friend((uint64)msg->source_id());
             if (f) {
                 LobbyInvite_t data;
@@ -1263,7 +1328,7 @@ void Callback(Common_Message *msg)
         }
 
         if (msg->friend_messages().type() == Friend_Messages::GAME_INVITE) {
-            PRINT_DEBUG("Steam_Friends Got Game Invite\n");
+            PRINT_DEBUG("Got Game Invite");
             //TODO: I'm pretty sure that the user should accept the invite before this is posted but we do like above
             if (overlay->Ready() && !settings->hasOverlayAutoAcceptInviteFromFriend(msg->source_id()))
             {

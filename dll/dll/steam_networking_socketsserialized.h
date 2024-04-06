@@ -32,7 +32,7 @@ public ISteamNetworkingSocketsSerialized005
 public:
 static void steam_callback(void *object, Common_Message *msg)
 {
-    // PRINT_DEBUG("steam_networkingsockets_callback\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Networking_Sockets_Serialized *steam_networkingsockets = (Steam_Networking_Sockets_Serialized *)object;
     steam_networkingsockets->Callback(msg);
@@ -40,7 +40,7 @@ static void steam_callback(void *object, Common_Message *msg)
 
 static void steam_run_every_runcb(void *object)
 {
-    // PRINT_DEBUG("steam_networkingsockets_serialized_run_every_runcb\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Networking_Sockets_Serialized *steam_networkingsockets = (Steam_Networking_Sockets_Serialized *)object;
     steam_networkingsockets->RunCallbacks();
@@ -66,17 +66,19 @@ Steam_Networking_Sockets_Serialized(class Settings *settings, class Networking *
 
 void SendP2PRendezvous( CSteamID steamIDRemote, uint32 unConnectionIDSrc, const void *pMsgRendezvous, uint32 cbRendezvous )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets_Serialized::SendP2PRendezvous\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 void SendP2PConnectionFailure( CSteamID steamIDRemote, uint32 unConnectionIDDest, uint32 nReason, const char *pszReason )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets_Serialized::SendP2PConnectionFailure\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 SteamAPICall_t GetCertAsync()
 {
-    PRINT_DEBUG("Steam_Networking_Sockets_Serialized::GetCertAsync\n");
+    PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     struct SteamNetworkingSocketsCert_t data = {};
     data.m_eResult = k_EResultOK;
@@ -86,53 +88,62 @@ SteamAPICall_t GetCertAsync()
 
 int GetNetworkConfigJSON( void *buf, uint32 cbBuf, const char *pszLauncherPartner )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets_Serialized::GetNetworkConfigJSON %s\n", pszLauncherPartner);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 int GetNetworkConfigJSON( void *buf, uint32 cbBuf )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets_Serialized::GetNetworkConfigJSON old\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return GetNetworkConfigJSON(buf, cbBuf, "");
 }
 
 void CacheRelayTicket( const void *pTicket, uint32 cbTicket )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets_Serialized::CacheRelayTicket\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 uint32 GetCachedRelayTicketCount()
 {
-    PRINT_DEBUG("Steam_Networking_Sockets_Serialized::GetCachedRelayTicketCount\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 int GetCachedRelayTicket( uint32 idxTicket, void *buf, uint32 cbBuf )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets_Serialized::GetCachedRelayTicket\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
 void PostConnectionStateMsg( const void *pMsg, uint32 cbMsg )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets_Serialized::PostConnectionStateMsg\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 bool GetSTUNServer(int dont_know, char *buf, unsigned int len)
 {
-    PRINT_DEBUG("Steam_Networking_Sockets_Serialized::GetSTUNServer %i %p %u\n", dont_know, buf, len);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
 bool BAllowDirectConnectToPeer(SteamNetworkingIdentity const &identity)
 {
-    PRINT_DEBUG("Steam_Networking_Sockets_Serialized::BAllowDirectConnectToPeer\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return true;
 }
 
 int BeginAsyncRequestFakeIP(int a)
 {
-    PRINT_DEBUG("Steam_Networking_Sockets_Serialized::BeginAsyncRequestFakeIP\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return true;
 }
 

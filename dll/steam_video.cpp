@@ -20,14 +20,16 @@
 // Get a URL suitable for streaming the given Video app ID's video
 void Steam_Video::GetVideoURL( AppId_t unVideoAppID )
 {
-    PRINT_DEBUG("TODO Steam_Video::GetVideoURL\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 
 // returns true if user is uploading a live broadcast
 bool Steam_Video::IsBroadcasting( int *pnNumViewers )
 {
-    PRINT_DEBUG("TODO Steam_Video::IsBroadcasting\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -36,11 +38,13 @@ bool Steam_Video::IsBroadcasting( int *pnNumViewers )
 STEAM_CALL_BACK( GetOPFSettingsResult_t )
 void Steam_Video::GetOPFSettings( AppId_t unVideoAppID )
 {
-    PRINT_DEBUG("TODO Steam_Video::GetOPFSettings\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 bool Steam_Video::GetOPFStringForApp( AppId_t unVideoAppID, char *pchBuffer, int32 *pnBufferSize )
 {
-    PRINT_DEBUG("TODO Steam_Video::GetOPFStringForApp\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }

@@ -94,7 +94,7 @@ public ISteamNetworkingSockets
 public:
 static void steam_callback(void *object, Common_Message *msg)
 {
-    // PRINT_DEBUG("steam_networkingsockets_callback\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Networking_Sockets *steam_networkingsockets = (Steam_Networking_Sockets *)object;
     steam_networkingsockets->Callback(msg);
@@ -102,7 +102,7 @@ static void steam_callback(void *object, Common_Message *msg)
 
 static void steam_run_every_runcb(void *object)
 {
-    // PRINT_DEBUG("steam_networkingsockets_run_every_runcb\n");
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Networking_Sockets *steam_networkingsockets = (Steam_Networking_Sockets *)object;
     steam_networkingsockets->RunCallbacks();
@@ -311,7 +311,7 @@ void launch_callback(HSteamNetConnection m_hConn, enum connect_socket_status old
 /// A SocketStatusCallback_t callback when another client attempts a connection.
 HSteamListenSocket CreateListenSocket( int nSteamConnectVirtualPort, uint32 nIP, uint16 nPort )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::CreateListenSocket %i %u %u\n", nSteamConnectVirtualPort, nIP, nPort);
+    PRINT_DEBUG("%i %u %u", nSteamConnectVirtualPort, nIP, nPort);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return new_listen_socket(nSteamConnectVirtualPort, nPort);
 }
@@ -332,21 +332,21 @@ HSteamListenSocket CreateListenSocket( int nSteamConnectVirtualPort, uint32 nIP,
 /// will be posted.  The connection will be in the connecting state.
 HSteamListenSocket CreateListenSocketIP( const SteamNetworkingIPAddr &localAddress )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::CreateListenSocketIP old\n");
+    PRINT_DEBUG("old");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return new_listen_socket(SNS_DISABLED_PORT, localAddress.m_port);
 }
 
 HSteamListenSocket CreateListenSocketIP( const SteamNetworkingIPAddr *localAddress )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::CreateListenSocketIP old1\n");
+    PRINT_DEBUG("old1");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return new_listen_socket(SNS_DISABLED_PORT, localAddress->m_port);
 }
 
 HSteamListenSocket CreateListenSocketIP( const SteamNetworkingIPAddr &localAddress, int nOptions, const SteamNetworkingConfigValue_t *pOptions )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::CreateListenSocketIP\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return new_listen_socket(SNS_DISABLED_PORT, localAddress.m_port);
 }
@@ -371,7 +371,7 @@ HSteamListenSocket CreateListenSocketIP( const SteamNetworkingIPAddr &localAddre
 /// man-in-the-middle attacks.
 HSteamNetConnection ConnectByIPAddress( const SteamNetworkingIPAddr &address )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::ConnectByIPAddress old\n");
+    PRINT_DEBUG("old");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     SteamNetworkingIdentity ip_id;
     ip_id.SetIPAddr(address);
@@ -382,7 +382,7 @@ HSteamNetConnection ConnectByIPAddress( const SteamNetworkingIPAddr &address )
 
 HSteamNetConnection ConnectByIPAddress( const SteamNetworkingIPAddr *address )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::ConnectByIPAddress old1\n");
+    PRINT_DEBUG("old1");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     SteamNetworkingIdentity ip_id;
     ip_id.SetIPAddr(*address);
@@ -393,7 +393,7 @@ HSteamNetConnection ConnectByIPAddress( const SteamNetworkingIPAddr *address )
 
 HSteamNetConnection ConnectByIPAddress( const SteamNetworkingIPAddr &address, int nOptions, const SteamNetworkingConfigValue_t *pOptions )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::ConnectByIPAddress %X\n", address.GetIPv4());
+    PRINT_DEBUG("%X", address.GetIPv4());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     SteamNetworkingIdentity ip_id;
     ip_id.SetIPAddr(address);
@@ -414,14 +414,14 @@ HSteamNetConnection ConnectByIPAddress( const SteamNetworkingIPAddr &address, in
 /// when your app initializes
 HSteamListenSocket CreateListenSocketP2P( int nVirtualPort )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::CreateListenSocketP2P old %i\n", nVirtualPort);
+    PRINT_DEBUG("old %i", nVirtualPort);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return new_listen_socket(nVirtualPort, SNS_DISABLED_PORT);
 }
 
 HSteamListenSocket CreateListenSocketP2P( int nVirtualPort, int nOptions, const SteamNetworkingConfigValue_t *pOptions )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::CreateListenSocketP2P %i\n", nVirtualPort);
+    PRINT_DEBUG("%i", nVirtualPort);
     //TODO config options
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return new_listen_socket(nVirtualPort, SNS_DISABLED_PORT);
@@ -440,16 +440,16 @@ HSteamListenSocket CreateListenSocketP2P( int nVirtualPort, int nOptions, const 
 /// when your app initializes
 HSteamNetConnection ConnectP2P( const SteamNetworkingIdentity &identityRemote, int nVirtualPort )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::ConnectP2P old %i\n", nVirtualPort);
+    PRINT_DEBUG("old %i", nVirtualPort);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     const SteamNetworkingIPAddr *ip = identityRemote.GetIPAddr();
 
     if (identityRemote.m_eType == k_ESteamNetworkingIdentityType_SteamID) {
-        PRINT_DEBUG("Steam_Networking_Sockets::ConnectP2P %llu\n", identityRemote.GetSteamID64());
+        PRINT_DEBUG("%llu", identityRemote.GetSteamID64());
         //steam id identity
     } else if (ip) {
-        PRINT_DEBUG("Steam_Networking_Sockets::ConnectP2P %u:%u ipv4? %u\n", ip->GetIPv4(), ip->m_port, ip->IsIPv4());
+        PRINT_DEBUG("%u:%u ipv4? %u", ip->GetIPv4(), ip->m_port, ip->IsIPv4());
         //ip addr
     } else {
         return k_HSteamNetConnection_Invalid;
@@ -462,13 +462,13 @@ HSteamNetConnection ConnectP2P( const SteamNetworkingIdentity &identityRemote, i
 
 HSteamNetConnection ConnectP2P( const SteamNetworkingIdentity *identityRemote, int nVirtualPort )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::ConnectP2P old1\n");
+    PRINT_DEBUG("old1");
     return ConnectP2P(*identityRemote, nVirtualPort);
 }
 
 HSteamNetConnection ConnectP2P( const SteamNetworkingIdentity &identityRemote, int nVirtualPort, int nOptions, const SteamNetworkingConfigValue_t *pOptions )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::ConnectP2P %i\n", nVirtualPort);
+    PRINT_DEBUG("%i", nVirtualPort);
     //TODO config options
     return ConnectP2P(identityRemote, nVirtualPort);
 }
@@ -484,14 +484,16 @@ HSteamNetConnection ConnectP2P( const SteamNetworkingIdentity &identityRemote, i
 //#ifndef STEAMNETWORKINGSOCKETS_OPENSOURCE
 HSteamNetConnection ConnectBySteamID( CSteamID steamIDTarget, int nVirtualPort )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::ConnectBySteamID\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_HSteamNetConnection_Invalid;
 }
 
 //#endif
 HSteamNetConnection ConnectByIPv4Address( uint32 nIP, uint16 nPort )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::ConnectByIPv4Address\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_HSteamNetConnection_Invalid;
 }
 
@@ -531,7 +533,7 @@ HSteamNetConnection ConnectByIPv4Address( uint32 nIP, uint16 nPort )
 /// notification being posted to the queue and when it is received by the application.)
 EResult AcceptConnection( HSteamNetConnection hConn )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::AcceptConnection %u\n", hConn);
+    PRINT_DEBUG("%u", hConn);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     auto connect_socket = s->connect_sockets.find(hConn);
@@ -568,7 +570,7 @@ EResult AcceptConnection( HSteamNetConnection hConn )
 /// ignored.
 bool CloseConnection( HSteamNetConnection hPeer, int nReason, const char *pszDebug, bool bEnableLinger )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::CloseConnection %u\n", hPeer);
+    PRINT_DEBUG("%u", hPeer);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     auto connect_socket = s->connect_sockets.find(hPeer);
@@ -604,7 +606,8 @@ bool CloseConnection( HSteamNetConnection hPeer, int nReason, const char *pszDeb
 /// socket must remain open until all clients have been cleaned up.
 bool CloseListenSocket( HSteamListenSocket hSocket, const char *pszNotifyRemoteReason )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::CloseListenSocket old\n");
+    PRINT_DEBUG("old");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -612,7 +615,7 @@ bool CloseListenSocket( HSteamListenSocket hSocket, const char *pszNotifyRemoteR
 /// socket are closed ungracefully.
 bool CloseListenSocket( HSteamListenSocket hSocket )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::CloseListenSocket\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     auto conn = std::find_if(s->listen_sockets.begin(), s->listen_sockets.end(), [&hSocket](struct Listen_Socket const& conn) { return conn.socket_id == hSocket;});
@@ -641,7 +644,7 @@ bool CloseListenSocket( HSteamListenSocket hSocket )
 /// Set connection user data.  Returns false if the handle is invalid.
 bool SetConnectionUserData( HSteamNetConnection hPeer, int64 nUserData )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::SetConnectionUserData\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     auto connect_socket = s->connect_sockets.find(hPeer);
     if (connect_socket == s->connect_sockets.end()) return false;
@@ -654,7 +657,7 @@ bool SetConnectionUserData( HSteamNetConnection hPeer, int64 nUserData )
 /// or if you haven't set any userdata on the connection.
 int64 GetConnectionUserData( HSteamNetConnection hPeer )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::GetConnectionUserData\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     auto connect_socket = s->connect_sockets.find(hPeer);
     if (connect_socket == s->connect_sockets.end()) return -1;
@@ -665,14 +668,16 @@ int64 GetConnectionUserData( HSteamNetConnection hPeer )
 /// Set a name for the connection, used mostly for debugging
 void SetConnectionName( HSteamNetConnection hPeer, const char *pszName )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::SetConnectionName\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 
 /// Fetch connection name.  Returns false if handle is invalid
 bool GetConnectionName( HSteamNetConnection hPeer, char *pszName, int nMaxLen )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::GetConnectionName\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -703,7 +708,8 @@ bool GetConnectionName( HSteamNetConnection hPeer, char *pszName, int nMaxLen )
 /// work without any changes. 
 EResult SendMessageToConnection( HSteamNetConnection hConn, const void *pData, uint32 cbData, ESteamNetworkingSendType eSendType )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::SendMessageToConnection old\n");
+    PRINT_DEBUG("old");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_EResultFail;
 }
 
@@ -746,7 +752,7 @@ EResult SendMessageToConnection( HSteamNetConnection hConn, const void *pData, u
 ///   (See k_ESteamNetworkingConfig_SendBufferSize)
 EResult SendMessageToConnection( HSteamNetConnection hConn, const void *pData, uint32 cbData, int nSendFlags, int64 *pOutMessageNumber )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::SendMessageToConnection %u, len %u, flags %i\n", hConn, cbData, nSendFlags);
+    PRINT_DEBUG("%u, len %u, flags %i", hConn, cbData, nSendFlags);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     auto connect_socket = s->connect_sockets.find(hConn);
@@ -781,7 +787,7 @@ EResult SendMessageToConnection( HSteamNetConnection hConn, const void *pData, u
 
 EResult SendMessageToConnection( HSteamNetConnection hConn, const void *pData, uint32 cbData, int nSendFlags )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::SendMessageToConnection old %u, len %u, flags %i\n", hConn, cbData, nSendFlags);
+    PRINT_DEBUG("old %u, len %u, flags %i", hConn, cbData, nSendFlags);
     return SendMessageToConnection(hConn, pData, cbData, nSendFlags, NULL);
 }
 
@@ -819,7 +825,8 @@ EResult SendMessageToConnection( HSteamNetConnection hConn, const void *pData, u
 /// failure codes.
 void SendMessages( int nMessages, SteamNetworkingMessage_t *const *pMessages, int64 *pOutMessageNumberOrResult )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::SendMessages\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     for (int i = 0; i < nMessages; ++i) {
         int64 out_number = 0;
         int result = SendMessageToConnection(pMessages[i]->m_conn, pMessages[i]->m_pData, pMessages[i]->m_cbSize, pMessages[i]->m_nFlags, &out_number);
@@ -845,7 +852,8 @@ void SendMessages( int nMessages, SteamNetworkingMessage_t *const *pMessages, in
 /// on the next transmission time (often that means right now).
 EResult FlushMessagesOnConnection( HSteamNetConnection hConn )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::FlushMessagesOnConnection\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_EResultOK;
 }
 
@@ -882,7 +890,7 @@ SteamNetworkingMessage_t *get_steam_message_connection(HSteamNetConnection hConn
     pMsg->m_pfnRelease = &delete_steam_message;
     pMsg->m_nChannel = 0;
     connect_socket->second.data.pop();
-    PRINT_DEBUG("get_steam_message_connection %u %lu, %llu\n", hConn, size, pMsg->m_nMessageNumber);
+    PRINT_DEBUG("get_steam_message_connection %u %lu, %llu", hConn, size, pMsg->m_nMessageNumber);
     return pMsg;
 }
 
@@ -903,10 +911,10 @@ SteamNetworkingMessage_t *get_steam_message_connection(HSteamNetConnection hConn
 /// a little while (put it into some queue, etc), and you may call Release() from any thread.
 int ReceiveMessagesOnConnection( HSteamNetConnection hConn, SteamNetworkingMessage_t **ppOutMessages, int nMaxMessages )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::ReceiveMessagesOnConnection %u %i\n", hConn, nMaxMessages);
+    PRINT_DEBUG("%u %i", hConn, nMaxMessages);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!ppOutMessages || !nMaxMessages) return 0;
 
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     SteamNetworkingMessage_t *msg = NULL;
     int messages = 0;
     while (messages < nMaxMessages && (msg = get_steam_message_connection(hConn))) {
@@ -914,7 +922,7 @@ int ReceiveMessagesOnConnection( HSteamNetConnection hConn, SteamNetworkingMessa
         ++messages;
     }
 
-    PRINT_DEBUG("messages %u\n", messages);
+    PRINT_DEBUG("messages %u", messages);
     return messages;
 }
 
@@ -928,10 +936,10 @@ int ReceiveMessagesOnConnection( HSteamNetConnection hConn, SteamNetworkingMessa
 /// messages is relevant!)
 int ReceiveMessagesOnListenSocket( HSteamListenSocket hSocket, SteamNetworkingMessage_t **ppOutMessages, int nMaxMessages )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::ReceiveMessagesOnListenSocket %u %i\n", hSocket, nMaxMessages);
+    PRINT_DEBUG("%u %i", hSocket, nMaxMessages);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!ppOutMessages || !nMaxMessages) return 0;
 
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     SteamNetworkingMessage_t *msg = NULL;
     int messages = 0;
 
@@ -953,11 +961,10 @@ int ReceiveMessagesOnListenSocket( HSteamListenSocket hSocket, SteamNetworkingMe
 /// Returns basic information about the high-level state of the connection.
 bool GetConnectionInfo( HSteamNetConnection hConn, SteamNetConnectionInfo_t *pInfo )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::GetConnectionInfo\n");
-    if (!pInfo)
-        return false;
-
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (!pInfo) return false;
+
     auto connect_socket = s->connect_sockets.find(hConn);
     if (connect_socket == s->connect_sockets.end()) return false;
 
@@ -985,7 +992,7 @@ bool GetConnectionInfo( HSteamNetConnection hConn, SteamNetConnectionInfo_t *pIn
 /// - k_EResultInvalidParam - nLanes is bad
 EResult GetConnectionRealTimeStatus( HSteamNetConnection hConn, SteamNetConnectionRealTimeStatus_t *pStatus, int nLanes, SteamNetConnectionRealTimeLaneStatus_t *pLanes )
 {
-    PRINT_DEBUG("%s %u %p %i %p\n", __FUNCTION__, hConn, pStatus, nLanes, pLanes);
+    PRINT_DEBUG("%s %u %p %i %p", __FUNCTION__, hConn, pStatus, nLanes, pLanes);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     auto connect_socket = s->connect_sockets.find(hConn);
     if (connect_socket == s->connect_sockets.end()) return k_EResultNoConnection;
@@ -1030,7 +1037,8 @@ EResult GetConnectionRealTimeStatus( HSteamNetConnection hConn, SteamNetConnecti
 /// into some queue, etc), and you may call Release() from any thread.
 int ReceiveMessagesOnConnection( HSteamNetConnection hConn, SteamNetworkingMessage001_t **ppOutMessages, int nMaxMessages )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::ReceiveMessagesOnConnection\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return -1;
 }
  
@@ -1045,7 +1053,8 @@ int ReceiveMessagesOnConnection( HSteamNetConnection hConn, SteamNetworkingMessa
 /// messages is relevant!)
 int ReceiveMessagesOnListenSocket( HSteamListenSocket hSocket, SteamNetworkingMessage001_t **ppOutMessages, int nMaxMessages )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::ReceiveMessagesOnListenSocket\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return -1;
 }
  
@@ -1053,7 +1062,8 @@ int ReceiveMessagesOnListenSocket( HSteamListenSocket hSocket, SteamNetworkingMe
 /// Returns information about the specified connection.
 bool GetConnectionInfo( HSteamNetConnection hConn, SteamNetConnectionInfo001_t *pInfo )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::GetConnectionInfo001\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -1062,7 +1072,7 @@ bool GetConnectionInfo( HSteamNetConnection hConn, SteamNetConnectionInfo001_t *
 /// to the user in game.
 bool GetQuickConnectionStatus( HSteamNetConnection hConn, SteamNetworkingQuickConnectionStatus *pStats )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::GetQuickConnectionStatus\n");
+    PRINT_DEBUG_ENTRY();
     if (!pStats)
         return false;
 
@@ -1079,7 +1089,8 @@ bool GetQuickConnectionStatus( HSteamNetConnection hConn, SteamNetworkingQuickCo
 /// >0 Your buffer was either nullptr, or it was too small and the text got truncated.  Try again with a buffer of at least N bytes.
 int GetDetailedConnectionStatus( HSteamNetConnection hConn, char *pszBuf, int cbBuf )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::GetDetailedConnectionStatus\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return -1;
 }
 
@@ -1089,7 +1100,8 @@ int GetDetailedConnectionStatus( HSteamNetConnection hConn, char *pszBuf, int cb
 /// An IPv6 address of ::ffff:0000:0000 means "any IPv4"
 bool GetListenSocketAddress( HSteamListenSocket hSocket, SteamNetworkingIPAddr *address )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::GetListenSocketAddress\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -1102,7 +1114,7 @@ bool GetListenSocketAddress( HSteamListenSocket hSocket, SteamNetworkingIPAddr *
 /// and may not be reachable by a general host on the Internet.
 bool GetListenSocketInfo( HSteamListenSocket hSocket, uint32 *pnIP, uint16 *pnPort )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::GetListenSocketInfo\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     struct Listen_Socket *socket = get_connection_socket(hSocket);
     if (!socket) return false;
@@ -1131,7 +1143,7 @@ bool GetListenSocketInfo( HSteamListenSocket hSocket, uint32 *pnIP, uint16 *pnPo
 /// The SteamID assigned to both ends of the connection will be the SteamID of this interface.
 bool CreateSocketPair( HSteamNetConnection *pOutConnection1, HSteamNetConnection *pOutConnection2, bool bUseNetworkLoopback )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::CreateSocketPair old\n");
+    PRINT_DEBUG("old");
     return CreateSocketPair(pOutConnection1, pOutConnection2, bUseNetworkLoopback, NULL, NULL);
 }
 
@@ -1157,9 +1169,9 @@ bool CreateSocketPair( HSteamNetConnection *pOutConnection1, HSteamNetConnection
 /// actual bound loopback port.  Otherwise, the port will be zero.
 bool CreateSocketPair( HSteamNetConnection *pOutConnection1, HSteamNetConnection *pOutConnection2, bool bUseNetworkLoopback, const SteamNetworkingIdentity *pIdentity1, const SteamNetworkingIdentity *pIdentity2 )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::CreateSocketPair %u %p %p\n", bUseNetworkLoopback, pIdentity1, pIdentity2);
-    if (!pOutConnection1 || !pOutConnection1) return false;
+    PRINT_DEBUG("%u %p %p", bUseNetworkLoopback, pIdentity1, pIdentity2);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (!pOutConnection1 || !pOutConnection1) return false;
 
     SteamNetworkingIdentity remote_identity;
     remote_identity.SetSteamID(settings->get_local_steam_id());
@@ -1241,7 +1253,7 @@ bool CreateSocketPair( HSteamNetConnection *pOutConnection1, HSteamNetConnection
 /// SteamNetworkingMessage_t::m_idxLane
 EResult ConfigureConnectionLanes( HSteamNetConnection hConn, int nNumLanes, const int *pLanePriorities, const uint16 *pLaneWeights )
 {
-    PRINT_DEBUG("TODO: %s\n", __FUNCTION__);
+    PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     auto connect_socket = s->connect_sockets.find(hConn);
     if (connect_socket == s->connect_sockets.end()) return k_EResultNoConnection;
@@ -1257,7 +1269,8 @@ EResult ConfigureConnectionLanes( HSteamNetConnection hConn, int nNumLanes, cons
 /// even if they are not signed into Steam.)
 bool GetIdentity( SteamNetworkingIdentity *pIdentity )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::GetIdentity\n");
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!pIdentity) return false;
     pIdentity->SetSteamID(settings->get_local_steam_id());
     return true;
@@ -1288,7 +1301,8 @@ bool GetIdentity( SteamNetworkingIdentity *pIdentity )
 /// Returns the current value that would be returned from GetAuthenticationStatus.
 ESteamNetworkingAvailability InitAuthentication()
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::InitAuthentication\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_ESteamNetworkingAvailability_Current;
 }
 
@@ -1301,7 +1315,8 @@ ESteamNetworkingAvailability InitAuthentication()
 /// details, pass non-NULL to receive them.
 ESteamNetworkingAvailability GetAuthenticationStatus( SteamNetAuthenticationStatus_t *pDetails )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::GetAuthenticationStatus\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_ESteamNetworkingAvailability_Current;
 }
 
@@ -1310,7 +1325,7 @@ ESteamNetworkingAvailability GetAuthenticationStatus( SteamNetAuthenticationStat
 /// You should destroy the poll group when you are done using DestroyPollGroup
 HSteamNetPollGroup CreatePollGroup()
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::CreatePollGroup\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     static HSteamNetPollGroup poll_group_counter;
     ++poll_group_counter;
@@ -1327,7 +1342,7 @@ HSteamNetPollGroup CreatePollGroup()
 /// Returns false if passed an invalid poll group handle.
 bool DestroyPollGroup( HSteamNetPollGroup hPollGroup )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::DestroyPollGroup\n");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     auto group = s->poll_groups.find(hPollGroup);
     if (group == s->poll_groups.end()) {
@@ -1361,7 +1376,7 @@ bool DestroyPollGroup( HSteamNetPollGroup hPollGroup )
 /// is invalid (and not k_HSteamNetPollGroup_Invalid).
 bool SetConnectionPollGroup( HSteamNetConnection hConn, HSteamNetPollGroup hPollGroup )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::SetConnectionPollGroup %u %u\n", hConn, hPollGroup);
+    PRINT_DEBUG("%u %u", hConn, hPollGroup);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     auto connect_socket = s->connect_sockets.find(hConn);
     if (connect_socket == s->connect_sockets.end()) {
@@ -1407,7 +1422,7 @@ bool SetConnectionPollGroup( HSteamNetConnection hConn, HSteamNetPollGroup hPoll
 /// other connections.)
 int ReceiveMessagesOnPollGroup( HSteamNetPollGroup hPollGroup, SteamNetworkingMessage_t **ppOutMessages, int nMaxMessages )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::ReceiveMessagesOnPollGroup %u %i\n", hPollGroup, nMaxMessages);
+    PRINT_DEBUG("%u %i", hPollGroup, nMaxMessages);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     auto group = s->poll_groups.find(hPollGroup);
     if (group == s->poll_groups.end()) {
@@ -1424,7 +1439,7 @@ int ReceiveMessagesOnPollGroup( HSteamNetPollGroup hPollGroup, SteamNetworkingMe
         }
     }
 
-    PRINT_DEBUG("Steam_Networking_Sockets::ReceiveMessagesOnPollGroup out %i\n", messages);
+    PRINT_DEBUG("out %i", messages);
     return messages;
 }
 
@@ -1442,7 +1457,8 @@ int ReceiveMessagesOnPollGroup( HSteamNetPollGroup hPollGroup, SteamNetworkingMe
 /// See stamdatagram_ticketgen.h for more details.
 bool ReceivedRelayAuthTicket( const void *pvTicket, int cbTicket, SteamDatagramRelayAuthTicket *pOutParsedTicket )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::ReceivedRelayAuthTicket\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -1455,7 +1471,7 @@ bool ReceivedRelayAuthTicket( const void *pvTicket, int cbTicket, SteamDatagramR
 /// call ConnectToHostedDedicatedServer to connect to the server.
 int FindRelayAuthTicketForServer( CSteamID steamID, int nVirtualPort, SteamDatagramRelayAuthTicket *pOutParsedTicket )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::FindRelayAuthTicketForServer old\n");
+    PRINT_DEBUG("old");
     return 0;
 }
 
@@ -1467,13 +1483,14 @@ int FindRelayAuthTicketForServer( CSteamID steamID, int nVirtualPort, SteamDatag
 /// call ConnectToHostedDedicatedServer to connect to the server.
 int FindRelayAuthTicketForServer( const SteamNetworkingIdentity *identityGameServer, int nVirtualPort, SteamDatagramRelayAuthTicket *pOutParsedTicket )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::FindRelayAuthTicketForServer old1\n");
+    PRINT_DEBUG("old1");
     return 0;
 }
 
 int FindRelayAuthTicketForServer( const SteamNetworkingIdentity &identityGameServer, int nVirtualPort, SteamDatagramRelayAuthTicket *pOutParsedTicket )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::FindRelayAuthTicketForServer\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
@@ -1488,13 +1505,15 @@ int FindRelayAuthTicketForServer( const SteamNetworkingIdentity &identityGameSer
 /// when your app initializes
 HSteamNetConnection ConnectToHostedDedicatedServer( const SteamNetworkingIdentity &identityTarget, int nVirtualPort )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::ConnectToHostedDedicatedServer old\n");
+    PRINT_DEBUG("old");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_HSteamListenSocket_Invalid;
 }
 
 HSteamNetConnection ConnectToHostedDedicatedServer( const SteamNetworkingIdentity *identityTarget, int nVirtualPort )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::ConnectToHostedDedicatedServer old1\n");
+    PRINT_DEBUG("old1");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_HSteamListenSocket_Invalid;
 }
 
@@ -1506,13 +1525,15 @@ HSteamNetConnection ConnectToHostedDedicatedServer( const SteamNetworkingIdentit
 /// connection to Steam or the central backend, or the app is restarted or crashes, etc.
 HSteamNetConnection ConnectToHostedDedicatedServer( CSteamID steamIDTarget, int nVirtualPort )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::ConnectToHostedDedicatedServer older\n");
+    PRINT_DEBUG("older");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_HSteamListenSocket_Invalid;
 }
 
 HSteamNetConnection ConnectToHostedDedicatedServer( const SteamNetworkingIdentity &identityTarget, int nVirtualPort, int nOptions, const SteamNetworkingConfigValue_t *pOptions )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::ConnectToHostedDedicatedServer\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_HSteamListenSocket_Invalid;
 }
 
@@ -1523,7 +1544,8 @@ HSteamNetConnection ConnectToHostedDedicatedServer( const SteamNetworkingIdentit
 /// Returns the value of the SDR_LISTEN_PORT environment variable.
 uint16 GetHostedDedicatedServerPort()
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::GetHostedDedicatedServerPort\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     //TODO?
     return 27054;
 }
@@ -1533,7 +1555,8 @@ uint16 GetHostedDedicatedServerPort()
 /// center code.  Returns 0 otherwise.
 SteamNetworkingPOPID GetHostedDedicatedServerPOPID()
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::GetHostedDedicatedServerPOPID\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
 
@@ -1558,7 +1581,7 @@ SteamNetworkingPOPID GetHostedDedicatedServerPOPID()
 /// Returns false if the SDR_LISTEN_PORT environment variable is not set.
 bool GetHostedDedicatedServerAddress001( SteamDatagramHostedAddress *pRouting )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::GetHostedDedicatedServerAddress002 %p\n", pRouting);
+    PRINT_DEBUG("%p", pRouting);
     return GetHostedDedicatedServerAddress(pRouting) == k_EResultOK;
 }
 
@@ -1590,7 +1613,7 @@ bool GetHostedDedicatedServerAddress001( SteamDatagramHostedAddress *pRouting )
 ///       directly share it with clients.
 virtual EResult GetHostedDedicatedServerAddress( SteamDatagramHostedAddress *pRouting )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::GetHostedDedicatedServerAddress %p\n", pRouting);
+    PRINT_DEBUG("%p", pRouting);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     pRouting->SetDevAddress(network->getOwnIP(), 27054);
     return k_EResultOK;
@@ -1603,7 +1626,7 @@ virtual EResult GetHostedDedicatedServerAddress( SteamDatagramHostedAddress *pRo
 /// Note that this call MUST be made through the SteamNetworkingSocketsGameServer() interface
 HSteamListenSocket CreateHostedDedicatedServerListenSocket( int nVirtualPort )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::CreateHostedDedicatedServerListenSocket old %i\n", nVirtualPort);
+    PRINT_DEBUG("old %i", nVirtualPort);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return new_listen_socket(nVirtualPort, SNS_DISABLED_PORT);
 }
@@ -1619,7 +1642,7 @@ HSteamListenSocket CreateHostedDedicatedServerListenSocket( int nVirtualPort )
 /// setting the options "immediately" after creation.
 HSteamListenSocket CreateHostedDedicatedServerListenSocket( int nVirtualPort, int nOptions, const SteamNetworkingConfigValue_t *pOptions )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::CreateHostedDedicatedServerListenSocket old %i\n", nVirtualPort);
+    PRINT_DEBUG("old %i", nVirtualPort);
     //TODO config options
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return new_listen_socket(nVirtualPort, SNS_DISABLED_PORT);
@@ -1633,7 +1656,8 @@ HSteamListenSocket CreateHostedDedicatedServerListenSocket( int nVirtualPort, in
 //
 bool GetConnectionDebugText( HSteamNetConnection hConn, char *pOut, int nOutCCH )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::GetConnectionDebugText\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -1644,14 +1668,16 @@ bool GetConnectionDebugText( HSteamNetConnection hConn, char *pOut, int nOutCCH 
 // Returns the value or -1 is eConfigValue is invalid
 int32 GetConfigurationValue( ESteamNetworkingConfigurationValue eConfigValue )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::GetConfigurationValue\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return -1;
 }
 
 // Returns true if successfully set
 bool SetConfigurationValue( ESteamNetworkingConfigurationValue eConfigValue, int32 nValue )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::SetConfigurationValue %i: %i\n", eConfigValue, nValue);
+    PRINT_DEBUG("%i: %i", eConfigValue, nValue);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return true;
 }
 
@@ -1659,7 +1685,8 @@ bool SetConfigurationValue( ESteamNetworkingConfigurationValue eConfigValue, int
 // Return the name of an int configuration value, or NULL if config value isn't known
 const char *GetConfigurationValueName( ESteamNetworkingConfigurationValue eConfigValue )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::GetConfigurationValueName\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return NULL;
 }
 
@@ -1671,13 +1698,15 @@ const char *GetConfigurationValueName( ESteamNetworkingConfigurationValue eConfi
 // returns -1 if the eConfigValue is invalid
 int32 GetConfigurationString( ESteamNetworkingConfigurationString eConfigString, char *pDest, int32 destSize )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::GetConfigurationString\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return -1;
 }
 
 bool SetConfigurationString( ESteamNetworkingConfigurationString eConfigString, const char *pString )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::SetConfigurationString\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -1685,7 +1714,8 @@ bool SetConfigurationString( ESteamNetworkingConfigurationString eConfigString, 
 // Return the name of a string configuration value, or NULL if config value isn't known
 const char *GetConfigurationStringName( ESteamNetworkingConfigurationString eConfigString )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::GetConfigurationStringName\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return NULL;
 }
 
@@ -1696,14 +1726,16 @@ const char *GetConfigurationStringName( ESteamNetworkingConfigurationString eCon
 // Returns the value or -1 is eConfigValue is invalid
 int32 GetConnectionConfigurationValue( HSteamNetConnection hConn, ESteamNetworkingConnectionConfigurationValue eConfigValue )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::GetConnectionConfigurationValue\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return -1;
 }
 
 // Returns true if successfully set
 bool SetConnectionConfigurationValue( HSteamNetConnection hConn, ESteamNetworkingConnectionConfigurationValue eConfigValue, int32 nValue )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::SetConnectionConfigurationValue\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -1739,7 +1771,8 @@ bool SetConnectionConfigurationValue( HSteamNetConnection hConn, ESteamNetworkin
 ///       and don't share it directly with clients.
 EResult GetGameCoordinatorServerLogin( SteamDatagramGameCoordinatorServerLogin *pLoginInfo, int *pcbSignedBlob, void *pBlob )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::GetGameCoordinatorServerLogin\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_EResultFail;
 }
 
@@ -1785,7 +1818,8 @@ EResult GetGameCoordinatorServerLogin( SteamDatagramGameCoordinatorServerLogin *
 /// setting the options "immediately" after creation.
 HSteamNetConnection ConnectP2PCustomSignaling( ISteamNetworkingConnectionCustomSignaling *pSignaling, const SteamNetworkingIdentity *pPeerIdentity, int nOptions, const SteamNetworkingConfigValue_t *pOptions )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::ConnectP2PCustomSignaling old\n");
+    PRINT_DEBUG("old");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     //return ConnectP2PCustomSignaling(pSignaling, pPeerIdentity, 0, nOptions, pOptions);
     return k_HSteamNetConnection_Invalid;
 }
@@ -1793,7 +1827,8 @@ HSteamNetConnection ConnectP2PCustomSignaling( ISteamNetworkingConnectionCustomS
 //HSteamNetConnection ConnectP2PCustomSignaling( ISteamNetworkingConnectionCustomSignaling *pSignaling, const SteamNetworkingIdentity *pPeerIdentity, int nRemoteVirtualPort, int nOptions, const SteamNetworkingConfigValue_t *pOptions )
 HSteamNetConnection ConnectP2PCustomSignaling( ISteamNetworkingConnectionSignaling *pSignaling, const SteamNetworkingIdentity *pPeerIdentity, int nRemoteVirtualPort, int nOptions, const SteamNetworkingConfigValue_t *pOptions )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::ConnectP2PCustomSignaling\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_HSteamNetConnection_Invalid;
 }
 
@@ -1828,13 +1863,15 @@ HSteamNetConnection ConnectP2PCustomSignaling( ISteamNetworkingConnectionSignali
 /// to call ISteamNetworkingUtils::InitRelayNetworkAccess() when your app initializes
 bool ReceivedP2PCustomSignal( const void *pMsg, int cbMsg, ISteamNetworkingCustomSignalingRecvContext *pContext )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::ReceivedP2PCustomSignal old\n");
+    PRINT_DEBUG("old");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
 bool ReceivedP2PCustomSignal( const void *pMsg, int cbMsg, ISteamNetworkingSignalingRecvContext *pContext )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::ReceivedP2PCustomSignal\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -1851,7 +1888,8 @@ bool ReceivedP2PCustomSignal( const void *pMsg, int cbMsg, ISteamNetworkingSigna
 /// Pass this blob to your game coordinator and call SteamDatagram_CreateCert.
 bool GetCertificateRequest( int *pcbBlob, void *pBlob, SteamNetworkingErrMsg &errMsg )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::GetCertificateRequest\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -1859,7 +1897,8 @@ bool GetCertificateRequest( int *pcbBlob, void *pBlob, SteamNetworkingErrMsg &er
 /// SteamDatagram_CreateCert.
 bool SetCertificate( const void *pCertificate, int cbCertificate, SteamNetworkingErrMsg &errMsg )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets::SetCertificate\n");
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -1873,7 +1912,8 @@ bool SetCertificate( const void *pCertificate, int cbCertificate, SteamNetworkin
 ///       a new user can sign in.
 void ResetIdentity( const SteamNetworkingIdentity *pIdentity )
 {
-    PRINT_DEBUG("TODO: %s\n", __FUNCTION__);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 //
@@ -1938,7 +1978,8 @@ void ResetIdentity( const SteamNetworkingIdentity *pIdentity )
 /// use CreateFakeUDPPort.
 bool BeginAsyncRequestFakeIP( int nNumPorts )
 {
-    PRINT_DEBUG("TODO: %s\n", __FUNCTION__);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
 
@@ -1947,7 +1988,8 @@ bool BeginAsyncRequestFakeIP( int nNumPorts )
 /// Make sure and check SteamNetworkingFakeIPResult_t::m_eResult
 void GetFakeIP( int idxFirstPort, SteamNetworkingFakeIPResult_t *pInfo )
 {
-    PRINT_DEBUG("TODO: %s\n", __FUNCTION__);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 /// Create a listen socket that will listen for P2P connections sent
@@ -1961,7 +2003,8 @@ void GetFakeIP( int idxFirstPort, SteamNetworkingFakeIPResult_t *pInfo )
 /// request to complete before creating the listen socket.
 HSteamListenSocket CreateListenSocketP2PFakeIP( int idxFakePort, int nOptions, const SteamNetworkingConfigValue_t *pOptions )
 {
-    PRINT_DEBUG("TODO: %s\n", __FUNCTION__);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_HSteamListenSocket_Invalid;
 }
 
@@ -1982,7 +2025,8 @@ HSteamListenSocket CreateListenSocketP2PFakeIP( int idxFakePort, int nOptions, c
 /// - k_EResultIPNotFound: This connection wasn't made using FakeIP system
 EResult GetRemoteFakeIPForConnection( HSteamNetConnection hConn, SteamNetworkingIPAddr *pOutAddr )
 {
-    PRINT_DEBUG("TODO: %s\n", __FUNCTION__);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_EResultNone;
 }
 
@@ -2005,7 +2049,8 @@ EResult GetRemoteFakeIPForConnection( HSteamNetConnection hConn, SteamNetworking
 /// assign a FakeIP from its own locally-controlled namespace.
 ISteamNetworkingFakeUDPPort *CreateFakeUDPPort( int idxFakeServerPort )
 {
-    PRINT_DEBUG("TODO: %s\n", __FUNCTION__);
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return NULL;
 }
 
@@ -2015,12 +2060,14 @@ ISteamNetworkingFakeUDPPort *CreateFakeUDPPort( int idxFakeServerPort )
 // to minimize potential changes in timing when that change happens.
 void RunCallbacks( ISteamNetworkingSocketsCallbacks *pCallbacks )
 {
-    PRINT_DEBUG("Steam_Networking_Sockets:RunCallbacks\n");
+    // PRINT_DEBUG_ENTRY();
 }
 
 
 void RunCallbacks()
 {
+    // PRINT_DEBUG_ENTRY();
+
     //TODO: timeout unaccepted connections after a few seconds or so
     auto current_time = std::chrono::steady_clock::now();
     auto socket_conn = std::begin(s->connect_sockets);
@@ -2038,6 +2085,8 @@ void RunCallbacks()
 
 void Callback(Common_Message *msg)
 {
+    // PRINT_DEBUG_ENTRY();
+
     if (msg->has_low_level()) {
         if (msg->low_level().type() == Low_Level::CONNECT) {
             
@@ -2055,7 +2104,7 @@ void Callback(Common_Message *msg)
     }
 
     if (msg->has_networking_sockets()) {
-        PRINT_DEBUG("Steam_Networking_Sockets: got network socket msg %u " "%" PRIu64 "\n", msg->networking_sockets().type(), msg->source_id());
+        PRINT_DEBUG("got network socket msg %u " "%" PRIu64 "", msg->networking_sockets().type(), msg->source_id());
         if (msg->networking_sockets().type() == Networking_Sockets::CONNECTION_REQUEST) {
             int virtual_port = msg->networking_sockets().virtual_port();
             int real_port = msg->networking_sockets().real_port();
@@ -2094,13 +2143,13 @@ void Callback(Common_Message *msg)
             auto connect_socket = s->connect_sockets.find(msg->networking_sockets().connection_id());
             if (connect_socket != s->connect_sockets.end()) {
                 if (connect_socket->second.remote_identity.GetSteamID64() == msg->source_id() && (connect_socket->second.status == CONNECT_SOCKET_CONNECTED)) {
-                    PRINT_DEBUG("Steam_Networking_Sockets: got data len %zu, num " "%" PRIu64 " on connection %u\n", msg->networking_sockets().data().size(), msg->networking_sockets().message_number(), connect_socket->first);
+                    PRINT_DEBUG("got data len %zu, num " "%" PRIu64 " on connection %u", msg->networking_sockets().data().size(), msg->networking_sockets().message_number(), connect_socket->first);
                     connect_socket->second.data.push(msg->networking_sockets());
                 }
             } else {
                 connect_socket = std::find_if(s->connect_sockets.begin(), s->connect_sockets.end(), [msg](const auto &in) {return in.second.remote_identity.GetSteamID64() == msg->source_id() && (in.second.status == CONNECT_SOCKET_NOT_ACCEPTED || in.second.status == CONNECT_SOCKET_CONNECTED) && in.second.remote_id == msg->networking_sockets().connection_id_from();});
                 if (connect_socket != s->connect_sockets.end()) {
-                    PRINT_DEBUG("Steam_Networking_Sockets: got data len %zu, num " "%" PRIu64 " on not accepted connection %u\n", msg->networking_sockets().data().size(), msg->networking_sockets().message_number(), connect_socket->first);
+                    PRINT_DEBUG("got data len %zu, num " "%" PRIu64 " on not accepted connection %u", msg->networking_sockets().data().size(), msg->networking_sockets().message_number(), connect_socket->first);
                     connect_socket->second.data.push(msg->networking_sockets());
                 }
             }

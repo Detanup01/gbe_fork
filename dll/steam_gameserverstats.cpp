@@ -23,7 +23,7 @@
 
 void Steam_GameServerStats::steam_gameserverstats_network_low_level(void *object, Common_Message *msg)
 {
-    // PRINT_DEBUG("Steam_GameServerStats::steam_gameserverstats_network_low_level\n");
+    //PRINT_DEBUG_ENTRY();
 
     auto inst = (Steam_GameServerStats *)object;
     inst->network_callback_low_level(msg);
@@ -31,7 +31,7 @@ void Steam_GameServerStats::steam_gameserverstats_network_low_level(void *object
 
 void Steam_GameServerStats::steam_gameserverstats_network_callback(void *object, Common_Message *msg)
 {
-    // PRINT_DEBUG("Steam_GameServerStats::steam_gameserverstats_network_callback\n");
+    //PRINT_DEBUG_ENTRY();
 
     auto inst = (Steam_GameServerStats *)object;
     inst->network_callback(msg);
@@ -39,7 +39,7 @@ void Steam_GameServerStats::steam_gameserverstats_network_callback(void *object,
 
 void Steam_GameServerStats::steam_gameserverstats_run_every_runcb(void *object)
 {
-    // PRINT_DEBUG("Steam_GameServerStats::steam_gameserverstats_run_every_runcb\n");
+    //PRINT_DEBUG_ENTRY();
 
     auto inst = (Steam_GameServerStats *)object;
     inst->steam_run_callback();
@@ -115,7 +115,7 @@ Steam_GameServerStats::~Steam_GameServerStats()
 STEAM_CALL_RESULT( GSStatsReceived_t )
 SteamAPICall_t Steam_GameServerStats::RequestUserStats( CSteamID steamIDUser )
 {
-    PRINT_DEBUG("Steam_GameServerStats::RequestUserStats %llu\n", (uint64)steamIDUser.ConvertToUint64());
+    PRINT_DEBUG("%llu", (uint64)steamIDUser.ConvertToUint64());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (settings->disable_sharing_stats_with_gameserver) {
         GSStatsReceived_t data_bad{};
@@ -153,7 +153,7 @@ SteamAPICall_t Steam_GameServerStats::RequestUserStats( CSteamID steamIDUser )
 // requests stat information for a user, usable after a successful call to RequestUserStats()
 bool Steam_GameServerStats::GetUserStat( CSteamID steamIDUser, const char *pchName, int32 *pData )
 {
-    PRINT_DEBUG("Steam_GameServerStats::GetUserStat <int32> %llu '%s' %p\n", (uint64)steamIDUser.ConvertToUint64(), pchName, pData);
+    PRINT_DEBUG("<int32> %llu '%s' %p", (uint64)steamIDUser.ConvertToUint64(), pchName, pData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (settings->disable_sharing_stats_with_gameserver) return false;
 
@@ -169,7 +169,7 @@ bool Steam_GameServerStats::GetUserStat( CSteamID steamIDUser, const char *pchNa
 
 bool Steam_GameServerStats::GetUserStat( CSteamID steamIDUser, const char *pchName, float *pData )
 {
-    PRINT_DEBUG("Steam_GameServerStats::GetUserStat <float> %llu '%s' %p\n", (uint64)steamIDUser.ConvertToUint64(), pchName, pData);
+    PRINT_DEBUG("<float> %llu '%s' %p", (uint64)steamIDUser.ConvertToUint64(), pchName, pData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (settings->disable_sharing_stats_with_gameserver) return false;
 
@@ -185,7 +185,7 @@ bool Steam_GameServerStats::GetUserStat( CSteamID steamIDUser, const char *pchNa
 
 bool Steam_GameServerStats::GetUserAchievement( CSteamID steamIDUser, const char *pchName, bool *pbAchieved )
 {
-    PRINT_DEBUG("Steam_GameServerStats::GetUserAchievement %llu '%s' %p\n", (uint64)steamIDUser.ConvertToUint64(), pchName, pbAchieved);
+    PRINT_DEBUG("%llu '%s' %p", (uint64)steamIDUser.ConvertToUint64(), pchName, pbAchieved);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (settings->disable_sharing_stats_with_gameserver) return false;
 
@@ -205,7 +205,7 @@ bool Steam_GameServerStats::GetUserAchievement( CSteamID steamIDUser, const char
 // Set the IP range of your official servers on the Steamworks page
 bool Steam_GameServerStats::SetUserStat( CSteamID steamIDUser, const char *pchName, int32 nData )
 {
-    PRINT_DEBUG("Steam_GameServerStats::SetUserStat <int32> %llu '%s'=%i\n", (uint64)steamIDUser.ConvertToUint64(), pchName, nData);
+    PRINT_DEBUG("<int32> %llu '%s'=%i", (uint64)steamIDUser.ConvertToUint64(), pchName, nData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (settings->disable_sharing_stats_with_gameserver) return false;
 
@@ -226,7 +226,7 @@ bool Steam_GameServerStats::SetUserStat( CSteamID steamIDUser, const char *pchNa
 
 bool Steam_GameServerStats::SetUserStat( CSteamID steamIDUser, const char *pchName, float fData )
 {
-    PRINT_DEBUG("Steam_GameServerStats::SetUserStat <float> %llu '%s'=%f\n", (uint64)steamIDUser.ConvertToUint64(), pchName, fData);
+    PRINT_DEBUG("<float> %llu '%s'=%f", (uint64)steamIDUser.ConvertToUint64(), pchName, fData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (settings->disable_sharing_stats_with_gameserver) return false;
 
@@ -247,7 +247,7 @@ bool Steam_GameServerStats::SetUserStat( CSteamID steamIDUser, const char *pchNa
 
 bool Steam_GameServerStats::UpdateUserAvgRateStat( CSteamID steamIDUser, const char *pchName, float flCountThisSession, double dSessionLength )
 {
-    PRINT_DEBUG("Steam_GameServerStats::UpdateUserAvgRateStat %llu '%s'\n", (uint64)steamIDUser.ConvertToUint64(), pchName);
+    PRINT_DEBUG("%llu '%s'", (uint64)steamIDUser.ConvertToUint64(), pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (settings->disable_sharing_stats_with_gameserver) return false;
 
@@ -280,7 +280,7 @@ bool Steam_GameServerStats::UpdateUserAvgRateStat( CSteamID steamIDUser, const c
 
 bool Steam_GameServerStats::SetUserAchievement( CSteamID steamIDUser, const char *pchName )
 {
-    PRINT_DEBUG("Steam_GameServerStats::SetUserAchievement %llu '%s'\n", (uint64)steamIDUser.ConvertToUint64(), pchName);
+    PRINT_DEBUG("%llu '%s'", (uint64)steamIDUser.ConvertToUint64(), pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (settings->disable_sharing_stats_with_gameserver) return false;
 
@@ -300,7 +300,7 @@ bool Steam_GameServerStats::SetUserAchievement( CSteamID steamIDUser, const char
 
 bool Steam_GameServerStats::ClearUserAchievement( CSteamID steamIDUser, const char *pchName )
 {
-    PRINT_DEBUG("Steam_GameServerStats::ClearUserAchievement %llu '%s'\n", (uint64)steamIDUser.ConvertToUint64(), pchName);
+    PRINT_DEBUG("%llu '%s'", (uint64)steamIDUser.ConvertToUint64(), pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (settings->disable_sharing_stats_with_gameserver) return false;
 
@@ -329,7 +329,7 @@ STEAM_CALL_RESULT( GSStatsStored_t )
 SteamAPICall_t Steam_GameServerStats::StoreUserStats( CSteamID steamIDUser )
 {
     // it's not necessary to send all data here, we already do that in run_callback() and on each API function call (immediate mode)
-    PRINT_DEBUG("Steam_GameServerStats::StoreUserStats\n");
+    PRINT_DEBUG("Steam_GameServerStats::StoreUserStats");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (settings->disable_sharing_stats_with_gameserver) {
         GSStatsStored_t data_bad{};
@@ -367,10 +367,7 @@ void Steam_GameServerStats::remove_timedout_userstats_requests()
             data.m_steamIDUser = pendReq.steamIDUser;
             callback_results->addCallResult(pendReq.steamAPICall, data.k_iCallback, &data, sizeof(data));
             
-            PRINT_DEBUG(
-                "Steam_GameServerStats::steam_run_callback RequestUserStats timeout, %llu\n",
-                pendReq.steamIDUser.ConvertToUint64()
-            );
+            PRINT_DEBUG("RequestUserStats timeout, %llu", pendReq.steamIDUser.ConvertToUint64());
         }
     }
 
@@ -441,8 +438,7 @@ void Steam_GameServerStats::collect_and_send_updated_user_stats()
         msg.set_dest_id(user_steamid);
         network->sendTo(&msg, true);
 
-        PRINT_DEBUG(
-            "Steam_GameServerStats::collect_and_send_updated_user_stats server sent updated stats %llu: %zu stats, %zu achievements\n",
+        PRINT_DEBUG("server sent updated stats %llu: %zu stats, %zu achievements",
             user_steamid, updated_stats_msg->user_stats().size(), updated_stats_msg->user_achievements().size()
         );
     }
@@ -459,14 +455,15 @@ void Steam_GameServerStats::steam_run_callback()
 
 // --- networking callbacks
 
+// user sent all their stats
 void Steam_GameServerStats::network_callback_initial_stats(Common_Message *msg)
 {
     uint64 user_steamid = msg->source_id();
 
-    PRINT_DEBUG("Steam_GameServerStats::network_callback_initial_stats player sent all their stats %llu\n", user_steamid);
+    PRINT_DEBUG("player sent all their stats %llu", user_steamid);
     if (!msg->gameserver_stats_messages().has_initial_user_stats() ||
         !msg->gameserver_stats_messages().initial_user_stats().has_all_data()) {
-        PRINT_DEBUG("Steam_GameServerStats::network_callback_initial_stats error empty msg\n");
+        PRINT_DEBUG("error empty msg");
         return;
     }
 
@@ -481,7 +478,7 @@ void Steam_GameServerStats::network_callback_initial_stats(Common_Message *msg)
         }
     );
     if (pending_RequestUserStats.end() == it) { // timeout and already removed
-        PRINT_DEBUG("Steam_GameServerStats::network_callback_initial_stats error got all player stats but pending request timedout and removed\n");
+        PRINT_DEBUG("error got all player stats but pending request timedout/removed (doesn't exist)");
         return;
     }
 
@@ -507,21 +504,21 @@ void Steam_GameServerStats::network_callback_initial_stats(Common_Message *msg)
     data.m_steamIDUser = user_steamid;
     callback_results->addCallResult(it->steamAPICall, data.k_iCallback, &data, sizeof(data));
     
-    PRINT_DEBUG(
-        "Steam_GameServerStats::network_callback_initial_stats server got all player stats %llu: %zu stats, %zu achievements\n",
+    PRINT_DEBUG("server got all player stats %llu: %zu stats, %zu achievements",
         user_steamid, all_users_data[user_steamid].stats.size(), all_users_data[user_steamid].achievements.size()
     );
 
     
 }
 
+// user has updated/new stats
 void Steam_GameServerStats::network_callback_updated_stats(Common_Message *msg)
 {
     uint64 user_steamid = msg->source_id();
 
-    PRINT_DEBUG("Steam_GameServerStats::network_callback_updated_stats player sent updated stats %llu\n", user_steamid);
+    PRINT_DEBUG("player sent updated stats %llu", user_steamid);
     if (!msg->gameserver_stats_messages().has_update_user_stats()) {
-        PRINT_DEBUG("Steam_GameServerStats::network_callback_updated_stats error empty msg\n");
+        PRINT_DEBUG("error empty msg");
         return;
     }
 
@@ -542,8 +539,7 @@ void Steam_GameServerStats::network_callback_updated_stats(Common_Message *msg)
         current_ach.ach = new_ach.second;
     }
     
-    PRINT_DEBUG(
-        "Steam_GameServerStats::network_callback got updated user stats %llu: %zu stats, %zu achievements\n",
+    PRINT_DEBUG("got updated user stats %llu: %zu stats, %zu achievements",
         user_steamid, new_user_data.user_stats().size(), new_user_data.user_achievements().size()
     );
 }
@@ -567,7 +563,7 @@ void Steam_GameServerStats::network_callback(Common_Message *msg)
     break;
     
     default:
-        PRINT_DEBUG("Steam_GameServerStats::network_callback unhandled type %i\n", (int)msg->gameserver_stats_messages().type());
+        PRINT_DEBUG("unhandled type %i", (int)msg->gameserver_stats_messages().type());
     break;
     }
 }
@@ -598,19 +594,16 @@ void Steam_GameServerStats::network_callback_low_level(Common_Message *msg)
             data.m_steamIDUser = it_rm->steamIDUser;
             callback_results->addCallResult(it_rm->steamAPICall, data.k_iCallback, &data, sizeof(data));
             
-            PRINT_DEBUG(
-                "Steam_GameServerStats::network_callback_low_level RequestUserStats timeout, %llu\n",
-                it_rm->steamIDUser.ConvertToUint64()
-            );
+            PRINT_DEBUG("RequestUserStats timeout, %llu", it_rm->steamIDUser.ConvertToUint64());
             it_rm = pending_RequestUserStats.erase(it_rm);
         }
         
-        // PRINT_DEBUG("Steam_GameServerStats::network_callback_low_level removed user %llu\n", steamid);
+        // PRINT_DEBUG("removed user %llu", steamid);
     }
     break;
     
     default:
-        PRINT_DEBUG("Steam_GameServerStats::network_callback_low_level unknown type %i\n", (int)msg->low_level().type());
+        PRINT_DEBUG("unknown type %i", (int)msg->low_level().type());
     break;
     }
 }
