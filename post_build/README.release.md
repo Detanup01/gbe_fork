@@ -389,6 +389,9 @@ Second, the project is not a malware, if your antivirus software complains, be s
 ---
 
 ## List of valid steam languages:
+Check this link for a complete list: https://partner.steamgames.com/doc/store/localization/languages  
+Look for the column `API language code`
+
 * arabic
 * bulgarian
 * schinese

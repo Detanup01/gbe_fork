@@ -3,7 +3,7 @@
 ; only set the parameters relevant to your use case
 ; ---------------------------
 
-; load custom font from a path
+; load custom TrueType font from a path
 ; path could be absolute, or relative to steam_settings/fonts
 Font_Override BungeeSpice-Regular.ttf
 
