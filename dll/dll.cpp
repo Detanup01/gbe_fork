@@ -407,6 +407,24 @@ STEAMAPI_API void S_CALLTYPE SteamAPI_Shutdown()
 //
 // NOTE: If you use the Steam DRM wrapper on your primary executable file, this check is unnecessary
 // since the DRM wrapper will ensure that your application was launched properly through Steam.
+
+// ------------------------
+// --- older notes/docs ---
+// note that this usually means we're dealing with CEG!
+// ------------------------
+
+// Detects if your executable was launched through the Steam client, and restarts your game through 
+// the client if necessary. The Steam client will be started if it is not running.
+//
+// Returns: true if your executable was NOT launched through the Steam client. This function will
+//          then start your application through the client. Your current process should exit.
+//
+//          false if your executable was started through the Steam client or a steam_appid.txt file
+//          is present in your game's directory (for development). Your current process should continue.
+//
+// NOTE: This function should be used only if you are using CEG or not using Steam's DRM. Once applied
+//       to your executable, Steam's DRM will handle restarting through Steam if necessary.
+
 STEAMAPI_API steam_bool S_CALLTYPE SteamAPI_RestartAppIfNecessary( uint32 unOwnAppID )
 {
     PRINT_DEBUG("%u", unOwnAppID);
@@ -423,18 +441,20 @@ STEAMAPI_API steam_bool S_CALLTYPE SteamAPI_RestartAppIfNecessary( uint32 unOwnA
 // program never needs to explicitly call this function.
 STEAMAPI_API void S_CALLTYPE SteamAPI_ReleaseCurrentThreadMemory()
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG_TODO();
 }
 
 // crash dump recording functions
 STEAMAPI_API void S_CALLTYPE SteamAPI_WriteMiniDump( uint32 uStructuredExceptionCode, void* pvExceptionInfo, uint32 uBuildID )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG_TODO();
+    PRINT_DEBUG("  The app is writing a crash dump! [XXXXXXXXXXXXXXXXXXXXXXXXXXX]");
 }
 
 STEAMAPI_API void S_CALLTYPE SteamAPI_SetMiniDumpComment( const char *pchMsg )
 {
-    PRINT_DEBUG("%s", pchMsg);
+    PRINT_DEBUG_TODO();
+    PRINT_DEBUG(  "%s", pchMsg);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------//
