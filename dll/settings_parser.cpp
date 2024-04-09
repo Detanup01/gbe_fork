@@ -1237,7 +1237,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     bool download_steamhttp_requests = false;
     bool force_steamhttp_success = false;
     bool disable_networking = false;
-    bool disable_overlay = false;
+    bool disable_overlay = true;
     bool disable_overlay_achievement_notification = false;
     bool disable_overlay_friend_notification = false;
     bool disable_overlay_warning_forced_setting = false;
@@ -1278,8 +1278,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
                 force_steamhttp_success = true;
             } else if (p == "disable_networking.txt") {
                 disable_networking = true;
-            } else if (p == "disable_overlay.txt") {
-                disable_overlay = true;
+            } else if (p == "enable_experimental_overlay.txt") {
+                disable_overlay = false;
             } else if (p == "disable_overlay_achievement_notification.txt") {
                 disable_overlay_achievement_notification = true;
             } else if (p == "disable_overlay_friend_notification.txt") {

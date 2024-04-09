@@ -259,7 +259,7 @@ public:
     bool immediate_gameserver_stats = false;
 
     //overlay
-    bool disable_overlay = false;
+    bool disable_overlay = true;
     int overlay_hook_delay_sec = 0; // "Saints Row (2022)" needs a lot of time to initialize, otherwise detection will fail
     int overlay_renderer_detector_timeout_sec = 15; // "Saints Row (2022)" takes almost ~8 sec to detect renderer (DX12)
     bool disable_overlay_achievement_notification = false;

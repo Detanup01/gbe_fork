@@ -1,1 +1,0 @@
-Rename this to: disable_overlay.txt to disable the overlay.

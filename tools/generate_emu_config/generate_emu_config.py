@@ -21,68 +21,6 @@ import queue
 import shutil
 import traceback
 
-def get_exe_dir(relative = False):
-    # https://pyinstaller.org/en/stable/runtime-information.html
-    if relative:
-        return os.path.curdir
-
-    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-        return os.path.dirname(sys.executable)
-    else:
-        return os.path.dirname(os.path.abspath(__file__))
-
-def get_stats_schema(client, game_id, owner_id):
-    message = MsgProto(EMsg.ClientGetUserStats)
-    message.body.game_id = game_id
-    message.body.schema_local_version = -1
-    message.body.crc_stats = 0
-    message.body.steam_id_for_user = owner_id
-
-    client.send(message)
-    return client.wait_msg(EMsg.ClientGetUserStatsResponse, timeout=5)
-
-def download_achievement_images(game_id : int, image_names : set[str], output_folder : str):
-    print(f"downloading achievements images inside '{output_folder }', images count = {len(image_names)}")
-    q : queue.Queue[str] = queue.Queue()
-
-    def downloader_thread():
-        while True:
-            name = q.get()
-            if name is None:
-                q.task_done()
-                return
-            
-            succeeded = False
-            for u in ["https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/", "https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/apps/"]:
-                url = "{}{}/{}".format(u, game_id, name)
-                try:
-                    with urllib.request.urlopen(url) as response:
-                        image_data = response.read()
-                        with open(os.path.join(output_folder, name), "wb") as f:
-                            f.write(image_data)
-                        succeeded = True
-                        break
-                except urllib.error.HTTPError as e:
-                    print("HTTPError downloading", url, e.code)
-                except urllib.error.URLError as e:
-                    print("URLError downloading", url, e.code)
-            if not succeeded:
-                print("error could not download", name)
-            
-            q.task_done()
-
-    num_threads = 50
-    for i in range(num_threads):
-        threading.Thread(target=downloader_thread, daemon=True).start()
-
-    for name in image_names:
-        q.put(name)
-    q.join()
-
-    for i in range(num_threads):
-        q.put(None)
-    q.join()
-    print("finished downloading achievements images")
 
 #steam ids with public profiles that own a lot of games
 # https://steamladder.com/ladder/games/
@@ -350,6 +288,89 @@ TOP_OWNER_IDS = list(dict.fromkeys([
     # 76561198020728639,
 ]))
 
+# extra features/options to disable
+EXTRA_FEATURES_DISABLE: list[tuple[str, str]] = [
+    ("disable_account_avatar.txt",                   "disable avatar functionality."),
+    ("disable_networking.txt",                       "disable all networking functionality of the emu."),
+    ("disable_source_query.txt",                     "do not send server details for the server browser. Only works for game servers."),
+    ("disable_sharing_stats_with_gameserver.txt",    "prevent sharing stats and achievements with any game server, this also disables the interface ISteamGameServerStats."),
+]
+
+# extra convenient features/options to enable
+EXTRA_FEATURES_CONVENIENT: list[tuple[str, str]] = [
+    ("disable_lan_only.txt",                        "don't hook OS networking APIs and allow any external requests."),
+    ("enable_experimental_overlay.txt",             "---------------------\nUSE AT YOUR OWN RISK\n---------------------\n\nEnable the experimental overlay."),
+    ("disable_overlay_warning_any.txt",             "disable all overlay warnings and allow modifying locked settings, if any."),
+    ("download_steamhttp_requests.txt",             "try to download all requests made via the Steam HTTP interface locally."),
+    ("new_app_ticket.txt",                          "generate new app ticket."),
+    ("gc_token.txt",                                "generate GC inside new App Ticket."),
+    ("share_leaderboards_over_network.txt",         "enable sharing Leaderboards scores with people playing the same game on the same network."),
+]
+
+
+def get_exe_dir(relative = False):
+    # https://pyinstaller.org/en/stable/runtime-information.html
+    if relative:
+        return os.path.curdir
+
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        return os.path.dirname(sys.executable)
+    else:
+        return os.path.dirname(os.path.abspath(__file__))
+
+def get_stats_schema(client, game_id, owner_id):
+    message = MsgProto(EMsg.ClientGetUserStats)
+    message.body.game_id = game_id
+    message.body.schema_local_version = -1
+    message.body.crc_stats = 0
+    message.body.steam_id_for_user = owner_id
+
+    client.send(message)
+    return client.wait_msg(EMsg.ClientGetUserStatsResponse, timeout=5)
+
+def download_achievement_images(game_id : int, image_names : set[str], output_folder : str):
+    print(f"downloading achievements images inside '{output_folder }', images count = {len(image_names)}")
+    q : queue.Queue[str] = queue.Queue()
+
+    def downloader_thread():
+        while True:
+            name = q.get()
+            if name is None:
+                q.task_done()
+                return
+            
+            succeeded = False
+            for u in ["https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/", "https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/apps/"]:
+                url = "{}{}/{}".format(u, game_id, name)
+                try:
+                    with urllib.request.urlopen(url) as response:
+                        image_data = response.read()
+                        with open(os.path.join(output_folder, name), "wb") as f:
+                            f.write(image_data)
+                        succeeded = True
+                        break
+                except urllib.error.HTTPError as e:
+                    print("HTTPError downloading", url, e.code)
+                except urllib.error.URLError as e:
+                    print("URLError downloading", url, e.code)
+            if not succeeded:
+                print("error could not download", name)
+            
+            q.task_done()
+
+    num_threads = 50
+    for i in range(num_threads):
+        threading.Thread(target=downloader_thread, daemon=True).start()
+
+    for name in image_names:
+        q.put(name)
+    q.join()
+
+    for i in range(num_threads):
+        q.put(None)
+    q.join()
+    print("finished downloading achievements images")
+
 def generate_achievement_stats(client, game_id : int, output_directory, backup_directory) -> list[dict]:
     stats_schema_found = None
     print(f"finding achievements stats...")
@@ -484,23 +505,6 @@ def get_dlc(raw_infos):
         print("could not get dlc infos, are there any dlcs ?")
         return (set(), set(), set())
 
-EXTRA_FEATURES_DISABLE: list[tuple[str, str]] = [
-    ("disable_account_avatar.txt",                   "disable avatar functionality."),
-    ("disable_networking.txt",                       "disable all networking functionality of the emu."),
-    ("disable_overlay.txt",                          "disable the overlay."),
-    ("disable_source_query.txt",                     "do not send server details for the server browser. Only works for game servers."),
-    ("disable_sharing_stats_with_gameserver.txt",    "prevent sharing stats and achievements with any game server, this also disables the interface ISteamGameServerStats."),
-]
-
-EXTRA_FEATURES_CONVENIENT: list[tuple[str, str]] = [
-    ("disable_lan_only.txt",                        "don't hook OS networking APIs and allow all external requests."),
-    ("disable_overlay_warning_any.txt",             "disable all overlay warnings and allow modifying locked settings, if any."),
-    ("download_steamhttp_requests.txt",             "try to download all requests made via the Steam HTTP interface locally."),
-    ("new_app_ticket.txt",                          "generate new app ticket."),
-    ("gc_token.txt",                                "generate GC inside new App Ticket."),
-    ("share_leaderboards_over_network.txt",         "enable sharing Leaderboards scores with people playing the same game on the same network."),
-]
-
 def disable_all_extra_features(emu_settings_dir : str) -> None:
     for item in EXTRA_FEATURES_DISABLE:
         with open(os.path.join(emu_settings_dir, item[0]), 'wt', encoding='utf-8') as f:
@@ -531,6 +535,7 @@ def help():
     print(" -anon:   login as an anonymous account, these have very limited access and cannot get all app details")
     print(" -de:     disable some extra features by generating the corresponding config files in steam_settings folder")
     print(" -cve:    enable some convenient extra features by generating the corresponding config files in steam_settings folder")
+    print(" -xcve:   enable some convenient extra features by generating the corresponding config files in steam_settings folder")
     print(" -reldir: generate temp files/folders, and expect input files, relative to the current working directory")
     print("\nAll switches are optional except app id, at least 1 app id must be provided")
     print("\nAutomate the login prompt:")
