@@ -331,6 +331,12 @@ call :build_rsrc "%win_resources_src_dir%\launcher\32\resources.rc" "%win_resour
   set /a last_code=1
   goto :end_script
 )
+call :build_rsrc "%win_resources_src_dir%\game_overlay_renderer\32\resources.rc" "%win_resources_out_dir%\rsrc-gameoverlay-32.res" || (
+  endlocal
+  call :err_msg "Resource compiler failed - 32"
+  set /a last_code=1
+  goto :end_script
+)
 echo: & echo:
 
 if %BUILD_LIB32% equ 1 (
@@ -451,6 +457,12 @@ call :build_rsrc "%win_resources_src_dir%\client\64\resources.rc" "%win_resource
   goto :end_script
 )
 call :build_rsrc "%win_resources_src_dir%\launcher\64\resources.rc" "%win_resources_out_dir%\rsrc-launcher-64.res" || (
+  endlocal
+  call :err_msg "Resource compiler failed - 64"
+  set /a last_code=1
+  goto :end_script
+)
+call :build_rsrc "%win_resources_src_dir%\game_overlay_renderer\64\resources.rc" "%win_resources_out_dir%\rsrc-gameoverlay-64.res" || (
   endlocal
   call :err_msg "Resource compiler failed - 64"
   set /a last_code=1
@@ -666,7 +678,7 @@ endlocal & exit /b %_exit%
 :compile_networking_sockets_lib_32
   setlocal
   echo // building library steamnetworkingsockets.dll - 32
-  set src_files="networking_sockets_lib\steamnetworkingsockets.cpp" 
+  set src_files="%win_resources_out_dir%\rsrc-client-32.res" "networking_sockets_lib\steamnetworkingsockets.cpp" 
   call :build_for 1 0 "%build_root_dir%\networking_sockets_lib\steamnetworkingsockets.dll" src_files
   set /a _exit=%errorlevel%
   if %_exit% equ 0 (
@@ -678,7 +690,7 @@ endlocal & exit /b %_exit%
 :compile_gameoverlay_lib_32
   setlocal
   echo // building experimental library GameOverlayRenderer.dll - 32
-  set src_files="game_overlay_renderer_lib\game_overlay_renderer_lib.cpp" 
+  set src_files="%win_resources_out_dir%\rsrc-gameoverlay-32.res" "game_overlay_renderer_lib\game_overlay_renderer_lib.cpp" 
   set extra_inc_dirs=/I"game_overlay_renderer_lib"
   call :build_for 1 0 "%steamclient_dir%\GameOverlayRenderer.dll" src_files extra_inc_dirs
   set /a _exit=%errorlevel%
@@ -773,7 +785,7 @@ endlocal & exit /b %_exit%
 :compile_networking_sockets_lib_64
   setlocal
   echo // building library steamnetworkingsockets64.dll - 64
-  set src_files="networking_sockets_lib\steamnetworkingsockets.cpp" 
+  set src_files="%win_resources_out_dir%\rsrc-client-64.res" "networking_sockets_lib\steamnetworkingsockets.cpp" 
   call :build_for 0 0 "%build_root_dir%\networking_sockets_lib\steamnetworkingsockets64.dll" src_files
   set /a _exit=%errorlevel%
   if %_exit% equ 0 (
@@ -785,7 +797,7 @@ endlocal & exit /b %_exit%
 :compile_gameoverlay_lib_64
   setlocal
   echo // building experimental library GameOverlayRenderer64.dll - 64
-  set src_files="game_overlay_renderer_lib\game_overlay_renderer_lib.cpp" 
+  set src_files="%win_resources_out_dir%\rsrc-gameoverlay-64.res" "game_overlay_renderer_lib\game_overlay_renderer_lib.cpp" 
   set extra_inc_dirs=/I"game_overlay_renderer_lib"
   call :build_for 0 0 "%steamclient_dir%\GameOverlayRenderer64.dll" src_files extra_inc_dirs
   set /a _exit=%errorlevel%
