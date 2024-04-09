@@ -1,1 +1,1 @@
-Rename this to: disable_lan_only.txt to prevent hooking OS networking APIs and allow all external requests.
+Rename this to: disable_lan_only.txt to prevent hooking OS networking APIs and allow any external requests.
