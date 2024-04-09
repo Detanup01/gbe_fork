@@ -104,11 +104,12 @@ class Steam_Overlay
 {
     constexpr static const char ACH_FALLBACK_DIR[] = "achievement_images";
 
-    Settings* settings;
-    SteamCallResults* callback_results;
-    SteamCallBacks* callbacks;
-    RunEveryRunCB* run_every_runcb;
-    Networking* network;
+    class Settings* settings;
+    class Local_Storage* local_storage;
+    class SteamCallResults* callback_results;
+    class SteamCallBacks* callbacks;
+    class RunEveryRunCB* run_every_runcb;
+    class Networking* network;
 
     // friend id, show client window (to chat and accept invite maybe)
     std::map<Friend, friend_window_state, Friend_Less> friends{};
@@ -223,7 +224,7 @@ class Steam_Overlay
     void steam_run_callback();
 
 public:
-    Steam_Overlay(Settings* settings, SteamCallResults* callback_results, SteamCallBacks* callbacks, RunEveryRunCB* run_every_runcb, Networking *network);
+    Steam_Overlay(Settings* settings, Local_Storage *local_storage, SteamCallResults* callback_results, SteamCallBacks* callbacks, RunEveryRunCB* run_every_runcb, Networking *network);
 
     ~Steam_Overlay();
 
@@ -258,7 +259,7 @@ public:
 class Steam_Overlay
 {
 public:
-    Steam_Overlay(Settings* settings, SteamCallResults* callback_results, SteamCallBacks* callbacks, RunEveryRunCB* run_every_runcb, Networking* network) {}
+    Steam_Overlay(Settings* settings, Local_Storage *local_storage, SteamCallResults* callback_results, SteamCallBacks* callbacks, RunEveryRunCB* run_every_runcb, Networking* network) {}
     ~Steam_Overlay() {}
 
     bool Ready() const { return false; }

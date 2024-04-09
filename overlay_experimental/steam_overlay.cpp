@@ -100,8 +100,9 @@ void Steam_Overlay::overlay_networking_callback(void* object, Common_Message* ms
     _this->networking_msg_received(msg);
 }
 
-Steam_Overlay::Steam_Overlay(Settings* settings, SteamCallResults* callback_results, SteamCallBacks* callbacks, RunEveryRunCB* run_every_runcb, Networking* network) :
+Steam_Overlay::Steam_Overlay(Settings* settings, Local_Storage *local_storage, SteamCallResults* callback_results, SteamCallBacks* callbacks, RunEveryRunCB* run_every_runcb, Networking* network) :
     settings(settings),
+    local_storage(local_storage),
     callback_results(callback_results),
     callbacks(callbacks),
     run_every_runcb(run_every_runcb),
@@ -328,11 +329,7 @@ void Steam_Overlay::load_audio()
         file_path = Local_Storage::get_game_settings_path() + file_name;
         file_size = file_size_(file_path);
         if (!file_size) {
-            if (settings->local_save.length() > 0) {
-                file_path = settings->local_save + "/settings/" + file_name;
-            } else {
-                file_path = Local_Storage::get_user_appdata_path() + "/settings/" + file_name;
-            }
+            file_path = local_storage->get_global_settings_path() + file_name;
             file_size = file_size_(file_path);
         }
         if (file_size) {
