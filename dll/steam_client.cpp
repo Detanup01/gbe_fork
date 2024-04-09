@@ -95,7 +95,7 @@ Steam_Client::Steam_Client()
 		set_env_variable("SteamOverlayGameId", appid_str);
     }
 
-    steam_overlay = new Steam_Overlay(settings_client, callback_results_client, callbacks_client, run_every_runcb, network);
+    steam_overlay = new Steam_Overlay(settings_client, local_storage, callback_results_client, callbacks_client, run_every_runcb, network);
 
     steam_user = new Steam_User(settings_client, local_storage, network, callback_results_client, callbacks_client);
     steam_friends = new Steam_Friends(settings_client, local_storage, network, callback_results_client, callbacks_client, run_every_runcb, steam_overlay);

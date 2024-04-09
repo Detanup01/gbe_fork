@@ -65,17 +65,15 @@ static const char* valid_languages[] = {
     "croatian"
 };
 
-ImFontAtlas fonts_atlas{};
-ImFont *font_default{};
-ImFont *font_notif{};
+static ImFontAtlas fonts_atlas{};
+static ImFont *font_default{};
+static ImFont *font_notif{};
 
-std::recursive_mutex overlay_mutex{};
-std::atomic<bool> setup_overlay_called = false;
+static std::recursive_mutex overlay_mutex{};
+static std::atomic<bool> setup_overlay_called = false;
 
-char *notif_achievement_wav_custom{};
-char *notif_invite_wav_custom{};
-bool notif_achievement_wav_custom_inuse = false;
-bool notif_invite_wav_custom_inuse = false;
+static char *notif_achievement_wav_custom{};
+static char *notif_invite_wav_custom{};
 
 
 // ListBoxHeader() is deprecated and inlined inside <imgui.h>
@@ -145,6 +143,7 @@ Steam_Overlay::~Steam_Overlay()
 {
     if (settings->disable_overlay) return;
 
+    UnSetupOverlay();
     this->network->rmCallback(CALLBACK_ID_STEAM_MESSAGES, settings->get_local_steam_id(), &Steam_Overlay::overlay_networking_callback, this);
     run_every_runcb->remove(&Steam_Overlay::overlay_run_callback, this);
 }
@@ -343,12 +342,10 @@ void Steam_Overlay::load_audio()
                 if (i == 0) {
                     notif_achievement_wav_custom = new char [length];
                     myfile.read (notif_achievement_wav_custom, length);
-                    notif_achievement_wav_custom_inuse = true;
                 }
                 if (i == 1) {
                     notif_invite_wav_custom = new char [length];
                     myfile.read (notif_invite_wav_custom, length);
-                    notif_invite_wav_custom_inuse = true;
                 }
 
                 myfile.close();
@@ -534,11 +531,11 @@ void Steam_Overlay::obscure_game_input(bool state) {
 void Steam_Overlay::notify_sound_user_invite(friend_window_state& friend_state)
 {
     if (settings->disable_overlay_friend_notification) return;
-    if (!(friend_state.window_state & window_state_show) || !show_overlay)
-    {
+
+    if (!(friend_state.window_state & window_state_show) || !show_overlay) {
         friend_state.window_state |= window_state_need_attention;
 #ifdef __WINDOWS__
-        if (notif_invite_wav_custom_inuse) {
+        if (notif_invite_wav_custom) {
             PlaySoundA((LPCSTR)notif_invite_wav_custom, NULL, SND_ASYNC | SND_MEMORY);
         } else {
             PlaySoundA((LPCSTR)notif_invite_wav, NULL, SND_ASYNC | SND_MEMORY);
@@ -550,10 +547,10 @@ void Steam_Overlay::notify_sound_user_invite(friend_window_state& friend_state)
 void Steam_Overlay::notify_sound_user_achievement()
 {
     if (settings->disable_overlay_achievement_notification) return;
-    if (!show_overlay)
-    {
+
+    if (!show_overlay) {
 #ifdef __WINDOWS__
-        if (notif_achievement_wav_custom_inuse) {
+        if (notif_achievement_wav_custom) {
             PlaySoundA((LPCSTR)notif_achievement_wav_custom, NULL, SND_ASYNC | SND_MEMORY);
         }
 #endif
@@ -563,8 +560,8 @@ void Steam_Overlay::notify_sound_user_achievement()
 void Steam_Overlay::notify_sound_auto_accept_friend_invite()
 {
 #ifdef __WINDOWS__
-    if (notif_achievement_wav_custom_inuse) {
-        PlaySoundA((LPCSTR)notif_achievement_wav_custom, NULL, SND_ASYNC | SND_MEMORY);
+    if (notif_invite_wav_custom) {
+        PlaySoundA((LPCSTR)notif_invite_wav_custom, NULL, SND_ASYNC | SND_MEMORY);
     } else {
         PlaySoundA((LPCSTR)notif_invite_wav, NULL, SND_ASYNC | SND_MEMORY);
     }
@@ -1707,6 +1704,16 @@ void Steam_Overlay::UnSetupOverlay()
             }
 
             _renderer = nullptr;
+        }
+
+        if (notif_achievement_wav_custom) {
+            delete[] notif_achievement_wav_custom;
+            notif_achievement_wav_custom = nullptr;
+        }
+
+        if (notif_invite_wav_custom) {
+            delete[] notif_invite_wav_custom;
+            notif_invite_wav_custom = nullptr;
         }
     }
 }
