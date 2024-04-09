@@ -207,9 +207,6 @@ public:
     //make lobby creation fail in the matchmaking interface
     bool disable_lobby_creation = false;
 
-    // path to local save
-    std::string local_save{};
-
     //steamhttp external download support
     bool download_steamhttp_requests = false;
     bool force_steamhttp_success = false;

@@ -300,32 +300,39 @@ static void load_gamecontroller_settings(Settings *settings)
 }
 
 // steam_appid.txt
-uint32 parse_steam_app_id(std::string &program_path)
+static uint32 parse_steam_app_id(const std::string &program_path)
 {
+    uint32 appid = 0;
+
+    // try steam_settings folder
     char array[10] = {};
     array[0] = '0';
     Local_Storage::get_file_data(Local_Storage::get_game_settings_path() + "steam_appid.txt", array, sizeof(array) - 1);
-    uint32 appid = 0;
     try {
-        appid = std::stoi(array);
+        appid = std::stoul(array);
     } catch (...) {}
+
+    // try current dir
     if (!appid) {
         memset(array, 0, sizeof(array));
         array[0] = '0';
         Local_Storage::get_file_data("steam_appid.txt", array, sizeof(array) - 1);
         try {
-            appid = std::stoi(array);
+            appid = std::stoul(array);
         } catch (...) {}
-        if (!appid) {
-            memset(array, 0, sizeof(array));
-            array[0] = '0';
-            Local_Storage::get_file_data(program_path + "steam_appid.txt", array, sizeof(array) - 1);
-            try {
-                appid = std::stoi(array);
-            } catch (...) {}
-        }
     }
 
+    // try exe dir
+    if (!appid) {
+        memset(array, 0, sizeof(array));
+        array[0] = '0';
+        Local_Storage::get_file_data(program_path + "steam_appid.txt", array, sizeof(array) - 1);
+        try {
+            appid = std::stoul(array);
+        } catch (...) {}
+    }
+
+    // try env vars
     if (!appid) {
         std::string str_appid = get_env_variable("SteamAppId");
         std::string str_gameid = get_env_variable("SteamGameId");
@@ -374,24 +381,23 @@ uint32 parse_steam_app_id(std::string &program_path)
         }
     }
 
+    PRINT_DEBUG("final appid = %u", appid);
     return appid;
 }
 
 // local_save.txt
-bool parse_local_save(std::string &program_path, std::string &save_path)
+static bool parse_local_save(const std::string &program_path, std::string &save_path)
 {
-    bool local_save = false;
-
     char array[256] = {};
     if (Local_Storage::get_file_data(program_path + "local_save.txt", array, sizeof(array) - 1) != -1) {
         save_path = program_path + Settings::sanitize(array);
-        local_save = true;
+        return true;
     }
-    return local_save;
+    return false;
 }
 
 // listen_port.txt
-uint16 parse_listen_port(class Local_Storage *local_storage)
+static uint16 parse_listen_port(class Local_Storage *local_storage)
 {
     char array_port[10] = {};
     array_port[0] = '0';
@@ -406,7 +412,7 @@ uint16 parse_listen_port(class Local_Storage *local_storage)
 }
 
 // account_name.txt
-std::string parse_account_name(class Local_Storage *local_storage)
+static std::string parse_account_name(class Local_Storage *local_storage)
 {
     char name[100] = {};
     if (local_storage->get_data_settings("account_name.txt", name, sizeof(name) - 1) <= 0) {
@@ -417,7 +423,7 @@ std::string parse_account_name(class Local_Storage *local_storage)
 }
 
 // user_steam_id.txt
-CSteamID parse_user_steam_id(class Local_Storage *local_storage)
+static CSteamID parse_user_steam_id(class Local_Storage *local_storage)
 {
     char array_steam_id[32] = {};
     CSteamID user_id;
@@ -458,7 +464,7 @@ CSteamID parse_user_steam_id(class Local_Storage *local_storage)
 
 // language.txt
 // valid list: https://partner.steamgames.com/doc/store/localization/languages
-std::string parse_current_language(class Local_Storage *local_storage)
+static std::string parse_current_language(class Local_Storage *local_storage)
 {
     char language[64] = {};
     if (local_storage->get_data_settings("language.txt", language, sizeof(language) - 1) <= 0) {
@@ -471,7 +477,7 @@ std::string parse_current_language(class Local_Storage *local_storage)
 
 // supported_languages.txt
 // valid list: https://partner.steamgames.com/doc/store/localization/languages
-std::set<std::string> parse_supported_languages(class Local_Storage *local_storage, std::string &language)
+static std::set<std::string> parse_supported_languages(class Local_Storage *local_storage, std::string &language)
 {
     std::set<std::string> supported_languages{};
 
@@ -513,7 +519,7 @@ std::set<std::string> parse_supported_languages(class Local_Storage *local_stora
 }
 
 // DLC.txt
-static void parse_dlc(class Settings *settings_client, Settings *settings_server)
+static void parse_dlc(class Settings *settings_client, class Settings *settings_server)
 {
     std::string dlc_config_path = Local_Storage::get_game_settings_path() + "DLC.txt";
     std::ifstream input( utf8_decode(dlc_config_path) );
@@ -595,7 +601,7 @@ static void parse_app_paths(class Settings *settings_client, Settings *settings_
 }
 
 // leaderboards.txt
-static void parse_leaderboards(class Settings *settings_client, Settings *settings_server)
+static void parse_leaderboards(class Settings *settings_client, class Settings *settings_server)
 {
     std::string dlc_config_path = Local_Storage::get_game_settings_path() + "leaderboards.txt";
     std::ifstream input( utf8_decode(dlc_config_path) );
@@ -638,7 +644,7 @@ static void parse_leaderboards(class Settings *settings_client, Settings *settin
 }
 
 // stats.txt
-static void parse_stats(class Settings *settings_client, Settings *settings_server)
+static void parse_stats(class Settings *settings_client, class Settings *settings_server)
 {
     std::string stats_config_path = Local_Storage::get_game_settings_path() + "stats.txt";
     std::ifstream input( utf8_decode(stats_config_path) );
@@ -706,7 +712,7 @@ static void parse_stats(class Settings *settings_client, Settings *settings_serv
 }
 
 // depots.txt
-static void parse_depots(class Settings *settings_client, Settings *settings_server)
+static void parse_depots(class Settings *settings_client, class Settings *settings_server)
 {
     std::string depots_config_path = Local_Storage::get_game_settings_path() + "depots.txt";
     std::ifstream input( utf8_decode(depots_config_path) );
@@ -733,7 +739,7 @@ static void parse_depots(class Settings *settings_client, Settings *settings_ser
 }
 
 // subscribed_groups.txt
-static void parse_subscribed_groups(class Settings *settings_client, Settings *settings_server)
+static void parse_subscribed_groups(class Settings *settings_client, class Settings *settings_server)
 {
     std::string depots_config_path = Local_Storage::get_game_settings_path() + "subscribed_groups.txt";
     std::ifstream input( utf8_decode(depots_config_path) );
@@ -760,7 +766,7 @@ static void parse_subscribed_groups(class Settings *settings_client, Settings *s
 }
 
 // installed_app_ids.txt
-static void parse_installed_app_Ids(class Settings *settings_client, Settings *settings_server)
+static void parse_installed_app_Ids(class Settings *settings_client, class Settings *settings_server)
 {
     std::string installed_apps_list_path = Local_Storage::get_game_settings_path() + "installed_app_ids.txt";
     std::ifstream input( utf8_decode(installed_apps_list_path) );
@@ -794,7 +800,7 @@ static void parse_installed_app_Ids(class Settings *settings_client, Settings *s
 }
 
 // force_branch_name.txt
-static void parse_force_branch_name(class Settings *settings_client, Settings *settings_server)
+static void parse_force_branch_name(class Settings *settings_client, class Settings *settings_server)
 {
     std::string installed_apps_list_path = Local_Storage::get_game_settings_path() + "force_branch_name.txt";
     std::ifstream input( utf8_decode(installed_apps_list_path) );
@@ -1067,19 +1073,23 @@ static bool parse_force_listen_port(uint16 &port, std::string &steam_settings_pa
 }
 
 // build_id.txt
-static void parse_build_id(int &build_id, std::string &steam_settings_path)
+static void parse_build_id(class Settings *settings_client, class Settings *settings_server)
 {
+    std::string steam_settings_path(Local_Storage::get_game_settings_path());
     char array_id[10] = {};
     int len = Local_Storage::get_file_data(steam_settings_path + "build_id.txt", array_id, sizeof(array_id) - 1);
     if (len > 0) {
-        build_id = std::stoi(array_id);
+        int build_id = std::stoi(array_id);
+        PRINT_DEBUG("build id = %i", build_id);
+        settings_client->build_id = build_id;
+        settings_server->build_id = build_id;
     }
 }
 
 // crash_printer_location.txt
 static void parse_crash_printer_location()
 {
-    std::string installed_apps_list_path = Local_Storage::get_game_settings_path() + "crash_printer_location.txt";
+    std::string installed_apps_list_path(Local_Storage::get_game_settings_path() + "crash_printer_location.txt");
     std::ifstream input( utf8_decode(installed_apps_list_path) );
     if (input.is_open()) {
         common_helpers::consume_bom(input);
@@ -1098,7 +1108,7 @@ static void parse_crash_printer_location()
 }
 
 // auto_accept_invite.txt
-static void parse_auto_accept_invite(class Settings *settings_client, Settings *settings_server)
+static void parse_auto_accept_invite(class Settings *settings_client, class Settings *settings_server)
 {
     std::string auto_accept_list_path = Local_Storage::get_game_settings_path() + "auto_accept_invite.txt";
     std::ifstream input( utf8_decode(auto_accept_list_path) );
@@ -1130,7 +1140,7 @@ static void parse_auto_accept_invite(class Settings *settings_client, Settings *
 }
 
 // ip_country.txt
-static void parse_ip_country(class Settings *settings_client, Settings *settings_server)
+static void parse_ip_country(class Settings *settings_client, class Settings *settings_server)
 {
     std::string setting_file = Local_Storage::get_game_settings_path() + "ip_country.txt";
     std::ifstream input( utf8_decode(setting_file) );
@@ -1150,7 +1160,7 @@ static void parse_ip_country(class Settings *settings_client, Settings *settings
 }
 
 // overlay_hook_delay_sec.txt
-static void parse_overlay_hook_delay_sec(class Settings *settings_client, Settings *settings_server)
+static void parse_overlay_hook_delay_sec(class Settings *settings_client, class Settings *settings_server)
 {
     std::string auto_accept_list_path = Local_Storage::get_game_settings_path() + "overlay_hook_delay_sec.txt";
     std::ifstream input( utf8_decode(auto_accept_list_path) );
@@ -1173,7 +1183,7 @@ static void parse_overlay_hook_delay_sec(class Settings *settings_client, Settin
 }
 
 // overlay_renderer_detector_timeout_sec.txt
-static void parse_overlay_renderer_detector_timeout_sec(class Settings *settings_client, Settings *settings_server)
+static void parse_overlay_renderer_detector_timeout_sec(class Settings *settings_client, class Settings *settings_server)
 {
     std::string auto_accept_list_path = Local_Storage::get_game_settings_path() + "overlay_renderer_detector_timeout_sec.txt";
     std::ifstream input( utf8_decode(auto_accept_list_path) );
@@ -1195,224 +1205,170 @@ static void parse_overlay_renderer_detector_timeout_sec(class Settings *settings
     }
 }
 
+// mainly enable/disable features
+static void parse_simple_features(class Settings *settings_client, class Settings *settings_server)
+{
+    std::string steam_settings_path(Local_Storage::get_game_settings_path());
+    std::vector<std::string> paths = Local_Storage::get_filenames_path(steam_settings_path);
+    for (const auto & p: paths) {
+        PRINT_DEBUG("steam settings path %s", p.c_str());
+        if (p == "build_id.txt") {
+            parse_build_id(settings_client, settings_server);
+        } else if (p == "steam_deck.txt") {
+            settings_client->steam_deck = true;
+            settings_server->steam_deck = true;
+        } else if (p == "download_steamhttp_requests.txt") {
+            settings_client->download_steamhttp_requests = true;
+            settings_server->download_steamhttp_requests = true;
+        } else if (p == "force_steamhttp_success.txt") {
+            settings_client->force_steamhttp_success = true;
+            settings_server->force_steamhttp_success = true;
+        } else if (p == "disable_networking.txt") {
+            settings_client->disable_networking = true;
+            settings_server->disable_networking = true;
+        } else if (p == "enable_experimental_overlay.txt") {
+            settings_client->disable_overlay = false;
+            settings_server->disable_overlay = false;
+        } else if (p == "disable_overlay_achievement_notification.txt") {
+            settings_client->disable_overlay_achievement_notification = true;
+            settings_server->disable_overlay_achievement_notification = true;
+        } else if (p == "disable_overlay_friend_notification.txt") {
+            settings_client->disable_overlay_friend_notification = true;
+            settings_server->disable_overlay_friend_notification = true;
+        } else if (p == "disable_overlay_warning_forced_setting.txt") {
+            settings_client->disable_overlay_warning_forced_setting = true;
+            settings_server->disable_overlay_warning_forced_setting = true;
+        } else if (p == "disable_overlay_warning_local_save.txt") {
+            settings_client->disable_overlay_warning_local_save = true;
+            settings_server->disable_overlay_warning_local_save = true;
+        } else if (p == "disable_overlay_warning_bad_appid.txt") { // overlay warning for bad app ID (= 0)
+            settings_client->disable_overlay_warning_bad_appid = true;
+            settings_server->disable_overlay_warning_bad_appid = true;
+        } else if (p == "disable_overlay_warning_any.txt") { // disable any overlay warning
+            settings_client->disable_overlay_warning_any = true;
+            settings_server->disable_overlay_warning_any = true;
+        } else if (p == "disable_lobby_creation.txt") {
+            settings_client->disable_lobby_creation = true;
+            settings_server->disable_lobby_creation = true;
+        } else if (p == "disable_source_query.txt") {
+            settings_client->disable_source_query = true;
+            settings_server->disable_source_query = true;
+        } else if (p == "disable_account_avatar.txt") {
+            settings_client->disable_account_avatar = true;
+            settings_server->disable_account_avatar = true;
+        } else if (p == "disable_leaderboards_create_unknown.txt") {
+            settings_client->disable_leaderboards_create_unknown = true;
+            settings_server->disable_leaderboards_create_unknown = true;
+        } else if (p == "share_leaderboards_over_network.txt") {
+            settings_client->share_leaderboards_over_network = true;
+            settings_server->share_leaderboards_over_network = true;
+        } else if (p == "disable_sharing_stats_with_gameserver.txt") {
+            settings_client->disable_sharing_stats_with_gameserver = true;
+            settings_server->disable_sharing_stats_with_gameserver = true;
+        } else if (p == "immediate_gameserver_stats.txt") {
+            settings_client->immediate_gameserver_stats = true;
+            settings_server->immediate_gameserver_stats = true;
+        } else if (p == "achievements_bypass.txt") {
+            settings_client->achievement_bypass = true;
+            settings_server->achievement_bypass = true;
+        } else if (p == "is_beta_branch.txt") {
+            settings_client->is_beta_branch = true;
+            settings_server->is_beta_branch = true;
+        } else if (p == "new_app_ticket.txt") {
+            settings_client->enable_new_app_ticket = true;
+            settings_server->enable_new_app_ticket = true;
+        } else if (p == "gc_token.txt") {
+            settings_client->use_gc_token = true;
+            settings_server->use_gc_token = true;
+        } else if (p == "matchmaking_server_list_actual_type.txt") {
+            settings_client->matchmaking_server_list_always_lan_type = false;
+            settings_server->matchmaking_server_list_always_lan_type = false;
+        } else if (p == "matchmaking_server_details_via_source_query.txt") {
+            settings_client->matchmaking_server_details_via_source_query = true;
+            settings_server->matchmaking_server_details_via_source_query = true;
+        }
+    }
+}
+
+
+
 uint32 create_localstorage_settings(Settings **settings_client_out, Settings **settings_server_out, Local_Storage **local_storage_out)
 {
-    std::string program_path = Local_Storage::get_program_path();
-    std::string save_path = Local_Storage::get_user_appdata_path();
-
-    PRINT_DEBUG("Current Path %s save_path: %s", program_path.c_str(), save_path.c_str());
-
+    PRINT_DEBUG_ENTRY();
     parse_crash_printer_location();
 
+    std::string program_path(Local_Storage::get_program_path());
     uint32 appid = parse_steam_app_id(program_path);
-
+    
+    std::string save_path(Local_Storage::get_user_appdata_path());
     bool local_save = parse_local_save(program_path, save_path);
+    PRINT_DEBUG("program path: '%s', save path: '%s'", program_path.c_str(), save_path.c_str());
 
-    PRINT_DEBUG("Set save_path: %s", save_path.c_str());
     Local_Storage *local_storage = new Local_Storage(save_path);
     local_storage->setAppId(appid);
 
     // Listen port
     uint16 port = parse_listen_port(local_storage);
-
     // Custom broadcasts
-    std::set<IP_PORT> custom_broadcasts;
+    std::set<IP_PORT> custom_broadcasts{};
     load_custom_broadcasts(local_storage->get_global_settings_path() + "custom_broadcasts.txt", custom_broadcasts);
     load_custom_broadcasts(Local_Storage::get_game_settings_path() + "custom_broadcasts.txt", custom_broadcasts);
 
     // Acount name
-    std::string name = parse_account_name(local_storage);
-    
+    std::string name(parse_account_name(local_storage));
     // Steam ID
     CSteamID user_id = parse_user_steam_id(local_storage);
-
     // Language
-    std::string language = parse_current_language(local_storage);
-
+    std::string language(parse_current_language(local_storage));
     // Supported languages, this will change the current language if needed
-    std::set<std::string> supported_languages = parse_supported_languages(local_storage, language);
+    std::set<std::string> supported_languages(parse_supported_languages(local_storage, language));
 
-    bool steam_offline_mode = false;
-    bool steam_deck_mode = false;
-    bool download_steamhttp_requests = false;
-    bool force_steamhttp_success = false;
-    bool disable_networking = false;
-    bool disable_overlay = true;
-    bool disable_overlay_achievement_notification = false;
-    bool disable_overlay_friend_notification = false;
-    bool disable_overlay_warning_forced_setting = false;
-    bool disable_overlay_warning_local_save = false;
-    bool disable_overlay_warning_bad_appid = false;
-    bool disable_overlay_warning_any = false;
-    bool disable_lobby_creation = false;
-    bool disable_source_query = false;
-    bool disable_account_avatar = false;
-    bool achievement_bypass = false;
-    bool is_beta_branch = false;
-    bool disable_leaderboards_create_unknown = false;
-    bool share_leaderboards_over_network = false;
-    bool disable_sharing_stats_with_gameserver = false;
-    bool immediate_gameserver_stats = false;
-    bool use_gc_token = false;
-    bool enable_new_app_ticket = false;
-    int build_id = 10;
-    bool matchmaking_server_list_always_lan_type = true;
-    bool matchmaking_server_details_via_source_query = false;
-
-    bool warn_forced_setting = false;
 
     // boolean flags and forced configurations
-    {
-        std::string steam_settings_path = Local_Storage::get_game_settings_path();
+    std::string steam_settings_path(Local_Storage::get_game_settings_path());
 
-        std::vector<std::string> paths = Local_Storage::get_filenames_path(steam_settings_path);
-        for (auto & p: paths) {
-            PRINT_DEBUG("steam settings path %s", p.c_str());
-            if (p == "offline.txt") {
-                steam_offline_mode = true;
-            } else if (p == "steam_deck.txt") {
-                steam_deck_mode = true;
-            } else if (p == "download_steamhttp_requests.txt") {
-                download_steamhttp_requests = true;
-            } else if (p == "force_steamhttp_success.txt") {
-                force_steamhttp_success = true;
-            } else if (p == "disable_networking.txt") {
-                disable_networking = true;
-            } else if (p == "enable_experimental_overlay.txt") {
-                disable_overlay = false;
-            } else if (p == "disable_overlay_achievement_notification.txt") {
-                disable_overlay_achievement_notification = true;
-            } else if (p == "disable_overlay_friend_notification.txt") {
-                disable_overlay_friend_notification = true;
-            } else if (p == "disable_overlay_warning_forced_setting.txt") {
-                disable_overlay_warning_forced_setting = true;
-            } else if (p == "disable_overlay_warning_local_save.txt") {
-                disable_overlay_warning_local_save = true;
-            } else if (p == "disable_overlay_warning_bad_appid.txt") {
-                disable_overlay_warning_bad_appid = true;
-            } else if (p == "disable_overlay_warning_any.txt") {
-                disable_overlay_warning_any = true;
-            } else if (p == "disable_lobby_creation.txt") {
-                disable_lobby_creation = true;
-            } else if (p == "disable_source_query.txt") {
-                disable_source_query = true;
-            } else if (p == "disable_account_avatar.txt") {
-                disable_account_avatar = true;
-            } else if (p == "disable_leaderboards_create_unknown.txt") {
-                disable_leaderboards_create_unknown = true;
-            } else if (p == "share_leaderboards_over_network.txt") {
-                share_leaderboards_over_network = true;
-            } else if (p == "disable_sharing_stats_with_gameserver.txt") {
-                disable_sharing_stats_with_gameserver = true;
-            } else if (p == "immediate_gameserver_stats.txt") {
-                immediate_gameserver_stats = true;
-            } else if (p == "achievements_bypass.txt") {
-                achievement_bypass = true;
-            } else if (p == "is_beta_branch.txt") {
-                is_beta_branch = true;
-            } else if (p == "force_language.txt") {
-                warn_forced_setting |= parse_force_language(language, steam_settings_path);
-            } else if (p == "force_steamid.txt") {
-                warn_forced_setting |= parse_force_user_steam_id(user_id, steam_settings_path);
-            } else if (p == "force_account_name.txt") {
-                warn_forced_setting |= parse_force_account_name(name, steam_settings_path);
-            } else if (p == "force_listen_port.txt") {
-                warn_forced_setting |= parse_force_listen_port(port, steam_settings_path);
-            } else if (p == "build_id.txt") {
-                parse_build_id(build_id, steam_settings_path);
-            } else if (p == "new_app_ticket.txt") {
-                enable_new_app_ticket = true;
-            } else if (p == "gc_token.txt") {
-                use_gc_token = true;
-            } else if (p == "matchmaking_server_list_actual_type.txt") {
-                matchmaking_server_list_always_lan_type = false;
-            } else if (p == "matchmaking_server_details_via_source_query.txt") {
-                matchmaking_server_details_via_source_query = true;
-            }
-        }
+    bool warn_forced_setting = false;
+    if (file_exists_(steam_settings_path + "force_steamid.txt")) {
+        warn_forced_setting |= parse_force_user_steam_id(user_id, steam_settings_path);
+    }
+
+    if (file_exists_(steam_settings_path + "force_account_name.txt")) {
+        warn_forced_setting |= parse_force_account_name(name, steam_settings_path);
+    }
+
+    if (file_exists_(steam_settings_path + "force_language.txt")) {
+        warn_forced_setting |= parse_force_language(language, steam_settings_path);
+    }
+
+    if (file_exists_(steam_settings_path + "force_listen_port.txt")) {
+        warn_forced_setting |= parse_force_listen_port(port, steam_settings_path);
+    }
+
+    bool steam_offline_mode = false;
+    if (file_exists_(steam_settings_path + "offline.txt")) {
+        steam_offline_mode = true;
     }
 
     Settings *settings_client = new Settings(user_id, CGameID(appid), name, language, steam_offline_mode);
     Settings *settings_server = new Settings(generate_steam_id_server(), CGameID(appid), name, language, steam_offline_mode);
+
+    // listen port
     settings_client->set_port(port);
     settings_server->set_port(port);
+    // broadcasts list
     settings_client->custom_broadcasts = custom_broadcasts;
     settings_server->custom_broadcasts = custom_broadcasts;
-    settings_client->disable_networking = disable_networking;
-    settings_server->disable_networking = disable_networking;
-
-    settings_client->disable_overlay = disable_overlay;
-    settings_server->disable_overlay = disable_overlay;
-    settings_client->disable_overlay_achievement_notification = disable_overlay_achievement_notification;
-    settings_server->disable_overlay_achievement_notification = disable_overlay_achievement_notification;
-    settings_client->disable_overlay_friend_notification = disable_overlay_friend_notification;
-    settings_server->disable_overlay_friend_notification = disable_overlay_friend_notification;
     // overlay warning for forced setting
     settings_client->overlay_warn_forced_setting = warn_forced_setting;
     settings_server->overlay_warn_forced_setting = warn_forced_setting;
-    settings_client->disable_overlay_warning_forced_setting = disable_overlay_warning_forced_setting;
-    settings_server->disable_overlay_warning_forced_setting = disable_overlay_warning_forced_setting;
     // overlay warning for local save
     settings_client->overlay_warn_local_save = local_save;
     settings_server->overlay_warn_local_save = local_save;
-    settings_client->disable_overlay_warning_local_save = disable_overlay_warning_local_save;
-    settings_server->disable_overlay_warning_local_save = disable_overlay_warning_local_save;
-    // overlay warning for bad app ID (= 0)
-    settings_client->disable_overlay_warning_bad_appid = disable_overlay_warning_bad_appid;
-    settings_server->disable_overlay_warning_bad_appid = disable_overlay_warning_bad_appid;
-    // disable any overlay warning
-    settings_client->disable_overlay_warning_any = disable_overlay_warning_any;
-    settings_server->disable_overlay_warning_any = disable_overlay_warning_any;
-
-    settings_client->disable_lobby_creation = disable_lobby_creation;
-    settings_server->disable_lobby_creation = disable_lobby_creation;
-    settings_client->disable_source_query = disable_source_query;
-    settings_server->disable_source_query = disable_source_query;
-    settings_client->disable_account_avatar = disable_account_avatar;
-    settings_server->disable_account_avatar = disable_account_avatar;
-    settings_client->build_id = build_id;
-    settings_server->build_id = build_id;
+    // supported languages list
     settings_client->set_supported_languages(supported_languages);
     settings_server->set_supported_languages(supported_languages);
-    settings_client->steam_deck = steam_deck_mode;
-    settings_server->steam_deck = steam_deck_mode;
 
-    settings_client->download_steamhttp_requests = download_steamhttp_requests;
-    settings_server->download_steamhttp_requests = download_steamhttp_requests;
-    settings_client->force_steamhttp_success = force_steamhttp_success;
-    settings_server->force_steamhttp_success = force_steamhttp_success;
-
-    settings_client->achievement_bypass = achievement_bypass;
-    settings_server->achievement_bypass = achievement_bypass;
-    settings_client->is_beta_branch = is_beta_branch;
-    settings_server->is_beta_branch = is_beta_branch;
-
-    settings_client->disable_leaderboards_create_unknown = disable_leaderboards_create_unknown;
-    settings_server->disable_leaderboards_create_unknown = disable_leaderboards_create_unknown;
-
-    settings_client->share_leaderboards_over_network = share_leaderboards_over_network;
-    settings_server->share_leaderboards_over_network = share_leaderboards_over_network;
-
-    settings_client->disable_sharing_stats_with_gameserver = disable_sharing_stats_with_gameserver;
-    settings_server->disable_sharing_stats_with_gameserver = disable_sharing_stats_with_gameserver;
-    settings_client->immediate_gameserver_stats = immediate_gameserver_stats;
-    settings_server->immediate_gameserver_stats = immediate_gameserver_stats;
-
-    settings_client->enable_new_app_ticket = enable_new_app_ticket;
-    settings_server->enable_new_app_ticket = enable_new_app_ticket;
-    settings_client->use_gc_token = use_gc_token;
-    settings_server->use_gc_token = use_gc_token;
-
-    settings_client->matchmaking_server_list_always_lan_type = matchmaking_server_list_always_lan_type;
-    settings_server->matchmaking_server_list_always_lan_type = matchmaking_server_list_always_lan_type;
-    settings_client->matchmaking_server_details_via_source_query = matchmaking_server_details_via_source_query;
-    settings_server->matchmaking_server_details_via_source_query = matchmaking_server_details_via_source_query;
-
-    if (local_save) {
-        settings_client->local_save = save_path;
-        settings_server->local_save = save_path;
-    }
-
+    parse_simple_features(settings_client, settings_server);
     parse_dlc(settings_client, settings_server);
     parse_app_paths(settings_client, settings_server, program_path);
     parse_leaderboards(settings_client, settings_server);
