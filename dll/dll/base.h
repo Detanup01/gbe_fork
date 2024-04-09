@@ -108,9 +108,9 @@ CSteamID generate_steam_id_lobby();
 std::string get_full_lib_path();
 std::string get_full_program_path();
 std::string get_current_path();
-std::string canonical_path(std::string path);
-bool file_exists_(std::string full_path);
-unsigned int file_size_(std::string full_path);
+std::string canonical_path(const std::string &path);
+bool file_exists_(const std::string &full_path);
+unsigned int file_size_(const std::string &full_path);
 
 class SteamCallResults {
     std::vector<struct Steam_Call_Result> callresults;

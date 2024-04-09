@@ -55,17 +55,18 @@ public:
 private:
     std::string save_directory;
     std::string appid;
+    
 public:
     static std::string get_program_path();
     static std::string get_game_settings_path();
     static std::string get_user_appdata_path();
-    Local_Storage(const std::string &save_directory);
-    static int get_file_data(std::string full_path, char *data, unsigned int max_length, unsigned int offset=0);
-    void setAppId(uint32 appid);
+    static int get_file_data(const std::string &full_path, char *data, unsigned int max_length, unsigned int offset=0);
     static int store_file_data(std::string folder, std::string file, const char *data, unsigned int length);
     static std::vector<std::string> get_filenames_path(std::string path);
     static std::vector<std::string> get_folders_path(std::string path);
 
+    Local_Storage(const std::string &save_directory);
+    void setAppId(uint32 appid);
     int store_data(std::string folder, std::string file, char *data, unsigned int length);
     int store_data_settings(std::string file, const char *data, unsigned int length);
     int get_data(std::string folder, std::string file, char *data, unsigned int max_length, unsigned int offset=0);

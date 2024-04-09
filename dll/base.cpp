@@ -245,7 +245,7 @@ std::string get_current_path()
     return path;
 }
 
-std::string canonical_path(std::string path)
+std::string canonical_path(const std::string &path)
 {
     std::string output;
 #if defined(STEAM_WIN32)
@@ -265,17 +265,17 @@ std::string canonical_path(std::string path)
     return output;
 }
 
-bool file_exists_(std::string full_path)
+bool file_exists_(const std::string &full_path)
 {
 #if defined(STEAM_WIN32)
-    struct _stat buffer;
+    struct _stat buffer{};
     if (_wstat(utf8_decode(full_path).c_str(), &buffer) != 0)
         return false;
 
     if ( buffer.st_mode & _S_IFDIR)
         return false;
 #else
-    struct stat buffer;
+    struct stat buffer{};
     if (stat(full_path.c_str(), &buffer) != 0)
         return false;
 
@@ -286,13 +286,13 @@ bool file_exists_(std::string full_path)
     return true;
 }
 
-unsigned int file_size_(std::string full_path)
+unsigned int file_size_(const std::string &full_path)
 {
 #if defined(STEAM_WIN32)
-    struct _stat buffer = {};
+    struct _stat buffer{};
     if (_wstat(utf8_decode(full_path).c_str(), &buffer) != 0) return 0;
 #else
-    struct stat buffer = {};
+    struct stat buffer{};
     if (stat (full_path.c_str(), &buffer) != 0) return 0;
 #endif
     return buffer.st_size;
