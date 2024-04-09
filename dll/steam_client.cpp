@@ -98,7 +98,7 @@ Steam_Client::Steam_Client()
     steam_overlay = new Steam_Overlay(settings_client, callback_results_client, callbacks_client, run_every_runcb, network);
 
     steam_user = new Steam_User(settings_client, local_storage, network, callback_results_client, callbacks_client);
-    steam_friends = new Steam_Friends(settings_client, network, callback_results_client, callbacks_client, run_every_runcb, steam_overlay);
+    steam_friends = new Steam_Friends(settings_client, local_storage, network, callback_results_client, callbacks_client, run_every_runcb, steam_overlay);
     steam_utils = new Steam_Utils(settings_client, callback_results_client, steam_overlay);
     
     ugc_bridge = new Ugc_Remote_Storage_Bridge(settings_client);

@@ -47,6 +47,7 @@ public ISteamFriends016,
 public ISteamFriends
 {
     class Settings *settings;
+    class Local_Storage* local_storage;
     class Networking *network;
     class SteamCallBacks *callbacks;
     class SteamCallResults *callback_results;
@@ -102,85 +103,55 @@ struct Avatar_Numbers add_friend_avatars(CSteamID id)
         return avatar_ids->second;
     }
 
-    struct Avatar_Numbers avatar_numbers;
+    struct Avatar_Numbers avatar_numbers{};
     std::string small_avatar(32 * 32 * 4, 0);
     std::string medium_avatar(64 * 64 * 4, 0);
     std::string large_avatar(184 * 184 * 4, 0);
 
-    if (!(settings->disable_account_avatar) && (id == settings->get_local_steam_id())) {
-        std::string file_path;
-        unsigned long long file_size;
+    static const std::initializer_list<std::string> avatar_icons = {
+        "account_avatar.png",
+        "account_avatar.jpg",
+        "account_avatar.jpeg",
+    };
 
-        for (int i = 0; i < 3; i++) {
-            std::string file_name;
-            if (i == 0) file_name = "account_avatar.png";
-            if (i == 1) file_name = "account_avatar.jpg";
-            if (i == 2) file_name = "account_avatar.jpeg";
-            file_path = Local_Storage::get_game_settings_path() + file_name;
-            file_size = file_size_(file_path);
-            if (file_size) break;
-        }
+    if (!settings->disable_account_avatar && (id == settings->get_local_steam_id())) {
+        std::string file_path{};
+        unsigned long long file_size{};
 
-        if (!file_size) {
-            for (int i = 0; i < 3; i++) {
-                std::string file_name;
-                if (i == 0) file_name = "account_avatar.png";
-                if (i == 1) file_name = "account_avatar.jpg";
-                if (i == 2) file_name = "account_avatar.jpeg";
-
-                if (settings->local_save.length() > 0) {
-                    file_path = settings->local_save + "/settings/" + file_name;
-                } else {
-                    file_path = Local_Storage::get_user_appdata_path() + "/settings/" + file_name;
-                }
-
+        // try local location first, then try global location
+        for (const auto &settings_path : { Local_Storage::get_game_settings_path(), local_storage->get_global_settings_path() }) {
+            for (const auto &file_name : avatar_icons) {
+                file_path = settings_path + file_name;
                 file_size = file_size_(file_path);
                 if (file_size) break;
             }
+            if (file_size) break;
         }
 
-        // no else statement here for default or else this breaks default images for friends
+        // no else statement here for default otherwise this breaks default images for friends
         if (file_size) {
             small_avatar = Local_Storage::load_image_resized(file_path, "", 32);
             medium_avatar = Local_Storage::load_image_resized(file_path, "", 64);
             large_avatar = Local_Storage::load_image_resized(file_path, "", 184);
         }
-    } else if (!(settings->disable_account_avatar)) {
+    } else if (!settings->disable_account_avatar) {
         Friend *f = find_friend(id);
         if (f && (large_avatar.compare(f->avatar()) != 0)) {
             large_avatar = f->avatar();
             medium_avatar = Local_Storage::load_image_resized("", f->avatar(), 64);
             small_avatar = Local_Storage::load_image_resized("", f->avatar(), 32);
         } else {
-            std::string file_path;
-            unsigned long long file_size;
+            std::string file_path{};
+            unsigned long long file_size{};
 
-            for (int i = 0; i < 3; i++) {
-                std::string file_name;
-                if (i == 0) file_name = "account_avatar_default.png";
-                if (i == 1) file_name = "account_avatar_default.jpg";
-                if (i == 2) file_name = "account_avatar_default.jpeg";
-                file_path = Local_Storage::get_game_settings_path() + file_name;
-                file_size = file_size_(file_path);
-                if (file_size) break;
-            }
-
-            if (!file_size) {
-                for (int i = 0; i < 3; i++) {
-                    std::string file_name;
-                    if (i == 0) file_name = "account_avatar_default.png";
-                    if (i == 1) file_name = "account_avatar_default.jpg";
-                    if (i == 2) file_name = "account_avatar_default.jpeg";
-
-                    if (settings->local_save.length() > 0) {
-                        file_path = settings->local_save + "/settings/" + file_name;
-                    } else {
-                        file_path = Local_Storage::get_user_appdata_path() + "/settings/" + file_name;
-                    }
-
+            // try local location first, then try global location
+            for (const auto &settings_path : { Local_Storage::get_game_settings_path(), local_storage->get_global_settings_path() }) {
+                for (const auto &file_name : avatar_icons) {
+                    file_path = settings_path + file_name;
                     file_size = file_size_(file_path);
                     if (file_size) break;
                 }
+                if (file_size) break;
             }
 
             if (file_size) {
@@ -221,8 +192,9 @@ void resend_friend_data()
     modified = true;
 }
 
-Steam_Friends(Settings* settings, Networking* network, SteamCallResults* callback_results, SteamCallBacks* callbacks, RunEveryRunCB* run_every_runcb, Steam_Overlay* overlay):
+Steam_Friends(Settings* settings, class Local_Storage* local_storage, Networking* network, SteamCallResults* callback_results, SteamCallBacks* callbacks, RunEveryRunCB* run_every_runcb, Steam_Overlay* overlay):
     settings(settings),
+    local_storage(local_storage),
     network(network),
     callbacks(callbacks),
     callback_results(callback_results),
