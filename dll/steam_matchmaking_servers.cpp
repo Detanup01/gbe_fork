@@ -749,7 +749,7 @@ void Steam_Matchmaking_Servers::RunCallbacks()
         r.gameservers_filtered.clear();
         for (auto &g : gameservers) {
             PRINT_DEBUG("%u==%u | %i==%i", g.server.appid(), r.appid, (int)g.type, (int)r.type);
-            if ((g.server.appid() == r.appid) && (g.type == r.type)) {
+            if ((g.server.appid() == r.appid) && (g.type == r.type || settings->matchmaking_server_list_always_lan_type)) {
                 PRINT_DEBUG("server found");
                 r.gameservers_filtered.push_back(g);
             }

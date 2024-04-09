@@ -6,6 +6,7 @@
 * decrease the periodicity of the background thread to `~100ms`, also prevent it from running if the callbacks are already running
 * output function name in debug log
 * imitate Windows resources of gameoverlayrenderer + add resources to networkingsocketslib
+* force add gameserver if `always_lan_type` was specified, not necessary but just in case
 
 ---
 
