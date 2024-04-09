@@ -200,7 +200,11 @@ void Steam_Overlay::renderer_hook_init_thread()
     // do a one time initialization
     // std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     _renderer = future_renderer.get();
-    PRINT_DEBUG("got renderer %p", _renderer);
+    if (!_renderer) { // is this even possible?
+        PRINT_DEBUG("renderer hook was null!");
+        return;
+    }
+    PRINT_DEBUG("got renderer hook %p for '%s'", _renderer, _renderer->GetLibraryName().c_str());
     
     // note: make sure to load all relevant strings before creating the font(s), otherwise some glyphs ranges will be missing
     load_achievements_data();
