@@ -1,3 +1,5 @@
+## 2024/4/10
+
 * properly implement `Steam_Apps::GetAvailableGameLanguages()`
 * ensure current emu language is inside `supported_languages` list
 * run the callbacks background thread earlier inside `Steam_Client::ConnectToGlobalUser()`  
@@ -13,19 +15,20 @@
   ---
 
 * decrease the periodicity of the background thread to `~100ms`, also prevent it from running if the callbacks are already running
-* output function name in debug log
+* output each function name in the debug log
 * imitate Windows resources of gameoverlayrenderer + add resources to networkingsocketslib
 * force add gameserver if `always_lan_type` was specified, not necessary but just in case
 * allow injecting id string during build via command line switch `+build_str <str>`
 
 ---
 
-# 2024/4/3 (hotfix 1)
+## 2024/4/3 (hotfix 1)
+
 * load achievements strings before creating fonts, so that their glyphs ranges are taken into consideration
 
 ---
 
-# 2024/4/3
+## 2024/4/3
 
 * **[detiam]** fix linking errors when building on archlinux
 * **[detiam]** optimize Linux deps build script:
@@ -71,7 +74,7 @@
 
 ---
 
-# 2024/3/17
+## 2024/3/17
 
 * **[bitsynth]** Fix Age of Empires 2: Definitive Edition, the game expects the app itself to be an owned DLC,  
   otherwise most options will be disabled
@@ -80,7 +83,7 @@
 
 ---
 
-# 2024/3/16
+## 2024/3/16
 
 * manage overlay cursor input/clipping and internal frame processing in a better way,
   should prevent more games from pausing to display notifications
@@ -95,7 +98,7 @@
 
 ---
 
-# 2024/3/9
+## 2024/3/9
 
 * prevent notifications that do not require interaction from stealing focus 
 * check for success when creating the overlay popup window
@@ -105,7 +108,7 @@
 
 ---
 
-# 2024/3/8 (hotfix 1)
+## 2024/3/8 (hotfix 1)
 
 * don't allow posting overlay achievements notifications when the overlay isn't ready yet
 * don't run overlay callback when it isn't ready yet
@@ -113,7 +116,7 @@
 
 ---
 
-# 2024/3/8
+## 2024/3/8
 
 * updated the ingame overlay project, suggested by **[CHESIRE721]**  
   Thanks to **[Nemirtingas]** for the amazing project: https://github.com/Nemirtingas/ingame_overlay
@@ -149,7 +152,7 @@
 
 ---
 
-# 2024/2/29
+## 2024/2/29
 
 * revert the changes to `steam_matchmaking_servers` and only enable them via the 2 new config files:
   - `matchmaking_server_list_actual_type.txt`: enable the behavior which allows steam matchmaking to use the actual type of the requestd server list, otherwise it's always LAN
@@ -161,14 +164,14 @@
 
 ---
 
-# 2024/2/24
+## 2024/2/24
 
 * build the python scripts `achievements_gen.py` and `parse_controller_vdf.py` into binary form using `pyinstaller` for a more user friendly usage, suggested by **[DogancanYr]**
 * change the scripts `achievements_gen.py` and `parse_controller_vdf.py` to accept multiple files
 
 ---
 
-# 2024/2/23
+## 2024/2/23
 
 * more accurately handle and download steamhttp requests in multi-threaded manner:
   - hanlde `GET`, `HEAD`, `POST`
@@ -182,7 +185,7 @@
 
 ---
 
-# 2024/2/20
+## 2024/2/20
 
 * generate_emu_config: allow setting the steam id of apps/games owners from an external file `top_owners_ids.txt` beside the script, suggested by **[M4RCK5]**
 * generate_emu_config: support the new format for `supported_languages`
