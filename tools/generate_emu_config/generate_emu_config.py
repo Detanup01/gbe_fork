@@ -535,7 +535,6 @@ def help():
     print(" -anon:   login as an anonymous account, these have very limited access and cannot get all app details")
     print(" -de:     disable some extra features by generating the corresponding config files in steam_settings folder")
     print(" -cve:    enable some convenient extra features by generating the corresponding config files in steam_settings folder")
-    print(" -xcve:   enable some convenient extra features by generating the corresponding config files in steam_settings folder")
     print(" -reldir: generate temp files/folders, and expect input files, relative to the current working directory")
     print("\nAll switches are optional except app id, at least 1 app id must be provided")
     print("\nAutomate the login prompt:")
