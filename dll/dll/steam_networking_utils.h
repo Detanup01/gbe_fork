@@ -109,6 +109,7 @@ SteamNetworkingMessage_t *AllocateMessage( int cbAllocateBuffer )
     if (cbAllocateBuffer < 0)
         cbAllocateBuffer = 0;
 
+    pMsg->m_pData = nullptr;
     if (cbAllocateBuffer)
         pMsg->m_pData = malloc(cbAllocateBuffer);
 
