@@ -267,9 +267,11 @@ Do not run more than one steam game with the **same appid** at the same time on 
 **Note: at the moment this feature is only enabled in the experimental builds**
 ---
 
-The overlay can be disabled by putting a file named `disable_overlay.txt` in the `steam_settings` folder.  
+The overlay can be enabled by creating a file named `enable_experimental_overlay.txt` in the `steam_settings` folder.  
+This feature is highly experimental and might cause crashes or other severe problems.  
 
 This is for games that depend on the steam overlay to let people join multiplayer games.  
+Alternatively, you can use the dedicated tool `lobby_connect` to join a game lobby.  
 Use `SHIFT-TAB` to open the overlay.
 
 ---
