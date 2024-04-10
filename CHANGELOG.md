@@ -1,4 +1,10 @@
-* **[breaking]** load overlay audio from `sounds` subfolder
+## 2024/4/11
+
+* **[breaking]** load overlay audio from `sounds` subfolder, either from the local game settings folder `steam_settings/sounds`,  
+  or from the global settings folder `Goldberg SteamEmu Settings/settings/sounds`
+* allow loading the overlay fonts from the global settings folder `Goldberg SteamEmu Settings/settings/fonts`
+* added missing example overlay `.wav` file
+* updated readme files + added some which were missing + removed invalid avatar example
 
 ---
 

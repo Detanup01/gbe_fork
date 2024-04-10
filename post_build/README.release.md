@@ -244,11 +244,10 @@ To allow external downloads which will be stored in this `steam_settings\http` f
 ---
 
 ## Avatar:
-Copy a `PNG` or `JPG` image to your `Goldberg SteamEmu Settings\settings` folder and name it `account_avatar`
+Copy a `png`, or a `jpg`, or a `jpeg` image file to your `Goldberg SteamEmu Settings\settings` folder and name it `account_avatar`.  
+You can also place this file inside the local `steam_settings` folder of the game.  
 
-You can also set a default profile picture for users who are missing one by copying a similar file called `account_avatar_default`  
-
-You can find example in `steam_settings.EXAMPLE`
+You can find an example in `steam_settings.EXAMPLE`
 
 ---
 
@@ -273,6 +272,20 @@ This feature is highly experimental and might cause crashes or other severe prob
 This is for games that depend on the steam overlay to let people join multiplayer games.  
 Alternatively, you can use the dedicated tool `lobby_connect` to join a game lobby.  
 Use `SHIFT-TAB` to open the overlay.
+
+---
+
+## Overlay notifications sounds:
+**Note: at the moment this feature is only enabled in the experimental builds for Windows only**
+---
+
+You can place a `.wav` file called `overlay_achievement_notification.wav` inside either the local `steam_settings/sounds` folder of the game,  
+or inside `Goldberg SteamEmu Settings/settings/sounds` folder, to play that audio file whenever an achievement is unlocked.  
+
+You can place a `.wav` file called `overlay_friend_notification.wav` inside either the local `steam_settings/sounds` folder of the game,  
+or inside `Goldberg SteamEmu Settings/settings/sounds` folder, to play that audio file whenever a friend sends an achievement.  
+
+You can find an example in `steam_settings.EXAMPLE`
 
 ---
 
@@ -447,6 +460,8 @@ Check the example files in the `steam_settings` folder
 ---
 
 These configuration file `overlay_appearance.txt` has various options to set for the overlay appearance.  
+You can place this file inside the local `steam_settings/` folder, or inside the global settings folder `Goldberg SteamEmu Settings/settings/`.  
+
 The notifications positions could be set to one of these values:  
 * `top_left`
 * `top_center`

@@ -3,8 +3,9 @@
 ; only set the parameters relevant to your use case
 ; ---------------------------
 
-; load custom TrueType font from a path
-; path could be absolute, or relative to steam_settings/fonts
+; load custom TrueType font from a path, it could be absolute, or relative
+; relative paths will be looked up inside the local folder "steam_settings/fonts" first,
+; if that wasn't found, it will be looked up inside the global folder "Goldberg SteamEmu Settings/settings/fonts"
 Font_Override BungeeSpice-Regular.ttf
 
 ; global font size

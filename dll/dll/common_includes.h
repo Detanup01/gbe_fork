@@ -112,7 +112,7 @@ static inline std::string utf8_encode(const std::wstring &wstr)
     return strTo;
 }
 
-// Convert an UTF8 string to a wide Unicode String
+// Convert UTF8 string to a wide Unicode String
 static inline std::wstring utf8_decode(const std::string &str)
 {
     if( str.empty() ) return std::wstring();
