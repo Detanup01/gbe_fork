@@ -110,7 +110,7 @@ HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, IS
     std::istringstream list_ss (list);
     std::string list_ip;
     while (std::getline(list_ss, list_ip)) {
-        if (list_ip.length() < 0) continue;
+        if (list_ip.length() <= 0) continue;
 
         unsigned int byte4, byte3, byte2, byte1, byte0;
         uint32 ip_int;
