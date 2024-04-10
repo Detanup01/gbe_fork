@@ -45,6 +45,8 @@ set /a BUILD_LIB_GAMEOVERLAY_64=0
 :: < 0: deduce, > 1: force
 set /a PARALLEL_THREADS_OVERRIDE=-1
 
+set "CMD_BUILD_STR="
+
 :: 0 = release, 1 = debug, otherwise error
 set /a BUILD_TYPE=-1
 
@@ -98,6 +100,14 @@ set /a VERBOSE=0
       set /a last_code=1
       goto :end_script
     )
+    shift /1
+  ) else if "%~1"=="+build_str" (
+    if "%~2"=="" (
+      call :err_msg "Expected a build string"
+      set /a last_code=1
+      goto :end_script
+    )
+    set "CMD_BUILD_STR=%~2"
     shift /1
   ) else if "%~1"=="-verbose" (
     set /a VERBOSE=1
@@ -239,9 +249,14 @@ set release_libs64=%release_libs_both% %ssq_lib64% %curl_lib64% %protob_lib64% %
 :: common source files used everywhere, just for convinience, you still have to provide a complete list later
 set release_src="dll/*.cpp" "%protoc_out_dir%/*.cc" "crash_printer/win.cpp" "helpers/common_helpers.cpp"
 
+set "emu_build_string=%CMD_BUILD_STR%"
+if not defined emu_build_string (
+  call :get_date_time_str emu_build_string
+)
+
 :: additional #defines
 set "common_defs=/DUTF_CPP_CPLUSPLUS=201703L /DCURL_STATICLIB /DUNICODE /D_UNICODE"
-set "release_defs=%dbg_defs% %common_defs%"
+set release_defs=%dbg_defs% %common_defs% /D"EMU_BUILD_STRING=%emu_build_string%"
 
 
 if not exist "%deps_dir%\" (
@@ -1006,6 +1021,58 @@ endlocal & exit /b %_exit%
   call "%_dos_stub_exe%" "%_file%"
 
 endlocal & exit /b %errorlevel%
+
+
+:: 1: (ref) out string
+:get_date_time_str
+setlocal
+  set "_date_v1="
+  set "_date_v2="
+  set "_date_v3="
+  set "_date_v4="
+  for /f "tokens=1-4 delims=/:-., " %%A in (' date /t') do (
+    set "_date_v1=%%~A"
+    set "_date_v2=%%~B"
+    set "_date_v3=%%~C"
+    set "_date_v4=%%~D"
+  )
+  if defined _date_v1 if "%_date_v1:~0,1%" lss "0" set "_date_v1="
+  if defined _date_v1 if "%_date_v1:~0,1%" gtr "9" set "_date_v1="
+
+  if defined _date_v2 if "%_date_v2:~0,1%" lss "0" set "_date_v2="
+  if defined _date_v2 if "%_date_v2:~0,1%" gtr "9" set "_date_v2="
+
+  if defined _date_v3 if "%_date_v3:~0,1%" lss "0" set "_date_v3="
+  if defined _date_v3 if "%_date_v3:~0,1%" gtr "9" set "_date_v3="
+
+  if defined _date_v4 if "%_date_v4:~0,1%" lss "0" set "_date_v4="
+  if defined _date_v4 if "%_date_v4:~0,1%" gtr "9" set "_date_v4="
+
+  set "_time_v1="
+  set "_time_v2="
+  set "_time_v3="
+  set "_time_v4="
+  for /f "tokens=1-4 delims=/:-., " %%A in (' time /t') do (
+    set "_time_v1=%%~A"
+    set "_time_v2=%%~B"
+    set "_time_v3=%%~C"
+    set "_time_v4=%%~D"
+  )
+  if defined _time_v1 if "%_time_v1:~0,1%" lss "0" set "_time_v1="
+  if defined _time_v1 if "%_time_v1:~0,1%" gtr "9" set "_time_v1="
+
+  if defined _time_v2 if "%_time_v2:~0,1%" lss "0" set "_time_v2="
+  if defined _time_v2 if "%_time_v2:~0,1%" gtr "9" set "_time_v2="
+
+  if defined _time_v3 if "%_time_v3:~0,1%" lss "0" set "_time_v3="
+  if defined _time_v3 if "%_time_v3:~0,1%" gtr "9" set "_time_v3="
+
+  if defined _time_v4 if "%_time_v4:~0,1%" lss "0" set "_time_v4="
+  if defined _time_v4 if "%_time_v4:~0,1%" gtr "9" set "_time_v4="
+endlocal & (
+  set "%~1=%_date_v1%%_date_v2%%_date_v3%%_date_v4%-%_time_v1%%_time_v2%%_time_v3%%_time_v4%"
+  exit /b
+)
 
 
 :cleanup

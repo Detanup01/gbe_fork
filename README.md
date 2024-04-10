@@ -130,6 +130,7 @@ Arguments you can pass to this script:
 >>>>>>>>>  ___
 
 * `-j <n>`: build with `<n>` parallel jobs, by default 70% of the available threads
+* `+build_str <str>`: add an identification string to the build (default date-time)
 * `-verbose`: output compiler/linker commands
 
 >>>>>>>>>  ___
@@ -194,6 +195,7 @@ Arguments you can pass to this script:
 >>>>>>>>>  ___
 
 * `-j <n>`: build with `<n>` parallel jobs, by default 70% of the available threads
+* `+build_str <str>`: add an identification string to the build (default date-time)
 * `-verbose`: output compiler/linker commands
 
 >>>>>>>>>  ___

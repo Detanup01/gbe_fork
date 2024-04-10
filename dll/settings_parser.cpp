@@ -1295,6 +1295,13 @@ static void parse_simple_features(class Settings *settings_client, class Setting
 uint32 create_localstorage_settings(Settings **settings_client_out, Settings **settings_server_out, Local_Storage **local_storage_out)
 {
     PRINT_DEBUG_ENTRY();
+
+#if defined(EMU_BUILD_STRING)
+    PRINT_DEBUG("emu build '%s'", EXPAND_AS_STR(EMU_BUILD_STRING));
+#else
+    PRINT_DEBUG("<unspecified emu build>");
+#endif
+
     parse_crash_printer_location();
 
     std::string program_path(Local_Storage::get_program_path());

@@ -175,6 +175,9 @@ static inline void reset_LastError()
 #include "steam/steam_gameserver.h"
 #include "steam/steamdatagram_tickets.h"
 
+#define AS_STR(x) #x
+#define EXPAND_AS_STR(x) AS_STR(x)
+
 // PRINT_DEBUG definition
 // notice the extra call to WSASetLastError(0) in Windows def
 #ifndef EMU_RELEASE_BUILD

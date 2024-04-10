@@ -148,7 +148,7 @@ jobs:
     - name: Build release mode
       shell: cmd
       working-directory: ${{ github.workspace }}
-      run: build_win.bat -verbose +exclient-extra-32 +exclient-extra-64 +lib-gameoverlay-32 +lib-gameoverlay-64 release
+      run: build_win.bat -verbose release +build_str ${{ github.sha }} +exclient-extra-32 +exclient-extra-64 +lib-gameoverlay-32 +lib-gameoverlay-64
 
 ### package (release mode)
     - name: Package build (release)
@@ -170,7 +170,7 @@ jobs:
     - name: Build debug mode
       shell: cmd
       working-directory: ${{ github.workspace }}
-      run: build_win.bat -verbose +exclient-extra-32 +exclient-extra-64 +lib-gameoverlay-32 +lib-gameoverlay-64 debug
+      run: build_win.bat -verbose debug +build_str ${{ github.sha }} +exclient-extra-32 +exclient-extra-64 +lib-gameoverlay-32 +lib-gameoverlay-64
 
 ### package (debug mode)
     - name: Package build (debug)

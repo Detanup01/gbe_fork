@@ -37,6 +37,8 @@ BUILD_LIB_NET_SOCKETS_64=0
 # < 0: deduce, > 1: force
 PARALLEL_THREADS_OVERRIDE=-1
 
+CMD_BUILD_STR=''
+
 # 0 = release, 1 = debug, otherwise error
 BUILD_TYPE=-1
 
@@ -54,6 +56,13 @@ for (( i=1; i<=$#; i++ )); do
       exit 1;
     }
     #echo "[?] Overriding parralel build jobs count with $PARALLEL_THREADS_OVERRIDE"
+  elif [[ "$var" = "+build_str" ]]; then
+    i=$((i+1))
+    CMD_BUILD_STR="${!i}"
+    [[ -z "$CMD_BUILD_STR" ]] && {
+      echo "[X] Expected a build string" >&2;
+      exit 1;
+    }
   elif [[ "$var" = "-lib-32" ]]; then
     BUILD_LIB32=0
   elif [[ "$var" = "-lib-64" ]]; then
@@ -257,8 +266,14 @@ release_src=(
   "helpers/common_helpers.cpp"
 )
 
+emu_build_string="$CMD_BUILD_STR"
+[[ -z "$emu_build_string" ]] && {
+  emu_build_string="$(date +'%m%d%Y-%H%M')"
+}
+
+# https://gcc.gnu.org/onlinedocs/gcc/Preprocessor-Options.html
 # additional #defines
-common_defs="-DGNUC -DUTF_CPP_CPLUSPLUS=201703L -DCURL_STATICLIB"
+common_defs="-DGNUC -DUTF_CPP_CPLUSPLUS=201703L -DCURL_STATICLIB -D'EMU_BUILD_STRING=$emu_build_string'"
 release_defs="$dbg_defs $common_defs"
 
 # errors to ignore during build

@@ -16,6 +16,7 @@
 * output function name in debug log
 * imitate Windows resources of gameoverlayrenderer + add resources to networkingsocketslib
 * force add gameserver if `always_lan_type` was specified, not necessary but just in case
+* allow injecting id string during build via command line switch `+build_str <str>`
 
 ---
 
