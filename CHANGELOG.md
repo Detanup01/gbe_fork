@@ -1,3 +1,7 @@
+* **[breaking]** load overlay audio from `sounds` subfolder
+
+---
+
 ## 2024/4/10
 
 * properly implement `Steam_Apps::GetAvailableGameLanguages()`
