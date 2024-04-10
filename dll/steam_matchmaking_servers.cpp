@@ -99,15 +99,15 @@ HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, IS
     }
 
     PRINT_DEBUG("list file '%s' [%llu bytes]", file_path.c_str(), file_size);
-    std::string list;
+    std::string list{};
     if (file_size) {
         list.resize(file_size);
-        Local_Storage::get_file_data(file_path, (char *)list.data(), file_size, 0);
+        Local_Storage::get_file_data(file_path, (char *)&list[0], file_size, 0);
     } else {
         return id;
     }
 
-    std::istringstream list_ss (list);
+    std::istringstream list_ss(list);
     std::string list_ip;
     while (std::getline(list_ss, list_ip)) {
         if (list_ip.length() <= 0) continue;

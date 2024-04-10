@@ -330,11 +330,11 @@ void Steam_Overlay::load_audio()
             if (file_size) break;
         }
 
+        kv.second.clear();
         if (file_size) {
-            kv.second.assign(file_size, 0);
-            Local_Storage::get_file_data(file_path, (char *)&kv.second[0], file_size);
-        } else {
-            kv.second.clear();
+            kv.second.assign(file_size + 1, 0); // +1 because this will be treated as a null-terminated string later
+            int read = Local_Storage::get_file_data(file_path, (char *)&kv.second[0], file_size);
+            if (read <= 0) kv.second.clear();
         }
     }
 }

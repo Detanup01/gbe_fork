@@ -348,9 +348,9 @@ int GetFavoriteGameCount()
     std::string file_path = Local_Storage::get_user_appdata_path() + "/7/" + Local_Storage::remote_storage_folder + "/serverbrowser_favorites.txt";
     unsigned long long file_size = file_size_(file_path);
     if (file_size) {
-        std::string list;
+        std::string list{};
         list.resize(file_size);
-        Local_Storage::get_file_data(file_path, (char *)list.data(), file_size, 0);
+        Local_Storage::get_file_data(file_path, (char *)&list[0], file_size, 0);
         auto list_lines = std::count(list.begin(), list.end(), '\n');
         list_lines += (!list.empty() && list.back() != '\n');
         return list_lines;
@@ -402,9 +402,9 @@ int AddFavoriteGame( AppId_t nAppID, uint32 nIP, uint16 nConnPort, uint16 nQuery
     newip_string.append(newip);
 
     if (file_size) {
-        std::string list;
+        std::string list{};
         list.resize(file_size);
-        Local_Storage::get_file_data(file_path, (char *)list.data(), file_size, 0);
+        Local_Storage::get_file_data(file_path, (char *)&list[0], file_size, 0);
         auto list_lines = std::count(list.begin(), list.end(), '\n');
         list_lines += (!list.empty() && list.back() != '\n');
 
@@ -465,9 +465,9 @@ bool RemoveFavoriteGame( AppId_t nAppID, uint32 nIP, uint16 nConnPort, uint16 nQ
     }
 
     if (file_size) {
-        std::string list;
+        std::string list{};
         list.resize(file_size);
-        Local_Storage::get_file_data(file_path, (char *)list.data(), file_size, 0);
+        Local_Storage::get_file_data(file_path, (char *)&list[0], file_size, 0);
 
         unsigned char ip[4];
         ip[0] = nIP & 0xFF;
