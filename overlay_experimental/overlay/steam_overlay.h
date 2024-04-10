@@ -102,6 +102,7 @@ struct NotificationsIndexes
 
 class Steam_Overlay
 {
+    constexpr static const char ACH_SOUNDS_FOLDER[] = "sounds";
     constexpr static const char ACH_FALLBACK_DIR[] = "achievement_images";
 
     class Settings* settings;

@@ -325,7 +325,7 @@ void Steam_Overlay::load_audio()
 
         // try local location first, then try global location
         for (const auto &settings_path : { Local_Storage::get_game_settings_path(), local_storage->get_global_settings_path() }) {
-            file_path = settings_path + kv.first;
+            file_path = settings_path + Steam_Overlay::ACH_SOUNDS_FOLDER + PATH_SEPARATOR + kv.first;
             file_size = file_size_(file_path);
             if (file_size) break;
         }
@@ -335,6 +335,7 @@ void Steam_Overlay::load_audio()
             kv.second.assign(file_size + 1, 0); // +1 because this will be treated as a null-terminated string later
             int read = Local_Storage::get_file_data(file_path, (char *)&kv.second[0], file_size);
             if (read <= 0) kv.second.clear();
+            PRINT_DEBUG("loaded '%s' (read %i/%u bytes)", file_path.c_str(), read, file_size);
         }
     }
 }
@@ -1096,7 +1097,7 @@ bool Steam_Overlay::try_load_ach_icon(Overlay_Achievement &ach, bool achieved)
         std::string file_path(Local_Storage::get_game_settings_path() + icon_name);
         unsigned int file_size = file_size_(file_path);
         if (!file_size) {
-            file_path = Local_Storage::get_game_settings_path() + Steam_Overlay::ACH_FALLBACK_DIR + "/" + icon_name;
+            file_path = Local_Storage::get_game_settings_path() + Steam_Overlay::ACH_FALLBACK_DIR + PATH_SEPARATOR + icon_name;
             file_size = file_size_(file_path);
         }
         if (file_size) {
