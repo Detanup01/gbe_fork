@@ -72,8 +72,10 @@ static ImFont *font_notif{};
 static std::recursive_mutex overlay_mutex{};
 static std::atomic<bool> setup_overlay_called = false;
 
-static char *notif_achievement_wav_custom{};
-static char *notif_invite_wav_custom{};
+static std::map<std::string, std::vector<char>> wav_files{
+    { "overlay_achievement_notification.wav", std::vector<char>{} },
+    { "overlay_friend_notification.wav", std::vector<char>{} },
+};
 
 
 // ListBoxHeader() is deprecated and inlined inside <imgui.h>
@@ -229,9 +231,7 @@ void Steam_Overlay::renderer_hook_init_thread()
 // note: make sure to load all relevant strings before creating the font(s), otherwise some glyphs ranges will be missing
 void Steam_Overlay::create_fonts()
 {
-    static std::atomic<bool> create_fonts_called = false;
-    bool not_created_yet = false;
-    if (!create_fonts_called.compare_exchange_weak(not_created_yet, true)) return;
+    PRINT_DEBUG_ENTRY();
 
     // disable rounding the texture height to the next power of two
     // see this: https://github.com/ocornut/imgui/blob/master/docs/FONTS.md#4-font-atlas-texture-fails-to-upload-to-gpu
@@ -317,39 +317,24 @@ void Steam_Overlay::create_fonts()
 
 void Steam_Overlay::load_audio()
 {
-    std::string file_path{};
-    std::string file_name{};
-    unsigned long long file_size;
+    PRINT_DEBUG_ENTRY();
 
-    for (int i = 0; i < 2; i++) {
-        if (i == 0) file_name = "overlay_achievement_notification.wav";
-        if (i == 1) file_name = "overlay_friend_notification.wav";
+    for (auto &kv : wav_files) {
+        std::string file_path{};
+        unsigned int file_size{};
 
-        file_path = Local_Storage::get_game_settings_path() + file_name;
-        file_size = file_size_(file_path);
-        if (!file_size) {
-            file_path = local_storage->get_global_settings_path() + file_name;
+        // try local location first, then try global location
+        for (const auto &settings_path : { Local_Storage::get_game_settings_path(), local_storage->get_global_settings_path() }) {
+            file_path = settings_path + kv.first;
             file_size = file_size_(file_path);
+            if (file_size) break;
         }
+
         if (file_size) {
-            std::ifstream myfile;
-            myfile.open(utf8_decode(file_path), std::ios::binary | std::ios::in);
-            if (myfile.is_open()) {
-                myfile.seekg (0, myfile.end);
-                int length = myfile.tellg();
-                myfile.seekg (0, myfile.beg);
-
-                if (i == 0) {
-                    notif_achievement_wav_custom = new char [length];
-                    myfile.read (notif_achievement_wav_custom, length);
-                }
-                if (i == 1) {
-                    notif_invite_wav_custom = new char [length];
-                    myfile.read (notif_invite_wav_custom, length);
-                }
-
-                myfile.close();
-            }
+            kv.second.assign(file_size, 0);
+            Local_Storage::get_file_data(file_path, (char *)&kv.second[0], file_size);
+        } else {
+            kv.second.clear();
         }
     }
 }
@@ -409,7 +394,7 @@ void Steam_Overlay::initial_load_achievements_icons()
             }
         }
 
-        try_load_ach_icon(ach);
+        try_load_ach_icon(ach, true);
 
         {
             std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
@@ -419,7 +404,7 @@ void Steam_Overlay::initial_load_achievements_icons()
             }
         }
 
-        try_load_ach_gray_icon(ach);
+        try_load_ach_icon(ach, false);
     }
 
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
@@ -535,8 +520,9 @@ void Steam_Overlay::notify_sound_user_invite(friend_window_state& friend_state)
     if (!(friend_state.window_state & window_state_show) || !show_overlay) {
         friend_state.window_state |= window_state_need_attention;
 #ifdef __WINDOWS__
-        if (notif_invite_wav_custom) {
-            PlaySoundA((LPCSTR)notif_invite_wav_custom, NULL, SND_ASYNC | SND_MEMORY);
+        auto wav_data = wav_files.find("overlay_friend_notification.wav");
+        if (wav_files.end() != wav_data && wav_data->second.size()) {
+            PlaySoundA((LPCSTR)&wav_data->second[0], NULL, SND_ASYNC | SND_MEMORY);
         } else {
             PlaySoundA((LPCSTR)notif_invite_wav, NULL, SND_ASYNC | SND_MEMORY);
         }
@@ -550,8 +536,9 @@ void Steam_Overlay::notify_sound_user_achievement()
 
     if (!show_overlay) {
 #ifdef __WINDOWS__
-        if (notif_achievement_wav_custom) {
-            PlaySoundA((LPCSTR)notif_achievement_wav_custom, NULL, SND_ASYNC | SND_MEMORY);
+        auto wav_data = wav_files.find("overlay_achievement_notification.wav");
+        if (wav_files.end() != wav_data && wav_data->second.size()) {
+            PlaySoundA((LPCSTR)&wav_data->second[0], NULL, SND_ASYNC | SND_MEMORY);
         }
 #endif
     }
@@ -560,8 +547,9 @@ void Steam_Overlay::notify_sound_user_achievement()
 void Steam_Overlay::notify_sound_auto_accept_friend_invite()
 {
 #ifdef __WINDOWS__
-    if (notif_invite_wav_custom) {
-        PlaySoundA((LPCSTR)notif_invite_wav_custom, NULL, SND_ASYNC | SND_MEMORY);
+    auto wav_data = wav_files.find("overlay_friend_notification.wav");
+    if (wav_files.end() != wav_data && wav_data->second.size()) {
+        PlaySoundA((LPCSTR)&wav_data->second[0], NULL, SND_ASYNC | SND_MEMORY);
     } else {
         PlaySoundA((LPCSTR)notif_invite_wav, NULL, SND_ASYNC | SND_MEMORY);
     }
@@ -1093,60 +1081,38 @@ void Steam_Overlay::invite_friend(uint64 friend_id, class Steam_Friends* steamFr
     }
 }
 
-bool Steam_Overlay::try_load_ach_icon(Overlay_Achievement &ach)
+bool Steam_Overlay::try_load_ach_icon(Overlay_Achievement &ach, bool achieved)
 {
     if (!_renderer) return false;
-    if (!ach.icon.expired()) return true;
+
+    std::weak_ptr<uint64_t> &icon_rsrc = achieved ? ach.icon : ach.icon_gray;
+    const std::string &icon_name = achieved ? ach.icon_name : ach.icon_gray_name;
+    uint8_t &load_trials = achieved ? ach.icon_load_trials : ach.icon_gray_load_trials;
+
+    if (!icon_rsrc.expired()) return true;
     
-    if (ach.icon_load_trials && ach.icon_name.size()) {
-        --ach.icon_load_trials;
-        std::string file_path = std::move(Local_Storage::get_game_settings_path() + ach.icon_name);
-        unsigned long long file_size = file_size_(file_path);
+    if (load_trials && icon_name.size()) {
+        --load_trials;
+        std::string file_path(Local_Storage::get_game_settings_path() + icon_name);
+        unsigned int file_size = file_size_(file_path);
         if (!file_size) {
-            file_path = std::move(Local_Storage::get_game_settings_path() + Steam_Overlay::ACH_FALLBACK_DIR + "/" + ach.icon_name);
+            file_path = Local_Storage::get_game_settings_path() + Steam_Overlay::ACH_FALLBACK_DIR + "/" + icon_name;
             file_size = file_size_(file_path);
         }
         if (file_size) {
             std::string img = Local_Storage::load_image_resized(file_path, "", settings->overlay_appearance.icon_size);
             if (img.length() > 0) {
-                ach.icon = _renderer->CreateImageResource(
+                icon_rsrc = _renderer->CreateImageResource(
                     (void*)img.c_str(),
                     settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size);
-                if (!ach.icon.expired()) ach.icon_load_trials = Overlay_Achievement::ICON_LOAD_MAX_TRIALS;
-                PRINT_DEBUG("'%s' (result=%i)", ach.name.c_str(), (int)!ach.icon.expired());
+                
+                if (!icon_rsrc.expired()) load_trials = Overlay_Achievement::ICON_LOAD_MAX_TRIALS;
+                PRINT_DEBUG("'%s' (result=%i)", ach.name.c_str(), (int)!icon_rsrc.expired());
             }
         }
     }
 
-    return !ach.icon.expired();
-}
-
-bool Steam_Overlay::try_load_ach_gray_icon(Overlay_Achievement &ach)
-{
-    if (!_renderer) return false;
-    if (!ach.icon_gray.expired()) return true;
-    
-    if (ach.icon_gray_load_trials && ach.icon_gray_name.size()) {
-        --ach.icon_gray_load_trials;
-        std::string file_path = std::move(Local_Storage::get_game_settings_path() + ach.icon_gray_name);
-        unsigned long long file_size = file_size_(file_path);
-        if (!file_size) {
-            file_path = std::move(Local_Storage::get_game_settings_path() + Steam_Overlay::ACH_FALLBACK_DIR + "/" + ach.icon_gray_name);
-            file_size = file_size_(file_path);
-        }
-        if (file_size) {
-            std::string img = Local_Storage::load_image_resized(file_path, "", settings->overlay_appearance.icon_size);
-            if (img.length() > 0) {
-                ach.icon_gray = _renderer->CreateImageResource(
-                    (void*)img.c_str(),
-                    settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size);
-                if (!ach.icon_gray.expired()) ach.icon_gray_load_trials = Overlay_Achievement::ICON_LOAD_MAX_TRIALS;
-                PRINT_DEBUG("'%s' (result=%i)", ach.name.c_str(), (int)!ach.icon_gray.expired());
-            }
-        }
-    }
-
-    return !ach.icon_gray.expired();
+    return !icon_rsrc.expired();
 }
 
 // Try to make this function as short as possible or it might affect game's fps.
@@ -1326,8 +1292,8 @@ void Steam_Overlay::render_main_window()
                     bool achieved = x.achieved;
                     bool hidden = x.hidden && !achieved;
 
-                    try_load_ach_icon(x);
-                    try_load_ach_gray_icon(x);
+                    try_load_ach_icon(x, true);
+                    try_load_ach_icon(x, false);
 
                     ImGui::Separator();
 
@@ -1672,13 +1638,13 @@ void Steam_Overlay::UnSetupOverlay()
 
         // stop internal frame processing & restore cursor
         if (_renderer) {
-            allow_renderer_frame_processing(false, true);
-            obscure_game_input(false);
-
             // for some reason this gets triggered after the overlay instance has been destroyed
             // I assume because the game de-initializes DX later after closing Steam APIs
             // this hacky solution just sets it to an empty function
-            _renderer->OverlayHookReady = [](InGameOverlay::OverlayHookState state) {};
+            _renderer->OverlayHookReady = [](InGameOverlay::OverlayHookState state){};
+            
+            allow_renderer_frame_processing(false, true);
+            obscure_game_input(false);
         }
 
         // allow the future_renderer thread to exit if needed
@@ -1690,7 +1656,7 @@ void Steam_Overlay::UnSetupOverlay()
         );
         
         if (_renderer) {
-            PRINT_DEBUG("will free any images resources");
+            PRINT_DEBUG("free-ing any images resources");
             for (auto &ach : achievements) {
                 if (!ach.icon.expired()) {
                     _renderer->ReleaseImageResource(ach.icon);
@@ -1706,14 +1672,13 @@ void Steam_Overlay::UnSetupOverlay()
             _renderer = nullptr;
         }
 
-        if (notif_achievement_wav_custom) {
-            delete[] notif_achievement_wav_custom;
-            notif_achievement_wav_custom = nullptr;
-        }
-
-        if (notif_invite_wav_custom) {
-            delete[] notif_invite_wav_custom;
-            notif_invite_wav_custom = nullptr;
+        // cleanup everything
+        fonts_atlas.Clear();
+        memset(&fonts_atlas, 0, sizeof(fonts_atlas));
+        font_default = nullptr;
+        font_notif = nullptr;
+        for (auto &kv : wav_files) {
+            kv.second.clear();
         }
     }
 }
@@ -1908,7 +1873,7 @@ void Steam_Overlay::AddAchievementNotification(nlohmann::json const& ach)
 
     if (!settings->disable_overlay_achievement_notification) {
         for (auto found_ach : found_achs) {
-            try_load_ach_icon(*found_ach);
+            try_load_ach_icon(*found_ach, true);
             submit_notification(
                 notification_type_achievement,
                 ach.value("displayName", std::string()) + "\n" + ach.value("description", std::string()),

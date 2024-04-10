@@ -6,9 +6,9 @@
 
   ---
 
-* **[breaking]** introduced a new config file `enable_experimental_overlay.EXAMPLE.txt`, this deprecates the config file `disable_overlay.txt`  
+* **[breaking]** introduced a new config file `enable_experimental_overlay.txt`, which deprecates the config file `disable_overlay.txt`  
   in many occasions this feature was a source of crashes, so it's better to make it an opt-in option.  
-  otherwise, the `experimental` and `Cold Client` builds of the emu will crash on startup by default for some apps/games 
+  otherwise, the `experimental` and `Cold Client` builds of the emu will crash by default on startup for some apps/games 
 
   ---
 

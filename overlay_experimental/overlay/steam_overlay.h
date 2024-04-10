@@ -215,8 +215,7 @@ class Steam_Overlay
 
     bool open_overlay_hook(bool toggle);
 
-    bool try_load_ach_icon(Overlay_Achievement &ach);
-    bool try_load_ach_gray_icon(Overlay_Achievement &ach);
+    bool try_load_ach_icon(Overlay_Achievement &ach, bool achieved);
 
     void overlay_render_proc();
     void render_main_window();

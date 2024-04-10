@@ -616,7 +616,7 @@ int Local_Storage::store_data_settings(std::string file, const char *data, unsig
 
 int Local_Storage::get_file_data(const std::string &full_path, char *data, unsigned int max_length, unsigned int offset)
 {
-    std::ifstream myfile;
+    std::ifstream myfile{};
     myfile.open(utf8_decode(full_path), std::ios::binary | std::ios::in);
     if (!myfile.is_open()) return -1;
 
