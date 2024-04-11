@@ -147,6 +147,10 @@ CSteamID generate_steam_id_lobby()
     return CSteamID(generate_account_id(), k_EChatInstanceFlagLobby | k_EChatInstanceFlagMMSLobby, k_EUniversePublic, k_EAccountTypeChat);
 }
 
+/// @brief Check for a timeout given some initial timepoint and a timeout in sec.
+/// @param old The initial timepoint which will be compared against current time
+/// @param timeout The max allowed time in seconds
+/// @return true if the timepoint has exceeded the max allowed timeout, false otherwise
 bool check_timedout(std::chrono::high_resolution_clock::time_point old, double timeout)
 {
     if (timeout == 0.0) return true;

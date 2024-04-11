@@ -80,13 +80,12 @@ Steam_Client::Steam_Client()
 
     network = new Networking(settings_server->get_local_steam_id(), appid, settings_server->get_port(), &(settings_server->custom_broadcasts), settings_server->disable_networking);
 
-    callback_results_client = new SteamCallResults();
-    callback_results_server = new SteamCallResults();
-    callbacks_client = new SteamCallBacks(callback_results_client);
-    callbacks_server = new SteamCallBacks(callback_results_server);
     run_every_runcb = new RunEveryRunCB();
 
-    PRINT_DEBUG("init: id: %llu server id: %llu, appid: %u, port: %u", settings_client->get_local_steam_id().ConvertToUint64(), settings_server->get_local_steam_id().ConvertToUint64(), appid, settings_server->get_port());
+    PRINT_DEBUG(
+        "init: id: %llu server id: %llu, appid: %u, port: %u",
+        settings_client->get_local_steam_id().ConvertToUint64(), settings_server->get_local_steam_id().ConvertToUint64(), appid, settings_server->get_port()
+    );
 
     if (appid) {
         auto appid_str = std::to_string(appid);
@@ -95,11 +94,15 @@ Steam_Client::Steam_Client()
 		set_env_variable("SteamOverlayGameId", appid_str);
     }
 
+    // client
+    PRINT_DEBUG("init client");
+    callback_results_client = new SteamCallResults();
+    callbacks_client = new SteamCallBacks(callback_results_client);
     steam_overlay = new Steam_Overlay(settings_client, local_storage, callback_results_client, callbacks_client, run_every_runcb, network);
 
     steam_user = new Steam_User(settings_client, local_storage, network, callback_results_client, callbacks_client);
     steam_friends = new Steam_Friends(settings_client, local_storage, network, callback_results_client, callbacks_client, run_every_runcb, steam_overlay);
-    steam_utils = new Steam_Utils(settings_client, callback_results_client, steam_overlay);
+    steam_utils = new Steam_Utils(settings_client, callback_results_client, callbacks_client, steam_overlay);
     
     ugc_bridge = new Ugc_Remote_Storage_Bridge(settings_client);
 
@@ -131,9 +134,13 @@ Steam_Client::Steam_Client()
     steam_remoteplay = new Steam_RemotePlay(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
     steam_tv = new Steam_TV(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
 
+    // server
     PRINT_DEBUG("init gameserver");
+    callback_results_server = new SteamCallResults();
+    callbacks_server = new SteamCallBacks(callback_results_server);
+
     steam_gameserver = new Steam_GameServer(settings_server, network, callbacks_server);
-    steam_gameserver_utils = new Steam_Utils(settings_server, callback_results_server, steam_overlay);
+    steam_gameserver_utils = new Steam_Utils(settings_server, callback_results_server, callbacks_server, steam_overlay);
     steam_gameserverstats = new Steam_GameServerStats(settings_server, network, callback_results_server, callbacks_server, run_every_runcb);
     steam_gameserver_networking = new Steam_Networking(settings_server, network, callbacks_server, run_every_runcb);
     steam_gameserver_http = new Steam_HTTP(settings_server, network, callback_results_server, callbacks_server);

@@ -273,7 +273,10 @@ SteamAPICall_t SendQueryUGCRequest( UGCQueryHandle_t handle )
     data.m_unNumResultsReturned = request->results.size();
     data.m_unTotalMatchingResults = request->results.size();
     data.m_bCachedData = false;
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 

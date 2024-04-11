@@ -37,10 +37,11 @@ public ISteamUtils
 private:
     Settings *settings;
     class SteamCallResults *callback_results;
+    class SteamCallBacks *callbacks{};
     Steam_Overlay* overlay;
 
 public:
-    Steam_Utils(Settings *settings, class SteamCallResults *callback_results, Steam_Overlay *overlay);
+    Steam_Utils(Settings *settings, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, Steam_Overlay *overlay);
 
     // return the number of seconds since the user 
     uint32 GetSecondsSinceAppActive();

@@ -1638,7 +1638,7 @@ SteamAPICall_t Steam_User_Stats::UploadLeaderboardScore( SteamLeaderboard_t hSte
 STEAM_CALL_RESULT( LeaderboardUGCSet_t )
 SteamAPICall_t Steam_User_Stats::AttachLeaderboardUGC( SteamLeaderboard_t hSteamLeaderboard, UGCHandle_t hUGC )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     LeaderboardUGCSet_t data{};
     if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) {

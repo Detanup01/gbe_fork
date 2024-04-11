@@ -181,6 +181,7 @@ void Steam_HTTP::online_http_request(Steam_Http_Request *request, SteamAPICall_t
         }
 
         if (pCallHandle) *pCallHandle = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1);
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.1);
     };
 
     std::size_t filename_part = request->target_filepath.find_last_of("\\/");
@@ -356,6 +357,7 @@ bool Steam_HTTP::SendHTTPRequest( HTTPRequestHandle hRequest, SteamAPICall_t *pC
         }
 
         if (pCallHandle) *pCallHandle = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1);
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.1);
     }
 
     return true;
@@ -367,7 +369,12 @@ bool Steam_HTTP::SendHTTPRequest( HTTPRequestHandle hRequest, SteamAPICall_t *pC
 // HTTPRequestDataReceived_t callbacks while streaming.
 bool Steam_HTTP::SendHTTPRequestAndStreamResponse( HTTPRequestHandle hRequest, SteamAPICall_t *pCallHandle )
 {
-    PRINT_DEBUG_ENTRY();
+    // TODO this function triggers 3 callbacks:
+    // https://partner.steamgames.com/doc/api/ISteamHTTP#SendHTTPRequestAndStreamResponse
+    // Triggers a HTTPRequestDataReceived_t callback.
+    // Triggers a HTTPRequestHeadersReceived_t callback.
+    // Triggers a HTTPRequestCompleted_t callback. 
+    PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     return SendHTTPRequest(hRequest, pCallHandle);

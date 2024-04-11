@@ -74,8 +74,10 @@ SteamAPICall_t CreateBrowser( const char *pchUserAgent, const char *pchUserCSS )
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     HTML_BrowserReady_t data;
     data.unBrowserHandle = 1234869;
-    //callback too?
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));;
+    
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 

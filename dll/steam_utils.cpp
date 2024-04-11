@@ -19,9 +19,10 @@
 #include "dll/steam_utils.h"
 
 
-Steam_Utils::Steam_Utils(Settings *settings, class SteamCallResults *callback_results, Steam_Overlay *overlay):
+Steam_Utils::Steam_Utils(Settings *settings, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, Steam_Overlay *overlay):
 settings(settings),
 callback_results(callback_results),
+callbacks(callbacks),
 overlay(overlay)
 {
     
@@ -258,7 +259,10 @@ SteamAPICall_t Steam_Utils::CheckFileSignature( const char *szFileName )
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     CheckFileSignature_t data;
     data.m_eCheckFileSignature = k_ECheckFileSignatureValidSignature;
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    // TODO callback too?
+    // callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 

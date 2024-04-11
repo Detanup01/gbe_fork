@@ -825,10 +825,13 @@ STEAM_CALL_RESULT( SteamInventoryRequestPricesResult_t )
 SteamAPICall_t RequestPrices()
 {
     PRINT_DEBUG_ENTRY();
-    SteamInventoryRequestPricesResult_t data;
+    SteamInventoryRequestPricesResult_t data{};
     data.m_result = k_EResultOK;
     memcpy(data.m_rgchCurrency, "USD", 4);
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.2);
+    
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.2);
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.2);
+    return ret;
 }
 
 

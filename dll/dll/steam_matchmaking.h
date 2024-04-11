@@ -27,36 +27,36 @@
 
 
 struct Pending_Joins {
-    SteamAPICall_t api_id;
-    CSteamID lobby_id;
-    std::chrono::high_resolution_clock::time_point joined;
-    bool message_sent;
+    SteamAPICall_t api_id{};
+    CSteamID lobby_id{};
+    std::chrono::high_resolution_clock::time_point joined{};
+    bool message_sent{};
 };
 
 struct Pending_Creates {
-    SteamAPICall_t api_id;
-    std::chrono::high_resolution_clock::time_point created;
-    ELobbyType eLobbyType;
-    int cMaxMembers;
+    SteamAPICall_t api_id{};
+    std::chrono::high_resolution_clock::time_point created{};
+    ELobbyType eLobbyType{};
+    int cMaxMembers{};
 };
 
 struct Data_Requested {
-    CSteamID lobby_id;
-    std::chrono::high_resolution_clock::time_point requested;
+    CSteamID lobby_id{};
+    std::chrono::high_resolution_clock::time_point requested{};
 };
 
 struct Filter_Values {
-	std::string key;
-	std::string value_string;
-	int value_int;
-	bool is_int;
-	ELobbyComparison eComparisonType;
+	std::string key{};
+	std::string value_string{};
+	int value_int{};
+	bool is_int{};
+	ELobbyComparison eComparisonType{};
 };
 
 struct Chat_Entry {
-    std::string message;
-    EChatEntryType type;
-    CSteamID lobby_id, user_id;
+    std::string message{};
+    EChatEntryType type{};
+    CSteamID lobby_id, user_id{};
 };
 
 #define FILTER_MAX_DEFAULT 4096
@@ -72,30 +72,31 @@ public ISteamMatchmaking007,
 public ISteamMatchmaking008,
 public ISteamMatchmaking
 {
-    class Settings *settings;
-    class Networking *network;
-    class SteamCallResults *callback_results;
-    class SteamCallBacks *callbacks;
-    class RunEveryRunCB *run_every_runcb;
+    class Settings *settings{};
+    class Networking *network{};
+    class SteamCallResults *callback_results{};
+    class SteamCallBacks *callbacks{};
+    class RunEveryRunCB *run_every_runcb{};
 
-    std::vector<Lobby> lobbies;
-    std::chrono::high_resolution_clock::time_point last_sent_lobbies;
-    std::vector<struct Pending_Joins> pending_joins;
-    std::vector<struct Pending_Creates> pending_creates;
+    std::vector<Lobby> lobbies{};
+    std::chrono::high_resolution_clock::time_point last_sent_lobbies{};
+    std::vector<struct Pending_Joins> pending_joins{};
+    std::vector<struct Pending_Creates> pending_creates{};
 
-    std::vector<struct Filter_Values> filter_values;
-    int filter_max_results;
-    std::vector<struct Filter_Values> filter_values_copy;
-    int filter_max_results_copy;
-    std::vector<CSteamID> filtered_lobbies;
-    std::chrono::high_resolution_clock::time_point lobby_last_search;
-    SteamAPICall_t search_call_api_id;
-    bool searching;
+    std::vector<struct Filter_Values> filter_values{};
+    int filter_max_results{};
+    std::vector<struct Filter_Values> filter_values_copy{};
+    int filter_max_results_copy{};
+    std::vector<CSteamID> filtered_lobbies{};
+    std::chrono::high_resolution_clock::time_point lobby_last_search{};
+    SteamAPICall_t search_call_api_id{};
+    bool searching{};
 
-    std::vector<struct Chat_Entry> chat_entries;
-    std::vector<struct Data_Requested> data_requested;
+    std::vector<struct Chat_Entry> chat_entries{};
+    std::vector<struct Data_Requested> data_requested{};
 
-    std::map<uint64, ::google::protobuf::Map<std::string, std::string>> self_lobby_member_data;
+    std::map<uint64, ::google::protobuf::Map<std::string, std::string>> self_lobby_member_data{};
+
 google::protobuf::Map<std::string,std::string>::const_iterator caseinsensitive_find(const ::google::protobuf::Map< ::std::string, ::std::string >& map, std::string key)
 {
     auto x = map.begin();
@@ -140,13 +141,12 @@ void trigger_lobby_dataupdate(CSteamID lobby, CSteamID member, bool success, dou
 {
     PRINT_DEBUG("%llu %llu", lobby.ConvertToUint64(), member.ConvertToUint64());
     LobbyDataUpdate_t data{};
-    memset(&data, 0, sizeof(data));
-
     data.m_ulSteamIDLobby = lobby.ConvertToUint64();
     data.m_bSuccess = success;
     data.m_ulSteamIDMember = member.ConvertToUint64();
     callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), cb_timeout, true);
 
+    // if this was a user data update, then trigger another callback for the lobby itself
     if (lobby != member) {
         data.m_ulSteamIDMember = lobby.ConvertToUint64();
         //Is this really necessary?
@@ -277,6 +277,7 @@ void remove_lobbies()
 void on_self_enter_leave_lobby(CSteamID id, int type, bool leaving)
 {
     if (type == k_ELobbyTypeInvisible) return;
+
     if (!leaving) {
         settings->set_lobby(id);
     } else {
@@ -544,9 +545,6 @@ SteamAPICall_t RequestLobbyList()
     searching = true;
     if (search_call_api_id) callback_results->rmCallBack(search_call_api_id, NULL);
     search_call_api_id = callback_results->reserveCallResult();
-
-
-
     
     return search_call_api_id;
 }
@@ -664,13 +662,13 @@ CSteamID GetLobbyByIndex( int iLobby )
     return id;
 }
 
-static bool enter_lobby(Lobby *lobby, CSteamID id)
+static bool add_member_to_lobby(Lobby *lobby, CSteamID id)
 {
     if (get_lobby_member(lobby, id)) return false; // player already exists
 
     Lobby_Member *member = lobby->add_members();
     member->set_id(id.ConvertToUint64());
-    PRINT_DEBUG("added player %llu to lobby", (uint64)id.ConvertToUint64());
+    PRINT_DEBUG("added lobby member %llu", (uint64)id.ConvertToUint64());
     return true;
 }
 
@@ -691,7 +689,7 @@ void Create_pending_lobbies()
     auto p_c = std::begin(pending_creates);
     while (p_c != std::end(pending_creates)) {
         if (check_timedout(p_c->created, LOBBY_CREATE_DELAY)) {
-            Lobby lobby;
+            Lobby lobby{};
             CSteamID lobby_id = generate_steam_id_lobby();
             lobby.set_room_id(lobby_id.ConvertToUint64());
             lobby.set_joinable(true);
@@ -699,7 +697,7 @@ void Create_pending_lobbies()
             lobby.set_type(p_c->eLobbyType);
             lobby.set_owner(settings->get_local_steam_id().ConvertToUint64());
             lobby.set_appid(settings->get_local_game_id().AppID());
-            enter_lobby(&lobby, settings->get_local_steam_id());
+            add_member_to_lobby(&lobby, settings->get_local_steam_id());
             lobbies.push_back(lobby);
 
             if (settings->disable_lobby_creation) {
@@ -714,17 +712,17 @@ void Create_pending_lobbies()
                 data.m_ulSteamIDLobby = lobby.room_id();
                 callback_results->addCallResult(p_c->api_id, data.k_iCallback, &data, sizeof(data));
                 callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
-
+                
                 {
-                    LobbyEnter_t data;
-                    data.m_ulSteamIDLobby = lobby.room_id();
-                    data.m_rgfChatPermissions = 0; //Unused - Always 0
+                    LobbyEnter_t data2{};
+                    data2.m_ulSteamIDLobby = lobby.room_id();
+                    data2.m_rgfChatPermissions = 0; //Unused - Always 0
                     if (p_c->eLobbyType == k_ELobbyTypePrivate)
-                        data.m_bLocked = true;
+                        data2.m_bLocked = true;
                     else
-                        data.m_bLocked = false;
-                    data.m_EChatRoomEnterResponse = k_EChatRoomEnterResponseSuccess;
-                    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+                        data2.m_bLocked = false;
+                    data2.m_EChatRoomEnterResponse = k_EChatRoomEnterResponseSuccess;
+                    callbacks->addCBResult(data2.k_iCallback, &data2, sizeof(data2));
                 }
 
                 on_self_enter_leave_lobby(lobby_id, p_c->eLobbyType, false);
@@ -749,7 +747,7 @@ SteamAPICall_t CreateLobby( ELobbyType eLobbyType, int cMaxMembers )
 {
     PRINT_DEBUG("type: %i max_members: %i", eLobbyType, cMaxMembers);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    struct Pending_Creates p_c;
+    struct Pending_Creates p_c{};
     p_c.api_id = callback_results->reserveCallResult();
     p_c.eLobbyType = eLobbyType;
     p_c.cMaxMembers = cMaxMembers;
@@ -760,6 +758,7 @@ SteamAPICall_t CreateLobby( ELobbyType eLobbyType, int cMaxMembers )
 
 SteamAPICall_t CreateLobby( ELobbyType eLobbyType )
 {
+    PRINT_DEBUG("old");
 	return CreateLobby(eLobbyType, 0);
 }
 
@@ -1431,8 +1430,9 @@ void RunCallbacks()
             PRINT_DEBUG("Lobby " "%" PRIu64 " use %u", l.room_id(), use);
             if (use) PUSH_BACK_IF_NOT_IN(filtered_lobbies, (uint64)l.room_id());
             if (filtered_lobbies.size() >= filter_max_results_copy) {
+                PRINT_DEBUG("returning lobby search results, count=%zu", filtered_lobbies.size());
                 searching = false;
-                LobbyMatchList_t data;
+                LobbyMatchList_t data{};
                 data.m_nLobbiesMatching = filtered_lobbies.size();
                 callback_results->addCallResult(search_call_api_id, data.k_iCallback, &data, sizeof(data));
                 callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
@@ -1443,7 +1443,7 @@ void RunCallbacks()
 
     if (searching && check_timedout(lobby_last_search, LOBBY_SEARCH_TIMEOUT)) {
         PRINT_DEBUG("LOBBY_SEARCH_TIMEOUT %zu", filtered_lobbies.size());
-        LobbyMatchList_t data;
+        LobbyMatchList_t data{};
         data.m_nLobbiesMatching = filtered_lobbies.size();
         callback_results->addCallResult(search_call_api_id, data.k_iCallback, &data, sizeof(data));
         callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
@@ -1615,7 +1615,7 @@ void Callback(Common_Message *msg)
             if (lobby->owner() == settings->get_local_steam_id().ConvertToUint64()) {
                 if (msg->lobby_messages().type() == Lobby_Messages::JOIN) {
                     PRINT_DEBUG("LOBBY MESSAGE: JOIN, lobby=%llu from=%llu", (uint64)lobby->room_id(), (uint64)msg->source_id());
-                    if (enter_lobby(lobby, (uint64)msg->source_id())) {
+                    if (add_member_to_lobby(lobby, (uint64)msg->source_id())) {
                         trigger_lobby_member_join_leave((uint64)lobby->room_id(), (uint64)msg->source_id(), false, true, 0.01);
                     }
                 }
@@ -1625,7 +1625,7 @@ void Callback(Common_Message *msg)
                     Lobby_Member *member = get_lobby_member(lobby, (uint64)msg->source_id());
                     if (member) {
                         for (auto const &p : msg->lobby_messages().map()) {
-                            PRINT_DEBUG("member data %s:%s", p.first.c_str(), p.second.c_str());
+                            PRINT_DEBUG("member data '%s'='%s'", p.first.c_str(), p.second.c_str());
                             auto result = caseinsensitive_find(member->values(), p.first);
                             if (result == member->values().end()) {
                                 (*member->mutable_values())[p.first] = p.second;
@@ -1659,7 +1659,7 @@ void Callback(Common_Message *msg)
                     entry.message = msg->lobby_messages().bdata();
                     entry.lobby_id = CSteamID((uint64)msg->lobby_messages().id());
                     entry.user_id = CSteamID((uint64)msg->source_id());
-                    LobbyChatMsg_t data;
+                    LobbyChatMsg_t data{};
                     data.m_ulSteamIDLobby = msg->lobby_messages().id();
                     data.m_ulSteamIDUser = msg->source_id();
                     data.m_eChatEntryType = entry.type;

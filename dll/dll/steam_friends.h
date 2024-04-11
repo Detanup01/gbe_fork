@@ -249,13 +249,23 @@ SteamAPICall_t SetPersonaName( const char *pchPersonaName )
 {
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    SetPersonaNameResponse_t data;
+    
+    SetPersonaNameResponse_t data{};
     data.m_bSuccess = true;
     data.m_bLocalSuccess = false;
     data.m_result = k_EResultOK;
     persona_change(settings->get_local_steam_id(), k_EPersonaChangeName);
 
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    
+    {
+        PersonaStateChange_t data2{};
+        data2.m_nChangeFlags = EPersonaChange::k_EPersonaChangeName;
+        data2.m_ulSteamID = settings->get_local_steam_id().ConvertToUint64();
+        callbacks->addCBResult(data2.k_iCallback, &data2, sizeof(data2));
+    }
+
+    return ret;
 }
 
 void SetPersonaName_old( const char *pchPersonaName )
