@@ -1,7 +1,7 @@
 ## 2024/4/11 (2)
 
-* more accurate implementation for callbacks and call results in `UserStats` and `GameServerStats` interfaces,  
-  allowing more games to work
+* **[Clompress]** Turkish translation for the overlay
+* more accurate implementation for callbacks and call results in various interfaces, allowing some games to work properly
 
 ---
 
