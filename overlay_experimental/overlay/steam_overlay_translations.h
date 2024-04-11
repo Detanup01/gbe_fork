@@ -176,7 +176,7 @@ const char translationCopyId[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"Copy ID",
 
 	// 26 - Turkish
-  u8"Copy ID",
+  u8"ID'yi Kopyala",
 
 	// 27 - Ukrainian
   u8"Copy ID",
@@ -362,7 +362,7 @@ const char translationInviteAll[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUF
   u8"Invite all",
 
 	// 26 - Turkish
-  u8"Invite all",
+  u8"Herkesi davet et",
 
 	// 27 - Ukrainian
   u8"Invite all",
@@ -926,7 +926,7 @@ const char translationSteamOverlay[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_
   u8"โอเวอร์เลย์ Steam",
 
 	// 26 - Turkish
-  u8"Steam Arayüz",
+  u8"Steam Arayüzü",
 
 	// 27 - Ukrainian
   u8"Оверлей Steam",
@@ -1018,7 +1018,7 @@ const char translationUserPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
   u8"Username: %s(%llu) playing %u",
 
 	// 26 - Turkish
-  u8"Username: %s(%llu) playing %u",
+  u8"Kullanıcı Adı: %s(%llu) %u oynuyor ",
 
 	// 27 - Ukrainian
   u8"Username: %s(%llu) playing %u",
@@ -1110,7 +1110,7 @@ const char translationRenderer[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Renderer: %s",
 
 	// 26 - Turkish
-  u8"Renderer: %s",
+  u8"Görüntüleyici: %s",
 
 	// 27 - Ukrainian
   u8"Renderer: %s",
@@ -1202,7 +1202,7 @@ const char translationShowAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
   u8"Show Achievements",
 
 	// 26 - Turkish
-  u8"Show Achievements",
+  u8"Başarımları Göster",
 
 	// 27 - Ukrainian
   u8"Show Achievements",
@@ -1483,7 +1483,7 @@ const char translationAchievementWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"Achievement Window",
 
 	// 26 - Turkish
-  u8"Achievement Window",
+  u8"Başarım Penceresi",
 
 	// 27 - Ukrainian
   u8"Achievement Window",
@@ -1575,7 +1575,7 @@ const char translationListOfAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSL
   u8"List of achievements",
 
 	// 26 - Turkish
-  u8"List of achievements",
+  u8"Başarımların listesi",
 
 	// 27 - Ukrainian
   u8"List of achievements",
@@ -1667,7 +1667,7 @@ const char translationAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_
   u8"Achievements",
 
 	// 26 - Turkish
-  u8"Achievements",
+  u8"Başarımlar",
 
 	// 27 - Ukrainian
   u8"Achievements",
@@ -1759,7 +1759,7 @@ const char translationHiddenAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"hidden achievement",
 
 	// 26 - Turkish
-  u8"hidden achievement",
+  u8"Gizli Başarım",
 
 	// 27 - Ukrainian
   u8"hidden achievement",
@@ -1851,7 +1851,7 @@ const char translationAchievedOn[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BU
   u8"achieved on %s",
 
 	// 26 - Turkish
-  u8"achieved on %s",
+  u8"%s'de elde edildi",
 
 	// 27 - Ukrainian
   u8"achieved on %s",
@@ -1943,7 +1943,7 @@ const char translationNotAchieved[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
   u8"not achieved",
 
 	// 26 - Turkish
-  u8"not achieved",
+  u8"Başarılmadı",
 
 	// 27 - Ukrainian
   u8"not achieved",
@@ -2035,7 +2035,7 @@ const char translationGlobalSettingsWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRAN
   u8"Global Settings Window",
 
 	// 26 - Turkish
-  u8"Global Settings Window",
+  u8"Genel Ayarlar Penceresi",
 
 	// 27 - Ukrainian
   u8"Global Settings Window",
@@ -2127,7 +2127,7 @@ const char translationGlobalSettingsWindowDescription[TRANSLATION_NUMBER_OF_LANG
   u8"These are global emulator settings and will apply to all games.",
 
 	// 26 - Turkish
-  u8"These are global emulator settings and will apply to all games.",
+  u8"Bunlar genel emülatör ayarlarıdır ve tüm oyunlar için geçerli olacaktır.",
 
 	// 27 - Ukrainian
   u8"These are global emulator settings and will apply to all games.",
@@ -2219,7 +2219,7 @@ const char translationUsername[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Username:",
 
 	// 26 - Turkish
-  u8"Username:",
+  u8"Kullanıcı Adı:",
 
 	// 27 - Ukrainian
   u8"Username:",
@@ -2311,7 +2311,7 @@ const char translationLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Language:",
 
 	// 26 - Turkish
-  u8"Language:",
+  u8"Dil:",
 
 	// 27 - Ukrainian
   u8"Language:",
@@ -2403,7 +2403,7 @@ const char translationSelectedLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
   u8"Selected Language: %s",
 
 	// 26 - Turkish
-  u8"Selected Language: %s",
+  u8"Seçilen Dil: %s",
 
 	// 27 - Ukrainian
   u8"Selected Language: %s",
@@ -2495,7 +2495,7 @@ const char translationRestartTheGameToApply[TRANSLATION_NUMBER_OF_LANGUAGES][TRA
   u8"You may have to restart the game for these to apply.",
 
 	// 26 - Turkish
-  u8"You may have to restart the game for these to apply.",
+  u8"Bunların uygulanması için oyunu yeniden başlatmanız gerekebilir.",
 
 	// 27 - Ukrainian
   u8"You may have to restart the game for these to apply.",
@@ -2587,7 +2587,7 @@ const char translationSave[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"Save",
 
 	// 26 - Turkish
-  u8"Save",
+  u8"Kaydet",
 
 	// 27 - Ukrainian
   u8"Save",
@@ -2679,7 +2679,7 @@ const char translationWarning[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8"WARNING",
 
 	// 26 - Turkish
-  u8"WARNING",
+  u8"UYARI",
 
 	// 27 - Ukrainian
   u8"WARNING",
@@ -2771,7 +2771,7 @@ const char translationWarningWarningWarning[TRANSLATION_NUMBER_OF_LANGUAGES][TRA
   u8"WARNING WARNING WARNING",
 
 	// 26 - Turkish
-  u8"WARNING WARNING WARNING",
+  u8"UYARI UYARI UYARI",
 
 	// 27 - Ukrainian
   u8"WARNING WARNING WARNING",
@@ -2863,7 +2863,7 @@ const char translationWarningDescription1[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
   u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
 
 	// 26 - Turkish
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
+  u8"Bazı steam_settings/force_*.txt dosyaları tespit edildi. Bu menünün çalışmasını istiyorsanız lütfen bunları silin.",
 
 	// 27 - Ukrainian
   u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
@@ -2955,7 +2955,7 @@ const char translationWarningDescription2[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
   u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 26 - Turkish
-  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID 0, lütfen doğru appid ile bir steam_appid.txt oluşturun ve oyunu yeniden başlatın.",
 
 	// 27 - Ukrainian
   u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
@@ -3047,7 +3047,7 @@ const char translationWarningDescription3[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
   u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 26 - Turkish
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save.txt tespit edildi, emulatör yerel olarak oyun klasörüne kaydediliyor. Eğer bunu istemiyorsanız lütfen silin.",
 
 	// 27 - Ukrainian
   u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
@@ -3139,7 +3139,7 @@ const char translationWarningDescription4[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
   u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
 
 	// 26 - Turkish
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
+  u8"Bazı steam_settings/force_*.txt dosyaları tespit edildi. Bazı ayarları kaydedemeyeceksiniz.",
 
 	// 27 - Ukrainian
   u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
@@ -3231,7 +3231,7 @@ const char translationSteamOverlayURL[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"The game tried to get the steam overlay to open this url:",
 
 	// 26 - Turkish
-  u8"The game tried to get the steam overlay to open this url:",
+  u8"Oyun, bu URL'yi açmak için Steam arayüzünü açmaya çalıştı:",
 
 	// 27 - Ukrainian
   u8"The game tried to get the steam overlay to open this url:",
@@ -3417,7 +3417,7 @@ const char translationPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8" playing ",
 
 	// 26 - Turkish
-  u8" playing ",
+  u8" oynuyor ",
 
 	// 27 - Ukrainian
   u8" playing ",
@@ -3509,7 +3509,7 @@ const char translationAutoAcceptFriendInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TR
   u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 26 - Turkish
-  u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Davetler auto_accept_invite.txt tarafından kontrol ediliyor!",
 
 	// 27 - Ukrainian
   u8"Invitations are controlled by auto_accept_invite.txt!",
