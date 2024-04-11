@@ -940,94 +940,94 @@ const char translationSteamOverlay[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_
 
 const char translationUserPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 1 - Arabic
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 2 - Bulgarian
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 3 - Simplified Chinese
-  u8"用户名：%s(%llu) 正在玩 %u",
+  u8"用户名：%s (%llu) 正在玩 %u",
 
 	// 4 - Traditional Chinese
-  u8"使用者名稱：%s(%llu) 正在玩 %u",
+  u8"使用者名稱：%s (%llu) 正在玩 %u",
 
 	// 5 - Czech
-  u8"Uživatel: %s(%llu) hraje %u",
+  u8"Uživatel: %s (%llu) hraje %u",
 
 	// 6 - Danish
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 7 - Dutch
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 8 - Finnish
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 9 - French
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 10 - German
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 11 - Greek
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 12 - Hungarian
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 13 - Italian
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 14 - Japanese
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 15 - Korean
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 16 - Norwegian
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 17 - Polish
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 18 - Portuguese
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 19 - Brazilian Portuguese
-  u8"Username: %s(%llu) está jogando %u",
+  u8"Username: %s (%llu) está jogando %u",
 
 	// 20 - Romanian
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 21 - Russian
-  u8"Имя пользователя: %s(%llu) играет в %u",
+  u8"Имя пользователя: %s (%llu) играет в %u",
 
 	// 22 - Spanish
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 23 - Latin American
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 24 - Swedish
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 25 - Thai
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 26 - Turkish
-  u8"Kullanıcı Adı: %s(%llu) %u oynuyor ",
+  u8"Kullanıcı Adı: %s (%llu) %u oynuyor ",
 
 	// 27 - Ukrainian
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 28 - Vietnamese
-  u8"Username: %s(%llu) playing %u",
+  u8"Username: %s (%llu) playing %u",
 
 	// 29 - Croatian
-  u8"Igrač: %s(%llu) igra %u"
+  u8"Igrač: %s (%llu) igra %u"
 };
 
 const char translationRenderer[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -2127,7 +2127,7 @@ const char translationGlobalSettingsWindowDescription[TRANSLATION_NUMBER_OF_LANG
   u8"These are global emulator settings and will apply to all games.",
 
 	// 26 - Turkish
-  u8"Bunlar genel emülatör ayarlarıdır ve tüm oyunlar için geçerli olacaktır.",
+  u8"Bu ayarlar genel öykünücü ayarlarıdır ve tüm oyunlar için geçerli olacaktır.",
 
 	// 27 - Ukrainian
   u8"These are global emulator settings and will apply to all games.",
@@ -2495,7 +2495,7 @@ const char translationRestartTheGameToApply[TRANSLATION_NUMBER_OF_LANGUAGES][TRA
   u8"You may have to restart the game for these to apply.",
 
 	// 26 - Turkish
-  u8"Bunların uygulanması için oyunu yeniden başlatmanız gerekebilir.",
+  u8"Bu ayarların uygulanması için oyunu yeniden başlatmanız gerekebilir.",
 
 	// 27 - Ukrainian
   u8"You may have to restart the game for these to apply.",
@@ -3047,7 +3047,7 @@ const char translationWarningDescription3[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
   u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 26 - Turkish
-  u8"local_save.txt tespit edildi, emulatör yerel olarak oyun klasörüne kaydediliyor. Eğer bunu istemiyorsanız lütfen silin.",
+  u8"local_save.txt tespit edildi, öykünücü yerel olarak oyun klasörüne kaydediyor. Eğer bunu istemiyorsanız lütfen silin.",
 
 	// 27 - Ukrainian
   u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",

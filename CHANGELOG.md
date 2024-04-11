@@ -1,7 +1,18 @@
 ## 2024/4/11 (2)
 
 * **[Clompress]** Turkish translation for the overlay
-* more accurate implementation for callbacks and call results in various interfaces, allowing some games to work properly
+* added callbacks alongside call results in various interfaces, allowing some games to work properly
+* trigger additional `UserAchievementStored_t` callbacks in `Steam_User_Stats::StoreStats()` for all the unlocked achievements prior to calling this function
+* trigger `UserStatsStored_t` callback in `Steam_User_Stats::IndicateAchievementProgress()` instead of a call result (call result is removed),
+  might break stuff
+* trigger `UserStatsReceived_t` callback as well as call result in `Steam_User_Stats::RequestUserStats()`, needed by some games
+* trigger additional `PersonaStateChange_t` callback in `Steam_Friends::SetPersonaName()`
+* trigger `SteamInventoryRequestPricesResult_t` callback as well as call result in `Steam_Inventory::RequestPrices()`
+* trigger `SteamUGCQueryCompleted_t` callback as well as call result in `Steam_UGC::SendQueryUGCRequest()`
+* trigger callback as well as call result in many places including the following classes:
+  - `Steam_User_Stats`
+  - `Steam_HTTP`
+  - `Steam_HTMLsurface`
 
 ---
 
