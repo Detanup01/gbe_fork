@@ -1308,7 +1308,7 @@ static void parse_simple_features(class Settings *settings_client, class Setting
 
 uint32 create_localstorage_settings(Settings **settings_client_out, Settings **settings_server_out, Local_Storage **local_storage_out)
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("start ----------");
 
 #if defined(EMU_BUILD_STRING)
     PRINT_DEBUG("emu build '%s'", EXPAND_AS_STR(EMU_BUILD_STRING));
@@ -1417,6 +1417,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     *local_storage_out = local_storage;
 
     reset_LastError();
+    PRINT_DEBUG("end *********");
     return appid;
 }
 
