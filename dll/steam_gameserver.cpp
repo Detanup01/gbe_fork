@@ -639,14 +639,14 @@ bool Steam_GameServer::RequestUserGroupStatus( CSteamID steamIDUser, CSteamID st
 // they will be removed in a future version of the SDK
 void Steam_GameServer::GetGameplayStats( )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 STEAM_CALL_RESULT( GSReputation_t )
 SteamAPICall_t Steam_GameServer::GetServerReputation()
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }

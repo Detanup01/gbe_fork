@@ -121,7 +121,10 @@ SteamAPICall_t Steam_GameServerStats::RequestUserStats( CSteamID steamIDUser )
         GSStatsReceived_t data_bad{};
         data_bad.m_eResult = EResult::k_EResultFail;
         data_bad.m_steamIDUser = steamIDUser;
-        return callback_results->addCallResult(data_bad.k_iCallback, &data_bad, sizeof(data_bad));
+        
+        auto ret = callback_results->addCallResult(data_bad.k_iCallback, &data_bad, sizeof(data_bad));
+        callbacks->addCBResult(data_bad.k_iCallback, &data_bad, sizeof(data_bad));
+        return ret;
     }
 
     struct RequestAllStats new_request{};
@@ -335,7 +338,9 @@ SteamAPICall_t Steam_GameServerStats::StoreUserStats( CSteamID steamIDUser )
         GSStatsStored_t data_bad{};
         data_bad.m_eResult = EResult::k_EResultFail;
         data_bad.m_steamIDUser = steamIDUser;
-        return callback_results->addCallResult(data_bad.k_iCallback, &data_bad, sizeof(data_bad));
+        auto ret = callback_results->addCallResult(data_bad.k_iCallback, &data_bad, sizeof(data_bad));
+        callbacks->addCBResult(data_bad.k_iCallback, &data_bad, sizeof(data_bad));
+        return ret;
     }
 
     GSStatsStored_t data{};
@@ -346,7 +351,10 @@ SteamAPICall_t Steam_GameServerStats::StoreUserStats( CSteamID steamIDUser )
         data.m_eResult = EResult::k_EResultFail;
     }
     data.m_steamIDUser = steamIDUser;
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.01);
+
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.01);
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.01);
+    return ret;
 }
 
 
@@ -365,7 +373,9 @@ void Steam_GameServerStats::remove_timedout_userstats_requests()
             GSStatsReceived_t data{};
             data.m_eResult = k_EResultTimeout;
             data.m_steamIDUser = pendReq.steamIDUser;
+
             callback_results->addCallResult(pendReq.steamAPICall, data.k_iCallback, &data, sizeof(data));
+            callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
             
             PRINT_DEBUG("RequestUserStats timeout, %llu", pendReq.steamIDUser.ConvertToUint64());
         }
@@ -502,7 +512,9 @@ void Steam_GameServerStats::network_callback_initial_stats(Common_Message *msg)
     GSStatsReceived_t data{};
     data.m_eResult = EResult::k_EResultOK;
     data.m_steamIDUser = user_steamid;
+
     callback_results->addCallResult(it->steamAPICall, data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
     
     PRINT_DEBUG("server got all player stats %llu: %zu stats, %zu achievements",
         user_steamid, all_users_data[user_steamid].stats.size(), all_users_data[user_steamid].achievements.size()
@@ -592,7 +604,9 @@ void Steam_GameServerStats::network_callback_low_level(Common_Message *msg)
             GSStatsReceived_t data{};
             data.m_eResult = k_EResultTimeout;
             data.m_steamIDUser = it_rm->steamIDUser;
+            
             callback_results->addCallResult(it_rm->steamAPICall, data.k_iCallback, &data, sizeof(data));
+            callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
             
             PRINT_DEBUG("RequestUserStats timeout, %llu", it_rm->steamIDUser.ConvertToUint64());
             it_rm = pending_RequestUserStats.erase(it_rm);

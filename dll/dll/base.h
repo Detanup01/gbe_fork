@@ -87,15 +87,15 @@ struct Steam_Call_Result {
         return callbacks.size() > 0;
     }
 
-    SteamAPICall_t api_call;
-    std::vector<class CCallbackBase *> callbacks;
-    std::vector<char> result;
+    SteamAPICall_t api_call{};
+    std::vector<class CCallbackBase *> callbacks{};
+    std::vector<char> result{};
     bool to_delete = false;
     bool reserved = false;
-    std::chrono::high_resolution_clock::time_point created;
-    double run_in;
-    bool run_call_completed_cb;
-    int iCallback;
+    std::chrono::high_resolution_clock::time_point created{};
+    double run_in{};
+    bool run_call_completed_cb{};
+    int iCallback{};
 };
 
 unsigned generate_account_id();
@@ -113,8 +113,8 @@ bool file_exists_(const std::string &full_path);
 unsigned int file_size_(const std::string &full_path);
 
 class SteamCallResults {
-    std::vector<struct Steam_Call_Result> callresults;
-    std::vector<class CCallbackBase *> completed_callbacks;
+    std::vector<struct Steam_Call_Result> callresults{};
+    std::vector<class CCallbackBase *> completed_callbacks{};
     void (*cb_all)(std::vector<char> result, int callback) = nullptr;
 
 public:
@@ -309,13 +309,14 @@ public:
 };
 
 struct Steam_Call_Back {
-    std::vector<class CCallbackBase *> callbacks;
-    std::vector<std::vector<char>> results;
+    std::vector<class CCallbackBase *> callbacks{};
+    std::vector<std::vector<char>> results{};
 };
 
 class SteamCallBacks {
-    std::map<int, struct Steam_Call_Back> callbacks;
-    SteamCallResults *results;
+    std::map<int, struct Steam_Call_Back> callbacks{};
+    SteamCallResults *results{};
+
 public:
     SteamCallBacks(SteamCallResults *results) {
         this->results = results;
@@ -352,7 +353,7 @@ public:
             }
         }
 
-        std::vector<char> temp;
+        std::vector<char> temp{};
         temp.resize(size);
         memcpy(&(temp[0]), result, size);
         callbacks[iCallback].results.push_back(temp);
@@ -401,12 +402,12 @@ public:
 };
 
 struct RunCBs {
-    void (*function)(void *object);
-    void *object;
+    void (*function)(void *object) = nullptr;
+    void *object{};
 };
 
 class RunEveryRunCB {
-    std::vector<struct RunCBs> cbs;
+    std::vector<struct RunCBs> cbs{};
 public:
     void add(void (*cb)(void *object), void *object) {
         remove(cb, object);

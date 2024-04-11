@@ -18,10 +18,11 @@
 #include "dll/steam_apps.h"
 #include "sha/sha1.hpp"
 
-Steam_Apps::Steam_Apps(Settings *settings, class SteamCallResults *callback_results)
+Steam_Apps::Steam_Apps(Settings *settings, class SteamCallResults *callback_results, class SteamCallBacks *callbacks)
 {
     this->settings = settings;
     this->callback_results = callback_results;
+    this->callbacks = callbacks;
 }
 
 // returns 0 if the key does not exist
@@ -168,9 +169,15 @@ bool Steam_Apps::BGetDLCDataByIndex( int iDLC, AppId_t *pAppID, bool *pbAvailabl
 // Install/Uninstall control for optional DLC
 void Steam_Apps::InstallDLC( AppId_t nAppID )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG_TODO();
     // we lock here because the API is supposed to modify the DLC list
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    if (settings->hasDLC(nAppID)) {
+        DlcInstalled_t data{};
+        data.m_nAppID = nAppID;
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.01);
+    }
 }
 
 void Steam_Apps::UninstallDLC( AppId_t nAppID )
@@ -226,7 +233,7 @@ void Steam_Apps::RequestAppProofOfPurchaseKey( AppId_t nAppID )
         FillProofOfPurchaseKey(data, nAppID, false);
     }
 
-    callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
 }
 
 // returns current beta branch name, 'public' is the default branch
@@ -422,7 +429,9 @@ SteamAPICall_t Steam_Apps::GetFileDetails( const char* pszFileName )
         data.m_eResult = k_EResultFileNotFound;
     }
 
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 // Get command line if game was launched via Steam URL, e.g. steam://run/<appid>//<command line>/.
@@ -463,3 +472,22 @@ bool Steam_Apps::SetDlcContext( AppId_t nAppID )
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return true;
 }
+
+
+#ifdef _PS3
+	// Result returned in a RegisterActivationCodeResponse_t callresult
+	SteamAPICall_t Steam_Apps::RegisterActivationCode( const char *pchActivationCode )
+    {
+        PRINT_DEBUG("%s", pchActivationCode);
+        std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+        if (!pchActivationCode) return 
+        RegisterActivationCodeResponse_t data{};
+        data.m_eResult = ERegisterActivationCodeResult::k_ERegisterActivationCodeResultOK;
+        // data.m_unPackageRegistered = 0; // TODO set this
+
+        auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+        return ret;
+    }
+#endif

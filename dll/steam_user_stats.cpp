@@ -543,40 +543,58 @@ Steam_User_Stats::InternalSetResult<bool> Steam_User_Stats::set_achievement_inte
 
     if (!pchName) return result;
     
+    std::string org_name(pchName);
+
     if (settings->achievement_bypass) {
+        auto &trig = store_stats_trigger[common_helpers::to_lower(org_name)];
+        trig.m_bGroupAchievement = false;
+        trig.m_nCurProgress = 100;
+        trig.m_nGameID = settings->get_local_game_id().ToUint64();
+        trig.m_nMaxProgress = 100;
+        memset(trig.m_rgchAchievementName, 0, sizeof(trig.m_rgchAchievementName));
+        org_name.copy(trig.m_rgchAchievementName, sizeof(trig.m_rgchAchievementName) - 1);
+
         result.success = true;
         return result;
     }
 
     nlohmann::detail::iter_impl<nlohmann::json> it = defined_achievements.end();
     try {
-        it = defined_achievements_find(pchName);
+        it = defined_achievements_find(org_name);
     } catch(...) { }
     if (defined_achievements.end() == it) return result;
 
     result.current_val = true;
-    result.internal_name = pchName;
+    result.internal_name = org_name;
     result.success = true;
 
     try {
-        std::string pch_name = it->value("name", std::string());
+        std::string internal_name = it->value("name", std::string());
 
-        result.internal_name = pch_name;
+        result.internal_name = internal_name;
 
-        auto ach = user_achievements.find(pch_name);
+        auto ach = user_achievements.find(internal_name);
         if (user_achievements.end() == ach || ach->value("earned", false) == false) {
-            user_achievements[pch_name]["earned"] = true;
-            user_achievements[pch_name]["earned_time"] =
+            user_achievements[internal_name]["earned"] = true;
+            user_achievements[internal_name]["earned_time"] =
                 std::chrono::duration_cast<std::chrono::duration<uint32>>(std::chrono::system_clock::now().time_since_epoch()).count();
 
             save_achievements();
 
             result.notify_server = !settings->disable_sharing_stats_with_gameserver;
 
-            if(!settings->disable_overlay) overlay->AddAchievementNotification(it.value());
+            if (!settings->disable_overlay) overlay->AddAchievementNotification(it.value());
 
         }
     } catch (...) {}
+
+    auto &trig = store_stats_trigger[common_helpers::to_lower(org_name)];
+    trig.m_bGroupAchievement = false;
+    trig.m_nCurProgress = 100;
+    trig.m_nGameID = settings->get_local_game_id().ToUint64();
+    trig.m_nMaxProgress = 100;
+    memset(trig.m_rgchAchievementName, 0, sizeof(trig.m_rgchAchievementName));
+    org_name.copy(trig.m_rgchAchievementName, sizeof(trig.m_rgchAchievementName) - 1);
 
     return result;
 }
@@ -589,30 +607,32 @@ Steam_User_Stats::InternalSetResult<bool> Steam_User_Stats::clear_achievement_in
 
     if (!pchName) return result;
 
+    std::string org_name(pchName);
+
     nlohmann::detail::iter_impl<nlohmann::json> it = defined_achievements.end();
     try {
-        it = defined_achievements_find(pchName);
+        it = defined_achievements_find(org_name);
     } catch(...) { }
     if (defined_achievements.end() == it) return result;
 
     result.current_val = false;
-    result.internal_name = pchName;
+    result.internal_name = org_name;
     result.success = true;
 
     try {
-        std::string pch_name = it->value("name", std::string());
+        std::string internal_name = it->value("name", std::string());
 
-        result.internal_name = pch_name;
+        result.internal_name = internal_name;
 
-        auto ach = user_achievements.find(pch_name);
+        auto ach = user_achievements.find(internal_name);
         // assume "earned" is true in case the json obj exists, but the key is absent
         // assume "earned_time" is UINT32_MAX in case the json obj exists, but the key is absent
         if (user_achievements.end() == ach ||
             ach->value("earned", true) == true ||
             ach->value("earned_time", static_cast<uint32>(UINT32_MAX)) == UINT32_MAX) {
             
-            user_achievements[pch_name]["earned"] = false;
-            user_achievements[pch_name]["earned_time"] = static_cast<uint32>(0);
+            user_achievements[internal_name]["earned"] = false;
+            user_achievements[internal_name]["earned_time"] = static_cast<uint32>(0);
             save_achievements();
 
             result.notify_server = !settings->disable_sharing_stats_with_gameserver;
@@ -620,6 +640,8 @@ Steam_User_Stats::InternalSetResult<bool> Steam_User_Stats::clear_achievement_in
         }
     } catch (...) {}
 
+    store_stats_trigger.erase(common_helpers::to_lower(org_name));
+    
     return result;
 }
 
@@ -983,6 +1005,11 @@ bool Steam_User_Stats::StoreStats()
     data.m_nGameID = settings->get_local_game_id().ToUint64();
     callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.01);
 
+    for (auto &kv : store_stats_trigger) {
+        callbacks->addCBResult(kv.second.k_iCallback, &kv.second, sizeof(kv.second));
+    }
+    store_stats_trigger.clear();
+
     return true;
 }
 
@@ -999,6 +1026,7 @@ int Steam_User_Stats::GetAchievementIcon( const char *pchName )
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!pchName) return 0;
 
+    // callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
     return 0;
 }
 
@@ -1068,7 +1096,7 @@ bool Steam_User_Stats::IndicateAchievementProgress( const char *pchName, uint32 
 
     if (!pchName) return false;
     if (nCurProgress >= nMaxProgress) return false;
-    auto ach_name = std::string(pchName);
+    std::string ach_name(pchName);
 
     // find in achievements.json
     nlohmann::detail::iter_impl<nlohmann::json> it = defined_achievements.end();
@@ -1103,6 +1131,13 @@ bool Steam_User_Stats::IndicateAchievementProgress( const char *pchName, uint32 
         save_achievements();
     } catch (...) {}
 
+    {
+        UserStatsStored_t data{};
+        data.m_eResult = EResult::k_EResultOK;
+        data.m_nGameID = settings->get_local_game_id().ToUint64();
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    }
+
     UserAchievementStored_t data{};
     data.m_nGameID = settings->get_local_game_id().ToUint64();
     data.m_bGroupAchievement = false;
@@ -1110,7 +1145,8 @@ bool Steam_User_Stats::IndicateAchievementProgress( const char *pchName, uint32 
     data.m_nMaxProgress = nMaxProgress;
     ach_name.copy(data.m_rgchAchievementName, sizeof(data.m_rgchAchievementName) - 1);
 
-    callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    // callback_results->addCallResult(data.k_iCallback, &data, sizeof(data)); // TODO was this correct?
     return true;
 }
 
@@ -1153,13 +1189,17 @@ SteamAPICall_t Steam_User_Stats::RequestUserStats( CSteamID steamIDUser )
     //if (steamIDUser == settings->get_local_steam_id()) {
     //    load_achievements();
     //}
-    
 
-    UserStatsReceived_t data;
+    UserStatsReceived_t data{};
     data.m_nGameID = settings->get_local_game_id().ToUint64();
     data.m_eResult = k_EResultOK;
     data.m_steamIDUser = steamIDUser;
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1);
+    // appid 756800 expects both: a callback (global event occurring in the Steam environment),
+    // and a callresult (the specific result of this function call)
+    // otherwise it will lock-up and hang at startup
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1);
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.1);
+    return ret;
 }
 
 
@@ -1293,7 +1333,9 @@ SteamAPICall_t Steam_User_Stats::FindOrCreateLeaderboard( const char *pchLeaderb
         LeaderboardFindResult_t data{};
         data.m_hSteamLeaderboard = 0;
         data.m_bLeaderboardFound = 0;
-        return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+        auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+        return ret;
     }
 
     unsigned int board_handle = cache_leaderboard_ifneeded(pchLeaderboardName, eLeaderboardSortMethod, eLeaderboardDisplayType);
@@ -1302,7 +1344,9 @@ SteamAPICall_t Steam_User_Stats::FindOrCreateLeaderboard( const char *pchLeaderb
     LeaderboardFindResult_t data{};
     data.m_hSteamLeaderboard = board_handle;
     data.m_bLeaderboardFound = 1;
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1); // TODO is the timing ok?
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1); // TODO is the timing ok?
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.1);
+    return ret;
 }
 
 
@@ -1317,7 +1361,9 @@ SteamAPICall_t Steam_User_Stats::FindLeaderboard( const char *pchLeaderboardName
         LeaderboardFindResult_t data{};
         data.m_hSteamLeaderboard = 0;
         data.m_bLeaderboardFound = 0;
-        return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+        auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+        return ret;
     }
 
     std::string name_lower(common_helpers::ascii_to_lowercase(pchLeaderboardName));
@@ -1335,7 +1381,9 @@ SteamAPICall_t Steam_User_Stats::FindLeaderboard( const char *pchLeaderboardName
         LeaderboardFindResult_t data{};
         data.m_hSteamLeaderboard = find_cached_leaderboard(name_lower);
         data.m_bLeaderboardFound = !!data.m_hSteamLeaderboard;
-        return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+        auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+        return ret;
     }
 }
 
@@ -1411,7 +1459,9 @@ SteamAPICall_t Steam_User_Stats::DownloadLeaderboardEntries( SteamLeaderboard_t 
     data.m_hSteamLeaderboard = hSteamLeaderboard;
     data.m_hSteamLeaderboardEntries = hSteamLeaderboard;
     data.m_cEntryCount = entries_count;
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1); // TODO is this timing ok?
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1); // TODO is this timing ok?
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.1);
+    return ret;
 }
 
 // as above, but downloads leaderboard entries for an arbitrary set of users - ELeaderboardDataRequest is k_ELeaderboardDataRequestUsers
@@ -1451,7 +1501,9 @@ SteamAPICall_t Steam_User_Stats::DownloadLeaderboardEntriesForUsers( SteamLeader
     data.m_hSteamLeaderboard = hSteamLeaderboard;
     data.m_hSteamLeaderboardEntries = hSteamLeaderboard;
     data.m_cEntryCount = total_count;
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1); // TODO is this timing ok?
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1); // TODO is this timing ok?
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.1);
+    return ret;
 }
 
 
@@ -1568,7 +1620,9 @@ SteamAPICall_t Steam_User_Stats::UploadLeaderboardScore( SteamLeaderboard_t hSte
     data.m_bScoreChanged = score_updated;
     data.m_nGlobalRankNew = new_rank;
     data.m_nGlobalRankPrevious = current_rank;
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1); // TODO is this timing ok?
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1); // TODO is this timing ok?
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.1);
+    return ret;
 }
 
 SteamAPICall_t Steam_User_Stats::UploadLeaderboardScore( SteamLeaderboard_t hSteamLeaderboard, int32 nScore, int32 *pScoreDetails, int cScoreDetailsCount )
@@ -1594,7 +1648,9 @@ SteamAPICall_t Steam_User_Stats::AttachLeaderboardUGC( SteamLeaderboard_t hSteam
     }
 
     data.m_hSteamLeaderboard = hSteamLeaderboard;
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 
@@ -1613,7 +1669,9 @@ SteamAPICall_t Steam_User_Stats::GetNumberOfCurrentPlayers()
     NumberOfCurrentPlayers_t data{};
     data.m_bSuccess = 1;
     data.m_cPlayers = distrib(gen);
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 
@@ -1629,7 +1687,9 @@ SteamAPICall_t Steam_User_Stats::RequestGlobalAchievementPercentages()
     GlobalAchievementPercentagesReady_t data{};
     data.m_eResult = EResult::k_EResultOK;
     data.m_nGameID = settings->get_local_game_id().ToUint64();
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 
@@ -1724,7 +1784,9 @@ SteamAPICall_t Steam_User_Stats::RequestGlobalStats( int nHistoryDays )
     GlobalStatsReceived_t data{};
     data.m_nGameID = settings->get_local_game_id().ToUint64();
     data.m_eResult = k_EResultOK;
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 

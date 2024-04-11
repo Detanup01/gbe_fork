@@ -10,11 +10,12 @@ public ISteamApps006,
 public ISteamApps007,
 public ISteamApps
 {
-    Settings *settings;
-    class SteamCallResults *callback_results;
+    Settings *settings{};
+    class SteamCallResults *callback_results{};
+    class SteamCallBacks *callbacks{};
 
 public:
-    Steam_Apps(Settings *settings, class SteamCallResults *callback_results);
+    Steam_Apps(Settings *settings, class SteamCallResults *callback_results, class SteamCallBacks *callbacks);
 
 	// returns 0 if the key does not exist
 	// this may be true on first call, since the app data may not be cached locally yet

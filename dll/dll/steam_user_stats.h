@@ -45,10 +45,10 @@ struct Steam_Leaderboard {
 };
 
 struct achievement_trigger {
-    std::string name;
-    std::string value_operation;
-    std::string min_value;
-    std::string max_value;
+    std::string name{};
+    std::string value_operation{};
+    std::string min_value{};
+    std::string max_value{};
 
     bool check_triggered(float stat) {
         try {
@@ -109,6 +109,10 @@ private:
 
     std::map<std::string, std::vector<achievement_trigger>> achievement_stat_trigger{};
     
+    // triggered when an achievement is unlocked
+    // https://partner.steamgames.com/doc/api/ISteamUserStats#StoreStats
+    std::map<std::string, UserAchievementStored_t> store_stats_trigger{};
+
     GameServerStats_Messages::AllStats pending_server_updates{};
 
 

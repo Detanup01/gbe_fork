@@ -1,5 +1,11 @@
 ## 2024/4/11
 
+* more accurate implementation for callbacks and call results in `UserStats` and `GameServerStats` interfaces
+
+---
+
+## 2024/4/11
+
 * **[breaking]** load overlay audio from `sounds` subfolder, either from the local game settings folder `steam_settings/sounds`,  
   or from the global settings folder `Goldberg SteamEmu Settings/settings/sounds`
 * allow loading the overlay fonts from the global settings folder `Goldberg SteamEmu Settings/settings/fonts`
