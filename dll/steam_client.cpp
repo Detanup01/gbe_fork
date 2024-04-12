@@ -23,12 +23,8 @@ static std::condition_variable kill_background_thread_cv;
 static bool kill_background_thread;
 static void background_thread(Steam_Client *client)
 {
-    // duration allowed in which the thread might get a kill signal, before running its code
-    constexpr const static auto kill_thread_allowed_duration = std::chrono::milliseconds(100);
     // max allowed time in which RunCallbacks() might not be called
-    constexpr const static auto max_stall_ms = 100ull;
-
-    static unsigned long long last_cooldown_time = 0;
+    constexpr const static auto max_stall_ms = std::chrono::milliseconds(200);
 
     // wait 1 sec
     {
@@ -43,11 +39,10 @@ static void background_thread(Steam_Client *client)
 
     PRINT_DEBUG("starting");
 
-    last_cooldown_time = (unsigned long long)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
     while (1) {
         {
             std::unique_lock lck(kill_background_thread_mutex);
-            if (kill_background_thread || kill_background_thread_cv.wait_for(lck, kill_thread_allowed_duration) != std::cv_status::timeout) {
+            if (kill_background_thread || kill_background_thread_cv.wait_for(lck, max_stall_ms) != std::cv_status::timeout) {
                 if (kill_background_thread) {
                     PRINT_DEBUG("exit");
                     return;
@@ -57,17 +52,14 @@ static void background_thread(Steam_Client *client)
 
         auto now_ms = (unsigned long long)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
 
-        if (now_ms > (last_cooldown_time + max_stall_ms)) { // if our cooldown time elapsed
-            last_cooldown_time = now_ms;
-            
-            // if our time exceeds last run time of callbacks and it wasn't processing already
-            if (!client->cb_run_active && (now_ms > (client->last_cb_run + max_stall_ms))) {
-                global_mutex.lock();
-                PRINT_DEBUG("run @@@@@@@@@@@@@@@@@@@@@@@@@@@");
-                client->network->Run(); // networking must run first since it receives messages use by each run_callback()
-                client->run_every_runcb->run(); // call each run_callback()
-                global_mutex.unlock();
-            }
+        // if our time exceeds last run time of callbacks and it wasn't processing already
+        if (!client->cb_run_active && (now_ms >= (client->last_cb_run + max_stall_ms.count()))) {
+            global_mutex.lock();
+            PRINT_DEBUG("run @@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            client->last_cb_run = now_ms; // update the time counter just to avoid overlap
+            client->network->Run(); // networking must run first since it receives messages used by each run_callback()
+            client->run_every_runcb->run(); // call each run_callback()
+            global_mutex.unlock();
         }
     }
 }

@@ -1,3 +1,7 @@
+ * increase run callbacks background thread polling time to ~200ms
+
+ ---
+ 
 ## 2024/4/11 (2)
 
 * **[Clompress]** Turkish translation for the overlay
