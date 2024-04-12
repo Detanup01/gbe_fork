@@ -264,7 +264,6 @@ void Steam_Overlay::create_fonts()
         font_builder.AddText(translationAccept[i]);
         font_builder.AddText(translationRefuse[i]);
         font_builder.AddText(translationSend[i]);
-        font_builder.AddText(translationSteamOverlay[i]);
         font_builder.AddText(translationUserPlaying[i]);
         font_builder.AddText(translationRenderer[i]);
         font_builder.AddText(translationShowAchievements[i]);
@@ -1155,11 +1154,9 @@ void Steam_Overlay::render_main_window()
 
     char tmp[TRANSLATION_BUFFER_SIZE]{};
     snprintf(tmp, sizeof(tmp), translationRenderer[current_language], (_renderer == nullptr ? "Unknown" : _renderer->GetLibraryName().c_str()));
-    std::string windowTitle;
-    windowTitle.append(translationSteamOverlay[current_language]);
-    windowTitle.append(" (");
-    windowTitle.append(tmp);
-    windowTitle.append(")");
+    std::string windowTitle{};
+    // Note: don't translate this, project and author names are nouns, they must be kept intact for proper referral
+    windowTitle.append("Ingame Overlay - Nemirtingas (").append(tmp).append(")");
 
     if ((settings->overlay_appearance.background_r >= 0) &&
         (settings->overlay_appearance.background_g >= 0) &&
