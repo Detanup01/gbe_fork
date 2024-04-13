@@ -1339,7 +1339,8 @@ void Steam_Overlay::render_main_window()
                     if (achieved) {
                         char buffer[80] = {};
                         time_t unlock_time = (time_t)x.unlock_time;
-                        std::strftime(buffer, 80, "%Y-%m-%d at %H:%M:%S", std::localtime(&unlock_time));
+                        // TODO add this format to the overlay_appearance.txt
+                        std::strftime(buffer, 80, "%Y/%m/%d - %H:%M:%S", std::localtime(&unlock_time));
 
                         ImGui::TextColored(ImVec4(0, 255, 0, 255), translationAchievedOn[current_language], buffer);
                     } else {
