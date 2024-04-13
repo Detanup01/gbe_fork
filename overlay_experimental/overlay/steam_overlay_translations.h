@@ -1757,7 +1757,7 @@ const char translationAchievedOn[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BU
   u8"achieved on %s",
 
 	// 26 - Turkish
-  u8"%s'de elde edildi",
+  u8"%s tarihinde elde edildi",
 
 	// 27 - Ukrainian
   u8"achieved on %s",

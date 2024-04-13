@@ -1156,7 +1156,8 @@ void Steam_Overlay::render_main_window()
     snprintf(tmp, sizeof(tmp), translationRenderer[current_language], (_renderer == nullptr ? "Unknown" : _renderer->GetLibraryName().c_str()));
     std::string windowTitle{};
     // Note: don't translate this, project and author names are nouns, they must be kept intact for proper referral
-    windowTitle.append("Ingame Overlay - Nemirtingas (").append(tmp).append(")");
+    // think of it as translating "Protobuf - Google"
+    windowTitle.append("Ingame Overlay project - Nemirtingas (").append(tmp).append(")");
 
     if ((settings->overlay_appearance.background_r >= 0) &&
         (settings->overlay_appearance.background_g >= 0) &&

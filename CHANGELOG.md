@@ -1,4 +1,6 @@
- * increase run callbacks background thread polling time to ~200ms
+* **[Clompress]** corrected Turkish translation
+* increase run callbacks background thread polling time to `~200ms`
+* changed the overlay title to give proper credits to its author
 
  ---
  
