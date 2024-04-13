@@ -83,7 +83,25 @@ Steam_Client::Steam_Client()
         auto appid_str = std::to_string(appid);
         set_env_variable("SteamAppId", appid_str);
         set_env_variable("SteamGameId", appid_str);
-		set_env_variable("SteamOverlayGameId", appid_str);
+        set_env_variable("SteamOverlayGameId", appid_str);
+    }
+
+    {
+        const char *user_name = settings_client->get_local_name();
+        if (user_name) {
+            set_env_variable("SteamAppUser", user_name);
+            set_env_variable("SteamUser", user_name);
+        }
+    }
+
+    set_env_variable("SteamClientLaunch", "1");
+    set_env_variable("SteamEnv", "1");
+    
+    {
+        std::string steam_path(get_env_variable("SteamPath"));
+        if (steam_path.empty()) {
+            set_env_variable("SteamPath", get_full_program_path());
+        }
     }
 
     // client

@@ -40,9 +40,9 @@ DWORD loadlib_remote(HANDLE hProcess, const std::wstring &lib_fullpath, const ch
 
 size_t get_pe_size(HMODULE hModule);
 
-const std::string get_current_exe_path();
+const std::string& get_current_exe_path();
 
-const std::wstring get_current_exe_path_w();
+const std::wstring& get_current_exe_path_w();
 
 bool ends_with_i(PUNICODE_STRING target, const std::wstring &query);
 

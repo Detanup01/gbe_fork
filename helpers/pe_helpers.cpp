@@ -378,7 +378,7 @@ size_t pe_helpers::get_pe_size(HMODULE hModule)
 
 static std::wstring path_w{};
 static std::string path_a{};
-const std::string pe_helpers::get_current_exe_path()
+const std::string& pe_helpers::get_current_exe_path()
 {
     if (path_a.empty()) {
         get_current_exe_path_w();
@@ -387,7 +387,7 @@ const std::string pe_helpers::get_current_exe_path()
     return path_a;
 }
 
-const std::wstring pe_helpers::get_current_exe_path_w()
+const std::wstring& pe_helpers::get_current_exe_path_w()
 {
     static std::recursive_mutex path_mtx{};
     if (path_w.empty()) {

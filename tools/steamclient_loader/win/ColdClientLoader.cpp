@@ -326,6 +326,14 @@ void set_steam_env_vars(const std::wstring &AppId)
     SetEnvironmentVariableW(L"SteamAppId", AppId.c_str());
     SetEnvironmentVariableW(L"SteamGameId", AppId.c_str());
     SetEnvironmentVariableW(L"SteamOverlayGameId", AppId.c_str());
+
+    // these 2 wil be overridden by the emu
+    SetEnvironmentVariableW(L"SteamAppUser", L"cold_player");
+    SetEnvironmentVariableW(L"SteamUser", L"cold_player");
+
+    SetEnvironmentVariableW(L"SteamClientLaunch", L"1");
+    SetEnvironmentVariableW(L"SteamEnv", L"1");
+    SetEnvironmentVariableW(L"SteamPath", pe_helpers::get_current_exe_path_w().c_str());
 }
 
 

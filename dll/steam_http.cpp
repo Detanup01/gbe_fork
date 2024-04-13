@@ -56,7 +56,7 @@ HTTPRequestHandle Steam_HTTP::CreateHTTPRequest( EHTTPMethod eHTTPRequestMethod,
     request.url = url;
     if (url_index) {
         if (url.back() == '/') url += "index.html";
-        std::string file_path = Local_Storage::get_game_settings_path() + "http/" + Local_Storage::sanitize_string(url.substr(url_index));
+        std::string file_path = Local_Storage::get_game_settings_path() + "http" + PATH_SEPARATOR + Local_Storage::sanitize_string(url.substr(url_index));
         request.target_filepath = file_path;
         unsigned long long file_size = file_size_(file_path);
         if (file_size) {
@@ -312,7 +312,7 @@ void Steam_HTTP::online_http_request(Steam_Http_Request *request, SteamAPICall_t
     fclose(hfile);
     headers.clear();
 
-    PRINT_DEBUG("CURL for '%s' error code (0 == OK 0): [%i]", request->url.c_str(), (int)res_curl);
+    PRINT_DEBUG("CURL error code for '%s' [%i] (OK == 0)", request->url.c_str(), (int)res_curl);
     
     unsigned int file_size = file_size_(request->target_filepath);
     if (file_size) {
@@ -401,7 +401,7 @@ bool Steam_HTTP::DeferHTTPRequest( HTTPRequestHandle hRequest )
 // the specified request to the head of the queue.  Returns false on invalid handle, or if the request is not yet sent.
 bool Steam_HTTP::PrioritizeHTTPRequest( HTTPRequestHandle hRequest )
 {
-    PRINT_DEBUG("Steam_HTTP::PrioritizeHTTPRequest");
+    PRINT_DEBUG("%u", hRequest);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     Steam_Http_Request *request = get_request(hRequest);
@@ -440,7 +440,7 @@ bool Steam_HTTP::GetHTTPResponseHeaderSize( HTTPRequestHandle hRequest, const ch
 // BGetHTTPResponseHeaderSize to check for the presence of the header and to find out the size buffer needed.
 bool Steam_HTTP::GetHTTPResponseHeaderValue( HTTPRequestHandle hRequest, const char *pchHeaderName, uint8 *pHeaderValueBuffer, uint32 unBufferSize )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("'%s'", pchHeaderName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchHeaderName) return false;
@@ -464,7 +464,7 @@ bool Steam_HTTP::GetHTTPResponseHeaderValue( HTTPRequestHandle hRequest, const c
 // handle is invalid.
 bool Steam_HTTP::GetHTTPResponseBodySize( HTTPRequestHandle hRequest, uint32 *unBodySize )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("%u", hRequest);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     Steam_Http_Request *request = get_request(hRequest);
@@ -525,7 +525,7 @@ bool Steam_HTTP::GetHTTPStreamingResponseBodyData( HTTPRequestHandle hRequest, u
 // callback and finishing using the response.
 bool Steam_HTTP::ReleaseHTTPRequest( HTTPRequestHandle hRequest )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("%u", hRequest);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     auto c = std::begin(requests);
@@ -547,7 +547,7 @@ bool Steam_HTTP::ReleaseHTTPRequest( HTTPRequestHandle hRequest )
 // zero for the duration of the request as the size is unknown until the connection closes.
 bool Steam_HTTP::GetHTTPDownloadProgressPct( HTTPRequestHandle hRequest, float *pflPercentOut )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("%u", hRequest);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     Steam_Http_Request *request = get_request(hRequest);
@@ -564,7 +564,7 @@ bool Steam_HTTP::GetHTTPDownloadProgressPct( HTTPRequestHandle hRequest, float *
 // parameter will set the content-type header for the request so the server may know how to interpret the body.
 bool Steam_HTTP::SetHTTPRequestRawPostBody( HTTPRequestHandle hRequest, const char *pchContentType, uint8 *pubBody, uint32 unBodyLen )
 {
-    PRINT_DEBUG("%s", pchContentType);
+    PRINT_DEBUG("%u '%s'", hRequest, pchContentType);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     Steam_Http_Request *request = get_request(hRequest);
@@ -635,7 +635,7 @@ bool Steam_HTTP::SetHTTPRequestCookieContainer( HTTPRequestHandle hRequest, HTTP
 // Set the extra user agent info for a request, this doesn't clobber the normal user agent, it just adds the extra info on the end
 bool Steam_HTTP::SetHTTPRequestUserAgentInfo( HTTPRequestHandle hRequest, const char *pchUserAgentInfo )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("%u '%s'", hRequest, pchUserAgentInfo);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     Steam_Http_Request *request = get_request(hRequest);
