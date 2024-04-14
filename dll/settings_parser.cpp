@@ -1437,5 +1437,5 @@ void save_global_settings(Local_Storage *local_storage, const char *name, const 
 bool settings_disable_lan_only()
 {
     load_main_config();
-    return ini.GetBoolValue("general", "disable_lan_only", false);
+    return ini.GetBoolValue("connectivity", "disable_lan_only", false);
 }
