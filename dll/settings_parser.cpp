@@ -1263,8 +1263,8 @@ static void parse_simple_features(class Settings *settings_client, class Setting
 
 
     // [overlay]
-    settings_client->disable_overlay = ini.GetBoolValue("overlay", "enable_experimental_overlay", settings_client->disable_overlay);
-    settings_server->disable_overlay = ini.GetBoolValue("overlay", "enable_experimental_overlay", settings_server->disable_overlay);
+    settings_client->disable_overlay = !ini.GetBoolValue("overlay", "enable_experimental_overlay", settings_client->disable_overlay);
+    settings_server->disable_overlay = !ini.GetBoolValue("overlay", "enable_experimental_overlay", settings_server->disable_overlay);
 
     settings_client->disable_overlay_achievement_notification = ini.GetBoolValue("overlay", "disable_achievement_notification", settings_client->disable_overlay_achievement_notification);
     settings_server->disable_overlay_achievement_notification = ini.GetBoolValue("overlay", "disable_achievement_notification", settings_server->disable_overlay_achievement_notification);
@@ -1291,22 +1291,21 @@ static void load_main_config()
 {
     static std::recursive_mutex ini_mtx{};
     static bool loaded = false;
+    
     std::lock_guard lck(ini_mtx);
     if (loaded) return;
     loaded = true;
 
-    std::ifstream ini_file(Local_Storage::get_program_path(), std::ios::binary | std::ios::in);
-    if (!ini_file) return;
+    std::ifstream ini_file(Local_Storage::get_game_settings_path() + "configs.ini", std::ios::binary | std::ios::in);
+    if (!ini_file.is_open()) {
+        PRINT_DEBUG("failed to open configs.ini");
+        return;
+    }
 
     ini.SetUnicode();
     auto err = ini.LoadData(ini_file);
-    // if (err != SI_OK) return;
-
-    // std::list<CSimpleIniA::Entry> sections{};
-    // ini.GetAllSections(sections);
-    // for (const auto &section : sections) {
-    //     section.pComment;
-    // }
+    PRINT_DEBUG("result of parsing configs.ini %i (success == 0)", (int)err);
+    ini_file.close();
 }
 
 
