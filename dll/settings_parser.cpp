@@ -22,6 +22,10 @@
 #define SI_NO_MBCS
 #include "simpleini/SimpleIni.h"
 
+
+static CSimpleIniA ini{};
+
+
 static void load_custom_broadcasts(std::string broadcasts_filepath, std::set<IP_PORT> &custom_broadcasts)
 {
     PRINT_DEBUG("loading broadcasts file '%s'", broadcasts_filepath.c_str());
@@ -1178,142 +1182,139 @@ static void parse_ip_country(class Settings *settings_client, class Settings *se
     }
 }
 
-// overlay_hook_delay_sec.txt
+// overlay::hook_delay_sec
 static void parse_overlay_hook_delay_sec(class Settings *settings_client, class Settings *settings_server)
 {
-    std::string auto_accept_list_path = Local_Storage::get_game_settings_path() + "overlay_hook_delay_sec.txt";
-    std::ifstream input( utf8_decode(auto_accept_list_path) );
-    if (input.is_open()) {
-        common_helpers::consume_bom(input);
-        std::string line{};
-        std::getline( input, line );
-        line = common_helpers::string_strip(line);
-        if (!line.empty()) {
-            try {
-                auto delay_sec = std::stoi(line);
-                if (delay_sec >= 0) {
-                    settings_client->overlay_hook_delay_sec = delay_sec;
-                    settings_server->overlay_hook_delay_sec = delay_sec;
-                    PRINT_DEBUG("Setting overlay hook delay to %i seconds", delay_sec);
-                }
-            } catch (...) {}
-        }
+    auto val = ini.GetLongValue("overlay", "hook_delay_sec", -1);
+    if (val >= 0) {
+        settings_client->overlay_hook_delay_sec = val;
+        settings_server->overlay_hook_delay_sec = val;
+        PRINT_DEBUG("Setting overlay hook delay to %i seconds", (int)val);
     }
 }
 
-// overlay_renderer_detector_timeout_sec.txt
+// overlay::renderer_detector_timeout_sec
 static void parse_overlay_renderer_detector_timeout_sec(class Settings *settings_client, class Settings *settings_server)
 {
-    std::string auto_accept_list_path = Local_Storage::get_game_settings_path() + "overlay_renderer_detector_timeout_sec.txt";
-    std::ifstream input( utf8_decode(auto_accept_list_path) );
-    if (input.is_open()) {
-        common_helpers::consume_bom(input);
-        std::string line{};
-        std::getline( input, line );
-        line = common_helpers::string_strip(line);
-        if (!line.empty()) {
-            try {
-                auto timeout_sec = std::stoi(line);
-                if (timeout_sec > 0) {
-                    settings_client->overlay_renderer_detector_timeout_sec = timeout_sec;
-                    settings_server->overlay_renderer_detector_timeout_sec = timeout_sec;
-                    PRINT_DEBUG("Setting overlay renderer detector timeout to %i seconds", timeout_sec);
-                }
-            } catch (...) {}
-        }
+    auto val = ini.GetLongValue("overlay", "renderer_detector_timeout_sec", -1);
+    if (val > 0) {
+        settings_client->overlay_renderer_detector_timeout_sec = val;
+        settings_server->overlay_renderer_detector_timeout_sec = val;
+        PRINT_DEBUG("Setting overlay renderer detector timeout to %i seconds", (int)val);
     }
 }
 
 // mainly enable/disable features
 static void parse_simple_features(class Settings *settings_client, class Settings *settings_server)
 {
-    std::string steam_settings_path(Local_Storage::get_game_settings_path());
-    std::vector<std::string> paths = Local_Storage::get_filenames_path(steam_settings_path);
-    for (const auto & p: paths) {
-        PRINT_DEBUG("steam settings path %s", p.c_str());
-        if (p == "build_id.txt") {
-            parse_build_id(settings_client, settings_server);
-        } else if (p == "steam_deck.txt") {
-            settings_client->steam_deck = true;
-            settings_server->steam_deck = true;
-        } else if (p == "download_steamhttp_requests.txt") {
-            settings_client->download_steamhttp_requests = true;
-            settings_server->download_steamhttp_requests = true;
-        } else if (p == "force_steamhttp_success.txt") {
-            settings_client->force_steamhttp_success = true;
-            settings_server->force_steamhttp_success = true;
-        } else if (p == "disable_networking.txt") {
-            settings_client->disable_networking = true;
-            settings_server->disable_networking = true;
-        } else if (p == "enable_experimental_overlay.txt") {
-            settings_client->disable_overlay = false;
-            settings_server->disable_overlay = false;
-        } else if (p == "disable_overlay_achievement_notification.txt") {
-            settings_client->disable_overlay_achievement_notification = true;
-            settings_server->disable_overlay_achievement_notification = true;
-        } else if (p == "disable_overlay_friend_notification.txt") {
-            settings_client->disable_overlay_friend_notification = true;
-            settings_server->disable_overlay_friend_notification = true;
-        } else if (p == "disable_overlay_warning_forced_setting.txt") {
-            settings_client->disable_overlay_warning_forced_setting = true;
-            settings_server->disable_overlay_warning_forced_setting = true;
-        } else if (p == "disable_overlay_warning_local_save.txt") {
-            settings_client->disable_overlay_warning_local_save = true;
-            settings_server->disable_overlay_warning_local_save = true;
-        } else if (p == "disable_overlay_warning_bad_appid.txt") { // overlay warning for bad app ID (= 0)
-            settings_client->disable_overlay_warning_bad_appid = true;
-            settings_server->disable_overlay_warning_bad_appid = true;
-        } else if (p == "disable_overlay_warning_any.txt") { // disable any overlay warning
-            settings_client->disable_overlay_warning_any = true;
-            settings_server->disable_overlay_warning_any = true;
-        } else if (p == "disable_lobby_creation.txt") {
-            settings_client->disable_lobby_creation = true;
-            settings_server->disable_lobby_creation = true;
-        } else if (p == "disable_source_query.txt") {
-            settings_client->disable_source_query = true;
-            settings_server->disable_source_query = true;
-        } else if (p == "disable_account_avatar.txt") {
-            settings_client->disable_account_avatar = true;
-            settings_server->disable_account_avatar = true;
-        } else if (p == "disable_leaderboards_create_unknown.txt") {
-            settings_client->disable_leaderboards_create_unknown = true;
-            settings_server->disable_leaderboards_create_unknown = true;
-        } else if (p == "share_leaderboards_over_network.txt") {
-            settings_client->share_leaderboards_over_network = true;
-            settings_server->share_leaderboards_over_network = true;
-        } else if (p == "disable_sharing_stats_with_gameserver.txt") {
-            settings_client->disable_sharing_stats_with_gameserver = true;
-            settings_server->disable_sharing_stats_with_gameserver = true;
-        } else if (p == "immediate_gameserver_stats.txt") {
-            settings_client->immediate_gameserver_stats = true;
-            settings_server->immediate_gameserver_stats = true;
-        } else if (p == "achievements_bypass.txt") {
-            settings_client->achievement_bypass = true;
-            settings_server->achievement_bypass = true;
-        } else if (p == "is_beta_branch.txt") {
-            settings_client->is_beta_branch = true;
-            settings_server->is_beta_branch = true;
-        } else if (p == "new_app_ticket.txt") {
-            settings_client->enable_new_app_ticket = true;
-            settings_server->enable_new_app_ticket = true;
-        } else if (p == "gc_token.txt") {
-            settings_client->use_gc_token = true;
-            settings_server->use_gc_token = true;
-        } else if (p == "matchmaking_server_list_actual_type.txt") {
-            settings_client->matchmaking_server_list_always_lan_type = false;
-            settings_server->matchmaking_server_list_always_lan_type = false;
-        } else if (p == "matchmaking_server_details_via_source_query.txt") {
-            settings_client->matchmaking_server_details_via_source_query = true;
-            settings_server->matchmaking_server_details_via_source_query = true;
-        }
-    }
+    // [general]
+    settings_client->enable_new_app_ticket = ini.GetBoolValue("general", "new_app_ticket", settings_client->enable_new_app_ticket);
+    settings_server->enable_new_app_ticket = ini.GetBoolValue("general", "new_app_ticket", settings_server->enable_new_app_ticket);
+
+    settings_client->use_gc_token = ini.GetBoolValue("general", "gc_token", settings_client->use_gc_token);
+    settings_server->use_gc_token = ini.GetBoolValue("general", "gc_token", settings_server->use_gc_token);
+
+    settings_client->disable_account_avatar = ini.GetBoolValue("general", "disable_account_avatar", settings_client->disable_account_avatar);
+    settings_server->disable_account_avatar = ini.GetBoolValue("general", "disable_account_avatar", settings_server->disable_account_avatar);
+
+    settings_client->is_beta_branch = ini.GetBoolValue("general", "is_beta_branch", settings_client->is_beta_branch);
+    settings_server->is_beta_branch = ini.GetBoolValue("general", "is_beta_branch", settings_server->is_beta_branch);
+
+    settings_client->achievement_bypass = ini.GetBoolValue("general", "achievements_bypass", settings_client->achievement_bypass);
+    settings_server->achievement_bypass = ini.GetBoolValue("general", "achievements_bypass", settings_server->achievement_bypass);
+
+    settings_client->steam_deck = ini.GetBoolValue("general", "steam_deck", settings_client->steam_deck);
+    settings_server->steam_deck = ini.GetBoolValue("general", "steam_deck", settings_server->steam_deck);
+
+    settings_client->disable_leaderboards_create_unknown = ini.GetBoolValue("general", "disable_leaderboards_create_unknown", settings_client->disable_leaderboards_create_unknown);
+    settings_server->disable_leaderboards_create_unknown = ini.GetBoolValue("general", "disable_leaderboards_create_unknown", settings_server->disable_leaderboards_create_unknown);
+
+    settings_client->immediate_gameserver_stats = ini.GetBoolValue("general", "immediate_gameserver_stats", settings_client->immediate_gameserver_stats);
+    settings_server->immediate_gameserver_stats = ini.GetBoolValue("general", "immediate_gameserver_stats", settings_server->immediate_gameserver_stats);
+
+    settings_client->matchmaking_server_details_via_source_query = ini.GetBoolValue("general", "matchmaking_server_details_via_source_query", settings_client->matchmaking_server_details_via_source_query);
+    settings_server->matchmaking_server_details_via_source_query = ini.GetBoolValue("general", "matchmaking_server_details_via_source_query", settings_server->matchmaking_server_details_via_source_query);
+
+    settings_client->matchmaking_server_list_always_lan_type = ini.GetBoolValue("general", "matchmaking_server_list_actual_type", settings_client->matchmaking_server_list_always_lan_type);
+    settings_server->matchmaking_server_list_always_lan_type = ini.GetBoolValue("general", "matchmaking_server_list_actual_type", settings_server->matchmaking_server_list_always_lan_type);
+
+
+    // [connectivity]
+    settings_client->disable_networking = ini.GetBoolValue("connectivity", "disable_networking", settings_client->disable_networking);
+    settings_server->disable_networking = ini.GetBoolValue("connectivity", "disable_networking", settings_server->disable_networking);
+
+    settings_client->disable_sharing_stats_with_gameserver = ini.GetBoolValue("connectivity", "disable_sharing_stats_with_gameserver", settings_client->disable_sharing_stats_with_gameserver);
+    settings_server->disable_sharing_stats_with_gameserver = ini.GetBoolValue("connectivity", "disable_sharing_stats_with_gameserver", settings_server->disable_sharing_stats_with_gameserver);
+    
+    settings_client->disable_source_query = ini.GetBoolValue("connectivity", "disable_source_query", settings_client->disable_source_query);
+    settings_server->disable_source_query = ini.GetBoolValue("connectivity", "disable_source_query", settings_server->disable_source_query);
+
+    settings_client->share_leaderboards_over_network = ini.GetBoolValue("connectivity", "share_leaderboards_over_network", settings_client->share_leaderboards_over_network);
+    settings_server->share_leaderboards_over_network = ini.GetBoolValue("connectivity", "share_leaderboards_over_network", settings_server->share_leaderboards_over_network);
+
+    settings_client->disable_lobby_creation = ini.GetBoolValue("connectivity", "disable_lobby_creation", settings_client->disable_lobby_creation);
+    settings_server->disable_lobby_creation = ini.GetBoolValue("connectivity", "disable_lobby_creation", settings_server->disable_lobby_creation);
+
+    settings_client->download_steamhttp_requests = ini.GetBoolValue("connectivity", "download_steamhttp_requests", settings_client->download_steamhttp_requests);
+    settings_server->download_steamhttp_requests = ini.GetBoolValue("connectivity", "download_steamhttp_requests", settings_server->download_steamhttp_requests);
+
+    settings_client->force_steamhttp_success = ini.GetBoolValue("connectivity", "force_steamhttp_success", settings_client->force_steamhttp_success);
+    settings_server->force_steamhttp_success = ini.GetBoolValue("connectivity", "force_steamhttp_success", settings_server->force_steamhttp_success);
+
+
+    // [overlay]
+    settings_client->disable_overlay = ini.GetBoolValue("overlay", "enable_experimental_overlay", settings_client->disable_overlay);
+    settings_server->disable_overlay = ini.GetBoolValue("overlay", "enable_experimental_overlay", settings_server->disable_overlay);
+
+    settings_client->disable_overlay_achievement_notification = ini.GetBoolValue("overlay", "disable_achievement_notification", settings_client->disable_overlay_achievement_notification);
+    settings_server->disable_overlay_achievement_notification = ini.GetBoolValue("overlay", "disable_achievement_notification", settings_server->disable_overlay_achievement_notification);
+
+    settings_client->disable_overlay_friend_notification = ini.GetBoolValue("overlay", "disable_friend_notification", settings_client->disable_overlay_friend_notification);
+    settings_server->disable_overlay_friend_notification = ini.GetBoolValue("overlay", "disable_friend_notification", settings_server->disable_overlay_friend_notification);
+
+    settings_client->disable_overlay_warning_any = ini.GetBoolValue("overlay", "disable_warning_any", settings_client->disable_overlay_warning_any);
+    settings_server->disable_overlay_warning_any = ini.GetBoolValue("overlay", "disable_warning_any", settings_server->disable_overlay_warning_any);
+
+    settings_client->disable_overlay_warning_bad_appid = ini.GetBoolValue("overlay", "disable_warning_bad_appid", settings_client->disable_overlay_warning_bad_appid);
+    settings_server->disable_overlay_warning_bad_appid = ini.GetBoolValue("overlay", "disable_warning_bad_appid", settings_server->disable_overlay_warning_bad_appid);
+
+    settings_client->disable_overlay_warning_forced_setting = ini.GetBoolValue("overlay", "disable_warning_forced_setting", settings_client->disable_overlay_warning_forced_setting);
+    settings_server->disable_overlay_warning_forced_setting = ini.GetBoolValue("overlay", "disable_warning_forced_setting", settings_server->disable_overlay_warning_forced_setting);
+
+    settings_client->disable_overlay_warning_local_save = ini.GetBoolValue("overlay", "disable_warning_local_save", settings_client->disable_overlay_warning_local_save);
+    settings_server->disable_overlay_warning_local_save = ini.GetBoolValue("overlay", "disable_warning_local_save", settings_server->disable_overlay_warning_local_save);
+
 }
 
+
+static void load_main_config()
+{
+    static std::recursive_mutex ini_mtx{};
+    static bool loaded = false;
+    std::lock_guard lck(ini_mtx);
+    if (loaded) return;
+    loaded = true;
+
+    std::ifstream ini_file(Local_Storage::get_program_path(), std::ios::binary | std::ios::in);
+    if (!ini_file) return;
+
+    ini.SetUnicode();
+    auto err = ini.LoadData(ini_file);
+    // if (err != SI_OK) return;
+
+    // std::list<CSimpleIniA::Entry> sections{};
+    // ini.GetAllSections(sections);
+    // for (const auto &section : sections) {
+    //     section.pComment;
+    // }
+}
 
 
 uint32 create_localstorage_settings(Settings **settings_client_out, Settings **settings_server_out, Local_Storage **local_storage_out)
 {
     PRINT_DEBUG("start ----------");
+
+    load_main_config();
 
 #if defined(EMU_BUILD_STRING)
     PRINT_DEBUG("emu build '%s'", EXPAND_AS_STR(EMU_BUILD_STRING));
@@ -1371,7 +1372,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     }
 
     bool steam_offline_mode = false;
-    if (file_exists_(steam_settings_path + "offline.txt")) {
+    if (ini.GetBoolValue("connectivity", "offline", false)) {
         steam_offline_mode = true;
     }
 
@@ -1393,6 +1394,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     // supported languages list
     settings_client->set_supported_languages(supported_languages);
     settings_server->set_supported_languages(supported_languages);
+
+    parse_build_id(settings_client, settings_server);
 
     parse_simple_features(settings_client, settings_server);
     parse_dlc(settings_client, settings_server);
@@ -1430,4 +1433,10 @@ void save_global_settings(Local_Storage *local_storage, const char *name, const 
 {
     local_storage->store_data_settings("account_name.txt", name, strlen(name));
     local_storage->store_data_settings("language.txt", language, strlen(language));
+}
+
+bool settings_disable_lan_only()
+{
+    load_main_config();
+    return ini.GetBoolValue("general", "disable_lan_only", false);
 }

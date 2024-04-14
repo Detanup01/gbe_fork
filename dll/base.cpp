@@ -491,23 +491,18 @@ static void load_dll()
 #include "dll/local_storage.h"
 static void load_dlls()
 {
-    std::string path = Local_Storage::get_game_settings_path();
-    path += "load_dlls";
-    path += PATH_SEPARATOR;
+    std::string path(Local_Storage::get_game_settings_path() + "load_dlls" + PATH_SEPARATOR);
 
-    std::vector<std::string> paths = Local_Storage::get_filenames_path(path);
+    std::vector<std::string> paths(Local_Storage::get_filenames_path(path));
     for (auto & p: paths) {
-        std::string full_path = path + p;
-        size_t length = full_path.length();
-        if (length < 4) continue;
-        if (std::toupper(full_path[length - 1]) != 'L') continue;
-        if (std::toupper(full_path[length - 2]) != 'L') continue;
-        if (std::toupper(full_path[length - 3]) != 'D') continue;
-        if (full_path[length - 4] != '.') continue;
+        std::string full_path(path + p);
+        if (!common_helpers::ends_with_i(full_path, ".dll")) continue;
 
-        PRINT_DEBUG("Trying to load %s", full_path.c_str());
+        PRINT_DEBUG("loading '%s'", full_path.c_str());
         if (LoadLibraryW(utf8_decode(full_path).c_str())) {
-            PRINT_DEBUG("LOADED %s", full_path.c_str());
+            PRINT_DEBUG(" LOADED");
+        } else {
+            PRINT_DEBUG(" FAILED, error 0x%X", GetLastError());
         }
     }
 }
@@ -602,11 +597,13 @@ HINTERNET WINAPI Mine_WinHttpOpenRequest(
 
 
 
+#include "dll/settings_parser.h"
+
 static bool network_functions_attached = false;
 BOOL WINAPI DllMain( HINSTANCE, DWORD dwReason, LPVOID ) {
     switch ( dwReason ) {
         case DLL_PROCESS_ATTACH:
-            if (!file_exists(get_full_program_path() + "disable_lan_only.txt") && !file_exists(get_full_program_path() + "\\steam_settings\\disable_lan_only.txt")) {
+            if (!settings_disable_lan_only()) {
                 PRINT_DEBUG("Hooking lan only functions");
                 DetourTransactionBegin();
                 DetourUpdateThread( GetCurrentThread() );
