@@ -294,14 +294,14 @@ bool common_helpers::dir_exist(const std::filesystem::path &dirpath)
     return false;
 }
 
-bool common_helpers::dir_exist(const std::string_view &dirpath)
+bool common_helpers::dir_exist(const std::string &dirpath)
 {
     if (dirpath.empty()) return false;
     std::filesystem::path path(dirpath);
     return dir_exist(path);
 }
 
-bool common_helpers::dir_exist(const std::wstring_view &dirpath)
+bool common_helpers::dir_exist(const std::wstring &dirpath)
 {
     if (dirpath.empty()) return false;
     std::filesystem::path path(dirpath);

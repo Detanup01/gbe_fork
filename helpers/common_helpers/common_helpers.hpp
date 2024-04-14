@@ -55,7 +55,7 @@ bool file_size(const std::string &filepath, size_t &size);
 bool file_size(const std::wstring &filepath, size_t &size);
 
 bool dir_exist(const std::filesystem::path &dirpath);
-bool dir_exist(const std::string_view &dirpath);
-bool dir_exist(const std::wstring_view &dirpath);
+bool dir_exist(const std::string &dirpath);
+bool dir_exist(const std::wstring &dirpath);
 
 }
