@@ -289,23 +289,33 @@ TOP_OWNER_IDS = list(dict.fromkeys([
 ]))
 
 # extra features/options to disable
-EXTRA_FEATURES_DISABLE: list[tuple[str, str]] = [
-    ("disable_account_avatar.txt",                   "disable avatar functionality."),
-    ("disable_networking.txt",                       "disable all networking functionality of the emu."),
-    ("disable_source_query.txt",                     "do not send server details for the server browser. Only works for game servers."),
-    ("disable_sharing_stats_with_gameserver.txt",    "prevent sharing stats and achievements with any game server, this also disables the interface ISteamGameServerStats."),
-]
+EXTRA_FEATURES_DISABLE = {
+    'general': {
+        'disable_account_avatar': (1, 'disable avatar functionality'),
+    },
+    'connectivity': {
+        'disable_networking': (1, 'disable avatar functionality'),
+        'disable_source_query': (1, 'do not send server details to the server browser, only works for game servers'),
+        'disable_sharing_stats_with_gameserver': (1, 'prevent sharing stats and achievements with any game server, this also disables the interface ISteamGameServerStats'),
+    },
+}
 
 # extra convenient features/options to enable
-EXTRA_FEATURES_CONVENIENT: list[tuple[str, str]] = [
-    ("disable_lan_only.txt",                        "don't hook OS networking APIs and allow any external requests."),
-    ("enable_experimental_overlay.txt",             "---------------------\nUSE AT YOUR OWN RISK\n---------------------\n\nEnable the experimental overlay."),
-    ("disable_overlay_warning_any.txt",             "disable all overlay warnings and allow modifying locked settings, if any."),
-    ("download_steamhttp_requests.txt",             "try to download all requests made via the Steam HTTP interface locally."),
-    ("new_app_ticket.txt",                          "generate new app ticket."),
-    ("gc_token.txt",                                "generate GC inside new App Ticket."),
-    ("share_leaderboards_over_network.txt",         "enable sharing Leaderboards scores with people playing the same game on the same network."),
-]
+EXTRA_FEATURES_CONVENIENT = {
+    'general': {
+        'new_app_ticket': (1, 'generate new app auth ticket'),
+        'gc_token': (1, 'generate/embed generate GC inside new App Ticket'),
+    },
+    'connectivity': {
+        'disable_lan_only': (1, 'prevent hooking OS networking APIs and allow any external requests'),
+        'share_leaderboards_over_network': (1, 'enable sharing leaderboards scores with people playing the same game on the same network'),
+        'download_steamhttp_requests': (1, 'attempt to download external HTTP(S) requests made via Steam_HTTP::SendHTTPRequest()'),
+    },
+    'overlay': {
+        'enable_experimental_overlay': (1, 'xxx USE AT YOUR OWN RISK xxx, enable the experimental overlay'),
+        'disable_warning_any': (1, 'disable any warning in the overlay'),
+    },
+}
 
 
 def get_exe_dir(relative = False):
@@ -504,16 +514,6 @@ def get_dlc(raw_infos):
     except Exception:
         print("could not get dlc infos, are there any dlcs ?")
         return (set(), set(), set())
-
-def disable_all_extra_features(emu_settings_dir : str) -> None:
-    for item in EXTRA_FEATURES_DISABLE:
-        with open(os.path.join(emu_settings_dir, item[0]), 'wt', encoding='utf-8') as f:
-            f.write(item[1])
-
-def enable_convenient_extra_features(emu_settings_dir : str) -> None:
-    for item in EXTRA_FEATURES_CONVENIENT:
-        with open(os.path.join(emu_settings_dir, item[0]), 'wt', encoding='utf-8') as f:
-            f.write(item[1])
 
 
 def help():
@@ -912,12 +912,22 @@ def main():
                 icon,
                 logo,
                 logo_small)
-            
+        
+        out_config_ini = {}
         if DISABLE_EXTRA:
-            disable_all_extra_features(emu_settings_dir)
+            out_config_ini.update(EXTRA_FEATURES_DISABLE)
  
         if CONVENIENT_EXTRA:
-            enable_convenient_extra_features(emu_settings_dir)
+            out_config_ini.update(EXTRA_FEATURES_CONVENIENT)
+        
+        if out_config_ini:
+            with open(os.path.join(emu_settings_dir, 'configs.ini'), 'wt', encoding='utf-8') as f:
+                for item in out_config_ini.items():
+                    f.write('[' + item[0] + ']\n') # section
+                    for kv in item[1].items():
+                        f.write('# ' + kv[1][1] + '\n') # comment
+                        f.write(kv[0] + '=' + str(kv[1][0]) + '\n') # key/value pair
+                    f.write('\n') # key/value pair
 
         inventory_data = generate_inventory(client, appid)
         if inventory_data is not None:
