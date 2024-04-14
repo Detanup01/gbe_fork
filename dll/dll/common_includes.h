@@ -209,8 +209,8 @@ static inline void reset_LastError()
             auto __prnt_dbg_ms = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::milli>>(__prnt_dbg_duration);                     \
             auto __prnt_dbg_f = fopen(dbg_log_file.c_str(), "a");                                                                                            \
             if (!__prnt_dbg_f) break;                                                                                                                        \
-            fprintf(__prnt_dbg_f, "[%llu ms, %llu us] [tid %ld] %s() " a "\n",                                                                               \
-                __prnt_dbg_ms.count(), __prnt_dbg_micro.count(), syscall(SYS_gettid), __FUNCTION__, ##__VA_ARGS__);                                          \
+            fprintf(__prnt_dbg_f, "[%llu ms, %llu us] [tid %ld] %s " a "\n",                                                                               \
+                __prnt_dbg_ms.count(), __prnt_dbg_micro.count(), syscall(SYS_gettid), __PRETTY_FUNCTION__, ##__VA_ARGS__);                                          \
             fclose(__prnt_dbg_f);                                                                                                                            \
         } while (0)
     #else
