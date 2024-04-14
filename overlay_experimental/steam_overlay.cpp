@@ -145,7 +145,6 @@ Steam_Overlay::~Steam_Overlay()
 {
     if (settings->disable_overlay) return;
 
-    UnSetupOverlay();
     this->network->rmCallback(CALLBACK_ID_STEAM_MESSAGES, settings->get_local_steam_id(), &Steam_Overlay::overlay_networking_callback, this);
     run_every_runcb->remove(&Steam_Overlay::overlay_run_callback, this);
 }
