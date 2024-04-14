@@ -1,4 +1,11 @@
 * **[Clompress]** corrected Turkish translation
+
+---
+
+* **[breaking]** move some settings inside a new file `config.ini` which could be created inside the `steam_settings` folder
+
+---
+
 * increase run callbacks background thread polling time to `~200ms`
 * changed the overlay title to give proper credits to its author
 * set these env vars for a more accurate emulation:
