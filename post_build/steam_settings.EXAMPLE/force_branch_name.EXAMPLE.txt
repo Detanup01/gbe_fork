@@ -1,0 +1,2 @@
+rename to: force_branch_name.txt and put the name of the branch on a single line that you wish to report to the game.
+by default this is "public", you might want to look at is_beta_branch.EXAMPLE.txt
