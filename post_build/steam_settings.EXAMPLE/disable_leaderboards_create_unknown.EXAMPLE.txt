@@ -1,1 +1,0 @@
-Rename this file to disable_leaderboards_create_unknown.txt to prevent Steam_User_Stats::FindLeaderboard() from always succeeding and creating the unknown leaderboard

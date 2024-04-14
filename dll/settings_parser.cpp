@@ -17,6 +17,11 @@
 
 #include "dll/settings_parser.h"
 
+#define SI_CONVERT_GENERIC
+#define SI_SUPPORT_IOSTREAMS
+#define SI_NO_MBCS
+#include "simpleini/SimpleIni.h"
+
 static void load_custom_broadcasts(std::string broadcasts_filepath, std::set<IP_PORT> &custom_broadcasts)
 {
     PRINT_DEBUG("loading broadcasts file '%s'", broadcasts_filepath.c_str());

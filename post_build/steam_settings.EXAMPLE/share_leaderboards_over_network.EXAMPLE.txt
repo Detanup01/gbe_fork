@@ -1,1 +1,0 @@
-Rename this file to share_leaderboards_over_network.txt to enable sharing Leaderboards scores with people playing the same game on the same network.

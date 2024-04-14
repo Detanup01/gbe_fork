@@ -236,7 +236,7 @@ static inline void reset_LastError()
 #define CLIENT_HSTEAMUSER 1
 #define SERVER_HSTEAMUSER 1
 
-#define DEFAULT_NAME "Noob"
+#define DEFAULT_NAME "orca"
 #define PROGRAM_NAME_1 "Go"
 #define PROGRAM_NAME_2 "ld"
 #define PROGRAM_NAME_3 "be"

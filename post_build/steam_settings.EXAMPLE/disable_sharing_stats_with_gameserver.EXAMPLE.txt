@@ -1,1 +1,0 @@
-Rename this file to disable_sharing_stats_with_gameserver.txt to prevent sharing stats and achievements with any game server, this also disables the interface ISteamGameServerStats.
