@@ -409,11 +409,13 @@ static uint32 parse_steam_app_id(const std::string &program_path)
 }
 
 // local_save.txt
-static bool parse_local_save(const std::string &program_path, std::string &save_path)
+static bool parse_local_save(const std::string &base_path, std::string &save_path)
 {
-    char array[256] = {};
-    if (Local_Storage::get_file_data(program_path + "local_save.txt", array, sizeof(array) - 1) != -1) {
-        save_path = program_path + Settings::sanitize(array);
+    char array[256]{};
+    int read = Local_Storage::get_file_data(base_path + "local_save.txt", array, sizeof(array) - 1);
+    if (read != -1) {
+        save_path = Local_Storage::get_program_path() + Settings::sanitize(array);
+        PRINT_DEBUG("using local save path '%s'", save_path.c_str());
         return true;
     }
     return false;
@@ -586,7 +588,7 @@ static void parse_dlc(class Settings *settings_client, class Settings *settings_
 }
 
 // app_paths.txt
-static void parse_app_paths(class Settings *settings_client, Settings *settings_server, std::string &program_path)
+static void parse_app_paths(class Settings *settings_client, Settings *settings_server, const std::string &program_path)
 {
     std::string dlc_config_path = Local_Storage::get_game_settings_path() + "app_paths.txt";
     std::ifstream input( utf8_decode(dlc_config_path) );
@@ -1032,7 +1034,7 @@ static void parse_mods_folder(class Settings *settings_client, Settings *setting
 }
 
 // force_language.txt
-static bool parse_force_language(std::string &language, std::string &steam_settings_path)
+static bool parse_force_language(std::string &language, const std::string &steam_settings_path)
 {
     bool warn_forced = false;
 
@@ -1048,7 +1050,7 @@ static bool parse_force_language(std::string &language, std::string &steam_setti
 }
 
 // force_steamid.txt
-static bool parse_force_user_steam_id(CSteamID &user_id, std::string &steam_settings_path)
+static bool parse_force_user_steam_id(CSteamID &user_id, const std::string &steam_settings_path)
 {
     bool warn_forced = false;
 
@@ -1065,7 +1067,7 @@ static bool parse_force_user_steam_id(CSteamID &user_id, std::string &steam_sett
 }
 
 // force_account_name.txt
-static bool parse_force_account_name(std::string &name, std::string &steam_settings_path)
+static bool parse_force_account_name(std::string &name, const std::string &steam_settings_path)
 {
     bool warn_forced = false;
 
@@ -1081,7 +1083,7 @@ static bool parse_force_account_name(std::string &name, std::string &steam_setti
 }
 
 // force_listen_port.txt
-static bool parse_force_listen_port(uint16 &port, std::string &steam_settings_path)
+static bool parse_force_listen_port(uint16 &port, const std::string &steam_settings_path)
 {
     bool warn_forced = false;
 
@@ -1323,11 +1325,13 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
 
     parse_crash_printer_location();
 
-    std::string program_path(Local_Storage::get_program_path());
+    const std::string program_path(Local_Storage::get_program_path());
+    const std::string steam_settings_path(Local_Storage::get_game_settings_path());
     uint32 appid = parse_steam_app_id(program_path);
     
     std::string save_path(Local_Storage::get_user_appdata_path());
     bool local_save = parse_local_save(program_path, save_path);
+    local_save = parse_local_save(steam_settings_path, save_path); // allow file in local steam_settings folder to override it
     PRINT_DEBUG("program path: '%s', save path: '%s'", program_path.c_str(), save_path.c_str());
 
     Local_Storage *local_storage = new Local_Storage(save_path);
@@ -1338,7 +1342,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     // Custom broadcasts
     std::set<IP_PORT> custom_broadcasts{};
     load_custom_broadcasts(local_storage->get_global_settings_path() + "custom_broadcasts.txt", custom_broadcasts);
-    load_custom_broadcasts(Local_Storage::get_game_settings_path() + "custom_broadcasts.txt", custom_broadcasts);
+    load_custom_broadcasts(steam_settings_path + "custom_broadcasts.txt", custom_broadcasts);
 
     // Acount name
     std::string name(parse_account_name(local_storage));
@@ -1351,7 +1355,6 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
 
 
     // boolean flags and forced configurations
-    std::string steam_settings_path(Local_Storage::get_game_settings_path());
 
     bool warn_forced_setting = false;
     if (file_exists_(steam_settings_path + "force_steamid.txt")) {
@@ -1407,10 +1410,10 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     parse_force_branch_name(settings_client, settings_server);
 
     load_subscribed_groups_clans(local_storage->get_global_settings_path() + "subscribed_groups_clans.txt", settings_client, settings_server);
-    load_subscribed_groups_clans(Local_Storage::get_game_settings_path() + "subscribed_groups_clans.txt", settings_client, settings_server);
+    load_subscribed_groups_clans(steam_settings_path + "subscribed_groups_clans.txt", settings_client, settings_server);
 
     load_overlay_appearance(local_storage->get_global_settings_path() + "overlay_appearance.txt", settings_client, settings_server, local_storage);
-    load_overlay_appearance(Local_Storage::get_game_settings_path() + "overlay_appearance.txt", settings_client, settings_server, local_storage);
+    load_overlay_appearance(steam_settings_path + "overlay_appearance.txt", settings_client, settings_server, local_storage);
 
     parse_mods_folder(settings_client, settings_server, local_storage);
     load_gamecontroller_settings(settings_client);

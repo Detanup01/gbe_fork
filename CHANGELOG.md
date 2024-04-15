@@ -6,6 +6,7 @@
 
 ---
 
+* allow creating the file `local_save.txt` inside the `steam_settings` folder
 * increase run callbacks background thread polling time to `~200ms`
 * changed the overlay title to give proper credits to its author
 * set these env vars for a more accurate emulation:
