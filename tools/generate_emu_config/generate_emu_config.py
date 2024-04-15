@@ -294,7 +294,7 @@ EXTRA_FEATURES_DISABLE = {
         'disable_account_avatar': (1, 'disable avatar functionality'),
     },
     'connectivity': {
-        'disable_networking': (1, 'disable avatar functionality'),
+        'disable_networking': (1, 'disable all steam networking interface functionality'),
         'disable_source_query': (1, 'do not send server details to the server browser, only works for game servers'),
         'disable_sharing_stats_with_gameserver': (1, 'prevent sharing stats and achievements with any game server, this also disables the interface ISteamGameServerStats'),
     },
@@ -545,6 +545,15 @@ def help():
     print("   GSE_CFG_PASSWORD")
     print("")
 
+
+def merge_dict(dest: dict, src: dict):
+    # merge similar keys, but don't overwrite values
+    for kv in src.items():
+        v_dest = dest.get(kv[0], None)
+        if isinstance(kv[1], dict) and isinstance(v_dest, dict):
+            merge_dict(v_dest, kv[1])
+        elif kv[0] not in dest:
+            dest[kv[0]] = kv[1]
 
 def main():
     USERNAME = ""
@@ -915,10 +924,10 @@ def main():
         
         out_config_ini = {}
         if DISABLE_EXTRA:
-            out_config_ini.update(EXTRA_FEATURES_DISABLE)
+            merge_dict(out_config_ini, EXTRA_FEATURES_DISABLE)
  
         if CONVENIENT_EXTRA:
-            out_config_ini.update(EXTRA_FEATURES_CONVENIENT)
+            merge_dict(out_config_ini, EXTRA_FEATURES_CONVENIENT)
         
         if out_config_ini:
             with open(os.path.join(emu_settings_dir, 'configs.ini'), 'wt', encoding='utf-8') as f:
