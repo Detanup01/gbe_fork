@@ -2,7 +2,7 @@
 
 ---
 
-* **[breaking]** move some settings inside a new file `config.ini` which could be created inside the `steam_settings` folder
+* **[breaking]** move some settings inside a new file `config.ini` which has to be created inside the `steam_settings` folder
 
 ---
 

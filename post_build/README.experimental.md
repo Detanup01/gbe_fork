@@ -5,7 +5,7 @@ This build of the emulator:
 * Can load extra dlls in memory via `LoadLibraryA()`
 
 * Mr.Goldberg's note:  
-  > In this folder is an experimental build of my emulator with code that hooks a few windows socket functions. It should block all connections from the game to non LAN ips. This means the game should work without any problems for LAN play (even with VPN LAN as long as you use standard LAN ips (10.x.x.x, 192.168.x.x, etc...)  
+  > In this folder is an experimental build of my emulator with code that hooks a few windows socket functions. It should block all connections from the game to non LAN ips. This means the game should work without any problems for LAN play (even with VPN LAN as long as you use standard LAN ips 10.x.x.x, 192.168.x.x, etc...)  
   
   > It likely doesn't work for some games but it should work for most of them.  
   
@@ -26,7 +26,7 @@ Mr.Goldberg's note:
 * 224.0.0.0 - 255.255.255.255
 
 ## To disable the LAN only connections feature
-Create a file named `disable_lan_only.txt` inside the `steam_settings` folder beside the steam api dll.
+Modify your `steam_settings\configs.ini` and set `disable_lan_only=1`.
 
 ## How to use a CPY style crack
 1. Rename `steam_api.dll` crack to `cracksteam_api.dll`, or `steam_api64.dll` to `cracksteam_api64.dll`

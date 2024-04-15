@@ -7,7 +7,7 @@ Mr.Goldberg's note:
 
 > Steam has something called rich presence (the connect key) that lets games tell your friends what command line parameters to run your game with to join their game.
 
-> Most steam games also let you join lobbies in game without having started the game by starting the game with the commadn line `+connect_lobby <lobby id>`.
+> Most steam games also let you join lobbies in game without having started the game by starting the game with the command line `+connect_lobby <lobby id>`.
 
 ## How to use it ?
 Just run this tool and follow the instructions then pick the exe of the game.  
