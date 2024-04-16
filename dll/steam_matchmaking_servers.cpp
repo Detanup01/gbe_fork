@@ -88,13 +88,13 @@ HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, IS
     std::string file_path;
     unsigned long long file_size;
     if (type == eInternetServer || type == eSpectatorServer) {
-        file_path = Local_Storage::get_user_appdata_path() + "/7/" + Local_Storage::remote_storage_folder + "/serverbrowser.txt";
+        file_path = Local_Storage::get_user_appdata_path() + "7" + PATH_SEPARATOR + Local_Storage::remote_storage_folder + PATH_SEPARATOR + "serverbrowser.txt";
         file_size = file_size_(file_path);
     } else if (type == eFavoritesServer) {
-        file_path = Local_Storage::get_user_appdata_path() + "/7/" + Local_Storage::remote_storage_folder + "/serverbrowser_favorites.txt";
+        file_path = Local_Storage::get_user_appdata_path() + "7" + PATH_SEPARATOR + Local_Storage::remote_storage_folder + PATH_SEPARATOR + "serverbrowser_favorites.txt";
         file_size = file_size_(file_path);
     } else if (type == eHistoryServer) {
-        file_path = Local_Storage::get_user_appdata_path() + "/7/" + Local_Storage::remote_storage_folder + "/serverbrowser_history.txt";
+        file_path = Local_Storage::get_user_appdata_path() + "7" + PATH_SEPARATOR + Local_Storage::remote_storage_folder + PATH_SEPARATOR + "serverbrowser_history.txt";
         file_size = file_size_(file_path);
     }
 

@@ -29,20 +29,28 @@ so it is recommended to check each example file in the `steam_settings` folder, 
 
 ## Saves location:
 * On Windows:  
-   `C:\Users\<Your windows user name>\AppData\Roaming\Goldberg SteamEmu Saves\`
+   `%appdata%\Goldberg SteamEmu Saves\`  
+   For example, if your user Windows user name is `Lion`, the save location would be:  
+   `C:\Users\Lion\AppData\Roaming\Goldberg SteamEmu Saves\`
 * On Linux: 
    * if `XDG_DATA_HOME` is defined:  
       `$XDG_DATA_HOME/Goldberg SteamEmu Saves/`
-   * Otherwise:  
+   * Otherwise, if `HOME` is defined:  
       `$HOME/.local/share/Goldberg SteamEmu Saves/`
+   * Otherwise:  
+      `SAVE/Goldberg SteamEmu Saves/` (relative to the current directory, which might not be the same as app/game directory)
+
+You can override the name of the base folder `Goldberg SteamEmu Saves` to whatever you want per game, to do this modify `configs.ini` inside your `steam_settings` folder and change the value of `saves_folder_name`.  
+Check the example file in `steam_settings.EXAMPLE\configs.EXAMPLE.ini`.  
 
 ---
 
-In the global settings folder in that save location you will find these files (if you have used the emulator at least once):
+In the global settings folder, in that save location, you will find these files (if you have used the emulator at least once):
 * `account_name.txt`: edit this file to change your name
 * `listen_port.txt`: edit this file if you want to change the UDP/TCP port the emulator listens on, you should probably not change this because everyone needs to use the same port or you won't find yourselves on the network
 * `user_steam_id.txt` this is where your steam id is saved, you can change it, if your saves for a game are locked to a specific steam id see below for a way to change it on a per game basis, but it has to be valid
 * `language.txt`: edit this to change the language the emulator will report to the game, default is `english`, it must be a valid steam language name or the game might have weird behaviour (list provided at the end of this readme)
+* You can also create the file `configs.ini` and specify the most common options you usually set, you can use the provided example file `steam_settings.EXAMPLE\configs.EXAMPLE.ini` as a base. Note that you do not have to specify everything
 
 Note that these are global so you won't have to change them for each game. For game unique stuff (stats and remote storage) a folder is created with the appid of the game.  
 If you want to change your steam_id on a per game basis, simply create a settings folder in the game unique directory (Full path: `C:\Users\<Your windows user name>\AppData\Roaming\Goldberg SteamEmu Saves\<appid>\settings`)  

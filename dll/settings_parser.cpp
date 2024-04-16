@@ -1298,16 +1298,96 @@ static void load_main_config()
     if (loaded) return;
     loaded = true;
 
-    std::ifstream ini_file(Local_Storage::get_game_settings_path() + "configs.ini", std::ios::binary | std::ios::in);
-    if (!ini_file.is_open()) {
-        PRINT_DEBUG("failed to open configs.ini");
-        return;
-    }
+    constexpr const static auto merge_ini = [](const CSimpleIniA &new_ini) {
+        std::list<CSimpleIniA::Entry> sections{};
+        new_ini.GetAllSections(sections);
+        for (auto const &sec : sections) {
+            std::list<CSimpleIniA::Entry> keys{};
+            new_ini.GetAllKeys(sec.pItem, keys);
+            for (auto const &key : keys) {
+                std::list<CSimpleIniA::Entry> vals{};
+                new_ini.GetAllValues(sec.pItem, key.pItem, vals);
+                for (const auto &val : vals) {
+                    ini.SetValue(sec.pItem, key.pItem, val.pItem);
+                }
+            }
+        }
+    };
 
     ini.SetUnicode();
-    auto err = ini.LoadData(ini_file);
-    PRINT_DEBUG("result of parsing configs.ini %i (success == 0)", (int)err);
-    ini_file.close();
+
+    CSimpleIniA local_ini{};
+    local_ini.SetUnicode();
+
+    // we have to load the local one first, since it might change base saves_folder_name
+    {
+        std::ifstream local_ini_file(Local_Storage::get_game_settings_path() + "configs.ini", std::ios::binary | std::ios::in);
+        if (local_ini_file.is_open()) {
+            auto err = local_ini.LoadData(local_ini_file);
+            PRINT_DEBUG("result of parsing local configs.ini %i (success == 0)", (int)err);
+            local_ini_file.close();
+            
+            if (err == SI_OK) {
+                std::string saves_folder_name{};
+                auto ptr = local_ini.GetValue("saves", "saves_folder_name", nullptr);
+                if (ptr && ptr[0]) {
+                    saves_folder_name = Settings::sanitize(common_helpers::string_strip(ptr));
+                }
+                
+                if (saves_folder_name.size()) {
+                    Local_Storage::set_saves_folder_name(saves_folder_name);
+                    PRINT_DEBUG("changed name of the base folder used for save data to '%s'", saves_folder_name.c_str());
+                }
+            }
+        }
+    }
+    
+    {
+        CSimpleIniA global_ini{};
+        global_ini.SetUnicode();
+
+        std::ifstream ini_file(Local_Storage::get_user_appdata_path() + Local_Storage::settings_storage_folder + PATH_SEPARATOR + "configs.ini", std::ios::binary | std::ios::in);
+        if (ini_file.is_open()) {
+            auto err = global_ini.LoadData(ini_file);
+            PRINT_DEBUG("result of parsing global configs.ini %i (success == 0)", (int)err);
+            ini_file.close();
+            
+            if (err == SI_OK) {
+                merge_ini(global_ini);
+            }
+        }
+
+    }
+
+    if (!local_ini.IsEmpty()) {
+        merge_ini(local_ini);
+    }
+
+#ifndef EMU_RELEASE_BUILD
+    // dump the final ini file
+    {
+        PRINT_DEBUG("final ini start ---------");
+        std::list<CSimpleIniA::Entry> sections{};
+        ini.GetAllSections(sections);
+        for (auto const &sec : sections) {
+            PRINT_DEBUG("[%s]", sec.pItem);
+            std::list<CSimpleIniA::Entry> keys{};
+            ini.GetAllKeys(sec.pItem, keys);
+            for (auto const &key : keys) {
+                std::list<CSimpleIniA::Entry> vals{};
+                ini.GetAllValues(sec.pItem, key.pItem, vals);
+                for (const auto &val : vals) {
+                    PRINT_DEBUG("%s=%s", key.pItem, val.pItem);
+                }
+            }
+            PRINT_DEBUG("");
+        }
+        PRINT_DEBUG("final ini end *********");
+    }
+#endif // EMU_RELEASE_BUILD
+
+    reset_LastError();
+
 }
 
 
@@ -1335,6 +1415,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     PRINT_DEBUG("program path: '%s', save path: '%s'", program_path.c_str(), save_path.c_str());
 
     Local_Storage *local_storage = new Local_Storage(save_path);
+    PRINT_DEBUG("global settings path for this app/game: '%s'", local_storage->get_global_settings_path().c_str());
     local_storage->setAppId(appid);
 
     // Listen port

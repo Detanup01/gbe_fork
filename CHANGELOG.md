@@ -2,10 +2,14 @@
 
 ---
 
-* **[breaking]** move some settings inside a new file `config.ini` which has to be created inside the `steam_settings` folder
+* **[breaking]** move some settings inside a new file `config.ini` which could be created inside the `steam_settings` folder, or inside the global settings folder, which is located at `%appdata%\Goldberg SteamEmu Saves\settings\` on Windows for example.  
+  you can create a global `.ini` file `Goldberg SteamEmu Saves/settings/config.ini` for the common options, and another local one `steam_settings/config.ini` for the game-specific options, and the emu will merge them.
 
 ---
 
+* **[breaking]** changed the environment variable `SteamAppPath` to `GseAppPath`, which is used to override the program path detected by the emu
+* allow changing the name of the base folder used to store save data, by default it would be `Goldberg SteamEmu Saves`, suggested by **[Clompress]**  
+  this could be changed by setting the option `saves_folder_name` inside the local file `steam_settings/config.ini`, the global one will not work
 * allow creating the file `local_save.txt` inside the `steam_settings` folder
 * increase run callbacks background thread polling time to `~200ms`
 * changed the overlay title to give proper credits to its author

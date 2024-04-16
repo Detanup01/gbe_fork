@@ -346,7 +346,7 @@ static Lobby_Member *get_lobby_member(Lobby *lobby, CSteamID user_id)
 int GetFavoriteGameCount()
 {
     PRINT_DEBUG_ENTRY();
-    std::string file_path = Local_Storage::get_user_appdata_path() + "/7/" + Local_Storage::remote_storage_folder + "/serverbrowser_favorites.txt";
+    std::string file_path = Local_Storage::get_user_appdata_path() + "7" + PATH_SEPARATOR + Local_Storage::remote_storage_folder + PATH_SEPARATOR + "serverbrowser_favorites.txt";
     unsigned long long file_size = file_size_(file_path);
     if (file_size) {
         std::string list{};
@@ -381,11 +381,11 @@ int AddFavoriteGame( AppId_t nAppID, uint32 nIP, uint16 nConnPort, uint16 nQuery
     unsigned long long file_size;
 
     if (unFlags == 1) {
-        file_path = Local_Storage::get_user_appdata_path() + "/7/" + Local_Storage::remote_storage_folder + "/serverbrowser_favorites.txt";
+        file_path = Local_Storage::get_user_appdata_path() + "7" + PATH_SEPARATOR + Local_Storage::remote_storage_folder + PATH_SEPARATOR + "serverbrowser_favorites.txt";
         file_size = file_size_(file_path);
     }
     else if (unFlags == 2) {
-        file_path = Local_Storage::get_user_appdata_path() + "/7/" + Local_Storage::remote_storage_folder + "/serverbrowser_history.txt";
+        file_path = Local_Storage::get_user_appdata_path() + "7" + PATH_SEPARATOR + Local_Storage::remote_storage_folder + PATH_SEPARATOR + "serverbrowser_history.txt";
         file_size = file_size_(file_path);
     }
     else {
@@ -454,11 +454,11 @@ bool RemoveFavoriteGame( AppId_t nAppID, uint32 nIP, uint16 nConnPort, uint16 nQ
     unsigned long long file_size;
 
     if (unFlags == 1) {
-        file_path = Local_Storage::get_user_appdata_path() + "/7/" + Local_Storage::remote_storage_folder + "/serverbrowser_favorites.txt";
+        file_path = Local_Storage::get_user_appdata_path() + "7" + PATH_SEPARATOR + Local_Storage::remote_storage_folder + "serverbrowser_favorites.txt";
         file_size = file_size_(file_path);
     }
     else if (unFlags == 2) {
-        file_path = Local_Storage::get_user_appdata_path() + "/7/" + Local_Storage::remote_storage_folder + "/serverbrowser_history.txt";
+        file_path = Local_Storage::get_user_appdata_path() + "7" + PATH_SEPARATOR + Local_Storage::remote_storage_folder + "serverbrowser_history.txt";
         file_size = file_size_(file_path);
     }
     else {

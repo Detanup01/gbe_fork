@@ -218,7 +218,7 @@ std::string get_full_lib_path()
 
 std::string get_full_program_path()
 {
-    std::string env_program_path = get_env_variable("SteamAppPath");
+    std::string env_program_path = get_env_variable("GseAppPath");
     if (env_program_path.length()) {
         if (env_program_path.back() != PATH_SEPARATOR[0]) {
             env_program_path = env_program_path.append(PATH_SEPARATOR);

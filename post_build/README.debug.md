@@ -3,7 +3,7 @@ This is the debug build of the emu, while the game/app is running
 the emu will write various events to a log file called `STEAM_LOG.txt`.
 
 ## Where is this log file ?
-Generally it should be beside the .dll/.so iteself, unless the environment variable `SteamAppPath`  
+Generally it should be beside the .dll/.so iteself, unless the environment variable `GseAppPath`  
 is defined, in which case this will be the path of this log file
 
 ## Why ?

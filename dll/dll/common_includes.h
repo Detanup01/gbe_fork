@@ -54,6 +54,7 @@
 #include <cstdint>
 #include <algorithm>
 #include <string>
+#include <string_view>
 #include <chrono>
 #include <cctype>
 #include <iomanip>
@@ -237,14 +238,6 @@ static inline void reset_LastError()
 #define SERVER_HSTEAMUSER 1
 
 #define DEFAULT_NAME "orca"
-#define PROGRAM_NAME_1 "Go"
-#define PROGRAM_NAME_2 "ld"
-#define PROGRAM_NAME_3 "be"
-#define PROGRAM_NAME_4 "rg "
-#define PROGRAM_NAME_5 "St"
-#define PROGRAM_NAME_6 "ea"
-#define PROGRAM_NAME_7 "mE"
-#define PROGRAM_NAME_8 "mu"
 
 #define DEFAULT_LANGUAGE "english"
 

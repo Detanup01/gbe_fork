@@ -42,30 +42,39 @@ struct image_t
 };
 
 class Local_Storage {
-public:
-    static constexpr auto inventory_storage_folder   = "inventory";
-    static constexpr auto settings_storage_folder    = "settings";
-    static constexpr auto remote_storage_folder      = "remote";
-    static constexpr auto stats_storage_folder       = "stats";
-    static constexpr auto leaderboard_storage_folder = "leaderboard";
-    static constexpr auto user_data_storage          = "local";
-    static constexpr auto screenshots_folder         = "screenshots";
-    static constexpr auto game_settings_folder       = "steam_settings";
-
 private:
-    std::string save_directory;
-    std::string appid;
-    
+    static std::string saves_folder_name;
+
 public:
+    static constexpr char inventory_storage_folder[]   = "inventory";
+    static constexpr char settings_storage_folder[]    = "settings";
+    static constexpr char remote_storage_folder[]      = "remote";
+    static constexpr char stats_storage_folder[]       = "stats";
+    static constexpr char leaderboard_storage_folder[] = "leaderboard";
+    static constexpr char user_data_storage[]          = "local";
+    static constexpr char screenshots_folder[]         = "screenshots";
+    static constexpr char game_settings_folder[]       = "steam_settings";
+
     static std::string get_program_path();
     static std::string get_game_settings_path();
     static std::string get_user_appdata_path();
+
     static int get_file_data(const std::string &full_path, char *data, unsigned int max_length, unsigned int offset=0);
     static int store_file_data(std::string folder, std::string file, const char *data, unsigned int length);
+    
     static std::vector<std::string> get_filenames_path(std::string path);
     static std::vector<std::string> get_folders_path(std::string path);
 
+    static void set_saves_folder_name(const std::string_view &str);
+    static const std::string& get_saves_folder_name();
+
+private:
+    std::string save_directory{};
+    std::string appid{}; // game appid
+    
+public:
     Local_Storage(const std::string &save_directory);
+
     void setAppId(uint32 appid);
     int store_data(std::string folder, std::string file, char *data, unsigned int length);
     int store_data_settings(std::string file, const char *data, unsigned int length);

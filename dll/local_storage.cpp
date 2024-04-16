@@ -34,8 +34,12 @@
 #include "stb/stb_image_resize.h"
 
 struct File_Data {
-    std::string name;
+    std::string name{};
 };
+
+
+std::string Local_Storage::saves_folder_name = "Goldberg SteamEmu Saves";
+
 
 #ifdef NO_DISK_WRITES
 std::string Local_Storage::get_program_path()
@@ -43,15 +47,45 @@ std::string Local_Storage::get_program_path()
     return " ";
 }
 
+std::string Local_Storage::get_game_settings_path()
+{
+    return " ";
+}
 
 std::string Local_Storage::get_user_appdata_path()
 {
     return " ";
 }
 
-std::string Local_Storage::get_game_settings_path()
+int Local_Storage::get_file_data(const std::string &full_path, char *data, unsigned int max_length, unsigned int offset)
 {
-    return " ";
+    return -1;
+}
+
+int Local_Storage::store_file_data(std::string folder, std::string file, const char *data, unsigned int length)
+{
+    return -1;
+}
+
+std::vector<std::string> Local_Storage::get_filenames_path(std::string path)
+{
+    return std::vector<std::string>();
+}
+
+std::vector<std::string> Local_Storage::get_folders_path(std::string path)
+{
+    return std::vector<std::string>();
+}
+
+void Local_Storage::set_saves_folder_name(const std::string_view &str)
+{
+
+}
+
+const std::string& Local_Storage::get_saves_folder_name()
+{
+    const static std::string empty{};
+    return empty;
 }
 
 std::string Local_Storage::get_path(std::string folder)
@@ -74,22 +108,12 @@ void Local_Storage::setAppId(uint32 appid)
 
 }
 
-int Local_Storage::store_file_data(std::string folder, std::string file, const char *data, unsigned int length)
-{
-    return -1;
-}
-
 int Local_Storage::store_data(std::string folder, std::string file, char *data, unsigned int length)
 {
     return -1;
 }
 
 int Local_Storage::store_data_settings(std::string file, const char *data, unsigned int length)
-{
-    return -1;
-}
-
-int Local_Storage::get_file_data(const std::string &full_path, char *data, unsigned int max_length, unsigned int offset)
 {
     return -1;
 }
@@ -152,16 +176,6 @@ bool Local_Storage::load_json_file(std::string folder, std::string const&file, n
 bool Local_Storage::write_json_file(std::string folder, std::string const&file, nlohmann::json const& json)
 {
     return false;
-}
-
-std::vector<std::string> Local_Storage::get_filenames_path(std::string path)
-{
-    return std::vector<std::string>();
-}
-
-std::vector<std::string> Local_Storage::get_folders_path(std::string path)
-{
-    return std::vector<std::string>();
 }
 
 std::vector<image_pixel_t> Local_Storage::load_image(std::string const& image_path)
@@ -459,7 +473,7 @@ std::string Local_Storage::get_user_appdata_path()
         }
     }
 #endif
-    return user_appdata_path.append(PATH_SEPARATOR).append(PROGRAM_NAME_1).append(PROGRAM_NAME_2).append(PROGRAM_NAME_3).append(PROGRAM_NAME_4).append(PROGRAM_NAME_5).append(PROGRAM_NAME_6).append(PROGRAM_NAME_7).append(PROGRAM_NAME_8).append(" Saves");
+    return user_appdata_path.append(PATH_SEPARATOR).append(get_saves_folder_name()).append(PATH_SEPARATOR);
 }
 
 static std::string replace_with(std::string s, std::string const &old, const char *new_str)
@@ -598,6 +612,16 @@ std::vector<std::string> Local_Storage::get_folders_path(std::string path)
     } catch(...) { }
     
     return output;
+}
+
+void Local_Storage::set_saves_folder_name(const std::string_view &str)
+{
+    Local_Storage::saves_folder_name = str;
+}
+
+const std::string& Local_Storage::get_saves_folder_name()
+{
+    return Local_Storage::saves_folder_name;
 }
 
 int Local_Storage::store_data(std::string folder, std::string file, char *data, unsigned int length)
