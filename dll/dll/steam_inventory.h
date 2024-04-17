@@ -257,7 +257,7 @@ bool GetResultItemProperty( SteamInventoryResult_t resultHandle,
                                     const char *pchPropertyName,
                                     STEAM_OUT_STRING_COUNT( punValueBufferSizeOut ) char *pchValueBuffer, uint32 *punValueBufferSizeOut )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     //TODO
     return false;

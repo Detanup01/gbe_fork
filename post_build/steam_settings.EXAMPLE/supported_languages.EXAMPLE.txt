@@ -1,8 +1,0 @@
-english
-german
-french
-spanish
-schinese
-russian
-japanese
-latam
