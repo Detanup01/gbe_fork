@@ -223,12 +223,12 @@ Steam_Client::~Steam_Client()
 
     delete ugc_bridge; ugc_bridge = nullptr;
 
+    delete network; network = nullptr;
     delete run_every_runcb; run_every_runcb = nullptr;
     delete callbacks_server; callbacks_server = nullptr;
     delete callbacks_client; callbacks_client = nullptr;
     delete callback_results_server; callback_results_server = nullptr;
     delete callback_results_client; callback_results_client = nullptr;
-    delete network; network = nullptr;
 }
 
 void Steam_Client::userLogIn()

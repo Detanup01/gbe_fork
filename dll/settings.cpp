@@ -22,7 +22,7 @@ std::string Settings::sanitize(const std::string &name)
 {
     // https://github.com/microsoft/referencesource/blob/51cf7850defa8a17d815b4700b67116e3fa283c2/mscorlib/system/io/path.cs#L88C9-L89C1
     // https://github.com/microsoft/referencesource/blob/51cf7850defa8a17d815b4700b67116e3fa283c2/mscorlib/system/io/pathinternal.cs#L32
-    static const char InvalidFileNameChars[] = {
+    constexpr const static char InvalidFileNameChars[] = {
         '\"', '<', '>', '|', '\0',
         (char)1, (char)2, (char)3, (char)4, (char)5, (char)6, (char)7, (char)8, (char)9, (char)10,
         (char)11, (char)12, (char)13, (char)14, (char)15, (char)16, (char)17, (char)18, (char)19, (char)20,
@@ -31,25 +31,31 @@ std::string Settings::sanitize(const std::string &name)
         ':', '*', '?', /*'\\', '/',*/
     };
 
+    if (name.empty()) return {};
+
     // we have to use utf-32 because Windows (and probably Linux) allows some chars that need at least 32 bits,
     // such as this one (U+1F5FA) called "World Map": https://www.compart.com/en/unicode/U+1F5FA
     // utf-16 encoding for these characters require 2 ushort, but we would like to iterate
     // over all chars in a linear fashion
-    std::u32string unicode_name;
+    std::u32string unicode_name{};
     utf8::utf8to32(
         name.begin(),
         utf8::find_invalid(name.begin(), name.end()), // returns an iterator pointing to the first invalid octet
-        std::back_inserter(unicode_name));
+        std::back_inserter(unicode_name)
+    );
     
-    unicode_name.erase(std::remove(unicode_name.begin(), unicode_name.end(), '\n'), unicode_name.end());
-    unicode_name.erase(std::remove(unicode_name.begin(), unicode_name.end(), '\r'), unicode_name.end());
+    auto rm_itr = std::remove_if(unicode_name.begin(), unicode_name.end(), [](decltype(unicode_name[0]) ch) {
+        return ch == '\n' || ch == '\r';
+    });
+    if (unicode_name.end() != rm_itr) {
+        unicode_name.erase(rm_itr, unicode_name.end());
+    }
 
     auto InvalidFileNameChars_last_it = std::end(InvalidFileNameChars);
-    for (auto& i : unicode_name)
-    {
-        auto found_it = std::find(std::begin(InvalidFileNameChars), InvalidFileNameChars_last_it, i);
+    for (auto& uch : unicode_name) {
+        auto found_it = std::find(std::begin(InvalidFileNameChars), InvalidFileNameChars_last_it, uch);
         if (found_it != InvalidFileNameChars_last_it) { // if illegal
-            i = ' ';
+            uch = ' ';
         }
     }
 

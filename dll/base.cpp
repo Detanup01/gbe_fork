@@ -432,7 +432,8 @@ static int WINAPI Mine_WSAConnect( SOCKET s, const sockaddr *addr, int namelen, 
     }
 }
 
-inline bool file_exists (const std::string& name) {
+inline bool file_exists (const std::string& name)
+{
   struct stat buffer;   
   return (stat (name.c_str(), &buffer) == 0); 
 }
@@ -472,14 +473,11 @@ static void unredirect_crackdll()
     DetourTransactionCommit();
 }
 
-HMODULE crack_dll_handle;
-static void load_dll()
+HMODULE crack_dll_handle{};
+static void load_crack_dll()
 {
-    std::string path = get_full_program_path();
-    path += "crack";
-    //path += PATH_SEPARATOR;
-    path += DLL_NAME;
-    PRINT_DEBUG("Crack file %s", path.c_str());
+    std::string path(get_full_program_path() + "crack" + DLL_NAME);
+    PRINT_DEBUG("searching for crack file '%s'", path.c_str());
     if (file_exists(path)) {
         redirect_crackdll();
         crack_dll_handle = LoadLibraryW(utf8_decode(path).c_str());
@@ -600,9 +598,11 @@ HINTERNET WINAPI Mine_WinHttpOpenRequest(
 #include "dll/settings_parser.h"
 
 static bool network_functions_attached = false;
-BOOL WINAPI DllMain( HINSTANCE, DWORD dwReason, LPVOID ) {
+BOOL WINAPI DllMain( HINSTANCE, DWORD dwReason, LPVOID )
+{
     switch ( dwReason ) {
         case DLL_PROCESS_ATTACH:
+            PRINT_DEBUG("experimental DLL_PROCESS_ATTACH");
             if (!settings_disable_lan_only()) {
                 PRINT_DEBUG("Hooking lan only functions");
                 DetourTransactionBegin();
@@ -622,11 +622,12 @@ BOOL WINAPI DllMain( HINSTANCE, DWORD dwReason, LPVOID ) {
                 DetourTransactionCommit();
                 network_functions_attached = true;
             }
-            load_dll();
+            load_crack_dll();
             load_dlls();
-            break;
+        break;
 
         case DLL_PROCESS_DETACH:
+            PRINT_DEBUG("experimental DLL_PROCESS_DETACH");
             if (network_functions_attached) {
                 DetourTransactionBegin();
                 DetourUpdateThread( GetCurrentThread() );
@@ -644,15 +645,20 @@ BOOL WINAPI DllMain( HINSTANCE, DWORD dwReason, LPVOID ) {
 
     return TRUE;
 }
+
 #else
+
 void set_whitelist_ips(uint32_t *from, uint32_t *to, unsigned num_ips)
 {
 
 }
+
 #endif
 #else
+
 void set_whitelist_ips(uint32_t *from, uint32_t *to, unsigned num_ips)
 {
 
 }
+
 #endif

@@ -76,10 +76,7 @@ static std::vector<uint8_t> get_pe_header(const std::wstring &filepath)
     }
 }
 
-static std::vector<std::wstring> collect_dlls_to_inject(
-    const std::wstring &extra_dlls_folder,
-    bool is_exe_32,
-    std::wstring &failed_dlls)
+static std::vector<std::wstring> collect_dlls_to_inject(const std::wstring &extra_dlls_folder, bool is_exe_32, std::wstring &failed_dlls)
 {
     const auto load_order_file = std::filesystem::path(extra_dlls_folder) / "load_order.txt";
     std::vector<std::wstring> dlls_to_inject{};

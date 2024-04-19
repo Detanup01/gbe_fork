@@ -103,13 +103,15 @@ bool common_helpers::ends_with_i(const std::wstring_view &target, const std::wst
 std::string common_helpers::string_strip(const std::string_view &str)
 {
     static constexpr const char whitespaces[] = " \t\r\n";
+    
+    if (str.empty()) return {};
 
     size_t start = str.find_first_not_of(whitespaces);
     size_t end = str.find_last_not_of(whitespaces);
     
     if (start == std::string::npos) return {};
 
-    if (start == end) {
+    if (start == end) { // happens when string is 1 char
         auto c = str[start];
         for (auto c_white = whitespaces; *c_white; ++c_white) {
             if (c == *c_white) return {};
@@ -184,6 +186,8 @@ void common_helpers::consume_bom(std::ifstream &input)
 
 std::string common_helpers::to_lower(const std::string_view &str)
 {
+    if (str.empty()) return {};
+    
     std::string _str(str.size(), '\0');
     std::transform(str.begin(), str.end(), _str.begin(), [](char c) { return std::tolower(c); });
     return _str;
@@ -191,6 +195,8 @@ std::string common_helpers::to_lower(const std::string_view &str)
 
 std::wstring common_helpers::to_lower(const std::wstring_view &wstr)
 {
+    if (wstr.empty()) return {};
+    
     std::wstring _wstr(wstr.size(), '\0');
     std::transform(wstr.begin(), wstr.end(), _wstr.begin(), [](wchar_t c) { return std::tolower(c); });
     return _wstr;
@@ -198,6 +204,8 @@ std::wstring common_helpers::to_lower(const std::wstring_view &wstr)
 
 std::string common_helpers::to_upper(const std::string_view &str)
 {
+    if (str.empty()) return {};
+
     std::string _str(str.size(), '\0');
     std::transform(str.begin(), str.end(), _str.begin(), [](char c) { return std::toupper(c); });
     return _str;
@@ -205,6 +213,8 @@ std::string common_helpers::to_upper(const std::string_view &str)
 
 std::wstring common_helpers::to_upper(const std::wstring_view &wstr)
 {
+    if (wstr.empty()) return {};
+    
     std::wstring _wstr(wstr.size(), '\0');
     std::transform(wstr.begin(), wstr.end(), _wstr.begin(), [](wchar_t c) { return std::toupper(c); });
     return _wstr;
