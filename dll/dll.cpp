@@ -17,6 +17,7 @@
 
 #define STEAM_API_FUNCTIONS_IMPL
 #include "dll/dll.h"
+#include "dll/settings_parser.h"
 
 
 static char old_client[128] = STEAMCLIENT_INTERFACE_VERSION; //"SteamClient017";
@@ -44,74 +45,84 @@ static char old_inventory[128] = STEAMINVENTORY_INTERFACE_VERSION; //"STEAMINVEN
 static char old_video[128] = STEAMVIDEO_INTERFACE_VERSION; //"STEAMVIDEO_INTERFACE_V001";
 static char old_masterserver_updater[128] = STEAMMASTERSERVERUPDATER_INTERFACE_VERSION; //"SteamMasterServerUpdater001";
 
-static bool try_load_steam_interfaces(std::string interfaces_path)
-{
-    std::ifstream input( utf8_decode(interfaces_path) );
-    if (!input.is_open()) {
-        return false;
-    }
+static ISteamUser *old_user_instance{};
+static ISteamFriends *old_friends_interface{};
+static ISteamUtils *old_utils_interface{};
+static ISteamMatchmaking *old_matchmaking_instance{};
+static ISteamUserStats *old_userstats_instance{};
+static ISteamApps *old_apps_instance{};
+static ISteamMatchmakingServers *old_matchmakingservers_instance{};
+static ISteamNetworking *old_networking_instance{};
+static ISteamRemoteStorage *old_remotestorage_instance{};
+static ISteamScreenshots *old_screenshots_instance{};
+static ISteamHTTP *old_http_instance{};
+static ISteamController *old_controller_instance{};
+static ISteamUGC *old_ugc_instance{};
+static ISteamAppList *old_applist_instance{};
+static ISteamMusic *old_music_instance{};
+static ISteamMusicRemote *old_musicremote_instance{};
+static ISteamHTMLSurface *old_htmlsurface_instance{};
+static ISteamInventory *old_inventory_instance{};
+static ISteamVideo *old_video_instance{};
+static ISteamParentalSettings *old_parental_instance{};
+static ISteamUnifiedMessages *old_unified_instance{};
+static ISteamGameServer *old_gameserver_instance{};
+static ISteamUtils *old_gamserver_utils_instance{};
+static ISteamNetworking  *old_gamserver_networking_instance{};
+static ISteamGameServerStats *old_gamserver_stats_instance{};
+static ISteamHTTP *old_gamserver_http_instance{};
+static ISteamInventory *old_gamserver_inventory_instance{};
+static ISteamUGC *old_gamserver_ugc_instance{};
+static ISteamApps *old_gamserver_apps_instance{};
+static ISteamMasterServerUpdater *old_gamserver_masterupdater_instance{};
 
-    PRINT_DEBUG("Trying to parse old steam interfaces from '%s'", interfaces_path.c_str());
-    for( std::string line; getline( input, line ); )
-    {
-        PRINT_DEBUG("  line: %s", line.c_str());
-        line.erase(std::remove(line.begin(), line.end(), ' '), line.end());
-        line.erase(std::remove(line.begin(), line.end(), '\n'), line.end());
-        line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
-        line.erase(std::remove(line.begin(), line.end(), '\t'), line.end());
 
-#define REPLACE_WITH_FILE(s, f) {if (line.find(s) != std::string::npos) {strncpy(f, line.c_str(), sizeof(f) - 1); continue;}}
-
-        REPLACE_WITH_FILE("SteamClient", old_client);
-
-        // NOTE: you must try to read the one with the most characters first
-        REPLACE_WITH_FILE("SteamGameServerStats", old_gameserver_stats);
-        REPLACE_WITH_FILE("SteamGameServer", old_gameserver);
-
-        // NOTE: you must try to read the one with the most characters first
-        REPLACE_WITH_FILE("SteamMatchMakingServers", old_matchmaking_servers);
-        REPLACE_WITH_FILE("SteamMatchMaking", old_matchmaking);
-
-        REPLACE_WITH_FILE("SteamUser", old_user);
-        REPLACE_WITH_FILE("SteamFriends", old_friends);
-        REPLACE_WITH_FILE("SteamUtils", old_utils);
-        REPLACE_WITH_FILE("STEAMUSERSTATS_INTERFACE_VERSION", old_userstats);
-        REPLACE_WITH_FILE("STEAMAPPS_INTERFACE_VERSION", old_apps);
-        REPLACE_WITH_FILE("SteamNetworking", old_networking);
-        REPLACE_WITH_FILE("STEAMREMOTESTORAGE_INTERFACE_VERSION", old_remote_storage_interface);
-        REPLACE_WITH_FILE("STEAMSCREENSHOTS_INTERFACE_VERSION", old_screenshots);
-        REPLACE_WITH_FILE("STEAMHTTP_INTERFACE_VERSION", old_http);
-        REPLACE_WITH_FILE("STEAMUNIFIEDMESSAGES_INTERFACE_VERSION", old_unified_messages);
-
-        REPLACE_WITH_FILE("STEAMCONTROLLER_INTERFACE_VERSION", old_controller);
-        REPLACE_WITH_FILE("SteamController", old_controller);
-
-        REPLACE_WITH_FILE("STEAMUGC_INTERFACE_VERSION", old_ugc_interface);
-        REPLACE_WITH_FILE("STEAMAPPLIST_INTERFACE_VERSION", old_applist);
-        REPLACE_WITH_FILE("STEAMMUSIC_INTERFACE_VERSION", old_music);
-        REPLACE_WITH_FILE("STEAMMUSICREMOTE_INTERFACE_VERSION", old_music_remote);
-        REPLACE_WITH_FILE("STEAMHTMLSURFACE_INTERFACE_VERSION", old_html_surface);
-        REPLACE_WITH_FILE("STEAMINVENTORY_INTERFACE", old_inventory);
-        REPLACE_WITH_FILE("STEAMVIDEO_INTERFACE", old_video);
-        REPLACE_WITH_FILE("SteamMasterServerUpdater", old_masterserver_updater);
-
-#undef REPLACE_WITH_FILE
-
-        PRINT_DEBUG("  NOT REPLACED %s", line.c_str());
-    }
-
-    return true;
-}
 
 static void load_old_interface_versions()
 {
     static bool loaded = false;
+    
+    std::lock_guard lck(global_mutex);
     if (loaded) return;
+    loaded = true;
 
-    if (!try_load_steam_interfaces(Local_Storage::get_game_settings_path() + "steam_interfaces.txt") &&
-        !try_load_steam_interfaces(Local_Storage::get_program_path() + "steam_interfaces.txt")) {
-        PRINT_DEBUG("Couldn't load steam_interfaces.txt");
-    }
+    const auto &old_itfs_map = settings_old_interfaces();
+
+#define SET_OLD_ITF(sitf, var) do {                                     \
+    auto itr = old_itfs_map.find(sitf);                                 \
+    if (old_itfs_map.end() != itr && itr->second.size()) {              \
+        memset(var, 0, sizeof(var));                                    \
+        itr->second.copy(var, sizeof(var) - 1);                         \
+        PRINT_DEBUG("set old interface: '%s'", itr->second.c_str());    \
+    }                                                                   \
+} while (0)
+
+    SET_OLD_ITF(SettingsItf::CLIENT, old_client);
+    SET_OLD_ITF(SettingsItf::GAMESERVER_STATS, old_gameserver_stats);
+    SET_OLD_ITF(SettingsItf::GAMESERVER, old_gameserver);
+    SET_OLD_ITF(SettingsItf::MATCHMAKING_SERVERS, old_matchmaking_servers);
+    SET_OLD_ITF(SettingsItf::MATCHMAKING, old_matchmaking);
+    SET_OLD_ITF(SettingsItf::USER, old_user);
+    SET_OLD_ITF(SettingsItf::FRIENDS, old_friends);
+    SET_OLD_ITF(SettingsItf::UTILS, old_utils);
+    SET_OLD_ITF(SettingsItf::USER_STATS, old_userstats);
+    SET_OLD_ITF(SettingsItf::APPS, old_apps);
+    SET_OLD_ITF(SettingsItf::NETWORKING, old_networking);
+    SET_OLD_ITF(SettingsItf::REMOTE_STORAGE, old_remote_storage_interface);
+    SET_OLD_ITF(SettingsItf::SCREENSHOTS, old_screenshots);
+    SET_OLD_ITF(SettingsItf::HTTP, old_http);
+    SET_OLD_ITF(SettingsItf::UNIFIED_MESSAGES, old_unified_messages);
+    SET_OLD_ITF(SettingsItf::CONTROLLER, old_controller);
+    SET_OLD_ITF(SettingsItf::UGC, old_ugc_interface);
+    SET_OLD_ITF(SettingsItf::APPLIST, old_applist);
+    SET_OLD_ITF(SettingsItf::MUSIC, old_music);
+    SET_OLD_ITF(SettingsItf::MUSIC_REMOTE, old_music_remote);
+    SET_OLD_ITF(SettingsItf::HTML_SURFACE, old_html_surface);
+    SET_OLD_ITF(SettingsItf::INVENTORY, old_inventory);
+    SET_OLD_ITF(SettingsItf::VIDEO, old_video);
+    SET_OLD_ITF(SettingsItf::MASTERSERVER_UPDATER, old_masterserver_updater);
+
+#undef SET_OLD_ITF
 
     PRINT_DEBUG("Old interfaces:");
     PRINT_DEBUG("  client: %s", old_client);
@@ -140,7 +151,6 @@ static void load_old_interface_versions()
     PRINT_DEBUG("  masterserver updater: %s", old_masterserver_updater);
     
     reset_LastError();
-    loaded = true;
 }
 
 //steam_api_internal.h
@@ -330,37 +340,6 @@ STEAMAPI_API steam_bool S_CALLTYPE SteamAPI_InitAnonymousUser()
     PRINT_DEBUG_ENTRY();
     return SteamAPI_Init();
 }
-
-static ISteamUser *old_user_instance;
-static ISteamFriends *old_friends_interface;
-static ISteamUtils *old_utils_interface;
-static ISteamMatchmaking *old_matchmaking_instance;
-static ISteamUserStats *old_userstats_instance;
-static ISteamApps *old_apps_instance;
-static ISteamMatchmakingServers *old_matchmakingservers_instance;
-static ISteamNetworking *old_networking_instance;
-static ISteamRemoteStorage *old_remotestorage_instance;
-static ISteamScreenshots *old_screenshots_instance;
-static ISteamHTTP *old_http_instance;
-static ISteamController *old_controller_instance;
-static ISteamUGC *old_ugc_instance;
-static ISteamAppList *old_applist_instance;
-static ISteamMusic *old_music_instance;
-static ISteamMusicRemote *old_musicremote_instance;
-static ISteamHTMLSurface *old_htmlsurface_instance;
-static ISteamInventory *old_inventory_instance;
-static ISteamVideo *old_video_instance;
-static ISteamParentalSettings *old_parental_instance;
-static ISteamUnifiedMessages *old_unified_instance;
-static ISteamGameServer *old_gameserver_instance;
-static ISteamUtils *old_gamserver_utils_instance;
-static ISteamNetworking  *old_gamserver_networking_instance;
-static ISteamGameServerStats *old_gamserver_stats_instance;
-static ISteamHTTP *old_gamserver_http_instance;
-static ISteamInventory *old_gamserver_inventory_instance;
-static ISteamUGC *old_gamserver_ugc_instance;
-static ISteamApps *old_gamserver_apps_instance;
-static ISteamMasterServerUpdater *old_gamserver_masterupdater_instance;
 
 // SteamAPI_Shutdown should be called during process shutdown if possible.
 STEAMAPI_API void S_CALLTYPE SteamAPI_Shutdown()
