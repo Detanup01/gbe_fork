@@ -22,8 +22,37 @@
 
 //returns game appid
 uint32 create_localstorage_settings(Settings **settings_client_out, Settings **settings_server_out, Local_Storage **local_storage_out);
-void save_global_settings(Local_Storage *local_storage, const char *name, const char *language);
+void save_global_settings(const char *name, const char *language);
 
 bool settings_disable_lan_only();
+
+enum class SettingsItf {
+   CLIENT,
+   GAMESERVER_STATS,
+   GAMESERVER,
+   MATCHMAKING_SERVERS,
+   MATCHMAKING,
+   USER,
+   FRIENDS,
+   UTILS,
+   USER_STATS,
+   APPS,
+   NETWORKING,
+   REMOTE_STORAGE,
+   SCREENSHOTS,
+   HTTP,
+   UNIFIED_MESSAGES,
+   CONTROLLER,
+   UGC,
+   APPLIST,
+   MUSIC,
+   MUSIC_REMOTE,
+   HTML_SURFACE,
+   INVENTORY,
+   VIDEO,
+   MASTERSERVER_UPDATER,
+};
+
+const std::map<SettingsItf, std::string>& settings_old_interfaces();
 
 #endif

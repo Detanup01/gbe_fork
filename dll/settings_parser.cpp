@@ -23,30 +23,133 @@
 #include "simpleini/SimpleIni.h"
 
 
+constexpr const static char config_ini_app[]     = "configs.app.ini";
+constexpr const static char config_ini_main[]    = "configs.main.ini";
+constexpr const static char config_ini_overlay[] = "configs.overlay.ini";
+constexpr const static char config_ini_user[]    = "configs.user.ini";
+
 static CSimpleIniA ini{};
 
+typedef struct IniValue {
+    enum class Type {
+        STR,
+        BOOL,
+        DOUBLE,
+        LONG,
+    };
 
-static void load_custom_broadcasts(std::string broadcasts_filepath, std::set<IP_PORT> &custom_broadcasts)
-{
-    PRINT_DEBUG("loading broadcasts file '%s'", broadcasts_filepath.c_str());
-    std::ifstream broadcasts_file(utf8_decode(broadcasts_filepath));
-    common_helpers::consume_bom(broadcasts_file);
-    if (broadcasts_file.is_open()) {
-        std::string line;
-        while (std::getline(broadcasts_file, line)) {
-            std::set<IP_PORT> ips = Networking::resolve_ip(line);
-            custom_broadcasts.insert(ips.begin(), ips.end());
+    explicit IniValue(const char *new_val): type(Type::STR),     val_str(new_val) {}
+    explicit IniValue(bool new_val):        type(Type::BOOL),    val_bool(new_val) {}
+    explicit IniValue(double new_val):      type(Type::DOUBLE),  val_double(new_val) {}
+    explicit IniValue(long new_val):        type(Type::LONG),    val_long(new_val) {}
+
+    Type type;
+    union {
+        const char *val_str;
+        bool val_bool;
+        double val_double;
+        long val_long;
+
+    };
+} IniValue;
+
+static void save_global_ini_value(const char *filename, const char *section, const char *key, IniValue val, const char *comment = nullptr) {
+    CSimpleIniA new_ini{};
+    new_ini.SetUnicode();
+    new_ini.SetSpaces(false);
+
+    std::wstring fullpath(utf8_decode(Local_Storage::get_user_appdata_path() + Local_Storage::settings_storage_folder + PATH_SEPARATOR + filename));
+    if (!common_helpers::create_dir(fullpath)) return;
+
+    std::ifstream ini_file( fullpath, std::ios::binary | std::ios::in);
+    if (ini_file.is_open()) {
+        new_ini.LoadData(ini_file);
+        ini_file.close();
+    }
+    
+    std::ofstream new_ini_file( fullpath, std::ios::binary | std::ios::out);
+    if (new_ini_file.is_open()) {
+        std::string comment_str{};
+        if (comment) {
+            comment_str.append("# ").append(comment);
+            comment = comment_str.c_str();
+        }
+        
+        switch (val.type)
+        {
+        case IniValue::Type::STR:
+            new_ini.SetValue(section, key, val.val_str, comment);
+        break;
+        
+        case IniValue::Type::BOOL:
+            new_ini.SetBoolValue(section, key, val.val_bool, comment);
+        break;
+
+        case IniValue::Type::DOUBLE:
+            new_ini.SetDoubleValue(section, key, val.val_double, comment);
+        break;
+
+        case IniValue::Type::LONG:
+            new_ini.SetLongValue(section, key, val.val_long, comment);
+        break;
+
+        default: break;
+        }
+
+        new_ini.Save(new_ini_file, false);
+        new_ini_file.close();
+    }
+}
+
+static void merge_ini(const CSimpleIniA &new_ini, bool overwrite = false) {
+    std::list<CSimpleIniA::Entry> sections{};
+    new_ini.GetAllSections(sections);
+    for (auto const &sec : sections) {
+        std::list<CSimpleIniA::Entry> keys{};
+        new_ini.GetAllKeys(sec.pItem, keys);
+        for (auto const &key : keys) {
+            // only add the key if it didn't exist already
+            if (!ini.KeyExists(sec.pItem, key.pItem) || overwrite) {
+                std::list<CSimpleIniA::Entry> vals{};
+                new_ini.GetAllValues(sec.pItem, key.pItem, vals);
+                for (const auto &val : vals) {
+                    ini.SetValue(sec.pItem, key.pItem, val.pItem);
+                }
+            }
         }
     }
 }
 
-static void load_subscribed_groups_clans(std::string clans_filepath, Settings *settings_client, Settings *settings_server)
+
+
+// custom_broadcasts.txt
+static void load_custom_broadcasts(const std::string &base_path, std::set<IP_PORT> &custom_broadcasts)
 {
-    PRINT_DEBUG("loading group clans file '%s'", clans_filepath.c_str());
+    const std::string broadcasts_filepath(base_path + "custom_broadcasts.txt");
+    std::ifstream broadcasts_file(utf8_decode(broadcasts_filepath));
+    if (broadcasts_file.is_open()) {
+        common_helpers::consume_bom(broadcasts_file);
+        PRINT_DEBUG("loading broadcasts file '%s'", broadcasts_filepath.c_str());
+        std::string line{};
+        while (std::getline(broadcasts_file, line)) {
+            if (line.length() <= 0) continue;
+
+            std::set<IP_PORT> ips = Networking::resolve_ip(line);
+            custom_broadcasts.insert(ips.begin(), ips.end());
+            PRINT_DEBUG("added ip/port to broadcast list '%s'", line.c_str());
+        }
+    }
+}
+
+// subscribed_groups_clans.txt
+static void load_subscribed_groups_clans(const std::string &base_path, Settings *settings_client, Settings *settings_server)
+{
+    const std::string clans_filepath(base_path + "subscribed_groups_clans.txt");
     std::ifstream clans_file(utf8_decode(clans_filepath));
     if (clans_file.is_open()) {
         common_helpers::consume_bom(clans_file);
-        std::string line;
+        PRINT_DEBUG("loading group clans file '%s'", clans_filepath.c_str());
+        std::string line{};
         while (std::getline(clans_file, line)) {
             if (line.length() <= 0) continue;
 
@@ -80,182 +183,167 @@ static void load_subscribed_groups_clans(std::string clans_filepath, Settings *s
     }
 }
 
-static void load_overlay_appearance(std::string appearance_filepath, class Settings *settings_client, class Settings *settings_server, class Local_Storage *local_storage)
+// overlay::appearance
+static void load_overlay_appearance(class Settings *settings_client, class Settings *settings_server, class Local_Storage *local_storage)
 {
-    std::ifstream appearance_file(utf8_decode(appearance_filepath));
-    if (appearance_file.is_open()) {
-        PRINT_DEBUG("Parsing overlay appearance file '%s'", appearance_filepath.c_str());
-        common_helpers::consume_bom(appearance_file);
-        std::string line{};
-        while (std::getline(appearance_file, line)) {
-            if (line.length() <= 0) continue;
+    std::list<CSimpleIniA::Entry> names{};
+    if (!ini.GetAllKeys("overlay::appearance", names) || names.empty()) return;
 
-            std::size_t seperator = line.find(" ");
-            std::string name{};
-            std::string value{};
-            if (seperator != std::string::npos) {
-                name = line.substr(0, seperator);
-                name = common_helpers::string_strip(name);
+    for (const auto &name_ent : names) {
+        auto val_ptr = ini.GetValue("overlay::appearance", name_ent.pItem);
+        if (!val_ptr || !val_ptr[0]) continue;
 
-                value = line.substr(seperator + 1);
-                value = common_helpers::string_strip(value);
-            }
-
-            // comments
-            if (name.size() && (
-                name[0] == '#' || name[0] == ';' || name.compare(0, 2, "//") == 0
-            )) {
-                continue;
-            }
-
-            PRINT_DEBUG("  Overlay appearance line '%s'='%s'", name.c_str(), value.c_str());
-            try {
-                if (name.compare("Font_Override") == 0) {
-                    // first try the local settings folder
-                    std::string nfont_override(common_helpers::to_absolute(value, Local_Storage::get_game_settings_path() + "fonts"));
-                    if (common_helpers::file_exist(nfont_override)) {
-                        settings_client->overlay_appearance.font_override = nfont_override;
-                        settings_server->overlay_appearance.font_override = nfont_override;
-                    }
-
-                    // then try the global settings folder
-                    if (settings_client->overlay_appearance.font_override.empty()) {
-                        nfont_override = common_helpers::to_absolute(value, local_storage->get_global_settings_path() + "fonts");
-                        if (common_helpers::file_exist(nfont_override)) {
-                            settings_client->overlay_appearance.font_override = nfont_override;
-                            settings_server->overlay_appearance.font_override = nfont_override;
-                        }
-                    }
-
-                    if (settings_client->overlay_appearance.font_override.empty()) {
-                        PRINT_DEBUG("  ERROR font file '%s' doesn't exist and will be ignored", value.c_str());
-                    } else {
-                        PRINT_DEBUG("  loaded font '%s'", nfont_override.c_str());
-                    }
-                } else if (name.compare("Font_Size") == 0) {
-                    float nfont_size = std::stof(value, NULL);
-                    settings_client->overlay_appearance.font_size = nfont_size;
-                    settings_server->overlay_appearance.font_size = nfont_size;
-                } else if (name.compare("Icon_Size") == 0) {
-                    float nicon_size = std::stof(value, NULL);
-                    settings_client->overlay_appearance.icon_size = nicon_size;
-                    settings_server->overlay_appearance.icon_size = nicon_size;
-                } else if (name.compare("Font_Glyph_Extra_Spacing_x") == 0) {
-                    float size = std::stof(value, NULL);
-                    settings_client->overlay_appearance.font_glyph_extra_spacing_x = size;
-                    settings_server->overlay_appearance.font_glyph_extra_spacing_x = size;
-                } else if (name.compare("Font_Glyph_Extra_Spacing_y") == 0) {
-                    float size = std::stof(value, NULL);
-                    settings_client->overlay_appearance.font_glyph_extra_spacing_y = size;
-                    settings_server->overlay_appearance.font_glyph_extra_spacing_y = size;
-                } else if (name.compare("Notification_R") == 0) {
-                    float nnotification_r = std::stof(value, NULL);
-                    settings_client->overlay_appearance.notification_r = nnotification_r;
-                    settings_server->overlay_appearance.notification_r = nnotification_r;
-                } else if (name.compare("Notification_G") == 0) {
-                    float nnotification_g = std::stof(value, NULL);
-                    settings_client->overlay_appearance.notification_g = nnotification_g;
-                    settings_server->overlay_appearance.notification_g = nnotification_g;
-                } else if (name.compare("Notification_B") == 0) {
-                    float nnotification_b = std::stof(value, NULL);
-                    settings_client->overlay_appearance.notification_b = nnotification_b;
-                    settings_server->overlay_appearance.notification_b = nnotification_b;
-                } else if (name.compare("Notification_A") == 0) {
-                    float nnotification_a = std::stof(value, NULL);
-                    settings_client->overlay_appearance.notification_a = nnotification_a;
-                    settings_server->overlay_appearance.notification_a = nnotification_a;
-                } else if (name.compare("Background_R") == 0) {
-                    float nbackground_r = std::stof(value, NULL);
-                    settings_client->overlay_appearance.background_r = nbackground_r;
-                    settings_server->overlay_appearance.background_r = nbackground_r;
-                } else if (name.compare("Background_G") == 0) {
-                    float nbackground_g = std::stof(value, NULL);
-                    settings_client->overlay_appearance.background_g = nbackground_g;
-                    settings_server->overlay_appearance.background_g = nbackground_g;
-                } else if (name.compare("Background_B") == 0) {
-                    float nbackground_b = std::stof(value, NULL);
-                    settings_client->overlay_appearance.background_b = nbackground_b;
-                    settings_server->overlay_appearance.background_b = nbackground_b;
-                } else if (name.compare("Background_A") == 0) {
-                    float nbackground_a = std::stof(value, NULL);
-                    settings_client->overlay_appearance.background_a = nbackground_a;
-                    settings_server->overlay_appearance.background_a = nbackground_a;
-                } else if (name.compare("Element_R") == 0) {
-                    float nelement_r = std::stof(value, NULL);
-                    settings_client->overlay_appearance.element_r = nelement_r;
-                    settings_server->overlay_appearance.element_r = nelement_r;
-                } else if (name.compare("Element_G") == 0) {
-                    float nelement_g = std::stof(value, NULL);
-                    settings_client->overlay_appearance.element_g = nelement_g;
-                    settings_server->overlay_appearance.element_g = nelement_g;
-                } else if (name.compare("Element_B") == 0) {
-                    float nelement_b = std::stof(value, NULL);
-                    settings_client->overlay_appearance.element_b = nelement_b;
-                    settings_server->overlay_appearance.element_b = nelement_b;
-                } else if (name.compare("Element_A") == 0) {
-                    float nelement_a = std::stof(value, NULL);
-                    settings_client->overlay_appearance.element_a = nelement_a;
-                    settings_server->overlay_appearance.element_a = nelement_a;
-                } else if (name.compare("ElementHovered_R") == 0) {
-                    float nelement_hovered_r = std::stof(value, NULL);
-                    settings_client->overlay_appearance.element_hovered_r = nelement_hovered_r;
-                    settings_server->overlay_appearance.element_hovered_r = nelement_hovered_r;
-                } else if (name.compare("ElementHovered_G") == 0) {
-                    float nelement_hovered_g = std::stof(value, NULL);
-                    settings_client->overlay_appearance.element_hovered_g = nelement_hovered_g;
-                    settings_server->overlay_appearance.element_hovered_g = nelement_hovered_g;
-                } else if (name.compare("ElementHovered_B") == 0) {
-                    float nelement_hovered_b = std::stof(value, NULL);
-                    settings_client->overlay_appearance.element_hovered_b = nelement_hovered_b;
-                    settings_server->overlay_appearance.element_hovered_b = nelement_hovered_b;
-                } else if (name.compare("ElementHovered_A") == 0) {
-                    float nelement_hovered_a = std::stof(value, NULL);
-                    settings_client->overlay_appearance.element_hovered_a = nelement_hovered_a;
-                    settings_server->overlay_appearance.element_hovered_a = nelement_hovered_a;
-                } else if (name.compare("ElementActive_R") == 0) {
-                    float nelement_active_r = std::stof(value, NULL);
-                    settings_client->overlay_appearance.element_active_r = nelement_active_r;
-                    settings_server->overlay_appearance.element_active_r = nelement_active_r;
-                } else if (name.compare("ElementActive_G") == 0) {
-                    float nelement_active_g = std::stof(value, NULL);
-                    settings_client->overlay_appearance.element_active_g = nelement_active_g;
-                    settings_server->overlay_appearance.element_active_g = nelement_active_g;
-                } else if (name.compare("ElementActive_B") == 0) {
-                    float nelement_active_b = std::stof(value, NULL);
-                    settings_client->overlay_appearance.element_active_b = nelement_active_b;
-                    settings_server->overlay_appearance.element_active_b = nelement_active_b;
-                } else if (name.compare("ElementActive_A") == 0) {
-                    float nelement_active_a = std::stof(value, NULL);
-                    settings_client->overlay_appearance.element_active_a = nelement_active_a;
-                    settings_server->overlay_appearance.element_active_a = nelement_active_a;
-                } else if (name.compare("PosAchievement") == 0) {
-                    auto pos = Overlay_Appearance::translate_notification_position(value);
-                    settings_client->overlay_appearance.ach_earned_pos = pos;
-                    settings_server->overlay_appearance.ach_earned_pos = pos;
-                } else if (name.compare("PosInvitation") == 0) {
-                    auto pos = Overlay_Appearance::translate_notification_position(value);
-                    settings_client->overlay_appearance.invite_pos = pos;
-                    settings_server->overlay_appearance.invite_pos = pos;
-                } else if (name.compare("PosChatMsg") == 0) {
-                    auto pos = Overlay_Appearance::translate_notification_position(value);
-                    settings_client->overlay_appearance.chat_msg_pos = pos;
-                    settings_server->overlay_appearance.chat_msg_pos = pos;
+        std::string name(name_ent.pItem);
+        std::string value(val_ptr);
+        PRINT_DEBUG("  Overlay appearance line '%s'='%s'", name.c_str(), value.c_str());
+        try {
+            if (name.compare("Font_Override") == 0) {
+                value = common_helpers::string_strip(Settings::sanitize(value));
+                // first try the local settings folder
+                std::string nfont_override(common_helpers::to_absolute(value, Local_Storage::get_game_settings_path() + "fonts"));
+                if (!common_helpers::file_exist(nfont_override)) {
+                    nfont_override.clear();
                 }
 
-            } catch (...) { }
-        }
+                // then try the global settings folder
+                if (nfont_override.empty()) {
+                    nfont_override = common_helpers::to_absolute(value, local_storage->get_global_settings_path() + "fonts");
+                    if (!common_helpers::file_exist(nfont_override)) {
+                        nfont_override.clear();
+                    }
+                }
+
+                if (nfont_override.size()) {
+                    settings_client->overlay_appearance.font_override = nfont_override;
+                    settings_server->overlay_appearance.font_override = nfont_override;
+                    PRINT_DEBUG("  loaded font '%s'", nfont_override.c_str());
+                } else {
+                    PRINT_DEBUG("  ERROR font file '%s' doesn't exist and will be ignored", value.c_str());
+                }
+            } else if (name.compare("Font_Size") == 0) {
+                float nfont_size = std::stof(value, NULL);
+                settings_client->overlay_appearance.font_size = nfont_size;
+                settings_server->overlay_appearance.font_size = nfont_size;
+            } else if (name.compare("Icon_Size") == 0) {
+                float nicon_size = std::stof(value, NULL);
+                settings_client->overlay_appearance.icon_size = nicon_size;
+                settings_server->overlay_appearance.icon_size = nicon_size;
+            } else if (name.compare("Font_Glyph_Extra_Spacing_x") == 0) {
+                float size = std::stof(value, NULL);
+                settings_client->overlay_appearance.font_glyph_extra_spacing_x = size;
+                settings_server->overlay_appearance.font_glyph_extra_spacing_x = size;
+            } else if (name.compare("Font_Glyph_Extra_Spacing_y") == 0) {
+                float size = std::stof(value, NULL);
+                settings_client->overlay_appearance.font_glyph_extra_spacing_y = size;
+                settings_server->overlay_appearance.font_glyph_extra_spacing_y = size;
+            } else if (name.compare("Notification_R") == 0) {
+                float nnotification_r = std::stof(value, NULL);
+                settings_client->overlay_appearance.notification_r = nnotification_r;
+                settings_server->overlay_appearance.notification_r = nnotification_r;
+            } else if (name.compare("Notification_G") == 0) {
+                float nnotification_g = std::stof(value, NULL);
+                settings_client->overlay_appearance.notification_g = nnotification_g;
+                settings_server->overlay_appearance.notification_g = nnotification_g;
+            } else if (name.compare("Notification_B") == 0) {
+                float nnotification_b = std::stof(value, NULL);
+                settings_client->overlay_appearance.notification_b = nnotification_b;
+                settings_server->overlay_appearance.notification_b = nnotification_b;
+            } else if (name.compare("Notification_A") == 0) {
+                float nnotification_a = std::stof(value, NULL);
+                settings_client->overlay_appearance.notification_a = nnotification_a;
+                settings_server->overlay_appearance.notification_a = nnotification_a;
+            } else if (name.compare("Background_R") == 0) {
+                float nbackground_r = std::stof(value, NULL);
+                settings_client->overlay_appearance.background_r = nbackground_r;
+                settings_server->overlay_appearance.background_r = nbackground_r;
+            } else if (name.compare("Background_G") == 0) {
+                float nbackground_g = std::stof(value, NULL);
+                settings_client->overlay_appearance.background_g = nbackground_g;
+                settings_server->overlay_appearance.background_g = nbackground_g;
+            } else if (name.compare("Background_B") == 0) {
+                float nbackground_b = std::stof(value, NULL);
+                settings_client->overlay_appearance.background_b = nbackground_b;
+                settings_server->overlay_appearance.background_b = nbackground_b;
+            } else if (name.compare("Background_A") == 0) {
+                float nbackground_a = std::stof(value, NULL);
+                settings_client->overlay_appearance.background_a = nbackground_a;
+                settings_server->overlay_appearance.background_a = nbackground_a;
+            } else if (name.compare("Element_R") == 0) {
+                float nelement_r = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_r = nelement_r;
+                settings_server->overlay_appearance.element_r = nelement_r;
+            } else if (name.compare("Element_G") == 0) {
+                float nelement_g = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_g = nelement_g;
+                settings_server->overlay_appearance.element_g = nelement_g;
+            } else if (name.compare("Element_B") == 0) {
+                float nelement_b = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_b = nelement_b;
+                settings_server->overlay_appearance.element_b = nelement_b;
+            } else if (name.compare("Element_A") == 0) {
+                float nelement_a = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_a = nelement_a;
+                settings_server->overlay_appearance.element_a = nelement_a;
+            } else if (name.compare("ElementHovered_R") == 0) {
+                float nelement_hovered_r = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_hovered_r = nelement_hovered_r;
+                settings_server->overlay_appearance.element_hovered_r = nelement_hovered_r;
+            } else if (name.compare("ElementHovered_G") == 0) {
+                float nelement_hovered_g = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_hovered_g = nelement_hovered_g;
+                settings_server->overlay_appearance.element_hovered_g = nelement_hovered_g;
+            } else if (name.compare("ElementHovered_B") == 0) {
+                float nelement_hovered_b = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_hovered_b = nelement_hovered_b;
+                settings_server->overlay_appearance.element_hovered_b = nelement_hovered_b;
+            } else if (name.compare("ElementHovered_A") == 0) {
+                float nelement_hovered_a = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_hovered_a = nelement_hovered_a;
+                settings_server->overlay_appearance.element_hovered_a = nelement_hovered_a;
+            } else if (name.compare("ElementActive_R") == 0) {
+                float nelement_active_r = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_active_r = nelement_active_r;
+                settings_server->overlay_appearance.element_active_r = nelement_active_r;
+            } else if (name.compare("ElementActive_G") == 0) {
+                float nelement_active_g = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_active_g = nelement_active_g;
+                settings_server->overlay_appearance.element_active_g = nelement_active_g;
+            } else if (name.compare("ElementActive_B") == 0) {
+                float nelement_active_b = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_active_b = nelement_active_b;
+                settings_server->overlay_appearance.element_active_b = nelement_active_b;
+            } else if (name.compare("ElementActive_A") == 0) {
+                float nelement_active_a = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_active_a = nelement_active_a;
+                settings_server->overlay_appearance.element_active_a = nelement_active_a;
+            } else if (name.compare("PosAchievement") == 0) {
+                auto pos = Overlay_Appearance::translate_notification_position(value);
+                settings_client->overlay_appearance.ach_earned_pos = pos;
+                settings_server->overlay_appearance.ach_earned_pos = pos;
+            } else if (name.compare("PosInvitation") == 0) {
+                auto pos = Overlay_Appearance::translate_notification_position(value);
+                settings_client->overlay_appearance.invite_pos = pos;
+                settings_server->overlay_appearance.invite_pos = pos;
+            } else if (name.compare("PosChatMsg") == 0) {
+                auto pos = Overlay_Appearance::translate_notification_position(value);
+                settings_client->overlay_appearance.chat_msg_pos = pos;
+                settings_server->overlay_appearance.chat_msg_pos = pos;
+            }
+
+        } catch (...) { }
     }
 }
 
 template<typename Out>
 static void split_string(const std::string &s, char delim, Out result) {
     std::stringstream ss(s);
-    std::string item;
+    std::string item{};
     while (std::getline(ss, item, delim)) {
         *(result++) = item;
     }
 }
 
+// folder "controller"
 static void load_gamecontroller_settings(Settings *settings)
 {
     std::string path = Local_Storage::get_game_settings_path() + "controller";
@@ -408,96 +496,81 @@ static uint32 parse_steam_app_id(const std::string &program_path)
     return appid;
 }
 
-// local_save.txt
-static bool parse_local_save(const std::string &base_path, std::string &save_path)
+// user::saves::local_save_path
+static bool parse_local_save(std::string &save_path)
 {
-    char array[256]{};
-    int read = Local_Storage::get_file_data(base_path + "local_save.txt", array, sizeof(array) - 1);
-    if (read != -1) {
-        save_path = Local_Storage::get_program_path() + Settings::sanitize(array);
-        PRINT_DEBUG("using local save path '%s'", save_path.c_str());
-        return true;
-    }
-    return false;
+    auto ptr = ini.GetValue("user::saves", "local_save_path");
+    if (!ptr || !ptr[0]) return false;
+    
+    save_path = common_helpers::to_absolute(common_helpers::string_strip(Settings::sanitize(ptr)), Local_Storage::get_program_path());
+    PRINT_DEBUG("using local save path '%s'", save_path.c_str());
+    return true;
 }
 
-// listen_port.txt
+// main::connectivity::listen_port
 static uint16 parse_listen_port(class Local_Storage *local_storage)
 {
-    char array_port[10] = {};
-    array_port[0] = '0';
-    local_storage->get_data_settings("listen_port.txt", array_port, sizeof(array_port) - 1);
-    uint16 port = (uint16)std::stoi(array_port);
+    uint16 port = ini.GetLongValue("main::connectivity", "listen_port");
     if (port == 0) {
         port = DEFAULT_PORT;
-        snprintf(array_port, sizeof(array_port), "%hu", port);
-        local_storage->store_data_settings("listen_port.txt", array_port, strlen(array_port));
+        save_global_ini_value(
+            config_ini_main,
+            "main::connectivity", "listen_port", IniValue((long)port),
+            "change the UDP/TCP port the emulator listens on"
+        );
     }
     return port;
 }
 
-// account_name.txt
+// user::general::account_name
 static std::string parse_account_name(class Local_Storage *local_storage)
 {
-    char name[100] = {};
-    if (local_storage->get_data_settings("account_name.txt", name, sizeof(name) - 1) <= 0) {
-        strcpy(name, DEFAULT_NAME);
-        local_storage->store_data_settings("account_name.txt", name, strlen(name));
+    auto name = ini.GetValue("user::general", "account_name");
+    if (!name || !name[0]) {
+        name = DEFAULT_NAME;
+        save_global_ini_value(
+            config_ini_user,
+            "user::general", "account_name", IniValue(name),
+            "user account name"
+        );
     }
     return std::string(name);
 }
 
-// user_steam_id.txt
+// user::general::account_steamid
 static CSteamID parse_user_steam_id(class Local_Storage *local_storage)
 {
     char array_steam_id[32] = {};
-    CSteamID user_id;
-    uint64 steam_id = 0;
-    bool generate_new = false;
-    //try to load steam id from game specific settings folder first
-    if (local_storage->get_data(Local_Storage::settings_storage_folder, "user_steam_id.txt", array_steam_id, sizeof(array_steam_id) - 1) > 0) {
-        user_id = CSteamID((uint64)std::atoll(array_steam_id));
-        if (!user_id.IsValid()) {
-            generate_new = true;
-        }
-    } else {
-        generate_new = true;
-    }
-
-    if (generate_new) {
-        generate_new = false;
-        if (local_storage->get_data_settings("user_steam_id.txt", array_steam_id, sizeof(array_steam_id) - 1) > 0) {
-            user_id = CSteamID((uint64)std::atoll(array_steam_id));
-            if (!user_id.IsValid()) {
-                generate_new = true;
-            }
-        } else {
-            generate_new = true;
-        }
-    }
-
-    if (generate_new) {
+    CSteamID user_id((uint64)std::atoll(ini.GetValue("user::general", "account_steamid", "0")));
+    if (!user_id.IsValid()) {
         user_id = generate_steam_id_user();
-        uint64 steam_id = user_id.ConvertToUint64();
-        char temp_text[32] = {};
-        snprintf(temp_text, sizeof(temp_text), "%llu", steam_id);
-        local_storage->store_data_settings("user_steam_id.txt", temp_text, strlen(temp_text));
+        char temp_text[32]{};
+        snprintf(temp_text, sizeof(temp_text), "%llu", (uint64)user_id.ConvertToUint64());
+        save_global_ini_value(
+            config_ini_user,
+            "user::general", "account_steamid", IniValue(temp_text),
+            "Steam64 format"
+        );
     }
 
     return user_id;
 }
 
-// language.txt
+// user::general::language
 // valid list: https://partner.steamgames.com/doc/store/localization/languages
 static std::string parse_current_language(class Local_Storage *local_storage)
 {
-    char language[64] = {};
-    if (local_storage->get_data_settings("language.txt", language, sizeof(language) - 1) <= 0) {
-        strcpy(language, DEFAULT_LANGUAGE);
-        local_storage->store_data_settings("language.txt", language, strlen(language));
+    auto lang = ini.GetValue("user::general", "language");
+    if (!lang || !lang[0]) {
+        lang = DEFAULT_LANGUAGE;
+        save_global_ini_value(
+            config_ini_user,
+            "user::general", "language", IniValue(lang),
+            "the language reported to the game, default is 'english', check 'API language code' in https://partner.steamgames.com/doc/store/localization/languages"
+        );
     }
 
-    return common_helpers::to_lower(std::string(language));
+    return common_helpers::to_lower(std::string(lang));
 }
 
 // supported_languages.txt
@@ -587,42 +660,30 @@ static void parse_dlc(class Settings *settings_client, class Settings *settings_
     }
 }
 
-// app_paths.txt
+// app::paths
 static void parse_app_paths(class Settings *settings_client, Settings *settings_server, const std::string &program_path)
 {
-    std::string dlc_config_path = Local_Storage::get_game_settings_path() + "app_paths.txt";
-    std::ifstream input( utf8_decode(dlc_config_path) );
+    std::list<CSimpleIniA::Entry> ids{};
+    if (!ini.GetAllKeys("app::paths", ids) || ids.empty()) return;
 
-    if (input.is_open()) {
-        common_helpers::consume_bom(input);
-        for( std::string line; getline( input, line ); ) {
-            if (!line.empty() && line[line.length()-1] == '\n') {
-                line.pop_back();
-            }
+    for (const auto &id : ids) {
+        auto val_ptr = ini.GetValue("app::paths", id.pItem);
+        if (!val_ptr || !val_ptr[0]) continue;
 
-            if (!line.empty() && line[line.length()-1] == '\r') {
-                line.pop_back();
-            }
+        AppId_t appid = std::stol(id.pItem);
+        std::string rel_path(val_ptr);
+        std::string path = canonical_path(program_path + rel_path);
 
-            std::size_t deliminator = line.find("=");
-            if (deliminator != 0 && deliminator != std::string::npos && deliminator != line.size()) {
-                AppId_t appid = stol(line.substr(0, deliminator));
-                std::string rel_path = line.substr(deliminator + 1);
-                std::string path = canonical_path(program_path + rel_path);
-
-                if (appid) {
-                    if (path.size()) {
-                        PRINT_DEBUG("Adding app path: %u|%s|", appid, path.c_str());
-                        settings_client->setAppInstallPath(appid, path);
-                        settings_server->setAppInstallPath(appid, path);
-                    } else {
-                        PRINT_DEBUG("Error adding app path for: %u does this path exist? |%s|", appid, rel_path.c_str());
-                    }
-                }
+        if (appid) {
+            if (path.size()) {
+                PRINT_DEBUG("Adding app path: %u|%s|", appid, path.c_str());
+                settings_client->setAppInstallPath(appid, path);
+                settings_server->setAppInstallPath(appid, path);
+            } else {
+                PRINT_DEBUG("Error adding app path for: %u does this path exist? |%s|", appid, rel_path.c_str());
             }
         }
     }
-
 }
 
 // leaderboards.txt
@@ -824,23 +885,7 @@ static void parse_installed_app_Ids(class Settings *settings_client, class Setti
 
 }
 
-// force_branch_name.txt
-static void parse_force_branch_name(class Settings *settings_client, class Settings *settings_server)
-{
-    std::string installed_apps_list_path = Local_Storage::get_game_settings_path() + "force_branch_name.txt";
-    std::ifstream input( utf8_decode(installed_apps_list_path) );
-    if (input.is_open()) {
-        common_helpers::consume_bom(input);
-        std::string line;
-        getline( input, line );
-        line = common_helpers::string_strip(line);
-        if (!line.empty()) {
-            settings_client->current_branch_name = line;
-            settings_server->current_branch_name = line;
-            PRINT_DEBUG("Forcing current branch name to '%s'", line.c_str());
-        }
-    }
-}
+
 
 // steam_settings/mods
 static const auto one_week_ago_epoch = std::chrono::duration_cast<std::chrono::seconds>(
@@ -1033,101 +1078,34 @@ static void parse_mods_folder(class Settings *settings_client, Settings *setting
 
 }
 
-// force_language.txt
-static bool parse_force_language(std::string &language, const std::string &steam_settings_path)
-{
-    bool warn_forced = false;
 
-    char forced_language[64] = {};
-    int len = Local_Storage::get_file_data(steam_settings_path + "force_language.txt", forced_language, sizeof(forced_language) - 1);
-    if (len > 0) {
-        forced_language[len] = 0;
-        warn_forced = true;
-    }
-    language = std::string(forced_language);
 
-    return warn_forced;
-}
-
-// force_steamid.txt
-static bool parse_force_user_steam_id(CSteamID &user_id, const std::string &steam_settings_path)
-{
-    bool warn_forced = false;
-
-    char steam_id_text[32] = {};
-    if (Local_Storage::get_file_data(steam_settings_path + "force_steamid.txt", steam_id_text, sizeof(steam_id_text) - 1) > 0) {
-        CSteamID temp_id = CSteamID((uint64)std::atoll(steam_id_text));
-        if (temp_id.IsValid()) {
-            user_id = temp_id;
-            warn_forced = true;
-        }
-    }
-
-    return warn_forced;
-}
-
-// force_account_name.txt
-static bool parse_force_account_name(std::string &name, const std::string &steam_settings_path)
-{
-    bool warn_forced = false;
-
-    char forced_name[100] = {};
-    int len = Local_Storage::get_file_data(steam_settings_path + "force_account_name.txt", forced_name, sizeof(forced_name) - 1);
-    if (len > 0) {
-        forced_name[len] = 0;
-        warn_forced = true;
-    }
-    name = std::string(forced_name);
-
-    return warn_forced;
-}
-
-// force_listen_port.txt
-static bool parse_force_listen_port(uint16 &port, const std::string &steam_settings_path)
-{
-    bool warn_forced = false;
-
-    char array_port[10] = {};
-    int len = Local_Storage::get_file_data(steam_settings_path + "force_listen_port.txt", array_port, sizeof(array_port) - 1);
-    if (len > 0) {
-        port = std::stoi(array_port);
-        warn_forced = true;
-    }
-
-    return warn_forced;
-}
-
-// build_id.txt
+// app::general::build_id
 static void parse_build_id(class Settings *settings_client, class Settings *settings_server)
 {
-    std::string steam_settings_path(Local_Storage::get_game_settings_path());
-    char array_id[10] = {};
-    int len = Local_Storage::get_file_data(steam_settings_path + "build_id.txt", array_id, sizeof(array_id) - 1);
-    if (len > 0) {
-        int build_id = std::stoi(array_id);
-        PRINT_DEBUG("build id = %i", build_id);
+    std::string line(common_helpers::string_strip(ini.GetValue("app::general", "build_id", "")));
+    if (line.size()) {
+        int build_id = std::stoi(line);
+        PRINT_DEBUG(" setting build id = %i", build_id);
         settings_client->build_id = build_id;
         settings_server->build_id = build_id;
     }
 }
 
-// crash_printer_location.txt
+// main::general::crash_printer_location
 static void parse_crash_printer_location()
 {
-    std::string installed_apps_list_path(Local_Storage::get_game_settings_path() + "crash_printer_location.txt");
-    std::ifstream input( utf8_decode(installed_apps_list_path) );
-    if (input.is_open()) {
-        common_helpers::consume_bom(input);
-        std::string line;
-        std::getline( input, line );
-        line = common_helpers::string_strip(line);
-        if (!line.empty()) {
-            auto crash_path = utf8_decode(get_full_program_path() + line);
-            if (crash_printer::init(crash_path)) {
-                PRINT_DEBUG("Unhandled crashes will be saved to '%s'", line.c_str());
-            } else {
-                PRINT_DEBUG("Failed to setup unhandled crash printer with path: '%s'", line.c_str());
-            }
+    std::wstring crash_path{};
+    std::string line(common_helpers::string_strip(Settings::sanitize(ini.GetValue("main::general", "crash_printer_location", ""))));
+    if (line.size()) {
+        crash_path = utf8_decode(common_helpers::to_absolute(line, get_full_program_path()));
+    }
+
+    if (crash_path.size()) {
+        if (crash_printer::init(crash_path)) {
+            PRINT_DEBUG("Unhandled crashes will be saved to '%s'", utf8_encode(crash_path).c_str());
+        } else {
+            PRINT_DEBUG("Failed to setup unhandled crash printer with path: '%s'", utf8_encode(crash_path).c_str());
         }
     }
 }
@@ -1164,132 +1142,146 @@ static void parse_auto_accept_invite(class Settings *settings_client, class Sett
     }
 }
 
-// ip_country.txt
+// user::general::ip_country
 static void parse_ip_country(class Settings *settings_client, class Settings *settings_server)
 {
-    std::string setting_file = Local_Storage::get_game_settings_path() + "ip_country.txt";
-    std::ifstream input( utf8_decode(setting_file) );
-    if (input.is_open()) {
-        common_helpers::consume_bom(input);
-        std::string line{};
-        std::getline( input, line );
-        line = common_helpers::string_strip(line);
-        // ISO 3166-1-alpha-2 format is 2 chars only
-        if (line.size() == 2) {
-            std::transform(line.begin(), line.end(), line.begin(), [](char c){ return std::toupper(c); } );
-            settings_client->ip_country = line;
-            settings_server->ip_country = line;
-            PRINT_DEBUG("Setting IP country to: '%s'", line.c_str());
-        }
+    std::string line(common_helpers::to_upper(common_helpers::string_strip(ini.GetValue("user::general", "ip_country", ""))));
+    if (line.empty()) {
+            line = DEFAULT_IP_COUNTRY;
+            save_global_ini_value(
+                config_ini_user,
+                "user::general", "ip_country", IniValue(line.c_str()),
+                "ISO 3166-1-alpha-2 format, use this link to get the 'Alpha-2' country code: https://www.iban.com/country-codes"
+            );
+    }
+
+    // ISO 3166-1-alpha-2 format is 2 chars only
+    if (line.size() == 2) {
+        settings_client->ip_country = line;
+        settings_server->ip_country = line;
+        PRINT_DEBUG("Setting IP country to: '%s'", line.c_str());
     }
 }
 
-// overlay::hook_delay_sec
-static void parse_overlay_hook_delay_sec(class Settings *settings_client, class Settings *settings_server)
+// overlay::general
+static void parse_overlay_general_config(class Settings *settings_client, class Settings *settings_server)
 {
-    auto val = ini.GetLongValue("overlay", "hook_delay_sec", -1);
-    if (val >= 0) {
+    settings_client->disable_overlay = !ini.GetBoolValue("overlay::general", "enable_experimental_overlay", settings_client->disable_overlay);
+    settings_server->disable_overlay = !ini.GetBoolValue("overlay::general", "enable_experimental_overlay", settings_server->disable_overlay);
+
+    {
+        auto val = ini.GetLongValue("overlay::general", "hook_delay_sec", -1);
+        if (val >= 0) {
         settings_client->overlay_hook_delay_sec = val;
         settings_server->overlay_hook_delay_sec = val;
         PRINT_DEBUG("Setting overlay hook delay to %i seconds", (int)val);
     }
-}
+    }
 
-// overlay::renderer_detector_timeout_sec
-static void parse_overlay_renderer_detector_timeout_sec(class Settings *settings_client, class Settings *settings_server)
-{
-    auto val = ini.GetLongValue("overlay", "renderer_detector_timeout_sec", -1);
-    if (val > 0) {
+    {
+        auto val = ini.GetLongValue("overlay::general", "renderer_detector_timeout_sec", -1);
+        if (val > 0) {
         settings_client->overlay_renderer_detector_timeout_sec = val;
         settings_server->overlay_renderer_detector_timeout_sec = val;
         PRINT_DEBUG("Setting overlay renderer detector timeout to %i seconds", (int)val);
     }
+    }
+
+    settings_client->disable_overlay_achievement_notification = ini.GetBoolValue("overlay::general", "disable_achievement_notification", settings_client->disable_overlay_achievement_notification);
+    settings_server->disable_overlay_achievement_notification = ini.GetBoolValue("overlay::general", "disable_achievement_notification", settings_server->disable_overlay_achievement_notification);
+
+    settings_client->disable_overlay_friend_notification = ini.GetBoolValue("overlay::general", "disable_friend_notification", settings_client->disable_overlay_friend_notification);
+    settings_server->disable_overlay_friend_notification = ini.GetBoolValue("overlay::general", "disable_friend_notification", settings_server->disable_overlay_friend_notification);
+
+    settings_client->disable_overlay_warning_any = ini.GetBoolValue("overlay::general", "disable_warning_any", settings_client->disable_overlay_warning_any);
+    settings_server->disable_overlay_warning_any = ini.GetBoolValue("overlay::general", "disable_warning_any", settings_server->disable_overlay_warning_any);
+
+    settings_client->disable_overlay_warning_bad_appid = ini.GetBoolValue("overlay::general", "disable_warning_bad_appid", settings_client->disable_overlay_warning_bad_appid);
+    settings_server->disable_overlay_warning_bad_appid = ini.GetBoolValue("overlay::general", "disable_warning_bad_appid", settings_server->disable_overlay_warning_bad_appid);
+
+    settings_client->disable_overlay_warning_local_save = ini.GetBoolValue("overlay::general", "disable_warning_local_save", settings_client->disable_overlay_warning_local_save);
+    settings_server->disable_overlay_warning_local_save = ini.GetBoolValue("overlay::general", "disable_warning_local_save", settings_server->disable_overlay_warning_local_save);
+
 }
 
 // mainly enable/disable features
 static void parse_simple_features(class Settings *settings_client, class Settings *settings_server)
 {
-    // [general]
-    settings_client->enable_new_app_ticket = ini.GetBoolValue("general", "new_app_ticket", settings_client->enable_new_app_ticket);
-    settings_server->enable_new_app_ticket = ini.GetBoolValue("general", "new_app_ticket", settings_server->enable_new_app_ticket);
+    // app::general::branch_name
+    {
+        std::string line(common_helpers::string_strip(ini.GetValue("app::general", "branch_name", "")));
+        if (line.size()) {
+            settings_client->current_branch_name = line;
+            settings_server->current_branch_name = line;
+            PRINT_DEBUG("setting current branch name to '%s'", line.c_str());
+        }
+    }
 
-    settings_client->use_gc_token = ini.GetBoolValue("general", "gc_token", settings_client->use_gc_token);
-    settings_server->use_gc_token = ini.GetBoolValue("general", "gc_token", settings_server->use_gc_token);
+    // [main::general]
+    settings_client->enable_new_app_ticket = ini.GetBoolValue("main::general", "new_app_ticket", settings_client->enable_new_app_ticket);
+    settings_server->enable_new_app_ticket = ini.GetBoolValue("main::general", "new_app_ticket", settings_server->enable_new_app_ticket);
 
-    settings_client->disable_account_avatar = ini.GetBoolValue("general", "disable_account_avatar", settings_client->disable_account_avatar);
-    settings_server->disable_account_avatar = ini.GetBoolValue("general", "disable_account_avatar", settings_server->disable_account_avatar);
+    settings_client->use_gc_token = ini.GetBoolValue("main::general", "gc_token", settings_client->use_gc_token);
+    settings_server->use_gc_token = ini.GetBoolValue("main::general", "gc_token", settings_server->use_gc_token);
 
-    settings_client->is_beta_branch = ini.GetBoolValue("general", "is_beta_branch", settings_client->is_beta_branch);
-    settings_server->is_beta_branch = ini.GetBoolValue("general", "is_beta_branch", settings_server->is_beta_branch);
+    settings_client->disable_account_avatar = ini.GetBoolValue("main::general", "disable_account_avatar", settings_client->disable_account_avatar);
+    settings_server->disable_account_avatar = ini.GetBoolValue("main::general", "disable_account_avatar", settings_server->disable_account_avatar);
 
-    settings_client->achievement_bypass = ini.GetBoolValue("general", "achievements_bypass", settings_client->achievement_bypass);
-    settings_server->achievement_bypass = ini.GetBoolValue("general", "achievements_bypass", settings_server->achievement_bypass);
+    settings_client->is_beta_branch = ini.GetBoolValue("main::general", "is_beta_branch", settings_client->is_beta_branch);
+    settings_server->is_beta_branch = ini.GetBoolValue("main::general", "is_beta_branch", settings_server->is_beta_branch);
 
-    settings_client->steam_deck = ini.GetBoolValue("general", "steam_deck", settings_client->steam_deck);
-    settings_server->steam_deck = ini.GetBoolValue("general", "steam_deck", settings_server->steam_deck);
+    settings_client->steam_deck = ini.GetBoolValue("main::general", "steam_deck", settings_client->steam_deck);
+    settings_server->steam_deck = ini.GetBoolValue("main::general", "steam_deck", settings_server->steam_deck);
 
-    settings_client->disable_leaderboards_create_unknown = ini.GetBoolValue("general", "disable_leaderboards_create_unknown", settings_client->disable_leaderboards_create_unknown);
-    settings_server->disable_leaderboards_create_unknown = ini.GetBoolValue("general", "disable_leaderboards_create_unknown", settings_server->disable_leaderboards_create_unknown);
+    settings_client->disable_leaderboards_create_unknown = ini.GetBoolValue("main::general", "disable_leaderboards_create_unknown", settings_client->disable_leaderboards_create_unknown);
+    settings_server->disable_leaderboards_create_unknown = ini.GetBoolValue("main::general", "disable_leaderboards_create_unknown", settings_server->disable_leaderboards_create_unknown);
 
-    settings_client->immediate_gameserver_stats = ini.GetBoolValue("general", "immediate_gameserver_stats", settings_client->immediate_gameserver_stats);
-    settings_server->immediate_gameserver_stats = ini.GetBoolValue("general", "immediate_gameserver_stats", settings_server->immediate_gameserver_stats);
+    settings_client->immediate_gameserver_stats = ini.GetBoolValue("main::general", "immediate_gameserver_stats", settings_client->immediate_gameserver_stats);
+    settings_server->immediate_gameserver_stats = ini.GetBoolValue("main::general", "immediate_gameserver_stats", settings_server->immediate_gameserver_stats);
 
-    settings_client->matchmaking_server_details_via_source_query = ini.GetBoolValue("general", "matchmaking_server_details_via_source_query", settings_client->matchmaking_server_details_via_source_query);
-    settings_server->matchmaking_server_details_via_source_query = ini.GetBoolValue("general", "matchmaking_server_details_via_source_query", settings_server->matchmaking_server_details_via_source_query);
+    settings_client->matchmaking_server_details_via_source_query = ini.GetBoolValue("main::general", "matchmaking_server_details_via_source_query", settings_client->matchmaking_server_details_via_source_query);
+    settings_server->matchmaking_server_details_via_source_query = ini.GetBoolValue("main::general", "matchmaking_server_details_via_source_query", settings_server->matchmaking_server_details_via_source_query);
 
-    settings_client->matchmaking_server_list_always_lan_type = ini.GetBoolValue("general", "matchmaking_server_list_actual_type", settings_client->matchmaking_server_list_always_lan_type);
-    settings_server->matchmaking_server_list_always_lan_type = ini.GetBoolValue("general", "matchmaking_server_list_actual_type", settings_server->matchmaking_server_list_always_lan_type);
+    settings_client->matchmaking_server_list_always_lan_type = ini.GetBoolValue("main::general", "matchmaking_server_list_actual_type", settings_client->matchmaking_server_list_always_lan_type);
+    settings_server->matchmaking_server_list_always_lan_type = ini.GetBoolValue("main::general", "matchmaking_server_list_actual_type", settings_server->matchmaking_server_list_always_lan_type);
 
 
-    // [connectivity]
-    settings_client->disable_networking = ini.GetBoolValue("connectivity", "disable_networking", settings_client->disable_networking);
-    settings_server->disable_networking = ini.GetBoolValue("connectivity", "disable_networking", settings_server->disable_networking);
+    // [main::connectivity]
+    settings_client->disable_networking = ini.GetBoolValue("main::connectivity", "disable_networking", settings_client->disable_networking);
+    settings_server->disable_networking = ini.GetBoolValue("main::connectivity", "disable_networking", settings_server->disable_networking);
 
-    settings_client->disable_sharing_stats_with_gameserver = ini.GetBoolValue("connectivity", "disable_sharing_stats_with_gameserver", settings_client->disable_sharing_stats_with_gameserver);
-    settings_server->disable_sharing_stats_with_gameserver = ini.GetBoolValue("connectivity", "disable_sharing_stats_with_gameserver", settings_server->disable_sharing_stats_with_gameserver);
+    settings_client->disable_sharing_stats_with_gameserver = ini.GetBoolValue("main::connectivity", "disable_sharing_stats_with_gameserver", settings_client->disable_sharing_stats_with_gameserver);
+    settings_server->disable_sharing_stats_with_gameserver = ini.GetBoolValue("main::connectivity", "disable_sharing_stats_with_gameserver", settings_server->disable_sharing_stats_with_gameserver);
     
-    settings_client->disable_source_query = ini.GetBoolValue("connectivity", "disable_source_query", settings_client->disable_source_query);
-    settings_server->disable_source_query = ini.GetBoolValue("connectivity", "disable_source_query", settings_server->disable_source_query);
+    settings_client->disable_source_query = ini.GetBoolValue("main::connectivity", "disable_source_query", settings_client->disable_source_query);
+    settings_server->disable_source_query = ini.GetBoolValue("main::connectivity", "disable_source_query", settings_server->disable_source_query);
 
-    settings_client->share_leaderboards_over_network = ini.GetBoolValue("connectivity", "share_leaderboards_over_network", settings_client->share_leaderboards_over_network);
-    settings_server->share_leaderboards_over_network = ini.GetBoolValue("connectivity", "share_leaderboards_over_network", settings_server->share_leaderboards_over_network);
+    settings_client->share_leaderboards_over_network = ini.GetBoolValue("main::connectivity", "share_leaderboards_over_network", settings_client->share_leaderboards_over_network);
+    settings_server->share_leaderboards_over_network = ini.GetBoolValue("main::connectivity", "share_leaderboards_over_network", settings_server->share_leaderboards_over_network);
 
-    settings_client->disable_lobby_creation = ini.GetBoolValue("connectivity", "disable_lobby_creation", settings_client->disable_lobby_creation);
-    settings_server->disable_lobby_creation = ini.GetBoolValue("connectivity", "disable_lobby_creation", settings_server->disable_lobby_creation);
+    settings_client->disable_lobby_creation = ini.GetBoolValue("main::connectivity", "disable_lobby_creation", settings_client->disable_lobby_creation);
+    settings_server->disable_lobby_creation = ini.GetBoolValue("main::connectivity", "disable_lobby_creation", settings_server->disable_lobby_creation);
 
-    settings_client->download_steamhttp_requests = ini.GetBoolValue("connectivity", "download_steamhttp_requests", settings_client->download_steamhttp_requests);
-    settings_server->download_steamhttp_requests = ini.GetBoolValue("connectivity", "download_steamhttp_requests", settings_server->download_steamhttp_requests);
-
-    settings_client->force_steamhttp_success = ini.GetBoolValue("connectivity", "force_steamhttp_success", settings_client->force_steamhttp_success);
-    settings_server->force_steamhttp_success = ini.GetBoolValue("connectivity", "force_steamhttp_success", settings_server->force_steamhttp_success);
+    settings_client->download_steamhttp_requests = ini.GetBoolValue("main::connectivity", "download_steamhttp_requests", settings_client->download_steamhttp_requests);
+    settings_server->download_steamhttp_requests = ini.GetBoolValue("main::connectivity", "download_steamhttp_requests", settings_server->download_steamhttp_requests);
 
 
-    // [overlay]
-    settings_client->disable_overlay = !ini.GetBoolValue("overlay", "enable_experimental_overlay", settings_client->disable_overlay);
-    settings_server->disable_overlay = !ini.GetBoolValue("overlay", "enable_experimental_overlay", settings_server->disable_overlay);
+    // [main::misc]
+    settings_client->achievement_bypass = ini.GetBoolValue("main::misc", "achievements_bypass", settings_client->achievement_bypass);
+    settings_server->achievement_bypass = ini.GetBoolValue("main::misc", "achievements_bypass", settings_server->achievement_bypass);
 
-    settings_client->disable_overlay_achievement_notification = ini.GetBoolValue("overlay", "disable_achievement_notification", settings_client->disable_overlay_achievement_notification);
-    settings_server->disable_overlay_achievement_notification = ini.GetBoolValue("overlay", "disable_achievement_notification", settings_server->disable_overlay_achievement_notification);
+    settings_client->force_steamhttp_success = ini.GetBoolValue("main::misc", "force_steamhttp_success", settings_client->force_steamhttp_success);
+    settings_server->force_steamhttp_success = ini.GetBoolValue("main::misc", "force_steamhttp_success", settings_server->force_steamhttp_success);
 
-    settings_client->disable_overlay_friend_notification = ini.GetBoolValue("overlay", "disable_friend_notification", settings_client->disable_overlay_friend_notification);
-    settings_server->disable_overlay_friend_notification = ini.GetBoolValue("overlay", "disable_friend_notification", settings_server->disable_overlay_friend_notification);
-
-    settings_client->disable_overlay_warning_any = ini.GetBoolValue("overlay", "disable_warning_any", settings_client->disable_overlay_warning_any);
-    settings_server->disable_overlay_warning_any = ini.GetBoolValue("overlay", "disable_warning_any", settings_server->disable_overlay_warning_any);
-
-    settings_client->disable_overlay_warning_bad_appid = ini.GetBoolValue("overlay", "disable_warning_bad_appid", settings_client->disable_overlay_warning_bad_appid);
-    settings_server->disable_overlay_warning_bad_appid = ini.GetBoolValue("overlay", "disable_warning_bad_appid", settings_server->disable_overlay_warning_bad_appid);
-
-    settings_client->disable_overlay_warning_forced_setting = ini.GetBoolValue("overlay", "disable_warning_forced_setting", settings_client->disable_overlay_warning_forced_setting);
-    settings_server->disable_overlay_warning_forced_setting = ini.GetBoolValue("overlay", "disable_warning_forced_setting", settings_server->disable_overlay_warning_forced_setting);
-
-    settings_client->disable_overlay_warning_local_save = ini.GetBoolValue("overlay", "disable_warning_local_save", settings_client->disable_overlay_warning_local_save);
-    settings_server->disable_overlay_warning_local_save = ini.GetBoolValue("overlay", "disable_warning_local_save", settings_server->disable_overlay_warning_local_save);
+    settings_client->disable_steamoverlaygameid_env_var = ini.GetBoolValue("main::misc", "disable_steamoverlaygameid_env_var", settings_client->disable_steamoverlaygameid_env_var);
+    settings_server->disable_steamoverlaygameid_env_var = ini.GetBoolValue("main::misc", "disable_steamoverlaygameid_env_var", settings_server->disable_steamoverlaygameid_env_var);
 
 }
 
 
-static void load_main_config()
+static std::map<SettingsItf, std::string> old_itfs_map{};
+
+static void load_all_config_settings()
 {
     static std::recursive_mutex ini_mtx{};
     static bool loaded = false;
@@ -1298,70 +1290,83 @@ static void load_main_config()
     if (loaded) return;
     loaded = true;
 
-    constexpr const static auto merge_ini = [](const CSimpleIniA &new_ini) {
-        std::list<CSimpleIniA::Entry> sections{};
-        new_ini.GetAllSections(sections);
-        for (auto const &sec : sections) {
-            std::list<CSimpleIniA::Entry> keys{};
-            new_ini.GetAllKeys(sec.pItem, keys);
-            for (auto const &key : keys) {
-                std::list<CSimpleIniA::Entry> vals{};
-                new_ini.GetAllValues(sec.pItem, key.pItem, vals);
-                for (const auto &val : vals) {
-                    ini.SetValue(sec.pItem, key.pItem, val.pItem);
-                }
-            }
-        }
+    constexpr const static char* config_files[] = {
+        config_ini_app,
+        config_ini_main,
+        config_ini_overlay,
+        config_ini_user,
     };
 
     ini.SetUnicode();
-
-    CSimpleIniA local_ini{};
-    local_ini.SetUnicode();
+    ini.SetSpaces(false);
 
     // we have to load the local one first, since it might change base saves_folder_name
     {
-        std::ifstream local_ini_file(Local_Storage::get_game_settings_path() + "configs.ini", std::ios::binary | std::ios::in);
-        if (local_ini_file.is_open()) {
+        CSimpleIniA local_ini{};
+        local_ini.SetUnicode();
+
+        for (const auto &config_file : config_files) {
+            std::ifstream local_ini_file( utf8_decode(Local_Storage::get_game_settings_path() + config_file), std::ios::binary | std::ios::in);
+            if (!local_ini_file.is_open()) continue;
+
             auto err = local_ini.LoadData(local_ini_file);
-            PRINT_DEBUG("result of parsing local configs.ini %i (success == 0)", (int)err);
             local_ini_file.close();
-            
+            PRINT_DEBUG("result of parsing local '%s' %i (success == 0)", config_file, (int)err);
             if (err == SI_OK) {
-                std::string saves_folder_name{};
-                auto ptr = local_ini.GetValue("saves", "saves_folder_name", nullptr);
-                if (ptr && ptr[0]) {
-                    saves_folder_name = Settings::sanitize(common_helpers::string_strip(ptr));
-                }
-                
-                if (saves_folder_name.size()) {
-                    Local_Storage::set_saves_folder_name(saves_folder_name);
-                    PRINT_DEBUG("changed name of the base folder used for save data to '%s'", saves_folder_name.c_str());
-                }
+                merge_ini(local_ini);
             }
         }
+        
+        std::string saves_folder_name(common_helpers::string_strip(Settings::sanitize(local_ini.GetValue("user::saves", "saves_folder_name", ""))));
+        if (saves_folder_name.size()) {
+            Local_Storage::set_saves_folder_name(saves_folder_name);
+            PRINT_DEBUG("changed base folder for save data to '%s'", saves_folder_name.c_str());
+        }
     }
-    
+
+    // now we can access get_user_appdata_path() which might have been changed by the above code
     {
         CSimpleIniA global_ini{};
         global_ini.SetUnicode();
 
-        std::ifstream ini_file(Local_Storage::get_user_appdata_path() + Local_Storage::settings_storage_folder + PATH_SEPARATOR + "configs.ini", std::ios::binary | std::ios::in);
-        if (ini_file.is_open()) {
+        for (const auto &config_file : config_files) {
+            std::ifstream ini_file( utf8_decode(Local_Storage::get_user_appdata_path() + Local_Storage::settings_storage_folder + PATH_SEPARATOR + config_file), std::ios::binary | std::ios::in);
+            if (!ini_file.is_open()) continue;
+            
             auto err = global_ini.LoadData(ini_file);
-            PRINT_DEBUG("result of parsing global configs.ini %i (success == 0)", (int)err);
             ini_file.close();
+            PRINT_DEBUG("result of parsing global '%s' %i (success == 0)", config_file, (int)err);
             
             if (err == SI_OK) {
                 merge_ini(global_ini);
             }
         }
-
     }
 
-    if (!local_ini.IsEmpty()) {
-        merge_ini(local_ini);
-    }
+    old_itfs_map[SettingsItf::CLIENT] = ini.GetValue("app::steam_interfaces", "client", "");
+    old_itfs_map[SettingsItf::GAMESERVER_STATS] = ini.GetValue("app::steam_interfaces", "gameserver_stats", "");
+    old_itfs_map[SettingsItf::GAMESERVER] = ini.GetValue("app::steam_interfaces", "gameserver", "");
+    old_itfs_map[SettingsItf::MATCHMAKING_SERVERS] = ini.GetValue("app::steam_interfaces", "matchmaking_servers", "");
+    old_itfs_map[SettingsItf::MATCHMAKING] = ini.GetValue("app::steam_interfaces", "matchmaking", "");
+    old_itfs_map[SettingsItf::USER] = ini.GetValue("app::steam_interfaces", "user", "");
+    old_itfs_map[SettingsItf::FRIENDS] = ini.GetValue("app::steam_interfaces", "friends", "");
+    old_itfs_map[SettingsItf::UTILS] = ini.GetValue("app::steam_interfaces", "utils", "");
+    old_itfs_map[SettingsItf::USER_STATS] = ini.GetValue("app::steam_interfaces", "user_stats", "");
+    old_itfs_map[SettingsItf::APPS] = ini.GetValue("app::steam_interfaces", "apps", "");
+    old_itfs_map[SettingsItf::NETWORKING] = ini.GetValue("app::steam_interfaces", "networking", "");
+    old_itfs_map[SettingsItf::REMOTE_STORAGE] = ini.GetValue("app::steam_interfaces", "remote_storage", "");
+    old_itfs_map[SettingsItf::SCREENSHOTS] = ini.GetValue("app::steam_interfaces", "screenshots", "");
+    old_itfs_map[SettingsItf::HTTP] = ini.GetValue("app::steam_interfaces", "http", "");
+    old_itfs_map[SettingsItf::UNIFIED_MESSAGES] = ini.GetValue("app::steam_interfaces", "unified_messages", "");
+    old_itfs_map[SettingsItf::CONTROLLER] = ini.GetValue("app::steam_interfaces", "controller", "");
+    old_itfs_map[SettingsItf::UGC] = ini.GetValue("app::steam_interfaces", "ugc", "");
+    old_itfs_map[SettingsItf::APPLIST] = ini.GetValue("app::steam_interfaces", "applist", "");
+    old_itfs_map[SettingsItf::MUSIC] = ini.GetValue("app::steam_interfaces", "music", "");
+    old_itfs_map[SettingsItf::MUSIC_REMOTE] = ini.GetValue("app::steam_interfaces", "music_remote", "");
+    old_itfs_map[SettingsItf::HTML_SURFACE] = ini.GetValue("app::steam_interfaces", "html_surface", "");
+    old_itfs_map[SettingsItf::INVENTORY] = ini.GetValue("app::steam_interfaces", "inventory", "");
+    old_itfs_map[SettingsItf::VIDEO] = ini.GetValue("app::steam_interfaces", "video", "");
+    old_itfs_map[SettingsItf::MASTERSERVER_UPDATER] = ini.GetValue("app::steam_interfaces", "masterserver_updater", "");
 
 #ifndef EMU_RELEASE_BUILD
     // dump the final ini file
@@ -1395,7 +1400,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
 {
     PRINT_DEBUG("start ----------");
 
-    load_main_config();
+    load_all_config_settings();
 
 #if defined(EMU_BUILD_STRING)
     PRINT_DEBUG("emu build '%s'", EXPAND_AS_STR(EMU_BUILD_STRING));
@@ -1407,24 +1412,23 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
 
     const std::string program_path(Local_Storage::get_program_path());
     const std::string steam_settings_path(Local_Storage::get_game_settings_path());
-    uint32 appid = parse_steam_app_id(program_path);
     
     std::string save_path(Local_Storage::get_user_appdata_path());
-    bool local_save = parse_local_save(program_path, save_path);
-    local_save = parse_local_save(steam_settings_path, save_path); // allow file in local steam_settings folder to override it
-    PRINT_DEBUG("program path: '%s', save path: '%s'", program_path.c_str(), save_path.c_str());
+    bool local_save = parse_local_save(save_path);
+    PRINT_DEBUG("program path: '%s', base path for saves: '%s'", program_path.c_str(), save_path.c_str());
 
     Local_Storage *local_storage = new Local_Storage(save_path);
-    PRINT_DEBUG("global settings path for this app/game: '%s'", local_storage->get_global_settings_path().c_str());
+    PRINT_DEBUG("global settings path: '%s'", local_storage->get_global_settings_path().c_str());
+    uint32 appid = parse_steam_app_id(program_path);
     local_storage->setAppId(appid);
+
+    // Custom broadcasts
+    std::set<IP_PORT> custom_broadcasts{};
+    load_custom_broadcasts(local_storage->get_global_settings_path(), custom_broadcasts);
+    load_custom_broadcasts(steam_settings_path, custom_broadcasts);
 
     // Listen port
     uint16 port = parse_listen_port(local_storage);
-    // Custom broadcasts
-    std::set<IP_PORT> custom_broadcasts{};
-    load_custom_broadcasts(local_storage->get_global_settings_path() + "custom_broadcasts.txt", custom_broadcasts);
-    load_custom_broadcasts(steam_settings_path + "custom_broadcasts.txt", custom_broadcasts);
-
     // Acount name
     std::string name(parse_account_name(local_storage));
     // Steam ID
@@ -1434,31 +1438,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     // Supported languages, this will change the current language if needed
     std::set<std::string> supported_languages(parse_supported_languages(local_storage, language));
 
-
-    // boolean flags and forced configurations
-
-    bool warn_forced_setting = false;
-    if (file_exists_(steam_settings_path + "force_steamid.txt")) {
-        warn_forced_setting |= parse_force_user_steam_id(user_id, steam_settings_path);
-    }
-
-    if (file_exists_(steam_settings_path + "force_account_name.txt")) {
-        warn_forced_setting |= parse_force_account_name(name, steam_settings_path);
-    }
-
-    if (file_exists_(steam_settings_path + "force_language.txt")) {
-        warn_forced_setting |= parse_force_language(language, steam_settings_path);
-    }
-
-    if (file_exists_(steam_settings_path + "force_listen_port.txt")) {
-        warn_forced_setting |= parse_force_listen_port(port, steam_settings_path);
-    }
-
-    bool steam_offline_mode = false;
-    if (ini.GetBoolValue("connectivity", "offline", false)) {
-        steam_offline_mode = true;
-    }
-
+    bool steam_offline_mode = ini.GetBoolValue("main::connectivity", "offline", false);
     Settings *settings_client = new Settings(user_id, CGameID(appid), name, language, steam_offline_mode);
     Settings *settings_server = new Settings(generate_steam_id_server(), CGameID(appid), name, language, steam_offline_mode);
 
@@ -1468,9 +1448,6 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     // broadcasts list
     settings_client->custom_broadcasts = custom_broadcasts;
     settings_server->custom_broadcasts = custom_broadcasts;
-    // overlay warning for forced setting
-    settings_client->overlay_warn_forced_setting = warn_forced_setting;
-    settings_server->overlay_warn_forced_setting = warn_forced_setting;
     // overlay warning for local save
     settings_client->overlay_warn_local_save = local_save;
     settings_server->overlay_warn_local_save = local_save;
@@ -1488,20 +1465,16 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     parse_depots(settings_client, settings_server);
     parse_subscribed_groups(settings_client, settings_server);
     parse_installed_app_Ids(settings_client, settings_server);
-    parse_force_branch_name(settings_client, settings_server);
+    load_subscribed_groups_clans(local_storage->get_global_settings_path(), settings_client, settings_server);
+    load_subscribed_groups_clans(steam_settings_path, settings_client, settings_server);
 
-    load_subscribed_groups_clans(local_storage->get_global_settings_path() + "subscribed_groups_clans.txt", settings_client, settings_server);
-    load_subscribed_groups_clans(steam_settings_path + "subscribed_groups_clans.txt", settings_client, settings_server);
-
-    load_overlay_appearance(local_storage->get_global_settings_path() + "overlay_appearance.txt", settings_client, settings_server, local_storage);
-    load_overlay_appearance(steam_settings_path + "overlay_appearance.txt", settings_client, settings_server, local_storage);
+    load_overlay_appearance(settings_client, settings_server, local_storage);
 
     parse_mods_folder(settings_client, settings_server, local_storage);
     load_gamecontroller_settings(settings_client);
     parse_auto_accept_invite(settings_client, settings_server);
     parse_ip_country(settings_client, settings_server);
-    parse_overlay_hook_delay_sec(settings_client, settings_server);
-    parse_overlay_renderer_detector_timeout_sec(settings_client, settings_server);
+    parse_overlay_general_config(settings_client, settings_server);
 
     *settings_client_out = settings_client;
     *settings_server_out = settings_server;
@@ -1512,14 +1485,29 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     return appid;
 }
 
-void save_global_settings(Local_Storage *local_storage, const char *name, const char *language)
+void save_global_settings(const char *name, const char *language)
 {
-    local_storage->store_data_settings("account_name.txt", name, strlen(name));
-    local_storage->store_data_settings("language.txt", language, strlen(language));
+    save_global_ini_value(
+        config_ini_user,
+        "user::general", "account_name", IniValue(name),
+        "user account name"
+    );
+    
+    save_global_ini_value(
+        config_ini_user,
+        "user::general", "language", IniValue(language),
+        "the language reported to the game, default is 'english', check 'API language code' in https://partner.steamgames.com/doc/store/localization/languages"
+    );
 }
 
 bool settings_disable_lan_only()
 {
-    load_main_config();
-    return ini.GetBoolValue("connectivity", "disable_lan_only", false);
+    load_all_config_settings();
+    return ini.GetBoolValue("main::connectivity", "disable_lan_only", false);
+}
+
+const std::map<SettingsItf, std::string>& settings_old_interfaces()
+{
+    load_all_config_settings();
+    return old_itfs_map;
 }
