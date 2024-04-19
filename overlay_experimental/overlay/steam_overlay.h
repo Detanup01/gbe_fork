@@ -128,10 +128,6 @@ class Steam_Overlay
     bool show_achievements = false;
     bool show_settings = false;
 
-    // disable input when force_*.txt file is used
-    bool disable_user_input = false;
-    // warn when force_*.txt file is used
-    bool warn_forced_setting = false;
     // warn when using local save
     bool warn_local_save = false;
     // warn when app ID = 0

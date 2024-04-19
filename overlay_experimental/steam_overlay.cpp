@@ -115,14 +115,10 @@ Steam_Overlay::Steam_Overlay(Settings* settings, Local_Storage *local_storage, S
 
     // we need these copies to show the warning only once, then disable the flag
     // avoid manipulating settings->xxx
-    this->warn_forced_setting =
-        !settings->disable_overlay_warning_any && !settings->disable_overlay_warning_forced_setting && settings->overlay_warn_forced_setting;
     this->warn_local_save =
         !settings->disable_overlay_warning_any && !settings->disable_overlay_warning_local_save && settings->overlay_warn_local_save;
     this->warn_bad_appid =
         !settings->disable_overlay_warning_any && !settings->disable_overlay_warning_bad_appid && settings->get_local_game_id().AppID() == 0;
-
-    this->disable_user_input = this->warn_forced_setting;
 
     current_language = 0;
     const char *language = settings->get_language();
@@ -283,10 +279,8 @@ void Steam_Overlay::create_fonts()
         font_builder.AddText(translationSave[i]);
         font_builder.AddText(translationWarning[i]);
         font_builder.AddText(translationWarningWarningWarning[i]);
-        font_builder.AddText(translationWarningDescription1[i]);
-        font_builder.AddText(translationWarningDescription2[i]);
-        font_builder.AddText(translationWarningDescription3[i]);
-        font_builder.AddText(translationWarningDescription4[i]);
+        font_builder.AddText(translationWarningDescription_badAppid[i]);
+        font_builder.AddText(translationWarningDescription_localSave[i]);
         font_builder.AddText(translationSteamOverlayURL[i]);
         font_builder.AddText(translationClose[i]);
         font_builder.AddText(translationPlaying[i]);
@@ -1367,7 +1361,7 @@ void Steam_Overlay::render_main_window()
 
                 ImGui::Text("%s", translationUsername[current_language]);
                 ImGui::SameLine();
-                ImGui::InputText("##username", username_text, sizeof(username_text), disable_user_input ? ImGuiInputTextFlags_ReadOnly : 0);
+                ImGui::InputText("##username", username_text, sizeof(username_text), 0);
 
                 ImGui::Separator();
 
@@ -1377,16 +1371,10 @@ void Steam_Overlay::render_main_window()
 
                 ImGui::Separator();
 
-                if (!disable_user_input) {
-                    ImGui::Text("%s", translationRestartTheGameToApply[current_language]);
-                    if (ImGui::Button(translationSave[current_language])) {
-                        save_settings = true;
-                        show_settings = false;
-                    }
-                } else {
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationWarningWarningWarning[current_language]);
-                    ImGui::TextWrapped("%s", translationWarningDescription1[current_language]);
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationWarningWarningWarning[current_language]);
+                ImGui::Text("%s", translationRestartTheGameToApply[current_language]);
+                if (ImGui::Button(translationSave[current_language])) {
+                    save_settings = true;
+                    show_settings = false;
                 }
             }
 
@@ -1413,7 +1401,7 @@ void Steam_Overlay::render_main_window()
             ImGui::End();
         }
 
-        bool show_warning = warn_local_save || warn_forced_setting || warn_bad_appid;
+        bool show_warning = warn_local_save || warn_bad_appid;
         if (show_warning) {
             ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 32, ImGui::GetFontSize() * 32), ImVec2(8192, 8192));
             ImGui::SetNextWindowFocus();
@@ -1421,24 +1409,19 @@ void Steam_Overlay::render_main_window()
             if (ImGui::Begin(translationWarning[current_language], &show_warning)) {
                 if (warn_bad_appid) {
                     ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationWarningWarningWarning[current_language]);
-                    ImGui::TextWrapped("%s", translationWarningDescription2[current_language]);
+                    ImGui::TextWrapped("%s", translationWarningDescription_badAppid[current_language]);
                     ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationWarningWarningWarning[current_language]);
                 }
                 if (warn_local_save) {
                     ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationWarningWarningWarning[current_language]);
-                    ImGui::TextWrapped("%s", translationWarningDescription3[current_language]);
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationWarningWarningWarning[current_language]);
-                }
-                if (warn_forced_setting) {
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationWarningWarningWarning[current_language]);
-                    ImGui::TextWrapped("%s", translationWarningDescription4[current_language]);
+                    ImGui::TextWrapped("%s", translationWarningDescription_localSave[current_language]);
                     ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationWarningWarningWarning[current_language]);
                 }
             }
 
             ImGui::End();
             if (!show_warning) {
-                warn_local_save = warn_forced_setting = false;
+                warn_local_save = false;
             }
         }
     }
@@ -1499,7 +1482,7 @@ void Steam_Overlay::steam_run_callback()
         save_settings = false;
 
         const char *language_text = valid_languages[current_language];
-        save_global_settings(get_steam_client()->local_storage, username_text, language_text);
+        save_global_settings(username_text, language_text);
         get_steam_client()->settings_client->set_local_name(username_text);
         get_steam_client()->settings_server->set_local_name(username_text);
         get_steam_client()->settings_client->set_language(language_text);

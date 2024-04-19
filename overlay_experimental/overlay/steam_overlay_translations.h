@@ -2689,99 +2689,7 @@ const char translationWarningWarningWarning[TRANSLATION_NUMBER_OF_LANGUAGES][TRA
   u8"UPOZORENJE UPOZORENJE UPOZORENJE"
 };
 
-const char translationWarningDescription1[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
-	// 0 - English
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
-
-	// 1 - Arabic
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
-
-	// 2 - Bulgarian
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
-
-	// 3 - Simplified Chinese
-  u8"检测到一些 steam_settings/force_*.txt 文件。如果您想让这个菜单工作，请删除它们。",
-
-	// 4 - Traditional Chinese
-  u8"檢測到一些 steam_settings/force_*.txt 檔案。如果您想讓這個選單工作，請刪除它們。",
-
-	// 5 - Czech
-  u8"Byly zjištěny soubory steam_settings/force_*.txt. Pokud chcete, aby toto menu fungovalo, odstraňte je.",
-
-	// 6 - Danish
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
-
-	// 7 - Dutch
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
-
-	// 8 - Finnish
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
-
-	// 9 - French
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
-
-	// 10 - German
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
-
-	// 11 - Greek
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
-
-	// 12 - Hungarian
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
-
-	// 13 - Italian
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
-
-	// 14 - Japanese
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
-
-	// 15 - Korean
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
-
-	// 16 - Norwegian
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
-
-	// 17 - Polish
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
-
-	// 18 - Portuguese
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
-
-	// 19 - Brazilian Portuguese
-  u8"Alguns arquivos steam_settings/force_*.txt foram detectados. Exclua-os se quiser que este menu funcione.",
-
-	// 20 - Romanian
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
-
-	// 21 - Russian
-  u8"Обнаружены файлы steam_settings/force_*.txt. Пожалуйста, удалите их, если хотите, чтобы это меню работало.",
-
-	// 22 - Spanish
-  u8"Un archivo de steam_settings/force_*.txt ha sido detectado. Por favor bórralo si quieres que el menu funcione.",
-
-	// 23 - Latin American
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
-
-	// 24 - Swedish
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
-
-	// 25 - Thai
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
-
-	// 26 - Turkish
-  u8"Bazı steam_settings/force_*.txt dosyaları tespit edildi. Bu menünün çalışmasını istiyorsanız lütfen bunları silin.",
-
-	// 27 - Ukrainian
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
-
-	// 28 - Vietnamese
-  u8"Some steam_settings/force_*.txt files have been detected. Please delete them if you want this menu to work.",
-
-	// 29 - Croatian
-  u8"Neke steam_settings/force_*.txt datoteke su otkrivene. Molimo da ih izbrišete ako želite da ovaj izbornik radi."
-};
-
-const char translationWarningDescription2[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+const char translationWarningDescription_badAppid[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
   u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
@@ -2873,188 +2781,96 @@ const char translationWarningDescription2[TRANSLATION_NUMBER_OF_LANGUAGES][TRANS
   u8"AppID je 0, molimo napravite steam_appid.txt sa točnim appid-em i ponovo pokrenite igru."
 };
 
-const char translationWarningDescription3[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+const char translationWarningDescription_localSave[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 1 - Arabic
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 2 - Bulgarian
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 3 - Simplified Chinese
-  u8"检测到 local_save.txt ，模拟器数据将保存到本地游戏文件夹。如果不想要此行为请删除该文件。",
+  u8"检测到 local_save_path ，模拟器数据将保存到本地游戏文件夹。如果不想要此行为请删除该文件。",
 
 	// 4 - Traditional Chinese
-  u8"檢測到 local_save.txt ，模擬器資料將儲存到本地遊戲資料夾。如果不想要此行為請刪除該檔案。",
+  u8"檢測到 local_save_path ，模擬器資料將儲存到本地遊戲資料夾。如果不想要此行為請刪除該檔案。",
 
 	// 5 - Czech
-  u8"Zjištěn local_save.txt, emulátor ukládá lokálně do složky hry. Pokud to nechcete, odstraňte ho.",
+  u8"Zjištěn local_save_path, emulátor ukládá lokálně do složky hry. Pokud to nechcete, odstraňte ho.",
 
 	// 6 - Danish
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 7 - Dutch
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 8 - Finnish
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 9 - French
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 10 - German
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 11 - Greek
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 12 - Hungarian
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 13 - Italian
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 14 - Japanese
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 15 - Korean
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 16 - Norwegian
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 17 - Polish
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 18 - Portuguese
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 19 - Brazilian Portuguese
-  u8"local_save.txt detectado, o emu está salvando localmente na pasta do jogo. Por favor, exclua-o se você não quiser isso.",
+  u8"local_save_path detectado, o emu está salvando localmente na pasta do jogo. Por favor, exclua-o se você não quiser isso.",
 
 	// 20 - Romanian
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 21 - Russian
-  u8"Обнаружен файл local_save.txt, эмулятор сохраняет локально в папку с игрой, если вам это не нужно, удалите его.",
+  u8"Обнаружен файл local_save_path, эмулятор сохраняет локально в папку с игрой, если вам это не нужно, удалите его.",
 
 	// 22 - Spanish
-  u8"local_save.txt detectado, el emulador está guardando en la carpeta del juego. Por favor bórralo si no quieres esto.",
+  u8"local_save_path detectado, el emulador está guardando en la carpeta del juego. Por favor bórralo si no quieres esto.",
 
 	// 23 - Latin American
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 24 - Swedish
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 25 - Thai
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 26 - Turkish
-  u8"local_save.txt tespit edildi, öykünücü yerel olarak oyun klasörüne kaydediyor. Eğer bunu istemiyorsanız lütfen silin.",
+  u8"local_save_path tespit edildi, öykünücü yerel olarak oyun klasörüne kaydediyor. Eğer bunu istemiyorsanız lütfen silin.",
 
 	// 27 - Ukrainian
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 28 - Vietnamese
-  u8"local_save.txt detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 29 - Croatian
-  u8"Datoteka local_save.txt je otkrivena u mapi igre. Molimo vas da je obiršete ako ne želite ovo."
-};
-
-const char translationWarningDescription4[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
-	// 0 - English
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
-
-	// 1 - Arabic
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
-
-	// 2 - Bulgarian
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
-
-	// 3 - Simplified Chinese
-  u8"检测到一些 steam_settings/force_*.txt 文件。您将无法保存某些设置。",
-
-	// 4 - Traditional Chinese
-  u8"檢測到一些 steam_settings/force_*.txt 檔案。您將無法儲存某些設定。",
-
-	// 5 - Czech
-  u8"Byly zjištěny soubory steam_settings/force_*.txt. Některá nastavení nebude možné uložit.",
-
-	// 6 - Danish
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
-
-	// 7 - Dutch
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
-
-	// 8 - Finnish
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
-
-	// 9 - French
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
-
-	// 10 - German
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
-
-	// 11 - Greek
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
-
-	// 12 - Hungarian
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
-
-	// 13 - Italian
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
-
-	// 14 - Japanese
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
-
-	// 15 - Korean
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
-
-	// 16 - Norwegian
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
-
-	// 17 - Polish
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
-
-	// 18 - Portuguese
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
-
-	// 19 - Brazilian Portuguese
-  u8"Alguns arquivos steam_settings/force_*.txt foram detectados. Você não poderá salvar algumas configurações.",
-
-	// 20 - Romanian
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
-
-	// 21 - Russian
-  u8"Обнаружены файлы steam_settings/force_*.txt. Вы не сможете сохранить некоторые настройки.",
-
-	// 22 - Spanish
-  u8"Un archivo steam_settings/force_*.txt ha sido detectado. No podrás guardar ciertas configuraciones.",
-
-	// 23 - Latin American
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
-
-	// 24 - Swedish
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
-
-	// 25 - Thai
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
-
-	// 26 - Turkish
-  u8"Bazı steam_settings/force_*.txt dosyaları tespit edildi. Bazı ayarları kaydedemeyeceksiniz.",
-
-	// 27 - Ukrainian
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
-
-	// 28 - Vietnamese
-  u8"Some steam_settings/force_*.txt files have been detected. You will not be able to save some settings.",
-
-	// 29 - Croatian
-  u8"Neke steam_settings/force_*.txt datoteke su otkrivene. Možda nećete moći spremiti neke postavke."
+  u8"Datoteka local_save_path je otkrivena u mapi igre. Molimo vas da je obiršete ako ne želite ovo."
 };
 
 const char translationSteamOverlayURL[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
