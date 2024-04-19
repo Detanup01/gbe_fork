@@ -617,7 +617,7 @@ endlocal & exit /b %_exit%
   setlocal
   echo // building lib experimental steamclient.dll - 32
   set src_files="%win_resources_out_dir%\rsrc-client-32.res" "steamclient\steamclient.cpp"
-  call :build_for 1 0 "%experimental_dir%\x32\steamclient.dll" src_files "" "/DEMU_EXPERIMENTAL_BUILD"
+  call :build_for 1 0 "%experimental_dir%\x32\steamclient.dll" src_files "" "/DEMU_EXPERIMENTAL_BUILD /DSTEAMCLIENT_DLL"
   set /a _exit=%errorlevel%
   if %_exit% equ 0 (
     call :change_dos_stub 1 "%experimental_dir%\x32\steamclient.dll"
@@ -748,7 +748,7 @@ endlocal & exit /b %_exit%
   setlocal
   echo // building lib experimental steamclient64.dll - 64
   set src_files="%win_resources_out_dir%\rsrc-client-64.res" "steamclient\steamclient.cpp"
-  call :build_for 0 0 "%experimental_dir%\x64\steamclient64.dll" src_files "" "/DEMU_EXPERIMENTAL_BUILD"
+  call :build_for 0 0 "%experimental_dir%\x64\steamclient64.dll" src_files "" "/DEMU_EXPERIMENTAL_BUILD /DSTEAMCLIENT_DLL"
   set /a _exit=%errorlevel%
   if %_exit% equ 0 (
     call :change_dos_stub 0 "%experimental_dir%\x64\steamclient64.dll"
