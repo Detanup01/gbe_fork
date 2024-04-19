@@ -2,15 +2,26 @@
 
 ---
 
-* **[breaking]** move some settings inside a new file `config.ini` which could be created inside the `steam_settings` folder, or inside the global settings folder, which is located at `%appdata%\Goldberg SteamEmu Saves\settings\` on Windows for example.  
-  you can create a global `.ini` file `Goldberg SteamEmu Saves/settings/config.ini` for the common options, and another local one `steam_settings/config.ini` for the game-specific options, and the emu will merge them.
+* **[breaking]** move most settings inside `.ini` files:
+  - `configs.main.ini`: configurations for the emu itself
+  - `configs.user.ini`: configurations specific to the user
+  - `configs.app.ini`: configurations specific to the game/app
+  - `configs.overlay.ini`: configurations of the overlay  
+
+   they could be placed inside the local `steam_settings` folder,  
+ or inside the new global settings folder `GSE Saves/settings`, located at `%appdata%\GSE Saves\settings\` on Windows for example.  
+  you can create a global `.ini` file `GSE Saves/settings/config.xxx.ini` for the common options, and another local one `steam_settings/config.xxx.ini` for the game-specific options, and the emu will merge them.
 
 ---
 
+* allow changing the name of the base folder used to store save data, suggested by **[Clompress]**  
+  by default it would be the new folder `GSE Saves` (instead of `Goldberg SteamEmu Saves`)  
+  this could be changed only by setting the option `saves_folder_name` inside the local file `steam_settings/configs.user.ini`, the global one will not work
 * **[breaking]** changed the environment variable `SteamAppPath` to `GseAppPath`, which is used to override the program path detected by the emu
-* allow changing the name of the base folder used to store save data, by default it would be `Goldberg SteamEmu Saves`, suggested by **[Clompress]**  
-  this could be changed by setting the option `saves_folder_name` inside the local file `steam_settings/config.ini`, the global one will not work
-* allow creating the file `local_save.txt` inside the `steam_settings` folder
+* removed the limit on the amount of characters for local saves
+* allow specifying absolute paths for local saves
+* removed the warning for using `force_xxx.txt` files from the overlay, since it's no longer relevant, also removed the code which disables the user input when this warning was displayed
+* added a workaroung for Steam Input, set `disable_steamoverlaygameid_env_var=1` inside `configs.main.ini`, might not work though
 * increase run callbacks background thread polling time to `~200ms`
 * changed the overlay title to give proper credits to its author
 * set these env vars for a more accurate emulation:

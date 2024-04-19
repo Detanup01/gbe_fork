@@ -5,7 +5,7 @@ This build of the emulator:
 * Can load extra dlls in memory via `LoadLibraryA()`
 
 * Mr.Goldberg's note:  
-  > In this folder is an experimental build of my emulator with code that hooks a few windows socket functions. It should block all connections from the game to non LAN ips. This means the game should work without any problems for LAN play (even with VPN LAN as long as you use standard LAN ips 10.x.x.x, 192.168.x.x, etc...)  
+  > In this folder is an experimental build of the emulator with code that hooks a few windows socket functions. It should block all connections from the game to non LAN ips. This means the game should work without any problems for LAN play (even with VPN LAN as long as you use standard LAN ips 10.x.x.x, 192.168.x.x, etc...)  
   
   > It likely doesn't work for some games but it should work for most of them.  
   
@@ -13,8 +13,8 @@ This build of the emulator:
 
 ## Why ?
 Mr.Goldberg's note:
-> I noticed a lot of games seem to connect to analytics services and other crap that I hate.  
-> Blocking the game from communicating with online ips without affecting the LAN functionality of my emu is a pain if you try to use a firewall so I made this special build.
+> Lots of games seem to connect to analytics services and other crap.  
+> Blocking the game from communicating with online ips without affecting the LAN functionality of this emu is a pain if you try to use a firewall.
 
 ## Which IPs are blocked ?
 **All** IPs *except* these ranges:
@@ -26,7 +26,7 @@ Mr.Goldberg's note:
 * 224.0.0.0 - 255.255.255.255
 
 ## To disable the LAN only connections feature
-Modify your `steam_settings\configs.ini` and set `disable_lan_only=1`.
+Modify your `steam_settings\configs.main.ini` and set `disable_lan_only=1`.
 
 ## How to use a CPY style crack
 1. Rename `steam_api.dll` crack to `cracksteam_api.dll`, or `steam_api64.dll` to `cracksteam_api64.dll`
@@ -34,5 +34,5 @@ Modify your `steam_settings\configs.ini` and set `disable_lan_only=1`.
 3. Then use the emu like you normally would with all the configurations
 
 ## How to load extra dlls in memory
-Put the dll file inside the folder `steam_settings\load_dlls\` and it will be loaded automatically using the `LoadLibraryA()` function
+Put the dll file inside the folder `steam_settings\load_dlls\` and it will be loaded automatically using the `LoadLibraryW()` function
 

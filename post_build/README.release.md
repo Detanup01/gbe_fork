@@ -13,64 +13,55 @@ https://gitlab.com/Mr_Goldberg/goldberg_emulator
 3. Use the command line tool `generate_interfaces` to generate the file `steam_interfaces.txt`,  
    then move it inside the folder `steam_settings`
 4. Move the entire folder `steam_settings` beside the emu .dll/.so.
-5. Copy the the example file `steam_settings.EXAMPLE\configs.EXAMPLE.ini` and paste it inside your own `steam_settings` folder, then rename it to `configs.ini`
+5. Copy the the example files `steam_settings.EXAMPLE\configs.xxx.EXAMPLE.ini` and paste them inside your own `steam_settings` folder, then the postfix `.EXAMPLE`.  
+  Make sure to only keep the options you need, don't sepecify everything
 
 
 Mr.Goldberg's note:
-> If the game has DRM (other than steamworks) you need to remove/crack it first.
+> If the game has DRM (other than steamworks) you need to remove it first.
 
 ---
 
 ## Various configurations:
 Due to the various changes and additions, it became tedious to document everything,  
-so it is recommended to check each example file in the `steam_settings` folder, and the various options inside `configs.ini`.
+so it is recommended to check each example file in the `steam_settings` folder, and the various options inside `configs.xxx.ini`.
 
 ---
+
+When you use the emu at least once, some default configurations are saved inside the global settings folder
+
+* `configs.main.ini`: configurations for the emu itself
+* `configs.user.ini`: configurations specific to the user
+* `configs.app.ini`: configurations specific to the game/app
+* `configs.overlay.ini`: configurations of the overlay
+
+---
+
 
 ## Saves location:
 * On Windows:  
-   `%appdata%\Goldberg SteamEmu Saves\`  
+   `%appdata%\GSE Saves\`  
    For example, if your user Windows user name is `Lion`, the save location would be:  
-   `C:\Users\Lion\AppData\Roaming\Goldberg SteamEmu Saves\`
+   `C:\Users\Lion\AppData\Roaming\GSE Saves\`
 * On Linux: 
    * if `XDG_DATA_HOME` is defined:  
-      `$XDG_DATA_HOME/Goldberg SteamEmu Saves/`
+      `$XDG_DATA_HOME/GSE Saves/`
    * Otherwise, if `HOME` is defined:  
-      `$HOME/.local/share/Goldberg SteamEmu Saves/`
+      `$HOME/.local/share/GSE Saves/`
    * Otherwise:  
-      `SAVE/Goldberg SteamEmu Saves/` (relative to the current directory, which might not be the same as app/game directory)
+      `SAVE/GSE Saves/` (relative to the current directory, which might not be the same as app/game directory)
 
-You can override the name of the base folder `Goldberg SteamEmu Saves` to whatever you want per game, to do this modify `configs.ini` inside your `steam_settings` folder and change the value of `saves_folder_name`.  
+You can override the name of the base folder `GSE Saves` to whatever you want per game, to do this modify `configs.user.ini` inside your `steam_settings` folder and change the value of `saves_folder_name`.  
 Check the example file in `steam_settings.EXAMPLE\configs.EXAMPLE.ini`.  
-
----
-
-In the global settings folder, in that save location, you will find these files (if you have used the emulator at least once):
-* `account_name.txt`: edit this file to change your name
-* `listen_port.txt`: edit this file if you want to change the UDP/TCP port the emulator listens on, you should probably not change this because everyone needs to use the same port or you won't find yourselves on the network
-* `user_steam_id.txt` this is where your steam id is saved, you can change it, if your saves for a game are locked to a specific steam id see below for a way to change it on a per game basis, but it has to be valid
-* `language.txt`: edit this to change the language the emulator will report to the game, default is `english`, it must be a valid steam language name or the game might have weird behaviour (list provided at the end of this readme)
-* You can also create the file `configs.ini` and specify the most common options you usually set, you can use the provided example file `steam_settings.EXAMPLE\configs.EXAMPLE.ini` as a base. Note that you do not have to specify everything
-
-Note that these are global so you won't have to change them for each game. For game unique stuff (stats and remote storage) a folder is created with the appid of the game.  
-If you want to change your steam_id on a per game basis, simply create a settings folder in the game unique directory (Full path: `C:\Users\<Your windows user name>\AppData\Roaming\Goldberg SteamEmu Saves\<appid>\settings`)  
-In that settings folder create a `user_steam_id.txt` file that contains the valid steam id that you want to use for that game only.  
-
-You can also make the emu ignore certain global settings by using a `force_account_name.txt`, `force_language.txt`, `force_listen_port.txt` or `force_steamid.txt` that you put in your `steam_settings\` folder.  
-See the `steam_settings.EXAMPLE` folder for an example.  
-
-If for some reason you want it to save in the game directory, you can create a file named `local_save.txt` right beside steam_api(64).dll (libsteam_api.so on linux) or inside your `steam_settings` folder.  
-The only thing that file should contain is the name of the save directory. This can be useful if you want to use different global settings like a different account name or steam id for a particular game.  
-Note that this save directory will be beside where the emu dll (or .so) is, which may not be the same as the game path.  
 
 ---
 
 ## DLC:
 By default the emulator will try to unlock all DLCs (by returning `true` when the game calls the `BIsDlcInstalled()` function).  
-If the game uses the other function you will need to provide a list of DLCs to my emulator.  
+If the game uses the other function you will need to provide a list of DLCs to the emulator.  
 
-To do this first create a `steam_settings` folder right beside where you put my emulator.  
-In this folder, put a `DLC.txt` file. (path will be `<path where my emu lib is>\steam_settings\DLC.txt`)
+To do this first create a `steam_settings` folder right beside the emulator.  
+In this folder, put a `DLC.txt` file. (path will be `<path where the emu lib is>\steam_settings\DLC.txt`)
 
 If the DLC file is present, the emulator will only unlock the DLCs in that file. If the file is empty all DLCs will be locked.
 
@@ -121,9 +112,7 @@ Some rare games might need to be provided one or more paths to app ids.
 For example the path to where a dlc is installed.  
 This sets the paths returned by the `Steam_Apps::GetAppInstallDir` function.  
 
-See `steam_settings.EXAMPLE\app_paths.EXAMPLE.txt` for an example.  
-
-This file should be put here: `steam_settings\app_paths.txt`  
+See `[app::paths]` inside `steam_settings.EXAMPLE\configs.app.EXAMPLE.ini` for an example.  
 
 Note that paths are treated as relative paths **from where the steam_api dll is located**.
 ---
@@ -154,20 +143,8 @@ But it is highly recommended to always create this file inside `steam_settings` 
 
 ---
 
-## Offline mode:
-Some games that connect to online servers might only work if the steam emu behaves like steam is in offline mode.  
-If you need this, modify `configs.ini` and set `offline=1`
-
----
-
-## Disable networking:
-If you want to disable all the networking functionality of the emu, modify `configs.ini` and set `disable_networking=1`.  
-**This will of course break all the networking functionality** so games that use networking related functionality like lobbies or those that launch a server in the background will not work.
-
----
-
 ## Custom Broadcast IPs:
-If you want to set custom ips (or domains) which the emulator will send broadcast packets to, make a list of them, one on each line in: `Goldberg SteamEmu Saves\settings\custom_broadcasts.txt`  
+If you want to set custom ips (or domains) which the emulator will send broadcast packets to, make a list of them, one on each line in: `GSE Saves\settings\custom_broadcasts.txt`  
 
 If the custom IPs/domains are specific for one game only you can put the `custom_broadcasts.txt` in the `steam_settings` folder.  
 
@@ -215,8 +192,6 @@ For the display type
 * 2 = time seconds
 * 3 = milliseconds
 
-If you don't want the emu to create unknown leaderboards, modify `configs.ini` and set `disable_leaderboards_create_unknown=1`.  
-
 An example can be found in `steam_settings.EXAMPLE`
 
 ---
@@ -241,13 +216,6 @@ You can use the command line tool `generate_emu_config` to generate a stats conf
 
 ---
 
-## Build id:
-Add a `steam_settings\build_id.txt` with the build id if the game doesn't show the correct build id and you want the emu to display the correct one.  
-
-An example can be found in `steam_settings.EXAMPLE`
-
----
-
 ## SteamHTTP:
 Create a `steam_settings\http\` folder which should contain the domain name and path to the files that will be returned by steamHTTP like so \(For example this url: `https://en.wikipedia.org/wiki/Main_Page`\):
 
@@ -256,43 +224,13 @@ Create a `steam_settings\http\` folder which should contain the domain name and 
 
 An example that was made for payday 2 can be found in `steam_settings.EXAMPLE`  
 
-To allow external downloads which will be stored in this `steam_settings\http` folder modify `configs.ini` and set `disable_lan_only=1`.  
-
----
-
-## Donwload Steam HTTP(S) requests:
-
-You can make the emu attempt to download external http(s) requests madia via `Steam_HTTP::SendHTTPRequest()`, by modifying `configs.ini` and setting `download_steamhttp_requests=1`.  
-All the responses will be downloaded and saved locally inside: `steam_settings\http\`.  
-
-Make sure to change these options:  
-* set `disable_lan_only=1`  
-* set `disable_networking=0`  
-
-Note that this will **not** work if the app is using native/OS web APIs, also support for this feature is very basic and will fail in many cases.  
-
-You can use this feature, for eaxmple, to know which requests are made by the app.  
-It's up to you afterwards to specify the correct responses for these requests by changing the content of the files inside `steam_settings\http\`.  
-
-Check the example file in the `steam_settings` folder
-
----
-
-## Force the API `Steam_HTTP::SendHTTPRequest()` to always succeed:
-
-You can force the API `Steam_HTTP::SendHTTPRequest()` to always report success, by modifying `configs.ini` and setting `force_steamhttp_success=1`.  
-
-Check the example file in the `steam_settings` folder
-
 ---
 
 ## Avatar:
-Copy a `png`, or a `jpg`, or a `jpeg` image file to your `Goldberg SteamEmu Settings\settings` folder and name it `account_avatar`.  
+Copy a `png`, or a `jpg`, or a `jpeg` image file to your `GSE Settings/settings` folder and name it `account_avatar`.  
 You can also place this file inside the local `steam_settings` folder of the game.  
 
 Players avatars are shared over the local network
-
-You can disable this feature by modifying `configs.ini` and setting `disable_account_avatar=1`  
 
 You can find an example in `steam_settings.EXAMPLE`
 
@@ -305,7 +243,7 @@ See the build in the experimental folder.
 You must all be on the same LAN for it to work.
 
 **IMPORTANT:**  
-Do not run more than one steam game with the **same appid** at the same time on the same computer with my emu or there might be network issues (dedicated servers should be fine though).
+Do not run more than one steam game with the **same appid** at the same time on the same computer with this emu or there might be network issues (dedicated servers should be fine though).
 
 ---
 
@@ -316,12 +254,11 @@ Do not run more than one steam game with the **same appid** at the same time on 
 
 This is made possible using the amazing third-party library `Ingame Overlay project`: https://github.com/Nemirtingas/ingame_overlay  
 
-The overlay can be enabled by modifying `configs.ini` and setting `enable_experimental_overlay=1`.  
+The overlay can be enabled by modifying `configs.overlay.ini` and setting `enable_experimental_overlay=1`.  
 Use `SHIFT-TAB` to open the overlay.  
 
-This is for games that depend on the steam overlay to let people join multiplayer games.  
-
 This feature is **highly experimental** and might cause crashes or other problems.  
+
 Alternatively, you can use the dedicated tool `lobby_connect` to join a game lobby.  
 
 ---
@@ -330,9 +267,9 @@ Alternatively, you can use the dedicated tool `lobby_connect` to join a game lob
 **Note: at the moment this feature is only enabled in the experimental builds for Windows only**
 ---
 
-You can place a `.wav` file called `overlay_achievement_notification.wav` inside either the local `steam_settings/sounds` folder of the game, or inside `Goldberg SteamEmu Settings/settings/sounds` folder, which will be played whenever an achievement is unlocked.  
+You can place a `.wav` file called `overlay_achievement_notification.wav` inside either the local `steam_settings/sounds` folder of the game, or inside `GSE Settings/settings/sounds` folder, which will be played whenever an achievement is unlocked.  
 
-You can place a `.wav` file called `overlay_friend_notification.wav` inside either the local `steam_settings/sounds` folder of the game, or inside `Goldberg SteamEmu Settings/settings/sounds` folder, which will be played whenever a friend sends an invitation.  
+You can place a `.wav` file called `overlay_friend_notification.wav` inside either the local `steam_settings/sounds` folder of the game, or inside `GSE Settings/settings/sounds` folder, which will be played whenever a friend sends an invitation.  
 
 You can find an example in `steam_settings.EXAMPLE`
 
@@ -417,30 +354,7 @@ By default the emu will send the old token format for various APIs, like:
 * `Steam_User::GetAuthTicketForWebApi()`
 
 You can make the emu generate new ticket data, and additionally the GC token.  
-Modify `configs.ini` and set `new_app_ticket=1` and `gc_token=1`
-
----
-
-## Branch name and type:
-
-By default the emu will report a `non-beta` branch with the name `public` when the game calls `Steam_Apps::GetCurrentBetaName()`  
-
-You can modify `configs.ini` and set `is_beta_branch=1` to tell the game you're using a `beta` branch.  
-Also, check the relevant file `force_branch_name.txt` in the `steam_settings` folder to change the branch name.  
-
----
-
-## Crash log/printer:
-
-The emu can setup a very basic crash logger/printer.  
-This is intended to debug some annoying scenarios, and best used with the debug build of the emu.  
-
-To enable this feature create a file called `crash_printer_location.txt` inside your `steam_settings` folder,  
-and set the path to the crash log file on a single line.  
-
-Note that forward slashes `/` are encouraged for both Windows & Linux.  
-
-Check the example file `crash_printer_location.EXAMPLE.txt`  
+Modify `configs.main.ini` and set `new_app_ticket=1` and additionally `gc_token=1`
 
 ---
 
@@ -490,41 +404,6 @@ Look for the column `API language code`
 
 ---
 
-## Overlay warnings:
-**Note: at the moment this feature is only enabled in the experimental builds**
----
-
-These configurations inside `configs.ini` allow disabling various overlay warnings:  
-* `disable_warning_forced_setting`:  
-   - disable the warning for the usage of any file `force_*.txt` in the overlay
-   - unlocks the settigs menu, this may result in an undesirable output
-* `disable_warning_bad_appid`: disable the warning for bad app ID (when app ID = 0) in the overlay
-* `disable_warning_local_save`: disable the warning for using local save in the overlay
-* `disable_warning_any`: all the above  
-
-Check the example files in the `steam_settings` folder
-
----
-
-## Overlay appearance:
-**Note: at the moment this feature is only enabled in the experimental builds**
----
-
-The configuration file `overlay_appearance.txt` has various options to set for the overlay appearance.  
-You can place this file inside the local `steam_settings/` folder, or inside the global settings folder `Goldberg SteamEmu Settings/settings/`.  
-
-The notifications positions could be set to one of these values:  
-* `top_left`
-* `top_center`
-* `top_right`
-* `bot_left`
-* `bot_center`
-* `bot_right`
-
-Check the example file in the `steam_settings` folder
-
----
-
 ## Auto accept game/lobby invites:
 **Note: at the moment this feature is only enabled in the experimental builds**
 ---
@@ -540,76 +419,13 @@ Check the example file in the `steam_settings` folder
 
 ---
 
-## IP country:
-
-You can report a country IP if the game queries it, by setting the 2 characters code in the file `ip_country.txt`.  
-Use this link to get the `Alpha-2` country code: https://www.iban.com/country-codes  
-
-Check the example file in the `steam_settings` folder
-
----
-
 ## Enable non-LAN behavior in `steam_matchmaking_servers`:
 
 By default, match making servers (which handles browsing for matches) will always return LAN servers list whenever the game inquires about the available servers with a specific type (Internet, Friends, LAN, etc...).  
-You can make the emu return the proper/actual servers list for the given type, by modifying `configs.ini` and setting `matchmaking_server_list_actual_type-1`.  
+You can make the emu return the proper/actual servers list for the given type, by modifying `configs.main.ini` and setting `matchmaking_server_list_actual_type-1`.  
 **This is currently broken**.  
 
-Also, match making servers will return the info of the server from the incoming local packets, you can make the emu retrieve the actual server info by performing a source server query, this is enabled by setting `matchmaking_server_details_via_source_query-1` inside `configs.ini`.  
+Also, match making servers will return the info of the server from the incoming local packets, you can make the emu retrieve the actual server info by performing a source server query, this is enabled by setting `matchmaking_server_details_via_source_query-1` inside `configs.main.ini`.  
 **This is currently broken**.  
-
----
-
-## Overlay hook delay and renderer detector timeout:
-**Note: at the moment this feature is only enabled in the experimental builds**
----
-
-By default the emu will immediately start the renderer detector for the overlay, but you can give it some initial delay,  
-which allows some games to initialize properly, otherwise the detector may not detect the current renderer (DirectX, OpenGL, etc...) and the overlay will not work (example games: `Have a Nice Death`, and `Saints Row (2022)`).  
-
-After that initial delay, the emu will give the detector `15 seconds` as a timeout, after that time if the detector didn't return a valid result, it will fail. This avoids an infinite detection loop and a potential FPS drop on failure.  
-
-You can control these timings from `configs.ini`:
-* `hook_delay_sec`: controls the amount of seconds to wait for initially before attempting the detection.  
-* `enable_experimental_overlay`: controls the timeout of the detection, in seconds.  
-
-Negative values will be ignored, also the renderer detector timeout cannot be 0.  
-
-Check the example files in the `steam_settings` folder
-
----
-
-## Prevent lobby creation:
-
-You can prevent lobby creation (created via steam matchmaking APIs) by modifying `configs.ini` and setting `disable_lobby_creation=1`.   
-
----
-
-## Sharing leaderboards scores over LAN:
-
-You can allow the emu to mutually share leaderboards scores with people playing the same game on the same network, by modifying `configs.ini` and setting `share_leaderboards_over_network=1`.  
-
-This works best with real LAN, latency from VPN clients might break it.  
-
----
-
-## Sharing stats and achievements with game servers:
-
-By default the emu will mutually share stats with game servers, you can disable this behavior by modifying `configs.ini` and setting `disable_sharing_stats_with_gameserver=1`, this also disables the interface `ISteamGameServerStats`.  
-
-Game servers and players will not immediately synchronize stats/achievements whey they're changed, they'll wait for the next call to `Steam_RunCallbacks()`.  
-You can change this behavior and make them eager to send updated data by modifying `configs.ini` and setting `immediate_gameserver_stats=1`.  
-
----
-
-## Pretend that the app in running in Steam Deck mode:
-
-Modify `configs.ini` and set `steam_deck=1` to pretent that the app is running on a Steam Deck.  
-
----
-
-## Force achievements functions to succeed:
-
-Modify `configs.ini` and set `achievements_bypass=1` to force some achievements functions to succeed.  
 
 ---
