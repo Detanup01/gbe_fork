@@ -214,7 +214,7 @@ if [ ! -z "${STEAM_RUNTIME}" ]; then
   )
 fi
 
-GseAppPath="${EXE_RUN_DIR}" SteamAppId=$APP_ID SteamGameId=$APP_ID SteamOverlayGameId=$APP_ID SteamAppUser='client_player' SteamUser='client_player' SteamClientLaunch='1' SteamEnv='1' SteamPath="$script_dir" "$TARGET_EXE" "${EXE_COMMAND_LINE[@]}"
+GseAppPath="${EXE_RUN_DIR}" SteamAppId=$APP_ID SteamGameId=$APP_ID SteamAppUser='client_player' SteamUser='client_player' SteamClientLaunch='1' SteamEnv='1' SteamPath="$script_dir" "$TARGET_EXE" "${EXE_COMMAND_LINE[@]}"
 
 popd
 

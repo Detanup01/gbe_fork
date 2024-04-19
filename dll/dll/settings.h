@@ -224,6 +224,9 @@ public:
 
     bool disable_account_avatar = false;
 
+    // setting this env var conflicts with Steam Input
+    bool disable_steamoverlaygameid_env_var = false;
+
     std::map<int, struct Image_Data> images{};
 
     //subscribed lobby/group ids

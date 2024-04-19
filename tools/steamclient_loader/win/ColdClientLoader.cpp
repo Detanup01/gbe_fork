@@ -322,7 +322,8 @@ void set_steam_env_vars(const std::wstring &AppId)
 {
     SetEnvironmentVariableW(L"SteamAppId", AppId.c_str());
     SetEnvironmentVariableW(L"SteamGameId", AppId.c_str());
-    SetEnvironmentVariableW(L"SteamOverlayGameId", AppId.c_str());
+    // this env var conflicts with Steam Input
+    // SetEnvironmentVariableW(L"SteamOverlayGameId", AppId.c_str());
 
     // these 2 wil be overridden by the emu
     SetEnvironmentVariableW(L"SteamAppUser", L"cold_player");

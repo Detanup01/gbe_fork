@@ -83,7 +83,10 @@ Steam_Client::Steam_Client()
         auto appid_str = std::to_string(appid);
         set_env_variable("SteamAppId", appid_str);
         set_env_variable("SteamGameId", appid_str);
-        set_env_variable("SteamOverlayGameId", appid_str);
+        
+        if (!settings_client->disable_steamoverlaygameid_env_var) {
+            set_env_variable("SteamOverlayGameId", appid_str);
+        }
     }
 
     {
@@ -170,6 +173,8 @@ Steam_Client::Steam_Client()
 
     last_cb_run = 0;
     PRINT_DEBUG("end *********");
+
+    reset_LastError();
 }
 
 Steam_Client::~Steam_Client()
@@ -272,7 +277,10 @@ void Steam_Client::setAppID(uint32 appid)
         network->setAppID(appid);
         set_env_variable("SteamAppId", std::to_string(appid));
         set_env_variable("SteamGameId", std::to_string(appid));
-        set_env_variable("SteamOverlayGameId", std::to_string(appid));
+
+        if (!settings_client->disable_steamoverlaygameid_env_var) {
+            set_env_variable("SteamOverlayGameId", std::to_string(appid));
+        }
     }
 
     
