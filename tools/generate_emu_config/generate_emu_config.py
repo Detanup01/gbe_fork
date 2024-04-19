@@ -290,31 +290,37 @@ TOP_OWNER_IDS = list(dict.fromkeys([
 
 # extra features/options to disable
 EXTRA_FEATURES_DISABLE = {
-    'general': {
-        'disable_account_avatar': (1, 'disable avatar functionality'),
-    },
-    'connectivity': {
-        'disable_networking': (1, 'disable all steam networking interface functionality'),
-        'disable_source_query': (1, 'do not send server details to the server browser, only works for game servers'),
-        'disable_sharing_stats_with_gameserver': (1, 'prevent sharing stats and achievements with any game server, this also disables the interface ISteamGameServerStats'),
+    'configs.main.ini': {
+        'main::general': {
+            'disable_account_avatar': (1, 'disable avatar functionality'),
+        },
+        'main::connectivity': {
+            'disable_networking': (1, 'disable all steam networking interface functionality'),
+            'disable_source_query': (1, 'do not send server details to the server browser, only works for game servers'),
+            'disable_sharing_stats_with_gameserver': (1, 'prevent sharing stats and achievements with any game server, this also disables the interface ISteamGameServerStats'),
+        },
     },
 }
 
 # extra convenient features/options to enable
 EXTRA_FEATURES_CONVENIENT = {
-    'general': {
-        'new_app_ticket': (1, 'generate new app auth ticket'),
-        'gc_token': (1, 'generate/embed generate GC inside new App Ticket'),
+    'configs.main.ini': {
+        'main::general': {
+            'new_app_ticket': (1, 'generate new app auth ticket'),
+            'gc_token': (1, 'generate/embed GC token inside new App Ticket'),
+        },
+        'main::connectivity': {
+            'disable_lan_only': (1, 'prevent hooking OS networking APIs and allow any external requests'),
+            'share_leaderboards_over_network': (1, 'enable sharing leaderboards scores with people playing the same game on the same network'),
+            'download_steamhttp_requests': (1, 'attempt to download external HTTP(S) requests made via Steam_HTTP::SendHTTPRequest()'),
+        },
     },
-    'connectivity': {
-        'disable_lan_only': (1, 'prevent hooking OS networking APIs and allow any external requests'),
-        'share_leaderboards_over_network': (1, 'enable sharing leaderboards scores with people playing the same game on the same network'),
-        'download_steamhttp_requests': (1, 'attempt to download external HTTP(S) requests made via Steam_HTTP::SendHTTPRequest()'),
-    },
-    'overlay': {
-        'enable_experimental_overlay': (1, 'xxx USE AT YOUR OWN RISK xxx, enable the experimental overlay'),
-        'disable_warning_any': (1, 'disable any warning in the overlay'),
-    },
+    'configs.overlay.ini': {
+        'overlay::general': {
+            'enable_experimental_overlay': (1, 'xxx USE AT YOUR OWN RISK xxx, enable the experimental overlay'),
+            'disable_warning_any': (1, 'disable any warning in the overlay'),
+        },
+    }
 }
 
 
@@ -555,6 +561,16 @@ def merge_dict(dest: dict, src: dict):
         elif kv[0] not in dest:
             dest[kv[0]] = kv[1]
 
+def write_ini_file(base_path: str, out_ini: dict):
+    for file in out_ini.items():
+        with open(os.path.join(base_path, file[0]), 'wt', encoding='utf-8') as f:
+            for item in file[1].items():
+                f.write('[' + item[0] + ']\n') # section
+                for kv in item[1].items():
+                    f.write('# ' + kv[1][1] + '\n') # comment
+                    f.write(kv[0] + '=' + str(kv[1][0]) + '\n') # key/value pair
+                f.write('\n') # key/value pair
+
 def main():
     USERNAME = ""
     PASSWORD = ""
@@ -705,6 +721,8 @@ def main():
         TOP_OWNER_IDS.insert(0, client.steam_id.as_64)
 
     for appid in appids:
+        out_config_app_ini = {}
+
         print(f"********* generating info for app id {appid} *********")
         raw = client.get_product_info(apps=[appid])
         game_info : dict = raw["apps"][appid]
@@ -807,8 +825,13 @@ def main():
                 if "public" in game_info["depots"]["branches"]:
                     if "buildid" in game_info["depots"]["branches"]["public"]:
                         buildid = game_info["depots"]["branches"]["public"]["buildid"]
-                        with open(os.path.join(emu_settings_dir, "build_id.txt"), 'wt', encoding='utf-8') as f:
-                            f.write(str(buildid))
+                        merge_dict(out_config_app_ini, {
+                            'configs.app.ini': {
+                                'app::general': {
+                                    'build_id': (buildid, 'allow the app/game to show the correct build id'),
+                                }
+                            }
+                        })
 
         dlc_config_list : list[tuple[int, str]] = []
         dlc_list, depot_app_list, all_depots = get_dlc(game_info)
@@ -922,21 +945,18 @@ def main():
                 logo,
                 logo_small)
         
-        out_config_ini = {}
+        out_config_main_ini = {}
         if DISABLE_EXTRA:
-            merge_dict(out_config_ini, EXTRA_FEATURES_DISABLE)
+            merge_dict(out_config_main_ini, EXTRA_FEATURES_DISABLE)
  
         if CONVENIENT_EXTRA:
-            merge_dict(out_config_ini, EXTRA_FEATURES_CONVENIENT)
+            merge_dict(out_config_main_ini, EXTRA_FEATURES_CONVENIENT)
         
-        if out_config_ini:
-            with open(os.path.join(emu_settings_dir, 'configs.ini'), 'wt', encoding='utf-8') as f:
-                for item in out_config_ini.items():
-                    f.write('[' + item[0] + ']\n') # section
-                    for kv in item[1].items():
-                        f.write('# ' + kv[1][1] + '\n') # comment
-                        f.write(kv[0] + '=' + str(kv[1][0]) + '\n') # key/value pair
-                    f.write('\n') # key/value pair
+        if out_config_main_ini:
+            write_ini_file(emu_settings_dir, out_config_main_ini)
+
+        if out_config_app_ini:
+            write_ini_file(emu_settings_dir, out_config_app_ini)
 
         inventory_data = generate_inventory(client, appid)
         if inventory_data is not None:
