@@ -1,1 +1,1 @@
-Place your overlay fonts here, then modify the file `overlay_appearance.txt` and point at the desired one.
+Place your overlay fonts here, then modify `overlay_appearance` and point at the desired one.

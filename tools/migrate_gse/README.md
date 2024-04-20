@@ -1,4 +1,4 @@
-## Save & Settings folder migration tool
+# Save & Settings folder migration tool
 This tool allows you to migrate your `steam_settings` folder, or your global `settings` folder from the old format, to the new `.ini` oriented format.  
 
 ## Where is the global settings folder?
