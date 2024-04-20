@@ -325,11 +325,9 @@ bool Steam_Apps::BIsAppInstalled( AppId_t appID )
     if (appID == UINT32_MAX) return false;
     if (appID == settings->get_local_game_id().AppID()) return true;
 
-    // only check for DLC if the the list is limited/bounded,
-    // calling hasDLC() when unlockAllDLCs is true will always satisfy the below condition
-    if (!settings->allDLCUnlocked() && settings->hasDLC(appID)) {
-        return false;
-    }
+    // TODO is this correct?
+    // the docs say that this function won't work on DLCs, but HITMAN 3 uses it on every DLC
+    if (settings->hasDLC(appID)) return true;
 
     return settings->appIsInstalled(appID);
 }

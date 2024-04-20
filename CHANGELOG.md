@@ -26,6 +26,7 @@
 * **[breaking]** removed the setting `disable_account_avatar` in favor of the new one `enable_account_avatar`, this feature is now disabled by default
 * new option `add_steam_preowned_ids` in `configs.main.ini` which allows adding a lot of Steam builtin and preowned IDs to the DLC list, and the emu's list of installed apps
 * added a workaround for Steam Input, set `disable_steamoverlaygameid_env_var=1` inside `configs.main.ini`, might not work though
+* reverted the changes to `Steam_Apps::BIsAppInstalled()`, now it will return true when the given app id is found in the DLC list, this function is also controlled via `installed_app_ids.txt`
 * removed the limit on the amount of characters for local saves
 * allow specifying absolute paths for local saves
 * removed the warning for using `force_xxx.txt` files from the overlay, since it's no longer relevant, also removed the code which disables the user input when this warning was displayed
