@@ -160,6 +160,7 @@ static inline void reset_LastError()
     #define PATH_MAX_STRING_SIZE 512
     #define PATH_SEPARATOR "/" 
     #define utf8_decode(a) a
+    #define utf8_encode(a) a
     #define reset_LastError()
 #endif
 

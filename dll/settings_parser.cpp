@@ -58,7 +58,7 @@ static void save_global_ini_value(const char *filename, const char *section, con
     new_ini.SetUnicode();
     new_ini.SetSpaces(false);
 
-    std::wstring fullpath(utf8_decode(Local_Storage::get_user_appdata_path() + Local_Storage::settings_storage_folder + PATH_SEPARATOR + filename));
+    auto fullpath = utf8_decode(Local_Storage::get_user_appdata_path() + Local_Storage::settings_storage_folder + PATH_SEPARATOR + filename);
     if (!common_helpers::create_dir(fullpath)) return;
 
     std::ifstream ini_file( fullpath, std::ios::binary | std::ios::in);
@@ -1095,17 +1095,15 @@ static void parse_build_id(class Settings *settings_client, class Settings *sett
 // main::general::crash_printer_location
 static void parse_crash_printer_location()
 {
-    std::wstring crash_path{};
     std::string line(common_helpers::string_strip(Settings::sanitize(ini.GetValue("main::general", "crash_printer_location", ""))));
     if (line.size()) {
-        crash_path = utf8_decode(common_helpers::to_absolute(line, get_full_program_path()));
-    }
-
-    if (crash_path.size()) {
-        if (crash_printer::init(crash_path)) {
-            PRINT_DEBUG("Unhandled crashes will be saved to '%s'", utf8_encode(crash_path).c_str());
-        } else {
-            PRINT_DEBUG("Failed to setup unhandled crash printer with path: '%s'", utf8_encode(crash_path).c_str());
+        auto crash_path = utf8_decode(common_helpers::to_absolute(line, get_full_program_path()));
+        if (crash_path.size()) {
+            if (crash_printer::init(crash_path)) {
+                PRINT_DEBUG("Unhandled crashes will be saved to '%s'", utf8_encode(crash_path).c_str());
+            } else {
+                PRINT_DEBUG("Failed to setup unhandled crash printer with path: '%s'", utf8_encode(crash_path).c_str());
+            }
         }
     }
 }
