@@ -17,11 +17,18 @@
 * allow changing the name of the base folder used to store save data, suggested by **[Clompress]**  
   by default it would be the new folder `GSE Saves` (instead of `Goldberg SteamEmu Saves`)  
   this could be changed only by setting the option `saves_folder_name` inside the local file `steam_settings/configs.user.ini`, the global one will not work
+* new switches for the `generate_emu_config` tool
+  - `-skip_ach`: skip downloading & generating achievements and their images
+  - `-skip_con`: skip downloading & generating controller configuration files  
+  - `-skip_inv`: skip downloading & generating inventory data (`items.json` & `default_items.json`)  
+
+  suggested by **[M4RCK5]**
 * new tool `migrate_gse` to convert either your global `settings` folder, or your local `steam_settings` folder from the old format to the new one
   - run the tool without arguments to let it convert the global settings folder
   - run the tool and pass the target `steam_settings` or `settings` folder as an argument to convert the structure of that folder  
   
-  in both cases, the tool will create a new folder `steam_settings` in the current directory with all the results of the conversion
+  in both cases, the tool will create a new folder `steam_settings` in the current directory with all the results of the conversion  
+  check its own dedicated readme
 * **[breaking]** changed the environment variable `SteamAppPath` to `GseAppPath`, which is used to override the program path detected by the emu
 * **[breaking]** removed the setting `disable_account_avatar` in favor of the new one `enable_account_avatar`, this feature is now disabled by default
 * new option `add_steam_preowned_ids` in `configs.main.ini` which allows adding a lot of Steam builtin and preowned IDs to the DLC list, and the emu's list of installed apps

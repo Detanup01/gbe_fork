@@ -457,6 +457,9 @@ def main():
 
         write_ini_file('steam_settings', out_dict_ini)
         print(f'new settings written inside: "{os.path.join(os.path.curdir, "steam_settings")}"')
+    else:
+        print('nothing found!', file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

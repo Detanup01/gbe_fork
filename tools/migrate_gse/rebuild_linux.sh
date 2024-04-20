@@ -18,6 +18,8 @@ source "./$venv/bin/activate"
 echo building migrate_gse...
 pyinstaller "main.py" --distpath "$out_dir" -y --clean --onedir --name "migrate_gse" --noupx --console -i "NONE" --workpath "$build_temp_dir" || exit 1
 
+cp -f "README.md" "$out_dir/migrate_gse"
+
 echo;
 echo =============
 echo Built inside: "$out_dir/"

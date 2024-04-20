@@ -528,18 +528,21 @@ def help():
     print(f" Example: {exe_name} -shots -thumbs -vid -imgs -name -cdx -aw -clean -de -cve 421050")
     print(f" Example: {exe_name} -shots -thumbs -vid -imgs -name -cdx -aw -clean -cve 421050")
     print("\nSwitches:")
-    print(" -shots:  download screenshots for each app if they're available")
-    print(" -thumbs: download screenshots thumbnails for each app if they're available")
-    print(" -vid:    download the first video available for each app: trailer, gameplay, announcement, etc...")
-    print(" -imgs:   download common images for each app: Steam generated background, icon, logo, etc...")
-    print(" -name:   save the output of each app in a folder with the same name as the app, unsafe characters are discarded")
-    print(" -cdx:    generate .ini file for CODEX Steam emu for each app")
-    print(" -aw:     generate schemas of all possible languages for Achievement Watcher")
-    print(" -clean:  delete any folder/file with the same name as the output before generating any data")
-    print(" -anon:   login as an anonymous account, these have very limited access and cannot get all app details")
-    print(" -de:     disable some extra features by generating the corresponding config files in steam_settings folder")
-    print(" -cve:    enable some convenient extra features by generating the corresponding config files in steam_settings folder")
-    print(" -reldir: generate temp files/folders, and expect input files, relative to the current working directory")
+    print(" -shots:    download screenshots for each app if they're available")
+    print(" -thumbs:   download screenshots thumbnails for each app if they're available")
+    print(" -vid:      download the first video available for each app: trailer, gameplay, announcement, etc...")
+    print(" -imgs:     download common images for each app: Steam generated background, icon, logo, etc...")
+    print(" -name:     save the output of each app in a folder with the same name as the app, unsafe characters are discarded")
+    print(" -cdx:      generate .ini file for CODEX Steam emu for each app")
+    print(" -aw:       generate schemas of all possible languages for Achievement Watcher")
+    print(" -clean:    delete any folder/file with the same name as the output before generating any data")
+    print(" -anon:     login as an anonymous account, these have very limited access and cannot get all app details")
+    print(" -de:       disable some extra features by generating the corresponding config files in steam_settings folder")
+    print(" -cve:      enable some convenient extra features by generating the corresponding config files in steam_settings folder")
+    print(" -reldir:   generate temp files/folders, and expect input files, relative to the current working directory")
+    print(" -skip_ach: skip downloading & generating achievements and their images")
+    print(" -skip_con: skip downloading & generating controller configuration files")
+    print(" -skip_inv: skip downloading & generating inventory data (items.json & default_items.json)")
     print("\nAll switches are optional except app id, at least 1 app id must be provided")
     print("\nAutomate the login prompt:")
     print(" * You can create a file called 'my_login.txt' beside the script, then add your username on the first line")
@@ -586,6 +589,9 @@ def main():
     CLEANUP_BEFORE_GENERATING = False
     ANON_LOGIN = False
     RELATIVE_DIR = False
+    SKIP_ACH = False
+    SKIP_CONTROLLER = False
+    SKIP_INVENTORY = False
     
     prompt_for_unavailable = True
 
@@ -621,6 +627,12 @@ def main():
             CONVENIENT_EXTRA = True
         elif f'{appid}'.lower() == '-reldir':
             RELATIVE_DIR = True
+        elif f'{appid}'.lower() == '-skip_ach':
+            SKIP_ACH = True
+        elif f'{appid}'.lower() == '-skip_con':
+            SKIP_CONTROLLER = True
+        elif f'{appid}'.lower() == '-skip_inv':
+            SKIP_INVENTORY = True
         else:
             print(f'[X] invalid switch: {appid}')
             help()
@@ -802,7 +814,8 @@ def main():
             
             #print(f"generating achievement stats")
             #if "community_visible_stats" in game_info_common: #NOTE: checking this seems to skip stats on a few games so it's commented out
-            achievements = generate_achievement_stats(client, appid, emu_settings_dir, backup_dir)
+            if not SKIP_ACH:
+                achievements = generate_achievement_stats(client, appid, emu_settings_dir, backup_dir)
 
             if "supported_languages" in game_info_common:
                 langs: dict[str, dict] = game_info_common["supported_languages"]
@@ -878,7 +891,7 @@ def main():
         
         config_generated = False
         if "config" in game_info:
-            if "steamcontrollerconfigdetails" in game_info["config"]:
+            if not SKIP_CONTROLLER and "steamcontrollerconfigdetails" in game_info["config"]:
                 controller_details = game_info["config"]["steamcontrollerconfigdetails"]
                 print('downloading controller vdf files')
                 for id in controller_details:
@@ -897,7 +910,7 @@ def main():
                             print(f'controller type is supported')
                             parse_controller_vdf.generate_controller_config(out_vdf.decode('utf-8'), os.path.join(emu_settings_dir, "controller"))
                             config_generated = True
-            if "steamcontrollertouchconfigdetails" in game_info["config"]:
+            if not SKIP_CONTROLLER and "steamcontrollertouchconfigdetails" in game_info["config"]:
                 controller_details = game_info["config"]["steamcontrollertouchconfigdetails"]
                 for id in controller_details:
                     details = controller_details[id]
@@ -968,7 +981,9 @@ def main():
         if out_config_app_ini:
             write_ini_file(emu_settings_dir, out_config_app_ini)
 
-        inventory_data = generate_inventory(client, appid)
+        inventory_data = None
+        if not SKIP_INVENTORY:
+            inventory_data = generate_inventory(client, appid)
         if inventory_data is not None:
             out_inventory = {}
             default_items = {}
