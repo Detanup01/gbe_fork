@@ -188,7 +188,7 @@ def main():
             merge_dict(out_dict_ini, {
                 'configs.main.ini': {
                     'main::general': {
-                        'disable_account_avatar': (1, 'disable avatar functionality'),
+                        'enable_account_avatar': (0, 'enable avatar functionality'),
                     },
                 }
             })

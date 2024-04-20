@@ -23,6 +23,7 @@
   
   in both cases, the tool will create a new folder `steam_settings` in the current directory with all the results of the conversion
 * **[breaking]** changed the environment variable `SteamAppPath` to `GseAppPath`, which is used to override the program path detected by the emu
+* **[breaking]** removed the setting `disable_account_avatar` in favor of the new one `enable_account_avatar`, this feature is now disabled by default
 * new option `add_steam_preowned_ids` in `configs.main.ini` which allows adding a lot of Steam builtin and preowned IDs to the DLC list, and the emu's list of installed apps
 * added a workaround for Steam Input, set `disable_steamoverlaygameid_env_var=1` inside `configs.main.ini`, might not work though
 * removed the limit on the amount of characters for local saves

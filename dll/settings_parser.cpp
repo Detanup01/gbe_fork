@@ -1223,8 +1223,8 @@ static void parse_simple_features(class Settings *settings_client, class Setting
     settings_client->use_gc_token = ini.GetBoolValue("main::general", "gc_token", settings_client->use_gc_token);
     settings_server->use_gc_token = ini.GetBoolValue("main::general", "gc_token", settings_server->use_gc_token);
 
-    settings_client->disable_account_avatar = ini.GetBoolValue("main::general", "disable_account_avatar", settings_client->disable_account_avatar);
-    settings_server->disable_account_avatar = ini.GetBoolValue("main::general", "disable_account_avatar", settings_server->disable_account_avatar);
+    settings_client->disable_account_avatar = !ini.GetBoolValue("main::general", "enable_account_avatar", !settings_client->disable_account_avatar);
+    settings_server->disable_account_avatar = !ini.GetBoolValue("main::general", "enable_account_avatar", !settings_server->disable_account_avatar);
 
     settings_client->is_beta_branch = ini.GetBoolValue("main::general", "is_beta_branch", settings_client->is_beta_branch);
     settings_server->is_beta_branch = ini.GetBoolValue("main::general", "is_beta_branch", settings_server->is_beta_branch);

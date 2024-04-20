@@ -291,9 +291,6 @@ TOP_OWNER_IDS = list(dict.fromkeys([
 # extra features/options to disable
 EXTRA_FEATURES_DISABLE = {
     'configs.main.ini': {
-        'main::general': {
-            'disable_account_avatar': (1, 'disable avatar functionality'),
-        },
         'main::connectivity': {
             'disable_networking': (1, 'disable all steam networking interface functionality'),
             'disable_source_query': (1, 'do not send server details to the server browser, only works for game servers'),
@@ -308,6 +305,7 @@ EXTRA_FEATURES_CONVENIENT = {
         'main::general': {
             'new_app_ticket': (1, 'generate new app auth ticket'),
             'gc_token': (1, 'generate/embed GC token inside new App Ticket'),
+            'enable_account_avatar': (1, 'enable avatar functionality'),
         },
         'main::connectivity': {
             'disable_lan_only': (1, 'prevent hooking OS networking APIs and allow any external requests'),

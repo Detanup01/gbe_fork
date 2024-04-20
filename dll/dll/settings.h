@@ -222,7 +222,7 @@ public:
     // bypass to make SetAchievement() always return true, prevent some games from breaking
     bool achievement_bypass = false;
 
-    bool disable_account_avatar = false;
+    bool disable_account_avatar = true;
 
     // setting this env var conflicts with Steam Input
     bool disable_steamoverlaygameid_env_var = false;
