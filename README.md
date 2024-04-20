@@ -331,6 +331,19 @@ The following are special branches, pushing any code to them will trigger the bu
 
 >>>>>>>>>  ___
 
+* `ci-build-migrate-linux*`: any branch matching this pattern will trigger the **Linux** build of the script `migrate_gse`  
+  Example of a valid branch name:  
+    - `ci-build-migrate-linux`
+    - `ci-build-migrate-linux-test1`
+    - `ci-build-migrate-linux_trial`
+* `ci-build-migrate-win*`: any branch matching this pattern will trigger the **Windows** build of the script `migrate_gse`  
+  Example of a valid branch name:  
+    - `ci-build-migrate-win`
+    - `ci-build-migrate-win-test1`
+    - `ci-build-migrate-win_trial`
+
+>>>>>>>>>  ___
+
 * `ci-build-all`: pushing code to this exact branch will trigger all builds
 
 ---

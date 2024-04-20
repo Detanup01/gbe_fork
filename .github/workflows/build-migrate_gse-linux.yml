@@ -1,0 +1,73 @@
+name: Migrate GSE script (Linux)
+
+on:
+  push:
+    branches: [ 
+      "ci-build-migrate-linux*",
+      "ci-build-all"
+    ]
+    tags:        
+      - release*
+  pull_request:
+    branches: [ "dev" ]
+  workflow_dispatch:
+    # allows manual trigger
+
+permissions:
+  contents: write
+
+env:
+  ARTIFACT_NAME: "migrate_gse-linux-${{ github.sha }}"
+  SCRIPT_BASE_DIR: "tools/migrate_gse"
+  PACKAGE_BASE_DIR: "tools/migrate_gse/bin/package/linux"
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout branch
+      uses: actions/checkout@v4
+    
+### fix folder permissions! not sure why this fails
+    # nested subdirs "build/linux/release" cause permission problems
+    - name: Give all permissions for repo folder
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run:  sudo chmod -R 777 "${{ github.workspace }}"
+
+# deps
+    - name: Install dependencies
+      shell: bash
+      working-directory: "${{ env.SCRIPT_BASE_DIR }}"
+      run: sudo chmod 77 recreate_venv_linux.sh && sudo ./recreate_venv_linux.sh
+
+# build
+    - name: Rebuild
+      shell: bash
+      working-directory: "${{ env.SCRIPT_BASE_DIR }}"
+      run: sudo chmod 77 rebuild_linux.sh && sudo ./rebuild_linux.sh
+
+# package
+    - name: Package build
+      shell: bash
+      working-directory: "${{ env.SCRIPT_BASE_DIR }}"
+      run: sudo chmod 77 package_linux.sh && sudo ./package_linux.sh
+
+# upload artifact
+    - name: Upload build package
+      uses: actions/upload-artifact@v4
+      with:
+        name: "${{ env.ARTIFACT_NAME }}"
+        path: "${{ env.PACKAGE_BASE_DIR }}/"
+        if-no-files-found: 'error'
+        compression-level: 9
+        retention-days: 1
+
+# release tag
+    - name: Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: "${{ env.PACKAGE_BASE_DIR }}/**/*"
+    
