@@ -17,6 +17,11 @@
 * allow changing the name of the base folder used to store save data, suggested by **[Clompress]**  
   by default it would be the new folder `GSE Saves` (instead of `Goldberg SteamEmu Saves`)  
   this could be changed only by setting the option `saves_folder_name` inside the local file `steam_settings/configs.user.ini`, the global one will not work
+* new tool `migrate_gse` to convert either your global `settings` folder, or your local `steam_settings` folder from the old format to the new one
+  - run the tool without arguments to let it convert the global settings folder
+  - run the tool and pass the target `steam_settings` or `settings` folder as an argument to convert the structure of that folder  
+  
+  in both cases, the tool will create a new folder `steam_settings` in the current directory with all the results of the conversion
 * **[breaking]** changed the environment variable `SteamAppPath` to `GseAppPath`, which is used to override the program path detected by the emu
 * removed the limit on the amount of characters for local saves
 * allow specifying absolute paths for local saves

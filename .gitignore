@@ -21,4 +21,12 @@ tools/generate_emu_config/**/*.spec
 tools/generate_emu_config/**/my_login.txt
 tools/generate_emu_config/top_owners_ids.txt
 
+tools/migrate_gse/.py*/
+tools/migrate_gse/.venv*/
+tools/migrate_gse/.env*/
+tools/migrate_gse/.vscode/
+tools/migrate_gse/bin/
+tools/migrate_gse/**/__pycache__/
+tools/migrate_gse/**/*.spec
+
 third-party/
