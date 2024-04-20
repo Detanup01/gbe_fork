@@ -16,6 +16,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "dll/settings.h"
+#include "dll/steam_app_ids.h"
 
 
 std::string Settings::sanitize(const std::string &name)
@@ -299,6 +300,14 @@ bool Settings::allDLCUnlocked() const
     return this->unlockAllDLCs;
 }
 
+void Settings::addSteamPreownedIds()
+{
+    for (const auto &id_pair : steam_preowned_app_ids) {
+        addDLC(id_pair.first, id_pair.second, true);
+        installed_app_ids.insert(id_pair.first);
+    }
+}
+
 void Settings::setAppInstallPath(AppId_t appID, const std::string &path)
 {
     app_paths[appID] = path;
@@ -349,11 +358,7 @@ bool Settings::appIsInstalled(AppId_t appID)
 {
     if (this->assume_any_app_installed) return true;
 
-    auto f = std::find_if(installed_app_ids.begin(), installed_app_ids.end(), [&appID](AppId_t const& item) { return item == appID; });
-    if (installed_app_ids.end() == f)
-        return false;
-
-    return true;
+    return !!installed_app_ids.count(appID);
 }
 
 

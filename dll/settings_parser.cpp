@@ -1193,6 +1193,16 @@ static void parse_overlay_general_config(class Settings *settings_client, class 
 
 }
 
+static void parse_steam_preowned_ids(class Settings *settings_client, class Settings *settings_server)
+{
+    bool add_steam_preowned_ids = ini.GetBoolValue("main::misc", "add_steam_preowned_ids");
+    if (add_steam_preowned_ids) {
+        settings_client->addSteamPreownedIds();
+        settings_server->addSteamPreownedIds();
+        PRINT_DEBUG("added Steam preowned IDs");
+    }
+}
+
 // mainly enable/disable features
 static void parse_simple_features(class Settings *settings_client, class Settings *settings_server)
 {
@@ -1464,13 +1474,14 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     parse_auto_accept_invite(settings_client, settings_server);
     parse_ip_country(settings_client, settings_server);
     parse_overlay_general_config(settings_client, settings_server);
+    parse_steam_preowned_ids(settings_client, settings_server);
 
     *settings_client_out = settings_client;
     *settings_server_out = settings_server;
     *local_storage_out = local_storage;
 
-    reset_LastError();
     PRINT_DEBUG("end *********");
+    reset_LastError();
     return appid;
 }
 

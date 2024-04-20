@@ -312,6 +312,8 @@ public:
     bool hasDLC(AppId_t appID);
     bool getDLC(unsigned int index, AppId_t &appID, bool &available, std::string &name);
     bool allDLCUnlocked() const;
+    // add Steam Applications IDS (mostly builtin apps + dedicated servers) to the list
+    void addSteamPreownedIds();
 
     //App Install paths
     void setAppInstallPath(AppId_t appID, const std::string &path);
