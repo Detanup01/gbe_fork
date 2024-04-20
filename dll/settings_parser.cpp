@@ -1155,8 +1155,8 @@ static void parse_ip_country(class Settings *settings_client, class Settings *se
 // overlay::general
 static void parse_overlay_general_config(class Settings *settings_client, class Settings *settings_server)
 {
-    settings_client->disable_overlay = !ini.GetBoolValue("overlay::general", "enable_experimental_overlay", settings_client->disable_overlay);
-    settings_server->disable_overlay = !ini.GetBoolValue("overlay::general", "enable_experimental_overlay", settings_server->disable_overlay);
+    settings_client->disable_overlay = !ini.GetBoolValue("overlay::general", "enable_experimental_overlay", !settings_client->disable_overlay);
+    settings_server->disable_overlay = !ini.GetBoolValue("overlay::general", "enable_experimental_overlay", !settings_server->disable_overlay);
 
     {
         auto val = ini.GetLongValue("overlay::general", "hook_delay_sec", -1);

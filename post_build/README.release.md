@@ -388,7 +388,7 @@ Look for the column `API language code`
 
 ---
 
-## Auto accept game/lobby invites:
+## Bypass overlay and auto accept game/lobby invites:
 **Note: at the moment this feature is only enabled in the experimental builds**
 ---
 

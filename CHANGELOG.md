@@ -24,10 +24,10 @@
   in both cases, the tool will create a new folder `steam_settings` in the current directory with all the results of the conversion
 * **[breaking]** changed the environment variable `SteamAppPath` to `GseAppPath`, which is used to override the program path detected by the emu
 * new option `add_steam_preowned_ids` in `configs.main.ini` which allows adding a lot of Steam builtin and preowned IDs to the DLC list, and the emu's list of installed apps
+* added a workaround for Steam Input, set `disable_steamoverlaygameid_env_var=1` inside `configs.main.ini`, might not work though
 * removed the limit on the amount of characters for local saves
 * allow specifying absolute paths for local saves
 * removed the warning for using `force_xxx.txt` files from the overlay, since it's no longer relevant, also removed the code which disables the user input when this warning was displayed
-* added a workaroung for Steam Input, set `disable_steamoverlaygameid_env_var=1` inside `configs.main.ini`, might not work though
 * increase run callbacks background thread polling time to `~200ms`
 * changed the overlay title to give proper credits to its author
 * set these env vars for a more accurate emulation:
