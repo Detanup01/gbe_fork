@@ -56,22 +56,6 @@ Check the example file in `steam_settings.EXAMPLE\configs.EXAMPLE.ini`.
 
 ---
 
-## DLC:
-By default the emulator will try to unlock all DLCs (by returning `true` when the game calls the `BIsDlcInstalled()` function).  
-If the game uses the other function you will need to provide a list of DLCs to the emulator.  
-
-To do this first create a `steam_settings` folder right beside the emulator.  
-In this folder, put a `DLC.txt` file. (path will be `<path where the emu lib is>\steam_settings\DLC.txt`)
-
-If the DLC file is present, the emulator will only unlock the DLCs in that file. If the file is empty all DLCs will be locked.
-
-The contents of this file are:  
-`appid=DLC name`  
-
-See the `steam_settings.EXAMPLE` folder for an example.
-
----
-
 ## Languages:
 You can include a `steam_settings\supported_languages.txt` file with a list of languages that the game supports.  
 

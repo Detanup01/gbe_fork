@@ -616,47 +616,38 @@ static std::set<std::string> parse_supported_languages(class Local_Storage *loca
     return supported_languages;
 }
 
-// DLC.txt
+// app::dlcs
 static void parse_dlc(class Settings *settings_client, class Settings *settings_server)
 {
-    std::string dlc_config_path = Local_Storage::get_game_settings_path() + "DLC.txt";
-    std::ifstream input( utf8_decode(dlc_config_path) );
-    if (input.is_open()) {
-        common_helpers::consume_bom(input);
-        settings_client->unlockAllDLC(false);
-        settings_server->unlockAllDLC(false);
-        PRINT_DEBUG("Locking all DLC");
+    constexpr static const char unlock_all_key[] = "unlock_all";
 
-        for( std::string line; std::getline( input, line ); ) {
-            if (!line.empty() && line.front() == '#') {
-                continue;
-            }
-            if (!line.empty() && line.back() == '\n') {
-                line.pop_back();
-            }
-
-            if (!line.empty() && line.back() == '\r') {
-                line.pop_back();
-            }
-
-            std::size_t deliminator = line.find("=");
-            if (deliminator != 0 && deliminator != std::string::npos && deliminator != line.size()) {
-                AppId_t appid = stol(line.substr(0, deliminator));
-                std::string name = line.substr(deliminator + 1);
-                bool available = true;
-
-                if (appid) {
-                    PRINT_DEBUG("Adding DLC: %u|%s| %u", appid, name.c_str(), available);
-                    settings_client->addDLC(appid, name, available);
-                    settings_server->addDLC(appid, name, available);
-                }
-            }
-        }
-    } else {
-        //unlock all DLC
-        PRINT_DEBUG("Unlocking all DLC");
+    bool unlock_all = ini.GetBoolValue("app::dlcs", unlock_all_key, true);
+    if (unlock_all) {
+        PRINT_DEBUG("unlocking all DLCs");
         settings_client->unlockAllDLC(true);
         settings_server->unlockAllDLC(true);
+    } else {
+        PRINT_DEBUG("locking all DLCs");
+        settings_client->unlockAllDLC(false);
+        settings_server->unlockAllDLC(false);
+    }
+
+    std::list<CSimpleIniA::Entry> dlcs_keys{};
+    if (!ini.GetAllKeys("app::dlcs", dlcs_keys) || dlcs_keys.empty()) return;
+
+    // remove the unlock all key so we can iterate through the DLCs
+    dlcs_keys.remove_if([](const CSimpleIniA::Entry &item){
+        return common_helpers::str_cmp_insensitive(item.pItem, unlock_all_key);
+    });
+
+    for (const auto &dlc_key : dlcs_keys) {
+        AppId_t appid = (AppId_t)std::stoul(dlc_key.pItem);
+        if (!appid) continue;
+        
+        auto name = ini.GetValue("app::dlcs", dlc_key.pItem, "unknown DLC");
+        PRINT_DEBUG("adding DLC: [%u] = '%s'", appid, name);
+        settings_client->addDLC(appid, name, true);
+        settings_server->addDLC(appid, name, true);
     }
 }
 

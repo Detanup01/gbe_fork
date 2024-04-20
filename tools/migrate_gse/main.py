@@ -29,12 +29,12 @@ def write_ini_file(base_path: str, out_ini: dict):
     for file in out_ini.items():
         with open(os.path.join(base_path, file[0]), 'wt', encoding='utf-8') as f:
             for item in file[1].items():
-                f.write('[' + item[0] + ']\n') # section
+                f.write('[' + str(item[0]) + ']\n') # section
                 for kv in item[1].items():
-                    if kv[1][1]:
-                        f.write('# ' + kv[1][1] + '\n') # comment
-                    f.write(kv[0] + '=' + str(kv[1][0]) + '\n') # key/value pair
-                f.write('\n') # key/value pair
+                    if kv[1][1]: # comment
+                        f.write('# ' + str(kv[1][1]) + '\n')
+                    f.write(str(kv[0]) + '=' + str(kv[1][0]) + '\n') # key/value pair
+                f.write('\n')
 
 itf_patts = [
     ( r'SteamClient\d+', "client" ),
@@ -99,28 +99,22 @@ def main():
                     global_settings = os.path.join(home_env, 'Goldberg SteamEmu Saves', 'settings')
 
     if not global_settings or not os.path.isdir(global_settings):
-        print('failed to detect settings folder', file=sys.stderr)
+        print('failed to detect folder', file=sys.stderr)
         help()
         sys.exit(1)
 
+    print(f'searching inside the folder: "{global_settings}"')
+
     out_dict_ini = {}
+    # oh no, they're too many!
     for file in glob.glob('*.*', root_dir=global_settings):
         file = file.lower()
-        if file == 'force_account_name.txt':
+        if file == 'force_account_name.txt' or file == 'account_name.txt':
             with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
                 merge_dict(out_dict_ini, {
                     'configs.user.ini': {
                         'user::general': {
-                            'account_name': (fr.readline(), 'user account name'),
-                        },
-                    }
-                })
-        elif file == 'account_name.txt':
-            with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
-                merge_dict(out_dict_ini, {
-                    'configs.user.ini': {
-                        'user::general': {
-                            'account_name': (fr.readline(), 'user account name'),
+                            'account_name': (fr.readline().strip('\n').strip('\r'), 'user account name'),
                         },
                     }
                 })
@@ -129,11 +123,11 @@ def main():
                 merge_dict(out_dict_ini, {
                     'configs.app.ini': {
                         'app::general': {
-                            'branch_name': (fr.readline(), 'the name of the beta branch'),
+                            'branch_name': (fr.readline().strip(), 'the name of the beta branch'),
                         },
                     }
                 })
-        elif file == 'force_language.txt':
+        elif file == 'force_language.txt' or file == 'language.txt':
             with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
                 merge_dict(out_dict_ini, {
                     'configs.user.ini': {
@@ -142,16 +136,7 @@ def main():
                         },
                     }
                 })
-        elif file == 'language.txt':
-            with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
-                merge_dict(out_dict_ini, {
-                    'configs.user.ini': {
-                        'user::general': {
-                            'language': (fr.readline().strip(), 'the language reported to the app/game, https://partner.steamgames.com/doc/store/localization/languages'),
-                        },
-                    }
-                })
-        elif file == 'force_listen_port.txt':
+        elif file == 'force_listen_port.txt' or file == 'listen_port.txt':
             with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
                 merge_dict(out_dict_ini, {
                     'configs.main.ini': {
@@ -160,25 +145,7 @@ def main():
                         },
                     }
                 })
-        elif file == 'listen_port.txt':
-            with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
-                merge_dict(out_dict_ini, {
-                    'configs.main.ini': {
-                        'main::connectivity': {
-                            'listen_port': (fr.readline().strip(), 'change the UDP/TCP port the emulator listens on'),
-                        },
-                    }
-                })
-        elif file == 'force_steamid.txt':
-            with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
-                merge_dict(out_dict_ini, {
-                    'configs.user.ini': {
-                        'user::general': {
-                            'account_steamid': (fr.readline().strip(), 'Steam64 format'),
-                        },
-                    }
-                })
-        elif file == 'user_steam_id.txt':
+        elif file == 'force_steamid.txt' or file == 'user_steam_id.txt':
             with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
                 merge_dict(out_dict_ini, {
                     'configs.user.ini': {
@@ -272,23 +239,45 @@ def main():
                         },
                     }
                 })
-        elif file == 'enable_experimental_overlay.txt':
+        elif file == 'enable_experimental_overlay.txt' or file == 'disable_overlay.txt':
+            enable_ovl = 0
+            if file == 'enable_experimental_overlay.txt':
+                enable_ovl = 1
             merge_dict(out_dict_ini, {
                 'configs.overlay.ini': {
                     'overlay::general': {
-                        'enable_experimental_overlay': (1, 'XXX USE AT YOUR OWN RISK XXX, enable the experimental overlay, might cause crashes'),
+                        'enable_experimental_overlay': (enable_ovl, 'XXX USE AT YOUR OWN RISK XXX, enable the experimental overlay, might cause crashes'),
                     },
                 }
             })
         elif file == 'app_paths.txt':
             with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
-                app_lines = [lll for lll in fr.readlines() if lll.strip()]
+                app_lines = [lll.strip('\n').strip('\r') for lll in fr.readlines() if lll.strip() and lll.strip()[0] != '#']
                 for app_lll in app_lines:
                     [apppid, appppath] = app_lll.split('=', 1)
                     merge_dict(out_dict_ini, {
                         'configs.app.ini': {
                             'app::paths': {
                                 apppid.strip(): (appppath, ''),
+                            },
+                        }
+                    })
+        elif file == 'dlc.txt':
+            with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
+                dlc_lines = [lll.strip('\n').strip('\r') for lll in fr.readlines() if lll.strip() and lll.strip()[0] != '#']
+                merge_dict(out_dict_ini, {
+                    'configs.app.ini': {
+                        'app::dlcs': {
+                            'unlock_all': (0, 'should the emu report all DLCs as unlocked, default=1'),
+                        },
+                    }
+                })
+                for dlc_lll in dlc_lines:
+                    [dlcid, dlcname] = dlc_lll.split('=', 1)
+                    merge_dict(out_dict_ini, {
+                        'configs.app.ini': {
+                            'app::dlcs': {
+                                dlcid.strip(): (dlcname, ''),
                             },
                         }
                     })
@@ -305,7 +294,7 @@ def main():
                 merge_dict(out_dict_ini, {
                     'configs.main.ini': {
                         'main::general': {
-                            'crash_printer_location': (fr.readline(), 'this is intended to debug some annoying scenarios, and best used with the debug build'),
+                            'crash_printer_location': (fr.readline().strip('\n').strip('\r'), 'this is intended to debug some annoying scenarios, and best used with the debug build'),
                         },
                     }
                 })
@@ -467,6 +456,7 @@ def main():
             os.makedirs('steam_settings')
 
         write_ini_file('steam_settings', out_dict_ini)
+        print(f'new settings written inside: "{os.path.join(os.path.curdir, "steam_settings")}"')
 
 
 if __name__ == "__main__":

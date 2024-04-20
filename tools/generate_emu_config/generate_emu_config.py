@@ -317,7 +317,7 @@ EXTRA_FEATURES_CONVENIENT = {
     },
     'configs.overlay.ini': {
         'overlay::general': {
-            'enable_experimental_overlay': (1, 'xxx USE AT YOUR OWN RISK xxx, enable the experimental overlay'),
+            'enable_experimental_overlay': (1, 'XXX USE AT YOUR OWN RISK XXX, enable the experimental overlay, might cause crashes or other problems'),
             'disable_warning_any': (1, 'disable any warning in the overlay'),
         },
     }
@@ -565,11 +565,12 @@ def write_ini_file(base_path: str, out_ini: dict):
     for file in out_ini.items():
         with open(os.path.join(base_path, file[0]), 'wt', encoding='utf-8') as f:
             for item in file[1].items():
-                f.write('[' + item[0] + ']\n') # section
+                f.write('[' + str(item[0]) + ']\n') # section
                 for kv in item[1].items():
-                    f.write('# ' + kv[1][1] + '\n') # comment
-                    f.write(kv[0] + '=' + str(kv[1][0]) + '\n') # key/value pair
-                f.write('\n') # key/value pair
+                    if kv[1][1]: # comment
+                        f.write('# ' + str(kv[1][1]) + '\n')
+                    f.write(str(kv[0]) + '=' + str(kv[1][0]) + '\n') # key/value pair
+                f.write('\n')
 
 def main():
     USERNAME = ""
@@ -832,6 +833,8 @@ def main():
                                 }
                             }
                         })
+                        # write the data as soon as possible in case a later step caused an exception
+                        write_ini_file(emu_settings_dir, out_config_app_ini)
 
         dlc_config_list : list[tuple[int, str]] = []
         dlc_list, depot_app_list, all_depots = get_dlc(game_info)
@@ -850,13 +853,26 @@ def main():
                 
                 dlc_config_list.append((dlc, dlc_name))
 
-        # we create the DLC fle nonetheless, empty file makes the emu lock DLCs, otherwise everything is allowed
+        # we set unlock_all=0 nonetheless, to make the emu lock DLCs, otherwise everything is allowed
         # some games use that as a detection mechanism
-        with open(os.path.join(emu_settings_dir, "DLC.txt"), 'wt', encoding="utf-8") as f:
-            if dlc_config_list:
-                for x in dlc_config_list:
-                    f.write(f"{x[0]}={x[1]}\n")
-        
+        merge_dict(out_config_app_ini, {
+            'configs.app.ini': {
+                'app::dlcs': {
+                    'unlock_all': (0, 'should the emu report all DLCs as unlocked, default=1'),
+                }
+            }
+        })
+        for x in dlc_config_list:
+            merge_dict(out_config_app_ini, {
+                'configs.app.ini': {
+                    'app::dlcs': {
+                        x[0]: (x[1], ''),
+                    }
+                }
+            })
+        # write the data as soon as possible in case a later step caused an exception
+        write_ini_file(emu_settings_dir, out_config_app_ini)
+
         if all_depots:
             with open(os.path.join(emu_settings_dir, "depots.txt"), 'wt', encoding="utf-8") as f:
                 for game_depot in all_depots:
@@ -945,16 +961,12 @@ def main():
                 logo,
                 logo_small)
         
-        out_config_main_ini = {}
         if DISABLE_EXTRA:
-            merge_dict(out_config_main_ini, EXTRA_FEATURES_DISABLE)
+            merge_dict(out_config_app_ini, EXTRA_FEATURES_DISABLE)
  
         if CONVENIENT_EXTRA:
-            merge_dict(out_config_main_ini, EXTRA_FEATURES_CONVENIENT)
+            merge_dict(out_config_app_ini, EXTRA_FEATURES_CONVENIENT)
         
-        if out_config_main_ini:
-            write_ini_file(emu_settings_dir, out_config_main_ini)
-
         if out_config_app_ini:
             write_ini_file(emu_settings_dir, out_config_app_ini)
 
