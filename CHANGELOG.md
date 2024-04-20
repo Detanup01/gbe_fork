@@ -17,12 +17,11 @@
 * allow changing the name of the base folder used to store save data, suggested by **[Clompress]**  
   by default it would be the new folder `GSE Saves` (instead of `Goldberg SteamEmu Saves`)  
   this could be changed only by setting the option `saves_folder_name` inside the local file `steam_settings/configs.user.ini`, the global one will not work
-* new switches for the `generate_emu_config` tool
+* new switches for the `generate_emu_config` tool, suggested by **[M4RCK5]**
   - `-skip_ach`: skip downloading & generating achievements and their images
   - `-skip_con`: skip downloading & generating controller configuration files  
   - `-skip_inv`: skip downloading & generating inventory data (`items.json` & `default_items.json`)  
 
-  suggested by **[M4RCK5]**
 * new tool `migrate_gse` to convert either your global `settings` folder, or your local `steam_settings` folder from the old format to the new one
   - run the tool without arguments to let it convert the global settings folder
   - run the tool and pass the target `steam_settings` or `settings` folder as an argument to convert the structure of that folder  

@@ -1193,6 +1193,7 @@ static void parse_overlay_general_config(class Settings *settings_client, class 
 
 }
 
+// main::misc::add_steam_preowned_ids
 static void parse_steam_preowned_ids(class Settings *settings_client, class Settings *settings_server)
 {
     bool add_steam_preowned_ids = ini.GetBoolValue("main::misc", "add_steam_preowned_ids");

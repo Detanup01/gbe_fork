@@ -29,6 +29,7 @@ The tool will generate a new folder in the current directory called `steam_setti
       `$HOME/.local/share/GSE Saves/settings/`
 
 Notice the new name of the global saves folder `GSE Saves`, not to be confused with the old one `Goldberg SteamEmu Saves`  
+Finally, copy everything from `Goldberg SteamEmu Saves` to `GSE Saves`  
 
 
 ## How to migrate a local `steam_settings` folder you already have
