@@ -1193,11 +1193,11 @@ static void parse_overlay_general_config(class Settings *settings_client, class 
 
 }
 
-// main::misc::add_steam_preowned_ids
+// main::misc::disable_steam_preowned_ids
 static void parse_steam_preowned_ids(class Settings *settings_client, class Settings *settings_server)
 {
-    bool add_steam_preowned_ids = ini.GetBoolValue("main::misc", "add_steam_preowned_ids");
-    if (add_steam_preowned_ids) {
+    bool disable_steam_preowned_ids = ini.GetBoolValue("main::misc", "disable_steam_preowned_ids", false);
+    if (!disable_steam_preowned_ids) {
         settings_client->addSteamPreownedIds();
         settings_server->addSteamPreownedIds();
         PRINT_DEBUG("added Steam preowned IDs");
@@ -1458,24 +1458,26 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     parse_build_id(settings_client, settings_server);
 
     parse_simple_features(settings_client, settings_server);
+
     parse_dlc(settings_client, settings_server);
+    parse_installed_app_Ids(settings_client, settings_server);
     parse_app_paths(settings_client, settings_server, program_path);
+    parse_steam_preowned_ids(settings_client, settings_server);
+
     parse_leaderboards(settings_client, settings_server);
     parse_stats(settings_client, settings_server);
     parse_depots(settings_client, settings_server);
     parse_subscribed_groups(settings_client, settings_server);
-    parse_installed_app_Ids(settings_client, settings_server);
     load_subscribed_groups_clans(local_storage->get_global_settings_path(), settings_client, settings_server);
     load_subscribed_groups_clans(steam_settings_path, settings_client, settings_server);
-
-    load_overlay_appearance(settings_client, settings_server, local_storage);
 
     parse_mods_folder(settings_client, settings_server, local_storage);
     load_gamecontroller_settings(settings_client);
     parse_auto_accept_invite(settings_client, settings_server);
     parse_ip_country(settings_client, settings_server);
+
     parse_overlay_general_config(settings_client, settings_server);
-    parse_steam_preowned_ids(settings_client, settings_server);
+    load_overlay_appearance(settings_client, settings_server, local_storage);
 
     *settings_client_out = settings_client;
     *settings_server_out = settings_server;
