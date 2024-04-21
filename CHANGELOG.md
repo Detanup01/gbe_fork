@@ -1,4 +1,13 @@
+## 2024/4/21
+
 * **[Clompress]** corrected Turkish translation
+* allow changing the name of the base/global folder used to store save data, suggested by **[Clompress]**  
+  by default it would be the new folder `GSE Saves` (instead of `Goldberg SteamEmu Saves`)  
+  this could be changed only by setting the option `saves_folder_name` inside the local file `steam_settings/configs.user.ini`, the global one will not work
+* new switches for the `generate_emu_config` tool, suggested by **[M4RCK5]**
+  - `-skip_ach`: skip downloading & generating achievements and their images
+  - `-skip_con`: skip downloading & generating controller configuration files  
+  - `-skip_inv`: skip downloading & generating inventory data (`items.json` & `default_items.json`)  
 
 ---
 
@@ -10,27 +19,24 @@
 
    they could be placed inside the local `steam_settings` folder,  
  or inside the new global settings folder `GSE Saves/settings`, located at `%appdata%\GSE Saves\settings\` on Windows for example.  
-  you can create a global `.ini` file `GSE Saves/settings/config.xxx.ini` for the common options, and another local one `steam_settings/config.xxx.ini` for the game-specific options, and the emu will merge them.
+  you can create a global `.ini` file `GSE Saves/settings/config.xxx.ini` for the common options, and another local one `steam_settings/config.xxx.ini` for the game-specific options, and the emu will merge them.  
 
----
-
-* allow changing the name of the base folder used to store save data, suggested by **[Clompress]**  
-  by default it would be the new folder `GSE Saves` (instead of `Goldberg SteamEmu Saves`)  
-  this could be changed only by setting the option `saves_folder_name` inside the local file `steam_settings/configs.user.ini`, the global one will not work
-* new switches for the `generate_emu_config` tool, suggested by **[M4RCK5]**
-  - `-skip_ach`: skip downloading & generating achievements and their images
-  - `-skip_con`: skip downloading & generating controller configuration files  
-  - `-skip_inv`: skip downloading & generating inventory data (`items.json` & `default_items.json`)  
+  To avoid confusion, the global saves folder is changed to be `GSE Saves` by default.  
 
 * new tool `migrate_gse` to convert either your global `settings` folder, or your local `steam_settings` folder from the old format to the new one
   - run the tool without arguments to let it convert the global settings folder
   - run the tool and pass the target `steam_settings` or `settings` folder as an argument to convert the structure of that folder  
   
   in both cases, the tool will create a new folder `steam_settings` in the current directory with all the results of the conversion  
+
   check its own dedicated readme
+
+---
+
 * **[breaking]** changed the environment variable `SteamAppPath` to `GseAppPath`, which is used to override the program path detected by the emu
 * **[breaking]** removed the setting `disable_account_avatar` in favor of the new one `enable_account_avatar`, this feature is now disabled by default
-* new option `disable_steam_preowned_ids` in `configs.main.ini` which prevents adding a lot of Steam builtin and preowned IDs to the DLC list, and the emu's list of installed apps
+* introduced a new behavior in the emu, which makes it by default add a lot of Steam builtin and preowned IDs to the DLC list, and the emu's list of installed apps  
+  you can disable this via the option `disable_steam_preowned_ids` in `configs.main.ini`
 * added a workaround for Steam Input, set `disable_steamoverlaygameid_env_var=1` inside `configs.main.ini`, might not work though
 * reverted the changes to `Steam_Apps::BIsAppInstalled()`, now it will return true when the given app id is found in the DLC list, this function is also controlled via `installed_app_ids.txt`
 * removed the limit on the amount of characters for local saves
@@ -46,7 +52,7 @@
   - `SteamPath`
 
  ---
- 
+
 ## 2024/4/11 (2)
 
 * **[Clompress]** Turkish translation for the overlay
