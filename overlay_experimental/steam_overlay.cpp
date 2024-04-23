@@ -836,12 +836,21 @@ void Steam_Overlay::build_friend_window(Friend const& frd, friend_window_state& 
 // set the position of the next notification
 void Steam_Overlay::set_next_notification_pos(float width, float height, float font_size, notification_type type, struct NotificationsIndexes &idx)
 {
+    // Add window rounding
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.WindowRounding = settings->overlay_appearance.notification_rounding;
+
+    const float noti_width = width * Notification::width_percent;
+    float noti_height = Notification::height * font_size;
     // 0 on the y-axis is top, 0 on the x-axis is left
 
     // get the required position
     Overlay_Appearance::NotificationPosition pos = Overlay_Appearance::default_pos;
     switch (type) {
-    case notification_type::notification_type_achievement: pos = settings->overlay_appearance.ach_earned_pos; break;
+    case notification_type::notification_type_achievement: 
+        pos = settings->overlay_appearance.ach_earned_pos; 
+        noti_height = settings->overlay_appearance.icon_size + style.FramePadding.y * Notification::height;
+        break;
     case notification_type::notification_type_invite: pos = settings->overlay_appearance.invite_pos; break;
     case notification_type::notification_type_message: pos = settings->overlay_appearance.chat_msg_pos; break;
     default: /* satisfy compiler warning */ break;
@@ -849,8 +858,6 @@ void Steam_Overlay::set_next_notification_pos(float width, float height, float f
 
     float x = 0.0f;
     float y = 0.0f;
-    const float noti_width = width * Notification::width_percent;
-    const float noti_height = Notification::height * font_size;
     switch (pos) {
     // top
     case Overlay_Appearance::NotificationPosition::top_left:
@@ -890,6 +897,8 @@ void Steam_Overlay::set_next_notification_pos(float width, float height, float f
     }
 
     ImGui::SetNextWindowPos(ImVec2( x, y ));
+    ImGui::SetNextWindowSize(ImVec2(width * Notification::width_percent, noti_height));
+    ImGui::SetNextWindowBgAlpha(0.9f);
 }
 
 void Steam_Overlay::build_notifications(int width, int height)
@@ -903,9 +912,7 @@ void Steam_Overlay::build_notifications(int width, int height)
         auto elapsed_notif = now - it->start_time;
 
         set_next_notification_pos(width, height, font_size, (notification_type)it->type, idx);
-        ImGui::SetNextWindowSize(ImVec2( width * Notification::width_percent, Notification::height * font_size ));
-        ImGui::SetNextWindowBgAlpha(0.9f);
-        
+
         if ( elapsed_notif < Notification::fade_in) { // still appearing (fading in)
             float alpha = settings->overlay_appearance.notification_a * (elapsed_notif.count() / static_cast<float>(Notification::fade_in.count()));
             ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, alpha));
