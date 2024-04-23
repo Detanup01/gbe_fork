@@ -1482,7 +1482,7 @@ void Steam_Overlay::steam_run_callback()
         save_settings = false;
 
         const char *language_text = valid_languages[current_language];
-        save_global_settings(username_text, language_text);
+        save_global_settings(get_steam_client()->local_storage, username_text, language_text);
         get_steam_client()->settings_client->set_local_name(username_text);
         get_steam_client()->settings_server->set_local_name(username_text);
         get_steam_client()->settings_client->set_language(language_text);

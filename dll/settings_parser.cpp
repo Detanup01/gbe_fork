@@ -53,52 +53,52 @@ typedef struct IniValue {
     };
 } IniValue;
 
-static void save_global_ini_value(const char *filename, const char *section, const char *key, IniValue val, const char *comment = nullptr) {
+static void save_global_ini_value(class Local_Storage *local_storage, const char *filename, const char *section, const char *key, IniValue val, const char *comment = nullptr) {
     CSimpleIniA new_ini{};
     new_ini.SetUnicode();
     new_ini.SetSpaces(false);
 
-    auto fullpath = utf8_decode(Local_Storage::get_user_appdata_path() + Local_Storage::settings_storage_folder + PATH_SEPARATOR + filename);
-    if (!common_helpers::create_dir(fullpath)) return;
+    auto sz = local_storage->data_settings_size(filename);
+    if (sz > 0) {
+        std::vector<char> ini_file_data(sz);
+        auto read = local_storage->get_data_settings(filename, &ini_file_data[0], ini_file_data.size());
+        if (read == sz) {
+            new_ini.LoadData(&ini_file_data[0], ini_file_data.size());
+        }
+    }
 
-    std::ifstream ini_file( fullpath, std::ios::binary | std::ios::in);
-    if (ini_file.is_open()) {
-        new_ini.LoadData(ini_file);
-        ini_file.close();
+    std::string comment_str{};
+    if (comment && comment[0]) {
+        comment_str.append("# ").append(comment);
+        comment = comment_str.c_str();
     }
     
-    std::ofstream new_ini_file( fullpath, std::ios::binary | std::ios::out);
-    if (new_ini_file.is_open()) {
-        std::string comment_str{};
-        if (comment) {
-            comment_str.append("# ").append(comment);
-            comment = comment_str.c_str();
-        }
-        
-        switch (val.type)
-        {
-        case IniValue::Type::STR:
-            new_ini.SetValue(section, key, val.val_str, comment);
-        break;
-        
-        case IniValue::Type::BOOL:
-            new_ini.SetBoolValue(section, key, val.val_bool, comment);
-        break;
+    switch (val.type)
+    {
+    case IniValue::Type::STR:
+        new_ini.SetValue(section, key, val.val_str, comment);
+    break;
+    
+    case IniValue::Type::BOOL:
+        new_ini.SetBoolValue(section, key, val.val_bool, comment);
+    break;
 
-        case IniValue::Type::DOUBLE:
-            new_ini.SetDoubleValue(section, key, val.val_double, comment);
-        break;
+    case IniValue::Type::DOUBLE:
+        new_ini.SetDoubleValue(section, key, val.val_double, comment);
+    break;
 
-        case IniValue::Type::LONG:
-            new_ini.SetLongValue(section, key, val.val_long, comment);
-        break;
+    case IniValue::Type::LONG:
+        new_ini.SetLongValue(section, key, val.val_long, comment);
+    break;
 
-        default: break;
-        }
-
-        new_ini.Save(new_ini_file, false);
-        new_ini_file.close();
+    default: break;
     }
+
+    std::string ini_buff{};
+    if (new_ini.Save(ini_buff, false) == SI_OK) {
+        local_storage->store_data_settings(filename, &ini_buff[0], ini_buff.size());
+    }
+    
 }
 
 static void merge_ini(const CSimpleIniA &new_ini, bool overwrite = false) {
@@ -514,6 +514,7 @@ static uint16 parse_listen_port(class Local_Storage *local_storage)
     if (port == 0) {
         port = DEFAULT_PORT;
         save_global_ini_value(
+            local_storage,
             config_ini_main,
             "main::connectivity", "listen_port", IniValue((long)port),
             "change the UDP/TCP port the emulator listens on"
@@ -529,6 +530,7 @@ static std::string parse_account_name(class Local_Storage *local_storage)
     if (!name || !name[0]) {
         name = DEFAULT_NAME;
         save_global_ini_value(
+            local_storage,
             config_ini_user,
             "user::general", "account_name", IniValue(name),
             "user account name"
@@ -547,6 +549,7 @@ static CSteamID parse_user_steam_id(class Local_Storage *local_storage)
         char temp_text[32]{};
         snprintf(temp_text, sizeof(temp_text), "%llu", (uint64)user_id.ConvertToUint64());
         save_global_ini_value(
+            local_storage,
             config_ini_user,
             "user::general", "account_steamid", IniValue(temp_text),
             "Steam64 format"
@@ -564,6 +567,7 @@ static std::string parse_current_language(class Local_Storage *local_storage)
     if (!lang || !lang[0]) {
         lang = DEFAULT_LANGUAGE;
         save_global_ini_value(
+            local_storage,
             config_ini_user,
             "user::general", "language", IniValue(lang),
             "the language reported to the game, default is 'english', check 'API language code' in https://partner.steamgames.com/doc/store/localization/languages"
@@ -1132,12 +1136,13 @@ static void parse_auto_accept_invite(class Settings *settings_client, class Sett
 }
 
 // user::general::ip_country
-static void parse_ip_country(class Settings *settings_client, class Settings *settings_server)
+static void parse_ip_country(class Local_Storage *local_storage, class Settings *settings_client, class Settings *settings_server)
 {
     std::string line(common_helpers::to_upper(common_helpers::string_strip(ini.GetValue("user::general", "ip_country", ""))));
     if (line.empty()) {
             line = DEFAULT_IP_COUNTRY;
             save_global_ini_value(
+                local_storage,
                 config_ini_user,
                 "user::general", "ip_country", IniValue(line.c_str()),
                 "ISO 3166-1-alpha-2 format, use this link to get the 'Alpha-2' country code: https://www.iban.com/country-codes"
@@ -1439,6 +1444,9 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     std::set<std::string> supported_languages(parse_supported_languages(local_storage, language));
 
     bool steam_offline_mode = ini.GetBoolValue("main::connectivity", "offline", false);
+    if (steam_offline_mode) {
+        PRINT_DEBUG("setting emu to offline mode");
+    }
     Settings *settings_client = new Settings(user_id, CGameID(appid), name, language, steam_offline_mode);
     Settings *settings_server = new Settings(generate_steam_id_server(), CGameID(appid), name, language, steam_offline_mode);
 
@@ -1474,7 +1482,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     parse_mods_folder(settings_client, settings_server, local_storage);
     load_gamecontroller_settings(settings_client);
     parse_auto_accept_invite(settings_client, settings_server);
-    parse_ip_country(settings_client, settings_server);
+    parse_ip_country(local_storage, settings_client, settings_server);
 
     parse_overlay_general_config(settings_client, settings_server);
     load_overlay_appearance(settings_client, settings_server, local_storage);
@@ -1488,15 +1496,17 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     return appid;
 }
 
-void save_global_settings(const char *name, const char *language)
+void save_global_settings(class Local_Storage *local_storage, const char *name, const char *language)
 {
     save_global_ini_value(
+        local_storage,
         config_ini_user,
         "user::general", "account_name", IniValue(name),
         "user account name"
     );
     
     save_global_ini_value(
+        local_storage,
         config_ini_user,
         "user::general", "language", IniValue(language),
         "the language reported to the game, default is 'english', check 'API language code' in https://partner.steamgames.com/doc/store/localization/languages"
