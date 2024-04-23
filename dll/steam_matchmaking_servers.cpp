@@ -26,9 +26,10 @@ static void network_callback(void *object, Common_Message *msg)
     obj->Callback(msg);
 }
 
-Steam_Matchmaking_Servers::Steam_Matchmaking_Servers(class Settings *settings, class Networking *network)
+Steam_Matchmaking_Servers::Steam_Matchmaking_Servers(class Settings *settings, class Local_Storage *local_storage, class Networking *network)
 {
     this->settings = settings;
+    this->local_storage = local_storage;
     this->network = network;
     this->network->setCallback(CALLBACK_ID_GAMESERVER, (uint64) 0, &network_callback, this);
 }
@@ -88,13 +89,13 @@ HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, IS
     std::string file_path;
     unsigned long long file_size;
     if (type == eInternetServer || type == eSpectatorServer) {
-        file_path = Local_Storage::get_user_appdata_path() + "7" + PATH_SEPARATOR + Local_Storage::remote_storage_folder + PATH_SEPARATOR + "serverbrowser.txt";
+        file_path = local_storage->get_current_save_directory() + "7" + PATH_SEPARATOR + Local_Storage::remote_storage_folder + PATH_SEPARATOR + "serverbrowser.txt";
         file_size = file_size_(file_path);
     } else if (type == eFavoritesServer) {
-        file_path = Local_Storage::get_user_appdata_path() + "7" + PATH_SEPARATOR + Local_Storage::remote_storage_folder + PATH_SEPARATOR + "serverbrowser_favorites.txt";
+        file_path = local_storage->get_current_save_directory() + "7" + PATH_SEPARATOR + Local_Storage::remote_storage_folder + PATH_SEPARATOR + "serverbrowser_favorites.txt";
         file_size = file_size_(file_path);
     } else if (type == eHistoryServer) {
-        file_path = Local_Storage::get_user_appdata_path() + "7" + PATH_SEPARATOR + Local_Storage::remote_storage_folder + PATH_SEPARATOR + "serverbrowser_history.txt";
+        file_path = local_storage->get_current_save_directory() + "7" + PATH_SEPARATOR + Local_Storage::remote_storage_folder + PATH_SEPARATOR + "serverbrowser_history.txt";
         file_size = file_size_(file_path);
     }
 

@@ -58,8 +58,9 @@ struct Steam_Matchmaking_Request {
 class Steam_Matchmaking_Servers : public ISteamMatchmakingServers,
 public ISteamMatchmakingServers001
 {
-    class Settings *settings;
-    class Networking *network;
+    class Settings *settings{};
+    class Local_Storage *local_storage{};
+    class Networking *network{};
 
     std::vector <struct Steam_Matchmaking_Servers_Gameserver> gameservers;
     std::vector <struct Steam_Matchmaking_Servers_Gameserver_Friends> gameservers_friends;
@@ -68,7 +69,7 @@ public ISteamMatchmakingServers001
 	HServerListRequest RequestServerList(AppId_t iApp, ISteamMatchmakingServerListResponse *pRequestServersResponse, EMatchMakingType type);
 	void RequestOldServerList(AppId_t iApp, ISteamMatchmakingServerListResponse001 *pRequestServersResponse, EMatchMakingType type);
 public:
-    Steam_Matchmaking_Servers(class Settings *settings, class Networking *network);
+    Steam_Matchmaking_Servers(class Settings *settings, class Local_Storage *local_storage, class Networking *network);
 	~Steam_Matchmaking_Servers();
 	
 	// Request a new list of servers of a particular type.  These calls each correspond to one of the EMatchMakingType values.
