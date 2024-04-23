@@ -75,10 +75,12 @@ private:
 public:
     Local_Storage(const std::string &save_directory);
 
+    const std::string& get_current_save_directory() const;
     void setAppId(uint32 appid);
     int store_data(std::string folder, std::string file, char *data, unsigned int length);
     int store_data_settings(std::string file, const char *data, unsigned int length);
     int get_data(std::string folder, std::string file, char *data, unsigned int max_length, unsigned int offset=0);
+    unsigned int data_settings_size(std::string file);
     int get_data_settings(std::string file, char *data, unsigned int max_length);
     int count_files(std::string folder);
     bool iterate_file(std::string folder, int index, char *output_filename, int32 *output_size);

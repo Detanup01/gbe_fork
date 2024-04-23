@@ -42,6 +42,9 @@ std::string Local_Storage::saves_folder_name = "GSE Saves";
 
 
 #ifdef NO_DISK_WRITES
+
+static const std::string empty_str{};
+
 std::string Local_Storage::get_program_path()
 {
     return " ";
@@ -84,23 +87,27 @@ void Local_Storage::set_saves_folder_name(const std::string_view &str)
 
 const std::string& Local_Storage::get_saves_folder_name()
 {
-    const static std::string empty{};
-    return empty;
+    return empty_str;
 }
 
 std::string Local_Storage::get_path(std::string folder)
 {
-    return "";
+    return empty_str;
 }
 
 std::string Local_Storage::get_global_settings_path()
 {
-    return "";
+    return empty_str;
 }
 
 Local_Storage::Local_Storage(const std::string &save_directory)
 {
 
+}
+
+const std::string& Local_Storage::get_current_save_directory() const
+{
+    return empty_str;
 }
 
 void Local_Storage::setAppId(uint32 appid)
@@ -121,6 +128,11 @@ int Local_Storage::store_data_settings(std::string file, const char *data, unsig
 int Local_Storage::get_data(std::string folder, std::string file, char *data, unsigned int max_length, unsigned int offset)
 {
     return -1;
+}
+
+unsigned int Local_Storage::data_settings_size(std::string file)
+{
+    return 0;
 }
 
 int Local_Storage::get_data_settings(std::string file, char *data, unsigned int max_length)
@@ -185,7 +197,7 @@ std::vector<image_pixel_t> Local_Storage::load_image(std::string const& image_pa
 
 std::string Local_Storage::load_image_resized(std::string const& image_path, std::string const& image_data, int resolution)
 {
-    return "";
+    return empty_str;
 }
 
 bool Local_Storage::save_screenshot(std::string const& image_path, uint8_t* img_ptr, int32_t width, int32_t height, int32_t channels)
@@ -195,12 +207,12 @@ bool Local_Storage::save_screenshot(std::string const& image_path, uint8_t* img_
 
 std::string Local_Storage::sanitize_string(std::string name)
 {
-    return "";
+    return empty_str;
 }
 
 std::string Local_Storage::desanitize_string(std::string name)
 {
-    return "";
+    return empty_str;
 }
 
 #else
@@ -534,6 +546,11 @@ Local_Storage::Local_Storage(const std::string &save_directory)
     }
 }
 
+const std::string& Local_Storage::get_current_save_directory() const
+{
+    return this->save_directory;
+}
+
 void Local_Storage::setAppId(uint32 appid)
 {
     this->appid = std::to_string(appid) + PATH_SEPARATOR;
@@ -660,6 +677,13 @@ int Local_Storage::get_data(std::string folder, std::string file, char *data, un
 
     std::string full_path(save_directory + appid + folder + file);
     return get_file_data(full_path, data, max_length, offset);
+}
+
+unsigned int Local_Storage::data_settings_size(std::string file)
+{
+    file = sanitize_file_name(file);
+    std::string full_path(get_global_settings_path() + file);
+    return file_size_(full_path);
 }
 
 int Local_Storage::get_data_settings(std::string file, char *data, unsigned int max_length)
