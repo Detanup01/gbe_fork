@@ -503,6 +503,9 @@ static bool parse_local_save(std::string &save_path)
     if (!ptr || !ptr[0]) return false;
     
     save_path = common_helpers::to_absolute(common_helpers::string_strip(Settings::sanitize(ptr)), Local_Storage::get_program_path());
+    if (save_path.size() && save_path.back() != *PATH_SEPARATOR) {
+        save_path.push_back(*PATH_SEPARATOR);
+    }
     PRINT_DEBUG("using local save path '%s'", save_path.c_str());
     return true;
 }
@@ -1287,7 +1290,7 @@ static void parse_simple_features(class Settings *settings_client, class Setting
 
 static std::map<SettingsItf, std::string> old_itfs_map{};
 
-static bool try_load_steam_interfaces(std::string interfaces_path)
+static bool try_parse_old_steam_interfaces_file(std::string interfaces_path)
 {
     std::ifstream input( utf8_decode(interfaces_path) );
     if (!input.is_open()) return false;
@@ -1298,7 +1301,7 @@ static bool try_load_steam_interfaces(std::string interfaces_path)
         line.erase(std::remove(line.begin(), line.end(), '\n'), line.end());
         line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
         line.erase(std::remove(line.begin(), line.end(), '\t'), line.end());
-        PRINT_DEBUG("  line: |%s|", line.c_str());
+        PRINT_DEBUG("  valid line: |%s|", line.c_str());
 
 #define OLD_ITF_LINE(istr, itype) {                 \
     if (line.find(istr) != std::string::npos) {     \
@@ -1386,7 +1389,7 @@ static void load_all_config_settings()
 
             auto err = local_ini.LoadData(local_ini_file);
             local_ini_file.close();
-            PRINT_DEBUG("result of parsing local '%s' %i (success == 0)", config_file, (int)err);
+            PRINT_DEBUG("result of parsing ini in local settings '%s' %i (success == 0)", config_file, (int)err);
             if (err == SI_OK) {
                 merge_ini(local_ini);
             }
@@ -1399,18 +1402,43 @@ static void load_all_config_settings()
         }
     }
 
-    // now we can access get_user_appdata_path() which might have been changed by the above code
-    {
+    std::string local_save_folder{};
+    if (parse_local_save(local_save_folder) && local_save_folder.size()) {
+        CSimpleIniA local_ini{};
+        local_ini.SetUnicode();
+
+        for (const auto &config_file : config_files) {
+            std::ifstream local_ini_file( utf8_decode(local_save_folder + Local_Storage::settings_storage_folder + PATH_SEPARATOR + config_file), std::ios::binary | std::ios::in);
+            if (!local_ini_file.is_open()) continue;
+
+            auto err = local_ini.LoadData(local_ini_file);
+            local_ini_file.close();
+            PRINT_DEBUG("result of parsing ini in local save '%s' %i (success == 0)", config_file, (int)err);
+            if (err == SI_OK) {
+                merge_ini(local_ini, true);
+            }
+        }
+        
+        std::string saves_folder_name(common_helpers::string_strip(Settings::sanitize(local_ini.GetValue("user::saves", "saves_folder_name", ""))));
+        if (saves_folder_name.size()) {
+            Local_Storage::set_saves_folder_name(saves_folder_name);
+            PRINT_DEBUG("changed base folder for save data to '%s'", saves_folder_name.c_str());
+        }
+        
+        PRINT_DEBUG("global settings will be ignored since local save is being used");
+
+    } else { // only read global folder if we're not using local save
         CSimpleIniA global_ini{};
         global_ini.SetUnicode();
-
+        
+        // now we can access get_user_appdata_path() which might have been changed by the above code
         for (const auto &config_file : config_files) {
             std::ifstream ini_file( utf8_decode(Local_Storage::get_user_appdata_path() + Local_Storage::settings_storage_folder + PATH_SEPARATOR + config_file), std::ios::binary | std::ios::in);
             if (!ini_file.is_open()) continue;
             
             auto err = global_ini.LoadData(ini_file);
             ini_file.close();
-            PRINT_DEBUG("result of parsing global '%s' %i (success == 0)", config_file, (int)err);
+            PRINT_DEBUG("result of parsing global ini '%s' %i (success == 0)", config_file, (int)err);
             
             if (err == SI_OK) {
                 merge_ini(global_ini);
