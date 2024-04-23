@@ -64,18 +64,6 @@ itf_patts = [
     ( r'SteamMasterServerUpdater\d+', "masterserver_updater" ),
 ]
 
-def add_itf_line(itf: str, out_dict_ini: dict):
-    for itf_patt in itf_patts:
-        if re.match(itf_patt[0], itf):
-            merge_dict(out_dict_ini, {
-                'configs.app.ini': {
-                    'app::steam_interfaces': {
-                        itf_patt[1]: (itf, ''),
-                    },
-                }
-            })
-            return
-
 
 def main():
     is_windows = platform.system().lower() == "windows"
@@ -216,11 +204,6 @@ def main():
                     },
                 }
             })
-        elif file == 'steam_interfaces.txt':
-            with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
-                itf_lines = [lll.strip() for lll in fr.readlines() if lll.strip()]
-                for itf in itf_lines:
-                    add_itf_line(itf, out_dict_ini)
         elif file == 'overlay_hook_delay_sec.txt':
             with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
                 merge_dict(out_dict_ini, {

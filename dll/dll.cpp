@@ -78,7 +78,7 @@ static ISteamMasterServerUpdater *old_gamserver_masterupdater_instance{};
 
 
 
-static void load_old_interface_versions()
+static void load_old_steam_interfaces()
 {
     static bool loaded = false;
     
@@ -174,7 +174,7 @@ Steam_Client *get_steam_client()
         std::lock_guard<std::recursive_mutex> lock(global_mutex);
         // if we win the thread arbitration for the first time, this will still be null
         if (!steamclient_instance) {
-            load_old_interface_versions();
+            load_old_steam_interfaces();
             steamclient_instance = new Steam_Client();
         }
     }

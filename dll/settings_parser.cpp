@@ -1284,7 +1284,77 @@ static void parse_simple_features(class Settings *settings_client, class Setting
 }
 
 
+
 static std::map<SettingsItf, std::string> old_itfs_map{};
+
+static bool try_load_steam_interfaces(std::string interfaces_path)
+{
+    std::ifstream input( utf8_decode(interfaces_path) );
+    if (!input.is_open()) return false;
+
+    PRINT_DEBUG("Trying to parse old steam interfaces from '%s'", interfaces_path.c_str());
+    for( std::string line; std::getline( input, line ); ) {
+        line.erase(std::remove(line.begin(), line.end(), ' '), line.end());
+        line.erase(std::remove(line.begin(), line.end(), '\n'), line.end());
+        line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
+        line.erase(std::remove(line.begin(), line.end(), '\t'), line.end());
+        PRINT_DEBUG("  line: |%s|", line.c_str());
+
+#define OLD_ITF_LINE(istr, itype) {                 \
+    if (line.find(istr) != std::string::npos) {     \
+        old_itfs_map[itype] = line;                 \
+        continue;                                   \
+    }                                               \
+}
+
+        OLD_ITF_LINE("SteamClient", SettingsItf::CLIENT);
+
+        // NOTE: you must try to read the one with the most characters first
+        OLD_ITF_LINE("SteamGameServerStats", SettingsItf::GAMESERVER_STATS);
+        OLD_ITF_LINE("SteamGameServer", SettingsItf::GAMESERVER);
+
+        // NOTE: you must try to read the one with the most characters first
+        OLD_ITF_LINE("SteamMatchMakingServers", SettingsItf::MATCHMAKING_SERVERS);
+        OLD_ITF_LINE("SteamMatchMaking", SettingsItf::MATCHMAKING);
+
+        OLD_ITF_LINE("SteamUser", SettingsItf::USER);
+        OLD_ITF_LINE("SteamFriends", SettingsItf::FRIENDS);
+        OLD_ITF_LINE("SteamUtils", SettingsItf::UTILS);
+        OLD_ITF_LINE("STEAMUSERSTATS_INTERFACE_VERSION", SettingsItf::USER_STATS);
+        OLD_ITF_LINE("STEAMAPPS_INTERFACE_VERSION", SettingsItf::APPS);
+        OLD_ITF_LINE("SteamNetworking", SettingsItf::NETWORKING);
+        OLD_ITF_LINE("STEAMREMOTESTORAGE_INTERFACE_VERSION", SettingsItf::REMOTE_STORAGE);
+        OLD_ITF_LINE("STEAMSCREENSHOTS_INTERFACE_VERSION", SettingsItf::SCREENSHOTS);
+        OLD_ITF_LINE("STEAMHTTP_INTERFACE_VERSION", SettingsItf::HTTP);
+        OLD_ITF_LINE("STEAMUNIFIEDMESSAGES_INTERFACE_VERSION", SettingsItf::UNIFIED_MESSAGES);
+
+        OLD_ITF_LINE("STEAMCONTROLLER_INTERFACE_VERSION", SettingsItf::CONTROLLER);
+        OLD_ITF_LINE("SteamController", SettingsItf::CONTROLLER);
+
+        OLD_ITF_LINE("STEAMUGC_INTERFACE_VERSION", SettingsItf::UGC);
+        OLD_ITF_LINE("STEAMAPPLIST_INTERFACE_VERSION", SettingsItf::APPLIST);
+        OLD_ITF_LINE("STEAMMUSIC_INTERFACE_VERSION", SettingsItf::MUSIC);
+        OLD_ITF_LINE("STEAMMUSICREMOTE_INTERFACE_VERSION", SettingsItf::MUSIC_REMOTE);
+        OLD_ITF_LINE("STEAMHTMLSURFACE_INTERFACE_VERSION", SettingsItf::HTML_SURFACE);
+        OLD_ITF_LINE("STEAMINVENTORY_INTERFACE", SettingsItf::INVENTORY);
+        OLD_ITF_LINE("STEAMVIDEO_INTERFACE", SettingsItf::VIDEO);
+        OLD_ITF_LINE("SteamMasterServerUpdater", SettingsItf::MASTERSERVER_UPDATER);
+
+#undef OLD_ITF_LINE
+
+        PRINT_DEBUG("  NOT REPLACED |%s|", line.c_str());
+    }
+
+    return true;
+}
+
+static void parse_old_steam_interfaces()
+{
+    if (!try_parse_old_steam_interfaces_file(Local_Storage::get_game_settings_path() + "steam_interfaces.txt") &&
+        !try_parse_old_steam_interfaces_file(Local_Storage::get_program_path() + "steam_interfaces.txt")) {
+        PRINT_DEBUG("Couldn't load steam_interfaces.txt");
+    }
+}
 
 static void load_all_config_settings()
 {
@@ -1348,30 +1418,7 @@ static void load_all_config_settings()
         }
     }
 
-    old_itfs_map[SettingsItf::CLIENT] = ini.GetValue("app::steam_interfaces", "client", "");
-    old_itfs_map[SettingsItf::GAMESERVER_STATS] = ini.GetValue("app::steam_interfaces", "gameserver_stats", "");
-    old_itfs_map[SettingsItf::GAMESERVER] = ini.GetValue("app::steam_interfaces", "gameserver", "");
-    old_itfs_map[SettingsItf::MATCHMAKING_SERVERS] = ini.GetValue("app::steam_interfaces", "matchmaking_servers", "");
-    old_itfs_map[SettingsItf::MATCHMAKING] = ini.GetValue("app::steam_interfaces", "matchmaking", "");
-    old_itfs_map[SettingsItf::USER] = ini.GetValue("app::steam_interfaces", "user", "");
-    old_itfs_map[SettingsItf::FRIENDS] = ini.GetValue("app::steam_interfaces", "friends", "");
-    old_itfs_map[SettingsItf::UTILS] = ini.GetValue("app::steam_interfaces", "utils", "");
-    old_itfs_map[SettingsItf::USER_STATS] = ini.GetValue("app::steam_interfaces", "user_stats", "");
-    old_itfs_map[SettingsItf::APPS] = ini.GetValue("app::steam_interfaces", "apps", "");
-    old_itfs_map[SettingsItf::NETWORKING] = ini.GetValue("app::steam_interfaces", "networking", "");
-    old_itfs_map[SettingsItf::REMOTE_STORAGE] = ini.GetValue("app::steam_interfaces", "remote_storage", "");
-    old_itfs_map[SettingsItf::SCREENSHOTS] = ini.GetValue("app::steam_interfaces", "screenshots", "");
-    old_itfs_map[SettingsItf::HTTP] = ini.GetValue("app::steam_interfaces", "http", "");
-    old_itfs_map[SettingsItf::UNIFIED_MESSAGES] = ini.GetValue("app::steam_interfaces", "unified_messages", "");
-    old_itfs_map[SettingsItf::CONTROLLER] = ini.GetValue("app::steam_interfaces", "controller", "");
-    old_itfs_map[SettingsItf::UGC] = ini.GetValue("app::steam_interfaces", "ugc", "");
-    old_itfs_map[SettingsItf::APPLIST] = ini.GetValue("app::steam_interfaces", "applist", "");
-    old_itfs_map[SettingsItf::MUSIC] = ini.GetValue("app::steam_interfaces", "music", "");
-    old_itfs_map[SettingsItf::MUSIC_REMOTE] = ini.GetValue("app::steam_interfaces", "music_remote", "");
-    old_itfs_map[SettingsItf::HTML_SURFACE] = ini.GetValue("app::steam_interfaces", "html_surface", "");
-    old_itfs_map[SettingsItf::INVENTORY] = ini.GetValue("app::steam_interfaces", "inventory", "");
-    old_itfs_map[SettingsItf::VIDEO] = ini.GetValue("app::steam_interfaces", "video", "");
-    old_itfs_map[SettingsItf::MASTERSERVER_UPDATER] = ini.GetValue("app::steam_interfaces", "masterserver_updater", "");
+    parse_old_steam_interfaces();
 
 #ifndef EMU_RELEASE_BUILD
     // dump the final ini file

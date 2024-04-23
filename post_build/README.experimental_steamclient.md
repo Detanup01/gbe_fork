@@ -7,6 +7,7 @@ See both the regular and experimental readmes for how to configure it.
 ---
 
 **Note** that all emu config files should be put beside the `steamclient(64).dll`.  
+
 You do not need to create a `steam_interfaces.txt` file for the `steamclient` version of the emu.
 
 ---
