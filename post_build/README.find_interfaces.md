@@ -1,5 +1,5 @@
 ## What is this ?
-This tool will generate the ini section `app::steam_interfaces` which is **always** recommended to be created.
+This tool will generate the file `steam_interfaces.txt` which is **always** recommended to be created.
 
 ## How to use it ?
 1. * On Windows
@@ -14,8 +14,7 @@ This tool will generate the ini section `app::steam_interfaces` which is **alway
         chmod 777 generate_interfaces_file_x64 # make sure we can execute the binary
         generate_interfaces_file_x64 libsteam_api.so
         ```
-2. Copy the section `app::steam_interfaces` to your `configs.app.ini` 
-
+2. Copy the generated `steam_interfaces.txt` file inside the folder `steam_settings`
 ---
 
 In both cases, make sure the .dll/.so is **the original** one
