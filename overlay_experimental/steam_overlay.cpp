@@ -836,20 +836,16 @@ void Steam_Overlay::build_friend_window(Friend const& frd, friend_window_state& 
 // set the position of the next notification
 void Steam_Overlay::set_next_notification_pos(float width, float height, float font_size, notification_type type, struct NotificationsIndexes &idx)
 {
-    // Add window rounding
-    ImGuiStyle& style = ImGui::GetStyle();
-    style.WindowRounding = settings->overlay_appearance.notification_rounding;
-
+    // 0 on the y-axis is top, 0 on the x-axis is left
     const float noti_width = width * Notification::width_percent;
     float noti_height = Notification::height * font_size;
-    // 0 on the y-axis is top, 0 on the x-axis is left
-
+   
     // get the required position
     Overlay_Appearance::NotificationPosition pos = Overlay_Appearance::default_pos;
     switch (type) {
     case notification_type::notification_type_achievement: 
         pos = settings->overlay_appearance.ach_earned_pos; 
-        noti_height = settings->overlay_appearance.icon_size + style.FramePadding.y * Notification::height;
+        noti_height = settings->overlay_appearance.icon_size + ImGui::GetStyle().FramePadding.y * Notification::height;
         break;
     case notification_type::notification_type_invite: pos = settings->overlay_appearance.invite_pos; break;
     case notification_type::notification_type_message: pos = settings->overlay_appearance.chat_msg_pos; break;
@@ -907,6 +903,9 @@ void Steam_Overlay::build_notifications(int width, int height)
     float font_size = ImGui::GetFontSize();
     std::queue<Friend> friend_actions_temp{};
 
+    // Add window rounding
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, settings->overlay_appearance.notification_rounding);
+   
     NotificationsIndexes idx{};
     for (auto it = notifications.begin(); it != notifications.end(); ++it) {
         auto elapsed_notif = now - it->start_time;
@@ -1001,6 +1000,7 @@ void Steam_Overlay::build_notifications(int width, int height)
         ImGui::End();
 
         ImGui::PopStyleColor(3);
+        ImGui::PopStyleVar();
     }
 
     // erase all notifications whose visible time exceeded the max
