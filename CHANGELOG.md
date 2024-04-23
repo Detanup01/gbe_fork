@@ -1,3 +1,10 @@
+* fixed local saving + ignore the global settings folder entirely when using the local save option for a full portable behavior
+* reverted all changes made to `find_interfaces` tool and reverted the format back to the original one, which allows loading `steam_interfaces.txt`
+* don't use global appdata path in `matchmaking` + `matchmaking_servers`, instead use current/active save directory, in case we're using local_save_path
+* fixed a bug in the `settings_parser` which lead to unwanted disk write operations in the `lobby_connect` tool
+
+---
+
 ## 2024/4/21
 
 * **[Clompress]** corrected Turkish translation
