@@ -247,7 +247,7 @@ const char translationTestAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"Test achievement",
 
 	// 19 - Brazilian Portuguese
-  u8"Copiar ID",
+  u8"Test achievement",
 
 	// 20 - Romanian
   u8"Test achievement",

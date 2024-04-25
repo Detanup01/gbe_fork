@@ -1,9 +1,13 @@
+## 2024/4/25 (hotfix 1)
+
+* fixed mismatching push/pop for the overlay style, resulting in a crash when the default colors are changed
+
 ## 2024/4/25
 
 * **[schmurger]** improved achievement notification:
   - added new overlay appearance option `Notification_Rounding` which allows increasing the roundness of the notifications corners
   - the overlay ini file now contains color scheme similar to the one used in steam for the notification background
-* added a new button to the overlay `"Test achievement"` which triggeres a test achievement, suggested by **[Kirius88]**  
+* added a new button to the overlay `"Test achievement"` which triggers a test achievement, suggested by **[Kirius88]**  
   note that the icon for this test achievement is selected randomly from the current list of achievements
 * added a new overlay appearance option `Achievement_Unlock_Datetime_Format` which allows changing the date/time format of the unlocked achievements, suggested by **[Clompress]**
 * removed the condition which disabled the overlay sounds when it is shown, suggested by **[Vlxst]**

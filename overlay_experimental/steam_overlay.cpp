@@ -1338,6 +1338,7 @@ void Steam_Overlay::render_main_window()
                     if (ImGui::IsItemClicked() && ImGui::IsMouseDoubleClicked(0)) {
                         i.second.window_state |= window_state_show;
                     }
+
                     ImGui::PopID();
 
                     build_friend_window(i.first, i.second);
@@ -1465,9 +1466,11 @@ void Steam_Overlay::render_main_window()
             if (ImGui::Begin(URL_WINDOW_NAME, &show)) {
                 ImGui::Text("%s", translationSteamOverlayURL[current_language]);
                 ImGui::Spacing();
+
                 ImGui::PushItemWidth(ImGui::CalcTextSize(url.c_str()).x + 20);
                 ImGui::InputText("##url_copy", (char *)url.data(), url.size(), ImGuiInputTextFlags_ReadOnly);
                 ImGui::PopItemWidth();
+                
                 ImGui::Spacing();
                 if (ImGui::Button(translationClose[current_language]) || !show)
                     show_url = "";
