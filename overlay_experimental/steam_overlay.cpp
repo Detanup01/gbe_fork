@@ -840,7 +840,6 @@ void Steam_Overlay::set_next_notification_pos(float width, float height, const N
     
     auto &global_style = ImGui::GetStyle();
     const float padding_all_sides = 2 * (global_style.WindowPadding.y + global_style.WindowPadding.x);
-    PRINT_DEBUG("%f", padding_all_sides);
 
     const float msg_height = ImGui::CalcTextSize(
         noti.message.c_str(),
