@@ -188,6 +188,98 @@ const char translationCopyId[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"Copy ID",
 };
 
+const char translationTestAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"Test achievement",
+
+	// 1 - Arabic
+  u8"Test achievement",
+
+	// 2 - Bulgarian
+  u8"Test achievement",
+
+	// 3 - Simplified Chinese
+  u8"Test achievement",
+
+	// 4 - Traditional Chinese
+  u8"Test achievement",
+
+	// 5 - Czech
+  u8"Test achievement",
+
+	// 6 - Danish
+  u8"Test achievement",
+
+	// 7 - Dutch
+  u8"Test achievement",
+
+	// 8 - Finnish
+  u8"Test achievement",
+
+	// 9 - French
+  u8"Test achievement",
+
+	// 10 - German
+  u8"Test achievement",
+
+	// 11 - Greek
+  u8"Test achievement",
+
+	// 12 - Hungarian
+  u8"Test achievement",
+
+	// 13 - Italian
+  u8"Test achievement",
+
+	// 14 - Japanese
+  u8"Test achievement",
+
+	// 15 - Korean
+  u8"Test achievement",
+
+	// 16 - Norwegian
+  u8"Test achievement",
+
+	// 17 - Polish
+  u8"Test achievement",
+
+	// 18 - Portuguese
+  u8"Test achievement",
+
+	// 19 - Brazilian Portuguese
+  u8"Copiar ID",
+
+	// 20 - Romanian
+  u8"Test achievement",
+
+	// 21 - Russian
+  u8"Test achievement",
+
+	// 22 - Spanish
+  u8"Test achievement",
+
+	// 23 - Latin American
+  u8"Test achievement",
+
+	// 24 - Swedish
+  u8"Test achievement",
+
+	// 25 - Thai
+  u8"Test achievement",
+
+	// 26 - Turkish
+  u8"Test achievement",
+
+	// 27 - Ukrainian
+  u8"Test achievement",
+
+	// 28 - Vietnamese
+  u8"Test achievement",
+
+	// 29 - Croatian
+  u8"Test achievement",
+};
+
 // C:\Program Files (x86)\Steam\tenfoot\resource\localization\tenfoot_*.txt
 // Friends_ProfileDetails_Action_InviteToGame
 const char translationInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {

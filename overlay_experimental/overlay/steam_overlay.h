@@ -24,6 +24,7 @@ enum window_state
     window_state_rich_invite    = 1<<4,
     window_state_send_message   = 1<<5,
     window_state_need_attention = 1<<6,
+
 };
 
 struct friend_window_state
@@ -50,46 +51,46 @@ struct Friend_Less
     }
 };
 
-enum notification_type
+enum class notification_type
 {
-    notification_type_message = 0,
-    notification_type_invite,
-    notification_type_achievement,
-    notification_type_auto_accept_invite,
+    message = 0,
+    invite,
+    achievement,
+    auto_accept_invite,
 };
 
 struct Notification
 {
     static constexpr float width_percent = 0.25f; // percentage from total width
-    static constexpr float height = 6.5f;
     static constexpr std::chrono::milliseconds fade_in   = std::chrono::milliseconds(2000);
     static constexpr std::chrono::milliseconds fade_out  = std::chrono::milliseconds(2000);
     static constexpr std::chrono::milliseconds show_time = std::chrono::milliseconds(6000) + fade_in + fade_out;
     static constexpr std::chrono::milliseconds fade_out_start = show_time - fade_out;
 
-    int id;
-    uint8 type;
-    std::chrono::seconds start_time;
-    std::string message;
-    std::pair<const Friend, friend_window_state>* frd;
-    std::weak_ptr<uint64_t> icon;
+    int id{};
+    uint8 type{};
+    std::chrono::seconds start_time{};
+    std::string message{};
+    std::pair<const Friend, friend_window_state>* frd{};
+    std::weak_ptr<uint64_t> icon{};
 };
 
 struct Overlay_Achievement
 {
-    std::string name;
-    std::string title;
-    std::string description;
-    std::string icon_name;
-    std::string icon_gray_name;
-    bool hidden;
-    bool achieved;
-    uint32 unlock_time;
-    std::weak_ptr<uint64_t> icon;
-    std::weak_ptr<uint64_t> icon_gray;
-
     // avoids spam loading on failure
     constexpr const static int ICON_LOAD_MAX_TRIALS = 3;
+
+    std::string name{};
+    std::string title{};
+    std::string description{};
+    std::string icon_name{};
+    std::string icon_gray_name{};
+    bool hidden{};
+    bool achieved{};
+    uint32 unlock_time{};
+    std::weak_ptr<uint64_t> icon{};
+    std::weak_ptr<uint64_t> icon_gray{};
+
     uint8_t icon_load_trials = ICON_LOAD_MAX_TRIALS;
     uint8_t icon_gray_load_trials = ICON_LOAD_MAX_TRIALS;
 };
@@ -127,6 +128,7 @@ class Steam_Overlay
     bool show_overlay = false;
     bool show_achievements = false;
     bool show_settings = false;
+    bool show_test_ach = false;
 
     // warn when using local save
     bool warn_local_save = false;
@@ -185,7 +187,7 @@ class Steam_Overlay
     // Double click on friend
     void build_friend_window(Friend const& frd, friend_window_state &state);
     // Notifications like achievements, chat and invitations
-    void set_next_notification_pos(float width, float height, float font_size, notification_type type, struct NotificationsIndexes &idx);
+    void set_next_notification_pos(float width, float height, const Notification &noti, struct NotificationsIndexes &idx);
     void build_notifications(int width, int height);
     // invite a single friend
     void invite_friend(uint64 friend_id, class Steam_Friends* steamFriends, class Steam_Matchmaking* steamMatchmaking);
@@ -205,9 +207,8 @@ class Steam_Overlay
     void obscure_game_input(bool state);
 
     void add_auto_accept_invite_notification();
-
     void add_invite_notification(std::pair<const Friend, friend_window_state> &wnd_state);
-    
+    void post_achievement_notification(Overlay_Achievement &ach);
     void add_chat_message_notification(std::string const& message);
 
     bool open_overlay_hook(bool toggle);
