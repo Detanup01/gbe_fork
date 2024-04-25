@@ -30,7 +30,7 @@ del /f /q "*.spec"
 call "%venv%\Scripts\activate.bat"
 
 echo building migrate_gse...
-pyinstaller "main.py" --distpath "%out_dir%" -y --clean --onedir --name "migrate_gse" --noupx --console -i "NONE" --workpath "%build_temp_dir%" || (
+pyinstaller "main.py" --distpath "%out_dir%" -y --clean --onedir --name "migrate_gse" --noupx --console -i "NONE" --workpath "%build_temp_dir%" --specpath "%build_temp_dir%" || (
     set /a last_code=1
     goto :script_end
 )

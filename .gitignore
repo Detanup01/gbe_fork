@@ -17,7 +17,6 @@ tools/generate_emu_config/bin/
 tools/generate_emu_config/login_temp/
 tools/generate_emu_config/output/
 tools/generate_emu_config/**/__pycache__/
-tools/generate_emu_config/**/*.spec
 tools/generate_emu_config/**/my_login.txt
 tools/generate_emu_config/top_owners_ids.txt
 
@@ -27,6 +26,5 @@ tools/migrate_gse/.env*/
 tools/migrate_gse/.vscode/
 tools/migrate_gse/bin/
 tools/migrate_gse/**/__pycache__/
-tools/migrate_gse/**/*.spec
 
 third-party/

@@ -16,13 +16,13 @@ chmod 777 "./$venv/bin/activate"
 source "./$venv/bin/activate"
 
 echo building generate_emu_config...
-pyinstaller "generate_emu_config.py" --distpath "$out_dir" -y --clean --onedir --name "generate_emu_config" --noupx --console -i "NONE" --workpath "$build_temp_dir" --collect-submodules "steam" || exit 1
+pyinstaller "generate_emu_config.py" --distpath "$out_dir" -y --clean --onedir --name "generate_emu_config" --noupx --console -i "NONE" --collect-submodules "steam" --workpath "$build_temp_dir" --specpath "$build_temp_dir" || exit 1
 
 echo building parse_controller_vdf...
-pyinstaller "controller_config_generator/parse_controller_vdf.py" --distpath "$out_dir" -y --clean --onedir --name "parse_controller_vdf" --noupx --console -i "NONE" --workpath "$build_temp_dir" || exit 1
+pyinstaller "controller_config_generator/parse_controller_vdf.py" --distpath "$out_dir" -y --clean --onedir --name "parse_controller_vdf" --noupx --console -i "NONE" --workpath "$build_temp_dir" --specpath "$build_temp_dir" || exit 1
 
 echo building parse_achievements_schema...
-pyinstaller "stats_schema_achievement_gen/achievements_gen.py" --distpath "$out_dir" -y --clean --onedir --name "parse_achievements_schema" --noupx --console -i "NONE" --workpath "$build_temp_dir" || exit 1
+pyinstaller "stats_schema_achievement_gen/achievements_gen.py" --distpath "$out_dir" -y --clean --onedir --name "parse_achievements_schema" --noupx --console -i "NONE" --workpath "$build_temp_dir" --specpath "$build_temp_dir" || exit 1
 
 cp -f "steam_default_icon_locked.jpg" "$out_dir/generate_emu_config"
 cp -f "steam_default_icon_unlocked.jpg" "$out_dir/generate_emu_config"
