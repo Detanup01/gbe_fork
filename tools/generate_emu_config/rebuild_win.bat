@@ -6,7 +6,8 @@ pushd "%~dp0"
 set "venv=.env-win"
 set "out_dir=bin\win"
 set "build_temp_dir=bin\tmp\win"
-set "icon_file=icon\Froyoshark-Enkel-Steam.ico"
+:: relative to build_temp_dir
+set "icon_file=..\..\..\icon\Froyoshark-Enkel-Steam.ico"
 set "signer_tool=..\..\third-party\build\win\cert\sign_helper.bat"
 
 set /a last_code=0
