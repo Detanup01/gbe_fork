@@ -39,13 +39,15 @@ Steam_Matchmaking_Servers::~Steam_Matchmaking_Servers()
     this->network->rmCallback(CALLBACK_ID_GAMESERVER, (uint64) 0, &network_callback, this);
 }
 
-static int server_list_request = 0;
+static unsigned server_list_request = 0;
 
 HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, ISteamMatchmakingServerListResponse *pRequestServersResponse, EMatchMakingType type)
 {
     PRINT_DEBUG("%u %p, %i", iApp, pRequestServersResponse, (int)type);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
     ++server_list_request;
+    if (!server_list_request) server_list_request = 1;
     HServerListRequest id = (char *)0 + server_list_request; // (char *)0 silences the compiler warning
 
     if (settings->matchmaking_server_list_always_lan_type) {
@@ -62,20 +64,20 @@ HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, IS
     request.type = type;
     request.id = id;
     requests.push_back(request);
-    PRINT_DEBUG("id: %p", id);
+    PRINT_DEBUG("pushed new request with id: %p", request.id);
 
     if (type == eLANServer) return id;
 
     if (type == eFriendsServer) {
         for (auto &g : gameservers_friends) {
             if (g.source_id != settings->get_local_steam_id().ConvertToUint64()) {
-                Gameserver server;
+                Gameserver server{};
                 server.set_ip(g.ip);
                 server.set_port(g.port);
                 server.set_query_port(g.port);
                 server.set_appid(iApp);
 
-                struct Steam_Matchmaking_Servers_Gameserver g2;
+                struct Steam_Matchmaking_Servers_Gameserver g2{};
                 g2.last_recv = std::chrono::high_resolution_clock::now();
                 g2.server = server;
                 g2.type = type;
@@ -131,18 +133,18 @@ HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, IS
             continue;
         }
 
-        Gameserver server;
+        Gameserver server{};
         server.set_ip(ip_int);
         server.set_port(port_int);
         server.set_query_port(port_int);
         server.set_appid(iApp);
 
-        struct Steam_Matchmaking_Servers_Gameserver g;
+        struct Steam_Matchmaking_Servers_Gameserver g{};
         g.last_recv = std::chrono::high_resolution_clock::now();
         g.server = server;
         g.type = type;
         gameservers.push_back(g);
-        PRINT_DEBUG("  SERVER ADDED");
+        PRINT_DEBUG("  SERVER ADDED %i", (int)g.type);
 
         list_ip = "";
     }
@@ -213,6 +215,7 @@ void Steam_Matchmaking_Servers::RequestOldServerList(AppId_t iApp, ISteamMatchma
     request.type = type;
     request.id = (void *)type;
     requests.push_back(request);
+    PRINT_DEBUG("pushed new request with id: %p", request.id);
 }
 
 void Steam_Matchmaking_Servers::RequestInternetServerList( AppId_t iApp, MatchMakingKeyValuePair_t **ppchFilters, uint32 nFilters, ISteamMatchmakingServerListResponse001 *pRequestServersResponse )
@@ -272,6 +275,7 @@ void Steam_Matchmaking_Servers::ReleaseRequest( HServerListRequest hServerListRe
             //TODO: eventually delete the released request.
             g->cancelled = true;
             g->released = true;
+            PRINT_DEBUG("released request with id: %p", g->id);
         }
 
         ++g;
@@ -601,6 +605,7 @@ void Steam_Matchmaking_Servers::CancelQuery( HServerListRequest hRequest )
     while (g != std::end(requests)) {
         if (g->id == hRequest) {
             g->cancelled = true;
+            PRINT_DEBUG("canceled request with id: %p", g->id);
         }
 
         ++g;
@@ -643,6 +648,7 @@ int Steam_Matchmaking_Servers::GetServerCount( HServerListRequest hRequest )
         ++g;
     }
 
+    PRINT_DEBUG("final count = %i", size);
     return size;
 }
 
@@ -719,7 +725,7 @@ HServerQuery Steam_Matchmaking_Servers::ServerRules( uint32 unIP, uint16 usPort,
 // to one of the above calls to avoid crashing when callbacks occur.
 void Steam_Matchmaking_Servers::CancelServerQuery( HServerQuery hServerQuery )
 {
-    PRINT_DEBUG("Steam_Matchmaking_Servers::CancelServerQuery");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     auto r = std::find_if(direct_ip_requests.begin(), direct_ip_requests.end(), [&hServerQuery](Steam_Matchmaking_Servers_Direct_IP_Request const& item) { return item.id == hServerQuery; });
     if (direct_ip_requests.end() == r) return;
@@ -735,7 +741,7 @@ void Steam_Matchmaking_Servers::RunCallbacks()
         while (g != std::end(gameservers)) {
             if (check_timedout(g->last_recv, SERVER_TIMEOUT)) {
                 g = gameservers.erase(g);
-                PRINT_DEBUG("TIMEOUT");
+                PRINT_DEBUG("SERVER REMOVED, TIMEOUT");
             } else {
                 ++g;
             }
@@ -868,13 +874,13 @@ void Steam_Matchmaking_Servers::Callback(Common_Message *msg)
             }
 
             if (!already) {
-                struct Steam_Matchmaking_Servers_Gameserver g;
+                struct Steam_Matchmaking_Servers_Gameserver g{};
                 g.last_recv = std::chrono::high_resolution_clock::now();
                 g.server = msg->gameserver();
                 g.server.set_ip(msg->source_ip());
                 g.type = eLANServer;
                 gameservers.push_back(g);
-                PRINT_DEBUG("ADDED");
+                PRINT_DEBUG("  eLANServer SERVER ADDED");
             }
         }
     }
