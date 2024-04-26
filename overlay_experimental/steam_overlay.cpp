@@ -940,14 +940,18 @@ void Steam_Overlay::set_next_notification_pos(float width, float height, float e
 float Steam_Overlay::animate_factor(float elapsed)
 {
     float factor = 0.0f;
+    float animation_duration = settings->overlay_appearance.notification_animation * 1000;
     PRINT_DEBUG("ELAPSED %f", elapsed);
-    if (elapsed < Notification::animation_duration) {
-        factor = 1 - (elapsed / Notification::animation_duration);
-        PRINT_DEBUG("SHOW FACTOR %f", factor);
-    }
-    else if (elapsed > Notification::show_time.count() - Notification::animation_duration) {
-        factor = 1 - (Notification::show_time.count() - elapsed) / Notification::animation_duration;
-        PRINT_DEBUG("HIDE FACTOR %f", factor);
+    
+    if (animation_duration > 0) {
+        if (elapsed < animation_duration) {
+            factor = 1 - (elapsed / animation_duration);
+            PRINT_DEBUG("SHOW FACTOR %f", factor);
+        }
+        else if (elapsed > Notification::show_time.count() - animation_duration) {
+            factor = 1 - (Notification::show_time.count() - elapsed) / animation_duration;
+            PRINT_DEBUG("HIDE FACTOR %f", factor);
+        }
     }
     
     return factor;

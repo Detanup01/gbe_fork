@@ -62,7 +62,6 @@ enum class notification_type
 struct Notification
 {
     static constexpr float width_percent = 0.25f; // percentage from total width
-    static constexpr float animation_duration = 500.0f; //animation duration in miliseconds
     static constexpr std::chrono::milliseconds fade_in   = std::chrono::milliseconds(2000);
     static constexpr std::chrono::milliseconds fade_out  = std::chrono::milliseconds(2000);
     static constexpr std::chrono::milliseconds show_time = std::chrono::milliseconds(6000) + fade_in + fade_out;

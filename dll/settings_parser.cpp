@@ -256,6 +256,10 @@ static void load_overlay_appearance(class Settings *settings_client, class Setti
                 float nnotification_rounding = std::stof(value, NULL);
                 settings_client->overlay_appearance.notification_rounding = nnotification_rounding;
                 settings_server->overlay_appearance.notification_rounding = nnotification_rounding;
+            } else if (name.compare("Notification_Animation") == 0) {
+                float nnotification_animation = std::stof(value, NULL);
+                settings_client->overlay_appearance.notification_animation = nnotification_animation;
+                settings_server->overlay_appearance.notification_animation = nnotification_animation;
             } else if (name.compare("Achievement_Unlock_Datetime_Format") == 0) {
                 settings_client->overlay_appearance.ach_unlock_datetime_format = value;
                 settings_server->overlay_appearance.ach_unlock_datetime_format = value;

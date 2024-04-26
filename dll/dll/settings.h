@@ -125,6 +125,7 @@ struct Overlay_Appearance {
     float notification_b = 0.48f;
     float notification_a = 1.0f;
     float notification_rounding = 0.0f;
+    float notification_animation = 0.0f;
     std::string ach_unlock_datetime_format = "%Y/%m/%d - %H:%M:%S";
     
     float background_r = -1.0f;
