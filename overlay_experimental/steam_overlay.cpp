@@ -885,28 +885,28 @@ void Steam_Overlay::set_next_notification_pos(float width, float height, float e
     float animate_size = 0.f;
 
     switch (pos) {
-        // top
+    // top
     case Overlay_Appearance::NotificationPosition::top_left:
         animate_size = animate_factor(elapsed) * noti_width;
         margin_y = anchor_margin * (idx.top_left + 1);
         x = anchor_margin - animate_size;
         y = margin_y + noti_height * idx.top_left;
         ++idx.top_left;
-        break;
+    break;
     case Overlay_Appearance::NotificationPosition::top_center:
         animate_size = animate_factor(elapsed) * noti_height;
         margin_y = anchor_margin * (idx.top_center + 1);
         x = (width / 2) - (noti_width / 2);
         y = (margin_y + noti_height * idx.top_center) - animate_size;
         ++idx.top_center;
-        break;
+    break;
     case Overlay_Appearance::NotificationPosition::top_right:
         animate_size = animate_factor(elapsed) * noti_width;
         margin_y = anchor_margin * (idx.top_right + 1);
         x = (width - noti_width - anchor_margin) + animate_size;
         y = margin_y * (idx.top_center + 1) + noti_height * idx.top_right;
         ++idx.top_right;
-        break;
+    break;
 
         // bot
     case Overlay_Appearance::NotificationPosition::bot_left:
@@ -915,21 +915,21 @@ void Steam_Overlay::set_next_notification_pos(float width, float height, float e
         x = anchor_margin - animate_size;
         y = height - noti_height * (idx.bot_left + 1) - margin_y;
         ++idx.bot_left;
-        break;
+    break;
     case Overlay_Appearance::NotificationPosition::bot_center:
         animate_size = animate_factor(elapsed) * noti_height;
         margin_y = anchor_margin * (idx.bot_center + 1);
         x = (width / 2) - (noti_width / 2);
         y = height - noti_height * (idx.bot_center + 1) - margin_y + animate_size;
         ++idx.bot_center;
-        break;
+    break;
     case Overlay_Appearance::NotificationPosition::bot_right:
         animate_size = animate_factor(elapsed) * noti_width;
         margin_y = anchor_margin * (idx.bot_right + 1);
         x = width - noti_width - anchor_margin + animate_size;
         y = height - noti_height * (idx.bot_right + 1) - margin_y;
         ++idx.bot_right;
-        break;
+    break;
 
     default: /* satisfy compiler warning */ break;
     }
@@ -967,7 +967,7 @@ void Steam_Overlay::build_notifications(int width, int height)
     NotificationsIndexes idx{};
     for (auto it = notifications.begin(); it != notifications.end(); ++it) {
         auto elapsed_notif = now - it->start_time;
-        
+
         set_next_notification_pos(width, height, elapsed_notif.count(), *it, idx);
 
         if ( elapsed_notif < Notification::fade_in) { // still appearing (fading in)
