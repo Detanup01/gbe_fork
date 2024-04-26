@@ -908,7 +908,7 @@ void Steam_Overlay::set_next_notification_pos(float width, float height, float e
         ++idx.top_right;
     break;
 
-        // bot
+    // bot
     case Overlay_Appearance::NotificationPosition::bot_left:
         animate_size = animate_factor(elapsed) * noti_width;
         margin_y = anchor_margin * (idx.bot_left + 1);
