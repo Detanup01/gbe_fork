@@ -62,6 +62,7 @@ enum class notification_type
 struct Notification
 {
     static constexpr float width_percent = 0.25f; // percentage from total width
+    static constexpr float animation_duration = 500.0f; //animation duration in miliseconds
     static constexpr std::chrono::milliseconds fade_in   = std::chrono::milliseconds(2000);
     static constexpr std::chrono::milliseconds fade_out  = std::chrono::milliseconds(2000);
     static constexpr std::chrono::milliseconds show_time = std::chrono::milliseconds(6000) + fade_in + fade_out;
@@ -187,7 +188,8 @@ class Steam_Overlay
     // Double click on friend
     void build_friend_window(Friend const& frd, friend_window_state &state);
     // Notifications like achievements, chat and invitations
-    void set_next_notification_pos(float width, float height, const Notification &noti, struct NotificationsIndexes &idx);
+    void set_next_notification_pos(float width, float height, float elapsed, const Notification &noti, struct NotificationsIndexes &idx);
+    float animate_factor(float elapsed);
     void build_notifications(int width, int height);
     // invite a single friend
     void invite_friend(uint64 friend_id, class Steam_Friends* steamFriends, class Steam_Matchmaking* steamMatchmaking);
