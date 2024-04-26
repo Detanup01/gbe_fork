@@ -875,8 +875,6 @@ void Steam_Overlay::set_next_notification_pos(float width, float height, float e
     default: /* satisfy compiler warning */ break;
     }
 
-   
-
     // 0 on the y-axis is top, 0 on the x-axis is left
     float x = 0.0f;
     float y = 0.0f;
