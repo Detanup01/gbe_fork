@@ -127,7 +127,7 @@ Auth_Data Auth_Manager::getTicketData( void *pTicket, int cbMaxTicket, uint32 *p
         }
         std::vector<uint8_t> ser = ticket_data.Serialize();
         *pcbTicket = ser.size();
-        memset(pTicket, 0, ser.size()));
+        memset(pTicket, 0, ser.size());
         memcpy(pTicket, ser.data(), ser.size());
     }
     else
