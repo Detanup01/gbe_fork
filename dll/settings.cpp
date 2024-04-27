@@ -171,27 +171,6 @@ void Settings::set_port(uint16 port)
     this->port = port;
 }
 
-void Settings::unlockAllDLC(bool value)
-{
-    this->unlockAllDLCs = value;
-}
-
-void Settings::addDLC(AppId_t appID, std::string name, bool available)
-{
-    auto f = std::find_if(DLCs.begin(), DLCs.end(), [&appID](DLC_entry const& item) { return item.appID == appID; });
-    if (DLCs.end() != f) {
-        f->name = name;
-        f->available = available;
-        return;
-    }
-
-    DLC_entry new_entry;
-    new_entry.appID = appID;
-    new_entry.name = name;
-    new_entry.available = available;
-    DLCs.push_back(new_entry);
-}
-
 void Settings::addMod(PublishedFileId_t id, const std::string &title, const std::string &path)
 {
     auto f = std::find_if(mods.begin(), mods.end(), [&id](Mod_entry const& item) { return item.id == id; });
@@ -269,9 +248,30 @@ std::set<PublishedFileId_t> Settings::modSet()
     return ret_set;
 }
 
-unsigned int Settings::DLCCount()
+void Settings::unlockAllDLC(bool value)
 {
-    return this->DLCs.size();
+    this->unlockAllDLCs = value;
+}
+
+void Settings::addDLC(AppId_t appID, std::string name, bool available)
+{
+    auto f = std::find_if(DLCs.begin(), DLCs.end(), [&appID](DLC_entry const& item) { return item.appID == appID; });
+    if (DLCs.end() != f) {
+        f->name = name;
+        f->available = available;
+        return;
+    }
+
+    DLC_entry new_entry{};
+    new_entry.appID = appID;
+    new_entry.name = name;
+    new_entry.available = available;
+    DLCs.push_back(new_entry);
+}
+
+unsigned int Settings::DLCCount() const
+{
+    return static_cast<unsigned int>(this->DLCs.size());
 }
 
 bool Settings::hasDLC(AppId_t appID)
@@ -279,10 +279,11 @@ bool Settings::hasDLC(AppId_t appID)
     if (this->unlockAllDLCs) return true;
 
     auto f = std::find_if(DLCs.begin(), DLCs.end(), [&appID](DLC_entry const& item) { return item.appID == appID; });
-    if (DLCs.end() == f)
-        return false;
+    if (DLCs.end() != f) return f->available;
 
-    return f->available;
+    if (enable_builtin_preowned_ids && steam_preowned_app_ids.count(appID)) return true;
+
+    return false;
 }
 
 bool Settings::getDLC(unsigned int index, AppId_t &appID, bool &available, std::string &name)
@@ -295,17 +296,23 @@ bool Settings::getDLC(unsigned int index, AppId_t &appID, bool &available, std::
     return true;
 }
 
-bool Settings::allDLCUnlocked() const
+void Settings::assumeAnyAppInstalled(bool val)
 {
-    return this->unlockAllDLCs;
+    assume_any_app_installed = val;
 }
 
-void Settings::addSteamPreownedIds()
+void Settings::addInstalledApp(AppId_t appID)
 {
-    for (const auto &id_pair : steam_preowned_app_ids) {
-        addDLC(id_pair.first, id_pair.second, true);
-        installed_app_ids.insert(id_pair.first);
-    }
+    installed_app_ids.insert(appID);
+}
+
+bool Settings::isAppInstalled(AppId_t appID) const
+{
+    if (assume_any_app_installed) return true;
+    if (installed_app_ids.count(appID)) return true;
+    if (enable_builtin_preowned_ids && steam_preowned_app_ids.count(appID)) return true;
+
+    return false;
 }
 
 void Settings::setAppInstallPath(AppId_t appID, const std::string &path)
@@ -352,13 +359,6 @@ int Settings::add_image(const std::string &data, uint32 width, uint32 height)
     dt.data = data;
     images[last] = dt;
     return last;
-}
-
-bool Settings::appIsInstalled(AppId_t appID)
-{
-    if (this->assume_any_app_installed) return true;
-
-    return !!installed_app_ids.count(appID);
 }
 
 

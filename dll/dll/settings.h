@@ -174,14 +174,20 @@ class Settings {
     std::string language{}; // default "english"
     CSteamID lobby_id = k_steamIDNil;
 
-    bool unlockAllDLCs = true;
     bool offline = false;
+    uint16 port{}; // Listen port, default 47584
+
+    bool unlockAllDLCs = true;
     std::vector<struct DLC_entry> DLCs{};
-    std::vector<struct Mod_entry> mods{};
+    
+    //installed app ids, Steam_Apps::BIsAppInstalled()
+    bool assume_any_app_installed = true;
+    std::set<AppId_t> installed_app_ids{};
+
     std::map<AppId_t, std::string> app_paths{};
+    std::vector<struct Mod_entry> mods{};
     std::map<std::string, Leaderboard_config> leaderboards{};
     std::map<std::string, Stat_config> stats{};
-    uint16 port{}; // Listen port, default 47584
 
     //supported languages
     std::set<std::string> supported_languages_set{};
@@ -231,6 +237,9 @@ public:
     // setting this env var conflicts with Steam Input
     bool disable_steamoverlaygameid_env_var = false;
 
+    // enable owning Steam Applications IDs (mostly builtin apps + dedicated servers)
+    bool enable_builtin_preowned_ids = false;
+
     std::map<int, struct Image_Data> images{};
 
     //subscribed lobby/group ids
@@ -248,9 +257,6 @@ public:
     struct Controller_Settings controller_settings{};
     std::string glyphs_directory{};
 
-    //installed app ids, Steam_Apps::BIsAppInstalled()
-    std::set<AppId_t> installed_app_ids{};
-    bool assume_any_app_installed = true;
 
     // allow Steam_User_Stats::FindLeaderboard() to always succeed and create the given unknown leaderboard
     bool disable_leaderboards_create_unknown = false;
@@ -312,12 +318,14 @@ public:
     //DLC stuff
     void unlockAllDLC(bool value);
     void addDLC(AppId_t appID, std::string name, bool available);
-    unsigned int DLCCount();
+    unsigned int DLCCount() const;
     bool hasDLC(AppId_t appID);
     bool getDLC(unsigned int index, AppId_t &appID, bool &available, std::string &name);
-    bool allDLCUnlocked() const;
-    // add Steam Applications IDS (mostly builtin apps + dedicated servers) to the list
-    void addSteamPreownedIds();
+
+    //installed apps, used by Steam_Apps::BIsAppInstalled()
+    void assumeAnyAppInstalled(bool val);
+    void addInstalledApp(AppId_t appID);
+    bool isAppInstalled(AppId_t appID) const;
 
     //App Install paths
     void setAppInstallPath(AppId_t appID, const std::string &path);
@@ -340,8 +348,6 @@ public:
 
     //images
     int add_image(const std::string &data, uint32 width, uint32 height);
-
-    bool appIsInstalled(AppId_t appID);
 
     // overlay auto accept stuff
     void acceptAnyOverlayInvites(bool value);

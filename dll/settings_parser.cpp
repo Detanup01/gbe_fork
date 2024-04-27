@@ -866,8 +866,8 @@ static void parse_installed_app_Ids(class Settings *settings_client, class Setti
     std::string installed_apps_list_path = Local_Storage::get_game_settings_path() + "installed_app_ids.txt";
     std::ifstream input( utf8_decode(installed_apps_list_path) );
     if (input.is_open()) {
-        settings_client->assume_any_app_installed = false;
-        settings_server->assume_any_app_installed = false;
+        settings_client->assumeAnyAppInstalled(false);
+        settings_server->assumeAnyAppInstalled(false);
         PRINT_DEBUG("Limiting/Locking installed apps");
         common_helpers::consume_bom(input);
         for( std::string line; getline( input, line ); ) {
@@ -881,14 +881,14 @@ static void parse_installed_app_Ids(class Settings *settings_client, class Setti
 
             try {
                 AppId_t app_id = std::stoul(line);
-                settings_client->installed_app_ids.insert(app_id);
-                settings_server->installed_app_ids.insert(app_id);
+                settings_client->addInstalledApp(app_id);
+                settings_server->addInstalledApp(app_id);
                 PRINT_DEBUG("Added installed app with ID %u", app_id);
             } catch (...) {}
         }
     } else {
-        settings_client->assume_any_app_installed = true;
-        settings_server->assume_any_app_installed = true;
+        settings_client->assumeAnyAppInstalled(true);
+        settings_server->assumeAnyAppInstalled(true);
         PRINT_DEBUG("Assuming any app is installed");
     }
 
@@ -1212,17 +1212,6 @@ static void parse_overlay_general_config(class Settings *settings_client, class 
 
 }
 
-// main::misc::disable_steam_preowned_ids
-static void parse_steam_preowned_ids(class Settings *settings_client, class Settings *settings_server)
-{
-    bool disable_steam_preowned_ids = ini.GetBoolValue("main::misc", "disable_steam_preowned_ids", false);
-    if (!disable_steam_preowned_ids) {
-        settings_client->addSteamPreownedIds();
-        settings_server->addSteamPreownedIds();
-        PRINT_DEBUG("added Steam preowned IDs");
-    }
-}
-
 // mainly enable/disable features
 static void parse_simple_features(class Settings *settings_client, class Settings *settings_server)
 {
@@ -1295,6 +1284,8 @@ static void parse_simple_features(class Settings *settings_client, class Setting
     settings_client->disable_steamoverlaygameid_env_var = ini.GetBoolValue("main::misc", "disable_steamoverlaygameid_env_var", settings_client->disable_steamoverlaygameid_env_var);
     settings_server->disable_steamoverlaygameid_env_var = ini.GetBoolValue("main::misc", "disable_steamoverlaygameid_env_var", settings_server->disable_steamoverlaygameid_env_var);
 
+    settings_client->enable_builtin_preowned_ids = ini.GetBoolValue("main::misc", "enable_steam_preowned_ids", settings_client->enable_builtin_preowned_ids);
+    settings_server->enable_builtin_preowned_ids = ini.GetBoolValue("main::misc", "enable_steam_preowned_ids", settings_server->enable_builtin_preowned_ids);
 }
 
 
@@ -1556,7 +1547,6 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     parse_dlc(settings_client, settings_server);
     parse_installed_app_Ids(settings_client, settings_server);
     parse_app_paths(settings_client, settings_server, program_path);
-    parse_steam_preowned_ids(settings_client, settings_server);
 
     parse_leaderboards(settings_client, settings_server);
     parse_stats(settings_client, settings_server);

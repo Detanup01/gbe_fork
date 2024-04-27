@@ -329,7 +329,7 @@ bool Steam_Apps::BIsAppInstalled( AppId_t appID )
     // the docs say that this function won't work on DLCs, but HITMAN 3 uses it on every DLC
     if (settings->hasDLC(appID)) return true;
 
-    return settings->appIsInstalled(appID);
+    return settings->isAppInstalled(appID);
 }
 
 // returns the SteamID of the original owner. If different from current user, it's borrowed
