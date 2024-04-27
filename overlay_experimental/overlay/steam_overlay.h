@@ -69,7 +69,7 @@ struct Notification
 
     int id{};
     uint8 type{};
-    std::chrono::seconds start_time{};
+    std::chrono::milliseconds start_time{};
     std::string message{};
     std::pair<const Friend, friend_window_state>* frd{};
     std::weak_ptr<uint64_t> icon{};
@@ -187,8 +187,9 @@ class Steam_Overlay
     // Double click on friend
     void build_friend_window(Friend const& frd, friend_window_state &state);
     // Notifications like achievements, chat and invitations
-    void set_next_notification_pos(float width, float height, float elapsed, const Notification &noti, struct NotificationsIndexes &idx);
-    float animate_factor(float elapsed);
+    void set_next_notification_pos(float width, float height, std::chrono::milliseconds elapsed, const Notification &noti, struct NotificationsIndexes &idx);
+    // factor controlling the amount of sliding during the animation, 0 means disabled
+    float animate_factor(std::chrono::milliseconds elapsed);
     void build_notifications(int width, int height);
     // invite a single friend
     void invite_friend(uint64 friend_id, class Steam_Friends* steamFriends, class Steam_Matchmaking* steamMatchmaking);

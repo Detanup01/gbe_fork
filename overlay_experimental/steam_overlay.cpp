@@ -604,7 +604,7 @@ bool Steam_Overlay::submit_notification(notification_type type, const std::strin
     }
 
     Notification notif{};
-    notif.start_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
+    notif.start_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
     notif.id = id;
     notif.type = (uint8)type;
     notif.message = msg;
@@ -834,7 +834,7 @@ void Steam_Overlay::build_friend_window(Friend const& frd, friend_window_state& 
 }
 
 // set the position of the next notification
-void Steam_Overlay::set_next_notification_pos(float width, float height, float elapsed, const Notification &noti, struct NotificationsIndexes &idx)
+void Steam_Overlay::set_next_notification_pos(float width, float height, std::chrono::milliseconds elapsed, const Notification &noti, struct NotificationsIndexes &idx)
 {
     const float noti_width = width * Notification::width_percent;
     
@@ -878,9 +878,9 @@ void Steam_Overlay::set_next_notification_pos(float width, float height, float e
     // 0 on the y-axis is top, 0 on the x-axis is left
     float x = 0.0f;
     float y = 0.0f;
-    float anchor_margin = 10.0f;
-    float margin_y = 0.f;
-    float animate_size = 0.f;
+    float anchor_margin = 5.0f;
+    float margin_y = 0.0f;
+    float animate_size = 0.0f;
 
     switch (pos) {
     // top
@@ -937,20 +937,23 @@ void Steam_Overlay::set_next_notification_pos(float width, float height, float e
     ImGui::SetNextWindowBgAlpha(0.9f);
 }
 
-float Steam_Overlay::animate_factor(float elapsed)
+float Steam_Overlay::animate_factor(std::chrono::milliseconds elapsed)
 {
+    if (settings->overlay_appearance.notification_animation <= 0) return 0.0f; // no animation
+
+    std::chrono::milliseconds animation_duration(settings->overlay_appearance.notification_animation);
+    // PRINT_DEBUG("ELAPSED %u/%u", (uint32)elapsed.count(), (uint32)animation_duration.count());
+
     float factor = 0.0f;
-    float animation_duration = settings->overlay_appearance.notification_animation * 1000;
-    PRINT_DEBUG("ELAPSED %f", elapsed);
-    
-    if (animation_duration > 0) {
-        if (elapsed < animation_duration) {
-            factor = 1 - (elapsed / animation_duration);
-            PRINT_DEBUG("SHOW FACTOR %f", factor);
-        }
-        else if (elapsed > Notification::show_time.count() - animation_duration) {
-            factor = 1 - (Notification::show_time.count() - elapsed) / animation_duration;
-            PRINT_DEBUG("HIDE FACTOR %f", factor);
+    if (elapsed < animation_duration) { // sliding in
+        factor = 1.0f - (static_cast<float>(elapsed.count()) / animation_duration.count());
+        // PRINT_DEBUG("SHOW FACTOR %f", factor);
+    } else {
+         // time between sliding in/out animation
+        auto steady_time = Notification::show_time - animation_duration;
+        if (elapsed > steady_time) {
+            factor = 1.0f - static_cast<float>((Notification::show_time - elapsed).count()) / animation_duration.count();
+            // PRINT_DEBUG("HIDE FACTOR %f", factor);
         }
     }
     
@@ -970,7 +973,7 @@ void Steam_Overlay::build_notifications(int width, int height)
     for (auto it = notifications.begin(); it != notifications.end(); ++it) {
         auto elapsed_notif = now - it->start_time;
 
-        set_next_notification_pos(width, height, elapsed_notif.count(), *it, idx);
+        set_next_notification_pos(width, height, elapsed_notif, *it, idx);
 
         if ( elapsed_notif < Notification::fade_in) { // still appearing (fading in)
             float alpha = settings->overlay_appearance.notification_a * (elapsed_notif.count() / static_cast<float>(Notification::fade_in.count()));
@@ -1033,11 +1036,12 @@ void Steam_Overlay::build_notifications(int width, int height)
 
                 case notification_type::invite: {
                     ImGui::TextWrapped("%s", it->message.c_str());
-                    if (ImGui::Button(translationJoin[current_language]))
-                    {
+                    if (ImGui::Button(translationJoin[current_language])) {
                         it->frd->second.window_state |= window_state_join;
                         friend_actions_temp.push(it->frd->first);
-                        it->start_time = std::chrono::seconds(0);
+                        // when we click "accept game invite" from someone else, we want to remove this notification immediately since it's no longer relevant
+                        // this assignment will make the notification elapsed time insanely large
+                        it->start_time = std::chrono::milliseconds(0);
                     }
                 }
                 break;
