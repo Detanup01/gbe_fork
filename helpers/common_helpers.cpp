@@ -21,7 +21,7 @@ static bool create_dir_impl(std::filesystem::path &dirpath)
 
 bool common_helpers::create_dir(const std::string_view &filepath)
 {
-    std::filesystem::path parent(std::filesystem::path(filepath).parent_path());
+    std::filesystem::path parent(std::filesystem::u8path(filepath).parent_path());
     return create_dir_impl(parent);
 }
 
@@ -231,17 +231,17 @@ static std::filesystem::path to_absolute_impl(const std::filesystem::path &path,
 
 std::string common_helpers::to_absolute(const std::string_view &path, const std::string_view &base)
 {
-    if (path.empty()) return std::string(path);
+    if (path.empty()) return {};
     auto path_abs = to_absolute_impl(
-        std::filesystem::path(path),
-        base.empty() ? std::filesystem::current_path() : std::filesystem::path(base)
+        std::filesystem::u8path(path),
+        base.empty() ? std::filesystem::current_path() : std::filesystem::u8path(base)
     );
     return path_abs.u8string();
 }
 
 std::wstring common_helpers::to_absolute(const std::wstring_view &path, const std::wstring_view &base)
 {
-    if (path.empty()) return std::wstring(path);
+    if (path.empty()) return {};
     auto path_abs = to_absolute_impl(
         std::filesystem::path(path),
         base.empty() ? std::filesystem::current_path() : std::filesystem::path(base)
@@ -263,15 +263,13 @@ bool common_helpers::file_exist(const std::filesystem::path &filepath)
 bool common_helpers::file_exist(const std::string &filepath)
 {
     if (filepath.empty()) return false;
-    std::filesystem::path path(filepath);
-    return file_exist(path);
+    return file_exist(std::filesystem::u8path(filepath));
 }
 
 bool common_helpers::file_exist(const std::wstring &filepath)
 {
     if (filepath.empty()) return false;
-    std::filesystem::path path(filepath);
-    return file_exist(path);
+    return file_exist(std::filesystem::path(filepath));
 }
 
 bool common_helpers::file_size(const std::filesystem::path &filepath, size_t &size)
@@ -285,14 +283,12 @@ bool common_helpers::file_size(const std::filesystem::path &filepath, size_t &si
 
 bool common_helpers::file_size(const std::string &filepath, size_t &size)
 {
-    const auto file_p = std::filesystem::path(filepath);
-    return file_size(file_p, size);
+    return file_size(std::filesystem::u8path(filepath), size);
 }
 
 bool common_helpers::file_size(const std::wstring &filepath, size_t &size)
 {
-    const auto file_p = std::filesystem::path(filepath);
-    return file_size(file_p, size);
+    return file_size(std::filesystem::path(filepath), size);
 }
 
 bool common_helpers::dir_exist(const std::filesystem::path &dirpath)
@@ -307,13 +303,11 @@ bool common_helpers::dir_exist(const std::filesystem::path &dirpath)
 bool common_helpers::dir_exist(const std::string &dirpath)
 {
     if (dirpath.empty()) return false;
-    std::filesystem::path path(dirpath);
-    return dir_exist(path);
+    return dir_exist(std::filesystem::u8path(dirpath));
 }
 
 bool common_helpers::dir_exist(const std::wstring &dirpath)
 {
     if (dirpath.empty()) return false;
-    std::filesystem::path path(dirpath);
-    return dir_exist(path);
+    return dir_exist(std::filesystem::path(dirpath));
 }

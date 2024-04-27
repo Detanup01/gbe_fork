@@ -198,7 +198,7 @@ static void load_overlay_appearance(class Settings *settings_client, class Setti
         PRINT_DEBUG("  Overlay appearance line '%s'='%s'", name.c_str(), value.c_str());
         try {
             if (name.compare("Font_Override") == 0) {
-                value = common_helpers::string_strip(Settings::sanitize(value));
+                value = common_helpers::string_strip(value);
                 // first try the local settings folder
                 std::string nfont_override(common_helpers::to_absolute(value, Local_Storage::get_game_settings_path() + "fonts"));
                 if (!common_helpers::file_exist(nfont_override)) {
@@ -513,7 +513,7 @@ static bool parse_local_save(std::string &save_path)
     auto ptr = ini.GetValue("user::saves", "local_save_path");
     if (!ptr || !ptr[0]) return false;
     
-    save_path = common_helpers::to_absolute(common_helpers::string_strip(Settings::sanitize(ptr)), Local_Storage::get_program_path());
+    save_path = common_helpers::to_absolute(common_helpers::string_strip(ptr), Local_Storage::get_program_path());
     if (save_path.size() && save_path.back() != *PATH_SEPARATOR) {
         save_path.push_back(*PATH_SEPARATOR);
     }
@@ -1104,7 +1104,7 @@ static void parse_build_id(class Settings *settings_client, class Settings *sett
 // main::general::crash_printer_location
 static void parse_crash_printer_location()
 {
-    std::string line(common_helpers::string_strip(Settings::sanitize(ini.GetValue("main::general", "crash_printer_location", ""))));
+    std::string line(common_helpers::string_strip(ini.GetValue("main::general", "crash_printer_location", "")));
     if (line.size()) {
         auto crash_path = utf8_decode(common_helpers::to_absolute(line, get_full_program_path()));
         if (crash_path.size()) {
