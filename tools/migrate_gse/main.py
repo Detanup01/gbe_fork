@@ -2,18 +2,32 @@ import platform
 import os
 import sys
 import glob
-import re
+import configparser
 import traceback
 
 
 def help():
     exe_name = os.path.basename(sys.argv[0])
-    print(f"\nUsage: {exe_name} [settings path]")
+    print(f"\nUsage: {exe_name} [Switches] [settings folder path]")
+    print(f"\nSwitches:")
+    print(f" -revert: convert all .ini files back to .txt files")
+    print(f" /?, -?, --?, /h, -h, --h, /help, -help, --help")
+    print(f"    show this help page")
+    print(f"\nExamples:")
     print(f" Example: {exe_name}")
-    print(f" Example: {exe_name} D:\\game\\steam_settings")
+    print(f" Example: {exe_name} -revert")
+    print(f' Example: {exe_name} "D:\\game\\steam_settings"')
+    print(f' Example: {exe_name} -revert "D:\\game\\steam_settings"')
     print("\nNote:")
     print(" Running the tool without any switches will make it attempt to read the global settings folder")
     print("")
+
+
+NEW_STEAM_SETTINGS_FOLDER = 'steam_settings'
+
+def create_new_steam_settings_folder():
+    if not os.path.exists(NEW_STEAM_SETTINGS_FOLDER):
+        os.makedirs(NEW_STEAM_SETTINGS_FOLDER)
 
 
 def merge_dict(dest: dict, src: dict):
@@ -36,64 +50,7 @@ def write_ini_file(base_path: str, out_ini: dict):
                     f.write(str(kv[0]) + '=' + str(kv[1][0]) + '\n') # key/value pair
                 f.write('\n')
 
-itf_patts = [
-    ( r'SteamClient\d+', "client" ),
-    ( r'SteamGameServerStats\d+', "gameserver_stats" ),
-    ( r'SteamGameServer\d+', "gameserver" ),
-    ( r'SteamMatchMakingServers\d+', "matchmaking_servers" ),
-    ( r'SteamMatchMaking\d+', "matchmaking" ),
-    ( r'SteamUser\d+', "user" ),
-    ( r'SteamFriends\d+', "friends" ),
-    ( r'SteamUtils\d+', "utils" ),
-    ( r'STEAMUSERSTATS_INTERFACE_VERSION\d+', "user_stats" ),
-    ( r'STEAMAPPS_INTERFACE_VERSION\d+', "apps" ),
-    ( r'SteamNetworking\d+', "networking" ),
-    ( r'STEAMREMOTESTORAGE_INTERFACE_VERSION\d+', "remote_storage" ),
-    ( r'STEAMSCREENSHOTS_INTERFACE_VERSION\d+', "screenshots" ),
-    ( r'STEAMHTTP_INTERFACE_VERSION\d+', "http" ),
-    ( r'STEAMUNIFIEDMESSAGES_INTERFACE_VERSION\d+', "unified_messages" ),
-    ( r'STEAMCONTROLLER_INTERFACE_VERSION\d+', "controller" ),
-    ( r'SteamController\d+', "controller" ),
-    ( r'STEAMUGC_INTERFACE_VERSION\d+', "ugc" ),
-    ( r'STEAMAPPLIST_INTERFACE_VERSION\d+', "applist" ),
-    ( r'STEAMMUSIC_INTERFACE_VERSION\d+', "music" ),
-    ( r'STEAMMUSICREMOTE_INTERFACE_VERSION\d+', "music_remote" ),
-    ( r'STEAMHTMLSURFACE_INTERFACE_VERSION_\d+', "html_surface" ),
-    ( r'STEAMINVENTORY_INTERFACE_V\d+', "inventory" ),
-    ( r'STEAMVIDEO_INTERFACE_V\d+', "video" ),
-    ( r'SteamMasterServerUpdater\d+', "masterserver_updater" ),
-]
-
-
-def main():
-    is_windows = platform.system().lower() == "windows"
-    global_settings = ''
-
-    if len(sys.argv) > 1:
-        global_settings = sys.argv[1]
-    else:
-        if is_windows:
-            appdata = os.getenv('APPDATA')
-            if appdata:
-                global_settings = os.path.join(appdata, 'Goldberg SteamEmu Saves', 'settings')
-        else:
-            xdg = os.getenv('XDG_DATA_HOME')
-            if xdg:
-                global_settings = os.path.join(xdg, 'Goldberg SteamEmu Saves', 'settings')
-            
-            if not global_settings:
-                home_env = os.getenv('HOME')
-                if home_env:
-                    global_settings = os.path.join(home_env, 'Goldberg SteamEmu Saves', 'settings')
-
-    if not global_settings or not os.path.isdir(global_settings):
-        print('failed to detect folder', file=sys.stderr)
-        help()
-        sys.exit(1)
-
-    print(f'searching inside the folder: "{global_settings}"')
-
-    out_dict_ini = {}
+def convert_to_ini(global_settings: str, out_dict_ini: dict):
     # oh no, they're too many!
     for file in glob.glob('*.*', root_dir=global_settings):
         file = file.lower()
@@ -434,20 +391,173 @@ def main():
                 }
             })
 
-    if out_dict_ini:
-        if not os.path.exists('steam_settings'):
-            os.makedirs('steam_settings')
 
-        write_ini_file('steam_settings', out_dict_ini)
-        print(f'new settings written inside: "{os.path.join(os.path.curdir, "steam_settings")}"')
-    else:
-        print('nothing found!', file=sys.stderr)
+def write_txt_file(filename: str, dict_ini: dict, section: str, key: str):
+    val = dict_ini.get(section, {}).get(key, None)
+    if val is None:
+        return False
+    
+    create_new_steam_settings_folder()
+    
+    with open(os.path.join(NEW_STEAM_SETTINGS_FOLDER, filename), "wt", encoding='utf-8') as fw:
+        fw.write(str(val))
+
+    return True
+
+def write_txt_file_bool(filename: str, dict_ini: dict, section: str, key: str, write_if: bool):
+    val = dict_ini.get(section, {}).get(key, None)
+    if val is None:
+        return False
+    val = str(val).lower()[0]
+    bool_val = val == '1' or val == "t" or val == "y"
+    if bool_val != write_if:
+        return False
+    
+    create_new_steam_settings_folder()
+    
+    with open(os.path.join(NEW_STEAM_SETTINGS_FOLDER, filename), "wt", encoding='utf-8') as fw:
+        fw.write(f'{key}={val}')
+    
+    return True
+
+def write_txt_file_multi(filename: str, dict_ini: dict, section: str):
+    val = dict_ini.get(section, {})
+    if len(val) <= 0:
+        return False
+    
+    create_new_steam_settings_folder()
+    
+    with open(os.path.join(NEW_STEAM_SETTINGS_FOLDER, filename), "wt", encoding='utf-8') as fw:
+        for kv in val.items():
+            fw.write(f'{kv[0]}={kv[1]}\n')
+    
+    return True
+
+
+def convert_to_txt(global_settings: str):
+    # oh no, they're too many!
+    config = configparser.ConfigParser(strict=False, empty_lines_in_values=False)
+    for file in glob.glob('*.ini*', root_dir=global_settings):
+        config.read(os.path.join(global_settings, file), encoding='utf-8')
+
+    dict_ini = dict(config)
+    if 'DEFAULT' in dict_ini: # remove the "magic" default section
+        del dict_ini['DEFAULT']
+
+    done = 0
+    done += write_txt_file_bool('achievements_bypass.txt', dict_ini, 'main::misc', 'achievements_bypass', True)
+    done += write_txt_file_multi('app_paths.txt', dict_ini, 'app::paths')
+    done += write_txt_file('build_id.txt', dict_ini, 'app::general', 'build_id')
+    done += write_txt_file('crash_printer_location.txt', dict_ini, 'main::general', 'crash_printer_location')
+    done += write_txt_file_bool('disable_account_avatar.txt', dict_ini, 'main::general', 'enable_account_avatar', False)
+    done += write_txt_file_bool('disable_lan_only.txt', dict_ini, 'main::connectivity', 'disable_lan_only',True)
+    done += write_txt_file_bool('disable_leaderboards_create_unknown.txt', dict_ini, 'main::general', 'disable_leaderboards_create_unknown', True)
+    done += write_txt_file_bool('disable_lobby_creation.txt', dict_ini, 'main::connectivity', 'disable_lobby_creation', True)
+    done += write_txt_file_bool('disable_networking.txt', dict_ini, 'main::connectivity', 'disable_networking', True)
+    done += write_txt_file_bool('disable_overlay_achievement_notification.txt', dict_ini, 'overlay::general', 'disable_achievement_notification', True)
+    done += write_txt_file_bool('disable_overlay_friend_notification.txt', dict_ini, 'overlay::general', 'disable_friend_notification', True)
+    done += write_txt_file_bool('disable_overlay_warning_any.txt', dict_ini, 'overlay::general', 'disable_warning_any', True)
+    done += write_txt_file_bool('disable_overlay_warning_bad_appid.txt', dict_ini, 'overlay::general', 'disable_warning_bad_appid', True)
+    done += write_txt_file_bool('disable_overlay_warning_local_save.txt', dict_ini, 'overlay::general', 'disable_warning_local_save', True)
+    done += write_txt_file_bool('disable_sharing_stats_with_gameserver.txt', dict_ini, 'main::connectivity', 'disable_sharing_stats_with_gameserver', True)
+    done += write_txt_file_bool('disable_source_query.txt', dict_ini, 'main::connectivity', 'disable_source_query', True)
+    done += write_txt_file_multi('dlc.txt', dict_ini, 'app::dlcs')
+    done += write_txt_file_bool('download_steamhttp_requests.txt', dict_ini, 'main::connectivity', 'download_steamhttp_requests', True)
+    done += write_txt_file_bool('disable_overlay.txt', dict_ini, 'overlay::general', 'enable_experimental_overlay', False)
+    done += write_txt_file_bool('enable_experimental_overlay.txt', dict_ini, 'overlay::general', 'enable_experimental_overlay', True)
+    done += write_txt_file('force_account_name.txt', dict_ini, 'user::general', 'account_name')
+    done += write_txt_file('force_branch_name.txt', dict_ini, 'app::general', 'branch_name')
+    done += write_txt_file('force_language.txt', dict_ini, 'user::general', 'language')
+    done += write_txt_file('force_listen_port.txt', dict_ini, 'main::connectivity', 'listen_port')
+    done += write_txt_file_bool('force_steamhttp_success.txt', dict_ini, 'main::misc', 'force_steamhttp_success', True)
+    done += write_txt_file('force_steamid.txt', dict_ini, 'user::general', 'account_steamid')
+    done += write_txt_file_bool('gc_token.txt', dict_ini, 'main::general', 'gc_token', True)
+    done += write_txt_file_bool('immediate_gameserver_stats.txt', dict_ini, 'main::general', 'immediate_gameserver_stats', True)
+    done += write_txt_file('ip_country.txt', dict_ini, 'user::general', 'ip_country')
+    done += write_txt_file_bool('is_beta_branch.txt', dict_ini, 'app::general', 'is_beta_branch', True)
+    done += write_txt_file_bool('matchmaking_server_details_via_source_query.txt', dict_ini, 'main::general', 'matchmaking_server_details_via_source_query', True)
+    done += write_txt_file_bool('matchmaking_server_list_actual_type.txt', dict_ini, 'main::general', 'matchmaking_server_list_actual_type', True)
+    done += write_txt_file_bool('new_app_ticket.txt', dict_ini, 'main::general', 'new_app_ticket', True)
+    done += write_txt_file_bool('offline.txt', dict_ini, 'main::connectivity', 'offline', True)
+    done += write_txt_file_multi('overlay_appearance.txt', dict_ini, 'overlay::appearance')
+    done += write_txt_file('overlay_hook_delay_sec.txt', dict_ini, 'overlay::general', 'hook_delay_sec')
+    done += write_txt_file('overlay_renderer_detector_timeout_sec.txt', dict_ini, 'overlay::general', 'renderer_detector_timeout_sec')
+    done += write_txt_file_bool('share_leaderboards_over_network.txt', dict_ini, 'main::connectivity', 'share_leaderboards_over_network', True)
+    done += write_txt_file_bool('steam_deck.txt', dict_ini, 'main::general', 'steam_deck', True)
+    
+    return done
+
+
+def main():
+    is_windows = platform.system().lower() == "windows"
+    global_settings = ''
+
+    CONVERT_TO_INI = True
+    SHOW_HELP = False
+
+    argc = len(sys.argv)
+    for idx in range(1, argc):
+        arg = sys.argv[idx]
+        if arg.lower() == "-revert":
+            CONVERT_TO_INI = False
+        elif arg == "/?" or arg == "-?" or arg == "--?" or arg.lower() == "/h" or arg.lower() == "-h" or arg.lower() == "--h" or arg.lower() == "/help" or arg.lower() == "-help" or arg.lower() == "--help":
+            SHOW_HELP = True
+        elif os.path.isdir(arg):
+            global_settings = arg
+        else:
+            print(f'invalid arg #{idx} "{arg}"', file=sys.stderr)
+            help()
+            sys.exit(1)
+    
+    if SHOW_HELP:
+        help()
+        sys.exit(0)
+        
+    if not global_settings:
+        if is_windows:
+            appdata = os.getenv('APPDATA')
+            if appdata:
+                global_settings = os.path.join(appdata, 'Goldberg SteamEmu Saves', 'settings')
+        else:
+            xdg = os.getenv('XDG_DATA_HOME')
+            if xdg:
+                global_settings = os.path.join(xdg, 'Goldberg SteamEmu Saves', 'settings')
+            
+            if not global_settings:
+                home_env = os.getenv('HOME')
+                if home_env:
+                    global_settings = os.path.join(home_env, 'Goldberg SteamEmu Saves', 'settings')
+
+    if not global_settings or not os.path.isdir(global_settings):
+        print('failed to detect folder', file=sys.stderr)
+        help()
         sys.exit(1)
+
+    print(f'searching inside the folder: "{global_settings}"')
+
+    if CONVERT_TO_INI:
+        out_dict_ini = {}
+        convert_to_ini(global_settings, out_dict_ini)
+
+        if out_dict_ini:
+            create_new_steam_settings_folder()
+            write_ini_file(NEW_STEAM_SETTINGS_FOLDER, out_dict_ini)
+            print(f'new settings written inside: "{os.path.join(os.path.curdir, NEW_STEAM_SETTINGS_FOLDER)}"')
+        else:
+            print('nothing found!', file=sys.stderr)
+            sys.exit(1)
+    else:
+        if convert_to_txt(global_settings):
+            print(f'new settings written inside: "{os.path.join(os.path.curdir, NEW_STEAM_SETTINGS_FOLDER)}"')
+        else:
+            print('nothing found!', file=sys.stderr)
+            sys.exit(1)
 
 
 if __name__ == "__main__":
     try:
         main()
+        sys.exit(0)
     except Exception as e:
         print("Unexpected error:")
         print(e)
@@ -456,4 +566,3 @@ if __name__ == "__main__":
             print(line)
         print("-----------------------")
         sys.exit(1)
-
