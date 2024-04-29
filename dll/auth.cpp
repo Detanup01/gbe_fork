@@ -81,7 +81,7 @@ Auth_Data Auth_Manager::getTicketData( void *pTicket, int cbMaxTicket, uint32 *p
 
 #define IP4_AS_DWORD_LITTLE_ENDIAN(a,b,c,d) (((uint32_t)d)<<24 | ((uint32_t)c)<<16 | ((uint32_t)b)<<8 | (uint32_t)a)
 
-    Auth_Data ticket_data;
+    Auth_Data ticket_data{};
     CSteamID steam_id = settings->get_local_steam_id();
     if (settings->enable_new_app_ticket)
     {
@@ -127,7 +127,8 @@ Auth_Data Auth_Manager::getTicketData( void *pTicket, int cbMaxTicket, uint32 *p
         }
         std::vector<uint8_t> ser = ticket_data.Serialize();
         *pcbTicket = ser.size();
-        memcpy(pTicket, ser.data(), ser.size());
+        if (cbMaxTicket >= ser.size())
+            memcpy(pTicket, ser.data(), ser.size());
     }
     else
     {
@@ -189,7 +190,7 @@ uint32 Auth_Manager::getWebApiTicket( const char* pchIdentity )
     GetTicketForWebApiResponse_t data{};
     uint32 cbTicket = 0;
     Auth_Data ticket_data = getTicketData(data.m_rgubTicket, STEAM_AUTH_TICKET_SIZE, &cbTicket);
-    if (*cbTicket > STEAM_AUTH_TICKET_SIZE)
+    if (cbTicket > STEAM_AUTH_TICKET_SIZE)
         return 0;
     data.m_cubTicket = (int)cbTicket;
     uint32 ttt = ticket_data.number;
