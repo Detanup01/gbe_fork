@@ -127,7 +127,6 @@ Auth_Data Auth_Manager::getTicketData( void *pTicket, int cbMaxTicket, uint32 *p
         }
         std::vector<uint8_t> ser = ticket_data.Serialize();
         *pcbTicket = ser.size();
-        memset(pTicket, 0, ser.size());
         memcpy(pTicket, ser.data(), ser.size());
     }
     else
@@ -154,6 +153,7 @@ Auth_Data Auth_Manager::getTicketData( void *pTicket, int cbMaxTicket, uint32 *p
 }
 
 //Conan Exiles doesn't work with 512 or 128, 256 seems to be the good size
+// Usually steam send as 1024 (or recommend sending as that)
 //Steam returns 234
 #define STEAM_AUTH_TICKET_SIZE 256 //234
 
@@ -170,6 +170,8 @@ uint32 Auth_Manager::getTicket( void *pTicket, int cbMaxTicket, uint32 *pcbTicke
     }
     
     Auth_Data ticket_data = getTicketData(pTicket, cbMaxTicket, pcbTicket );
+    if (*pcbTicket > cbMaxTicket)
+        return 0;
     uint32 ttt = ticket_data.number;
     GetAuthSessionTicketResponse_t data;
     data.m_hAuthTicket = ttt;
@@ -187,6 +189,8 @@ uint32 Auth_Manager::getWebApiTicket( const char* pchIdentity )
     GetTicketForWebApiResponse_t data{};
     uint32 cbTicket = 0;
     Auth_Data ticket_data = getTicketData(data.m_rgubTicket, STEAM_AUTH_TICKET_SIZE, &cbTicket);
+    if (*cbTicket > STEAM_AUTH_TICKET_SIZE)
+        return 0;
     data.m_cubTicket = (int)cbTicket;
     uint32 ttt = ticket_data.number;
     data.m_hAuthTicket = ttt;

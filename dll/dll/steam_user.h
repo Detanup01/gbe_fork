@@ -118,6 +118,8 @@ int InitiateGameConnection( void *pAuthBlob, int cbMaxAuthBlob, CSteamID steamID
     if (!pAuthBlob) return 0;
     uint32 out_size = INITIATE_GAME_CONNECTION_TICKET_SIZE;
     auth_manager->getTicketData(pAuthBlob, INITIATE_GAME_CONNECTION_TICKET_SIZE, &out_size);
+    if (*out_size > INITIATE_GAME_CONNECTION_TICKET_SIZE)
+        return 0;
     return out_size;
 }
 
