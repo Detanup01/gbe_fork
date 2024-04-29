@@ -1,6 +1,24 @@
+* **[schmurger]** added a sliding animation for the overlay notifications  
+  the duration of the animation could be changed using the new option `Notification_Animation` in `configs.overlay.ini`  
+* **[Detanup01]** fixed a bug which resulted in a crash when the generated auth ticket size exceeded the max buffer size
+* use `std::filesystem::u8path` to support `utf-8` paths, suggested by **[Clompress]**  
+  this fixes a bug where non-ascii paths were not being recognized in many places
+* fixed an undesired behavior where the steam pre-owned ids were being merged with user's dlc list or installed apps list,  
+  this option is now disabled by default and the option `disable_steam_preowned_ids` is deprecate in favor of the new `enable_steam_preowned_ids`  
+* fixed a bug where sanitizing paths in the settings parser would remove the colon ':' character,  
+  preventing the usage of absolute paths on Windows, like: `C:\aa\bb`
+* corrected the size of the auth ticket used in `Steam_User::GetAuthTicketForWebApi()`
+* added a new switch `-revert` for the tool `migrate_gse`, which allows converting `.ini` files back to `.txt` files,  
+  also added some common switches for the help page `/?`, `-?`, etc...  
+  note that this option isn't 100% perfect
+
+---
+
 ## 2024/4/25 (hotfix 1)
 
 * fixed mismatching push/pop for the overlay style, resulting in a crash when the default colors are changed
+
+---
 
 ## 2024/4/25
 
