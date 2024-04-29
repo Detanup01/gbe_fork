@@ -311,7 +311,7 @@ HAuthTicket GetAuthSessionTicket( void *pTicket, int cbMaxTicket, uint32 *pcbTic
 // if a Steam ID is passed Steam will only allow the ticket to be used by that Steam ID
 HAuthTicket GetAuthSessionTicket( void *pTicket, int cbMaxTicket, uint32 *pcbTicket, const SteamNetworkingIdentity *pSteamNetworkingIdentity )
 {
-    PRINT_DEBUG("%i", cbMaxTicket);
+    PRINT_DEBUG("%p [%i] %p", pTicket, cbMaxTicket, pcbTicket);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pTicket) return k_HAuthTicketInvalid;

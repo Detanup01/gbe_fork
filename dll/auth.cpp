@@ -158,49 +158,51 @@ Auth_Data Auth_Manager::getTicketData( void *pTicket, int cbMaxTicket, uint32 *p
 //Steam returns 234
 #define STEAM_AUTH_TICKET_SIZE 256 //234
 
-uint32 Auth_Manager::getTicket( void *pTicket, int cbMaxTicket, uint32 *pcbTicket )
+HAuthTicket Auth_Manager::getTicket( void *pTicket, int cbMaxTicket, uint32 *pcbTicket )
 {
     if (settings->enable_new_app_ticket)
     {
-        if (cbMaxTicket < STEAM_TICKET_MIN_SIZE_NEW) return 0;
+        if (cbMaxTicket < STEAM_TICKET_MIN_SIZE_NEW) return k_HAuthTicketInvalid;
     }
     else
     {
-        if (cbMaxTicket < STEAM_TICKET_MIN_SIZE) return 0;
+        if (cbMaxTicket < STEAM_TICKET_MIN_SIZE) return k_HAuthTicketInvalid;
         if (cbMaxTicket > STEAM_AUTH_TICKET_SIZE) cbMaxTicket = STEAM_AUTH_TICKET_SIZE;
     }
     
     Auth_Data ticket_data = getTicketData(pTicket, cbMaxTicket, pcbTicket );
-    if (*pcbTicket > cbMaxTicket)
-        return 0;
-    uint32 ttt = ticket_data.number;
-    GetAuthSessionTicketResponse_t data;
-    data.m_hAuthTicket = ttt;
-    data.m_eResult = k_EResultOK;
-    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), STEAM_TICKET_PROCESS_TIME);
 
+    if (*pcbTicket > cbMaxTicket)
+        return k_HAuthTicketInvalid;
+
+    GetAuthSessionTicketResponse_t data{};
+    data.m_hAuthTicket = (HAuthTicket)ticket_data.number;
+    data.m_eResult = EResult::k_EResultOK;
+    
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), STEAM_TICKET_PROCESS_TIME);
     outbound.push_back(ticket_data);
 
-    return ttt;
+    return data.m_hAuthTicket;
 }
 
-uint32 Auth_Manager::getWebApiTicket( const char* pchIdentity )
+HAuthTicket Auth_Manager::getWebApiTicket( const char* pchIdentity )
 {
     // https://docs.unity.com/ugs/en-us/manual/authentication/manual/platform-signin-steam
     GetTicketForWebApiResponse_t data{};
-    uint32 cbTicket = 0;
-    Auth_Data ticket_data = getTicketData(data.m_rgubTicket, STEAM_AUTH_TICKET_SIZE, &cbTicket);
-    if (cbTicket > STEAM_AUTH_TICKET_SIZE)
-        return 0;
-    data.m_cubTicket = (int)cbTicket;
-    uint32 ttt = ticket_data.number;
-    data.m_hAuthTicket = ttt;
-    data.m_eResult = k_EResultOK;
-    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), STEAM_TICKET_PROCESS_TIME);
 
+    uint32 cbTicket = 0;
+    Auth_Data ticket_data = getTicketData(data.m_rgubTicket, sizeof(data.m_rgubTicket), &cbTicket);
+
+    if (cbTicket > sizeof(data.m_rgubTicket))
+        return k_HAuthTicketInvalid;
+
+    data.m_cubTicket = (int)cbTicket;
+    data.m_hAuthTicket = (HAuthTicket)ticket_data.number;
+    data.m_eResult = EResult::k_EResultOK;
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), STEAM_TICKET_PROCESS_TIME);
     outbound.push_back(ticket_data);
 
-    return ttt;
+    return data.m_hAuthTicket;
 }
 
 CSteamID Auth_Manager::fakeUser()
