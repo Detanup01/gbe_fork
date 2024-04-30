@@ -120,38 +120,42 @@ struct Overlay_Appearance {
     float font_glyph_extra_spacing_x = 1.0f;
     float font_glyph_extra_spacing_y = 0.0f;
 
-    float notification_r = 0.16f;
-    float notification_g = 0.29f;
-    float notification_b = 0.48f;
+    float notification_r = 0.12f;
+    float notification_g = 0.14f;
+    float notification_b = 0.21f;
     float notification_a = 1.0f;
-    float notification_rounding = 0.0f; // corners roundness for all notifications
-    uint32 notification_animation = 0; // sliding animation duration (millisec)
+
+    float notification_rounding = 10.0f; // corners roundness for all notifications
+    float notification_margin_x = 5.0f; // horizontal margin
+    float notification_margin_y = 5.0f; // vertical margin
+    
+    uint32 notification_animation = 350; // sliding animation duration (millisec)
 
     std::string ach_unlock_datetime_format = "%Y/%m/%d - %H:%M:%S";
     
-    float background_r = -1.0f;
-    float background_g = -1.0f;
-    float background_b = -1.0f;
-    float background_a = -1.0f;
+    float background_r = 0.12f;
+    float background_g = 0.11f;
+    float background_b = 0.11f;
+    float background_a = 1.0f;
 
-    float element_r = -1.0f;
-    float element_g = -1.0f;
-    float element_b = -1.0f;
-    float element_a = -1.0f;
+    float element_r = 0.30f;
+    float element_g = 0.32f;
+    float element_b = 0.40f;
+    float element_a = 1.0f;
 
-    float element_hovered_r = -1.0f;
-    float element_hovered_g = -1.0f;
-    float element_hovered_b = -1.0f;
-    float element_hovered_a = -1.0f;
+    float element_hovered_r = 0.278f;
+    float element_hovered_g = 0.393f;
+    float element_hovered_b = 0.602f;
+    float element_hovered_a = 1.0f;
 
     float element_active_r = -1.0f;
     float element_active_g = -1.0f;
     float element_active_b = -1.0f;
     float element_active_a = -1.0f;
 
-    NotificationPosition ach_earned_pos = default_pos; // achievement earned
+    NotificationPosition ach_earned_pos = NotificationPosition::bot_right; // achievement earned
     NotificationPosition invite_pos = default_pos; // lobby/game invitation
-    NotificationPosition chat_msg_pos = default_pos; // chat message from a friend
+    NotificationPosition chat_msg_pos = NotificationPosition::top_center; // chat message from a friend
 
     static NotificationPosition translate_notification_position(const std::string &str)
     {

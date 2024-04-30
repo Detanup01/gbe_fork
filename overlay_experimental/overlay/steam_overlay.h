@@ -95,10 +95,11 @@ struct Overlay_Achievement
     uint8_t icon_gray_load_trials = ICON_LOAD_MAX_TRIALS;
 };
 
-struct NotificationsIndexes
+// notification coordinates { x, y }
+struct NotificationsCoords
 {
-    int top_left = 0, top_center = 0, top_right = 0;
-    int bot_left = 0, bot_center = 0, bot_right = 0;
+    std::pair<float, float> top_left{}, top_center{}, top_right{};
+    std::pair<float, float> bot_left{}, bot_center{}, bot_right{};
 };
 
 class Steam_Overlay
@@ -187,7 +188,7 @@ class Steam_Overlay
     // Double click on friend
     void build_friend_window(Friend const& frd, friend_window_state &state);
     // Notifications like achievements, chat and invitations
-    void set_next_notification_pos(float width, float height, std::chrono::milliseconds elapsed, const Notification &noti, struct NotificationsIndexes &idx);
+    void set_next_notification_pos(std::pair<float, float> scrn_size, std::chrono::milliseconds elapsed, const Notification &noti, struct NotificationsCoords &coords);
     // factor controlling the amount of sliding during the animation, 0 means disabled
     float animate_factor(std::chrono::milliseconds elapsed);
     void build_notifications(int width, int height);

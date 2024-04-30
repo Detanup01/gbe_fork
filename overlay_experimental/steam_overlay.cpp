@@ -834,9 +834,12 @@ void Steam_Overlay::build_friend_window(Friend const& frd, friend_window_state& 
 }
 
 // set the position of the next notification
-void Steam_Overlay::set_next_notification_pos(float width, float height, std::chrono::milliseconds elapsed, const Notification &noti, struct NotificationsIndexes &idx)
+void Steam_Overlay::set_next_notification_pos(std::pair<float, float> scrn_size, std::chrono::milliseconds elapsed, const Notification &noti, struct NotificationsCoords &coords)
 {
-    const float noti_width = width * Notification::width_percent;
+    const float scrn_width = scrn_size.first;
+    const float scrn_height = scrn_size.second;
+
+    const float noti_width = scrn_width * Notification::width_percent;
     
     auto &global_style = ImGui::GetStyle();
     const float padding_all_sides = 2 * (global_style.WindowPadding.y + global_style.WindowPadding.x);
@@ -878,55 +881,49 @@ void Steam_Overlay::set_next_notification_pos(float width, float height, std::ch
     // 0 on the y-axis is top, 0 on the x-axis is left
     float x = 0.0f;
     float y = 0.0f;
-    float anchor_margin = 5.0f;
-    float margin_y = 0.0f;
     float animate_size = 0.0f;
+    const float margin_y = settings->overlay_appearance.notification_margin_y;
+    const float margin_x = settings->overlay_appearance.notification_margin_x;
 
     switch (pos) {
     // top
     case Overlay_Appearance::NotificationPosition::top_left:
         animate_size = animate_factor(elapsed) * noti_width;
-        margin_y = anchor_margin * (idx.top_left + 1);
-        x = anchor_margin - animate_size;
-        y = margin_y + noti_height * idx.top_left;
-        ++idx.top_left;
+        x = margin_x - animate_size;
+        y = coords.top_left.second + margin_y;
+        coords.top_left.second = y + noti_height;
     break;
     case Overlay_Appearance::NotificationPosition::top_center:
         animate_size = animate_factor(elapsed) * noti_height;
-        margin_y = anchor_margin * (idx.top_center + 1);
-        x = (width / 2) - (noti_width / 2);
-        y = (margin_y + noti_height * idx.top_center) - animate_size;
-        ++idx.top_center;
+        x = (scrn_width / 2) - (noti_width / 2);
+        y = coords.top_center.second + margin_y - animate_size;
+        coords.top_center.second = y + noti_height;
     break;
     case Overlay_Appearance::NotificationPosition::top_right:
         animate_size = animate_factor(elapsed) * noti_width;
-        margin_y = anchor_margin * (idx.top_right + 1);
-        x = (width - noti_width - anchor_margin) + animate_size;
-        y = margin_y * (idx.top_center + 1) + noti_height * idx.top_right;
-        ++idx.top_right;
+        x = (scrn_width - noti_width - margin_x) + animate_size;
+        y = coords.top_right.second + margin_y;
+        coords.top_right.second = y + noti_height;
     break;
 
     // bot
     case Overlay_Appearance::NotificationPosition::bot_left:
         animate_size = animate_factor(elapsed) * noti_width;
-        margin_y = anchor_margin * (idx.bot_left + 1);
-        x = anchor_margin - animate_size;
-        y = height - noti_height * (idx.bot_left + 1) - margin_y;
-        ++idx.bot_left;
+        x = margin_x - animate_size;
+        y = scrn_height - coords.bot_left.second - margin_y - noti_height;
+        coords.bot_left.second = scrn_height - y;
     break;
     case Overlay_Appearance::NotificationPosition::bot_center:
         animate_size = animate_factor(elapsed) * noti_height;
-        margin_y = anchor_margin * (idx.bot_center + 1);
-        x = (width / 2) - (noti_width / 2);
-        y = height - noti_height * (idx.bot_center + 1) - margin_y + animate_size;
-        ++idx.bot_center;
+        x = (scrn_width / 2) - (noti_width / 2);
+        y = scrn_height - coords.bot_center.second - margin_y - noti_height + animate_size;
+        coords.bot_center.second = scrn_height - y;
     break;
     case Overlay_Appearance::NotificationPosition::bot_right:
         animate_size = animate_factor(elapsed) * noti_width;
-        margin_y = anchor_margin * (idx.bot_right + 1);
-        x = width - noti_width - anchor_margin + animate_size;
-        y = height - noti_height * (idx.bot_right + 1) - margin_y;
-        ++idx.bot_right;
+        x = (scrn_width - noti_width - margin_x) + animate_size;
+        y = scrn_height - coords.bot_right.second - margin_y - noti_height;
+        coords.bot_right.second = scrn_height - y;
     break;
 
     default: /* satisfy compiler warning */ break;
@@ -934,7 +931,7 @@ void Steam_Overlay::set_next_notification_pos(float width, float height, std::ch
 
     ImGui::SetNextWindowPos(ImVec2( x, y ));
     ImGui::SetNextWindowSize(ImVec2(noti_width, noti_height));
-    ImGui::SetNextWindowBgAlpha(0.9f);
+    ImGui::SetNextWindowBgAlpha(0.95f);
 }
 
 float Steam_Overlay::animate_factor(std::chrono::milliseconds elapsed)
@@ -969,11 +966,11 @@ void Steam_Overlay::build_notifications(int width, int height)
     // Add window rounding
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, settings->overlay_appearance.notification_rounding);
    
-    NotificationsIndexes idx{};
+    NotificationsCoords coords{};
     for (auto it = notifications.begin(); it != notifications.end(); ++it) {
         auto elapsed_notif = now - it->start_time;
 
-        set_next_notification_pos(width, height, elapsed_notif, *it, idx);
+        set_next_notification_pos({(float)width, (float)height}, elapsed_notif, *it, coords);
 
         if ( elapsed_notif < Notification::fade_in) { // still appearing (fading in)
             float alpha = settings->overlay_appearance.notification_a * (elapsed_notif.count() / static_cast<float>(Notification::fade_in.count()));

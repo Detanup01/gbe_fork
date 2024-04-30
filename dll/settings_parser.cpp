@@ -256,6 +256,14 @@ static void load_overlay_appearance(class Settings *settings_client, class Setti
                 float nnotification_rounding = std::stof(value, NULL);
                 settings_client->overlay_appearance.notification_rounding = nnotification_rounding;
                 settings_server->overlay_appearance.notification_rounding = nnotification_rounding;
+            } else if (name.compare("Notification_Margin_x") == 0) {
+                float val = std::stof(value, NULL);
+                settings_client->overlay_appearance.notification_margin_x = val;
+                settings_server->overlay_appearance.notification_margin_x = val;
+            } else if (name.compare("Notification_Margin_y") == 0) {
+                float val = std::stof(value, NULL);
+                settings_client->overlay_appearance.notification_margin_y = val;
+                settings_server->overlay_appearance.notification_margin_y = val;
             } else if (name.compare("Notification_Animation") == 0) {
                 uint32 nnotification_animation = (uint32)(std::stof(value, NULL) * 1000.0f); // convert sec to milli
                 settings_client->overlay_appearance.notification_animation = nnotification_animation;
