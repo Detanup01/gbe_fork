@@ -1,3 +1,5 @@
+## 2024/4/30
+
 * **[schmurger]** added a sliding animation for the overlay notifications  
   the duration of the animation could be changed using the new option `Notification_Animation` in `configs.overlay.ini`  
 * **[Detanup01]** fixed a bug which resulted in a crash when the generated auth ticket size exceeded the max buffer size
@@ -11,7 +13,7 @@
 * added 2 new options to the overlay appearance `Notification_Margin_x` and `Notification_Margin_y` which allow specifying a small gap horizontally or vertically for the notifications  
 * added a new switch `-revert` for the tool `migrate_gse`, which allows converting `.ini` files back to `.txt` files,  
   also added some common switches for the help page `/?`, `-?`, etc...  
-  note that this option isn't 100% perfect  
+  **note that this option isn't 100% perfect**  
 * updated the built-in overlay appearance & the example overlay ini file with a darker look and feel + changed some defaults, inspired by additions of **[schmurger]**  
 
 ---
