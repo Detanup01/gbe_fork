@@ -46,6 +46,17 @@ You can find instructions here: [README.release.md](./post_build/README.release.
  git submodule update --recursive --remote
  ```
 
+ Disable automatic CRLF handling:  
+ *Locally*
+ ```shell
+ git config --local core.autocrlf false
+ ```
+ *Or globally/system wide*
+ ```shell
+ git config --system core.autocrlf false
+ git config --global core.autocrlf false
+ ```
+
 ### For Windows:
 * You need Windows 10 or 8.1
 * Install `Visual Studio 2022 Community`: https://visualstudio.microsoft.com/vs/community/
