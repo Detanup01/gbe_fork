@@ -268,7 +268,7 @@ const char translationTestAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"Test achievement",
 
 	// 26 - Turkish
-  u8"Test achievement",
+  u8"Test Başarımı",
 
 	// 27 - Ukrainian
   u8"Test achievement",
