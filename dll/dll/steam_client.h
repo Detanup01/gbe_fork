@@ -15,6 +15,9 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef __INCLUDED_STEAM_CLIENT_H__
+#define __INCLUDED_STEAM_CLIENT_H__
+
 #include "base.h"
 #include "appticket.h"
 #include "steam_user.h"
@@ -79,78 +82,81 @@ public ISteamClient020,
 public ISteamClient
 {
 public:
-    Networking *network;
-    SteamCallResults *callback_results_server, *callback_results_client;
-    SteamCallBacks *callbacks_server, *callbacks_client;
-    Settings *settings_client, *settings_server;
-    Local_Storage *local_storage;
-    RunEveryRunCB *run_every_runcb;
+    Networking *network{};
+    SteamCallResults *callback_results_server{}, *callback_results_client{};
+    SteamCallBacks *callbacks_server{}, *callbacks_client{};
+    Settings *settings_client{}, *settings_server{};
+    Local_Storage *local_storage{};
+    RunEveryRunCB *run_every_runcb{};
 
-    Ugc_Remote_Storage_Bridge *ugc_bridge;
+    Ugc_Remote_Storage_Bridge *ugc_bridge{};
     
-    Steam_User *steam_user;
-    Steam_Friends *steam_friends;
-    Steam_Utils *steam_utils;
-    Steam_Matchmaking *steam_matchmaking;
-    Steam_Matchmaking_Servers *steam_matchmaking_servers;
-    Steam_User_Stats *steam_user_stats;
-    Steam_Apps *steam_apps;
-    Steam_Networking *steam_networking;
-    Steam_Remote_Storage *steam_remote_storage;
-    Steam_Screenshots *steam_screenshots;
-    Steam_HTTP *steam_http;
-    Steam_Controller *steam_controller;
-    Steam_UGC *steam_ugc;
-    Steam_Applist *steam_applist;
-    Steam_Music *steam_music;
-    Steam_MusicRemote *steam_musicremote;
-    Steam_HTMLsurface *steam_HTMLsurface;
-    Steam_Inventory *steam_inventory;
-    Steam_Video *steam_video;
-    Steam_Parental *steam_parental;
-    Steam_Networking_Sockets *steam_networking_sockets;
-    Steam_Networking_Sockets_Serialized *steam_networking_sockets_serialized;
-    Steam_Networking_Messages *steam_networking_messages;
-    Steam_Game_Coordinator *steam_game_coordinator;
-    Steam_Networking_Utils *steam_networking_utils;
-    Steam_Unified_Messages *steam_unified_messages;
-    Steam_Game_Search *steam_game_search;
-    Steam_Parties *steam_parties;
-    Steam_RemotePlay *steam_remoteplay;
-    Steam_TV *steam_tv;
+    Steam_User *steam_user{};
+    Steam_Friends *steam_friends{};
+    Steam_Utils *steam_utils{};
+    Steam_Matchmaking *steam_matchmaking{};
+    Steam_Matchmaking_Servers *steam_matchmaking_servers{};
+    Steam_User_Stats *steam_user_stats{};
+    Steam_Apps *steam_apps{};
+    Steam_Networking *steam_networking{};
+    Steam_Remote_Storage *steam_remote_storage{};
+    Steam_Screenshots *steam_screenshots{};
+    Steam_HTTP *steam_http{};
+    Steam_Controller *steam_controller{};
+    Steam_UGC *steam_ugc{};
+    Steam_Applist *steam_applist{};
+    Steam_Music *steam_music{};
+    Steam_MusicRemote *steam_musicremote{};
+    Steam_HTMLsurface *steam_HTMLsurface{};
+    Steam_Inventory *steam_inventory{};
+    Steam_Video *steam_video{};
+    Steam_Parental *steam_parental{};
+    Steam_Networking_Sockets *steam_networking_sockets{};
+    Steam_Networking_Sockets_Serialized *steam_networking_sockets_serialized{};
+    Steam_Networking_Messages *steam_networking_messages{};
+    Steam_Game_Coordinator *steam_game_coordinator{};
+    Steam_Networking_Utils *steam_networking_utils{};
+    Steam_Unified_Messages *steam_unified_messages{};
+    Steam_Game_Search *steam_game_search{};
+    Steam_Parties *steam_parties{};
+    Steam_RemotePlay *steam_remoteplay{};
+    Steam_TV *steam_tv{};
 
-    Steam_GameServer *steam_gameserver;
-    Steam_Utils *steam_gameserver_utils;
-    Steam_GameServerStats *steam_gameserverstats;
-    Steam_Networking *steam_gameserver_networking;
-    Steam_HTTP *steam_gameserver_http;
-    Steam_Inventory *steam_gameserver_inventory;
-    Steam_UGC *steam_gameserver_ugc;
-    Steam_Apps *steam_gameserver_apps;
-    Steam_Networking_Sockets *steam_gameserver_networking_sockets;
-    Steam_Networking_Sockets_Serialized *steam_gameserver_networking_sockets_serialized;
-    Steam_Networking_Messages *steam_gameserver_networking_messages;
-    Steam_Game_Coordinator *steam_gameserver_game_coordinator;
-    Steam_Masterserver_Updater *steam_masterserver_updater;
-    Steam_AppTicket *steam_app_ticket;
+    Steam_GameServer *steam_gameserver{};
+    Steam_Utils *steam_gameserver_utils{};
+    Steam_GameServerStats *steam_gameserverstats{};
+    Steam_Networking *steam_gameserver_networking{};
+    Steam_HTTP *steam_gameserver_http{};
+    Steam_Inventory *steam_gameserver_inventory{};
+    Steam_UGC *steam_gameserver_ugc{};
+    Steam_Apps *steam_gameserver_apps{};
+    Steam_Networking_Sockets *steam_gameserver_networking_sockets{};
+    Steam_Networking_Sockets_Serialized *steam_gameserver_networking_sockets_serialized{};
+    Steam_Networking_Messages *steam_gameserver_networking_messages{};
+    Steam_Game_Coordinator *steam_gameserver_game_coordinator{};
+    Steam_Masterserver_Updater *steam_masterserver_updater{};
+    Steam_AppTicket *steam_app_ticket{};
 
-    Steam_Overlay* steam_overlay;
+    Steam_Overlay* steam_overlay{};
 
     bool user_logged_in = false;
     bool server_init = false;
-    std::thread background_keepalive;
     bool steamclient_server_inited = false;
+
+    bool gameserver_has_ipv6_functions{};
+    
+    std::thread background_keepalive{};
     std::atomic<unsigned long long> last_cb_run{};
     std::atomic_bool cb_run_active = false;
 
     unsigned steam_pipe_counter = 1;
-    std::map<HSteamPipe, enum Steam_Pipe> steam_pipes;
+    std::map<HSteamPipe, enum Steam_Pipe> steam_pipes{};
 
-    bool gameserver_has_ipv6_functions;
 
     Steam_Client();
     ~Steam_Client();
-    	// Creates a communication pipe to the Steam client.
+
+    // Creates a communication pipe to the Steam client.
 	// NOT THREADSAFE - ensure that no other threads are accessing Steamworks API when calling
 	HSteamPipe CreateSteamPipe();
 
@@ -311,3 +317,5 @@ public:
 
     void DestroyAllInterfaces();
 };
+
+#endif // __INCLUDED_STEAM_CLIENT_H__

@@ -1,12 +1,19 @@
 #include "dll/ugc_remote_storage_bridge.h"
 
-
+  
 Ugc_Remote_Storage_Bridge::Ugc_Remote_Storage_Bridge(class Settings *settings)
 {
     this->settings = settings;
 
     // subscribe to all mods initially
     subscribed = settings->modSet();
+}
+
+Ugc_Remote_Storage_Bridge::~Ugc_Remote_Storage_Bridge()
+{
+    std::lock_guard lock(global_mutex);
+    
+    steam_ugc_queries.clear();
 }
 
 void Ugc_Remote_Storage_Bridge::add_ugc_query_result(UGCHandle_t file_handle, PublishedFileId_t fileid, bool handle_of_primary_file)
@@ -61,11 +68,4 @@ std::set<PublishedFileId_t>::iterator Ugc_Remote_Storage_Bridge::subbed_mods_itr
 std::set<PublishedFileId_t>::iterator Ugc_Remote_Storage_Bridge::subbed_mods_itr_end() const
 {
     return subscribed.end();
-}
-
-Ugc_Remote_Storage_Bridge::~Ugc_Remote_Storage_Bridge()
-{
-    std::lock_guard lock(global_mutex);
-    
-    steam_ugc_queries.clear();
 }

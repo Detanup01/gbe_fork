@@ -15,14 +15,18 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef __INCLUDED_SOURCE_QUERY_H__
+#define __INCLUDED_SOURCE_QUERY_H__
+
 #include "base.h"
 
 class Source_Query
 {
-    Source_Query () = delete;
+    Source_Query() = delete;
     ~Source_Query() = delete;
 
 public:
     static std::vector<uint8_t> handle_source_query(const void* buffer, size_t len, Gameserver const& gs);
 };
 
+#endif // __INCLUDED_SOURCE_QUERY_H__

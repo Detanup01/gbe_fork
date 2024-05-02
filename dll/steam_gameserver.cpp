@@ -20,19 +20,23 @@
 
 #define SEND_SERVER_RATE 5.0
 
+
 Steam_GameServer::Steam_GameServer(class Settings *settings, class Networking *network, class SteamCallBacks *callbacks)
 {
     this->network = network;
     this->settings = settings;
-    server_data.set_id(settings->get_local_steam_id().ConvertToUint64());
     this->callbacks = callbacks;
     auth_manager = new Auth_Manager(settings, network, callbacks);
+    
+    server_data.set_id(settings->get_local_steam_id().ConvertToUint64());
 }
 
 Steam_GameServer::~Steam_GameServer()
 {
     delete auth_manager;
+    auth_manager = nullptr;
 }
+
 
 std::vector<std::pair<CSteamID, Gameserver_Player_Info_t>>* Steam_GameServer::get_players()
 {
@@ -802,6 +806,8 @@ SteamAPICall_t Steam_GameServer::ComputeNewPlayerCompatibility( CSteamID steamID
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return 0;
 }
+
+
 
 void Steam_GameServer::RunCallbacks()
 {

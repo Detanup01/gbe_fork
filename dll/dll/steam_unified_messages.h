@@ -15,114 +15,53 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef __INCLUDED_STEAM_UNIFIED_MESSAGES_H__
+#define __INCLUDED_STEAM_UNIFIED_MESSAGES_H__
+
 #include "base.h"
 
-class Steam_Unified_Messages :
+class Steam_Unified_Messages:
 public ISteamUnifiedMessages
 {
-    class Settings *settings;
-    class Networking *network;
-    class SteamCallResults *callback_results;
-    class SteamCallBacks *callbacks;
-    class RunEveryRunCB *run_every_runcb;
+    class Settings *settings{};
+    class Networking *network{};
+    class SteamCallResults *callback_results{};
+    class SteamCallBacks *callbacks{};
+    class RunEveryRunCB *run_every_runcb{};
+
+    static void network_callback(void *object, Common_Message *msg);
+    static void steam_runcb(void *object);
 
 public:
-static void steam_callback(void *object, Common_Message *msg)
-{
-    // PRINT_DEBUG_ENTRY();
+    Steam_Unified_Messages(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, class RunEveryRunCB *run_every_runcb);
+    ~Steam_Unified_Messages();
 
-    Steam_Unified_Messages *steam_steamunifiedmessages = (Steam_Unified_Messages *)object;
-    steam_steamunifiedmessages->Callback(msg);
-}
-
-static void steam_run_every_runcb(void *object)
-{
-    // PRINT_DEBUG_ENTRY();
-
-    Steam_Unified_Messages *steam_steamunifiedmessages = (Steam_Unified_Messages *)object;
-    steam_steamunifiedmessages->RunCallbacks();
-}
-
-Steam_Unified_Messages(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, class RunEveryRunCB *run_every_runcb)
-{
-    this->settings = settings;
-    this->network = network;
-    this->run_every_runcb = run_every_runcb;
-    // this->network->setCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_Unified_Messages::steam_callback, this);
-    // this->run_every_runcb->add(&Steam_Unified_Messages::steam_run_every_runcb, this);
-
-    this->callback_results = callback_results;
-    this->callbacks = callbacks;
-}
-
-~Steam_Unified_Messages()
-{
-    // this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_Unified_Messages::steam_callback, this);
-    // this->run_every_runcb->remove(&Steam_Unified_Messages::steam_run_every_runcb, this);
-}
-
-// Sends a service method (in binary serialized form) using the Steam Client.
-// Returns a unified message handle (k_InvalidUnifiedMessageHandle if could not send the message).
-ClientUnifiedMessageHandle SendMethod( const char *pchServiceMethod, const void *pRequestBuffer, uint32 unRequestBufferSize, uint64 unContext )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return ISteamUnifiedMessages::k_InvalidUnifiedMessageHandle;
-}
+    // Sends a service method (in binary serialized form) using the Steam Client.
+    // Returns a unified message handle (k_InvalidUnifiedMessageHandle if could not send the message).
+    ClientUnifiedMessageHandle SendMethod( const char *pchServiceMethod, const void *pRequestBuffer, uint32 unRequestBufferSize, uint64 unContext );
 
 
-// Gets the size of the response and the EResult. Returns false if the response is not ready yet.
-bool GetMethodResponseInfo( ClientUnifiedMessageHandle hHandle, uint32 *punResponseSize, EResult *peResult )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return false;
-}
+    // Gets the size of the response and the EResult. Returns false if the response is not ready yet.
+    bool GetMethodResponseInfo( ClientUnifiedMessageHandle hHandle, uint32 *punResponseSize, EResult *peResult );
 
 
-// Gets a response in binary serialized form (and optionally release the corresponding allocated memory).
-bool GetMethodResponseData( ClientUnifiedMessageHandle hHandle, void *pResponseBuffer, uint32 unResponseBufferSize, bool bAutoRelease )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return false;
-}
+    // Gets a response in binary serialized form (and optionally release the corresponding allocated memory).
+    bool GetMethodResponseData( ClientUnifiedMessageHandle hHandle, void *pResponseBuffer, uint32 unResponseBufferSize, bool bAutoRelease );
 
 
-// Releases the message and its corresponding allocated memory.
-bool ReleaseMethod( ClientUnifiedMessageHandle hHandle )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return false;
-}
+    // Releases the message and its corresponding allocated memory.
+    bool ReleaseMethod( ClientUnifiedMessageHandle hHandle );
 
 
-// Sends a service notification (in binary serialized form) using the Steam Client.
-// Returns true if the notification was sent successfully.
-bool SendNotification( const char *pchServiceNotification, const void *pNotificationBuffer, uint32 unNotificationBufferSize )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return false;
-}
+    // Sends a service notification (in binary serialized form) using the Steam Client.
+    // Returns true if the notification was sent successfully.
+    bool SendNotification( const char *pchServiceNotification, const void *pNotificationBuffer, uint32 unNotificationBufferSize );
 
 
-void RunCallbacks()
-{
-}
+    void RunCallbacks();
 
-void Callback(Common_Message *msg)
-{
-    if (msg->has_low_level()) {
-        if (msg->low_level().type() == Low_Level::CONNECT) {
-            
-        }
-
-        if (msg->low_level().type() == Low_Level::DISCONNECT) {
-
-        }
-    }
-}
+    void Callback(Common_Message *msg);
 
 };
+
+#endif // __INCLUDED_STEAM_UNIFIED_MESSAGES_H__

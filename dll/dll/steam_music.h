@@ -15,15 +15,20 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef __INCLUDED_STEAM_MUSIC_H__
+#define __INCLUDED_STEAM_MUSIC_H__
+
 #include "base.h"
 
-class Steam_Music : public ISteamMusic
+class Steam_Music :
+public ISteamMusic
 {
-    int playing;
-    float volume;
+    int playing{};;
+    float volume{};;
     void change_playstate(int new_playing);
 
-    class SteamCallBacks *callbacks;
+    class SteamCallBacks *callbacks{};
+    
 public:
     Steam_Music(class SteamCallBacks *callbacks);
 
@@ -41,3 +46,5 @@ public:
 	void SetVolume( float flVolume );
 	float GetVolume();
 };
+
+#endif // __INCLUDED_STEAM_MUSIC_H__

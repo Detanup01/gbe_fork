@@ -15,6 +15,9 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef __INCLUDED_STEAM_GAMESERVER_H__
+#define __INCLUDED_STEAM_GAMESERVER_H__
+
 #include "base.h"
 #include "auth.h"
 
@@ -23,16 +26,16 @@
 //-----------------------------------------------------------------------------
 
 struct Gameserver_Outgoing_Packet {
-	std::vector<uint8_t> data;
+	std::vector<uint8_t> data{};
 
-	uint32 ip;
-	uint16 port;
+	uint32 ip{};
+	uint16 port{};
 };
 
 struct Gameserver_Player_Info_t {
-    std::chrono::steady_clock::time_point join_time;
-    std::string name;
-    uint32 score;
+    std::chrono::steady_clock::time_point join_time{};
+    std::string name{};
+    uint32 score{};
 };
 
 class Steam_GameServer : 
@@ -47,27 +50,28 @@ public ISteamGameServer013,
 public ISteamGameServer014,
 public ISteamGameServer
 {
-    class Settings *settings;
-    class Networking *network;
-    class SteamCallBacks *callbacks;
+    class Settings *settings{};
+    class Networking *network{};
+    class SteamCallBacks *callbacks{};
 
-    CSteamID steam_id;
+    CSteamID steam_id{};
 
     bool call_servers_connected = false;
     bool logged_in = false;
     bool call_servers_disconnected = false;
-    Gameserver server_data;
-    std::vector<std::pair<CSteamID, Gameserver_Player_Info_t>> players;
+    Gameserver server_data{};
+    std::vector<std::pair<CSteamID, Gameserver_Player_Info_t>> players{};
 
-    uint32 flags;
-    bool policy_response_called;
+    uint32 flags{};
+    bool policy_response_called{};
 
-    std::chrono::high_resolution_clock::time_point last_sent_server_info;
-    Auth_Manager *auth_manager;
+    std::chrono::high_resolution_clock::time_point last_sent_server_info{};
+    Auth_Manager *auth_manager{};
 
-    std::vector<struct Gameserver_Outgoing_Packet> outgoing_packets;
+    std::vector<struct Gameserver_Outgoing_Packet> outgoing_packets{};
+
+
 public:
-
     Steam_GameServer(class Settings *settings, class Networking *network, class SteamCallBacks *callbacks);
     ~Steam_GameServer();
 
@@ -361,6 +365,10 @@ public:
 	STEAM_CALL_RESULT( ComputeNewPlayerCompatibilityResult_t )
 	SteamAPICall_t ComputeNewPlayerCompatibility( CSteamID steamIDNewPlayer );
 
-    //
+
+    // called by steam_client::runcallbacks
     void RunCallbacks();
+
 };
+
+#endif // __INCLUDED_STEAM_GAMESERVER_H__

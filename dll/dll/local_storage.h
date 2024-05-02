@@ -15,18 +15,17 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#ifndef LOCAL_STORAGE_INCLUDE
-#define LOCAL_STORAGE_INCLUDE
+#ifndef LOCAL_STORAGE_INCLUDE_H
+#define LOCAL_STORAGE_INCLUDE_H
 
 #include "base.h"
 
 #define MAX_FILENAME_LENGTH 300
 
-union image_pixel_t
-{
+union image_pixel_t {
     uint32_t pixel;
-    struct pixel_channels_t
-    {
+
+    struct pixel_channels_t {
         uint8_t r;
         uint8_t g;
         uint8_t b;
@@ -34,11 +33,10 @@ union image_pixel_t
     } channels;
 };
 
-struct image_t
-{
-    size_t width;
-    size_t height;
-    std::vector<image_pixel_t> pix_map;
+struct image_t {
+    size_t width{};
+    size_t height{};
+    std::vector<image_pixel_t> pix_map{};
 };
 
 class Local_Storage {
@@ -105,4 +103,4 @@ public:
     static std::string desanitize_string(std::string name);
 };
 
-#endif
+#endif // LOCAL_STORAGE_INCLUDE_H

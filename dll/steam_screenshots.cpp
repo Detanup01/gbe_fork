@@ -21,6 +21,7 @@ Steam_Screenshots::Steam_Screenshots(class Local_Storage* local_storage, class S
     local_storage(local_storage),
     callbacks(callbacks)
 {
+    
 }
 
 ScreenshotHandle Steam_Screenshots::create_screenshot_handle()

@@ -1,3 +1,23 @@
+/* Copyright (C) 2019 Mr Goldberg
+   This file is part of the Goldberg Emulator
+
+   The Goldberg Emulator is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 3 of the License, or (at your option) any later version.
+
+   The Goldberg Emulator is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the Goldberg Emulator; if not, see
+   <http://www.gnu.org/licenses/>.  */
+
+#ifndef __INCLUDED_STEAM_APPS_H__
+#define __INCLUDED_STEAM_APPS_H__
+
 #include "base.h"
 
 class Steam_Apps :
@@ -10,7 +30,7 @@ public ISteamApps006,
 public ISteamApps007,
 public ISteamApps
 {
-    Settings *settings{};
+    class Settings *settings{};
     class SteamCallResults *callback_results{};
     class SteamCallBacks *callbacks{};
 
@@ -115,3 +135,5 @@ public:
 	// set current DLC AppID being played (or 0 if none). Allows Steam to track usage of major DLC extensions
     bool SetDlcContext( AppId_t nAppID );
 };
+
+#endif // __INCLUDED_STEAM_APPS_H__

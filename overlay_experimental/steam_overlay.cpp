@@ -6,8 +6,6 @@
 // avoids confusing ImGui when another label has the same text "MyText"
 
 #include "overlay/steam_overlay.h"
-#include "overlay/notification.h"
-#include "overlay/steam_overlay_translations.h"
 
 #include <thread>
 #include <string>
@@ -17,14 +15,17 @@
 #include <random>
 
 #include "InGameOverlay/ImGui/imgui.h"
+#include "InGameOverlay/RendererDetector.h"
 
 #include "dll/dll.h"
 #include "dll/settings_parser.h"
 
-#include "InGameOverlay/RendererDetector.h"
-
+// translation
+#include "overlay/steam_overlay_translations.h"
 // fonts
 #include "fonts/unifont.hpp"
+// builtin audio
+#include "overlay/notification.h"
 
 #define URL_WINDOW_NAME "URL Window"
 
@@ -135,7 +136,7 @@ Steam_Overlay::Steam_Overlay(Settings* settings, Local_Storage *local_storage, S
     }
 
     this->network->setCallback(CALLBACK_ID_STEAM_MESSAGES, settings->get_local_steam_id(), &Steam_Overlay::overlay_networking_callback, this);
-    run_every_runcb->add(&Steam_Overlay::overlay_run_callback, this);
+    this->run_every_runcb->add(&Steam_Overlay::overlay_run_callback, this);
 }
 
 Steam_Overlay::~Steam_Overlay()
@@ -143,7 +144,7 @@ Steam_Overlay::~Steam_Overlay()
     if (settings->disable_overlay) return;
 
     this->network->rmCallback(CALLBACK_ID_STEAM_MESSAGES, settings->get_local_steam_id(), &Steam_Overlay::overlay_networking_callback, this);
-    run_every_runcb->remove(&Steam_Overlay::overlay_run_callback, this);
+    this->run_every_runcb->remove(&Steam_Overlay::overlay_run_callback, this);
 }
 
 void Steam_Overlay::request_renderer_detector()
@@ -1038,7 +1039,7 @@ void Steam_Overlay::build_notifications(int width, int height)
                         friend_actions_temp.push(it->frd->first);
                         // when we click "accept game invite" from someone else, we want to remove this notification immediately since it's no longer relevant
                         // this assignment will make the notification elapsed time insanely large
-                        it->start_time = std::chrono::milliseconds(0);
+                        it->start_time = {};
                     }
                 }
                 break;

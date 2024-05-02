@@ -15,10 +15,10 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "settings.h"
+#ifndef SETTINGS_PARSER_INCLUDE_H
+#define SETTINGS_PARSER_INCLUDE_H
 
-#ifndef SETTINGS_PARSER_INCLUDE
-#define SETTINGS_PARSER_INCLUDE
+#include "settings.h"
 
 //returns game appid
 uint32 create_localstorage_settings(Settings **settings_client_out, Settings **settings_server_out, Local_Storage **local_storage_out);
@@ -55,4 +55,4 @@ enum class SettingsItf {
 
 const std::map<SettingsItf, std::string>& settings_old_interfaces();
 
-#endif
+#endif // SETTINGS_PARSER_INCLUDE_H

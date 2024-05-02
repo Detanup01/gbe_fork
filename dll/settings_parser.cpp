@@ -121,6 +121,19 @@ static void merge_ini(const CSimpleIniA &new_ini, bool overwrite = false) {
 }
 
 
+Overlay_Appearance::NotificationPosition Overlay_Appearance::translate_notification_position(const std::string &str)
+{
+    if (str == "top_left") return NotificationPosition::top_left;
+    else if (str == "top_center") return NotificationPosition::top_center;
+    else if (str == "top_right") return NotificationPosition::top_right;
+    else if (str == "bot_left") return NotificationPosition::bot_left;
+    else if (str == "bot_center") return NotificationPosition::bot_center;
+    else if (str == "bot_right") return NotificationPosition::bot_right;
+
+    PRINT_DEBUG("Invalid position '%s'", str.c_str());
+    return default_pos;
+}
+
 
 // custom_broadcasts.txt
 static void load_custom_broadcasts(const std::string &base_path, std::set<IP_PORT> &custom_broadcasts)

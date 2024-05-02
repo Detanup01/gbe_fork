@@ -254,7 +254,7 @@ public:
     void AddAchievementNotification(nlohmann::json const& ach);
 };
 
-#else
+#else // EMU_OVERLAY
 
 class Steam_Overlay
 {
@@ -288,6 +288,6 @@ public:
     void AddAchievementNotification(nlohmann::json const& ach) {}
 };
 
-#endif
+#endif // EMU_OVERLAY
 
-#endif//__INCLUDED_STEAM_OVERLAY_H__
+#endif //__INCLUDED_STEAM_OVERLAY_H__

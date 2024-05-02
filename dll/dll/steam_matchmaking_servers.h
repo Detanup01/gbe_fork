@@ -15,59 +15,69 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef __INCLUDED_STEAM_MATCHMAKING_SERVERS_H__
+#define __INCLUDED_STEAM_MATCHMAKING_SERVERS_H__
+
 #include "base.h"
 #include <ssq/a2s.h>
 
-#define SERVER_TIMEOUT 10.0
-#define DIRECT_IP_DELAY 0.05
-
 struct Steam_Matchmaking_Servers_Direct_IP_Request {
-	HServerQuery id;
-	uint32 ip;
-	uint16 port;
+	HServerQuery id{};
+	uint32 ip{};
+	uint16 port{};
 
-	std::chrono::high_resolution_clock::time_point created;
-	ISteamMatchmakingRulesResponse *rules_response = NULL;
-	ISteamMatchmakingPlayersResponse *players_response = NULL;
-	ISteamMatchmakingPingResponse *ping_response = NULL;
+	std::chrono::high_resolution_clock::time_point created{};
+	ISteamMatchmakingRulesResponse *rules_response{};
+	ISteamMatchmakingPlayersResponse *players_response{};
+	ISteamMatchmakingPingResponse *ping_response{};
 };
 
 struct Steam_Matchmaking_Servers_Gameserver_Friends {
-    uint64 source_id;
-    uint32 ip;
-    uint16 port;
-    std::chrono::high_resolution_clock::time_point last_recv;
+    uint64 source_id{};
+    uint32 ip{};
+    uint16 port{};
+    std::chrono::high_resolution_clock::time_point last_recv{};
 };
 
 struct Steam_Matchmaking_Servers_Gameserver {
-    Gameserver server;
-    std::chrono::high_resolution_clock::time_point last_recv;
-    EMatchMakingType type;
+    Gameserver server{};
+    std::chrono::high_resolution_clock::time_point last_recv{};
+    EMatchMakingType type{};
 };
 
 struct Steam_Matchmaking_Request {
-    AppId_t appid;
-    HServerListRequest id;
-    ISteamMatchmakingServerListResponse *callbacks;
-	ISteamMatchmakingServerListResponse001 *old_callbacks;
-    bool completed, cancelled, released;
-    std::vector <struct Steam_Matchmaking_Servers_Gameserver> gameservers_filtered;
-    EMatchMakingType type;
+    AppId_t appid{};
+    HServerListRequest id{};
+    ISteamMatchmakingServerListResponse *callbacks{};
+	ISteamMatchmakingServerListResponse001 *old_callbacks{};
+    bool completed{}, cancelled{}, released{};
+    std::vector <struct Steam_Matchmaking_Servers_Gameserver> gameservers_filtered{};
+    EMatchMakingType type{};
 };
 
-class Steam_Matchmaking_Servers : public ISteamMatchmakingServers,
-public ISteamMatchmakingServers001
+class Steam_Matchmaking_Servers :
+public ISteamMatchmakingServers001,
+public ISteamMatchmakingServers
 {
     class Settings *settings{};
     class Local_Storage *local_storage{};
     class Networking *network{};
 
-    std::vector <struct Steam_Matchmaking_Servers_Gameserver> gameservers;
-    std::vector <struct Steam_Matchmaking_Servers_Gameserver_Friends> gameservers_friends;
-    std::vector <struct Steam_Matchmaking_Request> requests;
-    std::vector <struct Steam_Matchmaking_Servers_Direct_IP_Request> direct_ip_requests;
+    std::vector <struct Steam_Matchmaking_Servers_Gameserver> gameservers{};
+    std::vector <struct Steam_Matchmaking_Servers_Gameserver_Friends> gameservers_friends{};
+    std::vector <struct Steam_Matchmaking_Request> requests{};
+    std::vector <struct Steam_Matchmaking_Servers_Direct_IP_Request> direct_ip_requests{};
+
 	HServerListRequest RequestServerList(AppId_t iApp, ISteamMatchmakingServerListResponse *pRequestServersResponse, EMatchMakingType type);
 	void RequestOldServerList(AppId_t iApp, ISteamMatchmakingServerListResponse001 *pRequestServersResponse, EMatchMakingType type);
+	
+    //
+	static void network_callback(void *object, Common_Message *msg);
+    void server_details(Gameserver *g, gameserveritem_t *server);
+    void server_details_players(Gameserver *g, Steam_Matchmaking_Servers_Direct_IP_Request *r);
+    void server_details_rules(Gameserver *g, Steam_Matchmaking_Servers_Direct_IP_Request *r);
+    void Callback(Common_Message *msg);
+
 public:
     Steam_Matchmaking_Servers(class Settings *settings, class Local_Storage *local_storage, class Networking *network);
 	~Steam_Matchmaking_Servers();
@@ -195,25 +205,25 @@ public:
 	// Get details on a given server in the list, you can get the valid range of index
 	// values by calling GetServerCount().  You will also receive index values in 
 	// ISteamMatchmakingServerListResponse::ServerResponded() callbacks
-	gameserveritem_t *GetServerDetails( EMatchMakingType eType, int iServer ) { return GetServerDetails((HServerListRequest) eType , iServer ); }
+	gameserveritem_t *GetServerDetails( EMatchMakingType eType, int iServer );
 
 	// Cancel an request which is operation on the given list type.  You should call this to cancel
 	// any in-progress requests before destructing a callback object that may have been passed 
 	// to one of the above list request calls.  Not doing so may result in a crash when a callback
 	// occurs on the destructed object.
-	void CancelQuery( EMatchMakingType eType ) { return CancelQuery((HServerListRequest) eType); }
+	void CancelQuery( EMatchMakingType eType );
 
 	// Ping every server in your list again but don't update the list of servers
-	void RefreshQuery( EMatchMakingType eType ) { return RefreshQuery((HServerListRequest) eType); }
+	void RefreshQuery( EMatchMakingType eType );
 
 	// Returns true if the list is currently refreshing its server list
-	bool IsRefreshing( EMatchMakingType eType ) { return IsRefreshing((HServerListRequest) eType); }
+	bool IsRefreshing( EMatchMakingType eType );
 
 	// How many servers in the given list, GetServerDetails above takes 0... GetServerCount() - 1
-	int GetServerCount( EMatchMakingType eType ) { return GetServerCount((HServerListRequest) eType); }
+	int GetServerCount( EMatchMakingType eType );
 
 	// Refresh a single server inside of a query (rather than all the servers )
-	void RefreshServer( EMatchMakingType eType, int iServer ) { return RefreshServer((HServerListRequest) eType, iServer); }
+	void RefreshServer( EMatchMakingType eType, int iServer );
 
 	//-----------------------------------------------------------------------------
 	// Queries to individual servers directly via IP/Port
@@ -233,10 +243,9 @@ public:
 	// to one of the above calls to avoid crashing when callbacks occur.
 	void CancelServerQuery( HServerQuery hServerQuery ); 
 
-    //
+	// called by steam_client::runcallbacks
     void RunCallbacks();
-    void Callback(Common_Message *msg);
-    void server_details(Gameserver *g, gameserveritem_t *server);
-    void server_details_players(Gameserver *g, Steam_Matchmaking_Servers_Direct_IP_Request *r);
-    void server_details_rules(Gameserver *g, Steam_Matchmaking_Servers_Direct_IP_Request *r);
+	
 };
+
+#endif // __INCLUDED_STEAM_MATCHMAKING_SERVERS_H__

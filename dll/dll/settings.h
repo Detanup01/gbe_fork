@@ -15,54 +15,57 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#ifndef SETTINGS_INCLUDE
-#define SETTINGS_INCLUDE
+#ifndef SETTINGS_INCLUDE_H
+#define SETTINGS_INCLUDE_H
 
 #include "base.h"
 
 struct IP_PORT;
 
 struct DLC_entry {
-    AppId_t appID;
-    std::string name;
-    bool available;
+    AppId_t appID{};
+    std::string name{};
+    bool available{};
 };
 
 struct Mod_entry {
-    PublishedFileId_t id;
-    std::string title;
-    std::string path;
+    PublishedFileId_t id{};
+    std::string title{};
+    std::string path{};
 
-    std::string previewURL;
-    EWorkshopFileType fileType;
-    std::string description;
-    uint64 steamIDOwner;
-    uint32 timeCreated;
-    uint32 timeUpdated;
-    uint32 timeAddedToUserList;
-    ERemoteStoragePublishedFileVisibility visibility;
-    bool banned;
-    bool acceptedForUse;
-    bool tagsTruncated;
-    std::string tags; 
+    std::string previewURL{};
+    EWorkshopFileType fileType{};
+    std::string description{};
+    uint64 steamIDOwner{};
+    uint32 timeCreated{};
+    uint32 timeUpdated{};
+    uint32 timeAddedToUserList{};
+    ERemoteStoragePublishedFileVisibility visibility{};
+    bool banned = false;
+    bool acceptedForUse{};
+    bool tagsTruncated{};
+    std::string tags{};
+
     // file/url information
     UGCHandle_t handleFile = generate_file_handle();
     UGCHandle_t handlePreviewFile = generate_file_handle();
-    std::string primaryFileName;
-    int32 primaryFileSize;
-    std::string previewFileName;
-    int32 previewFileSize;
-    std::string workshopItemURL;
+
+    std::string primaryFileName{};
+    int32 primaryFileSize{};
+    std::string previewFileName{};
+    int32 previewFileSize{};
+    std::string workshopItemURL{};
+
     // voting information
-    uint32 votesUp;
-    uint32 votesDown;
-    float score;
+    uint32 votesUp{};
+    uint32 votesDown{};
+    float score{};
+
     // collection details
-    uint32 numChildren;
+    uint32 numChildren{}; // TODO
     
 private:
-    UGCHandle_t generate_file_handle()
-    {
+    UGCHandle_t generate_file_handle() {
         static UGCHandle_t val = 0;
 
         ++val;
@@ -74,12 +77,12 @@ private:
 };
 
 struct Leaderboard_config {
-    enum ELeaderboardSortMethod sort_method;
-    enum ELeaderboardDisplayType display_type;
+    enum ELeaderboardSortMethod sort_method{};
+    enum ELeaderboardDisplayType display_type{};
 };
 
 struct Stat_config {
-    GameServerStats_Messages::StatInfo::Stat_Type type;
+    GameServerStats_Messages::StatInfo::Stat_Type type{};
     union {
         float default_value_float;
         int32 default_value_int;
@@ -87,21 +90,21 @@ struct Stat_config {
 };
 
 struct Image_Data {
-    uint32 width;
-    uint32 height;
-    std::string data;
+    uint32 width{};
+    uint32 height{};
+    std::string data{};
 };
 
 struct Controller_Settings {
-    std::map<std::string, std::map<std::string, std::pair<std::set<std::string>, std::string>>> action_sets;
-    std::map<std::string, std::string> action_set_layer_parents;
-    std::map<std::string, std::map<std::string, std::pair<std::set<std::string>, std::string>>> action_set_layers;
+    std::map<std::string, std::map<std::string, std::pair<std::set<std::string>, std::string>>> action_sets{};
+    std::map<std::string, std::string> action_set_layer_parents{};
+    std::map<std::string, std::map<std::string, std::pair<std::set<std::string>, std::string>>> action_set_layers{};
 };
 
 struct Group_Clans {
-    CSteamID id;
-    std::string name;
-    std::string tag;
+    CSteamID id{};
+    std::string name{};
+    std::string tag{};
 };
 
 struct Overlay_Appearance {
@@ -112,7 +115,7 @@ struct Overlay_Appearance {
 
     constexpr const static NotificationPosition default_pos = NotificationPosition::top_right;
 
-    std::string font_override{}; // path to a custom user-provided font
+    std::string font_override{}; // path to a custom user-provided TTF font
     float font_size = 16.0f;
     
     float icon_size = 64.0f;
@@ -157,23 +160,12 @@ struct Overlay_Appearance {
     NotificationPosition invite_pos = default_pos; // lobby/game invitation
     NotificationPosition chat_msg_pos = NotificationPosition::top_center; // chat message from a friend
 
-    static NotificationPosition translate_notification_position(const std::string &str)
-    {
-        if (str == "top_left") return NotificationPosition::top_left;
-        else if (str == "top_center") return NotificationPosition::top_center;
-        else if (str == "top_right") return NotificationPosition::top_right;
-        else if (str == "bot_left") return NotificationPosition::bot_left;
-        else if (str == "bot_center") return NotificationPosition::bot_center;
-        else if (str == "bot_right") return NotificationPosition::bot_right;
-
-        PRINT_DEBUG("Invalid position '%s'", str.c_str());
-        return default_pos;
-    }
+    static NotificationPosition translate_notification_position(const std::string &str);
 };
 
 class Settings {
-    CSteamID steam_id; // user id
-    CGameID game_id;
+    CSteamID steam_id{}; // user id
+    CGameID game_id{};
     std::string name{};
     std::string language{}; // default "english"
     CSteamID lobby_id = k_steamIDNil;
@@ -294,17 +286,21 @@ public:
 
 
 #ifdef LOBBY_CONNECT
-    static const bool is_lobby_connect = true;
+    static constexpr const bool is_lobby_connect = true;
 #else
-    static const bool is_lobby_connect = false;
+    static constexpr const bool is_lobby_connect = false;
 #endif
 
-    static std::string sanitize(const std::string &name);
     Settings(CSteamID steam_id, CGameID game_id, const std::string &name, const std::string &language, bool offline);
+
+    static std::string sanitize(const std::string &name);
+
     CSteamID get_local_steam_id();
     CGameID get_local_game_id();
+
     const char *get_local_name();
     void set_local_name(const char *name);
+
     const char *get_language();
     void set_language(const char *language);
 
@@ -313,9 +309,12 @@ public:
     const std::string& get_supported_languages() const;
 
     void set_game_id(CGameID game_id);
+
     void set_lobby(CSteamID lobby_id);
     CSteamID get_lobby();
+
     bool is_offline();
+
     uint16 get_port();
     void set_port(uint16 port);
 
@@ -361,4 +360,4 @@ public:
 
 };
 
-#endif
+#endif // SETTINGS_INCLUDE_H

@@ -15,9 +15,13 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef __INCLUDED_STEAM_APPLIST_H__
+#define __INCLUDED_STEAM_APPLIST_H__
+
 #include "base.h"
 
-class Steam_Applist : public ISteamAppList
+class Steam_Applist :
+public ISteamAppList
 {
 public:
 	uint32 GetNumInstalledApps();
@@ -28,3 +32,5 @@ public:
 
 	int GetAppBuildId( AppId_t nAppID ); // return the buildid of this app, may change at any time based on backend updates to the game
 };
+
+#endif // __INCLUDED_STEAM_APPLIST_H__

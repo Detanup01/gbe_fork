@@ -15,9 +15,13 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef __INCLUDED_STEAM_MUSICREMOTE_H__
+#define __INCLUDED_STEAM_MUSICREMOTE_H__
+
 #include "base.h"
 
-class Steam_MusicRemote : public ISteamMusicRemote
+class Steam_MusicRemote :
+public ISteamMusicRemote
 {
 public:
 	// Service Definition
@@ -65,3 +69,5 @@ public:
 	bool SetCurrentPlaylistEntry( int nID );
 	bool PlaylistDidChange();
 };
+
+#endif // __INCLUDED_STEAM_MUSICREMOTE_H__

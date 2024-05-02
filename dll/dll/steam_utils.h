@@ -1,5 +1,3 @@
-#ifndef __STEAM_UTILS_H__
-#define __STEAM_UTILS_H__
 
 /* Copyright (C) 2019 Mr Goldberg
    This file is part of the Goldberg Emulator
@@ -18,6 +16,9 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef __STEAM_UTILS_H__
+#define __STEAM_UTILS_H__
+
 #include "common_includes.h"
 #include "local_storage.h"
 #include "overlay/steam_overlay.h"
@@ -35,10 +36,10 @@ public ISteamUtils009,
 public ISteamUtils
 {
 private:
-    Settings *settings;
-    class SteamCallResults *callback_results;
+    Settings *settings{};
+    class SteamCallResults *callback_results{};
     class SteamCallBacks *callbacks{};
-    Steam_Overlay* overlay;
+    Steam_Overlay* overlay{};
 
 public:
     Steam_Utils(Settings *settings, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, Steam_Overlay *overlay);

@@ -17,6 +17,12 @@
 
 #include "dll/base.h"
 
+std::recursive_mutex global_mutex{};
+// some arbitrary counter/time for reference
+const std::chrono::time_point<std::chrono::high_resolution_clock> startup_counter = std::chrono::high_resolution_clock::now();
+const std::chrono::time_point<std::chrono::system_clock> startup_time = std::chrono::system_clock::now();
+
+
 #ifdef __WINDOWS__
 
 void randombytes(char *buf, size_t size)
@@ -93,11 +99,6 @@ bool set_env_variable(const std::string &name, const std::string &value)
 
 #endif
 
-std::recursive_mutex global_mutex{};
-
-// some arbitrary counter/time for reference
-const std::chrono::time_point<std::chrono::high_resolution_clock> startup_counter = std::chrono::high_resolution_clock::now();
-const std::chrono::time_point<std::chrono::system_clock> startup_time = std::chrono::system_clock::now();
 
 #ifndef EMU_RELEASE_BUILD
 const std::string dbg_log_file = get_full_program_path() + "STEAM_LOG.txt";
@@ -147,10 +148,6 @@ CSteamID generate_steam_id_lobby()
     return CSteamID(generate_account_id(), k_EChatInstanceFlagLobby | k_EChatInstanceFlagMMSLobby, k_EUniversePublic, k_EAccountTypeChat);
 }
 
-/// @brief Check for a timeout given some initial timepoint and a timeout in sec.
-/// @param old The initial timepoint which will be compared against current time
-/// @param timeout The max allowed time in seconds
-/// @return true if the timepoint has exceeded the max allowed timeout, false otherwise
 bool check_timedout(std::chrono::high_resolution_clock::time_point old, double timeout)
 {
     if (timeout == 0.0) return true;

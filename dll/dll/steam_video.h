@@ -15,9 +15,13 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef __INCLUDED_STEAM_VIDEO_H__
+#define __INCLUDED_STEAM_VIDEO_H__
+
 #include "base.h"
 
-class Steam_Video : public ISteamVideo
+class Steam_Video :
+public ISteamVideo
 {
 public:
 
@@ -32,3 +36,5 @@ public:
 	void GetOPFSettings( AppId_t unVideoAppID );
 	bool GetOPFStringForApp( AppId_t unVideoAppID, char *pchBuffer, int32 *pnBufferSize );
 };
+
+#endif // __INCLUDED_STEAM_VIDEO_H__

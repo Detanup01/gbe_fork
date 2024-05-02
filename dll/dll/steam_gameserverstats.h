@@ -15,18 +15,22 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef __INCLUDED_STEAM_GAMESERVERSTATS_H__
+#define __INCLUDED_STEAM_GAMESERVERSTATS_H__
+
 #include "base.h"
  
 //-----------------------------------------------------------------------------
 // Purpose: Functions for authenticating users via Steam to play on a game server
 //-----------------------------------------------------------------------------
-class Steam_GameServerStats : public ISteamGameServerStats
+class Steam_GameServerStats :
+public ISteamGameServerStats
 {
-    class Settings *settings;
-    class Networking *network;
-    class SteamCallResults *callback_results;
-    class SteamCallBacks *callbacks;
-    class RunEveryRunCB *run_every_runcb;
+    class Settings *settings{};
+    class Networking *network{};
+    class SteamCallResults *callback_results{};
+    class SteamCallBacks *callbacks{};
+    class RunEveryRunCB *run_every_runcb{};
 	
 	struct RequestAllStats {
 		std::chrono::high_resolution_clock::time_point created{};
@@ -109,3 +113,5 @@ public:
 	STEAM_CALL_RESULT( GSStatsStored_t )
 	SteamAPICall_t StoreUserStats( CSteamID steamIDUser );
 };
+
+#endif // __INCLUDED_STEAM_GAMESERVERSTATS_H__

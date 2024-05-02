@@ -15,9 +15,13 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef __INCLUDED_STEAM_PARENTAL_H__
+#define __INCLUDED_STEAM_PARENTAL_H__
+
 #include "base.h"
 
-class Steam_Parental : public ISteamParentalSettings
+class Steam_Parental :
+public ISteamParentalSettings
 {
 public:
 	bool BIsParentalLockEnabled();
@@ -29,3 +33,5 @@ public:
 	bool BIsFeatureBlocked( EParentalFeature eFeature );
 	bool BIsFeatureInBlockList( EParentalFeature eFeature );
 };
+
+#endif // __INCLUDED_STEAM_PARENTAL_H__

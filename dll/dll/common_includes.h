@@ -244,4 +244,4 @@ static inline void reset_LastError()
 
 #define LOBBY_CONNECT_APPID ((uint32)-2)
 
-#endif//__INCLUDED_COMMON_INCLUDES__
+#endif //__INCLUDED_COMMON_INCLUDES__

@@ -15,117 +15,47 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef __INCLUDED_STEAM_TV_H__
+#define __INCLUDED_STEAM_TV_H__
+
 #include "base.h"
 
 class Steam_TV :
 public ISteamTV
 {
-    class Settings *settings;
-    class Networking *network;
-    class SteamCallResults *callback_results;
-    class SteamCallBacks *callbacks;
-    class RunEveryRunCB *run_every_runcb;
+    class Settings *settings{};
+    class Networking *network{};
+    class SteamCallResults *callback_results{};
+    class SteamCallBacks *callbacks{};
+    class RunEveryRunCB *run_every_runcb{};
     std::chrono::time_point<std::chrono::steady_clock> initialized_time = std::chrono::steady_clock::now();
-    FSteamNetworkingSocketsDebugOutput debug_function;
+    FSteamNetworkingSocketsDebugOutput debug_function{};
+
+    static void steam_callback(void *object, Common_Message *msg);
+    static void steam_run_every_runcb(void *object);
 
 public:
-static void steam_callback(void *object, Common_Message *msg)
-{
-    // PRINT_DEBUG_ENTRY();
+    Steam_TV(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, class RunEveryRunCB *run_every_runcb);
+    ~Steam_TV();
 
-    Steam_TV *steam_parties = (Steam_TV *)object;
-    steam_parties->Callback(msg);
-}
+    bool IsBroadcasting(int *pnNumViewers);
 
-static void steam_run_every_runcb(void *object)
-{
-    // PRINT_DEBUG_ENTRY();
+    void AddBroadcastGameData(const char * pchKey, const char * pchValue);
 
-    Steam_TV *steam_parties = (Steam_TV *)object;
-    steam_parties->RunCallbacks();
-}
+    void RemoveBroadcastGameData(const char * pchKey);
 
-Steam_TV(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, class RunEveryRunCB *run_every_runcb)
-{
-    this->settings = settings;
-    this->network = network;
-    this->run_every_runcb = run_every_runcb;
-    //this->network->setCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_TV::steam_callback, this);
-    // this->run_every_runcb->add(&Steam_TV::steam_run_every_runcb, this);
+    void AddTimelineMarker(const char * pchTemplateName, bool bPersistent, uint8 nColorR, uint8 nColorG, uint8 nColorB);
 
-    this->callback_results = callback_results;
-    this->callbacks = callbacks;
-}
+    void RemoveTimelineMarker();
 
-~Steam_TV()
-{
-    //this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_TV::steam_callback, this);
-    //this->run_every_runcb->remove(&Steam_TV::steam_run_every_runcb, this);
-}
+    uint32 AddRegion(const char * pchElementName, const char * pchTimelineDataSection, const SteamTVRegion_t * pSteamTVRegion, ESteamTVRegionBehavior eSteamTVRegionBehavior);
 
-bool IsBroadcasting(int *pnNumViewers)
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return false;
-}
+    void RemoveRegion(uint32 unRegionHandle);
 
-void AddBroadcastGameData(const char * pchKey, const char * pchValue)
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    void RunCallbacks();
 
-void RemoveBroadcastGameData(const char * pchKey)
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
-
-void AddTimelineMarker(const char * pchTemplateName, bool bPersistent, uint8 nColorR, uint8 nColorG, uint8 nColorB)
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
-
-void RemoveTimelineMarker()
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
-
-uint32 AddRegion(const char * pchElementName, const char * pchTimelineDataSection, const SteamTVRegion_t * pSteamTVRegion, ESteamTVRegionBehavior eSteamTVRegionBehavior)
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return 0;
-}
-
-void RemoveRegion(uint32 unRegionHandle)
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
-
-void RunCallbacks()
-{
-}
-
-void Callback(Common_Message *msg)
-{
-    if (msg->has_low_level()) {
-        if (msg->low_level().type() == Low_Level::CONNECT) {
-            
-        }
-
-        if (msg->low_level().type() == Low_Level::DISCONNECT) {
-
-        }
-    }
-
-    if (msg->has_networking_sockets()) {
-
-    }
-}
+    void Callback(Common_Message *msg);
 
 };
+
+#endif // __INCLUDED_STEAM_TV_H__

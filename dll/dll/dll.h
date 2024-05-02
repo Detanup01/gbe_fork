@@ -15,6 +15,9 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef __INCLUDED_DLL_H__
+#define __INCLUDED_DLL_H__
+
 #include "steam_client.h"
 
 #ifdef STEAMCLIENT_DLL
@@ -32,3 +35,5 @@ HSteamUser flat_hsteamuser();
 HSteamPipe flat_hsteampipe();
 HSteamUser flat_gs_hsteamuser();
 HSteamPipe flat_gs_hsteampipe();
+
+#endif // __INCLUDED_DLL_H__

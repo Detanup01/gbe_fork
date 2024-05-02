@@ -50,21 +50,8 @@ struct achievement_trigger {
     std::string min_value{};
     std::string max_value{};
 
-    bool check_triggered(float stat) {
-        try {
-            if (std::stof(max_value) <= stat) return true;
-        } catch (...) {}
-
-        return false;
-    }
-
-    bool check_triggered(int32 stat) {
-        try {
-            if (std::stoi(max_value) <= stat) return true;
-        } catch (...) {}
-
-        return false;
-    }
+    bool check_triggered(float stat) const;
+    bool check_triggered(int32 stat) const;
 };
 
 class Steam_User_Stats :
@@ -91,9 +78,9 @@ private:
         T current_val{};
     };
 
-    Local_Storage *local_storage{};
-    Settings *settings{};
-    SteamCallResults *callback_results{};
+    class Local_Storage *local_storage{};
+    class Settings *settings{};
+    class SteamCallResults *callback_results{};
     class SteamCallBacks *callbacks{};
     class Networking *network{};
     class RunEveryRunCB *run_every_runcb{};
@@ -114,7 +101,6 @@ private:
     std::map<std::string, UserAchievementStored_t> store_stats_trigger{};
 
     GameServerStats_Messages::AllStats pending_server_updates{};
-
 
     void load_achievements_db();
     void load_achievements();

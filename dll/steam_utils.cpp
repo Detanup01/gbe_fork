@@ -20,10 +20,10 @@
 
 
 Steam_Utils::Steam_Utils(Settings *settings, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, Steam_Overlay *overlay):
-settings(settings),
-callback_results(callback_results),
-callbacks(callbacks),
-overlay(overlay)
+    settings(settings),
+    callback_results(callback_results),
+    callbacks(callbacks),
+    overlay(overlay)
 {
     
 }

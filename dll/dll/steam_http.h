@@ -15,14 +15,16 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef __INCLUDED_STEAM_HTTP_H__
+#define __INCLUDED_STEAM_HTTP_H__
+
 #include "base.h"
-#include "common_includes.h"
 #include <curl/curl.h>
 
 
 struct Steam_Http_Request {
-	HTTPRequestHandle handle;
-	EHTTPMethod request_method;
+	HTTPRequestHandle handle{};
+	EHTTPMethod request_method{};
 	std::string url{};
 	uint64 timeout_sec = 60;
 	bool requires_valid_ssl = false;
@@ -37,7 +39,7 @@ struct Steam_Http_Request {
 	std::map<std::string, std::string> get_or_post_params{};
 	std::string post_raw{};
 
-	uint64 context_value;
+	uint64 context_value{};
 
 	// target local filepath to save
 	std::string target_filepath{};
@@ -48,17 +50,18 @@ struct Steam_Http_Request {
 	std::string response{};
 };
 
+
 class Steam_HTTP :
 public ISteamHTTP001,
 public ISteamHTTP002,
 public ISteamHTTP
 {
-    class Settings *settings;
-    class Networking *network;
-    class SteamCallResults *callback_results;
-    class SteamCallBacks *callbacks;
+    class Settings *settings{};
+    class Networking *network{};
+    class SteamCallResults *callback_results{};
+    class SteamCallBacks *callbacks{};
 
-	std::vector<Steam_Http_Request> requests;
+	std::vector<Steam_Http_Request> requests{};
 
 	Steam_Http_Request *get_request(HTTPRequestHandle hRequest);
 	void online_http_request(Steam_Http_Request *request, SteamAPICall_t *pCallHandle);
@@ -177,3 +180,5 @@ public:
 	// Check if the reason the request failed was because we timed it out (rather than some harder failure)
 	bool GetHTTPRequestWasTimedOut( HTTPRequestHandle hRequest, bool *pbWasTimedOut );
 };
+
+#endif // __INCLUDED_STEAM_HTTP_H__

@@ -15,21 +15,24 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef __INCLUDED_STEAM_SCRNSHOTS_H__
+#define __INCLUDED_STEAM_SCRNSHOTS_H__
+
 #include "base.h"
 
-struct screenshot_infos_t
-{
-	std::string screenshot_name;
-	nlohmann::json metadatas;
+struct screenshot_infos_t {
+	std::string screenshot_name{};
+	nlohmann::json metadatas{};
 };
 
-class Steam_Screenshots : public ISteamScreenshots
+class Steam_Screenshots :
+public ISteamScreenshots
 {
-    bool hooked = false;
-	std::map<ScreenshotHandle, screenshot_infos_t> _screenshots;
+	class Local_Storage *local_storage{};
+	class SteamCallBacks *callbacks{};
 
-	class Local_Storage* local_storage;
-	class SteamCallBacks* callbacks;
+    bool hooked = false;
+	std::map<ScreenshotHandle, screenshot_infos_t> _screenshots{};
 
 	ScreenshotHandle create_screenshot_handle();
 
@@ -73,3 +76,5 @@ public:
 	// JPEG, TGA, and PNG formats are supported.
 	ScreenshotHandle AddVRScreenshotToLibrary( EVRScreenshotType eType, const char *pchFilename, const char *pchVRFilename );
 };
+
+#endif //__INCLUDED_STEAM_SCRNSHOTS_H__

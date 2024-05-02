@@ -15,140 +15,58 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef __INCLUDED_STEAM_REMOTEPLAY_H__
+#define __INCLUDED_STEAM_REMOTEPLAY_H__
+
 #include "base.h"
 
 class Steam_RemotePlay :
 public ISteamRemotePlay001,
 public ISteamRemotePlay
 {
-    class Settings *settings;
-    class Networking *network;
-    class SteamCallResults *callback_results;
-    class SteamCallBacks *callbacks;
-    class RunEveryRunCB *run_every_runcb;
+    class Settings *settings{};
+    class Networking *network{};
+    class SteamCallResults *callback_results{};
+    class SteamCallBacks *callbacks{};
+    class RunEveryRunCB *run_every_runcb{};
+
+    static void steam_callback(void *object, Common_Message *msg);
+    static void steam_run_every_runcb(void *object);
 
 public:
-static void steam_callback(void *object, Common_Message *msg)
-{
-    // PRINT_DEBUG_ENTRY();
+    Steam_RemotePlay(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, class RunEveryRunCB *run_every_runcb);
+    ~Steam_RemotePlay();
 
-    Steam_RemotePlay *steam_remoteplay = (Steam_RemotePlay *)object;
-    steam_remoteplay->Callback(msg);
-}
+    // Get the number of currently connected Steam Remote Play sessions
+    uint32 GetSessionCount();
 
-static void steam_run_every_runcb(void *object)
-{
-    // PRINT_DEBUG_ENTRY();
+    // Get the currently connected Steam Remote Play session ID at the specified index. Returns zero if index is out of bounds.
+    uint32 GetSessionID( int iSessionIndex );
 
-    Steam_RemotePlay *steam_remoteplay = (Steam_RemotePlay *)object;
-    steam_remoteplay->RunCallbacks();
-}
+    // Get the SteamID of the connected user
+    CSteamID GetSessionSteamID( uint32 unSessionID );
 
-Steam_RemotePlay(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, class RunEveryRunCB *run_every_runcb)
-{
-    this->settings = settings;
-    this->network = network;
-    this->run_every_runcb = run_every_runcb;
-    //this->network->setCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_RemotePlay::steam_callback, this);
-    this->run_every_runcb->add(&Steam_RemotePlay::steam_run_every_runcb, this);
+    // Get the name of the session client device
+    // This returns NULL if the sessionID is not valid
+    const char *GetSessionClientName( uint32 unSessionID );
 
-    this->callback_results = callback_results;
-    this->callbacks = callbacks;
-}
+    // Get the form factor of the session client device
+    ESteamDeviceFormFactor GetSessionClientFormFactor( uint32 unSessionID );
 
-~Steam_RemotePlay()
-{
-    //this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_RemotePlay::steam_callback, this);
-    this->run_every_runcb->remove(&Steam_RemotePlay::steam_run_every_runcb, this);
-}
+    // Get the resolution, in pixels, of the session client device
+    // This is set to 0x0 if the resolution is not available
+    bool BGetSessionClientResolution( uint32 unSessionID, int *pnResolutionX, int *pnResolutionY );
 
-// Get the number of currently connected Steam Remote Play sessions
-uint32 GetSessionCount()
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return 0;
-}
+    bool BStartRemotePlayTogether( bool bShowOverlay );
 
-// Get the currently connected Steam Remote Play session ID at the specified index. Returns zero if index is out of bounds.
-uint32 GetSessionID( int iSessionIndex )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return 0;
-}
+    // Invite a friend to Remote Play Together
+    // This returns false if the invite can't be sent
+    bool BSendRemotePlayTogetherInvite( CSteamID steamIDFriend );
 
-// Get the SteamID of the connected user
-CSteamID GetSessionSteamID( uint32 unSessionID )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return k_steamIDNil;
-}
+    void RunCallbacks();
 
-// Get the name of the session client device
-// This returns NULL if the sessionID is not valid
-const char *GetSessionClientName( uint32 unSessionID )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return NULL;
-}
-
-// Get the form factor of the session client device
-ESteamDeviceFormFactor GetSessionClientFormFactor( uint32 unSessionID )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return k_ESteamDeviceFormFactorUnknown;
-}
-
-// Get the resolution, in pixels, of the session client device
-// This is set to 0x0 if the resolution is not available
-bool BGetSessionClientResolution( uint32 unSessionID, int *pnResolutionX, int *pnResolutionY )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (pnResolutionX) *pnResolutionX = 0;
-    if (pnResolutionY) *pnResolutionY = 0;
-    return false;
-}
-
-bool BStartRemotePlayTogether( bool bShowOverlay )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return false;
-}
-
-// Invite a friend to Remote Play Together
-// This returns false if the invite can't be sent
-bool BSendRemotePlayTogetherInvite( CSteamID steamIDFriend )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return false;
-}
-
-void RunCallbacks()
-{
-}
-
-void Callback(Common_Message *msg)
-{
-    if (msg->has_low_level()) {
-        if (msg->low_level().type() == Low_Level::CONNECT) {
-            
-        }
-
-        if (msg->low_level().type() == Low_Level::DISCONNECT) {
-
-        }
-    }
-
-    if (msg->has_networking_sockets()) {
-
-    }
-}
+    void Callback(Common_Message *msg);
 
 };
+
+#endif // __INCLUDED_STEAM_REMOTEPLAY_H__

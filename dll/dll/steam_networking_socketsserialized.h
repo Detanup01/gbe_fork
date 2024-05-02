@@ -15,6 +15,9 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef __INCLUDED_STEAM_NETWORKING_SOCKETSERIALIZED_H__
+#define __INCLUDED_STEAM_NETWORKING_SOCKETSERIALIZED_H__
+
 #include "base.h"
 
 class Steam_Networking_Sockets_Serialized :
@@ -23,145 +26,47 @@ public ISteamNetworkingSocketsSerialized003,
 public ISteamNetworkingSocketsSerialized004,
 public ISteamNetworkingSocketsSerialized005
 {
-    class Settings *settings;
-    class Networking *network;
-    class SteamCallResults *callback_results;
-    class SteamCallBacks *callbacks;
-    class RunEveryRunCB *run_every_runcb;
+    class Settings *settings{};
+    class Networking *network{};
+    class SteamCallResults *callback_results{};
+    class SteamCallBacks *callbacks{};
+    class RunEveryRunCB *run_every_runcb{};
+
+    static void steam_callback(void *object, Common_Message *msg);
+    static void steam_run_every_runcb(void *object);
 
 public:
-static void steam_callback(void *object, Common_Message *msg)
-{
-    // PRINT_DEBUG_ENTRY();
+    Steam_Networking_Sockets_Serialized(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, class RunEveryRunCB *run_every_runcb);
+    ~Steam_Networking_Sockets_Serialized();
 
-    Steam_Networking_Sockets_Serialized *steam_networkingsockets = (Steam_Networking_Sockets_Serialized *)object;
-    steam_networkingsockets->Callback(msg);
-}
+    void SendP2PRendezvous( CSteamID steamIDRemote, uint32 unConnectionIDSrc, const void *pMsgRendezvous, uint32 cbRendezvous );
 
-static void steam_run_every_runcb(void *object)
-{
-    // PRINT_DEBUG_ENTRY();
+    void SendP2PConnectionFailure( CSteamID steamIDRemote, uint32 unConnectionIDDest, uint32 nReason, const char *pszReason );
 
-    Steam_Networking_Sockets_Serialized *steam_networkingsockets = (Steam_Networking_Sockets_Serialized *)object;
-    steam_networkingsockets->RunCallbacks();
-}
+    SteamAPICall_t GetCertAsync();
 
-Steam_Networking_Sockets_Serialized(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, class RunEveryRunCB *run_every_runcb)
-{
-    this->settings = settings;
-    this->network = network;
-    this->run_every_runcb = run_every_runcb;
-    this->network->setCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_Networking_Sockets_Serialized::steam_callback, this);
-    this->run_every_runcb->add(&Steam_Networking_Sockets_Serialized::steam_run_every_runcb, this);
+    int GetNetworkConfigJSON( void *buf, uint32 cbBuf, const char *pszLauncherPartner );
 
-    this->callback_results = callback_results;
-    this->callbacks = callbacks;
-}
+    int GetNetworkConfigJSON( void *buf, uint32 cbBuf );
 
-~Steam_Networking_Sockets_Serialized()
-{
-    this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_Networking_Sockets_Serialized::steam_callback, this);
-    this->run_every_runcb->remove(&Steam_Networking_Sockets_Serialized::steam_run_every_runcb, this);
-}
+    void CacheRelayTicket( const void *pTicket, uint32 cbTicket );
 
-void SendP2PRendezvous( CSteamID steamIDRemote, uint32 unConnectionIDSrc, const void *pMsgRendezvous, uint32 cbRendezvous )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    uint32 GetCachedRelayTicketCount();
 
-void SendP2PConnectionFailure( CSteamID steamIDRemote, uint32 unConnectionIDDest, uint32 nReason, const char *pszReason )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    int GetCachedRelayTicket( uint32 idxTicket, void *buf, uint32 cbBuf );
 
-SteamAPICall_t GetCertAsync()
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    struct SteamNetworkingSocketsCert_t data = {};
-    data.m_eResult = k_EResultOK;
+    void PostConnectionStateMsg( const void *pMsg, uint32 cbMsg );
 
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
-}
+    bool GetSTUNServer(int dont_know, char *buf, unsigned int len);
 
-int GetNetworkConfigJSON( void *buf, uint32 cbBuf, const char *pszLauncherPartner )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return 0;
-}
+    bool BAllowDirectConnectToPeer(SteamNetworkingIdentity const &identity);
 
-int GetNetworkConfigJSON( void *buf, uint32 cbBuf )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return GetNetworkConfigJSON(buf, cbBuf, "");
-}
+    int BeginAsyncRequestFakeIP(int a);
 
-void CacheRelayTicket( const void *pTicket, uint32 cbTicket )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    void RunCallbacks();
 
-uint32 GetCachedRelayTicketCount()
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return 0;
-}
-
-int GetCachedRelayTicket( uint32 idxTicket, void *buf, uint32 cbBuf )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return 0;
-}
-
-void PostConnectionStateMsg( const void *pMsg, uint32 cbMsg )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
-
-bool GetSTUNServer(int dont_know, char *buf, unsigned int len)
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return false;
-}
-
-bool BAllowDirectConnectToPeer(SteamNetworkingIdentity const &identity)
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return true;
-}
-
-int BeginAsyncRequestFakeIP(int a)
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return true;
-}
-
-void RunCallbacks()
-{
-}
-
-void Callback(Common_Message *msg)
-{
-    if (msg->has_low_level()) {
-        if (msg->low_level().type() == Low_Level::CONNECT) {
-            
-        }
-
-        if (msg->low_level().type() == Low_Level::DISCONNECT) {
-
-        }
-    }
-}
+    void Callback(Common_Message *msg);
 
 };
+
+#endif // __INCLUDED_STEAM_NETWORKING_SOCKETSERIALIZED_H__

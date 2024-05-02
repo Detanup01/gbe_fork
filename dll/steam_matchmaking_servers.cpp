@@ -17,34 +17,50 @@
 
 #include "dll/dll.h"
 
+#define SERVER_TIMEOUT 10.0
+#define DIRECT_IP_DELAY 0.05
 
-static void network_callback(void *object, Common_Message *msg)
+
+static HServerQuery new_server_query()
 {
-    PRINT_DEBUG("steam_matchmaking_servers_callback");
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    static unsigned int a = 0;
+    ++a;
+    if (!a) ++a;
+    return a;
+}
+
+
+void Steam_Matchmaking_Servers::network_callback(void *object, Common_Message *msg)
+{
+    // PRINT_DEBUG_ENTRY();
 
     Steam_Matchmaking_Servers *obj = (Steam_Matchmaking_Servers *)object;
     obj->Callback(msg);
 }
+
 
 Steam_Matchmaking_Servers::Steam_Matchmaking_Servers(class Settings *settings, class Local_Storage *local_storage, class Networking *network)
 {
     this->settings = settings;
     this->local_storage = local_storage;
     this->network = network;
-    this->network->setCallback(CALLBACK_ID_GAMESERVER, (uint64) 0, &network_callback, this);
+
+    this->network->setCallback(CALLBACK_ID_GAMESERVER, (uint64)0, &network_callback, this);
 }
 
 Steam_Matchmaking_Servers::~Steam_Matchmaking_Servers()
 {
-    this->network->rmCallback(CALLBACK_ID_GAMESERVER, (uint64) 0, &network_callback, this);
+    this->network->rmCallback(CALLBACK_ID_GAMESERVER, (uint64)0, &network_callback, this);
 }
 
-static unsigned server_list_request = 0;
 
 HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, ISteamMatchmakingServerListResponse *pRequestServersResponse, EMatchMakingType type)
 {
     PRINT_DEBUG("%u %p, %i", iApp, pRequestServersResponse, (int)type);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    static unsigned server_list_request = 0;
 
     ++server_list_request;
     if (!server_list_request) server_list_request = 1;
@@ -353,6 +369,221 @@ void Steam_Matchmaking_Servers::ReleaseRequest( HServerListRequest hServerListRe
         - Server passes the filter if it's a linux server
 */
 
+// Get details on a given server in the list, you can get the valid range of index
+// values by calling GetServerCount().  You will also receive index values in 
+// ISteamMatchmakingServerListResponse::ServerResponded() callbacks
+gameserveritem_t *Steam_Matchmaking_Servers::GetServerDetails( HServerListRequest hRequest, int iServer )
+{
+    PRINT_DEBUG("%p %i", hRequest, iServer);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    std::vector <struct Steam_Matchmaking_Servers_Gameserver> gameservers_filtered;
+    auto g = std::begin(requests);
+    while (g != std::end(requests)) {
+        PRINT_DEBUG("  equal? %p %p", hRequest, g->id);
+        if (g->id == hRequest) {
+            gameservers_filtered = g->gameservers_filtered;
+            PRINT_DEBUG("  found %zu", gameservers_filtered.size());
+            break;
+        }
+
+        ++g;
+    }
+
+    if (iServer >= gameservers_filtered.size() || iServer < 0) {
+        return NULL;
+    }
+
+    Gameserver *gs = &gameservers_filtered[iServer].server;
+    gameserveritem_t *server = new gameserveritem_t(); //TODO: is the new here ok?
+    server_details(gs, server);
+    PRINT_DEBUG("  Returned server details");
+    return server;
+}
+
+
+// Cancel an request which is operation on the given list type.  You should call this to cancel
+// any in-progress requests before destructing a callback object that may have been passed 
+// to one of the above list request calls.  Not doing so may result in a crash when a callback
+// occurs on the destructed object.
+// Canceling a query does not release the allocated request handle.
+// The request handle must be released using ReleaseRequest( hRequest )
+void Steam_Matchmaking_Servers::CancelQuery( HServerListRequest hRequest )
+{
+    PRINT_DEBUG("%p", hRequest);
+    auto g = std::begin(requests);
+    while (g != std::end(requests)) {
+        if (g->id == hRequest) {
+            g->cancelled = true;
+            PRINT_DEBUG("canceled request with id: %p", g->id);
+        }
+
+        ++g;
+    }
+}
+ 
+
+// Ping every server in your list again but don't update the list of servers
+// Query callback installed when the server list was requested will be used
+// again to post notifications and RefreshComplete, so the callback must remain
+// valid until another RefreshComplete is called on it or the request
+// is released with ReleaseRequest( hRequest )
+void Steam_Matchmaking_Servers::RefreshQuery( HServerListRequest hRequest )
+{
+    PRINT_DEBUG("%p", hRequest);
+}
+ 
+
+// Returns true if the list is currently refreshing its server list
+bool Steam_Matchmaking_Servers::IsRefreshing( HServerListRequest hRequest )
+{
+    PRINT_DEBUG("%p", hRequest);
+    return false;
+}
+ 
+
+// How many servers in the given list, GetServerDetails above takes 0... GetServerCount() - 1
+int Steam_Matchmaking_Servers::GetServerCount( HServerListRequest hRequest )
+{
+    PRINT_DEBUG("%p", hRequest);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    int size = 0;
+    auto g = std::begin(requests);
+    while (g != std::end(requests)) {
+        if (g->id == hRequest) {
+            size = g->gameservers_filtered.size();
+            break;
+        }
+
+        ++g;
+    }
+
+    PRINT_DEBUG("final count = %i", size);
+    return size;
+}
+
+
+// Refresh a single server inside of a query (rather than all the servers )
+void Steam_Matchmaking_Servers::RefreshServer( HServerListRequest hRequest, int iServer )
+{
+    PRINT_DEBUG("%p", hRequest);
+    //TODO
+}
+
+
+
+// Get details on a given server in the list, you can get the valid range of index
+// values by calling GetServerCount().  You will also receive index values in 
+// ISteamMatchmakingServerListResponse::ServerResponded() callbacks
+gameserveritem_t* Steam_Matchmaking_Servers::GetServerDetails( EMatchMakingType eType, int iServer )
+{
+    PRINT_DEBUG_ENTRY();
+    return GetServerDetails((HServerListRequest) eType , iServer );
+}
+
+// Cancel an request which is operation on the given list type.  You should call this to cancel
+// any in-progress requests before destructing a callback object that may have been passed 
+// to one of the above list request calls.  Not doing so may result in a crash when a callback
+// occurs on the destructed object.
+void Steam_Matchmaking_Servers::CancelQuery( EMatchMakingType eType )
+{
+    PRINT_DEBUG_ENTRY();
+    return CancelQuery((HServerListRequest) eType);
+}
+
+// Ping every server in your list again but don't update the list of servers
+void Steam_Matchmaking_Servers::RefreshQuery( EMatchMakingType eType )
+{
+    PRINT_DEBUG_ENTRY();
+    return RefreshQuery((HServerListRequest) eType);
+}
+
+// Returns true if the list is currently refreshing its server list
+bool Steam_Matchmaking_Servers::IsRefreshing( EMatchMakingType eType )
+{
+    return IsRefreshing((HServerListRequest) eType);
+}
+
+// How many servers in the given list, GetServerDetails above takes 0... GetServerCount() - 1
+int Steam_Matchmaking_Servers::GetServerCount( EMatchMakingType eType )
+{
+    PRINT_DEBUG_ENTRY();
+    return GetServerCount((HServerListRequest) eType);
+}
+
+// Refresh a single server inside of a query (rather than all the servers )
+void Steam_Matchmaking_Servers::RefreshServer( EMatchMakingType eType, int iServer )
+{
+    PRINT_DEBUG_ENTRY();
+    return RefreshServer((HServerListRequest) eType, iServer);
+}
+
+
+//-----------------------------------------------------------------------------
+// Queries to individual servers directly via IP/Port
+//-----------------------------------------------------------------------------
+
+// Request updated ping time and other details from a single server
+HServerQuery Steam_Matchmaking_Servers::PingServer( uint32 unIP, uint16 usPort, ISteamMatchmakingPingResponse *pRequestServersResponse )
+{
+    PRINT_DEBUG("%hhu.%hhu.%hhu.%hhu:%hu", ((unsigned char *)&unIP)[3], ((unsigned char *)&unIP)[2], ((unsigned char *)&unIP)[1], ((unsigned char *)&unIP)[0], usPort);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    Steam_Matchmaking_Servers_Direct_IP_Request r;
+    r.id = new_server_query();
+    r.ip = unIP;
+    r.port = usPort;
+    r.ping_response = pRequestServersResponse;
+    r.created = std::chrono::high_resolution_clock::now();
+    direct_ip_requests.push_back(r);
+    return r.id;
+}
+
+// Request the list of players currently playing on a server
+HServerQuery Steam_Matchmaking_Servers::PlayerDetails( uint32 unIP, uint16 usPort, ISteamMatchmakingPlayersResponse *pRequestServersResponse )
+{
+    PRINT_DEBUG("%hhu.%hhu.%hhu.%hhu:%hu", ((unsigned char *)&unIP)[3], ((unsigned char *)&unIP)[2], ((unsigned char *)&unIP)[1], ((unsigned char *)&unIP)[0], usPort);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    Steam_Matchmaking_Servers_Direct_IP_Request r;
+    r.id = new_server_query();
+    r.ip = unIP;
+    r.port = usPort;
+    r.players_response = pRequestServersResponse;
+    r.created = std::chrono::high_resolution_clock::now();
+    direct_ip_requests.push_back(r);
+    return r.id;
+}
+
+
+// Request the list of rules that the server is running (See ISteamGameServer::SetKeyValue() to set the rules server side)
+HServerQuery Steam_Matchmaking_Servers::ServerRules( uint32 unIP, uint16 usPort, ISteamMatchmakingRulesResponse *pRequestServersResponse )
+{
+    PRINT_DEBUG("%hhu.%hhu.%hhu.%hhu:%hu", ((unsigned char *)&unIP)[3], ((unsigned char *)&unIP)[2], ((unsigned char *)&unIP)[1], ((unsigned char *)&unIP)[0], usPort);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    Steam_Matchmaking_Servers_Direct_IP_Request r;
+    r.id = new_server_query();
+    r.ip = unIP;
+    r.port = usPort;
+    r.rules_response = pRequestServersResponse;
+    r.created = std::chrono::high_resolution_clock::now();
+    direct_ip_requests.push_back(r);
+    return r.id;
+}
+
+
+// Cancel an outstanding Ping/Players/Rules query from above.  You should call this to cancel
+// any in-progress requests before destructing a callback object that may have been passed 
+// to one of the above calls to avoid crashing when callbacks occur.
+void Steam_Matchmaking_Servers::CancelServerQuery( HServerQuery hServerQuery )
+{
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    auto r = std::find_if(direct_ip_requests.begin(), direct_ip_requests.end(), [&hServerQuery](Steam_Matchmaking_Servers_Direct_IP_Request const& item) { return item.id == hServerQuery; });
+    if (direct_ip_requests.end() == r) return;
+    direct_ip_requests.erase(r);
+}
+
+
+
 void Steam_Matchmaking_Servers::server_details(Gameserver *g, gameserveritem_t *server)
 {
     PRINT_DEBUG_ENTRY();
@@ -557,179 +788,6 @@ void Steam_Matchmaking_Servers::server_details_rules(Gameserver *g, Steam_Matchm
     }
 
     PRINT_DEBUG("  " "%" PRIu64 "", g->id());
-}
-
-// Get details on a given server in the list, you can get the valid range of index
-// values by calling GetServerCount().  You will also receive index values in 
-// ISteamMatchmakingServerListResponse::ServerResponded() callbacks
-gameserveritem_t *Steam_Matchmaking_Servers::GetServerDetails( HServerListRequest hRequest, int iServer )
-{
-    PRINT_DEBUG("%p %i", hRequest, iServer);
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-
-    std::vector <struct Steam_Matchmaking_Servers_Gameserver> gameservers_filtered;
-    auto g = std::begin(requests);
-    while (g != std::end(requests)) {
-        PRINT_DEBUG("  equal? %p %p", hRequest, g->id);
-        if (g->id == hRequest) {
-            gameservers_filtered = g->gameservers_filtered;
-            PRINT_DEBUG("  found %zu", gameservers_filtered.size());
-            break;
-        }
-
-        ++g;
-    }
-
-    if (iServer >= gameservers_filtered.size() || iServer < 0) {
-        return NULL;
-    }
-
-    Gameserver *gs = &gameservers_filtered[iServer].server;
-    gameserveritem_t *server = new gameserveritem_t(); //TODO: is the new here ok?
-    server_details(gs, server);
-    PRINT_DEBUG("  Returned server details");
-    return server;
-}
-
-
-// Cancel an request which is operation on the given list type.  You should call this to cancel
-// any in-progress requests before destructing a callback object that may have been passed 
-// to one of the above list request calls.  Not doing so may result in a crash when a callback
-// occurs on the destructed object.
-// Canceling a query does not release the allocated request handle.
-// The request handle must be released using ReleaseRequest( hRequest )
-void Steam_Matchmaking_Servers::CancelQuery( HServerListRequest hRequest )
-{
-    PRINT_DEBUG("%p", hRequest);
-    auto g = std::begin(requests);
-    while (g != std::end(requests)) {
-        if (g->id == hRequest) {
-            g->cancelled = true;
-            PRINT_DEBUG("canceled request with id: %p", g->id);
-        }
-
-        ++g;
-    }
-}
- 
-
-// Ping every server in your list again but don't update the list of servers
-// Query callback installed when the server list was requested will be used
-// again to post notifications and RefreshComplete, so the callback must remain
-// valid until another RefreshComplete is called on it or the request
-// is released with ReleaseRequest( hRequest )
-void Steam_Matchmaking_Servers::RefreshQuery( HServerListRequest hRequest )
-{
-    PRINT_DEBUG("%p", hRequest);
-}
- 
-
-// Returns true if the list is currently refreshing its server list
-bool Steam_Matchmaking_Servers::IsRefreshing( HServerListRequest hRequest )
-{
-    PRINT_DEBUG("%p", hRequest);
-    return false;
-}
- 
-
-// How many servers in the given list, GetServerDetails above takes 0... GetServerCount() - 1
-int Steam_Matchmaking_Servers::GetServerCount( HServerListRequest hRequest )
-{
-    PRINT_DEBUG("%p", hRequest);
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    int size = 0;
-    auto g = std::begin(requests);
-    while (g != std::end(requests)) {
-        if (g->id == hRequest) {
-            size = g->gameservers_filtered.size();
-            break;
-        }
-
-        ++g;
-    }
-
-    PRINT_DEBUG("final count = %i", size);
-    return size;
-}
-
-
-// Refresh a single server inside of a query (rather than all the servers )
-void Steam_Matchmaking_Servers::RefreshServer( HServerListRequest hRequest, int iServer )
-{
-    PRINT_DEBUG("%p", hRequest);
-    //TODO
-}
- 
-static HServerQuery new_server_query()
-{
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    static int a = 0;
-    ++a;
-    if (!a) ++a;
-    return a;
-}
-
-//-----------------------------------------------------------------------------
-// Queries to individual servers directly via IP/Port
-//-----------------------------------------------------------------------------
-
-// Request updated ping time and other details from a single server
-HServerQuery Steam_Matchmaking_Servers::PingServer( uint32 unIP, uint16 usPort, ISteamMatchmakingPingResponse *pRequestServersResponse )
-{
-    PRINT_DEBUG("%hhu.%hhu.%hhu.%hhu:%hu", ((unsigned char *)&unIP)[3], ((unsigned char *)&unIP)[2], ((unsigned char *)&unIP)[1], ((unsigned char *)&unIP)[0], usPort);
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    Steam_Matchmaking_Servers_Direct_IP_Request r;
-    r.id = new_server_query();
-    r.ip = unIP;
-    r.port = usPort;
-    r.ping_response = pRequestServersResponse;
-    r.created = std::chrono::high_resolution_clock::now();
-    direct_ip_requests.push_back(r);
-    return r.id;
-}
-
-// Request the list of players currently playing on a server
-HServerQuery Steam_Matchmaking_Servers::PlayerDetails( uint32 unIP, uint16 usPort, ISteamMatchmakingPlayersResponse *pRequestServersResponse )
-{
-    PRINT_DEBUG("%hhu.%hhu.%hhu.%hhu:%hu", ((unsigned char *)&unIP)[3], ((unsigned char *)&unIP)[2], ((unsigned char *)&unIP)[1], ((unsigned char *)&unIP)[0], usPort);
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    Steam_Matchmaking_Servers_Direct_IP_Request r;
-    r.id = new_server_query();
-    r.ip = unIP;
-    r.port = usPort;
-    r.players_response = pRequestServersResponse;
-    r.created = std::chrono::high_resolution_clock::now();
-    direct_ip_requests.push_back(r);
-    return r.id;
-}
-
-
-// Request the list of rules that the server is running (See ISteamGameServer::SetKeyValue() to set the rules server side)
-HServerQuery Steam_Matchmaking_Servers::ServerRules( uint32 unIP, uint16 usPort, ISteamMatchmakingRulesResponse *pRequestServersResponse )
-{
-    PRINT_DEBUG("%hhu.%hhu.%hhu.%hhu:%hu", ((unsigned char *)&unIP)[3], ((unsigned char *)&unIP)[2], ((unsigned char *)&unIP)[1], ((unsigned char *)&unIP)[0], usPort);
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    Steam_Matchmaking_Servers_Direct_IP_Request r;
-    r.id = new_server_query();
-    r.ip = unIP;
-    r.port = usPort;
-    r.rules_response = pRequestServersResponse;
-    r.created = std::chrono::high_resolution_clock::now();
-    direct_ip_requests.push_back(r);
-    return r.id;
-}
-
-
-// Cancel an outstanding Ping/Players/Rules query from above.  You should call this to cancel
-// any in-progress requests before destructing a callback object that may have been passed 
-// to one of the above calls to avoid crashing when callbacks occur.
-void Steam_Matchmaking_Servers::CancelServerQuery( HServerQuery hServerQuery )
-{
-    PRINT_DEBUG_ENTRY();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    auto r = std::find_if(direct_ip_requests.begin(), direct_ip_requests.end(), [&hServerQuery](Steam_Matchmaking_Servers_Direct_IP_Request const& item) { return item.id == hServerQuery; });
-    if (direct_ip_requests.end() == r) return;
-    direct_ip_requests.erase(r);
 }
 
 void Steam_Matchmaking_Servers::RunCallbacks()

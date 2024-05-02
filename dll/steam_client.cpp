@@ -18,13 +18,13 @@
 #include "dll/steam_client.h"
 #include "dll/settings_parser.h"
 
-static std::mutex kill_background_thread_mutex;
-static std::condition_variable kill_background_thread_cv;
-static bool kill_background_thread;
+static std::mutex kill_background_thread_mutex{};
+static std::condition_variable kill_background_thread_cv{};
+static bool kill_background_thread{};
 static void background_thread(Steam_Client *client)
 {
     // max allowed time in which RunCallbacks() might not be called
-    constexpr const static auto max_stall_ms = std::chrono::milliseconds(200);
+    constexpr const static auto max_stall_ms = std::chrono::milliseconds(300);
 
     // wait 1 sec
     {
@@ -228,12 +228,13 @@ Steam_Client::~Steam_Client()
 
     delete ugc_bridge; ugc_bridge = nullptr;
 
-    delete network; network = nullptr;
-    delete run_every_runcb; run_every_runcb = nullptr;
     delete callbacks_server; callbacks_server = nullptr;
     delete callbacks_client; callbacks_client = nullptr;
     delete callback_results_server; callback_results_server = nullptr;
     delete callback_results_client; callback_results_client = nullptr;
+
+    delete network; network = nullptr;
+    delete run_every_runcb; run_every_runcb = nullptr;
 }
 
 void Steam_Client::userLogIn()
@@ -275,11 +276,13 @@ void Steam_Client::setAppID(uint32 appid)
         settings_server->set_game_id(CGameID(appid));
         local_storage->setAppId(appid);
         network->setAppID(appid);
-        set_env_variable("SteamAppId", std::to_string(appid));
-        set_env_variable("SteamGameId", std::to_string(appid));
+
+        std::string appid_str(std::to_string(appid));
+        set_env_variable("SteamAppId", appid_str);
+        set_env_variable("SteamGameId", appid_str);
 
         if (!settings_client->disable_steamoverlaygameid_env_var) {
-            set_env_variable("SteamOverlayGameId", std::to_string(appid));
+            set_env_variable("SteamOverlayGameId", appid_str);
         }
     }
 
@@ -1974,5 +1977,5 @@ void Steam_Client::RunCallbacks(bool runClientCB, bool runGameserverCB)
 
 void Steam_Client::DestroyAllInterfaces()
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG_TODO();
 }

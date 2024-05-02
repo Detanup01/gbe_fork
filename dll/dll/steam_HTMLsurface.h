@@ -15,6 +15,9 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef __INCLUDED_STEAM_HTMLSURFACE_H__
+#define __INCLUDED_STEAM_HTMLSURFACE_H__
+
 #include "base.h"
 
 class Steam_HTMLsurface :
@@ -24,354 +27,166 @@ public ISteamHTMLSurface003,
 public ISteamHTMLSurface004,
 public ISteamHTMLSurface
 {
-    class Settings *settings;
-    class Networking *network;
-    class SteamCallResults *callback_results;
-    class SteamCallBacks *callbacks;
+    class Settings *settings{};
+    class Networking *network{};
+    class SteamCallResults *callback_results{};
+    class SteamCallBacks *callbacks{};
 
 public:
-Steam_HTMLsurface(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks)
-{
-    this->settings = settings;
-    this->network = network;
-    this->callback_results = callback_results;
-    this->callbacks = callbacks;
-}
+    Steam_HTMLsurface(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks);
 
-// Must call init and shutdown when starting/ending use of the interface
-bool Init()
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return true;
-}
+    // Must call init and shutdown when starting/ending use of the interface
+    bool Init();
 
-bool Shutdown()
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return true;
-}
+    bool Shutdown();
 
 
-// Create a browser object for display of a html page, when creation is complete the call handle
-// will return a HTML_BrowserReady_t callback for the HHTMLBrowser of your new browser.
-//   The user agent string is a substring to be added to the general user agent string so you can
-// identify your client on web servers.
-//   The userCSS string lets you apply a CSS style sheet to every displayed page, leave null if
-// you do not require this functionality.
-//
-// YOU MUST HAVE IMPLEMENTED HANDLERS FOR HTML_BrowserReady_t, HTML_StartRequest_t,
-// HTML_JSAlert_t, HTML_JSConfirm_t, and HTML_FileOpenDialog_t! See the CALLBACKS
-// section of this interface (AllowStartRequest, etc) for more details. If you do
-// not implement these callback handlers, the browser may appear to hang instead of
-// navigating to new pages or triggering javascript popups.
-//
-STEAM_CALL_RESULT( HTML_BrowserReady_t )
-SteamAPICall_t CreateBrowser( const char *pchUserAgent, const char *pchUserCSS )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    HTML_BrowserReady_t data;
-    data.unBrowserHandle = 1234869;
-    
-    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
-    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
-    return ret;
-}
+    // Create a browser object for display of a html page, when creation is complete the call handle
+    // will return a HTML_BrowserReady_t callback for the HHTMLBrowser of your new browser.
+    //   The user agent string is a substring to be added to the general user agent string so you can
+    // identify your client on web servers.
+    //   The userCSS string lets you apply a CSS style sheet to every displayed page, leave null if
+    // you do not require this functionality.
+    //
+    // YOU MUST HAVE IMPLEMENTED HANDLERS FOR HTML_BrowserReady_t, HTML_StartRequest_t,
+    // HTML_JSAlert_t, HTML_JSConfirm_t, and HTML_FileOpenDialog_t! See the CALLBACKS
+    // section of this interface (AllowStartRequest, etc) for more details. If you do
+    // not implement these callback handlers, the browser may appear to hang instead of
+    // navigating to new pages or triggering javascript popups.
+    //
+    STEAM_CALL_RESULT( HTML_BrowserReady_t )
+    SteamAPICall_t CreateBrowser( const char *pchUserAgent, const char *pchUserCSS );
 
 
-// Call this when you are done with a html surface, this lets us free the resources being used by it
-void RemoveBrowser( HHTMLBrowser unBrowserHandle )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // Call this when you are done with a html surface, this lets us free the resources being used by it
+    void RemoveBrowser( HHTMLBrowser unBrowserHandle );
 
 
-// Navigate to this URL, results in a HTML_StartRequest_t as the request commences 
-void LoadURL( HHTMLBrowser unBrowserHandle, const char *pchURL, const char *pchPostData )
-{
-    PRINT_DEBUG("TODO %s %s", pchURL, pchPostData);
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    static char url[256];
-    strncpy(url, pchURL, sizeof(url));
-    static char target[] = "_self";
-    static char title[] = "title";
-
-    {
-        HTML_StartRequest_t data;
-        data.unBrowserHandle = unBrowserHandle;
-        data.pchURL = url;
-        data.pchTarget = target;
-        data.pchPostData = "";
-        data.bIsRedirect = false;
-        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.1);
-    }
-
-    {
-        HTML_FinishedRequest_t data;
-        data.unBrowserHandle = unBrowserHandle;
-        data.pchURL = url;
-        data.pchPageTitle = title;
-        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.8);
-    }
-
-}
+    // Navigate to this URL, results in a HTML_StartRequest_t as the request commences 
+    void LoadURL( HHTMLBrowser unBrowserHandle, const char *pchURL, const char *pchPostData );
 
 
-// Tells the surface the size in pixels to display the surface
-void SetSize( HHTMLBrowser unBrowserHandle, uint32 unWidth, uint32 unHeight )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // Tells the surface the size in pixels to display the surface
+    void SetSize( HHTMLBrowser unBrowserHandle, uint32 unWidth, uint32 unHeight );
 
 
-// Stop the load of the current html page
-void StopLoad( HHTMLBrowser unBrowserHandle )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // Stop the load of the current html page
+    void StopLoad( HHTMLBrowser unBrowserHandle );
 
-// Reload (most likely from local cache) the current page
-void Reload( HHTMLBrowser unBrowserHandle )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // Reload (most likely from local cache) the current page
+    void Reload( HHTMLBrowser unBrowserHandle );
 
-// navigate back in the page history
-void GoBack( HHTMLBrowser unBrowserHandle )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // navigate back in the page history
+    void GoBack( HHTMLBrowser unBrowserHandle );
 
-// navigate forward in the page history
-void GoForward( HHTMLBrowser unBrowserHandle )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // navigate forward in the page history
+    void GoForward( HHTMLBrowser unBrowserHandle );
 
 
-// add this header to any url requests from this browser
-void AddHeader( HHTMLBrowser unBrowserHandle, const char *pchKey, const char *pchValue )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // add this header to any url requests from this browser
+    void AddHeader( HHTMLBrowser unBrowserHandle, const char *pchKey, const char *pchValue );
 
-// run this javascript script in the currently loaded page
-void ExecuteJavascript( HHTMLBrowser unBrowserHandle, const char *pchScript )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // run this javascript script in the currently loaded page
+    void ExecuteJavascript( HHTMLBrowser unBrowserHandle, const char *pchScript );
 
-// Mouse click and mouse movement commands
-void MouseUp( HHTMLBrowser unBrowserHandle, EHTMLMouseButton eMouseButton )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // Mouse click and mouse movement commands
+    void MouseUp( HHTMLBrowser unBrowserHandle, EHTMLMouseButton eMouseButton );
 
-void MouseDown( HHTMLBrowser unBrowserHandle, EHTMLMouseButton eMouseButton )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    void MouseDown( HHTMLBrowser unBrowserHandle, EHTMLMouseButton eMouseButton );
 
-void MouseDoubleClick( HHTMLBrowser unBrowserHandle, EHTMLMouseButton eMouseButton )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    void MouseDoubleClick( HHTMLBrowser unBrowserHandle, EHTMLMouseButton eMouseButton );
 
-// x and y are relative to the HTML bounds
-void MouseMove( HHTMLBrowser unBrowserHandle, int x, int y )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // x and y are relative to the HTML bounds
+    void MouseMove( HHTMLBrowser unBrowserHandle, int x, int y );
 
-// nDelta is pixels of scroll
-void MouseWheel( HHTMLBrowser unBrowserHandle, int32 nDelta )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // nDelta is pixels of scroll
+    void MouseWheel( HHTMLBrowser unBrowserHandle, int32 nDelta );
 
-// keyboard interactions, native keycode is the key code value from your OS
-void KeyDown( HHTMLBrowser unBrowserHandle, uint32 nNativeKeyCode, EHTMLKeyModifiers eHTMLKeyModifiers, bool bIsSystemKey = false )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // keyboard interactions, native keycode is the key code value from your OS
+    void KeyDown( HHTMLBrowser unBrowserHandle, uint32 nNativeKeyCode, EHTMLKeyModifiers eHTMLKeyModifiers, bool bIsSystemKey = false );
 
-void KeyDown( HHTMLBrowser unBrowserHandle, uint32 nNativeKeyCode, EHTMLKeyModifiers eHTMLKeyModifiers)
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    KeyDown(unBrowserHandle, nNativeKeyCode, eHTMLKeyModifiers, false);
-}
+    void KeyDown( HHTMLBrowser unBrowserHandle, uint32 nNativeKeyCode, EHTMLKeyModifiers eHTMLKeyModifiers);
 
 
-void KeyUp( HHTMLBrowser unBrowserHandle, uint32 nNativeKeyCode, EHTMLKeyModifiers eHTMLKeyModifiers )
-{
-    PRINT_DEBUG_ENTRY();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    void KeyUp( HHTMLBrowser unBrowserHandle, uint32 nNativeKeyCode, EHTMLKeyModifiers eHTMLKeyModifiers );
 
-// cUnicodeChar is the unicode character point for this keypress (and potentially multiple chars per press)
-void KeyChar( HHTMLBrowser unBrowserHandle, uint32 cUnicodeChar, EHTMLKeyModifiers eHTMLKeyModifiers )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // cUnicodeChar is the unicode character point for this keypress (and potentially multiple chars per press)
+    void KeyChar( HHTMLBrowser unBrowserHandle, uint32 cUnicodeChar, EHTMLKeyModifiers eHTMLKeyModifiers );
 
 
-// programmatically scroll this many pixels on the page
-void SetHorizontalScroll( HHTMLBrowser unBrowserHandle, uint32 nAbsolutePixelScroll )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // programmatically scroll this many pixels on the page
+    void SetHorizontalScroll( HHTMLBrowser unBrowserHandle, uint32 nAbsolutePixelScroll );
 
-void SetVerticalScroll( HHTMLBrowser unBrowserHandle, uint32 nAbsolutePixelScroll )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    void SetVerticalScroll( HHTMLBrowser unBrowserHandle, uint32 nAbsolutePixelScroll );
 
 
-// tell the html control if it has key focus currently, controls showing the I-beam cursor in text controls amongst other things
-void SetKeyFocus( HHTMLBrowser unBrowserHandle, bool bHasKeyFocus )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // tell the html control if it has key focus currently, controls showing the I-beam cursor in text controls amongst other things
+    void SetKeyFocus( HHTMLBrowser unBrowserHandle, bool bHasKeyFocus );
 
 
-// open the current pages html code in the local editor of choice, used for debugging
-void ViewSource( HHTMLBrowser unBrowserHandle )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // open the current pages html code in the local editor of choice, used for debugging
+    void ViewSource( HHTMLBrowser unBrowserHandle );
 
-// copy the currently selected text on the html page to the local clipboard
-void CopyToClipboard( HHTMLBrowser unBrowserHandle )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // copy the currently selected text on the html page to the local clipboard
+    void CopyToClipboard( HHTMLBrowser unBrowserHandle );
 
-// paste from the local clipboard to the current html page
-void PasteFromClipboard( HHTMLBrowser unBrowserHandle )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // paste from the local clipboard to the current html page
+    void PasteFromClipboard( HHTMLBrowser unBrowserHandle );
 
 
-// find this string in the browser, if bCurrentlyInFind is true then instead cycle to the next matching element
-void Find( HHTMLBrowser unBrowserHandle, const char *pchSearchStr, bool bCurrentlyInFind, bool bReverse )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // find this string in the browser, if bCurrentlyInFind is true then instead cycle to the next matching element
+    void Find( HHTMLBrowser unBrowserHandle, const char *pchSearchStr, bool bCurrentlyInFind, bool bReverse );
 
-// cancel a currently running find
-void StopFind( HHTMLBrowser unBrowserHandle )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // cancel a currently running find
+    void StopFind( HHTMLBrowser unBrowserHandle );
 
 
-// return details about the link at position x,y on the current page
-void GetLinkAtPosition(  HHTMLBrowser unBrowserHandle, int x, int y )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // return details about the link at position x,y on the current page
+    void GetLinkAtPosition(  HHTMLBrowser unBrowserHandle, int x, int y );
 
 
-// set a webcookie for the hostname in question
-void SetCookie( const char *pchHostname, const char *pchKey, const char *pchValue, const char *pchPath, RTime32 nExpires, bool bSecure, bool bHTTPOnly )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // set a webcookie for the hostname in question
+    void SetCookie( const char *pchHostname, const char *pchKey, const char *pchValue, const char *pchPath, RTime32 nExpires, bool bSecure, bool bHTTPOnly );
 
 
-// Zoom the current page by flZoom ( from 0.0 to 2.0, so to zoom to 120% use 1.2 ), zooming around point X,Y in the page (use 0,0 if you don't care)
-void SetPageScaleFactor( HHTMLBrowser unBrowserHandle, float flZoom, int nPointX, int nPointY )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // Zoom the current page by flZoom ( from 0.0 to 2.0, so to zoom to 120% use 1.2 ), zooming around point X,Y in the page (use 0,0 if you don't care)
+    void SetPageScaleFactor( HHTMLBrowser unBrowserHandle, float flZoom, int nPointX, int nPointY );
 
 
-// Enable/disable low-resource background mode, where javascript and repaint timers are throttled, resources are
-// more aggressively purged from memory, and audio/video elements are paused. When background mode is enabled,
-// all HTML5 video and audio objects will execute ".pause()" and gain the property "._steam_background_paused = 1".
-// When background mode is disabled, any video or audio objects with that property will resume with ".play()".
-void SetBackgroundMode( HHTMLBrowser unBrowserHandle, bool bBackgroundMode )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // Enable/disable low-resource background mode, where javascript and repaint timers are throttled, resources are
+    // more aggressively purged from memory, and audio/video elements are paused. When background mode is enabled,
+    // all HTML5 video and audio objects will execute ".pause()" and gain the property "._steam_background_paused = 1".
+    // When background mode is disabled, any video or audio objects with that property will resume with ".play()".
+    void SetBackgroundMode( HHTMLBrowser unBrowserHandle, bool bBackgroundMode );
 
 
-// Scale the output display space by this factor, this is useful when displaying content on high dpi devices.
-// Specifies the ratio between physical and logical pixels.
-void SetDPIScalingFactor( HHTMLBrowser unBrowserHandle, float flDPIScaling )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // Scale the output display space by this factor, this is useful when displaying content on high dpi devices.
+    // Specifies the ratio between physical and logical pixels.
+    void SetDPIScalingFactor( HHTMLBrowser unBrowserHandle, float flDPIScaling );
 
-void OpenDeveloperTools( HHTMLBrowser unBrowserHandle )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    void OpenDeveloperTools( HHTMLBrowser unBrowserHandle );
 
-// CALLBACKS
-//
-//  These set of functions are used as responses to callback requests
-//
+    // CALLBACKS
+    //
+    //  These set of functions are used as responses to callback requests
+    //
 
-// You MUST call this in response to a HTML_StartRequest_t callback
-//  Set bAllowed to true to allow this navigation, false to cancel it and stay 
-// on the current page. You can use this feature to limit the valid pages
-// allowed in your HTML surface.
-void AllowStartRequest( HHTMLBrowser unBrowserHandle, bool bAllowed )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // You MUST call this in response to a HTML_StartRequest_t callback
+    //  Set bAllowed to true to allow this navigation, false to cancel it and stay 
+    // on the current page. You can use this feature to limit the valid pages
+    // allowed in your HTML surface.
+    void AllowStartRequest( HHTMLBrowser unBrowserHandle, bool bAllowed );
 
 
-// You MUST call this in response to a HTML_JSAlert_t or HTML_JSConfirm_t callback
-//  Set bResult to true for the OK option of a confirm, use false otherwise
-void JSDialogResponse( HHTMLBrowser unBrowserHandle, bool bResult )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // You MUST call this in response to a HTML_JSAlert_t or HTML_JSConfirm_t callback
+    //  Set bResult to true for the OK option of a confirm, use false otherwise
+    void JSDialogResponse( HHTMLBrowser unBrowserHandle, bool bResult );
 
 
-// You MUST call this in response to a HTML_FileOpenDialog_t callback
-STEAM_IGNOREATTR()
-void FileLoadDialogResponse( HHTMLBrowser unBrowserHandle, const char **pchSelectedFiles )
-{
-    PRINT_DEBUG_TODO();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-}
+    // You MUST call this in response to a HTML_FileOpenDialog_t callback
+    STEAM_IGNOREATTR()
+    void FileLoadDialogResponse( HHTMLBrowser unBrowserHandle, const char **pchSelectedFiles );
 
 };
+
+#endif // __INCLUDED_STEAM_HTMLSURFACE_H__

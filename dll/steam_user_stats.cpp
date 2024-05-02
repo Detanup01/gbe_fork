@@ -68,6 +68,28 @@ void Steam_Leaderboard::sort_entries()
 
 
 
+// --- achievement_trigger ---
+bool achievement_trigger::check_triggered(float stat) const
+{
+    try {
+        if (std::stof(max_value) <= stat) return true;
+    } catch (...) {}
+
+    return false;
+}
+
+bool achievement_trigger::check_triggered(int32 stat) const
+{
+    try {
+        if (std::stoi(max_value) <= stat) return true;
+    } catch (...) {}
+
+    return false;
+}
+// --- achievement_trigger ---
+
+
+
 void Steam_User_Stats::load_achievements_db()
 {
     std::string file_path = Local_Storage::get_game_settings_path() + achievements_user_file;
