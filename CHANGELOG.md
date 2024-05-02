@@ -1,3 +1,7 @@
+* **[Clompress]** update Turkish translation  
+
+---
+
 ## 2024/4/30
 
 * **[schmurger]** added a sliding animation for the overlay notifications  
