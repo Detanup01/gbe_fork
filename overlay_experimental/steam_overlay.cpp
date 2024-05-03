@@ -34,7 +34,8 @@ static constexpr int base_notif_window_id  = 0 * max_window_id;
 static constexpr int base_friend_window_id = 1 * max_window_id;
 static constexpr int base_friend_item_id   = 2 * max_window_id;
 
-static const char* valid_languages[] = {
+// look for the column 'API language code' here: https://partner.steamgames.com/doc/store/localization/languages
+static constexpr const char* valid_languages[] = {
     "english",
     "arabic",
     "bulgarian",
@@ -64,7 +65,8 @@ static const char* valid_languages[] = {
     "turkish",
     "ukrainian",
     "vietnamese",
-    "croatian"
+    "croatian",
+    "indonesian",
 };
 
 static ImFontAtlas fonts_atlas{};
@@ -281,7 +283,6 @@ void Steam_Overlay::create_fonts()
         font_builder.AddText(translationRestartTheGameToApply[i]);
         font_builder.AddText(translationSave[i]);
         font_builder.AddText(translationWarning[i]);
-        font_builder.AddText(translationWarningWarningWarning[i]);
         font_builder.AddText(translationWarningDescription_badAppid[i]);
         font_builder.AddText(translationWarningDescription_localSave[i]);
         font_builder.AddText(translationSteamOverlayURL[i]);
@@ -1524,14 +1525,22 @@ void Steam_Overlay::render_main_window()
             ImGui::SetNextWindowBgAlpha(0.9f);
             if (ImGui::Begin(translationWarning[current_language], &show_warning)) {
                 if (warn_bad_appid) {
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationWarningWarningWarning[current_language]);
+                    ImGui::TextColored(ImVec4(255, 0, 0, 255),
+                        "%s %s %s",
+                        translationWarning[current_language], translationWarning[current_language], translationWarning[current_language]);
                     ImGui::TextWrapped("%s", translationWarningDescription_badAppid[current_language]);
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationWarningWarningWarning[current_language]);
+                    ImGui::TextColored(ImVec4(255, 0, 0, 255),
+                        "%s %s %s",
+                        translationWarning[current_language], translationWarning[current_language], translationWarning[current_language]);
                 }
                 if (warn_local_save) {
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationWarningWarningWarning[current_language]);
+                    ImGui::TextColored(ImVec4(255, 0, 0, 255),
+                        "%s %s %s",
+                        translationWarning[current_language], translationWarning[current_language], translationWarning[current_language]);
                     ImGui::TextWrapped("%s", translationWarningDescription_localSave[current_language]);
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationWarningWarningWarning[current_language]);
+                    ImGui::TextColored(ImVec4(255, 0, 0, 255),
+                        "%s %s %s",
+                        translationWarning[current_language], translationWarning[current_language], translationWarning[current_language]);
                 }
             }
 
@@ -1917,7 +1926,7 @@ void Steam_Overlay::FriendConnect(Friend _friend)
     int id = find_free_friend_id(friends);
     if (id != 0) {
         auto& item = friends[_friend];
-        item.window_title = std::move(_friend.name() + translationPlaying[current_language] + std::to_string(_friend.appid()));
+        item.window_title = std::move(_friend.name() + " " + translationPlaying[current_language] + " " + std::to_string(_friend.appid()));
         item.window_state = window_state_none;
         item.id = id;
         memset(item.chat_input, 0, max_chat_len);
