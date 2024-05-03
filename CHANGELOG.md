@@ -1,4 +1,6 @@
 * **[Clompress]** update Turkish translation  
+* increase polling of the run callbacks background thread to `300 ms`
+* refactored all code inside `.h/.cpp` pair, all source code in `dll/` is no longer written inside `.h` files
 
 ---
 
