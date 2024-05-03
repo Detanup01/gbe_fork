@@ -8,8 +8,12 @@ on:
     ]
     tags:        
       - release*
+    paths-ignore:
+      - '**/*.md'
   pull_request:
     branches: [ "dev" ]
+    paths-ignore:
+      - '**/*.md'
   workflow_dispatch:
     # allows manual trigger
 
