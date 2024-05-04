@@ -35,7 +35,7 @@ It is fairly straightforward, one request from the server, with its correspondin
 |-------------|  <<====  |-------------|
 ```
 
-- Send a `protobuff` message to the user asking for all their stats
+- Send a `protobuf` message to the user asking for all their stats
   ```proto
   enum Types {
       ...
@@ -74,7 +74,7 @@ It is fairly straightforward, one request from the server, with its correspondin
   network->sendTo(&msg, true);
   ```
 
-- The user will send back a `protobuff` message containing all the data, this is the user response with the enum `Type` set to `Response_AllUserStats`
+- The user will send back a `protobuf` message containing all the data, this is the user response with the enum `Type` set to `Response_AllUserStats`
   ```proto
     enum Types {
         ...
@@ -141,7 +141,7 @@ It is fairly straightforward, one request from the server, with its correspondin
   new_msg.set_dest_id(server_steamid);
   network->sendTo(&new_msg, true);
   ```
-- When the user returns a reposponse, we'll trigger a callback + a callresult
+- When the user returns a response, we'll trigger a callback + a callresult
   ```c++
   // void Steam_GameServerStats::network_callback_initial_stats(Common_Message *msg)
   GSStatsReceived_t data{};
@@ -189,7 +189,7 @@ ach->dirty = true; // set the dirty flag
 Another optimization made here is that the data is not sent immediately, game servers and game clients utilizing the Steam networking will always call `Steam_Client::RunCallbacks()` periodically, so we can just for that periodic call and send any *dirty* data all at once, or nothing if everything is clean! (unchanged).  
 
 
-Here's the `protobuff` message, and notice how it's exactly the same as the *user/player response* for `RequestUserStats()`, with these exceptions:
+Here's the `protobuf` message, and notice how it's exactly the same as the *user/player response* for `RequestUserStats()`, with these exceptions:
 1. This is sent from the server, not the user/player
 2. The enum `Type` is set to `UpdateUserStatsFromServer`
 3. The active member in the `oneof data_messages` is `update_user_stats`
@@ -264,7 +264,7 @@ Back on the user/client side, they will receive this message and update their da
 
 # How data is shared with game servers if the game client updated its data
 This more or less the same, with these changes
-* The `protobuff` enum `Type` is set to `UpdateUserStatsFromUser`
+* The `protobuf` enum `Type` is set to `UpdateUserStatsFromUser`
 * Since the game client doesn't know the server ID, it will broadcast the message to all game servers
 
 ```c++
