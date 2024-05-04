@@ -317,7 +317,7 @@ The networking implementation works like this
                                     ---------------------------
   
                                     -----------------------------------
-  CALLBACK_ID_GAMESERVER_STATS ---> | &other_fn_1 | &other_fn_1 | ... |
+  CALLBACK_ID_GAMESERVER_STATS ---> | &other_fn_1 | &other_fn_2 | ... |
                                     -----------------------------------
   ```
 
