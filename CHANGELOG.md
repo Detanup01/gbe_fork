@@ -1,3 +1,5 @@
+## 2024/5/5
+
 * **[Clompress]** update Turkish translation  
 * fixed a mistake where the interface `ISteamUser` `v022` was not added to the list of supported versions
 * increase polling of the run callbacks background thread to `300 ms`
