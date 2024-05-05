@@ -152,7 +152,7 @@ ISteamUtils *Steam_Client::GetISteamUtils( HSteamPipe hSteamPipe, const char *pc
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe)) return NULL;
 
-    Steam_Utils *steam_utils_temp;
+    Steam_Utils *steam_utils_temp{};
 
     if (steam_pipes[hSteamPipe] == Steam_Pipe::SERVER) {
         steam_utils_temp = steam_gameserver_utils;
@@ -260,7 +260,7 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     if (strstr(pchVersion, "SteamNetworkingSocketsSerialized") == pchVersion) {
-        Steam_Networking_Sockets_Serialized *steam_networking_sockets_serialized_temp;
+        Steam_Networking_Sockets_Serialized *steam_networking_sockets_serialized_temp{};
         if (server) {
             steam_networking_sockets_serialized_temp = steam_gameserver_networking_sockets_serialized;
         } else {
@@ -279,7 +279,7 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingSocketsSerialized005 *>(steam_networking_sockets_serialized_temp));
         }
     } else if (strstr(pchVersion, "SteamNetworkingSockets") == pchVersion) {
-        Steam_Networking_Sockets *steam_networking_sockets_temp;
+        Steam_Networking_Sockets *steam_networking_sockets_temp{};
         if (server) {
             steam_networking_sockets_temp = steam_gameserver_networking_sockets;
         } else {
@@ -306,7 +306,7 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingSockets *>( steam_networking_sockets_temp));
         }
     } else if (strstr(pchVersion, "SteamNetworkingMessages") == pchVersion) {
-        Steam_Networking_Messages *steam_networking_messages_temp;
+        Steam_Networking_Messages *steam_networking_messages_temp{};
         if (server) {
             steam_networking_messages_temp = steam_gameserver_networking_messages;
         } else {
@@ -333,7 +333,7 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
     } else if (strstr(pchVersion, "SteamNetworking") == pchVersion) {
         return GetISteamNetworking(hSteamUser, hSteamPipe, pchVersion);
     } else if (strstr(pchVersion, "SteamGameCoordinator") == pchVersion) {
-        Steam_Game_Coordinator *steam_game_coordinator_temp;
+        Steam_Game_Coordinator *steam_game_coordinator_temp{};
         if (server) {
             steam_game_coordinator_temp = steam_gameserver_game_coordinator;
         } else {
@@ -482,7 +482,7 @@ ISteamApps *Steam_Client::GetISteamApps( HSteamUser hSteamUser, HSteamPipe hStea
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
-    Steam_Apps *steam_apps_temp;
+    Steam_Apps *steam_apps_temp{};
 
     if (steam_pipes[hSteamPipe] == Steam_Pipe::SERVER) {
         steam_apps_temp = steam_gameserver_apps;
@@ -520,7 +520,7 @@ ISteamNetworking *Steam_Client::GetISteamNetworking( HSteamUser hSteamUser, HSte
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
-    Steam_Networking *steam_networking_temp;
+    Steam_Networking *steam_networking_temp{};
 
     if (steam_pipes[hSteamPipe] == Steam_Pipe::SERVER) {
         steam_networking_temp = steam_gameserver_networking;
@@ -618,7 +618,7 @@ ISteamHTTP *Steam_Client::GetISteamHTTP( HSteamUser hSteamuser, HSteamPipe hStea
 {
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
-    Steam_HTTP *steam_http_temp;
+    Steam_HTTP *steam_http_temp{};
 
     if (steam_pipes[hSteamPipe] == Steam_Pipe::SERVER) {
         steam_http_temp = steam_gameserver_http;
@@ -711,7 +711,7 @@ ISteamUGC *Steam_Client::GetISteamUGC( HSteamUser hSteamUser, HSteamPipe hSteamP
 {
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
-    Steam_UGC *steam_ugc_temp;
+    Steam_UGC *steam_ugc_temp{};
 
     if (steam_pipes[hSteamPipe] == Steam_Pipe::SERVER) {
         steam_ugc_temp = steam_gameserver_ugc;
@@ -849,10 +849,7 @@ ISteamInventory *Steam_Client::GetISteamInventory( HSteamUser hSteamuser, HSteam
 {
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
-    Steam_Inventory *steam_inventory_temp;
-    Settings *settings_temp;
-    SteamCallBacks *callbacks_temp;
-    SteamCallResults *callback_results_temp;
+    Steam_Inventory *steam_inventory_temp{};
 
     if (steam_pipes[hSteamPipe] == Steam_Pipe::SERVER) {
         steam_inventory_temp = steam_gameserver_inventory;
