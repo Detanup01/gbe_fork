@@ -35,6 +35,7 @@ public ISteamUser018,
 public ISteamUser019,
 public ISteamUser020,
 public ISteamUser021,
+public ISteamUser022,
 public ISteamUser
 {
     Settings *settings{};
