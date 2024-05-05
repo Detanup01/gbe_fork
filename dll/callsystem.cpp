@@ -81,7 +81,7 @@ void SteamCallResults::addCallCompleted(class CCallbackBase *cb)
 {
     if (std::find(completed_callbacks.begin(), completed_callbacks.end(), cb) == completed_callbacks.end()) {
         completed_callbacks.push_back(cb);
-        PRINT_DEBUG("new cb for call complete notification %p", cb);
+        PRINT_DEBUG("new cb for call complete notification [result k_iCallback=%i] %p", cb ? (cb->GetICallback()) : -1, cb);
     }
 }
 
@@ -90,7 +90,7 @@ void SteamCallResults::rmCallCompleted(class CCallbackBase *cb)
     auto c = std::find(completed_callbacks.begin(), completed_callbacks.end(), cb);
     if (c != completed_callbacks.end()) {
         completed_callbacks.erase(c);
-        PRINT_DEBUG("removed cb for call complete notification %p", cb);
+        PRINT_DEBUG("removed cb for call complete notification [result k_iCallback=%i] %p", cb ? (cb->GetICallback()) : -1, cb);
     }
 }
 
@@ -100,7 +100,7 @@ void SteamCallResults::addCallBack(SteamAPICall_t api_call, class CCallbackBase 
     if (cb_result != callresults.end()) {
         cb_result->callbacks.push_back(cb);
         CCallbackMgr::SetRegister(cb, cb->GetICallback());
-        PRINT_DEBUG("new cb for call result [api id=%llu] %p", api_call, cb);
+        PRINT_DEBUG("new cb for call result [api id=%llu, result k_iCallback=%i] %p", api_call, cb ? (cb->GetICallback()) : -1, cb);
     }
 }
 
@@ -139,7 +139,7 @@ void SteamCallResults::rmCallBack(SteamAPICall_t api_call, class CCallbackBase *
         if (it != cb_result->callbacks.end()) {
             cb_result->callbacks.erase(it);
             CCallbackMgr::SetUnregister(cb);
-            PRINT_DEBUG("removed cb for call result [api id=%llu] %p", api_call, cb);
+            PRINT_DEBUG("removed cb for call result [api id=%llu, result k_iCallback=%i] %p", api_call, cb ? (cb->GetICallback()) : -1, cb);
         }
     }
 }
