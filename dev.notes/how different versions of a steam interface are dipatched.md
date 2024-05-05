@@ -1,7 +1,7 @@
 # How different versions/implementations of 1 interface are maintained and dispatched
-This is done by ~~ab~~using the inheritance of C++ an how virtual functions tables (vftables) are implemented by compilers.  
+This is done by ~~ab~~using the inheritance of C++ and how virtual functions tables (`vftables`) are implemented by compilers.  
 
-The point of this article is explaining this somehwat cryptic code in [steam_client.cpp](../dll/steam_client.cpp)
+The point of this article is explaining this somewhat cryptic code in [steam_client.cpp](../dll/steam_client.cpp)
 ```c++
 if (strcmp(pchVersion, "SteamNetworking001") == 0) {
     return (ISteamNetworking *)(void *)(ISteamNetworking001 *)steam_networking_temp;
