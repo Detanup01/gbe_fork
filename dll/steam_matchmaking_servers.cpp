@@ -806,7 +806,9 @@ void Steam_Matchmaking_Servers::RunCallbacks()
         }
     }
 
-    PRINT_DEBUG("requests count = %zu, servers count = %zu", requests.size(), gameservers.size());
+    if (requests.size() || gameservers.size()) {
+        PRINT_DEBUG("requests count = %zu, servers count = %zu", requests.size(), gameservers.size());
+    }
 
     for (auto &r : requests) {
         if (r.cancelled || r.completed) continue;
@@ -822,7 +824,6 @@ void Steam_Matchmaking_Servers::RunCallbacks()
     }
 
     std::vector <struct Steam_Matchmaking_Request> requests_temp(requests);
-    PRINT_DEBUG("%zu", requests_temp.size());
     for (auto &r : requests) {
         r.completed = true;
     }
