@@ -81,6 +81,7 @@ void SteamCallResults::addCallCompleted(class CCallbackBase *cb)
 {
     if (std::find(completed_callbacks.begin(), completed_callbacks.end(), cb) == completed_callbacks.end()) {
         completed_callbacks.push_back(cb);
+        PRINT_DEBUG("new cb for call complete notification %p", cb);
     }
 }
 
@@ -89,6 +90,7 @@ void SteamCallResults::rmCallCompleted(class CCallbackBase *cb)
     auto c = std::find(completed_callbacks.begin(), completed_callbacks.end(), cb);
     if (c != completed_callbacks.end()) {
         completed_callbacks.erase(c);
+        PRINT_DEBUG("removed cb for call complete notification %p", cb);
     }
 }
 
@@ -98,6 +100,7 @@ void SteamCallResults::addCallBack(SteamAPICall_t api_call, class CCallbackBase 
     if (cb_result != callresults.end()) {
         cb_result->callbacks.push_back(cb);
         CCallbackMgr::SetRegister(cb, cb->GetICallback());
+        PRINT_DEBUG("new cb for call result [api id=%llu] %p", api_call, cb);
     }
 }
 
@@ -136,6 +139,7 @@ void SteamCallResults::rmCallBack(SteamAPICall_t api_call, class CCallbackBase *
         if (it != cb_result->callbacks.end()) {
             cb_result->callbacks.erase(it);
             CCallbackMgr::SetUnregister(cb);
+            PRINT_DEBUG("removed cb for call result [api id=%llu] %p", api_call, cb);
         }
     }
 }
@@ -147,6 +151,7 @@ void SteamCallResults::rmCallBack(class CCallbackBase *cb)
         auto it = std::find(cr.callbacks.begin(), cr.callbacks.end(), cb);
         if (it != cr.callbacks.end()) {
             cr.callbacks.erase(it);
+            PRINT_DEBUG("removed cb %p, kind=%i (0=callback, 1=call result)", cb, (int)cr.run_call_completed_cb);
         }
 
         if (cr.callbacks.size() == 0) {
@@ -160,6 +165,7 @@ SteamAPICall_t SteamCallResults::addCallResult(SteamAPICall_t api_call, int iCal
     PRINT_DEBUG("%i", iCallback);
     auto cb_result = std::find_if(callresults.begin(), callresults.end(), [api_call](struct Steam_Call_Result const& item) { return item.api_call == api_call; });
     if (cb_result != callresults.end()) {
+        // only change the data if this is a previously reserved callresult
         if (cb_result->reserved) {
             std::chrono::high_resolution_clock::time_point created = cb_result->created;
             std::vector<class CCallbackBase *> temp_cbs = cb_result->callbacks;
@@ -216,15 +222,20 @@ void SteamCallResults::runCallResults()
                 if (callresults[index].has_cb()) {
                     std::vector<class CCallbackBase *> temp_cbs = callresults[index].callbacks;
                     for (auto & cb : temp_cbs) {
-                        PRINT_DEBUG("Calling callresult %p %i", cb, cb->GetICallback());
+                        PRINT_DEBUG("Calling callresult %p %i, kind=%i (0=callback, 1=call result)", cb, cb->GetICallback(), (int)run_call_completed_cb);
                         global_mutex.unlock();
+
                         //TODO: unlock relock doesn't work if mutex was locked more than once.
                         if (run_call_completed_cb) { //run the right function depending on if it's a callback or a call result.
                             cb->Run(&(result[0]), false, api_call);
-                        } else {
+                        } else { // if this is a callback
                             cb->Run(&(result[0]));
                         }
+
+                        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                         //COULD BE DELETED SO DON'T TOUCH CB
+                        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
                         global_mutex.lock();
                         PRINT_DEBUG("callresult done");
                     }
@@ -236,10 +247,10 @@ void SteamCallResults::runCallResults()
                     SteamAPICallCompleted_t data{};
                     data.m_hAsyncCall = api_call;
                     data.m_iCallback = iCallback;
-                    data.m_cubParam = result.size();
+                    data.m_cubParam = (uint32)result.size();
 
                     for (auto & cb: callbacks) {
-                        PRINT_DEBUG("Call complete cb %i %p %llu", iCallback, cb, api_call);
+                        PRINT_DEBUG("Calling complete cb %p %i %llu", cb, iCallback, api_call);
                         //TODO: check if this is a problem or not.
                         SteamAPICallCompleted_t temp = data;
                         global_mutex.unlock();
@@ -248,7 +259,7 @@ void SteamCallResults::runCallResults()
                     }
 
                     if (cb_all) {
-                        std::vector<char> res;
+                        std::vector<char> res{};
                         res.resize(sizeof(data));
                         memcpy(&(res[0]), &data, sizeof(data));
                         cb_all(res, data.k_iCallback);
@@ -292,7 +303,7 @@ SteamCallBacks::SteamCallBacks(SteamCallResults *results)
 void SteamCallBacks::addCallBack(int iCallback, class CCallbackBase *cb)
 {
     PRINT_DEBUG("%i", iCallback);
-    if (iCallback == SteamAPICallCompleted_t::k_iCallback) {
+    if (iCallback == SteamAPICallCompleted_t::k_iCallback) { // if this is a call result "call completed cb"
         results->addCallCompleted(cb);
         CCallbackMgr::SetRegister(cb, iCallback);
         return;
@@ -300,6 +311,7 @@ void SteamCallBacks::addCallBack(int iCallback, class CCallbackBase *cb)
 
     if (std::find(callbacks[iCallback].callbacks.begin(), callbacks[iCallback].callbacks.end(), cb) == callbacks[iCallback].callbacks.end()) {
         callbacks[iCallback].callbacks.push_back(cb);
+        PRINT_DEBUG("new cb for callback [result k_iCallback=%i] %p", iCallback, cb);
         CCallbackMgr::SetRegister(cb, iCallback);
         for (auto & res: callbacks[iCallback].results) {
             //TODO: timeout?
@@ -363,6 +375,7 @@ void SteamCallBacks::rmCallBack(int iCallback, class CCallbackBase *cb)
     if (c != callbacks[iCallback].callbacks.end()) {
         callbacks[iCallback].callbacks.erase(c);
         CCallbackMgr::SetUnregister(cb);
+        PRINT_DEBUG("removed cb for callback [result k_iCallback=%i] %p", iCallback, cb);
         results->rmCallBack(cb);
     }
 }
@@ -379,7 +392,7 @@ void SteamCallBacks::runCallBacks()
 void RunEveryRunCB::add(void (*cb)(void *object), void *object)
 {
     remove(cb, object);
-    RunCBs rcb;
+    RunCBs rcb{};
     rcb.function = cb;
     rcb.object = object;
     cbs.push_back(rcb);
