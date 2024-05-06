@@ -36,16 +36,6 @@ You can find instructions here: [README.release.md](./post_build/README.release.
 ## One time setup
 ### **Cloning the repo**
 
- Clone the repo and its submodules **recursively**
- ```shell
- git clone --recurse-submodules https://github.com/otavepto/gbe_fork.git
- ```
-
- It is adviseable to always checkout submodules every now and then, to make sure they're up to date
- ```shell
- git submodule update --recursive --remote
- ```
-
  Disable automatic CRLF handling:  
  *Locally*
  ```shell
@@ -55,6 +45,16 @@ You can find instructions here: [README.release.md](./post_build/README.release.
  ```shell
  git config --system core.autocrlf false
  git config --global core.autocrlf false
+ ```
+
+ Clone the repo and its submodules **recursively**
+ ```shell
+ git clone --recurse-submodules https://github.com/otavepto/gbe_fork.git
+ ```
+
+ It is adviseable to always checkout submodules every now and then, to make sure they're up to date
+ ```shell
+ git submodule update --recursive --remote
  ```
 
 ### For Windows:
