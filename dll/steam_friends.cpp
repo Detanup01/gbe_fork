@@ -45,7 +45,7 @@ void Steam_Friends::rich_presence_updated(CSteamID id, AppId_t appid)
     callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
 }
 
-bool Steam_Friends::isAppIdCompatible(Friend *f)
+bool Steam_Friends::is_appid_compatible(Friend *f)
 {
     if (settings->is_lobby_connect) return true;
     if (f == &us) return true;
@@ -826,9 +826,9 @@ void Steam_Friends::ClearRichPresence()
     
 }
 
-const char* Steam_Friends::GetFriendRichPresence( CSteamID steamIDFriend, const char *pchKey )
+// the overlay will keep calling GetFriendRichPresence() and spam the debug log, hence this function
+const char* Steam_Friends::get_friend_rich_presence_silent( CSteamID steamIDFriend, const char *pchKey )
 {
-    PRINT_DEBUG("%llu '%s'", steamIDFriend.ConvertToUint64(), pchKey);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     const char *value = "";
 
@@ -839,10 +839,20 @@ const char* Steam_Friends::GetFriendRichPresence( CSteamID steamIDFriend, const 
         f = find_friend(steamIDFriend);
     }
 
-    if (f && isAppIdCompatible(f)) {
+    if (f && is_appid_compatible(f)) {
         auto result = f->rich_presence().find(pchKey);
         if (result != f->rich_presence().end()) value = result->second.c_str();
     }
+
+    return value;
+}
+
+const char* Steam_Friends::GetFriendRichPresence( CSteamID steamIDFriend, const char *pchKey )
+{
+    PRINT_DEBUG("%llu '%s'", steamIDFriend.ConvertToUint64(), pchKey);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    const char *value = get_friend_rich_presence_silent(steamIDFriend, pchKey);
 
     PRINT_DEBUG("returned '%s'", value);
     return value;
@@ -861,7 +871,7 @@ int Steam_Friends::GetFriendRichPresenceKeyCount( CSteamID steamIDFriend )
         f = find_friend(steamIDFriend);
     }
 
-    if (f && isAppIdCompatible(f)) num = f->rich_presence().size();
+    if (f && is_appid_compatible(f)) num = f->rich_presence().size();
     
     return num;
 }
@@ -879,7 +889,7 @@ const char* Steam_Friends::GetFriendRichPresenceKeyByIndex( CSteamID steamIDFrie
         f = find_friend(steamIDFriend);
     }
 
-    if (f && isAppIdCompatible(f) && f->rich_presence().size() > iKey && iKey >= 0) {
+    if (f && is_appid_compatible(f) && f->rich_presence().size() > iKey && iKey >= 0) {
         auto friend_data = f->rich_presence().begin();
         for (int i = 0; i < iKey; ++i) ++friend_data;
         key = friend_data->first.c_str();
@@ -1234,7 +1244,7 @@ void Steam_Friends::Callback(Common_Message *msg)
 
             if (map1 != map2) {
                 //The App ID of the game. This should always be the current game.
-                if (isAppIdCompatible(f)) {
+                if (is_appid_compatible(f)) {
                     rich_presence_updated((uint64)msg->friend_().id(), (uint64)msg->friend_().appid());
                 }
             }

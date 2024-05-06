@@ -652,7 +652,7 @@ bool Steam_Overlay::is_friend_joinable(std::pair<const Friend, friend_window_sta
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     Steam_Friends* steamFriends = get_steam_client()->steam_friends;
 
-    if (std::string(steamFriends->GetFriendRichPresence((uint64)f.first.id(), "connect")).length() > 0 ) {
+    if (std::string(steamFriends->get_friend_rich_presence_silent((uint64)f.first.id(), "connect")).length() > 0 ) {
         PRINT_DEBUG("%" PRIu64 " true (connect string)", f.first.id());
         return true;
     }
@@ -672,7 +672,7 @@ bool Steam_Overlay::got_lobby()
 {
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     Steam_Friends* steamFriends = get_steam_client()->steam_friends;
-    if (std::string(steamFriends->GetFriendRichPresence(settings->get_local_steam_id(), "connect")).length() > 0)
+    if (std::string(steamFriends->get_friend_rich_presence_silent(settings->get_local_steam_id(), "connect")).length() > 0)
         return true;
 
     if (settings->get_lobby().IsValid())
@@ -1152,7 +1152,7 @@ void Steam_Overlay::post_achievement_notification(Overlay_Achievement &ach)
 
 void Steam_Overlay::invite_friend(uint64 friend_id, class Steam_Friends* steamFriends, class Steam_Matchmaking* steamMatchmaking)
 {
-    std::string connect_str = steamFriends->GetFriendRichPresence(settings->get_local_steam_id(), "connect");
+    std::string connect_str = steamFriends->get_friend_rich_presence_silent(settings->get_local_steam_id(), "connect");
     if (connect_str.length() > 0) {
         steamFriends->InviteUserToGame(friend_id, connect_str.c_str());
         PRINT_DEBUG("sent game invitation to friend with id = %llu", friend_id);

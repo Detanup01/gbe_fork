@@ -67,7 +67,7 @@ public ISteamFriends
 
     void rich_presence_updated(CSteamID id, AppId_t appid);
 
-    bool isAppIdCompatible(Friend *f);
+    bool is_appid_compatible(Friend *f);
 
     struct Avatar_Numbers add_friend_avatars(CSteamID id);
 
@@ -314,6 +314,9 @@ public:
     bool SetRichPresence( const char *pchKey, const char *pchValue );
 
     void ClearRichPresence();
+
+    // the overlay will keep calling GetFriendRichPresence() and spam the debug log, hence this function
+    const char *get_friend_rich_presence_silent( CSteamID steamIDFriend, const char *pchKey );
 
     const char *GetFriendRichPresence( CSteamID steamIDFriend, const char *pchKey );
 
