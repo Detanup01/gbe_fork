@@ -28,7 +28,12 @@ PIMAGE_NT_HEADERS pe_helpers::get_nt_header(HMODULE hModule)
         return nullptr;
     }
     LONG newExeHeaderOffset = dosHeader->e_lfanew;
-    return (PIMAGE_NT_HEADERS)((char*)hModule + newExeHeaderOffset);
+    PIMAGE_NT_HEADERS ntHeader = (PIMAGE_NT_HEADERS)((char*)hModule + newExeHeaderOffset);
+    if (!ntHeader || ntHeader->Signature != 0x00004550) { // "PE\0\0"
+        return nullptr;
+    }
+    
+    return ntHeader;
 }
 
 PIMAGE_FILE_HEADER pe_helpers::get_file_header(HMODULE hModule)
