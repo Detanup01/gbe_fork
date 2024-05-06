@@ -57,7 +57,9 @@ Lobby* Steam_Matchmaking::get_lobby(CSteamID id)
 
 void Steam_Matchmaking::send_lobby_data()
 {
-    PRINT_DEBUG("lobbies %zu", lobbies.size());
+    if (lobbies.size()) {
+        PRINT_DEBUG("lobbies %zu", lobbies.size());
+    }
 
     for(auto & l: lobbies) {
         if (get_lobby_member(&l, settings->get_local_steam_id()) && l.owner() == settings->get_local_steam_id().ConvertToUint64() && !l.deleted()) {
