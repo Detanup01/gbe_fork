@@ -12,12 +12,13 @@
 #include <tchar.h>
 #include <stdio.h>
 #include <string>
+#include <filesystem>
 #include <set>
 #include <thread>
 
 
-static const std::wstring IniFile = pe_helpers::get_current_exe_path_w() + L"ColdClientLoader.ini";
-static const std::wstring dbg_file = pe_helpers::get_current_exe_path_w() + L"COLD_LDR_LOG.txt";
+static std::wstring IniFile{};
+static const std::wstring dbg_file = pe_helpers::get_current_exe_path_w() + pe_helpers::get_current_exe_name_w() + L".log";
 constexpr static const char STEAM_UNIVERSE[] = "Public";
 constexpr static const char STEAM_URL_PROTOCOL[] = "URL:steam protocol";
 
@@ -339,9 +340,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 {
     dbg_log::init(dbg_file.c_str());
 
+    IniFile = pe_helpers::get_current_exe_path_w() + std::filesystem::path(pe_helpers::get_current_exe_name_w()).stem().wstring() + L".ini";
+    dbg_log::write(L"Searching for configuration file: " + IniFile);
     if (!common_helpers::file_exist(IniFile)) {
-        dbg_log::write(L"Couldn't find the configuration file: " + dbg_file);
-        MessageBoxA(NULL, "Couldn't find the configuration file ColdClientLoader.ini.", "ColdClientLoader", MB_ICONERROR);
+        IniFile = pe_helpers::get_current_exe_path_w() + L"ColdClientLoader.ini";
+        dbg_log::write(L"Searching for configuration file: " + IniFile);
+    }
+
+    if (!common_helpers::file_exist(IniFile)) {
+        dbg_log::write(L"Couldn't find the configuration file");
+        MessageBoxA(NULL, "Couldn't find the configuration file.", "ColdClientLoader", MB_ICONERROR);
         dbg_log::close();
         return 1;
     }

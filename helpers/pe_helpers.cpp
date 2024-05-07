@@ -383,6 +383,11 @@ size_t pe_helpers::get_pe_size(HMODULE hModule)
 
 static std::wstring path_w{};
 static std::string path_a{};
+
+static std::wstring modulename_w{};
+static std::string modulename_a{};
+
+
 const std::string& pe_helpers::get_current_exe_path()
 {
     if (path_a.empty()) {
@@ -409,14 +414,27 @@ const std::wstring& pe_helpers::get_current_exe_path_w()
             }
 
             if ((read_chars < path_w.size()) && path_w[0]) {
-                path_w = path_w.substr(0, path_w.find_last_of(L"\\/") + 1);
+                auto modulename_idx = path_w.find_last_of(L"\\/") + 1;
+                modulename_w = path_w.substr(modulename_idx, read_chars - modulename_idx);
+                path_w = path_w.substr(0, modulename_idx);
 
-                auto cvt_state = std::mbstate_t();
-                const wchar_t* src = &path_w[0];
-                size_t conversion_bytes = std::wcsrtombs(nullptr, &src, 0, &cvt_state);
-                path_a.resize(conversion_bytes + 1);
-                std::wcsrtombs(&path_a[0], &src, path_a.size(), &cvt_state);
-                path_a = path_a.substr(0, conversion_bytes);
+                {
+                    auto cvt_state = std::mbstate_t();
+                    const wchar_t* src = &path_w[0];
+                    size_t conversion_bytes = std::wcsrtombs(nullptr, &src, 0, &cvt_state);
+                    path_a.resize(conversion_bytes + 1);
+                    std::wcsrtombs(&path_a[0], &src, path_a.size(), &cvt_state);
+                    path_a = path_a.substr(0, conversion_bytes);
+                }
+
+                {
+                    auto cvt_state = std::mbstate_t();
+                    const wchar_t* src = &modulename_w[0];
+                    size_t conversion_bytes = std::wcsrtombs(nullptr, &src, 0, &cvt_state);
+                    modulename_a.resize(conversion_bytes + 1);
+                    std::wcsrtombs(&modulename_a[0], &src, modulename_a.size(), &cvt_state);
+                    modulename_a = modulename_a.substr(0, conversion_bytes);
+                }
             } else {
                 path_w.clear();
             }
@@ -428,10 +446,28 @@ const std::wstring& pe_helpers::get_current_exe_path_w()
     return path_w;
 }
 
-bool pe_helpers::ends_with_i(PUNICODE_STRING target, const std::wstring &query)
+const std::string& pe_helpers::get_current_exe_name()
+{
+    if (modulename_a.empty()) {
+        get_current_exe_path_w();
+    }
+
+    return modulename_a;
+}
+
+const std::wstring& pe_helpers::get_current_exe_name_w()
+{
+    if (modulename_w.empty()) {
+        get_current_exe_path_w();
+    }
+
+    return modulename_w;
+}
+
+bool pe_helpers::ends_with_i(PUNICODE_STRING target, const std::wstring_view &query)
 {
     return common_helpers::ends_with_i(
-        std::wstring(target->Buffer, (PWSTR)((char*)target->Buffer + target->Length)),
+        std::wstring_view( target->Buffer, target->Length / sizeof(target->Buffer[0]) ),
         query
     );
 }

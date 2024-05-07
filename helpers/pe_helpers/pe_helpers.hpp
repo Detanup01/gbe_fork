@@ -5,6 +5,7 @@
 #include <winternl.h>
 
 #include <string>
+#include <string_view>
 
 namespace pe_helpers
 {
@@ -44,7 +45,11 @@ const std::string& get_current_exe_path();
 
 const std::wstring& get_current_exe_path_w();
 
-bool ends_with_i(PUNICODE_STRING target, const std::wstring &query);
+const std::string& get_current_exe_name();
+
+const std::wstring& get_current_exe_name_w();
+
+bool ends_with_i(PUNICODE_STRING target, const std::wstring_view &query);
 
 MEMORY_BASIC_INFORMATION get_mem_page_details(const void* mem);
 
