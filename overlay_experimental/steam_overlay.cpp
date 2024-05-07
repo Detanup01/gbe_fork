@@ -1658,7 +1658,7 @@ void Steam_Overlay::steam_run_callback()
             }
             // The user clicked on "Join"
             if (friend_info->second.window_state & window_state_join) {
-                std::string connect = steamFriends->GetFriendRichPresence(friend_id, "connect");
+                std::string connect = steamFriends->get_friend_rich_presence_silent(friend_id, "connect");
                 // The user got a lobby invite and accepted it
                 if (friend_info->second.window_state & window_state_lobby_invite) {
                     GameLobbyJoinRequested_t data;

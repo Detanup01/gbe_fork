@@ -382,7 +382,7 @@ void Steam_Apps::RequestAllProofOfPurchaseKeys()
     {
         AppProofOfPurchaseKeyResponse_t data{};
         FillProofOfPurchaseKey(data, settings->get_local_game_id().AppID(), true);
-        callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
     }
 
     // DLCs
@@ -395,14 +395,14 @@ void Steam_Apps::RequestAllProofOfPurchaseKeys()
 
         AppProofOfPurchaseKeyResponse_t data{};
         FillProofOfPurchaseKey(data, app_id, true);
-        callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
     }
     
     // termination entry
     {
         AppProofOfPurchaseKeyResponse_t data{};
         FillProofOfPurchaseKey(data, k_uAppIdInvalid, true, "");
-        callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
     }
 
 }

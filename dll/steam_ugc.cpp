@@ -784,7 +784,9 @@ SteamAPICall_t Steam_UGC::RequestUGCDetails( PublishedFileId_t nPublishedFileID,
     SteamUGCRequestUGCDetailsResult_t data{};
     data.m_bCachedData = false;
     set_details(nPublishedFileID, &(data.m_details));
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 SteamAPICall_t Steam_UGC::RequestUGCDetails( PublishedFileId_t nPublishedFileID )
@@ -1218,7 +1220,7 @@ bool Steam_UGC::GetItemInstallInfo( PublishedFileId_t nPublishedFileID, uint64 *
         // human fall flat doesn't send a nulled buffer, and won't recognize the proper mod path because of that
         memset(pchFolder, 0, cchFolderSize);
         mod.path.copy(pchFolder, cchFolderSize - 1);
-        PRINT_DEBUG("  copied mod path: '%s'", pchFolder);
+        PRINT_DEBUG("  final mod path: '%s'", pchFolder);
     }
 
     return true;
