@@ -8,19 +8,12 @@ on:
     ]
     tags:        
       - release*
-    paths-ignore:
-      - '**/*.md'
-      - 'dev.notes/**'
-      - 'post_build/**'
-      - 'z_original_repo_files/**'
     
   pull_request:
     branches: [ "dev" ]
-    paths-ignore:
-      - '**/*.md'
-      - 'dev.notes/**'
-      - 'post_build/**'
-      - 'z_original_repo_files/**'
+    paths:
+      - '!**/*.md'
+      - 'tools/generate_emu_config/**'
     
   workflow_dispatch:
     # allows manual trigger

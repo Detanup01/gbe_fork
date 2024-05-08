@@ -8,19 +8,20 @@ on:
     ]
     tags:        
       - release*
-    paths-ignore:
-      - '**/*.md'
-      - 'dev.notes/**'
-      - 'post_build/**'
-      - 'z_original_repo_files/**'
     
   pull_request:
     branches: [ "dev" ]
-    paths-ignore:
-      - '**/*.md'
-      - 'dev.notes/**'
-      - 'post_build/**'
-      - 'z_original_repo_files/**'
+    paths:
+      - '!**/*.md'
+      - '!dev.notes/**'
+      - '!post_build/**'
+      - '!z_original_repo_files/**'
+      - '!sdk/*.txt'
+      - '!LICENSE'
+      # tools
+      - '!tools/generate_emu_config/**'
+      - '!tools/migrate_gse/**'
+      - '!tools/steamclient_loader/linux/**'
     
   workflow_dispatch:
     # allows manual trigger
