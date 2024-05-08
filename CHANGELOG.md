@@ -1,3 +1,9 @@
+* for Windows ColdClientLoader: allow loading `.ini` file with the same name as the loader  
+  ex: if the loader is named `game_cold_loader.exe`, then it will first try to load `game_cold_loader.ini`,  
+  if that doesn't exist, it will fallback to `ColdClientLoader.ini`
+
+---
+
 ## 2024/5/5
 
 * **[Clompress]** update Turkish translation  
