@@ -5,12 +5,18 @@ Fork of https://gitlab.com/Mr_Goldberg/goldberg_emulator
 
 :red_circle:  
 
-**This fork is not a takover, not a resurreccion of the original project, and not a replacement.**  
-**This is just a personal fork, don't take it seriously.**  
+**This fork is not a takeover, not a resurrection of the original project, and not a replacement.**  
+**This is just a fork, don't take it seriously.**  
 **You are highly encouraged to fork/clone it and do whatever you want with it.**  
-**Don't depend on it as the main source.**
 
 :red_circle:
+
+---
+
+## **Credits**
+Thanks to everyone contributing to this project in any way possible, we try to keep the [CHANGELOG.md](./CHANGELOG.md) updated with all the changes and their authors.  
+
+This project depends on many third-party libraries and tools, credits to them for their amazing work, you can find their listing here in [CREDITS.md](./CREDITS.md).  
 
 ---
 
@@ -20,12 +26,12 @@ You can find the original README here: [README.md](./z_original_repo_files/READM
 ---
 
 # How to use the emu
-**Always generate the interfaces file using the `find_interfaces` tool.**  
-**Generate the proper app configuration using the `generate_emu_config` tool.**  
-**If it doesn't work try the `ColdClientLoader` setup.**  
+* **Always generate the interfaces file using the `find_interfaces` tool.**  
+* **Generate the proper app configuration using the `generate_emu_config` tool.**  
+* **If things don't work, try the `ColdClientLoader` setup.**  
 
 You can find helper guides, scripts, and tools here in this wiki: https://github.com/otavepto/gbe_fork/wiki/Emu-helpers  
-You can find instructions here: [README.release.md](./post_build/README.release.md)  
+You can also find instructions here in [README.release.md](./post_build/README.release.md)  
 
 ---
 ---
