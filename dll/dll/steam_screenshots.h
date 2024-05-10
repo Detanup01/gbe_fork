@@ -26,6 +26,8 @@ struct screenshot_infos_t {
 };
 
 class Steam_Screenshots :
+public ISteamScreenshots001,
+public ISteamScreenshots002,
 public ISteamScreenshots
 {
 	class Local_Storage *local_storage{};

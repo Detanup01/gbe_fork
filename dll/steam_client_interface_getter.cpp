@@ -609,9 +609,11 @@ ISteamScreenshots *Steam_Client::GetISteamScreenshots( HSteamUser hSteamuser, HS
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
 
-    // Here we always use the STEAMSCREENSHOTS_INTERFACE_VERSION003 since 01-02 has small difference
-
-    if (strcmp(pchVersion, STEAMSCREENSHOTS_INTERFACE_VERSION) == 0) {
+    if (strcmp(pchVersion, "STEAMSCREENSHOTS_INTERFACE_VERSION001") == 0) {
+        return reinterpret_cast<ISteamScreenshots *>(static_cast<ISteamScreenshots001 *>(steam_screenshots));
+    } else if (strcmp(pchVersion, "STEAMSCREENSHOTS_INTERFACE_VERSION002") == 0) {
+        return reinterpret_cast<ISteamScreenshots *>(static_cast<ISteamScreenshots002 *>(steam_screenshots));
+    } else if (strcmp(pchVersion, STEAMSCREENSHOTS_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamScreenshots *>(static_cast<ISteamScreenshots *>(steam_screenshots));
     } else {
         return reinterpret_cast<ISteamScreenshots *>(static_cast<ISteamScreenshots *>(steam_screenshots));
