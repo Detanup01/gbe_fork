@@ -1,0 +1,71 @@
+name: Third-party dependencies (Windows)
+
+on:
+  workflow_call:
+    # needed since it allows this to become a reusable workflow
+  workflow_dispatch:
+    # allows manual trigger
+
+permissions:
+  contents: write
+
+env:
+  DEPS_CACHE_KEY: emu-deps-win
+  DEPS_CACHE_DIR: build/deps/win
+  
+  PACKAGE_BASE_DIR: "build/package/win"
+  THIRD_PARTY_BASE_DIR: 'third-party'
+
+jobs:
+  # this helps in manual runs, if build fails, then deps are saved
+  dependencies:
+    runs-on: windows-2022
+    steps:
+    # on Windows Git will auto change line ending to CRLF, not preferable
+    - name: Ensure LF line ending
+      shell: cmd
+      working-directory: ${{ github.workspace }}
+      run: |
+        git config --local core.autocrlf false
+        git config --system core.autocrlf false
+        git config --global core.autocrlf false
+
+    - name: Lookup cache for deps
+      id: emu-deps-cache-step
+      uses: actions/cache@v4
+      with:
+        key: ${{ env.DEPS_CACHE_KEY }}
+        path: ${{ env.DEPS_CACHE_DIR }}
+        lookup-only: true # don't restore cache if found
+
+    # we need branch because it has build scripts
+    - name: Checkout branch
+      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+      uses: actions/checkout@v4
+
+    - name: Clone third-party deps (deps/win)
+      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+      uses: actions/checkout@v4
+      with:
+        ref: 'third-party/deps/win'
+        path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/win"
+
+    - name: Clone third-party deps (deps/common)
+      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+      uses: actions/checkout@v4
+      with:
+        ref: 'third-party/deps/common'
+        path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/common"
+
+    - name: Clone third-party deps (common/win)
+      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+      uses: actions/checkout@v4
+      with:
+        ref: 'third-party/common/win'
+        path: "${{env.THIRD_PARTY_BASE_DIR}}/common/win"
+
+    - name: Build deps
+      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+      shell: cmd
+      working-directory: ${{ github.workspace }}
+      run: build_win_deps.bat -verbose
