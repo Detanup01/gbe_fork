@@ -9,19 +9,19 @@ on:
     tags:        
       - release*
     
-  pull_request:
-    branches: [ "dev" ]
-    paths-ignore:
-      - '**/*.md'
-      - 'dev.notes/**'
-      - 'post_build/**'
-      - 'z_original_repo_files/**'
-      - 'sdk/*.txt'
-      - 'LICENSE'
-      # tools
-      - 'tools/generate_emu_config/**'
-      - 'tools/migrate_gse/**'
-      - 'tools/steamclient_loader/linux/**' # these are just shell scripts, not compiled
+  # pull_request:
+  #   branches: [ "dev" ]
+  #   paths-ignore:
+  #     - '**/*.md'
+  #     - 'dev.notes/**'
+  #     - 'post_build/**'
+  #     - 'z_original_repo_files/**'
+  #     - 'sdk/*.txt'
+  #     - 'LICENSE'
+  #     # tools
+  #     - 'tools/generate_emu_config/**'
+  #     - 'tools/migrate_gse/**'
+  #     - 'tools/steamclient_loader/linux/**' # these are just shell scripts, not compiled
     
   workflow_dispatch:
     # allows manual trigger

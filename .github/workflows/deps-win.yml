@@ -18,8 +18,9 @@ env:
 
 jobs:
   # this helps in manual runs, if build fails, then deps are saved
-  dependencies:
+  build:
     runs-on: windows-2022
+    if: ${{ !cancelled() }}
     steps:
     # on Windows Git will auto change line ending to CRLF, not preferable
     - name: Ensure LF line ending
