@@ -136,6 +136,8 @@
 #include "isteamremotestorage013.h"
 #include "isteamremotestorage014.h"
 #include "isteamscreenshots.h"
+#include "isteamscreenshots001.h"
+#include "isteamscreenshots002.h"
 #include "isteammusic.h"
 #include "isteammusicremote.h"
 #include "isteamhttp.h"
