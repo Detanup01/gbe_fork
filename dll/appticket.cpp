@@ -17,7 +17,7 @@
 
 #include "dll/appticket.h"
 
-// pr test
+
 void AppTicketV1::Reset()
 {
     TicketSize = 0;

@@ -5,7 +5,7 @@ import glob
 import configparser
 import traceback
 
-# pr test
+
 def help():
     exe_name = os.path.basename(sys.argv[0])
     print(f"\nUsage: {exe_name} [Switches] [settings folder path]")
