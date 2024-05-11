@@ -153,25 +153,25 @@ Arguments you can pass to this script:
 
 >>>>>>>>>  ___
 
-* `-lib-32`: prevent building normal `steam_api.dll`
-* `-lib-64`: prevent building normal `steam_api64.dll`
+* `+lib-32`: build normal `steam_api.dll`
+* `+lib-64`: build normal `steam_api64.dll`
 
 >>>>>>>>>  ___
 
-* `-ex-lib-32`: prevent building experimental `steam_api.dll`
-* `-ex-lib-64`: prevent building experimental `steam_api64.dll`
+* `+ex-lib-32`: build experimental `steam_api.dll`
+* `+ex-lib-64`: build experimental `steam_api64.dll`
 
 >>>>>>>>>  ___
 
-* `-ex-client-32`: prevent building experimental `steamclient.dll`
-* `-ex-client-64`: prevent building experimental `steamclient64.dll`
+* `+ex-client-32`: build experimental `steamclient.dll`
+* `+ex-client-64`: build experimental `steamclient64.dll`
 
 >>>>>>>>>  ___
 
-* `-exclient-32`: prevent building steamclient `steamclient.dll`
-* `-exclient-64`: prevent building steamclient `steamclient64.dll`
-* `-exclient-ldr-32`: prevent building steamclient loader (32) `steamclient_loader_32.exe`
-* `-exclient-ldr-64`: prevent building steamclient loader (64) `steamclient_loader_64.exe`
+* `+exclient-32`: build steamclient `steamclient.dll`
+* `+exclient-64`: build steamclient `steamclient64.dll`
+* `+exclient-ldr-32`: build steamclient loader (32) `steamclient_loader_32.exe`
+* `+exclient-ldr-64`: build steamclient loader (64) `steamclient_loader_64.exe`
 
 >>>>>>>>>  ___
 
@@ -180,8 +180,8 @@ Arguments you can pass to this script:
 
 >>>>>>>>>  ___
 
-* `-tool-itf` prevent building the tool `find_interfaces`
-* `-tool-lobby`: prevent building the tool `lobby_connect`
+* `+tool-itf` build the tool `find_interfaces`
+* `+tool-lobby`: build the tool `lobby_connect`
 
 >>>>>>>>>  ___
 
@@ -218,31 +218,31 @@ Arguments you can pass to this script:
 
 >>>>>>>>>  ___
 
-* `-lib-32`: prevent building normal 32-bit `libsteam_api.so`
-* `-lib-64`: prevent building normal 64-bit `libsteam_api.so`
+* `+lib-32`: build normal 32-bit `libsteam_api.so`
+* `+lib-64`: build normal 64-bit `libsteam_api.so`
 
 >>>>>>>>>  ___
 
-* `-exp-lib-32`: prevent building experimental 32-bit `libsteam_api.so`
-* `-exp-lib-64`: prevent building experimental 64-bit `libsteam_api.so`
-* `-exp-client-32`: prevent building experimental steam client 64-bit `steamclient.so`
-* `-exp-client-64`: prevent building experimental steam client 64-bit `steamclient.so`
+* `+exp-lib-32`: build experimental 32-bit `libsteam_api.so`
+* `+exp-lib-64`: build experimental 64-bit `libsteam_api.so`
+* `+exp-client-32`: build experimental steam client 64-bit `steamclient.so`
+* `+exp-client-64`: build experimental steam client 64-bit `steamclient.so`
 
 >>>>>>>>>  ___
 
-* `-client-32`: prevent building steam client 32-bit `steamclient.so`
-* `-client-64`: prevent building steam client 64-bit `steamclient.so`
+* `+client-32`: build steam client 32-bit `steamclient.so`
+* `+client-64`: build steam client 64-bit `steamclient.so`
 
 >>>>>>>>>  ___
 
-* `-tool-clientldr`: prevent copying the tool `steamclient_loader`
+* `+tool-clientldr`: copy the tool `steamclient_loader`
 
 >>>>>>>>>  ___
 
-* `-tool-itf-32`: prevent building the tool 32-bit `find_interfaces`
-* `-tool-itf-64`: prevent building the tool 64-bit `find_interfaces`
-* `-tool-lobby-32`: prevent building the tool 32-bit `lobby_connect`
-* `-tool-lobby-64`: prevent building the tool 64-bit `lobby_connect`
+* `+tool-itf-32`: build the tool 32-bit `find_interfaces`
+* `+tool-itf-64`: build the tool 64-bit `find_interfaces`
+* `+tool-lobby-32`: build the tool 32-bit `lobby_connect`
+* `+tool-lobby-64`: build the tool 64-bit `lobby_connect`
 
 >>>>>>>>>  ___
 

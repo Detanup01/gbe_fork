@@ -15,21 +15,21 @@ for emu_file in "${required_files[@]}"; do
   fi
 done
 
-BUILD_LIB32=1
-BUILD_LIB64=1
-BUILD_EXP_LIB32=1
-BUILD_EXP_LIB64=1
+BUILD_LIB32=0
+BUILD_LIB64=0
+BUILD_EXP_LIB32=0
+BUILD_EXP_LIB64=0
 
-BUILD_CLIENT32=1
-BUILD_CLIENT64=1
-BUILD_EXPT_CLIENT32=1
-BUILD_EXPT_CLIENT64=1
-BUILD_TOOL_CLIENT_LDR=1
+BUILD_CLIENT32=0
+BUILD_CLIENT64=0
+BUILD_EXPT_CLIENT32=0
+BUILD_EXPT_CLIENT64=0
+BUILD_TOOL_CLIENT_LDR=0
 
-BUILD_TOOL_FIND_ITFS32=1
-BUILD_TOOL_FIND_ITFS64=1
-BUILD_TOOL_LOBBY32=1
-BUILD_TOOL_LOBBY64=1
+BUILD_TOOL_FIND_ITFS32=0
+BUILD_TOOL_FIND_ITFS64=0
+BUILD_TOOL_LOBBY32=0
+BUILD_TOOL_LOBBY64=0
 
 BUILD_LIB_NET_SOCKETS_32=0
 BUILD_LIB_NET_SOCKETS_64=0
@@ -63,32 +63,32 @@ for (( i=1; i<=$#; i++ )); do
       echo "[X] Expected a build string" >&2;
       exit 1;
     }
-  elif [[ "$var" = "-lib-32" ]]; then
-    BUILD_LIB32=0
-  elif [[ "$var" = "-lib-64" ]]; then
-    BUILD_LIB64=0
-  elif [[ "$var" = "-exp-lib-32" ]]; then
-    BUILD_EXP_LIB32=0
-  elif [[ "$var" = "-exp-lib-64" ]]; then
-    BUILD_EXP_LIB64=0
-  elif [[ "$var" = "-client-32" ]]; then
-    BUILD_CLIENT32=0
-  elif [[ "$var" = "-client-64" ]]; then
-    BUILD_CLIENT64=0
-  elif [[ "$var" = "-exp-client-32" ]]; then
-    BUILD_EXPT_CLIENT32=0
-  elif [[ "$var" = "-exp-client-64" ]]; then
-    BUILD_EXPT_CLIENT64=0
-  elif [[ "$var" = "-tool-clientldr" ]]; then
-    BUILD_TOOL_CLIENT_LDR=0
-  elif [[ "$var" = "-tool-itf-32" ]]; then
-    BUILD_TOOL_FIND_ITFS32=0
-  elif [[ "$var" = "-tool-itf-64" ]]; then
-    BUILD_TOOL_FIND_ITFS64=0
-  elif [[ "$var" = "-tool-lobby-32" ]]; then
-    BUILD_TOOL_LOBBY32=0
-  elif [[ "$var" = "-tool-lobby-64" ]]; then
-    BUILD_TOOL_LOBBY64=0
+  elif [[ "$var" = "+lib-32" ]]; then
+    BUILD_LIB32=1
+  elif [[ "$var" = "+lib-64" ]]; then
+    BUILD_LIB64=1
+  elif [[ "$var" = "+exp-lib-32" ]]; then
+    BUILD_EXP_LIB32=1
+  elif [[ "$var" = "+exp-lib-64" ]]; then
+    BUILD_EXP_LIB64=1
+  elif [[ "$var" = "+client-32" ]]; then
+    BUILD_CLIENT32=1
+  elif [[ "$var" = "+client-64" ]]; then
+    BUILD_CLIENT64=1
+  elif [[ "$var" = "+exp-client-32" ]]; then
+    BUILD_EXPT_CLIENT32=1
+  elif [[ "$var" = "+exp-client-64" ]]; then
+    BUILD_EXPT_CLIENT64=1
+  elif [[ "$var" = "+tool-clientldr" ]]; then
+    BUILD_TOOL_CLIENT_LDR=1
+  elif [[ "$var" = "+tool-itf-32" ]]; then
+    BUILD_TOOL_FIND_ITFS32=1
+  elif [[ "$var" = "+tool-itf-64" ]]; then
+    BUILD_TOOL_FIND_ITFS64=1
+  elif [[ "$var" = "+tool-lobby-32" ]]; then
+    BUILD_TOOL_LOBBY32=1
+  elif [[ "$var" = "vtool-lobby-64" ]]; then
+    BUILD_TOOL_LOBBY64=1
   elif [[ "$var" = "+lib-netsockets-32" ]]; then
     BUILD_LIB_NET_SOCKETS_32=1
   elif [[ "$var" = "+lib-netsockets-64" ]]; then

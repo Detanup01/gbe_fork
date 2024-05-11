@@ -1,27 +1,37 @@
 name: Emu build 2 (Windows)
 
 on:
-  push:
-    branches: [ 
-      "ci-build-emu-win*",
-      "ci-build-all"
-    ]
-    tags:        
-      - release*
+  workflow_call:
+    inputs:
+      emu-variant:
+        description: |
+          Which variant of the emu to build:
+            regular: build the regular version of the emu
+            exp: build the experimental version of the emu
+            client: build the experimental steamclient version of the emu
+            tools: build the tools only
+            all: build all variants
+        default: 'all'
+        required: false
+        type: string
+
+      x32:
+        description: |
+          build architecture, unused when 'emu-variant' == 'all' or 'emu-variant' == 'tools'
+            true: x32
+            false: x64
+        default: false
+        required: false
+        type: boolean
     
-  pull_request:
-    branches: [ "dev" ]
-    paths-ignore:
-      - '**/*.md'
-      - 'dev.notes/**'
-      - 'post_build/**'
-      - 'z_original_repo_files/**'
-      - 'sdk/*.txt'
-      - 'LICENSE'
-      # tools
-      - 'tools/generate_emu_config/**'
-      - 'tools/migrate_gse/**'
-      - 'tools/steamclient_loader/linux/**'
+      debug:
+        description: |
+          build mode, unused when 'emu-variant' == 'all'
+            true: build in debug mode
+            false: build in release mode
+        default: false
+        required: false
+        type: boolean
     
   workflow_dispatch:
     # allows manual trigger
@@ -37,8 +47,8 @@ env:
   THIRD_PARTY_BASE_DIR: 'third-party'
 
 jobs:
-  # this helps in manual runs, if build fails, then deps are saved
   dependencies:
+    name: Restore or build deps
     if: ${{ !cancelled() }}
     uses: ./.github/workflows/deps-win.yml
 
@@ -48,7 +58,46 @@ jobs:
     needs: [ dependencies ]
     if: ${{ !cancelled() }}
     steps:
-    # on Windows Git will auto change line ending to CRLF, not preferable
+### setup build vars
+    - name: Setup build vars
+      shell: cmd
+      run: |
+        echo env file = "${{ GITHUB_ENV }}"
+        
+        if /i "${{ inputs.debug }}"=="true" (
+          set "build_switches=%build_switches% debug"
+          >>"${{ GITHUB_ENV }}" echo build_mode=debug
+        ) else (
+          >>"${{ GITHUB_ENV }}" echo build_mode=release
+        )
+
+        set "arch="
+        if /i "${{ inputs.x32 }}"=="true" (
+          set "arch=32"
+        ) else (
+          set "arch=64"
+        )
+
+        set "build_switches="
+        if "${{ inputs.emu-variant }}"=="regular" (
+          set "build_switches=+lib-%arch%"
+        ) else if "${{ inputs.emu-variant }}"=="exp" (
+          set "build_switches=+ex-lib-%arch% +ex-client-%arch%"
+        ) else if "${{ inputs.emu-variant }}"=="client" (
+          set "build_switches=+exclient-%arch% +exclient-ldr-%arch% +exclient-extra-%arch% +lib-gameoverlay-%arch%"
+        ) else if "${{ inputs.emu-variant }}"=="tools" (
+          set "build_switches=+tool-itf +tool-lobby"
+        ) else if "${{ inputs.emu-variant }}"=="all" (
+          set "build_switches=+lib-32 +lib-64 +ex-lib-32 +ex-lib-64 +ex-client-32 +ex-client-64 +exclient-32 +exclient-64 +exclient-ldr-32 +exclient-ldr-64 +tool-itf +tool-lobby +exclient-extra-32 +exclient-extra-64 +lib-gameoverlay-32 +lib-gameoverlay-64"
+        ) else (
+          1>&2 echo [X] invalid emu variant "${{ inputs.emu-variant }}"
+          exit /b 1
+        )
+        
+        echo final build switches %build_switches%
+        >>"${{ GITHUB_ENV }}" echo build_switches=%build_switches%
+
+### on Windows Git will auto change line ending to CRLF, not preferable
     - name: Ensure LF line ending
       shell: cmd
       working-directory: ${{ github.workspace }}
@@ -61,7 +110,7 @@ jobs:
       uses: actions/checkout@v4
 
 ### deps
-    - name: Lookup cache for deps
+    - name: Restore deps
       id: emu-deps-cache-step
       uses: actions/cache@v4
       with:
@@ -87,54 +136,44 @@ jobs:
         ref: 'third-party/build/win'
         path: "${{env.THIRD_PARTY_BASE_DIR}}/build/win"
 
-### build (release mode)
-    - name: Build release mode
+### build target(s)
+    - name: Build target(s)
+      if: inputs.emu-variant != 'all'
       shell: cmd
       working-directory: ${{ github.workspace }}
-      run: build_win.bat -verbose release +build_str ${{ github.sha }} +exclient-extra-32 +exclient-extra-64 +lib-gameoverlay-32 +lib-gameoverlay-64
+      run: build_win.bat -verbose ${{ env.build_mode }} clean +build_str ${{ github.sha }} ${{ env.build_switches }}
 
-### package (release mode)
-    - name: Package build (release)
+### build all
+    - name: Build all
+      if: inputs.emu-variant == 'all'
       shell: cmd
       working-directory: ${{ github.workspace }}
-      run: package_win.bat release
+      run: |
+        build_win.bat -verbose release clean +build_str ${{ github.sha }} ${{ env.build_switches }} || exit /b %errorlevel%
+        build_win.bat -verbose debug clean +build_str ${{ github.sha }} ${{ env.build_switches }} || exit /b %errorlevel%
+
+### package target(s)
+    - name: Package target(s)
+      if: inputs.emu-variant != 'all'
+      shell: cmd
+      working-directory: ${{ github.workspace }}
+      run: package_win.bat ${{ env.build_mode }}
+
+### package all
+    - name: Package all
+      if: inputs.emu-variant == 'all'
+      shell: cmd
+      working-directory: ${{ github.workspace }}
+      run: |
+        package_win.bat release || exit /b %errorlevel%
+        package_win.bat debug || exit /b %errorlevel%
 
 ### upload artifact/package to github Actions (release mode)
-    - name: Upload build package (release)
+    - name: Upload build package
       uses: actions/upload-artifact@v4
       with:
         name: "build-win-release-${{ github.sha }}"
-        path: "${{ env.PACKAGE_BASE_DIR }}/release/"
+        path: "${{ env.PACKAGE_BASE_DIR }}/"
         if-no-files-found: 'error'
         compression-level: 9
         retention-days: 1
-    
-### build (debug mode)
-    - name: Build debug mode
-      shell: cmd
-      working-directory: ${{ github.workspace }}
-      run: build_win.bat -verbose debug +build_str ${{ github.sha }} +exclient-extra-32 +exclient-extra-64 +lib-gameoverlay-32 +lib-gameoverlay-64
-
-### package (debug mode)
-    - name: Package build (debug)
-      shell: cmd
-      working-directory: ${{ github.workspace }}
-      run: package_win.bat debug
-
-### upload artifact/package to github Actions (debug mode)
-    - name: Upload build package (debug)
-      uses: actions/upload-artifact@v4
-      with:
-        name: "build-win-debug-${{ github.sha }}"
-        path: "${{ env.PACKAGE_BASE_DIR }}/debug/"
-        if-no-files-found: 'error'
-        compression-level: 9
-        retention-days: 1
-    
-### release (debug + release modes) if this is a tag push
-    - name: Release
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: softprops/action-gh-release@v1
-      with:
-        files: "${{ env.PACKAGE_BASE_DIR }}/**/*"
-    

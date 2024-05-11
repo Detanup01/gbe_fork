@@ -17,24 +17,24 @@ for %%A in (
     )
 )
 
-set /a BUILD_LIB32=1
-set /a BUILD_LIB64=1
+set /a BUILD_LIB32=0
+set /a BUILD_LIB64=0
 
-set /a BUILD_EXP_LIB32=1
-set /a BUILD_EXP_LIB64=1
-set /a BUILD_EXP_CLIENT32=1
-set /a BUILD_EXP_CLIENT64=1
+set /a BUILD_EXP_LIB32=0
+set /a BUILD_EXP_LIB64=0
+set /a BUILD_EXP_CLIENT32=0
+set /a BUILD_EXP_CLIENT64=0
 
-set /a BUILD_EXPCLIENT32=1
-set /a BUILD_EXPCLIENT64=1
-set /a BUILD_EXPCLIENT_LDR_32=1
-set /a BUILD_EXPCLIENT_LDR_64=1
+set /a BUILD_EXPCLIENT32=0
+set /a BUILD_EXPCLIENT64=0
+set /a BUILD_EXPCLIENT_LDR_32=0
+set /a BUILD_EXPCLIENT_LDR_64=0
 
 set /a BUILD_EXPCLIENT_EXTRA_32=0
 set /a BUILD_EXPCLIENT_EXTRA_64=0
 
-set /a BUILD_TOOL_FIND_ITFS=1
-set /a BUILD_TOOL_LOBBY=1
+set /a BUILD_TOOL_FIND_ITFS=0
+set /a BUILD_TOOL_LOBBY=0
 
 set /a BUILD_LIB_NET_SOCKETS_32=0
 set /a BUILD_LIB_NET_SOCKETS_64=0
@@ -58,34 +58,34 @@ set /a VERBOSE=0
 :args_loop
   if "%~1"=="" (
     goto :args_loop_end
-  ) else if "%~1"=="-lib-32" (
-    set /a BUILD_LIB32=0
-  ) else if "%~1"=="-lib-64" (
-    set /a BUILD_LIB64=0
-  ) else if "%~1"=="-ex-lib-32" (
-    set /a BUILD_EXP_LIB32=0
-  ) else if "%~1"=="-ex-lib-64" (
-    set /a BUILD_EXP_LIB64=0
-  ) else if "%~1"=="-ex-client-32" (
-    set /a BUILD_EXP_CLIENT32=0
-  ) else if "%~1"=="-ex-client-64" (
-    set /a BUILD_EXP_CLIENT64=0
-  ) else if "%~1"=="-exclient-32" (
-    set /a BUILD_EXPCLIENT32=0
-  ) else if "%~1"=="-exclient-64" (
-    set /a BUILD_EXPCLIENT64=0
-  ) else if "%~1"=="-exclient-ldr-32" (
-    set /a BUILD_EXPCLIENT_LDR_32=0
-  ) else if "%~1"=="-exclient-ldr-64" (
-    set /a BUILD_EXPCLIENT_LDR_64=0
+  ) else if "%~1"=="+lib-32" (
+    set /a BUILD_LIB32=1
+  ) else if "%~1"=="+lib-64" (
+    set /a BUILD_LIB64=1
+  ) else if "%~1"=="+ex-lib-32" (
+    set /a BUILD_EXP_LIB32=1
+  ) else if "%~1"=="+ex-lib-64" (
+    set /a BUILD_EXP_LIB64=1
+  ) else if "%~1"=="+ex-client-32" (
+    set /a BUILD_EXP_CLIENT32=1
+  ) else if "%~1"=="+ex-client-64" (
+    set /a BUILD_EXP_CLIENT64=1
+  ) else if "%~1"=="+exclient-32" (
+    set /a BUILD_EXPCLIENT32=1
+  ) else if "%~1"=="+exclient-64" (
+    set /a BUILD_EXPCLIENT64=1
+  ) else if "%~1"=="+exclient-ldr-32" (
+    set /a BUILD_EXPCLIENT_LDR_32=1
+  ) else if "%~1"=="+exclient-ldr-64" (
+    set /a BUILD_EXPCLIENT_LDR_64=1
   ) else if "%~1"=="+exclient-extra-32" (
     set /a BUILD_EXPCLIENT_EXTRA_32=1
   ) else if "%~1"=="+exclient-extra-64" (
     set /a BUILD_EXPCLIENT_EXTRA_64=1
-  ) else if "%~1"=="-tool-itf" (
-    set /a BUILD_TOOL_FIND_ITFS=0
-  ) else if "%~1"=="-tool-lobby" (
-    set /a BUILD_TOOL_LOBBY=0
+  ) else if "%~1"=="+tool-itf" (
+    set /a BUILD_TOOL_FIND_ITFS=1
+  ) else if "%~1"=="+tool-lobby" (
+    set /a BUILD_TOOL_LOBBY=1
   ) else if "%~1"=="+lib-netsockets-32" (
     set /a BUILD_LIB_NET_SOCKETS_32=1
   ) else if "%~1"=="+lib-netsockets-64" (
