@@ -65,7 +65,7 @@ last_code=0
 echo // installing required packages
 
 all_packages=(
-  # "binutils" # (optional) contains the tool 'readelf' mainly, and other usefull binary stuff
+  "binutils" # (optional) contains the tool 'readelf' mainly, and other usefull binary stuff
   "coreutils" # echo, printf, etc...
   "gcc@14"
   "llvm@14"
@@ -87,10 +87,8 @@ if [[ "$INSTALL_PACKAGES" -ne 0 ]]; then
   
   export PATH="/usr/local/bin:$PATH"
   export PATH="/usr/local/opt/llvm@14/bin:$PATH"
+  # export PATH="/usr/local/opt/llvm/bin:$PATH"
   
-  # TODO this causes problems with mbedtls
-  brew uninstall binutils
-
 else
   echo "Package installation skipped, please be sure the follow packages correspond to your distro is installed."
   echo "${all_packages[*]}"
@@ -297,6 +295,10 @@ pushd "$deps_dir/mbedtls"
 # https://en.wikipedia.org/wiki/SSE2
 
 mbedtls_common_defs="-DUSE_STATIC_MBEDTLS_LIBRARY=ON -DUSE_SHARED_MBEDTLS_LIBRARY=OFF -DENABLE_TESTING=OFF -DENABLE_PROGRAMS=OFF -DLINK_WITH_PTHREAD=ON"
+
+# "-no_warning_for_no_symbols" fails on clang
+sed -i '' 's/<CMAKE_RANLIB> -no_warning_for_no_symbols -c/<CMAKE_RANLIB> /' 'library/CMakeLists.txt'
+sed -i '' 's/RLFLAGS = -no_warning_for_no_symbols -c/RLFLAGS = /' 'library/Makefile'
 
 eval $recreate_64
 eval $cmake_gen64 $mbedtls_common_defs
