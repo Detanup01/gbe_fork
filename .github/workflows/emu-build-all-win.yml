@@ -13,13 +13,13 @@ jobs:
   deps:
     name: Restore or build deps
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/deps-win.yml
+    uses: ./.github/workflows/emu-deps-win.yml
 
   emu-regular-x32-release:
     name: Regular x32 (release)
     needs: [ deps ]
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/build-emu-variant-win.yml
+    uses: ./.github/workflows/emu-build-variant-win.yml
     with:
       emu-variant: regular
       x32: true
@@ -29,7 +29,7 @@ jobs:
     name: Regular x32 (debug)
     needs: [ deps ]
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/build-emu-variant-win.yml
+    uses: ./.github/workflows/emu-build-variant-win.yml
     with:
       emu-variant: regular
       x32: true
@@ -39,7 +39,7 @@ jobs:
     name: Experimental x32 (release)
     needs: [ deps ]
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/build-emu-variant-win.yml
+    uses: ./.github/workflows/emu-build-variant-win.yml
     with:
       emu-variant: exp
       x32: true
@@ -49,7 +49,7 @@ jobs:
     name: Experimental x32 (debug)
     needs: [ deps ]
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/build-emu-variant-win.yml
+    uses: ./.github/workflows/emu-build-variant-win.yml
     with:
       emu-variant: exp
       x32: true
@@ -59,7 +59,7 @@ jobs:
     name: Client x32 (release)
     needs: [ deps ]
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/build-emu-variant-win.yml
+    uses: ./.github/workflows/emu-build-variant-win.yml
     with:
       emu-variant: client
       x32: true
@@ -69,7 +69,7 @@ jobs:
     name: Client x32 (debug)
     needs: [ deps ]
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/build-emu-variant-win.yml
+    uses: ./.github/workflows/emu-build-variant-win.yml
     with:
       emu-variant: client
       x32: true
@@ -81,7 +81,7 @@ jobs:
     name: Regular x64 (release)
     needs: [ deps ]
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/build-emu-variant-win.yml
+    uses: ./.github/workflows/emu-build-variant-win.yml
     with:
       emu-variant: regular
       x32: false
@@ -91,7 +91,7 @@ jobs:
     name: Regular x64 (debug)
     needs: [ deps ]
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/build-emu-variant-win.yml
+    uses: ./.github/workflows/emu-build-variant-win.yml
     with:
       emu-variant: regular
       x32: false
@@ -101,7 +101,7 @@ jobs:
     name: Experimental x64 (release)
     needs: [ deps ]
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/build-emu-variant-win.yml
+    uses: ./.github/workflows/emu-build-variant-win.yml
     with:
       emu-variant: exp
       x32: false
@@ -111,7 +111,7 @@ jobs:
     name: Experimental x64 (debug)
     needs: [ deps ]
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/build-emu-variant-win.yml
+    uses: ./.github/workflows/emu-build-variant-win.yml
     with:
       emu-variant: exp
       x32: false
@@ -121,7 +121,7 @@ jobs:
     name: Client x64 (release)
     needs: [ deps ]
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/build-emu-variant-win.yml
+    uses: ./.github/workflows/emu-build-variant-win.yml
     with:
       emu-variant: client
       x32: false
@@ -131,7 +131,7 @@ jobs:
     name: Client x64 (debug)
     needs: [ deps ]
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/build-emu-variant-win.yml
+    uses: ./.github/workflows/emu-build-variant-win.yml
     with:
       emu-variant: client
       x32: false
@@ -143,7 +143,7 @@ jobs:
     name: Tools (release)
     needs: [ deps ]
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/build-emu-variant-win.yml
+    uses: ./.github/workflows/emu-build-variant-win.yml
     with:
       emu-variant: tools
       debug: false
@@ -152,7 +152,7 @@ jobs:
     name: Tools (debug)
     needs: [ deps ]
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/build-emu-variant-win.yml
+    uses: ./.github/workflows/emu-build-variant-win.yml
     with:
       emu-variant: tools
       debug: true

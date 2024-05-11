@@ -1,4 +1,4 @@
-name: Emu final release (Windows)
+name: Prepare release
 
 on:
   push:
@@ -19,10 +19,10 @@ jobs:
   emu-win-all:
     name: Emu win all
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/build-emu-all-win.yml
+    uses: ./.github/workflows/emu-build-all-win.yml
 
       
-  emu-win-dl:
+  emu-win-prep:
     needs: [ emu-win-all ]
     runs-on: windows-2022
     steps:

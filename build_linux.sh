@@ -87,7 +87,7 @@ for (( i=1; i<=$#; i++ )); do
     BUILD_TOOL_FIND_ITFS64=1
   elif [[ "$var" = "+tool-lobby-32" ]]; then
     BUILD_TOOL_LOBBY32=1
-  elif [[ "$var" = "vtool-lobby-64" ]]; then
+  elif [[ "$var" = "+tool-lobby-64" ]]; then
     BUILD_TOOL_LOBBY64=1
   elif [[ "$var" = "+lib-netsockets-32" ]]; then
     BUILD_LIB_NET_SOCKETS_32=1
@@ -664,6 +664,7 @@ cleanup
 # copy configs + examples
 if [[ $last_code = 0 ]]; then
   echo "// copying readmes + files examples"
+  mkdir -p "$build_root_dir/"
   cp -f -r "post_build/steam_settings.EXAMPLE/" "$build_root_dir/"
   cp -f "post_build/README.release.md" "$build_root_dir/"
   cp -f "CHANGELOG.md" "$build_root_dir/"
@@ -671,9 +672,11 @@ if [[ $last_code = 0 ]]; then
     cp -f "post_build/README.debug.md" "$build_root_dir/"
   fi
   if [[ -d "$build_root_tools/find_interfaces" ]]; then
+    mkdir -p "$build_root_tools/find_interfaces/"
     cp -f "post_build/README.find_interfaces.md" "$build_root_tools/find_interfaces/"
   fi
   if [[ -d "$build_root_tools/lobby_connect" ]]; then
+    mkdir -p "$build_root_tools/lobby_connect/"
     cp -f "post_build/README.lobby_connect.md" "$build_root_tools/lobby_connect/"
   fi
 else

@@ -1,4 +1,4 @@
-name: Third-party dependencies (Windows)
+name: Emu third-party dependencies (Windows)
 
 on:
   workflow_call:
@@ -17,7 +17,6 @@ env:
   THIRD_PARTY_BASE_DIR: 'third-party'
 
 jobs:
-  # this helps in manual runs, if build fails, then deps are saved
   deps-build:
     runs-on: windows-2022
     if: ${{ !cancelled() }}

@@ -223,15 +223,15 @@ Arguments you can pass to this script:
 
 >>>>>>>>>  ___
 
-* `+exp-lib-32`: build experimental 32-bit `libsteam_api.so`
-* `+exp-lib-64`: build experimental 64-bit `libsteam_api.so`
-* `+exp-client-32`: build experimental steam client 64-bit `steamclient.so`
-* `+exp-client-64`: build experimental steam client 64-bit `steamclient.so`
+* `+client-32`: build steam client 32-bit `steamclient.so`
+* `+client-64`: build steam client 64-bit `steamclient.so`
 
 >>>>>>>>>  ___
 
-* `+client-32`: build steam client 32-bit `steamclient.so`
-* `+client-64`: build steam client 64-bit `steamclient.so`
+* `+exp-lib-32`: build experimental 32-bit `libsteam_api.so`
+* `+exp-lib-64`: build experimental 64-bit `libsteam_api.so`
+* `+exp-client-32`: build experimental steam client 32-bit `steamclient.so`
+* `+exp-client-64`: build experimental steam client 64-bit `steamclient.so`
 
 >>>>>>>>>  ___
 

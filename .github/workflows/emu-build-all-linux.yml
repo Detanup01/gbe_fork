@@ -1,0 +1,138 @@
+name: Build all emu variants (Linux)
+
+on:
+  workflow_call:
+    # needed since it allows this to become a reusable workflow
+  workflow_dispatch:
+    # allows manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  deps:
+    name: Restore or build deps
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/emu-deps-linux.yml
+
+  emu-regular-x32-release:
+    name: Regular x32 (release)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/emu-build-variant-linux.yml
+    with:
+      emu-variant: regular
+      x32: true
+      debug: false
+
+  emu-regular-x32-debug:
+    name: Regular x32 (debug)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/emu-build-variant-linux.yml
+    with:
+      emu-variant: regular
+      x32: true
+      debug: true
+
+  emu-exp-x32-release:
+    name: Experimental x32 (release)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/emu-build-variant-linux.yml
+    with:
+      emu-variant: exp
+      x32: true
+      debug: false
+
+  emu-exp-x32-debug:
+    name: Experimental x32 (debug)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/emu-build-variant-linux.yml
+    with:
+      emu-variant: exp
+      x32: true
+      debug: true
+
+  tools-x32-release:
+    name: Tools x32 (release)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/emu-build-variant-linux.yml
+    with:
+      emu-variant: tools
+      x32: true
+      debug: false
+
+  tools-x32-debug:
+    name: Tools x32 (debug)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/emu-build-variant-linux.yml
+    with:
+      emu-variant: tools
+      x32: true
+      debug: true
+
+
+
+  emu-regular-x64-release:
+    name: Regular x64 (release)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/emu-build-variant-linux.yml
+    with:
+      emu-variant: regular
+      x32: false
+      debug: false
+
+  emu-regular-x64-debug:
+    name: Regular x64 (debug)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/emu-build-variant-linux.yml
+    with:
+      emu-variant: regular
+      x32: false
+      debug: true
+
+  emu-exp-x64-release:
+    name: Experimental x64 (release)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/emu-build-variant-linux.yml
+    with:
+      emu-variant: exp
+      x32: false
+      debug: false
+
+  emu-exp-x64-debug:
+    name: Experimental x64 (debug)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/emu-build-variant-linux.yml
+    with:
+      emu-variant: exp
+      x32: false
+      debug: true
+
+  tools-x64-release:
+    name: Tools x64 (release)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/emu-build-variant-linux.yml
+    with:
+      emu-variant: tools
+      x32: false
+      debug: false
+
+  tools-x64-debug:
+    name: Tools x64 (debug)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/emu-build-variant-linux.yml
+    with:
+      emu-variant: tools
+      x32: false
+      debug: true

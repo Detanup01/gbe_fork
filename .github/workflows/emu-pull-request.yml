@@ -1,4 +1,4 @@
-name: Emu pull request (Windows)
+name: Emu pull request
 
 on:
   pull_request:
@@ -13,7 +13,7 @@ on:
       # tools
       - 'tools/generate_emu_config/**'
       - 'tools/migrate_gse/**'
-      - 'tools/steamclient_loader/linux/**'
+      - 'tools/steamclient_loader/linux/**' # these are just scripts, not built
 
 permissions:
   contents: write
@@ -22,4 +22,9 @@ jobs:
   emu-win-all:
     name: Emu win all
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/build-emu-all-win.yml
+    uses: ./.github/workflows/emu-build-all-win.yml
+
+  emu-linux-all:
+    name: Emu linux all
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/emu-build-all-linux.yml
