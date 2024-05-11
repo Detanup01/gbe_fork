@@ -12,7 +12,6 @@ permissions:
   contents: write
 
 env:
-  PACKAGE_BASE_DIR: "build/package/win"
   THIRD_PARTY_BASE_DIR: 'third-party'
 
 jobs:
@@ -21,7 +20,11 @@ jobs:
     if: ${{ !cancelled() }}
     uses: ./.github/workflows/emu-build-all-win.yml
 
-      
+  gen_emu_script-win:
+    name: Gen emu config win
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/gen_emu_config-build-win.yml
+
   emu-win-prep:
     needs: [ emu-win-all ]
     runs-on: windows-2022
@@ -37,21 +40,21 @@ jobs:
 
       # we need branch because it has package scripts
       - name: Checkout branch
-        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
         uses: actions/checkout@v4
 
       - name: Clone third-party deps (deps/win)
-        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
         uses: actions/checkout@v4
         with:
           ref: 'third-party/deps/win'
           path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/win"
 
+## donwload artifacts
       - name: Download emu build artifacts (Win)
         uses: actions/download-artifact@v4
         with:
           # name: "emu-win-release"
           path: build/prep
+          pattern: emu-*
           merge-multiple: true
 
       - name: Extract all build artifacts (Win)
@@ -70,8 +73,8 @@ jobs:
       - name: Upload build package (release)
         uses: actions/upload-artifact@v4
         with:
-          name: "build-win-release-${{ github.sha }}"
-          path: "${{ env.PACKAGE_BASE_DIR }}/release/"
+          name: "build-win-release"
+          path: "build/package/win/release/"
           if-no-files-found: 'error'
           compression-level: 9
           retention-days: 1
@@ -86,11 +89,67 @@ jobs:
       - name: Upload build package (debug)
         uses: actions/upload-artifact@v4
         with:
-          name: "build-win-debug-${{ github.sha }}"
-          path: "${{ env.PACKAGE_BASE_DIR }}/debug/"
+          name: "build-win-debug"
+          path: "build/package/win/debug/"
           if-no-files-found: 'error'
           compression-level: 9
           retention-days: 1
+
+  gen_emu_script-win-prep:
+    needs: [ gen_emu_script-win ]
+    runs-on: windows-2022
+    steps:
+      # on Windows Git will auto change line ending to CRLF, not preferable
+      - name: Ensure LF line ending
+        shell: cmd
+        working-directory: ${{ github.workspace }}
+        run: |
+          git config --local core.autocrlf false
+          git config --system core.autocrlf false
+          git config --global core.autocrlf false
+
+      # we need branch because it has package scripts
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Clone third-party deps (deps/win)
+        uses: actions/checkout@v4
+        with:
+          ref: 'third-party/deps/win'
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/win"
+
+## donwload artifacts
+      - name: Download gen_emu_script build artifacts (Win)
+        uses: actions/download-artifact@v4
+        with:
+          # name: "emu-win-release"
+          path: build/prep
+          pattern: generate_emu_config-*
+          merge-multiple: true
+
+      - name: Extract all build artifacts (Win)
+        shell: cmd
+        working-directory: ${{ github.workspace }}
+        run: |
+          "${{env.THIRD_PARTY_BASE_DIR}}\deps\win\7za\7za.exe" x "build\prep\*.zip" -aos -o"tools\generate_emu_config\bin\win"
+
+### package
+      - name: Package generate_emu_config
+        shell: cmd
+        working-directory: "tools/generate_emu_config"
+        run: package_win.bat
+
+### upload artifact/package to github Actions
+      - name: Upload generate_emu_config package (release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: "generate_emu_config-win"
+          path: "generate_emu_config/bin/package/"
+          if-no-files-found: 'error'
+          compression-level: 9
+          retention-days: 1
+
+
 
 # ### release (debug + release modes)
 #       - name: Release
