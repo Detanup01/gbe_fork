@@ -1,0 +1,158 @@
+name: Build all emu variants (Windows)
+
+on:
+  workflow_call:
+    # needed since it allows this to become a reusable workflow
+  workflow_dispatch:
+    # allows manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  deps:
+    name: Restore or build deps
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/deps-win.yml
+
+  emu-regular-x32-release:
+    name: Regular x32 (release)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/build-emu-variant-win.yml
+    with:
+      emu-variant: regular
+      x32: true
+      debug: false
+
+  emu-regular-x32-debug:
+    name: Regular x32 (debug)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/build-emu-variant-win.yml
+    with:
+      emu-variant: regular
+      x32: true
+      debug: true
+
+  emu-exp-x32-release:
+    name: Experimental x32 (release)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/build-emu-variant-win.yml
+    with:
+      emu-variant: exp
+      x32: true
+      debug: false
+
+  emu-exp-x32-debug:
+    name: Experimental x32 (debug)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/build-emu-variant-win.yml
+    with:
+      emu-variant: exp
+      x32: true
+      debug: true
+
+  emu-client-x32-release:
+    name: Client x32 (release)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/build-emu-variant-win.yml
+    with:
+      emu-variant: client
+      x32: true
+      debug: false
+
+  emu-client-x32-debug:
+    name: Client x32 (debug)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/build-emu-variant-win.yml
+    with:
+      emu-variant: client
+      x32: true
+      debug: true
+
+
+
+  emu-regular-x64-release:
+    name: Regular x64 (release)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/build-emu-variant-win.yml
+    with:
+      emu-variant: regular
+      x32: false
+      debug: false
+
+  emu-regular-x64-debug:
+    name: Regular x64 (debug)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/build-emu-variant-win.yml
+    with:
+      emu-variant: regular
+      x32: false
+      debug: true
+
+  emu-exp-x64-release:
+    name: Experimental x64 (release)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/build-emu-variant-win.yml
+    with:
+      emu-variant: exp
+      x32: false
+      debug: false
+
+  emu-exp-x64-debug:
+    name: Experimental x64 (debug)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/build-emu-variant-win.yml
+    with:
+      emu-variant: exp
+      x32: false
+      debug: true
+
+  emu-client-x64-release:
+    name: Client x64 (release)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/build-emu-variant-win.yml
+    with:
+      emu-variant: client
+      x32: false
+      debug: false
+
+  emu-client-x64-debug:
+    name: Client x64 (debug)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/build-emu-variant-win.yml
+    with:
+      emu-variant: client
+      x32: false
+      debug: true
+
+
+
+  tools-release:
+    name: Tools (release)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/build-emu-variant-win.yml
+    with:
+      emu-variant: tools
+      debug: false
+
+  tools-debug:
+    name: Tools (debug)
+    needs: [ deps ]
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/build-emu-variant-win.yml
+    with:
+      emu-variant: tools
+      debug: true

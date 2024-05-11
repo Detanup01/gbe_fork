@@ -1,4 +1,4 @@
-name: Emu build 2 (Windows)
+name: Build emu variant (Windows)
 
 on:
   workflow_call:
@@ -10,31 +10,25 @@ on:
             exp: build the experimental version of the emu
             client: build the experimental steamclient version of the emu
             tools: build the tools only
-            all: build all variants
-        default: 'all'
-        required: false
+        required: true
         type: string
 
       x32:
         description: |
-          build architecture, unused when 'emu-variant' == 'all' or 'emu-variant' == 'tools'
+          build architecture, unused when 'emu-variant' == 'tools'
             true: x32
             false: x64
-        default: true
         required: false
         type: boolean
+        default: true
     
       debug:
         description: |
-          build mode, unused when 'emu-variant' == 'all'
+          build mode
             true: build in debug mode
             false: build in release mode
-        default: false
-        required: false
+        required: true
         type: boolean
-    
-  workflow_dispatch:
-    # allows manual trigger
 
 permissions:
   contents: write
@@ -43,19 +37,11 @@ env:
   DEPS_CACHE_KEY: emu-deps-win
   DEPS_CACHE_DIR: build/deps/win
   
-  PACKAGE_BASE_DIR: "build/package/win"
   THIRD_PARTY_BASE_DIR: 'third-party'
 
 jobs:
-  dependencies:
-    name: Restore or build deps
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/deps-win.yml
-
-
   build:
     runs-on: windows-2022
-    needs: [ dependencies ]
     if: ${{ !cancelled() }}
     steps:
 ### setup build vars
@@ -65,14 +51,6 @@ jobs:
         echo env file = "%GITHUB_ENV%"
         echo workspace = "${{ github.workspace }}"
         
-        set "build_mode="
-        if /i "${{ inputs.debug }}"=="true" (
-          set "build_mode=debug"
-        ) else (
-          set "build_mode=release"
-        )
-        >>"%GITHUB_ENV%" echo build_mode=%build_mode%
-
         set "arch="
         if /i "${{ inputs.x32 }}"=="true" (
           set "arch=32"
@@ -90,15 +68,19 @@ jobs:
           set "build_switches=+exclient-%arch% +exclient-ldr-%arch% +exclient-extra-%arch% +lib-gameoverlay-%arch%"
         ) else if "${{ inputs.emu-variant }}"=="tools" (
           set "build_switches=+tool-itf +tool-lobby"
-        ) else if "${{ inputs.emu-variant }}"=="all" (
-          set "build_switches=+lib-32 +lib-64 +ex-lib-32 +ex-lib-64 +ex-client-32 +ex-client-64 +exclient-32 +exclient-64 +exclient-ldr-32 +exclient-ldr-64 +tool-itf +tool-lobby +exclient-extra-32 +exclient-extra-64 +lib-gameoverlay-32 +lib-gameoverlay-64"
         ) else (
           1>&2 echo [X] invalid emu variant "${{ inputs.emu-variant }}"
           exit /b 1
         )
-        
-        echo final build switches %build_switches%
         >>"%GITHUB_ENV%" echo build_switches=%build_switches%
+
+        set "build_mode="
+        if /i "${{ inputs.debug }}"=="true" (
+          set "build_mode=debug"
+        ) else (
+          set "build_mode=release"
+        )
+        >>"%GITHUB_ENV%" echo build_mode=%build_mode%
 
 ### on Windows Git will auto change line ending to CRLF, not preferable
     - name: Ensure LF line ending
@@ -127,12 +109,6 @@ jobs:
         ref: 'third-party/common/win'
         path: "${{env.THIRD_PARTY_BASE_DIR}}/common/win"
 
-    - name: Clone third-party deps (deps/win)
-      uses: actions/checkout@v4
-      with:
-        ref: 'third-party/deps/win'
-        path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/win"
-
     - name: Clone third-party deps (build/win)
       uses: actions/checkout@v4
       with:
@@ -146,37 +122,12 @@ jobs:
       working-directory: ${{ github.workspace }}
       run: build_win.bat -verbose ${{ env.build_mode }} clean +build_str ${{ github.sha }} ${{ env.build_switches }}
 
-### build all
-    - name: Build all
-      if: inputs.emu-variant == 'all'
-      shell: cmd
-      working-directory: ${{ github.workspace }}
-      run: |
-        build_win.bat -verbose release clean +build_str ${{ github.sha }} ${{ env.build_switches }} || exit /b %errorlevel%
-        build_win.bat -verbose debug clean +build_str ${{ github.sha }} ${{ env.build_switches }} || exit /b %errorlevel%
-
-### package target(s)
-    - name: Package target(s)
-      if: inputs.emu-variant != 'all'
-      shell: cmd
-      working-directory: ${{ github.workspace }}
-      run: package_win.bat ${{ env.build_mode }}
-
-### package all
-    - name: Package all
-      if: inputs.emu-variant == 'all'
-      shell: cmd
-      working-directory: ${{ github.workspace }}
-      run: |
-        package_win.bat release || exit /b %errorlevel%
-        package_win.bat debug || exit /b %errorlevel%
-
-### upload artifact/package to github Actions
-    - name: Upload build package
+### upload artifact/package to github Actions (for targets)
+    - name: Upload build package (for targets)
       uses: actions/upload-artifact@v4
       with:
-        name: "win-${{ inputs.emu-variant }}-${{ env.build_arch }}-${{ env.build_mode }}-${{ github.sha }}"
-        path: "${{ env.PACKAGE_BASE_DIR }}/"
+        name: "emu-win-${{ inputs.emu-variant }}-${{ env.build_arch }}-${{ env.build_mode }}-${{ github.sha }}"
+        path: "build/win/"
         if-no-files-found: 'error'
         compression-level: 9
         retention-days: 1
