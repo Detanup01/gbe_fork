@@ -300,69 +300,27 @@ In your fork, open the `Settings` tab from the top, then:
 * *(Optional)* In the section `Artifact and log retention`, you can specify the amount of days to keep the build artifacts/archives.  
   It is recommended to set a reasonable number like 3-4 days, otherwise you may consume your packages storage if you use Github as a builder frequently, more details here: https://docs.github.com/en/get-started/learning-about-github/githubs-plans  
 
+### Manual trigger
+1. Go to the `Actions` tab in your fork
+2. Select the emu dependencies Workflow (ex: `Emu third-party dependencies (Windows) `) and run it on the **main** branch (ex: `dev`).  
+   Dependencies not created on the main branch won't be recognized by other branches or subsequent runs
+3. Select one of the Workflow scripts from the left side panel, for example `Build all emu variants (Windows)`
+3. On the top-right, select `Run workflow` -> select the desired branch (for example `dev`) -> press the button `Run workflow`
+4. When it's done, many packages (called build artifacts) will be created for that workflow.  
+   Make sure to select the workflow again to view its history, then select the last run at the very top to view its artifacts
+
 <br/>
 
 Important note:
 ---
 
-In any of the following trigger methods, when you run a workflow (build script), the dependencies will be cached to decrease the build times of the next triggers, and avoid unnecessary/wasteful build process.  
-
+When you build the dependencies workflows, they will be cached to decrease the build times of the next triggers and avoid unnecessary/wasteful build process.  
 This will cause a problem if at any time the third-party dependencies were updated, in that case you need to manually delete the cache, in your fork:
 1. Go to the `Actions` tab at the top
 2. Select `Caches` from the left side panel
 3. Delete the corresponding cache
 
 <br/>
-
-### Manual trigger
-1. Go to the `Actions` tab in your fork
-2. Select one of the Workflow scripts from the left side panel, for example `Emu build (Windows)`
-3. On the top-right, select `Run workflow` -> select the desired branch (for example `dev`) -> press the button `Run workflow`
-4. When it's done, a package (called build artifact) will be created for that workflow.  
-   Make sure to select the workflow again to view its history, then select the last run at the very top to view its artifacts
-
-### Automatic triggers
-The following are special branches, pushing any code to them will trigger the build Workflow scripts:  
-* `ci-build-emu-linux*`: any branch matching this pattern will trigger the **Linux** build of the emu  
-  Example of a valid branch name:  
-    - `ci-build-emu-linux`
-    - `ci-build-emu-linux-test1`
-    - `ci-build-emu-linux_trial`
-* `ci-build-emu-win*`: any branch matching this pattern will trigger the **Windows** build of the emu  
-  Example of a valid branch name:  
-    - `ci-build-emu-win`
-    - `ci-build-emu-win-test_x`
-    - `ci-build-emu-win_feature_y`
-
->>>>>>>>>  ___
-
-* `ci-build-gen-linux*`: any branch matching this pattern will trigger the **Linux** build of the script `generate_emu_config`  
-  Example of a valid branch name:  
-    - `ci-build-gen-linux`
-    - `ci-build-gen-linux-test1`
-    - `ci-build-gen-linux_trial`
-* `ci-build-gen-win*`: any branch matching this pattern will trigger the **Windows** build of the script `generate_emu_config`  
-  Example of a valid branch name:  
-    - `ci-build-gen-win`
-    - `ci-build-gen-win-test1`
-    - `ci-build-gen-win_trial`
-
->>>>>>>>>  ___
-
-* `ci-build-migrate-linux*`: any branch matching this pattern will trigger the **Linux** build of the script `migrate_gse`  
-  Example of a valid branch name:  
-    - `ci-build-migrate-linux`
-    - `ci-build-migrate-linux-test1`
-    - `ci-build-migrate-linux_trial`
-* `ci-build-migrate-win*`: any branch matching this pattern will trigger the **Windows** build of the script `migrate_gse`  
-  Example of a valid branch name:  
-    - `ci-build-migrate-win`
-    - `ci-build-migrate-win-test1`
-    - `ci-build-migrate-win_trial`
-
->>>>>>>>>  ___
-
-* `ci-build-all`: pushing code to this exact branch will trigger all builds
 
 ---
 
