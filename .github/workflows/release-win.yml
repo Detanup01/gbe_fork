@@ -1,0 +1,130 @@
+name: Emu final release (Windows)
+
+on:
+  push:
+    tags:        
+      - release*
+    
+  workflow_dispatch:
+    # allows manual trigger
+
+permissions:
+  contents: write
+
+env:
+  PACKAGE_BASE_DIR: "build/package/win"
+  THIRD_PARTY_BASE_DIR: 'third-party'
+
+jobs:
+  emu-win-all:
+    name: Emu win all
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/build-emu-all-win.yml
+
+      
+  emu-win-dl:
+    needs: [ emu-win-all ]
+    runs-on: windows-2022
+    steps:
+      # on Windows Git will auto change line ending to CRLF, not preferable
+      - name: Ensure LF line ending
+        shell: cmd
+        working-directory: ${{ github.workspace }}
+        run: |
+          git config --local core.autocrlf false
+          git config --system core.autocrlf false
+          git config --global core.autocrlf false
+
+      # we need branch because it has package scripts
+      - name: Checkout branch
+        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
+
+      - name: Clone third-party deps (deps/win)
+        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: 'third-party/deps/win'
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/win"
+
+      - name: Download emu build artifacts (Win)
+        uses: actions/download-artifact@v4
+        with:
+          # name: "emu-win-release"
+          path: build/prep
+          merge-multiple: true
+
+      - name: Extract all build artifacts (Win)
+        shell: cmd
+        working-directory: ${{ github.workspace }}
+        run: |
+          "${{env.THIRD_PARTY_BASE_DIR}}\deps\win\7za\7za.exe" x "build\prep\*.zip" -aos -o"build\win"
+
+### package (release mode)
+      - name: Package build (release)
+        shell: cmd
+        working-directory: ${{ github.workspace }}
+        run: package_win.bat release
+
+### upload artifact/package to github Actions (release mode)
+      - name: Upload build package (release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: "build-win-release-${{ github.sha }}"
+          path: "${{ env.PACKAGE_BASE_DIR }}/release/"
+          if-no-files-found: 'error'
+          compression-level: 9
+          retention-days: 1
+
+### package (debug mode)
+      - name: Package build (debug)
+        shell: cmd
+        working-directory: ${{ github.workspace }}
+        run: package_win.bat debug
+
+### upload artifact/package to github Actions (debug mode)
+      - name: Upload build package (debug)
+        uses: actions/upload-artifact@v4
+        with:
+          name: "build-win-debug-${{ github.sha }}"
+          path: "${{ env.PACKAGE_BASE_DIR }}/debug/"
+          if-no-files-found: 'error'
+          compression-level: 9
+          retention-days: 1
+
+# ### release (debug + release modes)
+#       - name: Release
+#         uses: softprops/action-gh-release@v1
+#         with:
+#           files: "${{ env.PACKAGE_BASE_DIR }}/**/*"
+      
+
+
+
+
+#   emu-win-linux:
+#     needs: [ emu-win-all ]
+#     runs-on: ubuntu-22.04
+#     steps:
+#       - name: Download emu build artifacts (Win)
+#         uses: actions/download-artifact@v4
+#         with:
+#           # name: "emu-win-release"
+#           path: build/prep
+#           merge-multiple: true
+
+# ### fix folder permissions! not sure why this fails
+#       # nested subdirs "build/linux/release" cause permission problems
+#       - name: Give all permissions to repo folder
+#         shell: bash
+#         working-directory: ${{ github.workspace }}
+#         run:  sudo chmod -R 777 "${{ github.workspace }}"
+
+#       - name: Extract all build artifacts
+#         shell: cmd
+#         working-directory: ${{ github.workspace }}
+#         run: |
+#           sudo apt install unzip -y || exit
+#           sudo apt install tar -y || exit 1
+#           unzip -q -b -C -DD -n 'build/prep/*.zip' -d 'build/win/' || exit
+#           tar -C "$script_dir/build/win" -c -j -vf "build/package/linux" "$1"
