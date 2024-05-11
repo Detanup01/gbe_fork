@@ -45,19 +45,19 @@ jobs:
     - name: Install dependencies
       shell: bash
       working-directory: "${{ env.SCRIPT_BASE_DIR }}"
-      run: sudo chmod 77 recreate_venv_linux.sh && sudo ./recreate_venv_linux.sh
+      run: sudo chmod 777 recreate_venv_linux.sh && sudo ./recreate_venv_linux.sh
 
 # build
     - name: Rebuild
       shell: bash
       working-directory: "${{ env.SCRIPT_BASE_DIR }}"
-      run: sudo chmod 77 rebuild_linux.sh && sudo ./rebuild_linux.sh
+      run: sudo chmod 777 rebuild_linux.sh && sudo ./rebuild_linux.sh
 
 # package
     - name: Package build
       shell: bash
       working-directory: "${{ env.SCRIPT_BASE_DIR }}"
-      run: sudo chmod 77 package_linux.sh && sudo ./package_linux.sh
+      run: sudo chmod 777 package_linux.sh && sudo ./package_linux.sh
 
 # upload artifact
     - name: Upload build package

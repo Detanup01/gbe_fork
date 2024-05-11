@@ -33,13 +33,13 @@ jobs:
     - name: Install env
       shell: bash
       working-directory: "${{ env.SCRIPT_BASE_DIR }}"
-      run: sudo chmod 77 recreate_venv_linux.sh && sudo ./recreate_venv_linux.sh
+      run: sudo chmod 777 recreate_venv_linux.sh && sudo ./recreate_venv_linux.sh
 
 # build
     - name: Rebuild
       shell: bash
       working-directory: "${{ env.SCRIPT_BASE_DIR }}"
-      run: sudo chmod 77 rebuild_linux.sh && ./rebuild_linux.sh
+      run: sudo chmod 777 rebuild_linux.sh && ./rebuild_linux.sh
 
 # upload artifact
     - name: Upload build package
