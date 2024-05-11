@@ -121,7 +121,7 @@ jobs:
       if: inputs.emu-variant != 'all'
       shell: cmd
       working-directory: ${{ github.workspace }}
-      run: build_win.bat -verbose ${{ env.build_mode }} clean +build_str ${{ github.sha }} ${{ env.build_switches }}
+      run: build_win.bat -j 3 -verbose ${{ env.build_mode }} clean +build_str ${{ github.sha }} ${{ env.build_switches }}
 
 ### upload artifact/package to github Actions (for targets)
     - name: Upload build package (for targets)

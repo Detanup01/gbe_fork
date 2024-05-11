@@ -114,7 +114,7 @@ jobs:
     - name: Build target(s)
       shell: bash
       working-directory: ${{ github.workspace }}
-      run: "sudo chmod 777 build_linux.sh && ./build_linux.sh -verbose ${{ env.build_mode }} clean +build_str ${{ github.sha }} ${{ env.build_switches }}"
+      run: "sudo chmod 777 build_linux.sh && ./build_linux.sh -j 3 -verbose ${{ env.build_mode }} clean +build_str ${{ github.sha }} ${{ env.build_switches }}"
 
 ### upload artifact/package to github Actions (for targets)
     - name: Upload build package (for targets)
