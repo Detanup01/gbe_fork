@@ -20,7 +20,7 @@ on:
           build architecture, unused when 'emu-variant' == 'all' or 'emu-variant' == 'tools'
             true: x32
             false: x64
-        default: false
+        default: true
         required: false
         type: boolean
     
@@ -62,14 +62,16 @@ jobs:
     - name: Setup build vars
       shell: cmd
       run: |
-        echo env file = "${{ GITHUB_ENV }}"
+        echo env file = "%GITHUB_ENV%"
+        echo workspace = "${{ github.workspace }}"
         
+        set "build_mode="
         if /i "${{ inputs.debug }}"=="true" (
-          set "build_switches=%build_switches% debug"
-          >>"${{ GITHUB_ENV }}" echo build_mode=debug
+          set "build_mode=debug"
         ) else (
-          >>"${{ GITHUB_ENV }}" echo build_mode=release
+          set "build_mode=release"
         )
+        >>"%GITHUB_ENV%" echo build_mode=%build_mode%
 
         set "arch="
         if /i "${{ inputs.x32 }}"=="true" (
@@ -77,6 +79,7 @@ jobs:
         ) else (
           set "arch=64"
         )
+        >>"%GITHUB_ENV%" echo build_arch=%arch%
 
         set "build_switches="
         if "${{ inputs.emu-variant }}"=="regular" (
@@ -95,7 +98,7 @@ jobs:
         )
         
         echo final build switches %build_switches%
-        >>"${{ GITHUB_ENV }}" echo build_switches=%build_switches%
+        >>"%GITHUB_ENV%" echo build_switches=%build_switches%
 
 ### on Windows Git will auto change line ending to CRLF, not preferable
     - name: Ensure LF line ending
@@ -168,11 +171,11 @@ jobs:
         package_win.bat release || exit /b %errorlevel%
         package_win.bat debug || exit /b %errorlevel%
 
-### upload artifact/package to github Actions (release mode)
+### upload artifact/package to github Actions
     - name: Upload build package
       uses: actions/upload-artifact@v4
       with:
-        name: "build-win-release-${{ github.sha }}"
+        name: "win-${{ inputs.emu-variant }}-${{ env.build_arch }}-${{ env.build_mode }}-${{ github.sha }}"
         path: "${{ env.PACKAGE_BASE_DIR }}/"
         if-no-files-found: 'error'
         compression-level: 9

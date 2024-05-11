@@ -18,7 +18,7 @@ env:
 
 jobs:
   # this helps in manual runs, if build fails, then deps are saved
-  build:
+  deps-build:
     runs-on: windows-2022
     if: ${{ !cancelled() }}
     steps:
