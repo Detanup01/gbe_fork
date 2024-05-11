@@ -1,4 +1,4 @@
-name: Emu pull request
+name: Gen emu config pull request
 
 on:
   pull_request:

@@ -20,11 +20,6 @@ jobs:
     if: ${{ !cancelled() }}
     uses: ./.github/workflows/emu-build-all-win.yml
 
-  gen_emu_script-win:
-    name: Gen emu config win
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/gen_emu_config-build-win.yml
-
   emu-win-prep:
     needs: [ emu-win-all ]
     runs-on: windows-2022
@@ -94,6 +89,11 @@ jobs:
           if-no-files-found: 'error'
           compression-level: 9
           retention-days: 1
+
+  gen_emu_script-win:
+    name: Gen emu config win
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/gen_emu_config-build-win.yml
 
   gen_emu_script-win-prep:
     needs: [ gen_emu_script-win ]

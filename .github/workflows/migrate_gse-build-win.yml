@@ -1,20 +1,8 @@
-name: Migrate GSE script (Windows)
+name: Build migrate_gse script (Windows)
 
 on:
-  push:
-    branches: [ 
-      "ci-build-migrate-win*",
-      "ci-build-all"
-    ]
-    tags:        
-      - release*
-    
-  pull_request:
-    branches: [ "dev" ]
-    paths:
-      - '!**/*.md'
-      - 'tools/migrate_gse/**'
-    
+  workflow_call:
+    # needed since it allows this to become a reusable workflow
   workflow_dispatch:
     # allows manual trigger
 
@@ -24,11 +12,10 @@ permissions:
 env:
   ARTIFACT_NAME: "migrate_gse-win-${{ github.sha }}"
   SCRIPT_BASE_DIR: "tools/migrate_gse"
-  PACKAGE_BASE_DIR: "tools/migrate_gse/bin/package/win"
+  PACKAGE_BASE_DIR: "tools/migrate_gse/bin/win"
   
   THIRD_PARTY_BASE_DIR: 'third-party'
   
-
 jobs:
   build:
     runs-on: windows-2022
@@ -43,20 +30,14 @@ jobs:
       uses: actions/checkout@v4
     
 ## extra helpers/tools, these are not built inside the deps build dir
-    - name: Clone third-party deps (deps/win)
-      uses: actions/checkout@v4
-      with:
-        ref: 'third-party/deps/win'
-        path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/win"
-
     - name: Clone third-party deps (build/win)
       uses: actions/checkout@v4
       with:
         ref: 'third-party/build/win'
         path: "${{env.THIRD_PARTY_BASE_DIR}}/build/win"
 
-# deps
-    - name: Install dependencies
+# env
+    - name: Install env
       shell: cmd
       working-directory: "${{ env.SCRIPT_BASE_DIR }}"
       run: recreate_venv_win.bat
@@ -67,12 +48,6 @@ jobs:
       working-directory: "${{ env.SCRIPT_BASE_DIR }}"
       run: rebuild_win.bat
 
-# package
-    - name: Package build
-      shell: cmd
-      working-directory: "${{ env.SCRIPT_BASE_DIR }}"
-      run: package_win.bat
-
 # upload artifact
     - name: Upload build package
       uses: actions/upload-artifact@v4
@@ -82,11 +57,3 @@ jobs:
         if-no-files-found: 'error'
         compression-level: 9
         retention-days: 1
-
-# release tag
-    - name: Release
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: softprops/action-gh-release@v1
-      with:
-        files: "${{ env.PACKAGE_BASE_DIR }}/**/*"
-    

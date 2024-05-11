@@ -1,20 +1,8 @@
-name: Migrate GSE script (Linux)
+name: Build migrate_gse script (Linux)
 
 on:
-  push:
-    branches: [ 
-      "ci-build-migrate-linux*",
-      "ci-build-all"
-    ]
-    tags:        
-      - release*
-    
-  pull_request:
-    branches: [ "dev" ]
-    paths:
-      - '!**/*.md'
-      - 'tools/migrate_gse/**'
-    
+  workflow_call:
+    # needed since it allows this to become a reusable workflow
   workflow_dispatch:
     # allows manual trigger
 
@@ -24,7 +12,7 @@ permissions:
 env:
   ARTIFACT_NAME: "migrate_gse-linux-${{ github.sha }}"
   SCRIPT_BASE_DIR: "tools/migrate_gse"
-  PACKAGE_BASE_DIR: "tools/migrate_gse/bin/package/linux"
+  PACKAGE_BASE_DIR: "tools/migrate_gse/bin/linux"
 
 jobs:
   build:
@@ -41,8 +29,8 @@ jobs:
       working-directory: ${{ github.workspace }}
       run:  sudo chmod -R 777 "${{ github.workspace }}"
 
-# deps
-    - name: Install dependencies
+# env
+    - name: Install env
       shell: bash
       working-directory: "${{ env.SCRIPT_BASE_DIR }}"
       run: sudo chmod 777 recreate_venv_linux.sh && sudo ./recreate_venv_linux.sh
@@ -51,13 +39,7 @@ jobs:
     - name: Rebuild
       shell: bash
       working-directory: "${{ env.SCRIPT_BASE_DIR }}"
-      run: sudo chmod 777 rebuild_linux.sh && sudo ./rebuild_linux.sh
-
-# package
-    - name: Package build
-      shell: bash
-      working-directory: "${{ env.SCRIPT_BASE_DIR }}"
-      run: sudo chmod 777 package_linux.sh && sudo ./package_linux.sh
+      run: sudo chmod 777 rebuild_linux.sh && ./rebuild_linux.sh
 
 # upload artifact
     - name: Upload build package
@@ -68,11 +50,3 @@ jobs:
         if-no-files-found: 'error'
         compression-level: 9
         retention-days: 1
-
-# release tag
-    - name: Release
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: softprops/action-gh-release@v1
-      with:
-        files: "${{ env.PACKAGE_BASE_DIR }}/**/*"
-    

@@ -1,0 +1,22 @@
+name: Migrate GSE pull request
+
+on:
+  pull_request:
+    branches: [ "dev" ]
+    paths:
+      - '!**/*.md'
+      - 'tools/migrate_gse/**'
+
+permissions:
+  contents: write
+
+jobs:
+  script-win:
+    name: Migrate GSE win
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/migrate_gse-build-win.yml
+
+  script-linux:
+    name: Migrate GSE linux
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/migrate_gse-build-linux.yml

@@ -36,8 +36,8 @@ jobs:
         ref: 'third-party/build/win'
         path: "${{env.THIRD_PARTY_BASE_DIR}}/build/win"
 
-# deps
-    - name: Install dependencies
+# env
+    - name: Install env
       shell: cmd
       working-directory: "${{ env.SCRIPT_BASE_DIR }}"
       run: recreate_venv_win.bat
