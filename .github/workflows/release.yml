@@ -4,9 +4,6 @@ on:
   push:
     tags:        
       - release*
-    
-  workflow_dispatch:
-    # allows manual trigger
 
 permissions:
   contents: write
@@ -47,16 +44,9 @@ jobs:
       - name: Download emu build artifacts (Win)
         uses: actions/download-artifact@v4
         with:
-          # name: "emu-win-release"
-          path: build/prep
-          pattern: emu-*
+          path: build/win
+          pattern: emu-win-*-${{ github.sha }}
           merge-multiple: true
-
-      - name: Extract all build artifacts (Win)
-        shell: cmd
-        working-directory: ${{ github.workspace }}
-        run: |
-          "${{env.THIRD_PARTY_BASE_DIR}}\deps\win\7za\7za.exe" x "build\prep\*.zip" -aos -o"build\win"
 
 ### package (release mode)
       - name: Package build (release)
@@ -64,31 +54,75 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: package_win.bat release
 
-### upload artifact/package to github Actions (release mode)
-      - name: Upload build package (release)
-        uses: actions/upload-artifact@v4
-        with:
-          name: "build-win-release"
-          path: "build/package/win/release/"
-          if-no-files-found: 'error'
-          compression-level: 9
-          retention-days: 1
-
 ### package (debug mode)
       - name: Package build (debug)
         shell: cmd
         working-directory: ${{ github.workspace }}
         run: package_win.bat debug
 
-### upload artifact/package to github Actions (debug mode)
-      - name: Upload build package (debug)
-        uses: actions/upload-artifact@v4
+### release (debug + release modes) if this is a tag push
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
         with:
-          name: "build-win-debug"
-          path: "build/package/win/debug/"
-          if-no-files-found: 'error'
-          compression-level: 9
-          retention-days: 1
+          files: "build/package/win/**/*"
+
+
+
+  emu-linux-all:
+    name: Emu linux all
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/emu-build-all-linux.yml
+
+  emu-linux-prep:
+    needs: [ emu-linux-all ]
+    runs-on: ubuntu-22.04
+    steps:
+      # we need branch because it has package scripts
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Clone third-party deps (deps/linux)
+        uses: actions/checkout@v4
+        with:
+          ref: 'third-party/deps/linux'
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/linux"
+
+## donwload artifacts
+      - name: Download emu build artifacts (linux)
+        uses: actions/download-artifact@v4
+        with:
+          path: build/linux
+          pattern: emu-linux-*-${{ github.sha }}
+          merge-multiple: true
+
+### fix folder permissions! not sure why this fails
+      # nested subdirs "build/linux/release" cause permission problems
+      - name: Give all permissions to repo folder
+        shell: bash
+        working-directory: ${{ github.workspace }}
+        run: sudo chmod -R 777 "${{ github.workspace }}" && sudo chmod 777 package_linux.sh
+
+### package (release mode)
+      - name: Package build (release)
+        shell: bash
+        working-directory: ${{ github.workspace }}
+        run: sudo ./package_linux.sh release
+
+### package (debug mode)
+      - name: Package build (debug)
+        shell: bash
+        working-directory: ${{ github.workspace }}
+        run: sudo ./package_linux.sh debug
+
+### release (debug + release modes) if this is a tag push
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "build/package/linux/**/*"
+
+
 
   gen_emu_script-win:
     name: Gen emu config win
@@ -119,71 +153,162 @@ jobs:
           path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/win"
 
 ## donwload artifacts
-      - name: Download gen_emu_script build artifacts (Win)
+      - name: Download script build artifacts (Win)
         uses: actions/download-artifact@v4
         with:
-          # name: "emu-win-release"
-          path: build/prep
-          pattern: generate_emu_config-*
+          path: tools/generate_emu_config/bin/win
+          pattern: generate_emu_config-win-*
           merge-multiple: true
 
-      - name: Extract all build artifacts (Win)
-        shell: cmd
-        working-directory: ${{ github.workspace }}
-        run: |
-          "${{env.THIRD_PARTY_BASE_DIR}}\deps\win\7za\7za.exe" x "build\prep\*.zip" -aos -o"tools\generate_emu_config\bin\win"
-
 ### package
-      - name: Package generate_emu_config
+      - name: Package script
         shell: cmd
         working-directory: "tools/generate_emu_config"
         run: package_win.bat
 
-### upload artifact/package to github Actions
-      - name: Upload generate_emu_config package (release)
-        uses: actions/upload-artifact@v4
+# release tag
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
         with:
-          name: "generate_emu_config-win"
-          path: "generate_emu_config/bin/package/"
-          if-no-files-found: 'error'
-          compression-level: 9
-          retention-days: 1
+          files: "tools/generate_emu_config/bin/package/win/**/*"
 
 
 
-# ### release (debug + release modes)
-#       - name: Release
-#         uses: softprops/action-gh-release@v1
-#         with:
-#           files: "${{ env.PACKAGE_BASE_DIR }}/**/*"
-      
+  gen_emu_script-linux:
+    name: Gen emu config linux
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/gen_emu_config-build-linux.yml
+
+  gen_emu_script-linux-prep:
+    needs: [ gen_emu_script-linux ]
+    runs-on: ubuntu-22.04
+    steps:
+      # we need branch because it has package scripts
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+## donwload artifacts
+      - name: Download script build artifacts (linux)
+        uses: actions/download-artifact@v4
+        with:
+          path: tools/generate_emu_config/bin/linux
+          pattern: generate_emu_config-linux-*
+          merge-multiple: true
+
+### fix folder permissions! not sure why this fails
+      # nested subdirs "build/linux/release" cause permission problems
+      - name: Give all permissions to repo folder
+        shell: bash
+        working-directory: ${{ github.workspace }}
+        run:  sudo chmod -R 777 "${{ github.workspace }}"
+
+### package
+      - name: Package script
+        shell: bash
+        working-directory: "tools/generate_emu_config"
+        run: sudo chmod 777 package_linux.sh && sudo ./package_linux.sh
+
+# release tag
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "tools/generate_emu_config/bin/package/linux/**/*"
 
 
 
+  migrate_gse_script-win:
+    name: Migrate GSE win
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/migrate_gse-build-win.yml
 
-#   emu-win-linux:
-#     needs: [ emu-win-all ]
-#     runs-on: ubuntu-22.04
-#     steps:
-#       - name: Download emu build artifacts (Win)
-#         uses: actions/download-artifact@v4
-#         with:
-#           # name: "emu-win-release"
-#           path: build/prep
-#           merge-multiple: true
+  migrate_gse_script-win-prep:
+    needs: [ migrate_gse_script-win ]
+    runs-on: windows-2022
+    steps:
+      # on Windows Git will auto change line ending to CRLF, not preferable
+      - name: Ensure LF line ending
+        shell: cmd
+        working-directory: ${{ github.workspace }}
+        run: |
+          git config --local core.autocrlf false
+          git config --system core.autocrlf false
+          git config --global core.autocrlf false
 
-# ### fix folder permissions! not sure why this fails
-#       # nested subdirs "build/linux/release" cause permission problems
-#       - name: Give all permissions to repo folder
-#         shell: bash
-#         working-directory: ${{ github.workspace }}
-#         run:  sudo chmod -R 777 "${{ github.workspace }}"
+      # we need branch because it has package scripts
+      - name: Checkout branch
+        uses: actions/checkout@v4
 
-#       - name: Extract all build artifacts
-#         shell: cmd
-#         working-directory: ${{ github.workspace }}
-#         run: |
-#           sudo apt install unzip -y || exit
-#           sudo apt install tar -y || exit 1
-#           unzip -q -b -C -DD -n 'build/prep/*.zip' -d 'build/win/' || exit
-#           tar -C "$script_dir/build/win" -c -j -vf "build/package/linux" "$1"
+      - name: Clone third-party deps (deps/win)
+        uses: actions/checkout@v4
+        with:
+          ref: 'third-party/deps/win'
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/win"
+
+## donwload artifacts
+      - name: Download script build artifacts (Win)
+        uses: actions/download-artifact@v4
+        with:
+          path: tools/migrate_gse/bin/win
+          pattern: migrate_gse-win-*
+          merge-multiple: true
+
+### package
+      - name: Package script
+        shell: cmd
+        working-directory: "tools/migrate_gse"
+        run: package_win.bat
+
+# release tag
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "tools/migrate_gse/bin/package/win/**/*"
+
+
+
+  migrate_gse_script-linux:
+    name: Migrate GSE linux
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/migrate_gse-build-linux.yml
+
+  migrate_gse_script-linux-prep:
+    needs: [ migrate_gse_script-linux ]
+    runs-on: ubuntu-22.04
+    steps:
+      # we need branch because it has package scripts
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+## donwload artifacts
+      - name: Download script build artifacts (linux)
+        uses: actions/download-artifact@v4
+        with:
+          path: tools/migrate_gse/bin/linux
+          pattern: migrate_gse-linux-*
+          merge-multiple: true
+
+### fix folder permissions! not sure why this fails
+      # nested subdirs "build/linux/release" cause permission problems
+      - name: Give all permissions to repo folder
+        shell: bash
+        working-directory: ${{ github.workspace }}
+        run:  sudo chmod -R 777 "${{ github.workspace }}"
+
+### package
+      - name: Package script
+        shell: bash
+        working-directory: "tools/migrate_gse"
+        run: sudo chmod 777 package_linux.sh && sudo ./package_linux.sh
+
+# release tag
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "tools/migrate_gse/bin/package/linux/**/*"
+
+
+
