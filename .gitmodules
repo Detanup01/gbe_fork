@@ -22,11 +22,3 @@
   path = third-party/build/win
   url = ./
   branch = third-party/build/win
-[submodule "third-party/deps/macos"]
-  path = third-party/deps/macos
-  url = ./
-  branch = third-party/deps/macos
-[submodule "third-party/build/macos"]
-  path = third-party/build/macos
-  url = ./
-  branch = third-party/build/macos
