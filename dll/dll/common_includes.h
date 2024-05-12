@@ -46,6 +46,15 @@
     #ifndef NOMINMAX
         #define NOMINMAX
     #endif
+#elif defined(__LINUX__)
+    #ifndef GNUC
+        #define GNUC
+    #endif
+    #ifndef NOMINMAX
+        #define NOMINMAX
+    #endif
+#else
+    #warn "Unrecognized OS"
 #endif
 
 #define STEAM_API_EXPORTS
