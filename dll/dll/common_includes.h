@@ -41,6 +41,11 @@
     #define __LINUX__
 #endif
 
+// TODO fix this and include proper headers
+#if defined(__APPLE__) && defined(__MACH__)
+    #define __MACOS__
+#endif
+
 #if defined(__WINDOWS__)
     #define STEAM_WIN32
     #ifndef NOMINMAX
@@ -50,11 +55,8 @@
     #ifndef GNUC
         #define GNUC
     #endif
-    #ifndef NOMINMAX
-        #define NOMINMAX
-    #endif
 #else
-    #warn "Unrecognized OS"
+    #warning "Unrecognized OS"
 #endif
 
 #define STEAM_API_EXPORTS
