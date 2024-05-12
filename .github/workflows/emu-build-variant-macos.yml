@@ -75,6 +75,11 @@ jobs:
         key: ${{ env.DEPS_CACHE_KEY }}
         path: ${{ env.DEPS_CACHE_DIR }}
 
+### macos comes with bash v3
+    - name: Update bash
+      shell: bash
+      run: brew update && brew install bash
+
 ## mandatory macos packages, installed via sudo apt install ...
     - name: Install required packages
       shell: bash
