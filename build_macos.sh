@@ -177,7 +177,7 @@ release_incs64=(
   "$mbedtls_inc64"
 )
 
-# directories where libraries (.a or .so) will be looked up
+# directories where libraries (.a or .dylib) will be looked up
 release_libs_dir64=(
   "$ssq_lib64"
   "$curl_lib64"
@@ -190,7 +190,7 @@ release_libs_dir64=(
   "$overlay_detour_lib64"
 )
 
-# libraries to link with, either static ".a" or dynamic ".so" (name only)
+# libraries to link with, either static ".a" or dynamic ".dylib" (name only)
 # if it's called libXYZ.a, then only write "XYZ"
 # for static libs make sure to build a PIC lib
 # each will be prefixed with -l, ex: -lpthread
@@ -404,27 +404,27 @@ last_code=$((last_code + $?))
 echo; echo;
 
 if [[ "$BUILD_LIB64" = "1" ]]; then
-  echo // building shared lib libsteam_api.so - 64
+  echo // building shared lib libsteam_api.dylib - 64
   all_src_files=(
     "${release_src[@]}"
     "controller/*.c"
   )
-  build_for 0 "$build_root_64/libsteam_api.so" all_src_files empty_arr '-DCONTROLLER_SUPPORT' empty_arr
+  build_for 0 "$build_root_64/libsteam_api.dylib" all_src_files empty_arr '-DCONTROLLER_SUPPORT' empty_arr
   last_code=$((last_code + $?))
 fi
 
 if [[ "$BUILD_CLIENT64" = "1" ]]; then
-  echo // building shared lib steamclient.so - 64
+  echo // building shared lib steamclient.dylib - 64
   all_src_files=(
     "${release_src[@]}"
     "controller/*.c"
   )
-  build_for 0 "$build_root_64/steamclient.so" all_src_files empty_arr '-DCONTROLLER_SUPPORT -DSTEAMCLIENT_DLL' empty_arr
+  build_for 0 "$build_root_64/steamclient.dylib" all_src_files empty_arr '-DCONTROLLER_SUPPORT -DSTEAMCLIENT_DLL' empty_arr
   last_code=$((last_code + $?))
 fi
 
 if [[ "$BUILD_EXP_LIB64" = "1" ]]; then
-  echo // building shared lib experimental libsteam_api.so - 64
+  echo // building shared lib experimental libsteam_api.dylib - 64
   all_src_files=(
     "${release_src[@]}"
     "controller/*.c"
@@ -438,12 +438,12 @@ if [[ "$BUILD_EXP_LIB64" = "1" ]]; then
     "system" # ingame_overlay dependency
     "mini_detour" # ingame_overlay dependency
   )
-  build_for 0 "$build_root_experimental/x64/libsteam_api.so" all_src_files extra_incs '-DCONTROLLER_SUPPORT -DEMU_OVERLAY -DImTextureID=ImU64' extra_link_libs
+  build_for 0 "$build_root_experimental/x64/libsteam_api.dylib" all_src_files extra_incs '-DCONTROLLER_SUPPORT -DEMU_OVERLAY -DImTextureID=ImU64' extra_link_libs
   last_code=$((last_code + $?))
 fi
 
 if [[ "$BUILD_EXPT_CLIENT64" = "1" ]]; then
-  echo // building shared lib experimental steamclient.so - 64
+  echo // building shared lib experimental steamclient.dylib - 64
   all_src_files=(
     "${release_src[@]}"
     "controller/*.c"
@@ -457,7 +457,7 @@ if [[ "$BUILD_EXPT_CLIENT64" = "1" ]]; then
     "system" # ingame_overlay dependency
     "mini_detour" # ingame_overlay dependency
   )
-  build_for 0 "$build_root_experimental/x64/steamclient.so" all_src_files extra_incs '-DCONTROLLER_SUPPORT -DSTEAMCLIENT_DLL -DEMU_OVERLAY -DImTextureID=ImU64' extra_link_libs
+  build_for 0 "$build_root_experimental/x64/steamclient.dylib" all_src_files extra_incs '-DCONTROLLER_SUPPORT -DSTEAMCLIENT_DLL -DEMU_OVERLAY -DImTextureID=ImU64' extra_link_libs
   last_code=$((last_code + $?))
 fi
 
@@ -481,11 +481,11 @@ if [[ "$BUILD_TOOL_FIND_ITFS64" = "1" ]]; then
 fi
 
 if [[ "$BUILD_LIB_NET_SOCKETS_64" = "1" ]]; then
-  echo // building shared lib steamnetworkingsockets64.so - 64
+  echo // building shared lib steamnetworkingsockets64.dylib - 64
   all_src_files=(
     "networking_sockets_lib/steamnetworkingsockets.cpp"
   )
-  build_for 0 "$build_root_dir/networking_sockets_lib/steamnetworkingsockets64.so" all_src_files empty_arr '' empty_arr
+  build_for 0 "$build_root_dir/networking_sockets_lib/steamnetworkingsockets64.dylib" all_src_files empty_arr '' empty_arr
   last_code=$((last_code + $?))
 fi
 
