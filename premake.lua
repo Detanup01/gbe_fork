@@ -96,7 +96,7 @@ workspace "GBE"
 
 -- Project SteamEmu
 project "SteamEmu"
-    cppdialect("C++17")
+    cppdialect("C++latest")
     kind "SharedLib"
     language "C++"
     targetdir "bin/SteamEmu/%{cfg.buildcfg}_%{cfg.platform}"
@@ -144,8 +144,7 @@ project "SteamEmu"
     -- WIN 32 DEFAULTS
     filter { "platforms:x32", "options:os=windows" }
         files {
-            windows_files,
-            "resources/win/api/32/resources.rc"
+            windows_files
         }
         links {
             win_link,
@@ -179,8 +178,7 @@ project "SteamEmu"
     -- WIN 64 DEFAULTS
     filter { "platforms:x64", "options:os=windows" }
         files {
-            windows_files,
-            "resources/win/api/64/resources.rc"
+            windows_files
         }
         links {
             win_link,
@@ -224,7 +222,8 @@ project "SteamEmu"
             "libs/**",
             crash_win,
             "controller/**",
-            "overlay_experimental/**"
+            "overlay_experimental/**",
+            "resources/win/api/32/resources.rc"
         }
         removefiles { "libs/detours/uimports.cc" }
         defines { "DEBUG", "EMU_EXPERIMENTAL_BUILD", "ImTextureID=ImU64" }
@@ -235,7 +234,8 @@ project "SteamEmu"
             "libs/**",
             crash_win,
             "controller/**",
-            "overlay_experimental/**"
+            "overlay_experimental/**",
+            "resources/win/api/32/resources.rc"
         }
         removefiles { "libs/detours/uimports.cc" }
         defines { "NDEBUG", "EMU_RELEASE_BUILD", "EMU_EXPERIMENTAL_BUILD" ,"CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64" }
@@ -260,12 +260,11 @@ project "SteamEmu"
         }
         defines { "NDEBUG", "EMU_RELEASE_BUILD", "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64" }
 
--- x
+-- end SteamEmu
 
 -- Project SteamClient
 project "SteamClient"
-    dependson { "SteamEmu" }
-    cppdialect("C++17")
+    cppdialect("C++latest")
     kind "SharedLib"
     language "C++"
     targetdir "bin/SteamClient/%{cfg.buildcfg}_%{cfg.platform}"
@@ -443,10 +442,58 @@ project "SteamClient"
         }
         defines {"UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "GNUC",  "NDEBUG", "EMU_RELEASE_BUILD", "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64", "STEAMCLIENT_DLL" }
 
+-- SteamClientExtra
+if os.target() == "windows" then
+project "SteamClientExtra"
+    cppdialect("C++latest")
+    kind "SharedLib"
+    language "C++"
+    targetdir "bin/SteamClientExtra/%{cfg.buildcfg}_%{cfg.platform}"
+    location "GBE_Build/SteamClientExtra"
+    staticruntime "on"
 
+    optimize "On"
+    symbols "Off"
 
+    buildoptions  {
+        "/permissive-", "/MP4", "/DYNAMICBASE", "/utf-8", "/Zc:char8_t-", "/EHsc", "/GL-"
+        }
+    linkoptions  {
+        "/emittoolversioninfo:no"
+        }
+    
+    links {
+        win_link,
+        "user32.lib"
+    }
 
+    includedirs {
+        "helpers",
+        "libs",
+        "tools/steamclient_loader/win/extra_protection"
+    }
+    -- WIN 32 DEFAULTS
+    filter { "platforms:x32", "options:os=windows" }
+        files {
+            "helpers/**",
+            "libs/detours/**",
+            "resources/win/client/32/resources.rc",
+            "tools/steamclient_loader/win/**"
+        }
+        removefiles { "libs/detours/uimports.cc" }
 
+    -- WIN 64 DEFAULTS
+    filter { "platforms:x64", "options:os=windows" }
+        files {
+            "helpers/**",
+            "libs/detours/**",
+            "resources/win/client/64/resources.rc",
+            "tools/steamclient_loader/win/**"
+        }
+        removefiles { "libs/detours/uimports.cc" }
+
+end
+-- End SteamClient + SteamClientExtra
 
 
 -- .
