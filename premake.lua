@@ -69,6 +69,7 @@ if _ACTION == "generateproto" then
 
 workspace "GBE"
     configurations { "Debug", "Release", "ExperimentalDebug", "ExperimentalRelease" }
+    platforms { "X64", "X86"  }
     location "GBE_Build"
 
 project "SteamEmu"
@@ -112,21 +113,17 @@ project "SteamEmu"
             crash_linux
         }
 
--- BUILD X64 and X85 on VS. (soon more!)
-    filter "action:vs*"
-        platforms { "x86_64", "x86" }
-
 -- SET ARCH
-    filter "platforms:x86"
+    filter "platforms:X86"
         targetname "steam_api"
         architecture "x86" 
 
-    filter "platforms:x86_64"
+    filter "platforms:X64"
         targetname "steam_api64"
         architecture "x86_64"
 
 -- WIN 32 DEFAULTS
-    filter { "platforms:x86", "options:os=windows" }
+    filter { "platforms:X86", "options:os=windows" }
         links {
             win_link,
             default_link,
@@ -156,7 +153,7 @@ project "SteamEmu"
         }
 
 -- WIN 64 DEFAULTS
-    filter { "platforms:x86_64", "options:os=windows" }
+    filter { "platforms:X64", "options:os=windows" }
         links {
             win_link,
             default_link,
