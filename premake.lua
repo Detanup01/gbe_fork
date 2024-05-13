@@ -32,6 +32,16 @@ local win_link = {
        "Ws2_32.lib", "Iphlpapi.lib", "Wldap32.lib", "Winmm.lib", "Bcrypt.lib", "Dbghelp.lib"
    }
 
+local linux_link = {
+    "pthread",
+    "dl",
+    "ssq",
+    "z", -- libz library
+    "curl",
+    "protobuf-lite",
+    "mbedcrypto"
+}
+
 local default_link = {
        "ssq.lib",
        "libcurl.lib",
@@ -43,9 +53,15 @@ local default_link = {
 local basic_dir_win = "build/deps/win/"
 local basic_dir_linux = "build/deps/linux/"
 
-local overlay_link = {
+local overlay_link_windows = {
        "ingame_overlay.lib", "system.lib", "mini_detour.lib"
    }
+
+local overlay_link_linux = {
+    "ingame_overlay",
+    "system", -- ingame_overlay dependency
+    "mini_detour" -- ingame_overlay dependency
+}
 
 local default_include = {
     "dll",
@@ -55,6 +71,12 @@ local default_include = {
     "crash_printer",
     "overlay_experimental",
     "controller"
+}
+
+local windows_files = {
+    default_files,
+    predefined_libs,
+    crash_win
 }
 
 -- END of predefines
@@ -69,34 +91,32 @@ if _ACTION == "generateproto" then
 
 workspace "GBE"
     configurations { "Debug", "Release", "ExperimentalDebug", "ExperimentalRelease" }
-    platforms { "X64", "X86"  }
+    platforms { "x64", "x32"  }
     location "GBE_Build"
 
+-- Project SteamEmu
 project "SteamEmu"
     cppdialect("C++17")
     kind "SharedLib"
     language "C++"
-    targetdir "bin/steamEmu/%{cfg.buildcfg}_%{cfg.platform}"
+    targetdir "bin/SteamEmu/%{cfg.buildcfg}_%{cfg.platform}"
     location "GBE_Build/SteamEmu"
     staticruntime "on"
 
     optimize "On"
     symbols "Off"
 
+    -- SET ARCH
+    filter "platforms:x32"
+        targetname "steam_api"
+        architecture "x86" 
 
-    links {
-        default_link
-    }
+    filter "platforms:x64"
+        targetname "steam_api64"
+        architecture "x86_64"
 
-
-
--- BASIC FOR WINDOWS 
+    -- BASIC FOR WINDOWS 
     filter "options:os=windows"
-        files {
-            default_files,
-            predefined_libs,
-            crash_win
-        }
         buildoptions  {
             "/permissive-", "/MP4", "/DYNAMICBASE", "/utf-8", "/Zc:char8_t-", "/EHsc", "/GL-"
         }
@@ -105,29 +125,32 @@ project "SteamEmu"
         }
         defines {"UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "UNICODE", "_UNICODE", "_CRT_SECURE_NO_WARNINGS" }
 
--- BASIC FOR LINUX
+    -- BASIC FOR LINUX
     filter "options:os=linux"
         files {
             default_files,
             predefined_libs,
             crash_linux
         }
+        defines {"UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "GNUC" }
+        buildoptions  {
+            "-fvisibility=hidden", "-fexceptions", "-fno-jump-tables", "-fno-char8_t"
+        }
+        links {
+            linux_link,
+            overlay_link_linux
+        }
 
--- SET ARCH
-    filter "platforms:X86"
-        targetname "steam_api"
-        architecture "x86" 
-
-    filter "platforms:X64"
-        targetname "steam_api64"
-        architecture "x86_64"
-
--- WIN 32 DEFAULTS
-    filter { "platforms:X86", "options:os=windows" }
+    -- WIN 32 DEFAULTS
+    filter { "platforms:x32", "options:os=windows" }
+        files {
+            windows_files,
+            "resources/win/api/32/resources.rc"
+        }
         links {
             win_link,
             default_link,
-            overlay_link
+            overlay_link_windows
         }
         libdirs {
             basic_dir_win .. "libssq/build32/Release",
@@ -151,13 +174,18 @@ project "SteamEmu"
             basic_dir_win .. "ingame_overlay/deps/System/install32/include",
             basic_dir_win .. "ingame_overlay/deps/mini_detour/install32/include"
         }
+      
 
--- WIN 64 DEFAULTS
-    filter { "platforms:X64", "options:os=windows" }
+    -- WIN 64 DEFAULTS
+    filter { "platforms:x64", "options:os=windows" }
+        files {
+            windows_files,
+            "resources/win/api/64/resources.rc"
+        }
         links {
             win_link,
             default_link,
-            overlay_link
+            overlay_link_windows
         }
         libdirs {
             basic_dir_win .. "libssq/build64/Release",
@@ -181,14 +209,15 @@ project "SteamEmu"
             basic_dir_win .. "ingame_overlay/deps/System/install64/include",
             basic_dir_win .. "ingame_overlay/deps/mini_detour/install64/include"
         }
--- DEBUG ALL
+
+    -- DEBUG ALL
     filter "configurations:Debug"
         defines { "DEBUG" }
--- Release ALL
+    -- Release ALL
     filter "configurations:Release"
         defines { "NDEBUG", "EMU_RELEASE_BUILD" }
 
--- ExperimentalDebug WINDOWS
+    -- ExperimentalDebug WINDOWS
     filter { "ExperimentalDebug", "options:os=windows" }
         files {
             default_files,
@@ -198,8 +227,8 @@ project "SteamEmu"
             "overlay_experimental/**"
         }
         removefiles { "libs/detours/uimports.cc" }
-        defines { "NDEBUG", "EMU_EXPERIMENTAL_BUILD", "ImTextureID=ImU64" }
--- ExperimentalRelease WINDOWS
+        defines { "DEBUG", "EMU_EXPERIMENTAL_BUILD", "ImTextureID=ImU64" }
+    -- ExperimentalRelease WINDOWS
     filter { "ExperimentalRelease", "options:os=windows" }
         files {
             default_files,
@@ -209,8 +238,8 @@ project "SteamEmu"
             "overlay_experimental/**"
         }
         removefiles { "libs/detours/uimports.cc" }
-        defines { "DEBUG", "EMU_RELEASE_BUILD", "EMU_EXPERIMENTAL_BUILD" ,"CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64" }
--- ExperimentalDebug LINUX
+        defines { "NDEBUG", "EMU_RELEASE_BUILD", "EMU_EXPERIMENTAL_BUILD" ,"CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64" }
+    -- ExperimentalDebug LINUX
     filter { "ExperimentalDebug", "options:os=linux" }
         files {
             default_files,
@@ -219,8 +248,8 @@ project "SteamEmu"
             "controller/**",
             "overlay_experimental/**"
         }
-        defines { "NDEBUG", "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64" }
--- ExperimentalRelease LINUX
+        defines { "DEBUG", "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64" }
+    -- ExperimentalRelease LINUX
     filter { "ExperimentalRelease", "options:os=linux" }
         files {
             default_files,
@@ -229,4 +258,195 @@ project "SteamEmu"
             "controller/**",
             "overlay_experimental/**"
         }
-        defines { "DEBUG", "EMU_RELEASE_BUILD", "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64" }
+        defines { "NDEBUG", "EMU_RELEASE_BUILD", "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64" }
+
+-- x
+
+-- Project SteamClient
+project "SteamClient"
+    dependson { "SteamEmu" }
+    cppdialect("C++17")
+    kind "SharedLib"
+    language "C++"
+    targetdir "bin/SteamClient/%{cfg.buildcfg}_%{cfg.platform}"
+    location "GBE_Build/SteamClient"
+    staticruntime "on"
+
+    optimize "On"
+    symbols "Off"
+
+    files {
+        "steamclient/**"
+    }
+
+    -- BASIC FOR WINDOWS 
+    filter "options:os=windows"
+        buildoptions  {
+            "/permissive-", "/MP4", "/DYNAMICBASE", "/utf-8", "/Zc:char8_t-", "/EHsc", "/GL-"
+        }
+        linkoptions  {
+            "/emittoolversioninfo:no"
+        }
+        defines { "STEAMCLIENT_DLL", "EMU_EXPERIMENTAL_BUILD" }    
+
+    -- BASIC FOR LINUX 
+    filter "options:os=linux"
+        files {
+            default_files,
+            predefined_libs,
+            crash_linux,
+            "controller/**"
+        }
+        buildoptions  {
+            "-fvisibility=hidden", "-fexceptions", "-fno-jump-tables", "-fno-char8_t"
+        }
+        links {
+            linux_link,
+            overlay_link_linux
+        }
+        defines { "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "GNUC", "NDEBUG", "STEAMCLIENT_DLL", "CONTROLLER_SUPPORT", "ImTextureID=ImU64" }
+
+        filter { "*Debug", "options:os=linux"}
+            defines {"UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "GNUC",  "DEBUG", "EMU_RELEASE_BUILD", "CONTROLLER_SUPPORT", "ImTextureID=ImU64", "STEAMCLIENT_DLL" }
+
+    -- SET ARCH
+    filter "platforms:x32"
+        targetname "steamclient"
+        architecture "x86" 
+
+    filter "platforms:x64"
+        targetname "steamclient64"
+        architecture "x86_64"
+
+    -- WIN 32 DEFAULTS
+    filter { "platforms:x32", "options:os=windows" }
+        files {
+            "steamclient/**",
+            "resources/win/client/32/resources.rc"
+        }
+
+    -- WIN 64 DEFAULTS
+    filter { "platforms:x64", "options:os=windows" }
+        files {
+            "steamclient/**",
+            "resources/win/client/64/resources.rc"
+        }
+
+    -- WIN X32 EXP
+    filter { "Experimental**", "options:os=windows",  "platforms:x32" }
+        files {
+            default_files,
+            "libs/**",
+            crash_win,
+            "controller/**",
+            "overlay_experimental/**",
+            "resources/win/client/32/resources.rc"
+        }
+        links {
+            win_link,
+            default_link,
+            overlay_link_windows
+        }
+        libdirs {
+            basic_dir_win .. "libssq/build32/Release",
+            basic_dir_win .. "curl/install32/lib",
+            basic_dir_win .. "protobuf/install32/lib",
+            basic_dir_win .. "zlib/install32/lib",
+            basic_dir_win .. "mbedtls/install32/lib",
+            basic_dir_win .. "ingame_overlay/install32/lib",
+            basic_dir_win .. "ingame_overlay/deps/System/install32/lib",
+            basic_dir_win .. "ingame_overlay/deps/mini_detour/install32/lib"
+        }
+        includedirs {
+            default_include,
+            "dll/proto_gen/win",
+            basic_dir_win .. "libssq/include",
+            basic_dir_win .. "curl/install32/include",
+            basic_dir_win .. "protobuf/install32/include",
+            basic_dir_win .. "zlib/install32/include",
+            basic_dir_win .. "mbedtls/install32/include",
+            basic_dir_win .. "ingame_overlay/install32/include",
+            basic_dir_win .. "ingame_overlay/deps/System/install32/include",
+            basic_dir_win .. "ingame_overlay/deps/mini_detour/install32/include"
+        }
+        removefiles { "steamclient/**" }
+        removefiles { "libs/detours/uimports.cc" }
+        
+    -- WIN X64 EXP
+    filter { "Experimental**", "options:os=windows",  "platforms:x64" }
+        files {
+            default_files,
+            "libs/**",
+            crash_win,
+            "controller/**",
+            "overlay_experimental/**",
+            "resources/win/client/64/resources.rc"
+        }
+        links {
+            win_link,
+            default_link,
+            overlay_link_windows
+        }
+        libdirs {
+            basic_dir_win .. "libssq/build64/Release",
+            basic_dir_win .. "curl/install64/lib",
+            basic_dir_win .. "protobuf/install64/lib",
+            basic_dir_win .. "zlib/install64/lib",
+            basic_dir_win .. "mbedtls/install64/lib",
+            basic_dir_win .. "ingame_overlay/install64/lib",
+            basic_dir_win .. "ingame_overlay/deps/System/install64/lib",
+            basic_dir_win .. "ingame_overlay/deps/mini_detour/install64/lib"
+        }
+        includedirs {
+            default_include,
+            "dll/proto_gen/win",
+            basic_dir_win .. "libssq/include",
+            basic_dir_win .. "curl/install64/include",
+            basic_dir_win .. "protobuf/install64/include",
+            basic_dir_win .. "zlib/install64/include",
+            basic_dir_win .. "mbedtls/install64/include",
+            basic_dir_win .. "ingame_overlay/install64/include",
+            basic_dir_win .. "ingame_overlay/deps/System/install64/include",
+            basic_dir_win .. "ingame_overlay/deps/mini_detour/install64/include"
+        }
+        removefiles { "steamclient/**" }
+        removefiles { "libs/detours/uimports.cc" }
+
+    -- ExperimentalDebug WINDOWS
+    filter { "ExperimentalDebug", "options:os=windows" }
+        defines { "DEBUG", "EMU_EXPERIMENTAL_BUILD", "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64", "STEAMCLIENT_DLL", "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "UNICODE", "_UNICODE", "_CRT_SECURE_NO_WARNINGS" }
+
+    -- ExperimentalRelease WINDOWS
+    filter { "ExperimentalRelease", "options:os=windows" }
+        defines { "NDEBUG", "EMU_RELEASE_BUILD", "EMU_EXPERIMENTAL_BUILD", "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64", "STEAMCLIENT_DLL", "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "UNICODE", "_UNICODE", "_CRT_SECURE_NO_WARNINGS" }
+
+    -- ExperimentalDebug LINUX
+    filter { "ExperimentalDebug", "options:os=linux" }
+        files {
+            default_files,
+            predefined_libs,
+            crash_linux,
+            "controller/**",
+            "overlay_experimental/**"
+        }
+        defines {"UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "GNUC",  "DEBUG", "EMU_RELEASE_BUILD", "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64", "STEAMCLIENT_DLL" }
+
+
+    -- ExperimentalRelease LINUX
+    filter { "ExperimentalRelease", "options:os=linux" }
+        files {
+            default_files,
+            predefined_libs,
+            crash_linux,
+            "controller/**",
+            "overlay_experimental/**"
+        }
+        defines {"UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "GNUC",  "NDEBUG", "EMU_RELEASE_BUILD", "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64", "STEAMCLIENT_DLL" }
+
+
+
+
+
+
+
+-- .
