@@ -260,7 +260,7 @@ project "SteamEmu"
         }
         defines { "NDEBUG", "EMU_RELEASE_BUILD", "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64" }
 
--- end SteamEmu
+-- End SteamEmu
 
 -- Project SteamClient
 project "SteamClient"
@@ -467,6 +467,15 @@ project "SteamClientExtra"
         "user32.lib"
     }
 
+        -- SET ARCH
+    filter "platforms:x32"
+        targetname "steamclient"
+        architecture "x86" 
+
+    filter "platforms:x64"
+        targetname "steamclient64"
+        architecture "x86_64"
+
     includedirs {
         "helpers",
         "libs",
@@ -494,6 +503,50 @@ project "SteamClientExtra"
 
 end
 -- End SteamClient + SteamClientExtra
+-- Project LobbyConnect
+project "LobbyConnect"
+    cppdialect("C++latest")
+    kind "ConsoleApp"
+    language "C++"
+    targetdir "bin/LobbyConnect/%{cfg.buildcfg}_%{cfg.platform}"
+    location "GBE_Build/LobbyConnect"
+    staticruntime "on"
 
+-- TODO LOBBYCONNECT
 
+    optimize "On"
+    symbols "Off"
+-- End LobbyConnect
+
+-- Project GenerateInterfaces
+project "GenerateInterfaces"
+    cppdialect("C++latest")
+    kind "ConsoleApp"
+    language "C++"
+    targetdir "bin/GenerateInterfaces/%{cfg.buildcfg}_%{cfg.platform}"
+    location "GBE_Build/GenerateInterfaces"
+    targetname "GenerateInterfaces"
+    optimize "On"
+    symbols "Off"
+
+    files {
+        "tools/generate_interfaces/**"
+    }
+-- End LobbyConnect
+
+-- Project steamnetworkingsockets
+project "steamnetworkingsockets"
+    cppdialect("C++latest")
+    kind "ConsoleApp"
+    language "C++"
+    targetdir "bin/steamnetworkingsockets/%{cfg.buildcfg}_%{cfg.platform}"
+    location "GBE_Build/steamnetworkingsockets"
+    targetname "steamnetworkingsockets"
+    optimize "On"
+    symbols "Off"
+
+    files {
+        "networking_sockets_lib/**"
+    }
+-- End LobbyConnect
 -- .
