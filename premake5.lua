@@ -79,6 +79,105 @@ local windows_files = {
     crash_win
 }
 
+
+local linux_files = {
+    default_files,
+    predefined_libs,
+    crash_linux
+}
+-- 32 
+local x32_libsdir_win = {
+    basic_dir_win .. "libssq/build32/Release",
+    basic_dir_win .. "curl/install32/lib",
+    basic_dir_win .. "protobuf/install32/lib",
+    basic_dir_win .. "zlib/install32/lib",
+    basic_dir_win .. "mbedtls/install32/lib",
+    basic_dir_win .. "ingame_overlay/install32/lib",
+    basic_dir_win .. "ingame_overlay/deps/System/install32/lib",
+    basic_dir_win .. "ingame_overlay/deps/mini_detour/install32/lib"
+}
+
+local x32_libsdir_linux = {
+    basic_dir_linux .. "libssq/build32/Release",
+    basic_dir_linux .. "curl/install32/lib",
+    basic_dir_linux .. "protobuf/install32/lib",
+    basic_dir_linux .. "zlib/install32/lib",
+    basic_dir_linux .. "mbedtls/install32/lib",
+    basic_dir_linux .. "ingame_overlay/install32/lib",
+    basic_dir_linux .. "ingame_overlay/deps/System/install32/lib",
+    basic_dir_linux .. "ingame_overlay/deps/mini_detour/install32/lib"
+}
+
+local x32_include_win = {
+    basic_dir_win .. "libssq/include",
+    basic_dir_win .. "curl/install32/include",
+    basic_dir_win .. "protobuf/install32/include",
+    basic_dir_win .. "zlib/install32/include",
+    basic_dir_win .. "mbedtls/install32/include",
+    basic_dir_win .. "ingame_overlay/install32/include",
+    basic_dir_win .. "ingame_overlay/deps/System/install32/include",
+    basic_dir_win .. "ingame_overlay/deps/mini_detour/install32/include"
+}
+
+local x32_include_linux = {
+    basic_dir_linux .. "libssq/include",
+    basic_dir_linux .. "curl/install32/include",
+    basic_dir_linux .. "protobuf/install32/include",
+    basic_dir_linux .. "zlib/install32/include",
+    basic_dir_linux .. "mbedtls/install32/include",
+    basic_dir_linux .. "ingame_overlay/install32/include",
+    basic_dir_linux .. "ingame_overlay/deps/System/install32/include",
+    basic_dir_linux .. "ingame_overlay/deps/mini_detour/install32/include"
+}
+
+-- 32 end
+-- 64
+local x64_libsdir_win = {
+    basic_dir_win .. "libssq/build64/Release",
+    basic_dir_win .. "curl/install64/lib",
+    basic_dir_win .. "protobuf/install64/lib",
+    basic_dir_win .. "zlib/install64/lib",
+    basic_dir_win .. "mbedtls/install64/lib",
+    basic_dir_win .. "ingame_overlay/install64/lib",
+    basic_dir_win .. "ingame_overlay/deps/System/install64/lib",
+    basic_dir_win .. "ingame_overlay/deps/mini_detour/install64/lib"
+}
+
+local x64_libsdir_linux = {
+    basic_dir_linux .. "libssq/build64/Release",
+    basic_dir_linux .. "curl/install64/lib",
+    basic_dir_linux .. "protobuf/install64/lib",
+    basic_dir_linux .. "zlib/install64/lib",
+    basic_dir_linux .. "mbedtls/install64/lib",
+    basic_dir_linux .. "ingame_overlay/install64/lib",
+    basic_dir_linux .. "ingame_overlay/deps/System/install64/lib",
+    basic_dir_linux .. "ingame_overlay/deps/mini_detour/install64/lib"
+}
+
+local x64_include_win = {
+    basic_dir_win .. "libssq/include",
+    basic_dir_win .. "curl/install64/include",
+    basic_dir_win .. "protobuf/install64/include",
+    basic_dir_win .. "zlib/install64/include",
+    basic_dir_win .. "mbedtls/install64/include",
+    basic_dir_win .. "ingame_overlay/install64/include",
+    basic_dir_win .. "ingame_overlay/deps/System/install64/include",
+    basic_dir_win .. "ingame_overlay/deps/mini_detour/install64/include"
+}
+
+local x64_include_linux = {
+    basic_dir_linux .. "libssq/include",
+    basic_dir_linux .. "curl/install64/include",
+    basic_dir_linux .. "protobuf/install64/include",
+    basic_dir_linux .. "zlib/install64/include",
+    basic_dir_linux .. "mbedtls/install64/include",
+    basic_dir_linux .. "ingame_overlay/install64/include",
+    basic_dir_linux .. "ingame_overlay/deps/System/install64/include",
+    basic_dir_linux .. "ingame_overlay/deps/mini_detour/install64/include"
+}
+
+-- 64 end
+
 -- END of predefines
 
 
@@ -128,9 +227,7 @@ project "SteamEmu"
     -- BASIC FOR LINUX
     filter "options:os=linux"
         files {
-            default_files,
-            predefined_libs,
-            crash_linux
+            linux_files
         }
         defines {"UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "GNUC" }
         buildoptions  {
@@ -151,27 +248,15 @@ project "SteamEmu"
             default_link,
             overlay_link_windows
         }
-        libdirs {
-            basic_dir_win .. "libssq/build32/Release",
-            basic_dir_win .. "curl/install32/lib",
-            basic_dir_win .. "protobuf/install32/lib",
-            basic_dir_win .. "zlib/install32/lib",
-            basic_dir_win .. "mbedtls/install32/lib",
-            basic_dir_win .. "ingame_overlay/install32/lib",
-            basic_dir_win .. "ingame_overlay/deps/System/install32/lib",
-            basic_dir_win .. "ingame_overlay/deps/mini_detour/install32/lib"
-        }
+
         includedirs {
             default_include,
             "dll/proto_gen/win",
-            basic_dir_win .. "libssq/include",
-            basic_dir_win .. "curl/install32/include",
-            basic_dir_win .. "protobuf/install32/include",
-            basic_dir_win .. "zlib/install32/include",
-            basic_dir_win .. "mbedtls/install32/include",
-            basic_dir_win .. "ingame_overlay/install32/include",
-            basic_dir_win .. "ingame_overlay/deps/System/install32/include",
-            basic_dir_win .. "ingame_overlay/deps/mini_detour/install32/include"
+            x32_include_win
+        }
+
+        libdirs {
+            x32_libsdir_win
         }
       
 
@@ -186,28 +271,39 @@ project "SteamEmu"
             overlay_link_windows
         }
         libdirs {
-            basic_dir_win .. "libssq/build64/Release",
-            basic_dir_win .. "curl/install64/lib",
-            basic_dir_win .. "protobuf/install64/lib",
-            basic_dir_win .. "zlib/install64/lib",
-            basic_dir_win .. "mbedtls/install64/lib",
-            basic_dir_win .. "ingame_overlay/install64/lib",
-            basic_dir_win .. "ingame_overlay/deps/System/install64/lib",
-            basic_dir_win .. "ingame_overlay/deps/mini_detour/install64/lib"
+            x64_libsdir_win
         }
         includedirs {
             default_include,
             "dll/proto_gen/win",
-            basic_dir_win .. "libssq/include",
-            basic_dir_win .. "curl/install64/include",
-            basic_dir_win .. "protobuf/install64/include",
-            basic_dir_win .. "zlib/install64/include",
-            basic_dir_win .. "mbedtls/install64/include",
-            basic_dir_win .. "ingame_overlay/install64/include",
-            basic_dir_win .. "ingame_overlay/deps/System/install64/include",
-            basic_dir_win .. "ingame_overlay/deps/mini_detour/install64/include"
+            x64_include_win
         }
 
+
+    -- linux 32 DEFAULTS
+    filter { "platforms:x32", "options:os=linux" }
+        includedirs {
+            default_include,
+            "dll/proto_gen/win",
+            x32_include_win
+        }
+
+        libdirs {
+            x32_libsdir_win
+        }
+      
+
+    -- linux 64 DEFAULTS
+    filter { "platforms:x64", "options:os=linux" }
+        includedirs {
+            default_include,
+            "dll/proto_gen/linux",
+            x32_include_linux
+        }
+
+        libdirs {
+            x32_libsdir_linux
+        }
     -- DEBUG ALL
     filter "configurations:Debug"
         defines { "DEBUG" }
