@@ -278,6 +278,10 @@ project "SteamEmu"
         files {
             linux_files
         }
+
+        removefiles {
+            "helpers/pe_**"
+        }
         buildoptions  {
             "-fvisibility=hidden", "-fexceptions", "-fno-jump-tables", "-fno-char8_t"
         }
