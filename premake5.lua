@@ -286,10 +286,7 @@ project "SteamEmu"
             linux_files
         }
         removefiles {
-            "libs/simpleini/**"
-        }
-
-        removefiles {
+            "libs/simpleini/**",
             "helpers/pe_**"
         }
         buildoptions  {
@@ -362,21 +359,25 @@ project "SteamEmu"
     -- ExperimentalDebug LINUX
     filter { "ExperimentalDebug", "options:os=linux" }
         files {
-            default_files,
-            predefined_libs,
-            crash_linux,
-            "controller/**",
+            linux_files,
             "overlay_experimental/**"
+        }
+
+        removefiles {
+            "libs/simpleini/**",
+            "helpers/pe_**"
         }
         defines { "DEBUG", "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64", "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "UNICODE", "_UNICODE", "GNUC", "EMU_BUILD_STRING=".._OPTIONS["emubuild"]  }
     -- ExperimentalRelease LINUX
     filter { "ExperimentalRelease", "options:os=linux" }
         files {
-            default_files,
-            predefined_libs,
-            crash_linux,
-            "controller/**",
+            linux_files,
             "overlay_experimental/**"
+        }
+
+        removefiles {
+            "libs/simpleini/**",
+            "helpers/pe_**"
         }
         defines { "NDEBUG", "EMU_RELEASE_BUILD", "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64", "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "UNICODE", "_UNICODE", "GNUC", "EMU_BUILD_STRING=".._OPTIONS["emubuild"]  }
 
