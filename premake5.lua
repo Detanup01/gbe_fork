@@ -16,16 +16,12 @@ local predefined_libs = {
 
 local crash_win = {
        "crash_printer/win.cpp",
-       "crash_printer/crash_printer/win.hpp",
-       "crash_printer/tests/test_win.cpp",
-       "crash_printer/tests/test_helper.hpp"
+       "crash_printer/crash_printer/win.hpp"
    }
 
 local crash_linux = {
        "crash_printer/linux.cpp",
-       "crash_printer/crash_printer/linux.hpp",
-       "crash_printer/tests/test_linux*",
-       "crash_printer/tests/test_helper.hpp"
+       "crash_printer/crash_printer/linux.hpp"
    }
 
 local win_link = {
@@ -318,7 +314,7 @@ project "SteamEmu"
             libdirs {
                 x32_libsdir_linux
             }
-            
+
     -- ExperimentalDebug WINDOWS
     filter { "ExperimentalDebug", "options:os=windows" }
         files {
