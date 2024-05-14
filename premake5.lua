@@ -329,10 +329,10 @@ project "SteamEmu"
             includedirs {
                 default_include,
                 "dll/proto_gen/linux",
-                x32_include_linux
+                x64_include_linux
             }
             libdirs {
-                x32_libsdir_linux
+                x64_libsdir_linux
             }
 
     -- ExperimentalDebug WINDOWS
