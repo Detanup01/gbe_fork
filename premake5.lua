@@ -187,7 +187,7 @@ if _ACTION == "generateproto" then
         os.mkdir("dll/proto_gen/win")
         os.execute('call ' .. _MAIN_SCRIPT_DIR ..'/build/deps/win/protobuf/install32/bin/protoc.exe dll/net.proto -I./dll/ --cpp_out=dll/proto_gen/win')
     end
-    else then
+    if os.target() == "linux" then
         os.mkdir("dll/proto_gen/linux")
         os.chmod(_MAIN_SCRIPT_DIR ..'/build/deps/linux/protobuf/install32/bin/protoc', "777")
         os.execute(_MAIN_SCRIPT_DIR ..'/build/deps/linux/protobuf/install32/bin/protoc dll/net.proto -I./dll/ --cpp_out=dll/proto_gen/linux')
