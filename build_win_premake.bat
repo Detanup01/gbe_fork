@@ -23,7 +23,8 @@ if "%my_vs_path%"=="" (
 :: Set configuration and platform here :)
 
 :: -v:n make it so we can actually see what commands it runs
-call %my_vs_path% GBE_Build\GBE.sln /p:Configuration=Release /p:Platform=x64 -v:n
+call %my_vs_path% GBE_Build\GBE.sln /p:Configuration=ExperimentalDebug /p:Platform=x64 -v:n
+::call %my_vs_path% GBE_Build\GBE.sln
 set /a _exit=%errorlevel%
 if %_exit% equ 0 (
     echo Please do change_dos_stub and sign it. (or you can move into premake to do it for you)

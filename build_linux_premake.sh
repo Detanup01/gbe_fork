@@ -9,7 +9,7 @@ chmod +777 premake5 # do we really need this?
 ./premake5 --os=linux generateproto
 
 # target other than clang?
-./premake5 --os=linux --cc:clang gmake 
+./premake5 --os=linux --cc=clang gmake 
 
 # going into build dir
 cd GBE_Build
