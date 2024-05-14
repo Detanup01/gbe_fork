@@ -94,7 +94,7 @@ local x32_libsdir_win = {
 }
 
 local x32_libsdir_linux = {
-    basic_dir_linux .. "libssq/build32/Release",
+    basic_dir_linux .. "libssq/build32",
     basic_dir_linux .. "curl/install32/lib",
     basic_dir_linux .. "protobuf/install32/lib",
     basic_dir_linux .. "zlib/install32/lib",
@@ -140,7 +140,7 @@ local x64_libsdir_win = {
 }
 
 local x64_libsdir_linux = {
-    basic_dir_linux .. "libssq/build64/Release",
+    basic_dir_linux .. "libssq/build64",
     basic_dir_linux .. "curl/install64/lib",
     basic_dir_linux .. "protobuf/install64/lib",
     basic_dir_linux .. "zlib/install64/lib",
