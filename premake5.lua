@@ -292,6 +292,7 @@ project "SteamEmu"
         }
 
         linkoptions {
+            "-Wl,--whole-archive -Wl,-Bstatic",
             "-Wl,-Bdynamic -Wl,--no-whole-archive -Wl,--exclude-libs,ALL"
         }
 
