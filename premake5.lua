@@ -79,7 +79,9 @@ local windows_files = {
 local linux_files = {
     default_files,
     predefined_libs,
-    crash_linux
+    crash_linux,
+    "controller/**",
+    ""
 }
 -- 32 
 local x32_libsdir_win = {
@@ -278,23 +280,31 @@ project "SteamEmu"
         files {
             linux_files
         }
+        removefiles {
+            "libs/simpleini/**"
+        }
 
         removefiles {
             "helpers/pe_**"
         }
         buildoptions  {
-            "-fvisibility=hidden", "-fexceptions", "-fno-jump-tables", "-fno-char8_t"
+            "-fvisibility=hidden", "-fexceptions", "-fno-jump-tables", "-fno-char8_t" , "-Wundefined-internal", "-Wno-switch"
         }
+
+        linkoptions {
+            "-Wl,-Bdynamic -Wl,--no-whole-archive -Wl,--exclude-libs,ALL"
+        }
+
         links {
             linux_link,
             overlay_link_linux
         }
 
         filter { "options:os=linux", "configurations:Release" }
-            defines {"NDEBUG", "EMU_RELEASE_BUILD", "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "UNICODE", "_UNICODE", "GNUC" }
+            defines {"NDEBUG", "EMU_RELEASE_BUILD", "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "UNICODE", "_UNICODE", "GNUC", "CONTROLLER_SUPPORT" }
 
         filter { "options:os=linux", "configurations:Debug" }
-            defines {"DEBUG", "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "UNICODE", "_UNICODE", "GNUC" }
+            defines {"DEBUG", "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "UNICODE", "_UNICODE", "GNUC", "CONTROLLER_SUPPORT" }
 
             -- linux 32 DEFAULTS
         filter { "platforms:x32", "options:os=linux" }
