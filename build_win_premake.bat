@@ -22,6 +22,26 @@ if "%my_vs_path%"=="" (
 )
 :: Set configuration and platform here :)
 
+:: manual config for all remove later
+call %my_vs_path% GBE_Build\GBE.sln /p:Configuration=Debug /p:Platform=x64 -v:n
+call %my_vs_path% GBE_Build\GBE.sln /p:Configuration=Debug /p:Platform=Win32 -v:n
+call %my_vs_path% GBE_Build\GBE.sln /p:Configuration=Release /p:Platform=x64 -v:n
+call %my_vs_path% GBE_Build\GBE.sln /p:Configuration=Release /p:Platform=Win32 -v:n
+call %my_vs_path% GBE_Build\GBE.sln /p:Configuration=ExperimentalDebug /p:Platform=x64 -v:n
+call %my_vs_path% GBE_Build\GBE.sln /p:Configuration=ExperimentalDebug /p:Platform=Win32 -v:n
+call %my_vs_path% GBE_Build\GBE.sln /p:Configuration=ExperimentalRelease /p:Platform=x64 -v:n
+call %my_vs_path% GBE_Build\GBE.sln /p:Configuration=ExperimentalRelease /p:Platform=Win32 -v:n
+
+exit /b
+
+:: exit with error
+:end_script_with_err
+popd
+endlocal & (
+  exit /b 1
+)
+
+
 :: -v:n make it so we can actually see what commands it runs
 call %my_vs_path% GBE_Build\GBE.sln /p:Configuration=ExperimentalDebug /p:Platform=x64 -v:n
 ::call %my_vs_path% GBE_Build\GBE.sln
@@ -32,12 +52,4 @@ if %_exit% equ 0 (
     ::call "%signer_tool%"
 ) else (
     goto :end_script_with_err
-)
-exit /b
-
-:: exit with error
-:end_script_with_err
-popd
-endlocal & (
-  exit /b 1
 )

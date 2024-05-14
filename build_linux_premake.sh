@@ -15,9 +15,10 @@ chmod +777 premake5 # do we really need this?
 cd GBE_Build
 # you can select individual or all
 
-# individual
-#make config=debug_x32
-# all
-make
+# make config=debug_x32
+make config=debug_x32 && make config=debug_x64
+make config=release_x32 && make config=release_x64 
+make config=experimentaldebug_x32 && make config=experimentaldebug_x64
+make config=experimentalrelease_x32 && make config=experimentalrelease_x64
 
 cd ..
