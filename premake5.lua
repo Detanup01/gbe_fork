@@ -202,7 +202,7 @@ workspace "GBE"
 
 -- Project SteamEmu
 project "SteamEmu"
-    cppdialect("C++latest")
+    cppdialect("c++17")
     kind "SharedLib"
     language "C++"
     targetdir "bin/SteamEmu/%{cfg.buildcfg}_%{cfg.platform}"
@@ -367,7 +367,7 @@ project "SteamEmu"
 
 -- Project SteamClient
 project "SteamClient"
-    cppdialect("C++latest")
+    cppdialect("c++17")
     kind "SharedLib"
     language "C++"
     targetdir "bin/SteamClient/%{cfg.buildcfg}_%{cfg.platform}"
@@ -548,7 +548,7 @@ project "SteamClient"
 -- SteamClientExtra
 if os.target() == "windows" then
 project "SteamClientExtra"
-    cppdialect("C++latest")
+    cppdialect("c++17")
     kind "SharedLib"
     language "C++"
     targetdir "bin/SteamClientExtra/%{cfg.buildcfg}_%{cfg.platform}"
@@ -608,7 +608,7 @@ end
 -- End SteamClient + SteamClientExtra
 -- Project LobbyConnect
 project "LobbyConnect"
-    cppdialect("C++latest")
+    cppdialect("c++17")
     kind "ConsoleApp"
     language "C++"
     targetdir "bin/LobbyConnect/%{cfg.buildcfg}_%{cfg.platform}"
@@ -623,7 +623,7 @@ project "LobbyConnect"
 
 -- Project GenerateInterfaces
 project "GenerateInterfaces"
-    cppdialect("C++latest")
+    cppdialect("c++17")
     kind "ConsoleApp"
     language "C++"
     targetdir "bin/GenerateInterfaces/%{cfg.buildcfg}_%{cfg.platform}"
@@ -639,7 +639,7 @@ project "GenerateInterfaces"
 
 -- Project steamnetworkingsockets
 project "steamnetworkingsockets"
-    cppdialect("C++latest")
+    cppdialect("c++17")
     kind "ConsoleApp"
     language "C++"
     targetdir "bin/steamnetworkingsockets/%{cfg.buildcfg}_%{cfg.platform}"
