@@ -2,6 +2,8 @@
 .vscode/
 
 build/
+bin/
+GBE_Build/
 
 dll/proto_gen/
 
