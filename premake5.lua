@@ -346,7 +346,10 @@ project "SteamEmu"
             "resources/win/api/32/resources.rc"
         }
         removefiles { "libs/detours/uimports.cc" }
-        defines { "DEBUG", "EMU_EXPERIMENTAL_BUILD", "ImTextureID=ImU64", "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "UNICODE", "_UNICODE", "_CRT_SECURE_NO_WARNINGS", "EMU_BUILD_STRING=".._OPTIONS["emubuild"] }
+        defines {
+            "EMU_EXPERIMENTAL_BUILD", "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64", "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB",
+            "DEBUG", "UNICODE", "_UNICODE", "_CRT_SECURE_NO_WARNINGS", "EMU_BUILD_STRING=".._OPTIONS["emubuild"]
+        }
     -- ExperimentalRelease WINDOWS
     filter { "ExperimentalRelease", "options:os=windows" }
         files {
@@ -358,7 +361,10 @@ project "SteamEmu"
             "resources/win/api/32/resources.rc"
         }
         removefiles { "libs/detours/uimports.cc" }
-        defines { "NDEBUG", "EMU_RELEASE_BUILD", "EMU_EXPERIMENTAL_BUILD" , "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64", "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "UNICODE", "_UNICODE", "_CRT_SECURE_NO_WARNINGS", "EMU_BUILD_STRING=".._OPTIONS["emubuild"] }
+        defines {
+            "EMU_EXPERIMENTAL_BUILD" , "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64", "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB",
+            "NDEBUG", "EMU_RELEASE_BUILD", "UNICODE", "_UNICODE", "_CRT_SECURE_NO_WARNINGS", "EMU_BUILD_STRING=".._OPTIONS["emubuild"]
+        }
     -- ExperimentalDebug LINUX
     filter { "ExperimentalDebug", "options:os=linux" }
         files {
@@ -370,7 +376,10 @@ project "SteamEmu"
             "libs/simpleini/**",
             "helpers/pe_**"
         }
-        defines { "DEBUG", "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64", "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "UNICODE", "_UNICODE", "GNUC", "EMU_BUILD_STRING=".._OPTIONS["emubuild"]  }
+        defines {
+            "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64", "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB",
+            "GNUC", "EMU_BUILD_STRING=".._OPTIONS["emubuild"]
+        }
     -- ExperimentalRelease LINUX
     filter { "ExperimentalRelease", "options:os=linux" }
         files {
@@ -382,7 +391,10 @@ project "SteamEmu"
             "libs/simpleini/**",
             "helpers/pe_**"
         }
-        defines { "NDEBUG", "EMU_RELEASE_BUILD", "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64", "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "UNICODE", "_UNICODE", "GNUC", "EMU_BUILD_STRING=".._OPTIONS["emubuild"]  }
+        defines {
+            "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64", "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB",
+            "NDEBUG", "EMU_RELEASE_BUILD", "GNUC", "EMU_BUILD_STRING=".._OPTIONS["emubuild"]
+        }
 
 -- End SteamEmu
 
