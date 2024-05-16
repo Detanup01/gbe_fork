@@ -3,30 +3,30 @@ local default_files = {
     "dll/**",
     "sdk/**",
     "helpers/**"
-   }
+}
 
 local predefined_libs = {
-       "libs/fifo_map/**",
-       "libs/json/**",
-       "libs/sha/**",
-       "libs/simpleini/**",
-       "libs/stb/**",
-       "libs/utfcpp/**"
-   }
+    "libs/fifo_map/**",
+    "libs/json/**",
+    "libs/sha/**",
+    "libs/simpleini/**",
+    "libs/stb/**",
+    "libs/utfcpp/**"
+}
 
 local crash_win = {
-       "crash_printer/win.cpp",
-       "crash_printer/crash_printer/win.hpp"
-   }
+    "crash_printer/win.cpp",
+    "crash_printer/crash_printer/win.hpp"
+}
 
 local crash_linux = {
-       "crash_printer/linux.cpp",
-       "crash_printer/crash_printer/linux.hpp"
-   }
+    "crash_printer/linux.cpp",
+    "crash_printer/crash_printer/linux.hpp"
+}
 
 local win_link = {
-       "Ws2_32.lib", "Iphlpapi.lib", "Wldap32.lib", "Winmm.lib", "Bcrypt.lib", "Dbghelp.lib"
-   }
+    "Ws2_32.lib", "Iphlpapi.lib", "Wldap32.lib", "Winmm.lib", "Bcrypt.lib", "Dbghelp.lib"
+}
 
 local linux_link = {
     "pthread",
@@ -39,19 +39,21 @@ local linux_link = {
 }
 
 local default_link = {
-       "ssq.lib",
-       "libcurl.lib",
-       "libprotobuf-lite.lib",
-       "zlibstatic.lib",
-       "mbedcrypto.lib"
-   }
+    "ssq.lib",
+    "libcurl.lib",
+    "libprotobuf-lite.lib",
+    "zlibstatic.lib",
+    "mbedcrypto.lib"
+}
 
 local basic_dir_win = "build/deps/win/"
 local basic_dir_linux = "build/deps/linux/"
 
 local overlay_link_windows = {
-       "ingame_overlay.lib", "system.lib", "mini_detour.lib"
-   }
+    "ingame_overlay.lib",
+    "system.lib",
+    "mini_detour.lib"
+}
 
 local overlay_link_linux = {
     "ingame_overlay",
