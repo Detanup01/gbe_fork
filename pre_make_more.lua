@@ -19,7 +19,7 @@ project "SteamClient"
         linkoptions  {
             "/DYNAMICBASE", "/ERRORREPORT:NONE", "/NOLOGO", "/emittoolversioninfo:no"
         }
-        defines { "STEAMCLIENT_DLL", "EMU_EXPERIMENTAL_BUILD" }    
+        defines { "STEAMCLIENT_DLL","EMU_EXPERIMENTAL_BUILD" }    
 
     -- BASIC FOR LINUX 
     filter "options:os=linux"
@@ -36,10 +36,16 @@ project "SteamClient"
             linux_link,
             overlay_link_linux
         }
-        defines { "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "GNUC", "NDEBUG", "STEAMCLIENT_DLL", "CONTROLLER_SUPPORT", "ImTextureID=ImU64" }
+        defines {
+            "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "GNUC", "NDEBUG",
+            "CONTROLLER_SUPPORT", "ImTextureID=ImU64", "STEAMCLIENT_DLL"
+        }
 
         filter { "*Debug", "options:os=linux"}
-            defines {"UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "GNUC",  "DEBUG", "EMU_RELEASE_BUILD", "CONTROLLER_SUPPORT", "ImTextureID=ImU64", "STEAMCLIENT_DLL" }
+            defines {
+                "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "GNUC",  "DEBUG",
+                "EMU_RELEASE_BUILD", "CONTROLLER_SUPPORT", "ImTextureID=ImU64", "STEAMCLIENT_DLL" 
+            }
 
     -- SET ARCH
     filter "platforms:x32"
@@ -146,11 +152,17 @@ project "SteamClient"
 
     -- ExperimentalDebug WINDOWS
     filter { "ExperimentalDebug", "options:os=windows" }
-        defines { "DEBUG", "EMU_EXPERIMENTAL_BUILD", "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64", "STEAMCLIENT_DLL", "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "UNICODE", "_UNICODE", "_CRT_SECURE_NO_WARNINGS" }
+        defines {
+            "DEBUG", "EMU_EXPERIMENTAL_BUILD", "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64",
+            "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "UNICODE", "_UNICODE", "_CRT_SECURE_NO_WARNINGS", "STEAMCLIENT_DLL"
+        }
 
     -- ExperimentalRelease WINDOWS
     filter { "ExperimentalRelease", "options:os=windows" }
-        defines { "NDEBUG", "EMU_RELEASE_BUILD", "EMU_EXPERIMENTAL_BUILD", "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64", "STEAMCLIENT_DLL", "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "UNICODE", "_UNICODE", "_CRT_SECURE_NO_WARNINGS" }
+        defines {
+            "NDEBUG", "EMU_RELEASE_BUILD", "EMU_EXPERIMENTAL_BUILD", "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64",
+            "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "UNICODE", "_UNICODE", "_CRT_SECURE_NO_WARNINGS", "STEAMCLIENT_DLL"
+    }
 
     -- ExperimentalDebug LINUX
     filter { "ExperimentalDebug", "options:os=linux" }
@@ -161,7 +173,10 @@ project "SteamClient"
             "controller/**",
             "overlay_experimental/**"
         }
-        defines {"UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "GNUC",  "DEBUG", "EMU_RELEASE_BUILD", "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64", "STEAMCLIENT_DLL" }
+        defines {
+            "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "GNUC",  "DEBUG", "EMU_RELEASE_BUILD",
+            "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64", "STEAMCLIENT_DLL"
+        }
 
 
     -- ExperimentalRelease LINUX
@@ -173,7 +188,10 @@ project "SteamClient"
             "controller/**",
             "overlay_experimental/**"
         }
-        defines {"UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "GNUC",  "NDEBUG", "EMU_RELEASE_BUILD", "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64", "STEAMCLIENT_DLL" }
+        defines {
+            "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "GNUC",  "NDEBUG", "EMU_RELEASE_BUILD",
+            "CONTROLLER_SUPPORT", "EMU_OVERLAY", "ImTextureID=ImU64", "STEAMCLIENT_DLL"
+        }
 
 -- SteamClientExtra
 if os.target() == "windows" then
