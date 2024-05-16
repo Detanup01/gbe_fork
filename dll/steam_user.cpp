@@ -399,9 +399,9 @@ SteamAPICall_t Steam_User::RequestEncryptedAppTicket( void *pDataToInclude, int 
 
     for (int i = 0; i < 140; ++i)
     {
-        AppId_t appid;
-        bool available;
-        std::string name;
+        AppId_t appid{};
+        bool available{};
+        std::string name{};
         if (!settings->getDLC(appid, appid, available, name)) break;
         ticket.TicketV4.AppIDs.emplace_back(appid);
     }
