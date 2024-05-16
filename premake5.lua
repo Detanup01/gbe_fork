@@ -184,12 +184,12 @@ if _ACTION == "generateproto" then
     print("Generating from .proto file!")
     if os.target() == "windows" then
         os.mkdir("dll/proto_gen/win")
-        os.execute('call ' .. _MAIN_SCRIPT_DIR ..'/build/deps/win/protobuf/install32/bin/protoc.exe dll/net.proto -I./dll/ --cpp_out=dll/proto_gen/win')
+        os.execute('call ' .. _MAIN_SCRIPT_DIR .. '/' .. basic_dir_win ..'protobuf/install64/bin/protoc.exe dll/net.proto -I./dll/ --cpp_out=dll/proto_gen/win')
     end
     if os.target() == "linux" then
         os.mkdir("dll/proto_gen/linux")
-        os.chmod(_MAIN_SCRIPT_DIR ..'/build/deps/linux/protobuf/install32/bin/protoc', "777")
-        os.execute(_MAIN_SCRIPT_DIR ..'/build/deps/linux/protobuf/install32/bin/protoc dll/net.proto -I./dll/ --cpp_out=dll/proto_gen/linux')
+        os.chmod(_MAIN_SCRIPT_DIR .. '/' .. basic_dir_linux ..'protobuf/install64/bin/protoc', "777")
+        os.execute(_MAIN_SCRIPT_DIR .. '/' .. basic_dir_linux ..'protobuf/install64/bin/protoc dll/net.proto -I./dll/ --cpp_out=dll/proto_gen/linux')
     end
     print("Generation success!")
 end
