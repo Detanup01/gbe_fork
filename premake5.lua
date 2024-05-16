@@ -229,10 +229,11 @@ project "SteamEmu"
     -- BASIC FOR WINDOWS 
     filter "options:os=windows"
         buildoptions  {
-            "/permissive-", "/MP4", "/DYNAMICBASE", "/utf-8", "/Zc:char8_t-", "/EHsc", "/GL-"
+            "/permissive-", "/MP", "/DYNAMICBASE", "/nologo",
+            "/utf-8", "/Zc:char8_t-", "/EHsc", "/GF", "/GL-", "/GS"
         }
         linkoptions  {
-            "/emittoolversioninfo:no"
+            "/DYNAMICBASE", "/ERRORREPORT:NONE", "/NOLOGO", "/emittoolversioninfo:no"
         }
 
         filter { "options:os=windows", "configurations:Release" }
