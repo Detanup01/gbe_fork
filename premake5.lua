@@ -199,7 +199,7 @@ newoption {
     description = "Set the EMU_BUILD_STRING",
     default = "manual"
 }
-
+-- GBE Workspace
 workspace "GBE"
     configurations { "Debug", "Release", "ExperimentalDebug", "ExperimentalRelease" }
     platforms { "x64", "x32"  }
@@ -249,7 +249,8 @@ project "SteamEmu"
         -- WIN 32 DEFAULTS
         filter { "platforms:x32", "options:os=windows" }
             files {
-                windows_files
+                windows_files,
+                "resources/win/api/32/resources.rc"
             }
             links {
                 win_link,
@@ -270,7 +271,8 @@ project "SteamEmu"
         -- WIN 64 DEFAULTS
         filter { "platforms:x64", "options:os=windows" }
             files {
-                windows_files
+                windows_files,
+                "resources/win/api/64/resources.rc"
             }
             links {
                 win_link,
@@ -303,7 +305,7 @@ project "SteamEmu"
         linkoptions {
             "-Wl,--exclude-libs,ALL"
         }
-        
+
         links {
             linux_link,
             overlay_link_linux
@@ -403,7 +405,257 @@ project "SteamEmu"
             "NDEBUG", "EMU_RELEASE_BUILD", "GNUC", "EMU_BUILD_STRING=".._OPTIONS["emubuild"]
         }
 
--- End SteamEmu
+-- Project SteamEmu END
+
+-- Project SteamClient
+project "SteamClient"
+    cppdialect("c++17")
+    kind "SharedLib"
+    language "C++"
+    targetdir "bin/SteamClient/%{cfg.buildcfg}_%{cfg.platform}"
+    location "GBE_Build/SteamClient"
+    staticruntime "on"
+
+    optimize "On"
+    symbols "Off"
+
+    -- SET ARCH
+    filter "platforms:x32"
+        targetname "steamclient"
+        architecture "x86" 
+
+    filter "platforms:x64"
+        targetname "steamclient64"
+        architecture "x86_64"
+
+    -- BASIC FOR WINDOWS 
+    filter "options:os=windows"
+        buildoptions  {
+            "/permissive-", "/MP", "/DYNAMICBASE",
+            "/utf-8", "/Zc:char8_t-", "/EHsc", "/GL-"
+        }
+        linkoptions  {
+            "/NOLOGO", "/emittoolversioninfo:no"
+        }
+
+        filter { "options:os=windows", "configurations:Release" }
+            defines {
+                "NDEBUG", "EMU_RELEASE_BUILD", "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "_CRT_SECURE_NO_WARNINGS", "EMU_BUILD_STRING=".._OPTIONS["emubuild"], "STEAMCLIENT_DLL", "EMU_EXPERIMENTAL_BUILD"
+            }
+
+        filter { "options:os=windows", "configurations:Debug" }
+            defines {
+                "DEBUG", "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "_CRT_SECURE_NO_WARNINGS", "EMU_BUILD_STRING=".._OPTIONS["emubuild"], "STEAMCLIENT_DLL", "EMU_EXPERIMENTAL_BUILD"
+            }
+
+    -- Win32 stuff
+    filter { "platforms:x32", "options:os=windows" }
+        files {
+            "steamclient/**",
+            "resources/win/client/32/resources.rc"
+        }
+
+        filter { "Experimental**", "options:os=windows",  "platforms:x32" }
+            files {
+                windows_files,
+                "controller/**",
+                "overlay_experimental/**",
+                "resources/win/client/32/resources.rc"
+            }
+            links {
+                win_link,
+                default_link,
+                overlay_link_windows
+            }
+            libdirs {
+                x32_libsdir_win
+            }
+            includedirs {
+                default_include,
+                "dll/proto_gen/win",
+                x32_include_win
+            }
+            removefiles { "steamclient/**" }
+            removefiles { "libs/detours/uimports.cc" }
+
+    -- Win64 stuff
+    filter { "platforms:x64", "options:os=windows" }
+        files {
+            "steamclient/**",
+            "resources/win/client/64/resources.rc"
+        }
+    
+        filter { "Experimental**", "options:os=windows",  "platforms:x64" }
+            files {
+                windows_files,
+                "controller/**",
+                "overlay_experimental/**",
+                "resources/win/client/64/resources.rc"
+            }
+            links {
+                win_link,
+                default_link,
+                overlay_link_windows
+            }
+            libdirs {
+                x64_libsdir_win
+            }
+            includedirs {
+                default_include,
+                "dll/proto_gen/win",
+                x64_include_win
+            }
+            removefiles { "steamclient/**" }
+            removefiles { "libs/detours/uimports.cc" }
+
+    -- ExperimentalDebug WINDOWS
+    filter { "ExperimentalDebug", "options:os=windows" }
+        defines {
+            "DEBUG", "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "_CRT_SECURE_NO_WARNINGS", "EMU_BUILD_STRING=".._OPTIONS["emubuild"], "STEAMCLIENT_DLL", "EMU_EXPERIMENTAL_BUILD", 
+            "ImTextureID=ImU64", "EMU_OVERLAY", "CONTROLLER_SUPPORT"
+        }
+
+    -- ExperimentalRelease WINDOWS
+    filter { "ExperimentalRelease", "options:os=windows" }
+        defines {
+            "NDEBUG", "EMU_RELEASE_BUILD","UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "_CRT_SECURE_NO_WARNINGS", "EMU_BUILD_STRING=".._OPTIONS["emubuild"], "STEAMCLIENT_DLL", "EMU_EXPERIMENTAL_BUILD", 
+            "ImTextureID=ImU64", "EMU_OVERLAY", "CONTROLLER_SUPPORT"
+        }
+
+    -- linux soon
+-- Project SteamClient END
+
+-- Project steamnetworkingsockets START
+project "steamnetworkingsockets"
+    cppdialect("c++17")
+    kind "SharedLib"
+    language "C++"
+    targetdir "bin/steamnetworkingsockets/%{cfg.buildcfg}_%{cfg.platform}"
+    location "GBE_Build/steamnetworkingsockets"
+    targetname "steamnetworkingsockets"
+    optimize "On"
+    symbols "Off"
+
+    files {
+        "networking_sockets_lib/**"
+    }
+
+    includedirs {
+        "dll",
+        "sdk"
+    }
+
+    filter "options:os=windows"
+        buildoptions  {
+            "/permissive-", "/MP", "/DYNAMICBASE",
+            "/utf-8", "/Zc:char8_t-", "/EHsc", "/GL-"
+        }
+        linkoptions  {
+            "/NOLOGO", "/emittoolversioninfo:no"
+        }
+        filter { "options:os=windows", "configurations:**Release" }
+            defines {
+                "NDEBUG", "EMU_RELEASE_BUILD", "UTF_CPP_CPLUSPLUS=201703L", "_CRT_SECURE_NO_WARNINGS", "EMU_BUILD_STRING=".._OPTIONS["emubuild"]
+            }
+
+        filter { "options:os=windows", "configurations:**Debug" }
+            defines {
+                "DEBUG", "UTF_CPP_CPLUSPLUS=201703L", "_CRT_SECURE_NO_WARNINGS", "EMU_BUILD_STRING=".._OPTIONS["emubuild"]
+            }
+
+        filter { "platforms:x64", "options:os=windows"}
+            files {
+                "networking_sockets_lib/**",
+                "resources/win/api/64/resources.rc"
+            }
+        filter { "platforms:x32", "options:os=windows" }
+            files {
+                "networking_sockets_lib/**",
+                "resources/win/api/32/resources.rc"
+            }
+
+    filter "options:os=linux"
+        buildoptions  {
+            "-fvisibility=hidden", "-fexceptions", "-fno-jump-tables", "-fno-char8_t" , "-Wundefined-internal", "-Wno-switch"
+        }
+
+        linkoptions {
+            "-Wl,--exclude-libs,ALL"
+        }
+        filter { "options:os=linux", "configurations:**Release" }
+            defines {
+                "GNUC", "NDEBUG", "EMU_RELEASE_BUILD", "UTF_CPP_CPLUSPLUS=201703L", "_CRT_SECURE_NO_WARNINGS", "EMU_BUILD_STRING=".._OPTIONS["emubuild"]
+            }
+
+        filter { "options:os=linux", "configurations:**Debug" }
+            defines {
+                "GNUC", "DEBUG", "UTF_CPP_CPLUSPLUS=201703L", "_CRT_SECURE_NO_WARNINGS", "EMU_BUILD_STRING=".._OPTIONS["emubuild"]
+            }
+
+-- Project steamnetworkingsockets END
+
+-- Project GenerateInterfaces
+project "GenerateInterfaces"
+    cppdialect("c++17")
+    kind "ConsoleApp"
+    language "C++"
+    targetdir "bin/GenerateInterfaces/%{cfg.buildcfg}_%{cfg.platform}"
+    location "GBE_Build/GenerateInterfaces"
+    targetname "GenerateInterfaces"
+    optimize "On"
+    symbols "Off"
+
+    files {
+        "tools/generate_interfaces/**"
+    }
+-- End GenerateInterfaces
+
+-- TODO: SteamClientExtra should make steamclient_loader_BIT.exe and steamclient_extra.dll.
+
+--    Normal (NON EXPERIMENTAL) should make the .exe
+--    EXPERIMENTAL should make the _extra.dll
+-- ONLY WINDOWS
+if os.target() == "windows" then
 
 
--- .
+
+-- Project GameOverlayRenderer
+project "GameOverlayRenderer"
+    cppdialect("c++17")
+    kind "SharedLib"
+    language "C++"
+    targetdir "bin/GameOverlayRenderer/%{cfg.buildcfg}_%{cfg.platform}"
+    location "GBE_Build/GameOverlayRenderer"
+    targetname "GameOverlayRenderer"
+    optimize "On"
+    symbols "Off"
+
+    files {
+        "game_overlay_renderer_lib/**"
+    }
+
+    filter { "platforms:x64", "options:os=windows"}
+        includedirs {
+            "game_overlay_renderer_lib",
+            default_include,
+            "dll/proto_gen/win",
+            x64_include_win
+        }
+        libdirs {
+            x64_libsdir_win
+        }
+    filter { "platforms:x32", "options:os=windows" }
+        includedirs {
+            "game_overlay_renderer_lib",
+            default_include,
+            "dll/proto_gen/win",
+            x32_include_win
+        }
+        libdirs {
+            x32_libsdir_win
+        }
+-- End GameOverlayRenderer
+
+end
+-- ONLY WINDOWS END
+-- Workspace END
