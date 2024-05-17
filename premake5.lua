@@ -31,11 +31,11 @@ local win_link = {
 local linux_link = {
     "pthread",
     "dl",
-    "ssq",
-    "z", -- libz library
-    "curl",
-    "protobuf-lite",
-    "mbedcrypto"
+    "ssq:static",
+    "z:static", -- libz library
+    "curl:static",
+    "protobuf-lite:static",
+    "mbedcrypto:static"
 }
 
 local default_link = {
@@ -56,9 +56,9 @@ local overlay_link_windows = {
 }
 
 local overlay_link_linux = {
-    "ingame_overlay",
-    "system", -- ingame_overlay dependency
-    "mini_detour" -- ingame_overlay dependency
+    "ingame_overlay:static",
+    "system:static", -- ingame_overlay dependency
+    "mini_detour:static" -- ingame_overlay dependency
 }
 
 local default_include = {
