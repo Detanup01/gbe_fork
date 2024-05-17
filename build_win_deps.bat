@@ -71,14 +71,11 @@ if %jobs_count% lss 1 (
 :: ############## common CMAKE args ##############
 :: https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS_CONFIG.html#variable:CMAKE_%3CLANG%3E_FLAGS_%3CCONFIG%3E
 set cmake_common_args=-G "Visual Studio 17 2022" -S .
-set cmake_common_defs=-DCMAKE_BUILD_TYPE=Release -DCMAKE_C_STANDARD_REQUIRED=ON -DCMAKE_CXX_STANDARD_REQUIRED=ON -DCMAKE_C_STANDARD=17 -DCMAKE_CXX_STANDARD=17 -DCMAKE_POSITION_INDEPENDENT_CODE=True -DBUILD_SHARED_LIBS=OFF -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded "-DCMAKE_C_FLAGS_RELEASE=/MT /std:c17 /D_MT" "-DCMAKE_CXX_FLAGS_RELEASE=/MT /std:c++17 /D_MT"
-set cmake_common_defs_mbedtls=-DCMAKE_BUILD_TYPE=Release -DCMAKE_C_STANDARD_REQUIRED=ON -DCMAKE_CXX_STANDARD_REQUIRED=ON -DCMAKE_POSITION_INDEPENDENT_CODE=True -DBUILD_SHARED_LIBS=OFF -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded "-DCMAKE_C_FLAGS_RELEASE=/MT /D_MT" "-DCMAKE_CXX_FLAGS_RELEASE=/MT /D_MT"
+set cmake_common_defs=-DCMAKE_BUILD_TYPE=Release -DCMAKE_C_STANDARD_REQUIRED=ON -DCMAKE_CXX_STANDARD_REQUIRED=ON -DCMAKE_POSITION_INDEPENDENT_CODE=True -DBUILD_SHARED_LIBS=OFF -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded "-DCMAKE_C_FLAGS_RELEASE=/MT /D_MT" "-DCMAKE_CXX_FLAGS_RELEASE=/MT /D_MT"
 set "recreate_32=rmdir /s /q build32\ 1>nul 2>&1 & rmdir /s /q install32\ 1>nul 2>&1 & mkdir build32\ && mkdir install32\"
 set "recreate_64=rmdir /s /q build64\ 1>nul 2>&1 & rmdir /s /q install64\ 1>nul 2>&1 & mkdir build64\ && mkdir install64\"
 set cmake_gen32="%mycmake%" %cmake_common_args% -A Win32 -B build32 -DCMAKE_INSTALL_PREFIX=install32 %cmake_common_defs%
 set cmake_gen64="%mycmake%" %cmake_common_args% -A x64 -B build64 -DCMAKE_INSTALL_PREFIX=install64 %cmake_common_defs%
-set cmake_gen32_mbedtls="%mycmake%" %cmake_common_args% -A Win32 -B build32 -DCMAKE_INSTALL_PREFIX=install32 %cmake_common_defs_mbedtls%
-set cmake_gen64_mbedtls="%mycmake%" %cmake_common_args% -A x64 -B build64 -DCMAKE_INSTALL_PREFIX=install64 %cmake_common_defs_mbedtls%
 set cmake_build32="%mycmake%" --build build32 --config Release --parallel %jobs_count% %VERBOSITY%
 set cmake_build64="%mycmake%" --build build64 --config Release --parallel %jobs_count% %VERBOSITY%
 set "clean_gen32=if exist build32\ rmdir /s /q build32"
@@ -315,7 +312,7 @@ call "%~dp0build_win_set_env.bat" 32 || (
     goto :end_script
 )
 %recreate_32%
-%cmake_gen32_mbedtls% %mbedtls_common_defs%
+%cmake_gen32% %mbedtls_common_defs%
 set /a _exit=%errorlevel%
 %cmake_build32% --target install
 set /a _exit+=%errorlevel%
@@ -331,7 +328,7 @@ call "%~dp0build_win_set_env.bat" 64 || (
     goto :end_script
 )
 %recreate_64%
-%cmake_gen64_mbedtls% %mbedtls_common_defs%
+%cmake_gen64% %mbedtls_common_defs%
 set /a _exit=%errorlevel%
 %cmake_build64% --target install
 set /a _exit+=%errorlevel%

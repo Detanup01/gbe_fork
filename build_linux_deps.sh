@@ -121,7 +121,7 @@ build_threads="$(( $(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 0) * 70 / 100
 ############## common CMAKE args ##############
 # https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS_CONFIG.html#variable:CMAKE_%3CLANG%3E_FLAGS_%3CCONFIG%3E
 cmake_common_args='-G "Unix Makefiles" -S .'
-cmake_common_defs="-DCMAKE_BUILD_TYPE=Release -DCMAKE_C_STANDARD_REQUIRED=ON -DCMAKE_CXX_STANDARD_REQUIRED=ON -DCMAKE_C_STANDARD=17 -DCMAKE_CXX_STANDARD=17 -DCMAKE_POSITION_INDEPENDENT_CODE=True -DBUILD_SHARED_LIBS=OFF"
+cmake_common_defs="-DCMAKE_BUILD_TYPE=Release -DCMAKE_C_STANDARD_REQUIRED=ON -DCMAKE_CXX_STANDARD_REQUIRED=ON -DCMAKE_POSITION_INDEPENDENT_CODE=True -DBUILD_SHARED_LIBS=OFF"
 recreate_32="rm -f -r build32/ && rm -f -r install32/ && mkdir build32/ && mkdir install32/"
 recreate_64="rm -f -r build64/ && rm -f -r install64/ && mkdir build64/ && mkdir install64/"
 cmake_gen32="'$mycmake' $cmake_common_args -B build32 -DCMAKE_TOOLCHAIN_FILE=$deps_dir/32-bit-toolchain.cmake -DCMAKE_INSTALL_PREFIX=install32 $cmake_common_defs"
