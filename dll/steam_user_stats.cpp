@@ -1858,9 +1858,29 @@ bool Steam_User_Stats::GetAchievementProgressLimits( const char *pchName, int32 
 
 bool Steam_User_Stats::GetAchievementProgressLimits( const char *pchName, float *pfMinProgress, float *pfMaxProgress )
 {
-    PRINT_DEBUG_TODO();
+    PRINT_DEBUG("'%s'", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return false;
+
+    if (!pchName) return false;
+
+    nlohmann::detail::iter_impl<nlohmann::json> it = defined_achievements.end();
+    try {
+        it = defined_achievements_find(pchName);
+    }
+    catch (...) {}
+    if (defined_achievements.end() == it) return false;
+
+    try {
+        std::string pch_name = it->value("name", std::string());
+        auto ach = user_achievements.find(pch_name);
+        if (user_achievements.end() != ach) {
+            if (pfMinProgress) *pfMinProgress = ach->value("progress", static_cast<float>(0));
+            if (pfMaxProgress) *pfMaxProgress = ach->value("max_progress", static_cast<float>(0));
+        }
+    }
+    catch (...) {}
+
+    return true;
 }
 
 

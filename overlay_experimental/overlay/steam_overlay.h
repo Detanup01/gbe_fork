@@ -85,6 +85,8 @@ struct Overlay_Achievement
     std::string description{};
     std::string icon_name{};
     std::string icon_gray_name{};
+    float progress{};
+    float max_progress{};
     bool hidden{};
     bool achieved{};
     uint32 unlock_time{};

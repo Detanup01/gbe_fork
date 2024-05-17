@@ -364,6 +364,11 @@ void Steam_Overlay::load_achievements_data()
 
         ach.icon_name = steamUserStats->get_achievement_icon_name(ach.name.c_str(), true);
         ach.icon_gray_name = steamUserStats->get_achievement_icon_name(ach.name.c_str(), false);
+        
+        float pnMinProgress, pnMaxProgress;
+        steamUserStats->GetAchievementProgressLimits(ach.name.c_str(), &pnMinProgress, &pnMaxProgress);
+        ach.progress = pnMinProgress;
+        ach.max_progress = pnMaxProgress;
 
         achievements.push_back(ach);
         
@@ -1453,6 +1458,11 @@ void Steam_Overlay::render_main_window()
                         ImGui::TextColored(ImVec4(0, 255, 0, 255), translationAchievedOn[current_language], buffer);
                     } else {
                         ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationNotAchieved[current_language]);
+                        if (x.max_progress > 0) {
+                            char buf[32];
+                            sprintf(buf, "%d/%d", (int)x.progress, (int)x.max_progress);
+                            ImGui::ProgressBar(x.progress / x.max_progress, { -1 , settings->overlay_appearance.font_size }, buf);
+                        }
                     }
 
                     if (could_create_ach_table_entry) ImGui::EndTable();
