@@ -51,6 +51,8 @@ def generate_stats_achievements(
                 out = {}
                 out['default'] = 0
                 out['name'] = stat['name']
+                if 'min' in stat:
+                    out['min'] = stat['min']
                 if stat['type'] == STAT_TYPE_INT:
                     out['type'] = 'int'
                 elif stat['type'] == STAT_TYPE_FLOAT:
@@ -99,7 +101,10 @@ def generate_stats_achievements(
                 except ValueError:
                     # we set this to min if someone is failed to set to a fucking int value. and after this and still throwing error I gonna throw the dev out of the windows whoever misstyped that!!!
                     # fixes 282800 | STAT_OJ46_C12 (<---THIS ONE)
-                    default_num = int(s['min'])
+                    if 'min' in s:
+                        default_num = int(s['min'])
+                    else:
+                        raise ValueError('min not exist in (s) and no way to get the data. please report with the appid')
         else:
             default_num = float(s['default'])
         output_stats.append(f"{s['name']}={s['type']}={default_num}\n")
