@@ -94,7 +94,12 @@ def generate_stats_achievements(
             try:
                 default_num = int(s['default'])
             except ValueError:
-                default_num = int(float(s['default']))
+                try:
+                    default_num = int(float(s['default']))
+                except ValueError:
+                    # we set this to min if someone is failed to set to a fucking int value. and after this and still throwing error I gonna throw the dev out of the windows whoever misstyped that!!!
+                    # fixes 282800 | STAT_OJ46_C12 (<---THIS ONE)
+                    default_num = int(s['min'])
         else:
             default_num = float(s['default'])
         output_stats.append(f"{s['name']}={s['type']}={default_num}\n")
