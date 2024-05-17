@@ -13,11 +13,11 @@ project "SteamClient"
     -- BASIC FOR WINDOWS 
     filter "options:os=windows"
         buildoptions  {
-            "/permissive-", "/MP", "/DYNAMICBASE", "/nologo",
-            "/utf-8", "/Zc:char8_t-", "/EHsc", "/GF", "/GL-", "/GS"
+            "/permissive-", "/MP", "/DYNAMICBASE",
+            "/utf-8", "/Zc:char8_t-", "/EHsc", "/GL-"
         }
         linkoptions  {
-            "/DYNAMICBASE", "/ERRORREPORT:NONE", "/NOLOGO", "/emittoolversioninfo:no"
+            "/NOLOGO", "/emittoolversioninfo:no"
         }
         defines { "STEAMCLIENT_DLL","EMU_EXPERIMENTAL_BUILD" }    
 
