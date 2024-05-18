@@ -43,10 +43,10 @@ enum class source_server_type : uint8_t {
 };
 
 enum class source_server_env : uint8_t {
-    linux   = 'l',
-    windows = 'w',
-    old_mac = 'm',
-    mac     = 'o',
+    linux_os   = 'l',
+    windows_os = 'w',
+    old_mac_os = 'm',
+    mac_os     = 'o',
 };
 
 enum class source_server_visibility : uint8_t {
@@ -69,9 +69,9 @@ enum source_server_extra_flag : uint8_t {
 };
 
 #if defined(STEAM_WIN32)
-static constexpr const source_server_env my_server_env = source_server_env::windows;
+static constexpr const source_server_env my_server_env = source_server_env::windows_os;
 #else
-static constexpr const source_server_env my_server_env = source_server_env::linux;
+static constexpr const source_server_env my_server_env = source_server_env::linux_os;
 #endif
 
 
