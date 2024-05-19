@@ -380,7 +380,6 @@ void Steam_Overlay::load_achievements_data()
 
 }
 
-
 void Steam_Overlay::initial_load_achievements_icons()
 {
     {
