@@ -1153,7 +1153,7 @@ bool Steam_User_Stats::IndicateAchievementProgress( const char *pchName, uint32 
         save_achievements();
         if (!settings->disable_overlay) {
             overlay->AddAchievementNotification(it.value());
-            overlay->update_achievement_progress(actual_ach_name, nCurProgress);
+            overlay->update_achievement_progress(actual_ach_name, (int)nCurProgress);
         }
     } catch (...) {}
 

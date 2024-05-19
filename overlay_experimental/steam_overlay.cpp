@@ -380,7 +380,7 @@ void Steam_Overlay::load_achievements_data()
 
 }
 
-void Steam_Overlay::update_achievement_progress(std::string const& ach_name, uint32 nCurProgress) {
+void Steam_Overlay::update_achievement_progress(std::string const& ach_name, int nCurProgress) {
 
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
