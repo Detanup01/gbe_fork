@@ -6,6 +6,10 @@
   path = third-party/common/win
   url = ./
   branch = third-party/common/win
+[submodule "third-party/common/linux"]
+  path = third-party/common/linux
+  url = ./
+  branch = third-party/common/linux
 [submodule "third-party/deps/common"]
   path = third-party/deps/common
   url = ./
