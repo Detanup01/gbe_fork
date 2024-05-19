@@ -365,10 +365,11 @@ void Steam_Overlay::load_achievements_data()
         ach.icon_name = steamUserStats->get_achievement_icon_name(ach.name.c_str(), true);
         ach.icon_gray_name = steamUserStats->get_achievement_icon_name(ach.name.c_str(), false);
         
-        float pnMinProgress, pnMaxProgress;
-        steamUserStats->GetAchievementProgressLimits(ach.name.c_str(), &pnMinProgress, &pnMaxProgress);
-        ach.progress = pnMinProgress;
-        ach.max_progress = pnMaxProgress;
+        float pnMinProgress = 0, pnMaxProgress = 0;
+        if (steamUserStats->GetAchievementProgressLimits(ach.name.c_str(), &pnMinProgress, &pnMaxProgress)) {
+            ach.progress = pnMinProgress;
+            ach.max_progress = pnMaxProgress;
+        }
 
         achievements.push_back(ach);
         
@@ -378,6 +379,20 @@ void Steam_Overlay::load_achievements_data()
     PRINT_DEBUG("count=%u, loaded=%zu", achievements_num, achievements.size());
 
 }
+
+void Steam_Overlay::update_achievement_progress(std::string const& ach_name, uint32 nCurProgress) {
+
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+
+    for (auto& ach : achievements) {
+        if (ach.name == ach_name) {
+            ach.progress = (float)nCurProgress;
+            break;
+        }
+    }
+}
+
 
 void Steam_Overlay::initial_load_achievements_icons()
 {
@@ -1459,7 +1474,7 @@ void Steam_Overlay::render_main_window()
                     } else {
                         ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationNotAchieved[current_language]);
                         if (x.max_progress > 0) {
-                            char buf[32];
+                            char buf[32]{};
                             sprintf(buf, "%d/%d", (int)x.progress, (int)x.max_progress);
                             ImGui::ProgressBar(x.progress / x.max_progress, { -1 , settings->overlay_appearance.font_size }, buf);
                         }
@@ -1972,29 +1987,25 @@ void Steam_Overlay::AddAchievementNotification(nlohmann::json const &ach)
     // otherwise when you open the achievements list/menu you won't see the new unlock status
 
     // adjust the local 'is_achieved' and 'unlock_time'
-    std::vector<Overlay_Achievement*> found_achs{};
-    {
-        std::lock_guard<std::recursive_mutex> lock2(global_mutex);
+    std::lock_guard<std::recursive_mutex> lock2(global_mutex);
 
-        std::string ach_name = ach.value("name", std::string());
-        for (auto &a : achievements) {
-            if (a.name == ach_name) {
-                found_achs.push_back(&a);
-                
-                bool achieved = false;
-                uint32 unlock_time = 0;
-                get_steam_client()->steam_user_stats->GetAchievementAndUnlockTime(a.name.c_str(), &achieved, &unlock_time);
-                a.achieved = achieved;
-                a.unlock_time = unlock_time;
+    std::string ach_name = ach.value("name", std::string());
+    for (auto &a : achievements) {
+        if (a.name == ach_name) {
+            bool achieved = false;
+            uint32 unlock_time = 0;
+
+            get_steam_client()->steam_user_stats->GetAchievementAndUnlockTime(a.name.c_str(), &achieved, &unlock_time);
+            a.achieved = achieved;
+            a.unlock_time = unlock_time;
+  
+            if (achieved) {
+                post_achievement_notification(a);
+                notify_sound_user_achievement();
             }
+            break;
         }
     }
-
-    for (auto found_ach : found_achs) {
-        post_achievement_notification(*found_ach);
-    }
-    
-    notify_sound_user_achievement();
 }
 
 #endif

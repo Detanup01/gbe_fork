@@ -1151,6 +1151,10 @@ bool Steam_User_Stats::IndicateAchievementProgress( const char *pchName, uint32 
         user_achievements[actual_ach_name]["progress"] = nCurProgress;
         user_achievements[actual_ach_name]["max_progress"] = nMaxProgress;
         save_achievements();
+        if (!settings->disable_overlay) {
+            overlay->AddAchievementNotification(it.value());
+            overlay->update_achievement_progress(actual_ach_name, nCurProgress);
+        }
     } catch (...) {}
 
     {
@@ -1869,6 +1873,9 @@ bool Steam_User_Stats::GetAchievementProgressLimits( const char *pchName, float 
     }
     catch (...) {}
     if (defined_achievements.end() == it) return false;
+
+    if (pfMinProgress) *pfMinProgress = 0;
+    if (pfMaxProgress) *pfMaxProgress = 0;
 
     try {
         std::string pch_name = it->value("name", std::string());
