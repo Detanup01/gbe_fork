@@ -253,8 +253,7 @@ public:
     void FriendConnect(Friend _friend);
     void FriendDisconnect(Friend _friend);
 
-    void AddAchievementNotification(nlohmann::json const& ach);
-    void update_achievement_progress(std::string const& ach_name, int nCurProgress);
+    void AddAchievementNotification(std::string ach_name, nlohmann::json const& ach);
 };
 
 #else // EMU_OVERLAY
@@ -288,8 +287,7 @@ public:
     void FriendConnect(Friend _friend) {}
     void FriendDisconnect(Friend _friend) {}
 
-    void AddAchievementNotification(nlohmann::json const& ach) {}
-    void update_achievement_progress(std::string const& ach_name, int nCurProgress);
+    void AddAchievementNotification(std::string ach_name, nlohmann::json const& ach) {}
 };
 
 #endif // EMU_OVERLAY

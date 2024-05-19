@@ -380,19 +380,6 @@ void Steam_Overlay::load_achievements_data()
 
 }
 
-void Steam_Overlay::update_achievement_progress(std::string const& ach_name, int nCurProgress) {
-
-    PRINT_DEBUG_ENTRY();
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-
-    for (auto& ach : achievements) {
-        if (ach.name == ach_name) {
-            ach.progress = (float)nCurProgress;
-            break;
-        }
-    }
-}
-
 
 void Steam_Overlay::initial_load_achievements_icons()
 {
@@ -1977,7 +1964,7 @@ void Steam_Overlay::FriendDisconnect(Friend _friend)
 }
 
 // show a notification when the user unlocks an achievement
-void Steam_Overlay::AddAchievementNotification(nlohmann::json const &ach)
+void Steam_Overlay::AddAchievementNotification(std::string ach_name, nlohmann::json const &ach)
 {
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
@@ -1989,16 +1976,13 @@ void Steam_Overlay::AddAchievementNotification(nlohmann::json const &ach)
     // adjust the local 'is_achieved' and 'unlock_time'
     std::lock_guard<std::recursive_mutex> lock2(global_mutex);
 
-    std::string ach_name = ach.value("name", std::string());
     for (auto &a : achievements) {
         if (a.name == ach_name) {
-            bool achieved = false;
-            uint32 unlock_time = 0;
+            a.achieved = ach.value("earned", false);
+            a.unlock_time = ach.value("earned_time", static_cast<uint32>(0));
+            a.progress = ach.value("progress", static_cast<float>(0));
+            a.max_progress = ach.value("max_progress", static_cast<float>(0));
 
-            get_steam_client()->steam_user_stats->GetAchievementAndUnlockTime(a.name.c_str(), &achieved, &unlock_time);
-            a.achieved = achieved;
-            a.unlock_time = unlock_time;
-  
             if (achieved) {
                 post_achievement_notification(a);
                 notify_sound_user_achievement();
