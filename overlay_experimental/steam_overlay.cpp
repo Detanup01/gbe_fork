@@ -1982,7 +1982,7 @@ void Steam_Overlay::AddAchievementNotification(std::string ach_name, nlohmann::j
             a.progress = ach.value("progress", static_cast<float>(0));
             a.max_progress = ach.value("max_progress", static_cast<float>(0));
 
-            if (achieved) {
+            if (a.achieved) {
                 post_achievement_notification(a);
                 notify_sound_user_achievement();
             }
