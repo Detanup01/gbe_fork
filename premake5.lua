@@ -113,9 +113,6 @@ newoption {
 
 -- paths to custom tools
 ---------
-local dos_stub_exe_32 = os.realpath('resources/win/file_dos_stub/file_dos_stub_32.exe')
-local dos_stub_exe_64 = os.realpath('resources/win/file_dos_stub/file_dos_stub_64.exe')
-local signer_tool = os.realpath('third-party/build/win/cert/sign_helper.bat')
 
 
 -- common defines
@@ -373,6 +370,10 @@ filter {} -- reset the filter and remove all active keywords
 
 -- post build change DOS stub + sign
 ---------
+if os.target() == "windows" then
+local dos_stub_exe_32 = os.realpath('resources/win/file_dos_stub/file_dos_stub_32.exe')
+local dos_stub_exe_64 = os.realpath('resources/win/file_dos_stub/file_dos_stub_64.exe')
+local signer_tool = os.realpath('third-party/build/win/cert/sign_helper.bat')
 -- change dos stub
 filter { "system:windows", "platforms:x32", }
     postbuildcommands {
@@ -388,7 +389,7 @@ filter { "system:windows", }
         '"' .. signer_tool .. '" %[%{!cfg.buildtarget.abspath}]',
     }
 filter {} -- reset the filter and remove all active keywords
-
+end
 
 
 workspace "gbe"
