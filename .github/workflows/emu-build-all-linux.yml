@@ -31,10 +31,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-## notice how on linux everything is lowercase, `cd GBE_Build`, then: `make help`
-        cfg: [ 'debug', 'release', 'experimentaldebug', 'experimentalrelease', ]
-        arch: [ 'x64', 'x32', ]
+        ## notice how on linux everything is lowercase, `cd GBE_Build`, then: `make help`
         prj: [ 'GenerateInterfaces', 'SteamClient', 'SteamEmu', ]
+        arch: [ 'x64', 'x32', ]
+        cfg: [ 'debug', 'release', 'experimentaldebug', 'experimentalrelease', ]
+    
+        exclude:
+        - prj: 'GenerateInterfaces'
+          cfg: 'experimentaldebug'
+        - prj: 'GenerateInterfaces'
+          cfg: 'experimentalrelease'
     
     steps:
 ### clone branch

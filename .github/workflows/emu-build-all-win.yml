@@ -33,6 +33,17 @@ jobs:
         prj: [ 'GameOverlayRenderer', 'GenerateInterfaces', 'SteamClient', 'SteamEmu', ]
         arch: [ 'x64', 'Win32', ]
         cfg: [ 'Debug', 'Release', 'ExperimentalDebug', 'ExperimentalRelease', ]
+        
+        exclude:
+        - prj: 'GameOverlayRenderer'
+          cfg: 'Debug'
+        - prj: 'GameOverlayRenderer'
+          cfg: 'Release'
+
+        - prj: 'GenerateInterfaces'
+          cfg: 'ExperimentalDebug'
+        - prj: 'GenerateInterfaces'
+          cfg: 'ExperimentalRelease'
     
     steps:
 ### on Windows Git will auto change line ending to CRLF, not preferable
