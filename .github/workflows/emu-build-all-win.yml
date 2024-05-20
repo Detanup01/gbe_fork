@@ -87,7 +87,7 @@ jobs:
 ### build target(s)
       - name: Build target(s)
         shell: cmd
-        working-directory: ${{ github.workspace }}/GBE_Build
+        working-directory: ${{ github.workspace }}/build/project/vs2022/win
         run: |
           msbuild /nologo /target:${{ matrix.prj }} /m:2 /v:d /p:Configuration=${{ matrix.cfg }},Platform=${{ matrix.arch }} GBE.sln
 
@@ -96,7 +96,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: "emu-win-${{ matrix.prj }}-${{ matrix.cfg }}-${{ matrix.arch }}-${{ github.sha }}"
-          path: "bin/"
+          path: "build/win/vs2022/"
           if-no-files-found: 'error'
           compression-level: 9
           retention-days: 1

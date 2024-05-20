@@ -90,7 +90,7 @@ jobs:
 ### build target(s)
       - name: Build target(s)
         shell: bash
-        working-directory: ${{ github.workspace }}/GBE_Build
+        working-directory: ${{ github.workspace }}/build/project/gmake/linux
         run: |
           echo "dry run..."
           CC=clang CXX=clang++ make -n -j 2 config=${{ matrix.cfg }}_${{ matrix.arch }} ${{ matrix.prj }}
@@ -102,7 +102,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: "emu-linux-${{ matrix.prj }}-${{ matrix.cfg }}-${{ matrix.arch }}-${{ github.sha }}"
-          path: "bin/"
+          path: "build/linux/gmake/"
           if-no-files-found: 'error'
           compression-level: 9
           retention-days: 1
