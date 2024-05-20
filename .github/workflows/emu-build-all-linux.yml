@@ -102,7 +102,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: "emu-linux-${{ matrix.prj }}-${{ matrix.cfg }}-${{ matrix.arch }}-${{ github.sha }}"
-          path: "build/linux/gmake2/"
+          path: "build/linux/gmake2/${{ matrix.cfg }}"
           if-no-files-found: 'error'
           compression-level: 9
           retention-days: 1
