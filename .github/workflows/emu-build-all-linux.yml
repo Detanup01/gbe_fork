@@ -9,130 +9,90 @@ on:
 permissions:
   contents: write
 
+env:
+  DEPS_CACHE_KEY: emu-deps-linux
+  DEPS_CACHE_DIR: build/deps/linux
+
+  PACKAGE_BASE_DIR: "build/package/linux"
+  THIRD_PARTY_BASE_DIR: 'third-party'
+  
 jobs:
   deps:
     name: Restore or build deps
     if: ${{ !cancelled() }}
     uses: ./.github/workflows/emu-deps-linux.yml
 
-  emu-regular-x32-release:
-    name: Regular x32 (release)
+  builds-matrix-linux:
+    name: Builds matrix (Linux)
     needs: [ deps ]
+    runs-on: ubuntu-22.04
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-linux.yml
-    with:
-      emu-variant: regular
-      x32: true
-      debug: false
+    
+    strategy:
+      matrix:
+## notice how on linux everything is lowercase, `cd GBE_Build`, then: `make help`
+        cfg: [ 'debug', 'release', 'experimentaldebug', 'experimentalrelease', ]
+        arch: [ 'x64', 'x32', ]
+        prj: [ 'GenerateInterfaces', 'SteamClient', 'SteamEmu', ]
+    
+    steps:
+### deps
+      - name: Restore deps
+        id: emu-deps-cache-step
+        uses: actions/cache@v4
+        with:
+          key: ${{ env.DEPS_CACHE_KEY }}
+          path: ${{ env.DEPS_CACHE_DIR }}
 
-  emu-regular-x32-debug:
-    name: Regular x32 (debug)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-linux.yml
-    with:
-      emu-variant: regular
-      x32: true
-      debug: true
+## mandatory Linux packages, installed via sudo apt install ...
+      - name: Install required packages
+        shell: bash
+        run: sudo chmod 777 build_linux_deps.sh && sudo ./build_linux_deps.sh -verbose -packages_only
 
-  emu-exp-x32-release:
-    name: Experimental x32 (release)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-linux.yml
-    with:
-      emu-variant: exp
-      x32: true
-      debug: false
+## extra helpers/tools, these are not built inside the deps build dir
+      - name: Clone third-party build helpers (common/linux)
+        uses: actions/checkout@v4
+        with:
+          ref: 'third-party/common/linux'
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/common/linux"
 
-  emu-exp-x32-debug:
-    name: Experimental x32 (debug)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-linux.yml
-    with:
-      emu-variant: exp
-      x32: true
-      debug: true
+      - name: Clone third-party build helpers (build/linux)
+        uses: actions/checkout@v4
+        with:
+          ref: 'third-party/build/linux'
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/build/linux"
 
-  tools-x32-release:
-    name: Tools x32 (release)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-linux.yml
-    with:
-      emu-variant: tools
-      x32: true
-      debug: false
+### fix folder permissions! not sure why this fails
+    # nested subdirs "build/linux/release" cause permission problems
+      - name: Give all permissions to repo folder
+        shell: bash
+        working-directory: ${{ github.workspace }}
+        run:  sudo chmod -R 777 "${{ github.workspace }}"
 
-  tools-x32-debug:
-    name: Tools x32 (debug)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-linux.yml
-    with:
-      emu-variant: tools
-      x32: true
-      debug: true
+### generate project files
+## TODO gen proto action is broken, always returns error = 1
+      - name: Generate project files
+        shell: bash
+        working-directory: ${{ github.workspace }}
+        run: |
+          sudo chmod 777 ./third-party/common/linux/premake/premake5
+          ./third-party/common/linux/premake/premake5 --file=premake5.lua --os=linux generateproto 
+          ./third-party/common/linux/premake/premake5 --file=premake5.lua --emubuild=${{ github.sha }} --os=linux gmake2
+          exit 0
 
+### build target(s)
+      - name: Build target(s)
+        shell: bash
+        working-directory: ${{ github.workspace }}/GBE_Build
+        run: |
+          make -j 2 config=${{ matrix.cfg }}_${{ matrix.arch }} ${{ matrix.prj }}
 
-
-  emu-regular-x64-release:
-    name: Regular x64 (release)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-linux.yml
-    with:
-      emu-variant: regular
-      x32: false
-      debug: false
-
-  emu-regular-x64-debug:
-    name: Regular x64 (debug)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-linux.yml
-    with:
-      emu-variant: regular
-      x32: false
-      debug: true
-
-  emu-exp-x64-release:
-    name: Experimental x64 (release)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-linux.yml
-    with:
-      emu-variant: exp
-      x32: false
-      debug: false
-
-  emu-exp-x64-debug:
-    name: Experimental x64 (debug)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-linux.yml
-    with:
-      emu-variant: exp
-      x32: false
-      debug: true
-
-  tools-x64-release:
-    name: Tools x64 (release)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-linux.yml
-    with:
-      emu-variant: tools
-      x32: false
-      debug: false
-
-  tools-x64-debug:
-    name: Tools x64 (debug)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-linux.yml
-    with:
-      emu-variant: tools
-      x32: false
-      debug: true
+### upload artifact/package to github Actions (for targets)
+      - name: Upload build package (for targets)
+        uses: actions/upload-artifact@v4
+        with:
+          name: "emu-linux-${{ matrix.prj }}-${{ matrix.cfg }}-${{ matrix.arch }}-${{ github.sha }}"
+          path: "bin/"
+          if-no-files-found: 'error'
+          compression-level: 9
+          retention-days: 1

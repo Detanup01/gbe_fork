@@ -9,150 +9,92 @@ on:
 permissions:
   contents: write
 
+env:
+  DEPS_CACHE_KEY: emu-deps-win
+  DEPS_CACHE_DIR: build/deps/win
+  
+  THIRD_PARTY_BASE_DIR: 'third-party'
+
 jobs:
   deps:
     name: Restore or build deps
     if: ${{ !cancelled() }}
     uses: ./.github/workflows/emu-deps-win.yml
 
-  emu-regular-x32-release:
-    name: Regular x32 (release)
+  builds-matrix-win:
+    name: Builds matrix (Windows)
     needs: [ deps ]
+    runs-on: windows-2022
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-win.yml
-    with:
-      emu-variant: regular
-      x32: true
-      debug: false
+    
+    strategy:
+      matrix:
+        prj: [ 'GameOverlayRenderer', 'GenerateInterfaces', 'SteamClient', 'SteamEmu', ]
+        arch: [ 'x64', 'Win32', ]
+        cfg: [ 'Debug', 'Release', 'ExperimentalDebug', 'ExperimentalRelease', ]
+    
+    steps:
+### on Windows Git will auto change line ending to CRLF, not preferable
+      - name: Ensure LF line ending
+        shell: cmd
+        working-directory: ${{ github.workspace }}
+        run: |
+          git config --local core.autocrlf false
+          git config --system core.autocrlf false
+          git config --global core.autocrlf false
 
-  emu-regular-x32-debug:
-    name: Regular x32 (debug)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-win.yml
-    with:
-      emu-variant: regular
-      x32: true
-      debug: true
+### ensure we have msbuild
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
 
-  emu-exp-x32-release:
-    name: Experimental x32 (release)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-win.yml
-    with:
-      emu-variant: exp
-      x32: true
-      debug: false
+### clone branch
+      - name: Checkout branch
+        uses: actions/checkout@v4
 
-  emu-exp-x32-debug:
-    name: Experimental x32 (debug)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-win.yml
-    with:
-      emu-variant: exp
-      x32: true
-      debug: true
+### deps
+      - name: Restore deps
+        id: emu-deps-cache-step
+        uses: actions/cache@v4
+        with:
+          key: ${{ env.DEPS_CACHE_KEY }}
+          path: ${{ env.DEPS_CACHE_DIR }}
 
-  emu-client-x32-release:
-    name: Client x32 (release)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-win.yml
-    with:
-      emu-variant: client
-      x32: true
-      debug: false
+## extra helpers/tools, these are not built inside the deps build dir
+      - name: Clone third-party build helpers (common/win)
+        uses: actions/checkout@v4
+        with:
+          ref: 'third-party/common/win'
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/common/win"
 
-  emu-client-x32-debug:
-    name: Client x32 (debug)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-win.yml
-    with:
-      emu-variant: client
-      x32: true
-      debug: true
+      - name: Clone third-party deps (build/win)
+        uses: actions/checkout@v4
+        with:
+          ref: 'third-party/build/win'
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/build/win"
 
+### generate project files
+## TODO gen proto action is broken, always returns error = 1
+      - name: Generate project files
+        shell: cmd
+        working-directory: ${{ github.workspace }}
+        run: |
+          third-party\common\win\premake\premake5.exe --file=premake5.lua --os=windows generateproto 
+          third-party\common\win\premake\premake5.exe --file=premake5.lua --emubuild=${{ github.sha }} --os=windows vs2022
+          exit /b 0
 
+### build target(s)
+      - name: Build target(s)
+        shell: cmd
+        working-directory: ${{ github.workspace }}/GBE_Build
+        run: |
+          msbuild /nologo /target:${{ matrix.prj }} /m:2 /v:diag /p:Configuration=${{ matrix.cfg }},Platform=${{ matrix.arch }} GBE.sln
 
-  emu-regular-x64-release:
-    name: Regular x64 (release)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-win.yml
-    with:
-      emu-variant: regular
-      x32: false
-      debug: false
-
-  emu-regular-x64-debug:
-    name: Regular x64 (debug)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-win.yml
-    with:
-      emu-variant: regular
-      x32: false
-      debug: true
-
-  emu-exp-x64-release:
-    name: Experimental x64 (release)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-win.yml
-    with:
-      emu-variant: exp
-      x32: false
-      debug: false
-
-  emu-exp-x64-debug:
-    name: Experimental x64 (debug)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-win.yml
-    with:
-      emu-variant: exp
-      x32: false
-      debug: true
-
-  emu-client-x64-release:
-    name: Client x64 (release)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-win.yml
-    with:
-      emu-variant: client
-      x32: false
-      debug: false
-
-  emu-client-x64-debug:
-    name: Client x64 (debug)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-win.yml
-    with:
-      emu-variant: client
-      x32: false
-      debug: true
-
-
-
-  tools-release:
-    name: Tools (release)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-win.yml
-    with:
-      emu-variant: tools
-      debug: false
-
-  tools-debug:
-    name: Tools (debug)
-    needs: [ deps ]
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-build-variant-win.yml
-    with:
-      emu-variant: tools
-      debug: true
+### upload artifact/package to github Actions (for targets)
+      - name: Upload build package (for targets)
+        uses: actions/upload-artifact@v4
+        with:
+          name: "emu-win-${{ matrix.prj }}-${{ matrix.cfg }}-${{ matrix.arch }}-${{ github.sha }}"
+          path: "bin/"
+          if-no-files-found: 'error'
+          compression-level: 9
+          retention-days: 1
