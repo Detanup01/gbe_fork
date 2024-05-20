@@ -23,6 +23,7 @@ jobs:
     uses: ./.github/workflows/emu-deps-linux.yml
 
   builds-matrix-linux:
+    name: build
     needs: [ deps ]
     runs-on: ubuntu-22.04
     if: ${{ !cancelled() }}
