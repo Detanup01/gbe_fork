@@ -36,6 +36,10 @@ jobs:
         prj: [ 'GenerateInterfaces', 'SteamClient', 'SteamEmu', ]
     
     steps:
+### clone branch
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
 ### deps
       - name: Restore deps
         id: emu-deps-cache-step
