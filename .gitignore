@@ -2,8 +2,6 @@
 .vscode/
 
 build/
-bin/
-GBE_Build/
 
 dll/proto_gen/
 
@@ -30,15 +28,3 @@ tools/migrate_gse/bin/
 tools/migrate_gse/**/__pycache__/
 
 third-party/
-
-# zips
-premake.zip
-premake.tar.gz
-
-# linux
-example.so
-premake
-libluasocket.so
-
-# win
-premake/
