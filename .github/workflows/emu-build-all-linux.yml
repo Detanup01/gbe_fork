@@ -80,7 +80,7 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           sudo chmod 777 ./third-party/common/linux/premake/premake5
-          ./third-party/common/linux/premake/premake5 --file=premake5.lua --os=linux generateproto 
+          ./third-party/common/linux/premake/premake5 --file=premake5.lua --os=linux generateproto || echo ;
           ./third-party/common/linux/premake/premake5 --file=premake5.lua --emubuild=${{ github.sha }} --os=linux gmake2
           exit 0
 
@@ -89,6 +89,9 @@ jobs:
         shell: bash
         working-directory: ${{ github.workspace }}/GBE_Build
         run: |
+          echo "dry run..."
+          make -n -j 2 config=${{ matrix.cfg }}_${{ matrix.arch }} ${{ matrix.prj }}
+          echo "actual run..."
           make -j 2 config=${{ matrix.cfg }}_${{ matrix.arch }} ${{ matrix.prj }}
 
 ### upload artifact/package to github Actions (for targets)
