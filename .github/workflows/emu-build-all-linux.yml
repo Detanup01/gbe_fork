@@ -29,6 +29,7 @@ jobs:
     if: ${{ !cancelled() }}
     
     strategy:
+      max-parallel: 2
       matrix:
 ## notice how on linux everything is lowercase, `cd GBE_Build`, then: `make help`
         cfg: [ 'debug', 'release', 'experimentaldebug', 'experimentalrelease', ]
@@ -90,9 +91,9 @@ jobs:
         working-directory: ${{ github.workspace }}/GBE_Build
         run: |
           echo "dry run..."
-          make -n -j 2 config=${{ matrix.cfg }}_${{ matrix.arch }} ${{ matrix.prj }}
+          CC=clang CXX=clang++ make -n -j 2 config=${{ matrix.cfg }}_${{ matrix.arch }} ${{ matrix.prj }}
           echo "actual run..."
-          make -j 2 config=${{ matrix.cfg }}_${{ matrix.arch }} ${{ matrix.prj }}
+          CC=clang CXX=clang++ make -j 2 config=${{ matrix.cfg }}_${{ matrix.arch }} ${{ matrix.prj }}
 
 ### upload artifact/package to github Actions (for targets)
       - name: Upload build package (for targets)
