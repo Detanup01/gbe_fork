@@ -28,7 +28,7 @@ jobs:
     if: ${{ !cancelled() }}
     
     strategy:
-      max-parallel: 2
+      max-parallel: 4
       matrix:
         prj: [ 'GameOverlayRenderer', 'GenerateInterfaces', 'SteamClient', 'SteamEmu', ]
         arch: [ 'x64', 'Win32', ]

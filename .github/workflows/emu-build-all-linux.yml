@@ -29,7 +29,7 @@ jobs:
     if: ${{ !cancelled() }}
     
     strategy:
-      max-parallel: 2
+      max-parallel: 4
       matrix:
 ## notice how on linux everything is lowercase, `cd GBE_Build`, then: `make help`
         cfg: [ 'debug', 'release', 'experimentaldebug', 'experimentalrelease', ]
