@@ -23,14 +23,10 @@ if "%my_vs_path%"=="" (
 :: Set configuration and platform here :)
 
 :: manual config for all remove later
-call %my_vs_path% GBE_Build\GBE.sln /p:Configuration=Debug /p:Platform=x64 -v:n
-call %my_vs_path% GBE_Build\GBE.sln /p:Configuration=Debug /p:Platform=Win32 -v:n
-call %my_vs_path% GBE_Build\GBE.sln /p:Configuration=Release /p:Platform=x64 -v:n
-call %my_vs_path% GBE_Build\GBE.sln /p:Configuration=Release /p:Platform=Win32 -v:n
-call %my_vs_path% GBE_Build\GBE.sln /p:Configuration=ExperimentalDebug /p:Platform=x64 -v:n
-call %my_vs_path% GBE_Build\GBE.sln /p:Configuration=ExperimentalDebug /p:Platform=Win32 -v:n
-call %my_vs_path% GBE_Build\GBE.sln /p:Configuration=ExperimentalRelease /p:Platform=x64 -v:n
-call %my_vs_path% GBE_Build\GBE.sln /p:Configuration=ExperimentalRelease /p:Platform=Win32 -v:n
+call %my_vs_path% build\project\vs2022\win\GBE.sln /p:Configuration=debug /p:Platform=x64 -v:n
+call %my_vs_path% build\project\vs2022\win\GBE.sln /p:Configuration=debug /p:Platform=Win32 -v:n
+call %my_vs_path% build\project\vs2022\win\GBE.sln /p:Configuration=release /p:Platform=x64 -v:n
+call %my_vs_path% build\project\vs2022\win\GBE.sln /p:Configuration=release /p:Platform=Win32 -v:n
 
 exit /b
 
@@ -43,8 +39,8 @@ endlocal & (
 
 
 :: -v:n make it so we can actually see what commands it runs
-call %my_vs_path% GBE_Build\GBE.sln /p:Configuration=ExperimentalDebug /p:Platform=x64 -v:n
-::call %my_vs_path% GBE_Build\GBE.sln
+call %my_vs_path% build\project\vs2022\win\GBE.sln /p:Configuration=debuug /p:Platform=x64 -v:n
+::call %my_vs_path% build\project\vs2022\win\GBE.sln
 set /a _exit=%errorlevel%
 if %_exit% equ 0 (
     echo Please do change_dos_stub and sign it. (or you can move into premake to do it for you)

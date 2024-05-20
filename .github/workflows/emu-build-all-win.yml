@@ -31,20 +31,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        prj: [ 'GameOverlayRenderer', 'GenerateInterfaces', 'SteamClient', 'SteamEmu', ]
+        prj: [ 'regular', 'experimental', 'steamclient_experimental', 'steamnetworkingsockets', 'tool_lobby_connect', 'GenerateInterfaces', 'experimental_client_win', 'GameOverlayRenderer', ]
         arch: [ 'x64', 'Win32', ]
-        cfg: [ 'Debug', 'Release', 'ExperimentalDebug', 'ExperimentalRelease', ]
-        
-        exclude:
-        - prj: 'GameOverlayRenderer'
-          cfg: 'Debug'
-        - prj: 'GameOverlayRenderer'
-          cfg: 'Release'
-
-        - prj: 'GenerateInterfaces'
-          cfg: 'ExperimentalDebug'
-        - prj: 'GenerateInterfaces'
-          cfg: 'ExperimentalRelease'
+        cfg: [ 'debug', 'release', ]
     
     steps:
 ### on Windows Git will auto change line ending to CRLF, not preferable
