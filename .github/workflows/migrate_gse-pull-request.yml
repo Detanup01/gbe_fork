@@ -1,4 +1,4 @@
-name: Migrate GSE pull request
+name: Migrate GSE PR
 
 on:
   pull_request:

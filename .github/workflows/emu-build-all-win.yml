@@ -1,4 +1,4 @@
-name: Build all emu variants (Windows)
+name: Build emu (Windows)
 
 on:
   workflow_call:
@@ -22,13 +22,13 @@ jobs:
     uses: ./.github/workflows/emu-deps-win.yml
 
   builds-matrix-win:
-    name: Builds matrix (Windows)
     needs: [ deps ]
     runs-on: windows-2022
     if: ${{ !cancelled() }}
+    continue-on-error: true
     
     strategy:
-      max-parallel: 4
+      fail-fast: false
       matrix:
         prj: [ 'GameOverlayRenderer', 'GenerateInterfaces', 'SteamClient', 'SteamEmu', ]
         arch: [ 'x64', 'Win32', ]

@@ -1,4 +1,4 @@
-name: Build all emu variants (Linux)
+name: Build emu (Linux)
 
 on:
   workflow_call:
@@ -23,13 +23,13 @@ jobs:
     uses: ./.github/workflows/emu-deps-linux.yml
 
   builds-matrix-linux:
-    name: Builds matrix (Linux)
     needs: [ deps ]
     runs-on: ubuntu-22.04
     if: ${{ !cancelled() }}
+    continue-on-error: true
     
     strategy:
-      max-parallel: 4
+      fail-fast: false
       matrix:
 ## notice how on linux everything is lowercase, `cd GBE_Build`, then: `make help`
         cfg: [ 'debug', 'release', 'experimentaldebug', 'experimentalrelease', ]

@@ -1,4 +1,4 @@
-name: Emu pull request
+name: Emu PR
 
 on:
   pull_request:
@@ -20,11 +20,11 @@ permissions:
 
 jobs:
   emu-win-all:
-    name: Emu win all
+    name: win
     if: ${{ !cancelled() }}
     uses: ./.github/workflows/emu-build-all-win.yml
 
   emu-linux-all:
-    name: Emu linux all
+    name: linux
     if: ${{ !cancelled() }}
     uses: ./.github/workflows/emu-build-all-linux.yml
