@@ -740,8 +740,8 @@ Steam_User_Stats::Steam_User_Stats(Settings *settings, class Networking *network
             if (user_achievements.find(name) == user_achievements.end()) {
                 user_achievements[name]["earned"] = false;
                 user_achievements[name]["earned_time"] = static_cast<uint32>(0);
-                user_achievements[name]["progress"] = std::stof(trig.min_value);
-                user_achievements[name]["max_progress"] = std::stof(trig.max_value);
+                user_achievements[name]["progress"] = std::stoi(trig.min_value);
+                user_achievements[name]["max_progress"] = std::stoi(trig.max_value);
             }
         } catch (...) {}
 
