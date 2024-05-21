@@ -5,6 +5,7 @@
   ex: if the loader is named `game_cold_loader.exe`, then it will first try to load `game_cold_loader.ini`,  
   if that doesn't exist, it will fallback to `ColdClientLoader.ini`
 * corrected callback vs call result in `Steam_Apps::RequestAllProofOfPurchaseKeys()` + added missing callback in `Steam_UGC::RequestUGCDetails()`
+* enable controller support by default for the regular emu build
 * make all switches in build scripts opt-in, nothing is built by default
 * deprecated and removed the special Git branches `ci-build-*`, they were intended for automation but no longer maintained
 
