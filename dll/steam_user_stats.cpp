@@ -728,10 +728,6 @@ Steam_User_Stats::Steam_User_Stats(Settings *settings, class Networking *network
         try {
             std::string name = static_cast<std::string const&>(it["name"]);
             sorted_achievement_names.push_back(name);
-            if (user_achievements.find(name) == user_achievements.end()) {
-                user_achievements[name]["earned"] = false;
-                user_achievements[name]["earned_time"] = static_cast<uint32>(0);
-            }
 
             achievement_trigger trig;
             trig.name = name;
@@ -740,6 +736,13 @@ Steam_User_Stats::Steam_User_Stats(Settings *settings, class Networking *network
             trig.min_value = static_cast<std::string const&>(it["progress"]["min_val"]);
             trig.max_value = static_cast<std::string const&>(it["progress"]["max_val"]);
             achievement_stat_trigger[stat_name].push_back(trig);
+
+            if (user_achievements.find(name) == user_achievements.end()) {
+                user_achievements[name]["earned"] = false;
+                user_achievements[name]["earned_time"] = static_cast<uint32>(0);
+                user_achievements[name]["progress"] = std::stof(trig.min_value);
+                user_achievements[name]["max_progress"] = std::stof(trig.max_value);
+            }
         } catch (...) {}
 
         try {
