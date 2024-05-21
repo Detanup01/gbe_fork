@@ -866,40 +866,74 @@ project "GenerateInterfaces"
 --    EXPERIMENTAL should make the _extra.dll
 
 
--- WINDOWS ONLY TARGETS START
-if os.target() == "windows" then
 
--- Project GameOverlayRenderer
-project "GameOverlayRenderer"
+-- Project lib_game_overlay_renderer
+project "lib_game_overlay_renderer"
     kind "SharedLib"
     location "%{wks.location}/%{prj.name}"
-    targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/tools/GameOverlayRenderer/%{cfg.platform}")
-    targetname "GameOverlayRenderer"
-    filter {}
+
+
+    -- targetdir
+    ---------
+    filter { "system:windows", }
+        targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/steamclient_experimental")
+    filter { "system:linux", }
+        targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/steamclient_experimental/%{cfg.platform}")
+
+
+    -- name
+    ---------
+    filter { "system:windows", "platforms:x32", }
+        targetname "GameOverlayRenderer"
+    filter { "system:windows", "platforms:x64", }
+        targetname "GameOverlayRenderer64"
+    filter { "system:linux", }
+        targetname "gameoverlayrenderer"
+
+    
+    -- include dir
+    ---------
+    -- common include dir
+    filter {} -- reset the filter and remove all active keywords
+    includedirs {
+        common_include,
+    }
+    -- x32 include dir
+    filter { "platforms:x32", }
+        includedirs {
+            x32_deps_include,
+        }
+
+    -- x64 include dir
+    filter { "platforms:x64", }
+        includedirs {
+            x64_deps_include,
+        }
+
+
+    -- common source & header files
+    ---------
+    filter {} -- reset the filter and remove all active keywords
     files {
         "game_overlay_renderer_lib/**"
     }
+    -- x32 common source files
+    filter { "system:windows", "platforms:x32", }
+        files {
+            "resources/win/game_overlay_renderer/32/resources.rc"
+        }
+    -- x64 common source files
+    filter { "system:windows", "platforms:x64", }
+        files {
+            "resources/win/game_overlay_renderer/64/resources.rc"
+        }
+-- End lib_game_overlay_renderer
 
-    filter { "platforms:x64" }
-        includedirs {
-            "game_overlay_renderer_lib",
-            common_include,
-            x64_deps_include
-        }
-        libdirs {
-            x64_deps_libdir
-        }
 
-    filter { "platforms:x32" }
-        includedirs {
-            "game_overlay_renderer_lib",
-            common_include,
-            x32_deps_include
-        }
-        libdirs {
-            x32_deps_libdir
-        }
--- End GameOverlayRenderer
+
+-- WINDOWS ONLY TARGETS START
+if os.target() == "windows" then
+
 
 -- Project experimental_client_win (Windows only)
 ---------
