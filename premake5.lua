@@ -936,11 +936,120 @@ project "experimental_client_win"
         files {
             "resources/win/client/64/resources.rc"
         }
--- Project experimental_client_win (Windows only) END
+-- End experimental_client_win (Windows only)
 
+
+-- Project experimental_client_extra_win
+project "experimental_client_extra_win"
+    kind "SharedLib"
+    location "%{wks.location}/%{prj.name}"
+    targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/steamclient_experimental/extra_dlls")
+    targetname "steamclient_extra_%{cfg.platform}"
+
+
+    -- include dir
+    ---------
+    -- common include dir
+    filter {} -- reset the filter and remove all active keywords
+    includedirs {
+        common_include,
+        'tools/steamclient_loader/win/extra_protection',
+    }
+    -- x32 include dir
+    filter { "platforms:x32", }
+        includedirs {
+            x32_deps_include,
+        }
+    -- x64 include dir
+    filter { "platforms:x64", }
+        includedirs {
+            x64_deps_include,
+        }
+
+
+    -- common source & header files
+    ---------
+    filter {} -- reset the filter and remove all active keywords
+    files {
+        "tools/steamclient_loader/win/extra_protection/**",
+        "helpers/pe_helpers.cpp",
+        "helpers/common_helpers.cpp",
+        -- detours
+        "libs/detours/**.cpp", "libs/detours/**.hpp",
+        "libs/detours/**.c", "libs/detours/**.h",
+    }
+    -- x32 common source files
+    filter { "platforms:x32", }
+        files {
+            "resources/win/client/32/resources.rc"
+        }
+    -- x64 common source files
+    filter { "platforms:x64", }
+        files {
+            "resources/win/client/64/resources.rc"
+        }
+-- End experimental_client_extra_win
+
+
+-- Project experimental_client_loader_win
+project "experimental_client_loader_win"
+    kind "WindowedApp"
+    location "%{wks.location}/%{prj.name}"
+    targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/steamclient_experimental")
+    targetname "steamclient_loader_%{cfg.platform}"
+
+
+    -- include dir
+    ---------
+    -- common include dir
+    filter {} -- reset the filter and remove all active keywords
+    includedirs {
+        common_include,
+    }
+    -- x32 include dir
+    filter { "platforms:x32", }
+        includedirs {
+            x32_deps_include,
+        }
+    -- x64 include dir
+    filter { "platforms:x64", }
+        includedirs {
+            x64_deps_include,
+        }
+
+
+    -- common source & header files
+    ---------
+    filter {} -- reset the filter and remove all active keywords
+    files {
+        "tools/steamclient_loader/win/*.cpp",
+        "helpers/pe_helpers.cpp",
+        "helpers/common_helpers.cpp",
+        "helpers/dbg_log.cpp",
+    }
+    -- x32 common source files
+    filter { "platforms:x32", }
+        files {
+            "resources/win/launcher/32/resources.rc"
+        }
+    -- x64 common source files
+    filter { "platforms:x64", }
+        files {
+            "resources/win/launcher/64/resources.rc"
+        }
+
+
+    -- libs to link
+    ---------
+    filter {} -- reset the filter and remove all active keywords
+    links {
+        -- common_link_win,
+        'user32.lib',
+    }
+-- End experimental_client_loader_win
 
 end
--- WINDOWS ONLY TARGETS END
+-- End WINDOWS ONLY TARGETS
 
 
 -- LINUX ONLY TARGETS START
