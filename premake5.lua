@@ -629,7 +629,7 @@ project "steamclient_experimental"
     filter { "system:windows", }
         targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/steamclient_experimental")
     filter { "system:linux", }
-        targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/steamclient_experimental/%{cfg.platform}")
+        targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/experimental/%{cfg.platform}")
 
 
     -- name
@@ -883,7 +883,7 @@ project "lib_game_overlay_renderer"
     filter { "system:windows", }
         targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/steamclient_experimental")
     filter { "system:linux", }
-        targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/steamclient_experimental/%{cfg.platform}")
+        targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/gameoverlayrenderer/%{cfg.platform}")
 
 
     -- name
@@ -1161,4 +1161,4 @@ project "steamclient_regular_linux"
 end
 -- End LINUX ONLY TARGETS
 
--- Workspace END
+-- End Workspace
