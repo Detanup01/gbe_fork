@@ -828,43 +828,48 @@ project "tool_lobby_connect"
         libdirs {
             x64_deps_libdir,
         }
+-- End tool_lobby_connect
 
 
--- Project steamnetworkingsockets START
-project "steamnetworkingsockets"
+-- Project tool_generate_interfaces
+project "tool_generate_interfaces"
+    kind "ConsoleApp"
+    location "%{wks.location}/%{prj.name}"
+    targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/tools/generate_interfaces")
+    targetname "generate_interfaces_%{cfg.platform}"
+
+
+    -- common source & header files
+    ---------
+    files {
+        "tools/generate_interfaces/**"
+    }
+-- End tool_generate_interfaces
+
+
+-- Project lib_steamnetworkingsockets START
+project "lib_steamnetworkingsockets"
     kind "SharedLib"
     location "%{wks.location}/%{prj.name}"
     targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/steamnetworkingsockets/%{cfg.platform}")
     targetname "steamnetworkingsockets"
 
-    files {
-        "networking_sockets_lib/**"
-    }
-
+    -- include dir
+    ---------
+    -- common include dir
     includedirs {
-        "dll",
-        "sdk"
+        common_include,
     }
 
--- Project steamnetworkingsockets END
 
--- Project GenerateInterfaces
-project "GenerateInterfaces"
-    kind "ConsoleApp"
-    location "%{wks.location}/%{prj.name}"
-    targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/tools/GenerateInterfaces/%{cfg.platform}")
-    targetname "GenerateInterfaces"
-
+    -- common source & header files
+    ---------
     files {
-        "tools/generate_interfaces/**"
+        "networking_sockets_lib/**",
     }
--- End GenerateInterfaces
 
--- TODO: SteamClientExtra should make steamclient_loader_BIT.exe and steamclient_extra.dll.
 
---    Normal (NON EXPERIMENTAL) should make the .exe
---    EXPERIMENTAL should make the _extra.dll
-
+-- End lib_steamnetworkingsockets
 
 
 -- Project lib_game_overlay_renderer
@@ -940,8 +945,6 @@ if os.target() == "windows" then
 project "experimental_client_win"
     -- https://stackoverflow.com/a/63228027
     kind "SharedLib"
-    filter {} -- reset the filter and remove all active keywords
-
     location "%{wks.location}/%{prj.name}"
     targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/experimental/%{cfg.platform}")
 
