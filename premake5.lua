@@ -1061,13 +1061,8 @@ project "steamclient_regular_linux"
     kind "SharedLib"
     location "%{wks.location}/%{prj.name}"
     targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/%{cfg.platform}")
+    targetname "steamclient"
 
-    -- name
-    ---------
-    filter { "platforms:x32", }
-        targetname "steamclient"
-    filter { "platforms:x64", }
-        targetname "steamclient64"
 
     -- defines
     ---------
