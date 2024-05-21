@@ -42,9 +42,9 @@ struct MatchMakingKeyValuePair_t
 	MatchMakingKeyValuePair_t() { m_szKey[0] = m_szValue[0] = 0; }
 	MatchMakingKeyValuePair_t( const char *pchKey, const char *pchValue )
 	{
-		strncpy( m_szKey, pchKey, sizeof(m_szKey) ); // this is a public header, use basic c library string funcs only!
+		strncpy_s( m_szKey, pchKey, sizeof(m_szKey) ); // this is a public header, use basic c library string funcs only!
 		m_szKey[ sizeof( m_szKey ) - 1 ] = '\0';
-		strncpy( m_szValue, pchValue, sizeof(m_szValue) );
+		strncpy_s( m_szValue, pchValue, sizeof(m_szValue) );
 		m_szValue[ sizeof( m_szValue ) - 1 ] = '\0';
 	}
 	char m_szKey[ 256 ];
@@ -156,9 +156,9 @@ inline const char *servernetadr_t::ToString( uint32 unIP, uint16 usPort ) const
 	static int nBuf = 0;
 	unsigned char *ipByte = (unsigned char *)&unIP;
 #ifdef VALVE_BIG_ENDIAN
-	_snprintf (s[nBuf], sizeof( s[nBuf] ), "%u.%u.%u.%u:%i", (int)(ipByte[0]), (int)(ipByte[1]), (int)(ipByte[2]), (int)(ipByte[3]), usPort );
+	_snprintf_s (s[nBuf], sizeof( s[nBuf] ), "%u.%u.%u.%u:%i", (int)(ipByte[0]), (int)(ipByte[1]), (int)(ipByte[2]), (int)(ipByte[3]), usPort );
 #else
-	_snprintf (s[nBuf], sizeof( s[nBuf] ), "%u.%u.%u.%u:%i", (int)(ipByte[3]), (int)(ipByte[2]), (int)(ipByte[1]), (int)(ipByte[0]), usPort );
+	_snprintf_s (s[nBuf], sizeof( s[nBuf] ), "%u.%u.%u.%u:%i", (int)(ipByte[3]), (int)(ipByte[2]), (int)(ipByte[1]), (int)(ipByte[0]), usPort );
 #endif
 	const char *pchRet = s[nBuf];
 	++nBuf;
@@ -243,7 +243,7 @@ inline const char* gameserveritem_t::GetName() const
 
 inline void gameserveritem_t::SetName( const char *pName )
 {
-	strncpy( m_szServerName, pName, sizeof( m_szServerName ) );
+	strncpy_s( m_szServerName, pName, sizeof( m_szServerName ) );
 	m_szServerName[ sizeof( m_szServerName ) - 1 ] = '\0';
 }
 

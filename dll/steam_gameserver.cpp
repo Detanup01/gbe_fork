@@ -728,7 +728,7 @@ int Steam_GameServer::GetNextOutgoingPacket( void *pOut, int cbMaxOut, uint32 *p
     if (settings->disable_source_query) return 0;
     if (outgoing_packets.size() == 0) return 0;
 
-    if (outgoing_packets.back().data.size() < cbMaxOut) cbMaxOut = outgoing_packets.back().data.size();
+    if (outgoing_packets.back().data.size() < cbMaxOut) cbMaxOut = static_cast<int>(outgoing_packets.back().data.size());
     if (pOut) memcpy(pOut, outgoing_packets.back().data.data(), cbMaxOut);
     if (pNetAdr) *pNetAdr = outgoing_packets.back().ip;
     if (pPort) *pPort = outgoing_packets.back().port;

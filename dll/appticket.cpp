@@ -35,7 +35,7 @@ std::vector<uint8_t> AppTicketV1::Serialize() const
     pBuffer = buffer.data();
     *reinterpret_cast<uint32_t*>(pBuffer) = TicketSize;      pBuffer += 4;
     *reinterpret_cast<uint32_t*>(pBuffer) = TicketVersion;   pBuffer += 4;
-    *reinterpret_cast<uint32_t*>(pBuffer) = UserData.size(); pBuffer += 4;
+    *reinterpret_cast<uint32_t*>(pBuffer) = static_cast<uint32_t>(UserData.size()); pBuffer += 4;
     *reinterpret_cast<uint32_t*>(pBuffer) = Unk2;            pBuffer += 4;
     memcpy(pBuffer, UserData.data(), UserData.size());
 
@@ -132,7 +132,7 @@ std::vector<uint8_t> AppTicketV4::Serialize()
         appids.emplace_back(0);
     }
 
-    uint16_t appid_count = static_cast<uint16_t>(appids.size() > 140 ? 140 : appids.size());
+    uint16_t appid_count = static_cast<uint16_t>(static_cast<uint16_t>(appids.size()) > 140 ? 140 : static_cast<uint16_t>(appids.size()));
     size_t buffer_size = static_cast<uint32_t>(appid_count) * 4ul + 2ul;
     std::vector<uint8_t> buffer{};
     uint8_t* pBuffer{};
@@ -235,8 +235,8 @@ std::vector<uint8_t> DecryptedAppTicket::SerializeTicket()
 {
     std::vector<uint8_t> buffer{};
 
-    TicketV1.TicketSize = TicketV1.UserData.size() + 40 + 2 + ((TicketV4.AppIDs.size() == 0 ? 1 : TicketV4.AppIDs.size()) * 4) + (TicketV4.HasVACStatus ? 4 : 0) + (TicketV4.HasAppValue ? 4 : 0);
-    TicketV2.TicketSize = TicketV1.TicketSize - TicketV1.UserData.size();
+    TicketV1.TicketSize = static_cast<uint32_t>(TicketV1.UserData.size()) + 40 + 2 + ((static_cast<uint32_t>(TicketV4.AppIDs.size()) == 0 ? 1 : static_cast<uint32_t>(TicketV4.AppIDs.size())) * 4) + (TicketV4.HasVACStatus ? 4 : 0) + (TicketV4.HasAppValue ? 4 : 0);
+    TicketV2.TicketSize = TicketV1.TicketSize - static_cast<uint32_t>(TicketV1.UserData.size());
 
     buffer = TicketV1.Serialize();
 

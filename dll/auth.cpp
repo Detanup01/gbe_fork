@@ -671,7 +671,7 @@ Auth_Data Auth_Manager::getTicketData( void *pTicket, int cbMaxTicket, uint32 *p
         ticket_data.Ticket.Licenses.push_back(0); //TODO
         unsigned int dlcCount = settings->DLCCount();
         ticket_data.Ticket.DLCs.resize(0);  //currently set to 0
-        for (int i = 0; i < dlcCount; ++i)
+        for (unsigned i = 0; i < dlcCount; ++i)
         {
             DLC dlc;
             AppId_t appid;
@@ -695,9 +695,10 @@ Auth_Data Auth_Manager::getTicketData( void *pTicket, int cbMaxTicket, uint32 *p
             ticket_data.GC.TicketGeneratedCount = get_ticket_count();
         }
         std::vector<uint8_t> ser = ticket_data.Serialize();
-        *pcbTicket = ser.size();
-        if (cbMaxTicket >= ser.size())
-            memcpy(pTicket, ser.data(), ser.size());
+        uint32_t ser_size = static_cast<uint32_t>(ser.size());
+        *pcbTicket = ser_size;
+        if (cbMaxTicket >= ser_size)
+            memcpy(pTicket, ser.data(), ser_size);
     }
     else
     {
@@ -846,7 +847,7 @@ EBeginAuthSessionResult Auth_Manager::beginAuth(const void *pAuthTicket, int cbA
 
 uint32 Auth_Manager::countInboundAuth()
 {
-    return inbound.size();
+    return static_cast<uint32>(inbound.size());
 }
 
 bool Auth_Manager::endAuth(CSteamID id)

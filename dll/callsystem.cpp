@@ -204,7 +204,7 @@ void SteamCallResults::setCbAll(void (*cb_all)(std::vector<char> result, int cal
 
 void SteamCallResults::runCallResults()
 {
-    unsigned long current_size = callresults.size();
+    unsigned long current_size = static_cast<unsigned long>(callresults.size());
     for (unsigned i = 0; i < current_size; ++i) {
         unsigned index = i;
 
@@ -315,7 +315,7 @@ void SteamCallBacks::addCallBack(int iCallback, class CCallbackBase *cb)
         CCallbackMgr::SetRegister(cb, iCallback);
         for (auto & res: callbacks[iCallback].results) {
             //TODO: timeout?
-            SteamAPICall_t api_id = results->addCallResult(iCallback, &(res[0]), res.size(), 0.0, false);
+            SteamAPICall_t api_id = results->addCallResult(iCallback, &(res[0]), static_cast<unsigned long>(res.size()), 0.0, false);
             results->addCallBack(api_id, cb);
         }
     }

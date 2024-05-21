@@ -1105,7 +1105,7 @@ STEAMAPI_API steam_bool S_CALLTYPE SteamAPI_ManualDispatch_GetNextCallback( HSte
         pCallbackMsg->m_hSteamUser = m_hSteamUser;
         pCallbackMsg->m_iCallback = q->front().cb_id;
         pCallbackMsg->m_pubParam = (uint8 *)&(q->front().result[0]);
-        pCallbackMsg->m_cubParam = q->front().result.size();
+        pCallbackMsg->m_cubParam = static_cast<unsigned long>(q->front().result.size());
         PRINT_DEBUG("cb number %i", q->front().cb_id);
         return true;
     }

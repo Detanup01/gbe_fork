@@ -352,7 +352,7 @@ void Settings::setStatDefiniton(const std::string &name, const struct Stat_confi
 
 int Settings::add_image(const std::string &data, uint32 width, uint32 height)
 {
-    int last = images.size() + 1;
+    int last = static_cast<int>(images.size()) + 1;
     struct Image_Data dt;
     dt.width = width;
     dt.height = height;
