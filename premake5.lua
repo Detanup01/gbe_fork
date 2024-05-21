@@ -627,9 +627,9 @@ project "steamclient_experimental"
     -- targetdir
     ---------
     filter { "system:windows", }
-        targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/steamclient_experimental/%{cfg.platform}")
+        targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/steamclient_experimental")
     filter { "system:linux", }
-        targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/experimental/%{cfg.platform}")
+        targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/steamclient_experimental/%{cfg.platform}")
 
 
     -- name
