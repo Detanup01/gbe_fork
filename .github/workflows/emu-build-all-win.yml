@@ -88,7 +88,7 @@ jobs:
         shell: cmd
         working-directory: ${{ github.workspace }}/build/project/vs2022/win
         run: |
-          msbuild /nologo /target:${{ matrix.prj }} /m:2 /v:d /p:Configuration=${{ matrix.cfg }},Platform=${{ matrix.arch }} GBE.sln
+          msbuild /nologo /target:${{ matrix.prj }} /m:2 /v:n /p:Configuration=${{ matrix.cfg }},Platform=${{ matrix.arch }} GBE.sln
 
 ### upload artifact/package to github Actions (for targets)
       - name: Upload build package (for targets)
