@@ -1,28 +1,35 @@
-[submodule "third-party/build/linux"]
-  path = third-party/build/linux
-  url = ./
-  branch = third-party/build/linux
-[submodule "third-party/common/win"]
-  path = third-party/common/win
-  url = ./
-  branch = third-party/common/win
-[submodule "third-party/common/linux"]
-  path = third-party/common/linux
-  url = ./
-  branch = third-party/common/linux
-[submodule "third-party/deps/common"]
-  path = third-party/deps/common
-  url = ./
-  branch = third-party/deps/common
-[submodule "third-party/deps/linux"]
-  path = third-party/deps/linux
-  url = ./
-  branch = third-party/deps/linux
-[submodule "third-party/deps/win"]
-  path = third-party/deps/win
-  url = ./
-  branch = third-party/deps/win
+
 [submodule "third-party/build/win"]
   path = third-party/build/win
   url = ./
   branch = third-party/build/win
+
+[submodule "third-party/build/linux"]
+  path = third-party/build/linux
+  url = ./
+  branch = third-party/build/linux
+
+[submodule "third-party/common/win"]
+  path = third-party/common/win
+  url = ./
+  branch = third-party/common/win
+
+[submodule "third-party/common/linux"]
+  path = third-party/common/linux
+  url = ./
+  branch = third-party/common/linux
+
+[submodule "third-party/deps/win"]
+  path = third-party/deps/win
+  url = ./
+  branch = third-party/deps/win
+
+[submodule "third-party/deps/linux"]
+  path = third-party/deps/linux
+  url = ./
+  branch = third-party/deps/linux
+
+[submodule "third-party/deps/common"]
+  path = third-party/deps/common
+  url = ./
+  branch = third-party/deps/common
