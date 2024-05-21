@@ -3,13 +3,13 @@ require("premake", ">=5.0.0-beta2")
 
 -- add "-Wl,--whole-archive -Wl,-Bstatic -lmylib -Wl,-Bdynamic -Wl,--no-whole-archive"
 -- via: links { 'mylib:static_whole' }
+-- https://premake.github.io/docs/Overrides-and-Call-Arrays/#introducing-overrides
 premake.override(premake.tools.gcc, "getlinks", function(originalFn, cfg, systemonly, nogroups)
-    -- source:    
+    -- source:
     -- premake.tools.gcc.getlinks(cfg, systemonly, nogroups)
     -- https://github.com/premake/premake-core/blob/d842e671c7bc7e09f2eeaafd199fd01e48b87ee7/src/tools/gcc.lua#L568C15-L568C22
 
     local result = originalFn(cfg, systemonly, nogroups)
-    local total_count = #result
     local static_whole_syslibs = {"-Wl,--whole-archive -Wl,-Bstatic"}
 
     local endswith = function(s, ptrn)
@@ -53,6 +53,8 @@ if os.target() == "windows" then
 elseif os.target() == "linux" then
     os_iden = 'linux'
     deps_folder = "build/deps/linux"
+else
+    error('Unsupported os target: "' .. os.target() .. '"')
 end
 
 local deps_dir = 'build/deps/' .. os_iden .. '/'
@@ -323,6 +325,7 @@ filter { "system:windows", }
         "/utf-8", "/Zc:char8_t-", "/EHsc", "/GL-"
     }
     linkoptions  {
+        -- source of emittoolversioninfo: https://developercommunity.visualstudio.com/t/add-linker-option-to-strip-rich-stamp-from-exe-hea/740443
         "/NOLOGO", "/emittoolversioninfo:no"
     }
 
@@ -371,6 +374,7 @@ filter {} -- reset the filter and remove all active keywords
 -- post build change DOS stub + sign
 ---------
 if os.target() == "windows" then
+
 local dos_stub_exe_32 = os.realpath('resources/win/file_dos_stub/file_dos_stub_32.exe')
 local dos_stub_exe_64 = os.realpath('resources/win/file_dos_stub/file_dos_stub_64.exe')
 local signer_tool = os.realpath('third-party/build/win/cert/sign_helper.bat')
@@ -389,6 +393,7 @@ filter { "system:windows", }
         '"' .. signer_tool .. '" %[%{!cfg.buildtarget.abspath}]',
     }
 filter {} -- reset the filter and remove all active keywords
+
 end
 
 
@@ -492,7 +497,7 @@ project "regular"
         libdirs {
             x64_deps_libdir,
         }
-
+-- End regular
 
 
 -- Project experimental
@@ -610,7 +615,7 @@ project "experimental"
             x64_deps_libdir,
             x64_deps_overlay_libdir,
         }
-
+-- End experimental
 
 
 -- Project steamclient_experimental
@@ -735,6 +740,7 @@ project "steamclient_experimental"
             x64_deps_libdir,
             x64_deps_overlay_libdir,
         }
+-- End steamclient_experimental
 
 
 -- Project tool_lobby_connect
@@ -762,7 +768,6 @@ project "tool_lobby_connect"
     includedirs {
         common_include,
     }
-
     -- x32 include dir
     filter { "platforms:x32", }
         includedirs {
@@ -971,13 +976,11 @@ project "steamclient_regular_linux"
     includedirs {
         common_include,
     }
-
     -- x32 include dir
     filter { "platforms:x32", }
         includedirs {
             x32_deps_include,
         }
-
     -- x64 include dir
     filter { "platforms:x64", }
         includedirs {
@@ -1012,10 +1015,9 @@ project "steamclient_regular_linux"
         libdirs {
             x64_deps_libdir,
         }
+-- End steamclient_regular_linux (Linux only)
 
 end
--- LINUX ONLY TARGETS END
+-- End LINUX ONLY TARGETS
 
-
--- ONLY WINDOWS END
 -- Workspace END
