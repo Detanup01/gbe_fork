@@ -1,10 +1,12 @@
+* **[Detanup01]** added premake build scripts, allowing the project to be built with different toolsets with ease on diffrerent platforms.
+* **[schmurger]** added progress bar for achievements that are not earned yet in the achievements list of the overlay
 * **[Detanup01]** added missing interfaces `ISteamScreenshot` `001` and `002`
 * for Windows ColdClientLoader: allow loading `.ini` file with the same name as the loader  
   ex: if the loader is named `game_cold_loader.exe`, then it will first try to load `game_cold_loader.ini`,  
   if that doesn't exist, it will fallback to `ColdClientLoader.ini`
 * corrected callback vs call result in `Steam_Apps::RequestAllProofOfPurchaseKeys()` + added missing callback in `Steam_UGC::RequestUGCDetails()`
 * make all switches in build scripts opt-in, nothing is built by default
-* deprecated and removed the special branches `ci-build-*`, they were intended for automation but no longer maintained
+* deprecated and removed the special Git branches `ci-build-*`, they were intended for automation but no longer maintained
 
 ---
 
