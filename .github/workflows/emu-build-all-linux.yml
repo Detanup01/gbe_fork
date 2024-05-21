@@ -83,8 +83,8 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           sudo chmod 777 ./third-party/common/linux/premake/premake5
-          ./third-party/common/linux/premake/premake5 --file=premake5.lua --os=linux genproto || echo ;
-          ./third-party/common/linux/premake/premake5 --file=premake5.lua --emubuild=${{ github.sha }} --os=linux gmake2
+          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5.lua --os=linux genproto || echo ;
+          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5.lua --emubuild=${{ github.sha }} --os=linux gmake2
           exit 0
 
 ### build target(s)

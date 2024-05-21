@@ -80,9 +80,8 @@ jobs:
         shell: cmd
         working-directory: ${{ github.workspace }}
         run: |
-          third-party\common\win\premake\premake5.exe --file=premake5.lua --os=windows genproto || echo:
-          third-party\common\win\premake\premake5.exe --file=premake5.lua --emubuild=${{ github.sha }} --os=windows vs2022
-          exit /b 0
+          "${{env.THIRD_PARTY_BASE_DIR}}\common\win\premake\premake5.exe" --file=premake5.lua --os=windows genproto
+          "${{env.THIRD_PARTY_BASE_DIR}}\common\win\premake\premake5.exe" --file=premake5.lua --emubuild=${{ github.sha }} --os=windows vs2022
 
 ### build target(s)
       - name: Build target(s)
