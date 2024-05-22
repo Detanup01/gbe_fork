@@ -198,7 +198,7 @@ static inline void reset_LastError()
             auto __prnt_dbg_f = fopen(dbg_log_file.c_str(), "a");                                                                                            \
             if (!__prnt_dbg_f) break;                                                                                                                        \
             fprintf(__prnt_dbg_f, "[%llu ms, %llu us] [tid %lu] %s() " a "\n",                                                                               \
-                __prnt_dbg_ms.count(), __prnt_dbg_micro.count(), GetCurrentThreadId(), __FUNCTION__, __VA_ARGS__);                                           \
+                __prnt_dbg_ms.count(), __prnt_dbg_micro.count(), GetCurrentThreadId(), __FUNCTION__, ##__VA_ARGS__);                                           \
             fclose(__prnt_dbg_f);                                                                                                                            \
             WSASetLastError(0);                                                                                                                              \
         } while (0)
