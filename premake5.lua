@@ -410,17 +410,13 @@ filter {} -- reset the filter and remove all active keywords
 ---------
 if os.target() == "windows" then
 
-local dos_stub_exe_32 = os.realpath('resources/win/file_dos_stub/file_dos_stub_32.exe')
-local dos_stub_exe_64 = os.realpath('resources/win/file_dos_stub/file_dos_stub_64.exe')
+-- token expansion like '%{cfg.platform}' happens later during project build
+local dos_stub_exe = os.realpath('resources/win/file_dos_stub/file_dos_stub_%{cfg.platform}.exe')
 local signer_tool = os.realpath('third-party/build/win/cert/sign_helper.bat')
 -- change dos stub
-filter { "system:windows", "platforms:x32", "options:dosstub", }
+filter { "system:windows", "options:dosstub", }
     postbuildcommands {
-        '"' .. dos_stub_exe_32 .. '" %[%{!cfg.buildtarget.abspath}]',
-    }
-filter { "system:windows", "platforms:x64", "options:dosstub", }
-    postbuildcommands {
-        '"' .. dos_stub_exe_64 .. '" %[%{!cfg.buildtarget.abspath}]',
+        '"' .. dos_stub_exe .. '" %[%{!cfg.buildtarget.abspath}]',
     }
 -- sign
 filter { "system:windows", "options:winsign", }
