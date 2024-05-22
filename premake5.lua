@@ -337,8 +337,8 @@ filter {} -- reset the filter and remove all active keywords
 
 --- common compiler/linker options
 ---------
--- Windows common compiler/linker options
-filter { "system:windows", }
+-- Visual Studio common compiler/linker options
+filter { "action:vs*", }
     buildoptions  {
         "/permissive-", "/MP", "/DYNAMICBASE",
         "/utf-8", "/Zc:char8_t-", "/EHsc", "/GL-"
@@ -348,8 +348,8 @@ filter { "system:windows", }
         "/NOLOGO", "/emittoolversioninfo:no"
     }
 
--- Linux common compiler/linker options
-filter { "system:linux", }
+-- GNU make common compiler/linker options
+filter { "action:gmake*", }
     buildoptions  {
         "-fvisibility=hidden", "-fexceptions", "-fno-jump-tables" , "-Wno-switch"
     }
