@@ -1117,6 +1117,34 @@ project "steamclient_experimental_loader_win"
     }
 -- End steamclient_experimental_loader_win
 
+
+-- Project file_dos_stub_changer
+project "file_dos_stub_changer"
+    kind "ConsoleApp"
+    location "%{wks.location}/%{prj.name}"
+    targetdir("resources/win/file_dos_stub")
+    targetname "file_dos_stub_%{cfg.platform}"
+
+
+    -- include dir
+    ---------
+    -- common include dir
+    filter {} -- reset the filter and remove all active keywords
+    includedirs {
+        common_include,
+    }
+
+
+    -- common source & header files
+    ---------
+    filter {} -- reset the filter and remove all active keywords
+    files {
+        "resources/win/file_dos_stub/file_dos_stub.cpp",
+        "helpers/pe_helpers.cpp",
+        "helpers/common_helpers.cpp",
+    }
+-- End file_dos_stub_changer
+
 end
 -- End WINDOWS ONLY TARGETS
 
