@@ -4,6 +4,7 @@
 * for Windows ColdClientLoader: allow loading `.ini` file with the same name as the loader  
   ex: if the loader is named `game_cold_loader.exe`, then it will first try to load `game_cold_loader.ini`,  
   if that doesn't exist, it will fallback to `ColdClientLoader.ini`
+* fixed a buffer overrun in `Steam_User_Stats::UpdateAvgRateStat`
 * corrected callback vs call result in `Steam_Apps::RequestAllProofOfPurchaseKeys()` + added missing callback in `Steam_UGC::RequestUGCDetails()`
 * enable controller support by default for the regular emu build
 * make all switches in build scripts opt-in, nothing is built by default
