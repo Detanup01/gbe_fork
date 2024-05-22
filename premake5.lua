@@ -227,9 +227,9 @@ local common_link_linux = {
 }
 
 local overlay_link_win = {
-    "ingame_overlay.lib",
-    "system.lib", -- ingame_overlay dependency
-    "mini_detour.lib", -- ingame_overlay dependency
+    "ingame_overlay",
+    "system", -- ingame_overlay dependency
+    "mini_detour", -- ingame_overlay dependency
 }
 
 local overlay_link_linux = {
@@ -829,7 +829,7 @@ project "tool_lobby_connect"
     filter { "system:windows", }
         links {
             common_link_win,
-            'Comdlg32.lib',
+            'Comdlg32',
         }
 
     -- Linux libs to link
@@ -1105,7 +1105,7 @@ project "steamclient_experimental_loader_win"
     filter {} -- reset the filter and remove all active keywords
     links {
         -- common_link_win,
-        'user32.lib',
+        'user32',
     }
 -- End steamclient_experimental_loader_win
 
