@@ -401,12 +401,12 @@ workspace "gbe"
     location("build/project/%{_ACTION}/" .. os_iden)
 
 
--- Project regular
+-- Project api_regular
 ---------
-project "regular"
+project "api_regular"
     kind "SharedLib"
     location "%{wks.location}/%{prj.name}"
-    targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/%{cfg.platform}")
+    targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/regular/%{cfg.platform}")
 
 
     -- name
@@ -497,12 +497,12 @@ project "regular"
         libdirs {
             x64_deps_libdir,
         }
--- End regular
+-- End api_regular
 
 
--- Project experimental
+-- Project api_experimental
 ---------
-project "experimental"
+project "api_experimental"
     kind "SharedLib"
     location "%{wks.location}/%{prj.name}"
     targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/experimental/%{cfg.platform}")
@@ -615,7 +615,7 @@ project "experimental"
             x64_deps_libdir,
             x64_deps_overlay_libdir,
         }
--- End experimental
+-- End api_experimental
 
 
 -- Project steamclient_experimental
@@ -854,6 +854,7 @@ project "lib_steamnetworkingsockets"
     targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/steamnetworkingsockets/%{cfg.platform}")
     targetname "steamnetworkingsockets"
 
+
     -- include dir
     ---------
     -- common include dir
@@ -940,9 +941,9 @@ project "lib_game_overlay_renderer"
 if os.target() == "windows" then
 
 
--- Project experimental_client_win (Windows only)
+-- Project steamclient_experimental_stub_win (Windows only)
 ---------
-project "experimental_client_win"
+project "steamclient_experimental_stub_win"
     -- https://stackoverflow.com/a/63228027
     kind "SharedLib"
     location "%{wks.location}/%{prj.name}"
@@ -973,11 +974,11 @@ project "experimental_client_win"
         files {
             "resources/win/client/64/resources.rc"
         }
--- End experimental_client_win (Windows only)
+-- End steamclient_experimental_stub_win (Windows only)
 
 
--- Project experimental_client_extra_win
-project "experimental_client_extra_win"
+-- Project steamclient_experimental_extra_win
+project "steamclient_experimental_extra_win"
     kind "SharedLib"
     location "%{wks.location}/%{prj.name}"
     targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/steamclient_experimental/extra_dlls")
@@ -1025,11 +1026,11 @@ project "experimental_client_extra_win"
         files {
             "resources/win/client/64/resources.rc"
         }
--- End experimental_client_extra_win
+-- End steamclient_experimental_extra_win
 
 
--- Project experimental_client_loader_win
-project "experimental_client_loader_win"
+-- Project steamclient_experimental_loader_win
+project "steamclient_experimental_loader_win"
     kind "WindowedApp"
     location "%{wks.location}/%{prj.name}"
     targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/steamclient_experimental")
@@ -1083,10 +1084,11 @@ project "experimental_client_loader_win"
         -- common_link_win,
         'user32.lib',
     }
--- End experimental_client_loader_win
+-- End steamclient_experimental_loader_win
 
 end
 -- End WINDOWS ONLY TARGETS
+
 
 
 -- LINUX ONLY TARGETS START
@@ -1097,7 +1099,7 @@ if os.target() == "linux" then
 project "steamclient_regular_linux"
     kind "SharedLib"
     location "%{wks.location}/%{prj.name}"
-    targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/%{cfg.platform}")
+    targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/regular/%{cfg.platform}")
     targetname "steamclient"
 
 
