@@ -32,8 +32,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ## notice how on linux everything is lowercase, `cd GBE_Build`, then: `make help`
-        prj: [ 'regular', 'experimental', 'steamclient_experimental', 'steamnetworkingsockets', 'tool_lobby_connect', 'GenerateInterfaces', 'steamclient_regular_linux', ]
+        prj: [
+          # regular api
+          'api_regular', 'steamclient_regular_linux',
+          # api + client (experimental)
+          'api_experimental', 'steamclient_experimental',
+          # tools
+          'tool_lobby_connect', 'tool_generate_interfaces',
+        ]
         arch: [ 'x64', 'x32', ]
         cfg: [ 'debug', 'release', ]
     

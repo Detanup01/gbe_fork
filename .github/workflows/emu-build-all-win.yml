@@ -31,7 +31,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        prj: [ 'regular', 'experimental', 'steamclient_experimental', 'steamnetworkingsockets', 'tool_lobby_connect', 'GenerateInterfaces', 'experimental_client_win', 'GameOverlayRenderer', ]
+        prj: [
+          # regular api
+          'api_regular',
+          # api + client (experimental)
+          'api_experimental', 'steamclient_experimental_stub_win',
+          # client (experimental) + loader + extra dll + gameoverlaylib
+          'steamclient_experimental', 'steamclient_experimental_loader_win',
+          'steamclient_experimental_extra_win', 'lib_game_overlay_renderer',
+          # tools
+          'tool_lobby_connect', 'tool_generate_interfaces',
+        ]
         arch: [ 'x64', 'Win32', ]
         cfg: [ 'debug', 'release', ]
     
