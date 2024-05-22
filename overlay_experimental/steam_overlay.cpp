@@ -1963,7 +1963,7 @@ void Steam_Overlay::FriendDisconnect(Friend _friend)
 }
 
 // show a notification when the user unlocks an achievement
-void Steam_Overlay::AddAchievementNotification(std::string ach_name, nlohmann::json const &ach)
+void Steam_Overlay::AddAchievementNotification(const std::string &ach_name, nlohmann::json const &ach)
 {
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
