@@ -394,6 +394,18 @@ filter { "system:linux" }
 filter {} -- reset the filter and remove all active keywords
 
 
+-- libraries
+---------
+-- filter { "system:windows", "action:gmake*", }
+--     links {
+--         -- CoreLibraryDependencies, copied from VS 2022
+--         "kernel32", "user32", "gdi32", "winspool", "comdlg32", "advapi32", "shell32", "ole32", "oleaut32", "uuid", "odbc32", "odbccp32",
+--         'Xinput',
+--         -- 'mingw32', 'gcc', 'msvcrt', 'mingwex',
+--         'ucrt', 'libstdc++',
+--     }
+
+
 -- post build change DOS stub + sign
 ---------
 if os.target() == "windows" then
