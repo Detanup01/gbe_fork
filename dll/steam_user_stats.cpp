@@ -533,7 +533,7 @@ Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo
     double oldsessionlength = 0;
     if (read_data == sizeof(data)) {
         memcpy(&oldcount, data + sizeof(float), sizeof(oldcount));
-        memcpy(&oldsessionlength, data + sizeof(float) + sizeof(double), sizeof(oldsessionlength));
+        memcpy(&oldsessionlength, data + sizeof(float) + sizeof(float), sizeof(oldsessionlength));
     }
 
     oldcount += flCountThisSession;
