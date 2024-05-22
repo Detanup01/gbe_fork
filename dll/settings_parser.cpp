@@ -139,7 +139,7 @@ Overlay_Appearance::NotificationPosition Overlay_Appearance::translate_notificat
 static void load_custom_broadcasts(const std::string &base_path, std::set<IP_PORT> &custom_broadcasts)
 {
     const std::string broadcasts_filepath(base_path + "custom_broadcasts.txt");
-    std::ifstream broadcasts_file(utf8_decode(broadcasts_filepath));
+    std::ifstream broadcasts_file(std::filesystem::u8path(broadcasts_filepath));
     if (broadcasts_file.is_open()) {
         common_helpers::consume_bom(broadcasts_file);
         PRINT_DEBUG("loading broadcasts file '%s'", broadcasts_filepath.c_str());
@@ -158,7 +158,7 @@ static void load_custom_broadcasts(const std::string &base_path, std::set<IP_POR
 static void load_subscribed_groups_clans(const std::string &base_path, Settings *settings_client, Settings *settings_server)
 {
     const std::string clans_filepath(base_path + "subscribed_groups_clans.txt");
-    std::ifstream clans_file(utf8_decode(clans_filepath));
+    std::ifstream clans_file(std::filesystem::u8path(clans_filepath));
     if (clans_file.is_open()) {
         common_helpers::consume_bom(clans_file);
         PRINT_DEBUG("loading group clans file '%s'", clans_filepath.c_str());
@@ -394,7 +394,7 @@ static void load_gamecontroller_settings(Settings *settings)
         std::transform(action_set_name.begin(), action_set_name.end(), action_set_name.begin(),[](unsigned char c){ return std::toupper(c); });
 
         std::string controller_config_path = path + PATH_SEPARATOR + p;
-        std::ifstream input( utf8_decode(controller_config_path) );
+        std::ifstream input( std::filesystem::u8path(controller_config_path) );
         if (input.is_open()) {
             common_helpers::consume_bom(input);
             std::map<std::string, std::pair<std::set<std::string>, std::string>> button_pairs;
@@ -619,7 +619,7 @@ static std::set<std::string> parse_supported_languages(class Local_Storage *loca
     std::set<std::string> supported_languages{};
 
     std::string lang_config_path = Local_Storage::get_game_settings_path() + "supported_languages.txt";
-    std::ifstream input( utf8_decode(lang_config_path) );
+    std::ifstream input( std::filesystem::u8path(lang_config_path) );
 
     std::string first_language{};
     if (input.is_open()) {
@@ -720,7 +720,7 @@ static void parse_app_paths(class Settings *settings_client, Settings *settings_
 static void parse_leaderboards(class Settings *settings_client, class Settings *settings_server)
 {
     std::string dlc_config_path = Local_Storage::get_game_settings_path() + "leaderboards.txt";
-    std::ifstream input( utf8_decode(dlc_config_path) );
+    std::ifstream input( std::filesystem::u8path(dlc_config_path) );
     if (input.is_open()) {
         common_helpers::consume_bom(input);
 
@@ -763,7 +763,7 @@ static void parse_leaderboards(class Settings *settings_client, class Settings *
 static void parse_stats(class Settings *settings_client, class Settings *settings_server)
 {
     std::string stats_config_path = Local_Storage::get_game_settings_path() + "stats.txt";
-    std::ifstream input( utf8_decode(stats_config_path) );
+    std::ifstream input( std::filesystem::u8path(stats_config_path) );
     if (input.is_open()) {
         common_helpers::consume_bom(input);
         for( std::string line; getline( input, line ); ) {
@@ -831,7 +831,7 @@ static void parse_stats(class Settings *settings_client, class Settings *setting
 static void parse_depots(class Settings *settings_client, class Settings *settings_server)
 {
     std::string depots_config_path = Local_Storage::get_game_settings_path() + "depots.txt";
-    std::ifstream input( utf8_decode(depots_config_path) );
+    std::ifstream input( std::filesystem::u8path(depots_config_path) );
     if (input.is_open()) {
         common_helpers::consume_bom(input);
         for( std::string line; getline( input, line ); ) {
@@ -858,7 +858,7 @@ static void parse_depots(class Settings *settings_client, class Settings *settin
 static void parse_subscribed_groups(class Settings *settings_client, class Settings *settings_server)
 {
     std::string depots_config_path = Local_Storage::get_game_settings_path() + "subscribed_groups.txt";
-    std::ifstream input( utf8_decode(depots_config_path) );
+    std::ifstream input( std::filesystem::u8path(depots_config_path) );
     if (input.is_open()) {
         common_helpers::consume_bom(input);
         for( std::string line; getline( input, line ); ) {
@@ -885,7 +885,7 @@ static void parse_subscribed_groups(class Settings *settings_client, class Setti
 static void parse_installed_app_Ids(class Settings *settings_client, class Settings *settings_server)
 {
     std::string installed_apps_list_path = Local_Storage::get_game_settings_path() + "installed_app_ids.txt";
-    std::ifstream input( utf8_decode(installed_apps_list_path) );
+    std::ifstream input( std::filesystem::u8path(installed_apps_list_path) );
     if (input.is_open()) {
         settings_client->assumeAnyAppInstalled(false);
         settings_server->assumeAnyAppInstalled(false);
@@ -1142,7 +1142,7 @@ static void parse_crash_printer_location()
 static void parse_auto_accept_invite(class Settings *settings_client, class Settings *settings_server)
 {
     std::string auto_accept_list_path = Local_Storage::get_game_settings_path() + "auto_accept_invite.txt";
-    std::ifstream input( utf8_decode(auto_accept_list_path) );
+    std::ifstream input( std::filesystem::u8path(auto_accept_list_path) );
     if (input.is_open()) {
         bool accept_any_invite = true;
         common_helpers::consume_bom(input);
@@ -1315,7 +1315,7 @@ static std::map<SettingsItf, std::string> old_itfs_map{};
 
 static bool try_parse_old_steam_interfaces_file(std::string interfaces_path)
 {
-    std::ifstream input( utf8_decode(interfaces_path) );
+    std::ifstream input( std::filesystem::u8path(interfaces_path) );
     if (!input.is_open()) return false;
 
     PRINT_DEBUG("Trying to parse old steam interfaces from '%s'", interfaces_path.c_str());
@@ -1407,7 +1407,7 @@ static void load_all_config_settings()
         local_ini.SetUnicode();
 
         for (const auto &config_file : config_files) {
-            std::ifstream local_ini_file( utf8_decode(Local_Storage::get_game_settings_path() + config_file), std::ios::binary | std::ios::in);
+            std::ifstream local_ini_file( std::filesystem::u8path(Local_Storage::get_game_settings_path() + config_file), std::ios::binary | std::ios::in);
             if (!local_ini_file.is_open()) continue;
 
             auto err = local_ini.LoadData(local_ini_file);
@@ -1431,7 +1431,7 @@ static void load_all_config_settings()
         local_ini.SetUnicode();
 
         for (const auto &config_file : config_files) {
-            std::ifstream local_ini_file( utf8_decode(local_save_folder + Local_Storage::settings_storage_folder + PATH_SEPARATOR + config_file), std::ios::binary | std::ios::in);
+            std::ifstream local_ini_file( std::filesystem::u8path(local_save_folder + Local_Storage::settings_storage_folder + PATH_SEPARATOR + config_file), std::ios::binary | std::ios::in);
             if (!local_ini_file.is_open()) continue;
 
             auto err = local_ini.LoadData(local_ini_file);
@@ -1456,7 +1456,7 @@ static void load_all_config_settings()
         
         // now we can access get_user_appdata_path() which might have been changed by the above code
         for (const auto &config_file : config_files) {
-            std::ifstream ini_file( utf8_decode(Local_Storage::get_user_appdata_path() + Local_Storage::settings_storage_folder + PATH_SEPARATOR + config_file), std::ios::binary | std::ios::in);
+            std::ifstream ini_file( std::filesystem::u8path(Local_Storage::get_user_appdata_path() + Local_Storage::settings_storage_folder + PATH_SEPARATOR + config_file), std::ios::binary | std::ios::in);
             if (!ini_file.is_open()) continue;
             
             auto err = global_ini.LoadData(ini_file);

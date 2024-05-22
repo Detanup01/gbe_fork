@@ -381,6 +381,10 @@ filter { "configurations:*debug" }
 filter { "system:windows", }
     defines {
         "_CRT_SECURE_NO_WARNINGS",
+
+        -- https://learn.microsoft.com/en-us/cpp/c-runtime-library/compatibility
+        -- '_CRT_NONSTDC_NO_WARNINGS',
+        '_CRT_DECLARE_NONSTDC_NAMES',
     }
 -- Linux defines
 filter { "system:linux" }

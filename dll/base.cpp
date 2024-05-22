@@ -273,7 +273,7 @@ bool file_exists_(const std::string &full_path)
     if (_wstat(utf8_decode(full_path).c_str(), &buffer) != 0)
         return false;
 
-    if ( buffer.st_mode & _S_IFDIR)
+    if ( buffer.st_mode & S_IFDIR)
         return false;
 #else
     struct stat buffer{};

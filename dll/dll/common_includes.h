@@ -90,6 +90,8 @@
 
     // we need this for BCryptGenRandom() in base.cpp
     #include <bcrypt.h>
+    // we need non-standard S_IFDIR for Windows
+    #include <sys/stat.h>
 
     #define MSG_NOSIGNAL 0
 
@@ -226,6 +228,7 @@ static inline void reset_LastError()
 // function entry
 #define PRINT_DEBUG_ENTRY() PRINT_DEBUG("")
 #define PRINT_DEBUG_TODO() PRINT_DEBUG("// TODO")
+#define PRINT_DEBUG_GNU_WIN() PRINT_DEBUG("GNU/Win")
 
 // Emulator includes
 // add them here after the inline functions definitions
