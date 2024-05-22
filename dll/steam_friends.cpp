@@ -277,6 +277,13 @@ CSteamID Steam_Friends::GetFriendByIndex( int iFriend, int iFriendFlags )
     return id;
 }
 
+void Steam_Friends::GetFriendByIndex(CSteamID& res, int iFriend, int iFriendFlags )
+{
+	PRINT_DEBUG_GNU_WIN();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+	res = GetFriendByIndex(iFriend, iFriendFlags );
+}
+
 CSteamID Steam_Friends::GetFriendByIndex( int iFriend, EFriendFlags eFriendFlags )
 {
 	PRINT_DEBUG("old");
@@ -289,7 +296,7 @@ void Steam_Friends::GetFriendByIndex(CSteamID& result, int iFriend, EFriendFlags
 {
 	PRINT_DEBUG_GNU_WIN();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-	result = GetFriendByIndex(iFriend, (int)eFriendFlags );
+	result = GetFriendByIndex(iFriend, eFriendFlags );
 }
 
 
@@ -570,6 +577,13 @@ CSteamID Steam_Friends::GetFriendFromSourceByIndex( CSteamID steamIDSource, int 
     return k_steamIDNil;
 }
 
+void Steam_Friends::GetFriendFromSourceByIndex( CSteamID& res, CSteamID steamIDSource, int iFriend )
+{
+    PRINT_DEBUG_GNU_WIN();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    res = GetFriendFromSourceByIndex( steamIDSource, iFriend );
+}
+
 
 // returns true if the local user can see that steamIDUser is a member or in steamIDSource
 bool Steam_Friends::IsUserInSource( CSteamID steamIDUser, CSteamID steamIDSource )
@@ -769,6 +783,13 @@ CSteamID Steam_Friends::GetClanOwner( CSteamID steamIDClan )
     return k_steamIDNil;
 }
 
+void Steam_Friends::GetClanOwner(CSteamID& res, CSteamID steamIDClan )
+{
+    PRINT_DEBUG_GNU_WIN();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    res = GetClanOwner( steamIDClan );
+}
+
 // returns the number of officers in a clan (including the owner)
 int Steam_Friends::GetClanOfficerCount( CSteamID steamIDClan )
 {
@@ -783,6 +804,13 @@ CSteamID Steam_Friends::GetClanOfficerByIndex( CSteamID steamIDClan, int iOffice
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_steamIDNil;
+}
+
+void Steam_Friends::GetClanOfficerByIndex(CSteamID& res, CSteamID steamIDClan, int iOfficer )
+{
+    PRINT_DEBUG_GNU_WIN();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    res = GetClanOfficerByIndex( steamIDClan, iOfficer );
 }
 
 // if current user is chat restricted, he can't send or receive any text/voice chat messages.
@@ -965,6 +993,13 @@ CSteamID Steam_Friends::GetCoplayFriend( int iCoplayFriend )
     return k_steamIDNil;
 }
 
+void Steam_Friends::GetCoplayFriend( CSteamID& res, int iCoplayFriend )
+{
+    PRINT_DEBUG_GNU_WIN();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    res = GetCoplayFriend( iCoplayFriend );
+}
+
 int Steam_Friends::GetFriendCoplayTime( CSteamID steamIDFriend )
 {
     PRINT_DEBUG_TODO();
@@ -1015,6 +1050,13 @@ CSteamID Steam_Friends::GetChatMemberByIndex( CSteamID steamIDClan, int iUser )
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return k_steamIDNil;
+}
+
+void Steam_Friends::GetChatMemberByIndex(CSteamID& res, CSteamID steamIDClan, int iUser )
+{
+    PRINT_DEBUG_GNU_WIN();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    res = GetChatMemberByIndex( steamIDClan, iUser );
 }
 
 bool Steam_Friends::SendClanChatMessage( CSteamID steamIDClanChat, const char *pchText )

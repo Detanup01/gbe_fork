@@ -605,6 +605,13 @@ CSteamID Steam_Matchmaking::GetLobbyByIndex( int iLobby )
     return id;
 }
 
+void Steam_Matchmaking::GetLobbyByIndex(CSteamID& res, int iLobby )
+{
+    PRINT_DEBUG_GNU_WIN();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    res = GetLobbyByIndex(iLobby );
+}
+
 // Create a lobby on the Steam servers.
 // If private, then the lobby will not be returned by any RequestLobbyList() call; the CSteamID
 // of the lobby will need to be communicated via game channels or via InviteUserToLobby()
@@ -771,6 +778,13 @@ CSteamID Steam_Matchmaking::GetLobbyMemberByIndex( CSteamID steamIDLobby, int iM
     if (lobby && !lobby->deleted() && lobby->members().size() > iMember && iMember >= 0) id = (uint64)lobby->members(iMember).id();
     PRINT_DEBUG("found member: %llu", id.ConvertToUint64());
     return id;
+}
+
+void Steam_Matchmaking::GetLobbyMemberByIndex(CSteamID&res, CSteamID steamIDLobby, int iMember )
+{
+    PRINT_DEBUG_GNU_WIN();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    res = GetLobbyMemberByIndex( steamIDLobby, iMember );
 }
 
 
@@ -1173,6 +1187,13 @@ CSteamID Steam_Matchmaking::GetLobbyOwner( CSteamID steamIDLobby )
 
     //TODO: might be better to require the lobby info to be at least requested first.
     return (uint64)lobby->owner();
+}
+
+void Steam_Matchmaking::GetLobbyOwner(CSteamID& res, CSteamID steamIDLobby )
+{
+    PRINT_DEBUG_GNU_WIN();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    res = GetLobbyOwner( steamIDLobby );
 }
 
 // asks the Steam servers for a list of lobbies that friends are in

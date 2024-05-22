@@ -121,6 +121,8 @@ public:
     // the returned CSteamID can then be used by all the functions below to access details about the user
     CSteamID GetFriendByIndex( int iFriend, int iFriendFlags );
 
+    void GetFriendByIndex(CSteamID& res, int iFriend, int iFriendFlags );
+
     CSteamID GetFriendByIndex( int iFriend, EFriendFlags eFriendFlags );
 
     void GetFriendByIndex(CSteamID& result, int iFriend, EFriendFlags eFriendFlags);
@@ -205,6 +207,8 @@ public:
     int GetFriendCountFromSource( CSteamID steamIDSource );
 
     CSteamID GetFriendFromSourceByIndex( CSteamID steamIDSource, int iFriend );
+
+    void GetFriendFromSourceByIndex(CSteamID& res, CSteamID steamIDSource, int iFriend);
 
 
     // returns true if the local user can see that steamIDUser is a member or in steamIDSource
@@ -292,11 +296,15 @@ public:
     // returns the steamID of the clan owner
     CSteamID GetClanOwner( CSteamID steamIDClan );
 
+    void GetClanOwner(CSteamID& res, CSteamID steamIDClan );
+
     // returns the number of officers in a clan (including the owner)
     int GetClanOfficerCount( CSteamID steamIDClan );
 
     // returns the steamID of a clan officer, by index, of range [0,GetClanOfficerCount)
     CSteamID GetClanOfficerByIndex( CSteamID steamIDClan, int iOfficer );
+
+    void GetClanOfficerByIndex(CSteamID& res, CSteamID steamIDClan, int iOfficer );
 
     // if current user is chat restricted, he can't send or receive any text/voice chat messages.
     // the user can't see custom avatars. But the user can be online and send/recv game invites.
@@ -345,6 +353,8 @@ public:
     int GetCoplayFriendCount();
 
     CSteamID GetCoplayFriend( int iCoplayFriend );
+    
+    void GetCoplayFriend(CSteamID& res, int iCoplayFriend );
 
     int GetFriendCoplayTime( CSteamID steamIDFriend );
 
@@ -363,6 +373,8 @@ public:
     int GetClanChatMemberCount( CSteamID steamIDClan );
 
     CSteamID GetChatMemberByIndex( CSteamID steamIDClan, int iUser );
+    
+    void GetChatMemberByIndex(CSteamID& res, CSteamID steamIDClan, int iUser );
 
     bool SendClanChatMessage( CSteamID steamIDClanChat, const char *pchText );
 

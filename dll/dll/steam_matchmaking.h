@@ -217,6 +217,8 @@ public:
     // the returned CSteamID::IsValid() will be false if iLobby is out of range
     CSteamID GetLobbyByIndex( int iLobby );
 
+    void GetLobbyByIndex(CSteamID& res, int iLobby );
+
 
     // Create a lobby on the Steam servers.
     // If private, then the lobby will not be returned by any RequestLobbyList() call; the CSteamID
@@ -268,6 +270,8 @@ public:
     // iMember is of range [0,GetNumLobbyMembers())
     // note that the current user must be in a lobby to retrieve CSteamIDs of other users in that lobby
     CSteamID GetLobbyMemberByIndex( CSteamID steamIDLobby, int iMember );
+
+    void GetLobbyMemberByIndex(CSteamID& res, CSteamID steamIDLobby, int iMember );
 
 
     // Get data associated with this lobby
@@ -358,6 +362,8 @@ public:
     // there always one lobby owner - if the current owner leaves, another user will become the owner
     // it is possible (bur rare) to join a lobby just as the owner is leaving, thus entering a lobby with self as the owner
     CSteamID GetLobbyOwner( CSteamID steamIDLobby );
+
+    void GetLobbyOwner(CSteamID& res, CSteamID steamIDLobby );
 
     // asks the Steam servers for a list of lobbies that friends are in
     // returns results by posting one RequestFriendsLobbiesResponse_t callback per friend/lobby pair
