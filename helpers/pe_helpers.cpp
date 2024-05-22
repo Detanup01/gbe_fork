@@ -231,7 +231,7 @@ std::string pe_helpers::get_err_string(DWORD code)
         code,
         MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL),
         (LPSTR)&err_str[0],
-        err_str.size(),
+        static_cast<DWORD>(err_str.size()),
         NULL);
     
     if (!msg_chars) return std::string();

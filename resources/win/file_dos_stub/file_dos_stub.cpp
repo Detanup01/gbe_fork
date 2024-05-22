@@ -35,7 +35,7 @@ static std::vector<uint8_t> load_file_partial(std::fstream &file)
         file.seekg(org_pos, std::ios::beg);
         return data;
     }
-    catch(const std::exception& e)
+    catch(...)
     {
         return std::vector<uint8_t>();
     }
@@ -55,7 +55,7 @@ int main(int argc, char* *argv)
         return 1;
     }
 
-    for (size_t i = 1; i < argc; ++i) {
+    for (size_t i = 1; i < (size_t)argc; ++i) {
         auto arg = argv[i];
         std::fstream file(arg, std::ios::in | std::ios::out | std::ios::binary);
         if (!file.is_open()) {

@@ -275,7 +275,7 @@ bool common_helpers::file_exist(const std::wstring &filepath)
 bool common_helpers::file_size(const std::filesystem::path &filepath, size_t &size)
 {
     if (common_helpers::file_exist(filepath)) {
-        size = std::filesystem::file_size(filepath);
+        size = static_cast<size_t>(std::filesystem::file_size(filepath));
         return true;
     }
     return false;
