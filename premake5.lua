@@ -109,7 +109,26 @@ newaction {
 newoption {
     trigger = "emubuild",
     description = "Set the EMU_BUILD_STRING",
-    default = os.date("%Y_%m_%d-%H_%M_%S")
+    value = "your_string",
+    default = os.date("%Y_%m_%d-%H_%M_%S"),
+}
+
+newoption {
+    category = "win build",
+    trigger = "dosstub",
+    description = "Change the DOS stub of the Windows builds",
+}
+
+newoption {
+    category = "win build",
+    trigger = "winsign",
+    description = "Sign Windows builds with a fake certificate",
+}
+
+newoption {
+    category = "win build",
+    trigger = "winrsrc",
+    description = "Add resources to Windows builds",
 }
 
 
@@ -379,16 +398,16 @@ local dos_stub_exe_32 = os.realpath('resources/win/file_dos_stub/file_dos_stub_3
 local dos_stub_exe_64 = os.realpath('resources/win/file_dos_stub/file_dos_stub_64.exe')
 local signer_tool = os.realpath('third-party/build/win/cert/sign_helper.bat')
 -- change dos stub
-filter { "system:windows", "platforms:x32", }
+filter { "system:windows", "platforms:x32", "options:dosstub", }
     postbuildcommands {
         '"' .. dos_stub_exe_32 .. '" %[%{!cfg.buildtarget.abspath}]',
     }
-filter { "system:windows", "platforms:x64", }
+filter { "system:windows", "platforms:x64", "options:dosstub", }
     postbuildcommands {
         '"' .. dos_stub_exe_64 .. '" %[%{!cfg.buildtarget.abspath}]',
     }
 -- sign
-filter { "system:windows", }
+filter { "system:windows", "options:winsign", }
     postbuildcommands {
         '"' .. signer_tool .. '" %[%{!cfg.buildtarget.abspath}]',
     }
@@ -459,12 +478,12 @@ project "api_regular"
             "dll/wrap.cpp"
         }
     -- Windows x32 common source files
-    filter { "system:windows", "platforms:x32", }
+    filter { "system:windows", "platforms:x32", "options:winrsrc", }
         files {
             "resources/win/api/32/resources.rc"
         }
     -- Windows x64 common source files
-    filter { "system:windows", "platforms:x64", }
+    filter { "system:windows", "platforms:x64", "options:winrsrc", }
         files {
             "resources/win/api/64/resources.rc"
         }
@@ -573,12 +592,12 @@ project "api_experimental"
             "dll/wrap.cpp"
         }
     -- Windows x32 common source files
-    filter { "system:windows", "platforms:x32", }
+    filter { "system:windows", "platforms:x32", "options:winrsrc", }
         files {
             "resources/win/api/32/resources.rc"
         }
     -- Windows x64 common source files
-    filter { "system:windows", "platforms:x64", }
+    filter { "system:windows", "platforms:x64", "options:winrsrc", }
         files {
             "resources/win/api/64/resources.rc"
         }
@@ -698,12 +717,12 @@ project "steamclient_experimental"
             "dll/wrap.cpp"
         }
     -- Windows x32 common source files
-    filter { "system:windows", "platforms:x32", }
+    filter { "system:windows", "platforms:x32", "options:winrsrc", }
         files {
             "resources/win/client/32/resources.rc"
         }
     -- Windows x64 common source files
-    filter { "system:windows", "platforms:x64", }
+    filter { "system:windows", "platforms:x64", "options:winrsrc", }
         files {
             "resources/win/client/64/resources.rc"
         }
@@ -789,12 +808,12 @@ project "tool_lobby_connect"
         'tools/lobby_connect/lobby_connect.cpp'
     }
     -- Windows x32 common source files
-    filter { "system:windows", "platforms:x32", }
+    filter { "system:windows", "platforms:x32", "options:winrsrc", }
         files {
             "resources/win/launcher/32/resources.rc"
         }
     -- Windows x64 common source files
-    filter { "system:windows", "platforms:x64", }
+    filter { "system:windows", "platforms:x64", "options:winrsrc", }
         files {
             "resources/win/launcher/64/resources.rc"
         }
@@ -924,12 +943,12 @@ project "lib_game_overlay_renderer"
         "game_overlay_renderer_lib/**"
     }
     -- x32 common source files
-    filter { "system:windows", "platforms:x32", }
+    filter { "system:windows", "platforms:x32", "options:winrsrc", }
         files {
             "resources/win/game_overlay_renderer/32/resources.rc"
         }
     -- x64 common source files
-    filter { "system:windows", "platforms:x64", }
+    filter { "system:windows", "platforms:x64", "options:winrsrc", }
         files {
             "resources/win/game_overlay_renderer/64/resources.rc"
         }
@@ -965,12 +984,12 @@ project "steamclient_experimental_stub_win"
         "steamclient/steamclient.cpp",
     }
     -- x32 common source files
-    filter { "platforms:x32", }
+    filter { "platforms:x32", "options:winrsrc", }
         files {
             "resources/win/client/32/resources.rc"
         }
     -- x64 common source files
-    filter { "platforms:x64", }
+    filter { "platforms:x64", "options:winrsrc", }
         files {
             "resources/win/client/64/resources.rc"
         }
@@ -1017,12 +1036,12 @@ project "steamclient_experimental_extra_win"
         "libs/detours/**.c", "libs/detours/**.h",
     }
     -- x32 common source files
-    filter { "platforms:x32", }
+    filter { "platforms:x32", "options:winrsrc", }
         files {
             "resources/win/client/32/resources.rc"
         }
     -- x64 common source files
-    filter { "platforms:x64", }
+    filter { "platforms:x64", "options:winrsrc", }
         files {
             "resources/win/client/64/resources.rc"
         }
@@ -1066,12 +1085,12 @@ project "steamclient_experimental_loader_win"
         "helpers/dbg_log.cpp",
     }
     -- x32 common source files
-    filter { "platforms:x32", }
+    filter { "platforms:x32", "options:winrsrc", }
         files {
             "resources/win/launcher/32/resources.rc"
         }
     -- x64 common source files
-    filter { "platforms:x64", }
+    filter { "platforms:x64", "options:winrsrc", }
         files {
             "resources/win/launcher/64/resources.rc"
         }
