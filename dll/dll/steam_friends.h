@@ -123,6 +123,8 @@ public:
 
     CSteamID GetFriendByIndex( int iFriend, EFriendFlags eFriendFlags );
 
+    void GetFriendByIndex(CSteamID& result, int iFriend, EFriendFlags eFriendFlags);
+
     // returns a relationship to a user
     EFriendRelationship GetFriendRelationship( CSteamID steamIDFriend );
 
@@ -182,6 +184,8 @@ public:
     int GetClanCount();
 
     CSteamID GetClanByIndex( int iClan );
+
+    void GetClanByIndex(CSteamID& result, int iClan );
 
     const char *GetClanName( CSteamID steamIDClan );
 

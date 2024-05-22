@@ -284,6 +284,15 @@ CSteamID Steam_Friends::GetFriendByIndex( int iFriend, EFriendFlags eFriendFlags
 	return GetFriendByIndex(iFriend, (int)eFriendFlags );
 }
 
+
+void Steam_Friends::GetFriendByIndex(CSteamID& result, int iFriend, EFriendFlags eFriendFlags)
+{
+	PRINT_DEBUG_GNU_WIN();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+	result = GetFriendByIndex(iFriend, (int)eFriendFlags );
+}
+
+
 // returns a relationship to a user
 EFriendRelationship Steam_Friends::GetFriendRelationship( CSteamID steamIDFriend )
 {
@@ -496,6 +505,13 @@ CSteamID Steam_Friends::GetClanByIndex( int iClan )
         counter++;
     }
     return k_steamIDNil;
+}
+
+void Steam_Friends::GetClanByIndex( CSteamID& result, int iClan )
+{
+    PRINT_DEBUG_GNU_WIN();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    result = GetClanByIndex(iClan);
 }
 
 const char* Steam_Friends::GetClanName( CSteamID steamIDClan )
