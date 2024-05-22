@@ -104,7 +104,7 @@ static void log_exception(LPEXCEPTION_POINTERS ex_pointers)
         return;
     }
     
-    std::ofstream file(logs_filepath, std::ios::app);
+    std::ofstream file(std::filesystem::path(logs_filepath), std::ios::app);
 
     auto now = std::chrono::system_clock::now();
     auto t_now = std::chrono::system_clock::to_time_t(now);
