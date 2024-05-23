@@ -295,7 +295,7 @@ static int send_packet_to(sock_t sock, IP_PORT ip_port, char *data, unsigned lon
     addr4->sin_family = AF_INET;
     addr4->sin_addr.s_addr = ip_port.ip;
     addr4->sin_port = ip_port.port;
-    return sendto(sock, data, length, 0, (struct sockaddr *)&addr, addrsize);
+    return sendto(sock, data, length, 0, (struct sockaddr *)&addr, static_cast<int>(addrsize));
 }
 
 static int receive_packet(sock_t sock, IP_PORT *ip_port, char *data, unsigned long max_length)
@@ -330,7 +330,7 @@ static bool send_broadcasts(sock_t sock, uint16 port, char *data, unsigned long 
             upper_range.push_back(addr.ip);
         }
 
-        set_whitelist_ips(lower_range.data(), upper_range.data(), lower_range.size());
+        set_whitelist_ips(lower_range.data(), upper_range.data(), static_cast<unsigned int>(lower_range.size()));
         last_get_broadcast_info = std::chrono::high_resolution_clock::now();
     }
 
@@ -380,7 +380,7 @@ static bool bind_socket(sock_t sock, uint16 port)
     addr4->sin_port = htons(port);
     addr4->sin_addr.s_addr = 0;
 
-    return !bind(sock, (struct sockaddr *)&addr, addrsize);
+    return !bind(sock, (struct sockaddr *)&addr, static_cast<int>(addrsize));
 }
 
 static bool socket_reuseaddr(sock_t sock)
@@ -400,7 +400,7 @@ static void connect_socket(sock_t sock, IP_PORT ip_port)
     addr4->sin_addr.s_addr = ip_port.ip;
     addr4->sin_port = ip_port.port;
 
-    connect(sock, (struct sockaddr *)&addr, addrsize);
+    connect(sock, (struct sockaddr *)&addr, static_cast<int>(addrsize));
 }
 
 unsigned int receive_buffer_amount(sock_t sock)
@@ -422,7 +422,7 @@ static void send_tcp_pending(struct TCP_Socket &socket)
     size_t buf_size = socket.send_buffer.size();
     if (buf_size == 0) return;
 
-    int len = send(socket.sock, &(socket.send_buffer[0]), buf_size, MSG_NOSIGNAL);
+    int len = send(socket.sock, &(socket.send_buffer[0]), static_cast<int>(buf_size), MSG_NOSIGNAL);
     if (len <= 0) return;
 
     socket.send_buffer.erase(socket.send_buffer.begin(), socket.send_buffer.begin() + len);
@@ -430,7 +430,7 @@ static void send_tcp_pending(struct TCP_Socket &socket)
 
 static void send_buffer_tcp(struct TCP_Socket &socket, Common_Message *msg)
 {
-    uint32 size = msg->ByteSizeLong(), old_size = socket.send_buffer.size();
+    uint32 size = static_cast<uint32>(msg->ByteSizeLong()), old_size = static_cast<uint32>(socket.send_buffer.size());
     socket.send_buffer.resize(old_size + sizeof(uint32) + size);
     memcpy(&(socket.send_buffer[old_size]), &size, sizeof(size));
     msg->SerializeToArray(&(socket.send_buffer[old_size + sizeof(uint32)]), size);
@@ -470,7 +470,7 @@ static bool unbuffer_tcp(struct TCP_Socket &socket, Common_Message *msg)
 static bool recv_tcp(struct TCP_Socket &socket)
 {
     if (is_socket_valid(socket.sock)) {
-        unsigned int size = receive_buffer_amount(socket.sock), old_size = socket.recv_buffer.size();
+        unsigned int size = receive_buffer_amount(socket.sock), old_size = static_cast<uint32>(socket.send_buffer.size());
         int len;
         socket.recv_buffer.resize(old_size + size);
         if (size > 0) {
@@ -696,23 +696,23 @@ bool Networking::handle_announce(Common_Message *msg, IP_PORT ip_port)
 
             size_t size = msg_.ByteSizeLong();
             char *buffer = new char[size];
-            msg_.SerializeToArray(buffer, size);
+            msg_.SerializeToArray(buffer, static_cast<int>(size));
             IP_PORT ipp;
             ipp.ip = msg->announce().peers(i).ip();
             ipp.port = htons(msg->announce().peers(i).udp_port());
-            send_packet_to(udp_socket, ipp, buffer, size);
+            send_packet_to(udp_socket, ipp, buffer, static_cast<unsigned long>(size));
             delete[] buffer;
         }
     }
 
     conn->last_received = std::chrono::high_resolution_clock::now();
 
-    if (msg->announce().type() == Announce::PING) {
+    if (msg->announce().type() & Announce::PING) {
         Common_Message msg = create_announce(false);
         size_t size = msg.ByteSizeLong(); 
         char *buffer = new char[size];
-        msg.SerializeToArray(buffer, size);
-        send_packet_to(udp_socket, ip_port, buffer, size);
+        msg.SerializeToArray(buffer, static_cast<int>(size));
+        send_packet_to(udp_socket, ip_port, buffer, static_cast<unsigned long>(size));
         delete[] buffer;
 
         //send ping packet if not pinged
@@ -720,11 +720,11 @@ bool Networking::handle_announce(Common_Message *msg, IP_PORT ip_port)
             Common_Message msg = create_announce(true);
             size_t size = msg.ByteSizeLong(); 
             char *buffer = new char[size];
-            msg.SerializeToArray(buffer, size);
-            send_packet_to(udp_socket, ip_port, buffer, size);
+            msg.SerializeToArray(buffer, static_cast<int>(size));
+            send_packet_to(udp_socket, ip_port, buffer, static_cast<unsigned long>(size));
             delete[] buffer;
         }
-    } else if (msg->announce().type() == Announce::PONG) {
+    } else if (msg->announce().type() & Announce::PONG) {
         conn->udp_ip_port = ip_port;
         conn->udp_pinged = true;
     }
@@ -776,7 +776,7 @@ Networking::Networking(CSteamID id, uint32 appid, uint16 port, std::set<IP_PORT>
     }
 
     run_at_startup();
-    sock_t sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    sock_t sock = static_cast<sock_t>(socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP));
     PRINT_DEBUG("UDP socket: %u", sock);
     if (is_socket_valid(sock) && set_socket_nonblocking(sock)) {
         int broadcast = 1;
@@ -805,7 +805,7 @@ Networking::Networking(CSteamID id, uint32 appid, uint16 port, std::set<IP_PORT>
         PRINT_DEBUG("UDP: could not initialize %i", get_last_error());
     }
 
-    sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    sock = static_cast<sock_t>(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP));
     PRINT_DEBUG("TCP socket: %u", sock);
     if (is_socket_valid(sock) && set_socket_nonblocking(sock)) {
         buffers_set(sock);
@@ -907,10 +907,10 @@ void Networking::send_announce_broadcasts()
 
     size_t size = msg.ByteSizeLong(); 
     std::vector<char> buffer(size);
-    msg.SerializeToArray(&buffer[0], size);
-    send_broadcasts(udp_socket, htons(DEFAULT_PORT), &buffer[0], size, &this->custom_broadcasts);
+    msg.SerializeToArray(&buffer[0], static_cast<int>(size));
+    send_broadcasts(udp_socket, htons(DEFAULT_PORT), &buffer[0], static_cast<unsigned long>(size), &this->custom_broadcasts);
     if (udp_port != DEFAULT_PORT) {
-        send_broadcasts(udp_socket, htons(udp_port), &buffer[0], size, &this->custom_broadcasts);
+        send_broadcasts(udp_socket, htons(udp_port), &buffer[0], static_cast<unsigned long>(size), &this->custom_broadcasts);
     }
 
     last_broadcast = std::chrono::high_resolution_clock::now();
@@ -993,7 +993,7 @@ void Networking::Run()
 #endif
     sock_t sock;
     PRINT_DEBUG("ACCEPTING");
-    while (is_socket_valid(sock = accept(tcp_socket, (struct sockaddr *)&addr, &addrlen))) {
+    while (is_socket_valid(sock = static_cast<sock_t>(accept(tcp_socket, (struct sockaddr *)&addr, &addrlen)))) {
         PRINT_DEBUG("ACCEPT SOCKET %u", sock);
         struct sockaddr_storage addr;
     #if defined(STEAM_WIN32)
@@ -1058,7 +1058,7 @@ void Networking::Run()
     PRINT_DEBUG("CONNECTIONS %zu", connections.size());
     for (auto &conn: connections) {
         if (!is_tcp_socket_valid(conn.tcp_socket_outgoing)) {
-            sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+            sock = static_cast<sock_t>(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP));
             if (is_socket_valid(sock) && set_socket_nonblocking(sock)) {
                 PRINT_DEBUG("NEW SOCKET %u %u", sock, conn.tcp_socket_outgoing.sock);
                 disable_nagle(sock);
@@ -1230,8 +1230,8 @@ bool Networking::sendTo(Common_Message *msg, bool reliable, Connection *conn)
             }
         } else {
             std::vector<char> buffer(size, 0);
-            msg->SerializeToArray(&buffer[0], size);
-            send_packet_to(udp_socket, conn->udp_ip_port, &buffer[0], size);
+            msg->SerializeToArray(&buffer[0], static_cast<int>(size));
+            send_packet_to(udp_socket, conn->udp_ip_port, &buffer[0], static_cast<unsigned long>(size));
             ret = true;
         }
     }
@@ -1364,7 +1364,7 @@ void Networking::startQuery(IP_PORT ip_port)
 
         while (retry++ < max_retry)
         {
-            query_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+            query_socket = static_cast<sock_t>(socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP));
             if (is_socket_valid(query_socket))
                 break;
             if (retry > max_retry)

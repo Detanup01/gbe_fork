@@ -33,7 +33,7 @@ uint32 Steam_Utils::GetSecondsSinceAppActive()
 {
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - startup_time).count();
+    return static_cast<uint32>(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - startup_time).count());
 }
 
 uint32 Steam_Utils::GetSecondsSinceComputerActive()

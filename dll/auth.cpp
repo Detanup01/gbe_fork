@@ -710,10 +710,9 @@ Auth_Data Auth_Manager::getTicketData( void *pTicket, int cbMaxTicket, uint32 *p
         uint64 steam_id_buff = steam_id.ConvertToUint64();
         memcpy((char *)pTicket + STEAM_ID_OFFSET_TICKET, &steam_id_buff, sizeof(steam_id_buff));
         *pcbTicket = cbMaxTicket;
-
+        uint32 ttt = generate_steam_ticket_id();
         ticket_data.id = steam_id;
-        ticket_data.number = generate_steam_ticket_id();
-        uint32 ttt = ticket_data.number;
+        ticket_data.number = ttt;
 
         memcpy(((char *)pTicket) + sizeof(uint64), &ttt, sizeof(ttt));
     }
@@ -871,11 +870,11 @@ bool Auth_Manager::endAuth(CSteamID id)
 void Auth_Manager::Callback(Common_Message *msg)
 {
     if (msg->has_low_level()) {
-        if (msg->low_level().type() == Low_Level::CONNECT) {
+        if (msg->low_level().type() & Low_Level::CONNECT) {
             
         }
 
-        if (msg->low_level().type() == Low_Level::DISCONNECT) {
+        if (msg->low_level().type() & Low_Level::DISCONNECT) {
             PRINT_DEBUG("TICKET DISCONNECT");
             auto t = std::begin(inbound);
             while (t != std::end(inbound)) {
@@ -890,7 +889,7 @@ void Auth_Manager::Callback(Common_Message *msg)
     }
 
     if (msg->has_auth_ticket()) {
-        if (msg->auth_ticket().type() == Auth_Ticket::CANCEL) {
+        if (msg->auth_ticket().type() & Auth_Ticket::CANCEL) {
             PRINT_DEBUG("TICKET CANCEL " "%" PRIu64, msg->source_id());
             uint32 number = msg->auth_ticket().number();
             auto t = std::begin(inbound);
