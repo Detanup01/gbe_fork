@@ -84,7 +84,6 @@
     #include <windows.h>
     #include <ws2tcpip.h>
     #include <processthreadsapi.h>
-    #include <windows.h>
     #include <direct.h>
     #include <iphlpapi.h> // Include winsock2 before this, or winsock2 iphlpapi will be unavailable
     #include <shlobj.h>

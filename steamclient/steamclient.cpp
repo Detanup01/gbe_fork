@@ -1,5 +1,6 @@
 
 //#include "dll.h"
+#define WIN32_LEAN_AND_MEAN
 #include "Windows.h"
 #ifdef _WIN64
 #define DLL_NAME "steam_api64.dll"
