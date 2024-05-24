@@ -378,8 +378,13 @@ filter { "configurations:*debug" }
 filter { "system:windows", }
     defines {
         "_CRT_SECURE_NO_WARNINGS",
-
-        -- https://learn.microsoft.com/en-us/cpp/c-runtime-library/compatibility
+    }
+-- MinGw on Windows doesn't have a definition for '_S_IFDIR' which is microsoft specific: https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/stat-functions
+-- this is used in 'base.cpp' -> if ( buffer.st_mode & _S_IFDIR)
+-- instead microsoft has an alternative but only enabled when _CRT_DECLARE_NONSTDC_NAMES is defined
+-- https://learn.microsoft.com/en-us/cpp/c-runtime-library/compatibility
+filter { "system:windows", "action:gmake*", }
+    defines {
         -- '_CRT_NONSTDC_NO_WARNINGS',
         '_CRT_DECLARE_NONSTDC_NAMES',
     }
