@@ -130,9 +130,6 @@ newoption {
 }
 
 
--- paths to custom tools
----------
-
 
 -- common defines
 ---------
@@ -359,22 +356,6 @@ filter { "action:gmake*" , "files:*.cpp or *.cc or *.hpp", }
     buildoptions  {
         "-fno-char8_t", -- GCC gives a warning when a .c file is compiled with this
     }
--- MinGw on Windows common compiler/linker options
-filter { "system:windows", "action:gmake*", }
-    buildoptions  {
-        -- MinGw on Windows cannot compile 'creatwth.cpp' from Detours lib (error: 'DWordMult' was not declared in this scope)
-        -- because intsafe.h isn't included by default
-        "-include intsafe.h",
-    }
-    -- source: https://gcc.gnu.org/onlinedocs/gcc/Cygwin-and-MinGW-Options.html
-    linkoptions {
-        -- MinGW on Windows cannot link wWinMain by default
-        "-municode",
-        -- from docs: "specifies that the typical Microsoft Windows predefined macros are to be set in the pre-processor,
-        --             but does not influence the choice of runtime library/startup code"
-        -- optional really
-       '-mwin32',
-    }
 filter {} -- reset the filter and remove all active keywords
 
 
@@ -395,15 +376,6 @@ filter { "system:windows", }
     defines {
         "_CRT_SECURE_NO_WARNINGS",
     }
--- MinGw on Windows doesn't have a definition for '_S_IFDIR' which is microsoft specific: https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/stat-functions
--- this is used in 'base.cpp' -> if ( buffer.st_mode & _S_IFDIR)
--- instead microsoft has an alternative but only enabled when _CRT_DECLARE_NONSTDC_NAMES is defined
--- https://learn.microsoft.com/en-us/cpp/c-runtime-library/compatibility
-filter { "system:windows", "action:gmake*", }
-    defines {
-        -- '_CRT_NONSTDC_NO_WARNINGS',
-        '_CRT_DECLARE_NONSTDC_NAMES',
-    }
 -- Linux defines
 filter { "system:linux" }
     defines {
@@ -412,9 +384,33 @@ filter { "system:linux" }
 filter {} -- reset the filter and remove all active keywords
 
 
--- libraries
+-- MinGw on Windows
 ---------
--- filter { "system:windows", "action:gmake*", }
+-- MinGw on Windows common compiler/linker options
+filter { "system:windows", "action:gmake*", }
+    buildoptions  {
+        -- MinGw on Windows cannot compile 'creatwth.cpp' from Detours lib (error: 'DWordMult' was not declared in this scope)
+        -- because intsafe.h isn't included by default
+        "-include intsafe.h",
+    }
+    -- source: https://gcc.gnu.org/onlinedocs/gcc/Cygwin-and-MinGW-Options.html
+    linkoptions {
+        "-static-libgcc", "-static-libstdc++", "-static",
+        -- from docs: "specifies that the typical Microsoft Windows predefined macros are to be set in the pre-processor,
+        --             but does not influence the choice of runtime library/startup code"
+        -- optional really
+        '-mwin32',
+    }
+-- MinGw on Windows common defines
+-- MinGw on Windows doesn't have a definition for '_S_IFDIR' which is microsoft specific: https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/stat-functions
+-- this is used in 'base.cpp' -> if ( buffer.st_mode & _S_IFDIR)
+-- instead microsoft has an alternative but only enabled when _CRT_DECLARE_NONSTDC_NAMES is defined
+-- https://learn.microsoft.com/en-us/cpp/c-runtime-library/compatibility
+    defines {
+        -- '_CRT_NONSTDC_NO_WARNINGS',
+        '_CRT_DECLARE_NONSTDC_NAMES',
+    }
+-- MinGw on Windows common libs to link
 --     links {
 --         -- CoreLibraryDependencies, copied from VS 2022
 --         "kernel32", "user32", "gdi32", "winspool", "comdlg32", "advapi32", "shell32", "ole32", "oleaut32", "uuid", "odbc32", "odbccp32",
@@ -422,6 +418,7 @@ filter {} -- reset the filter and remove all active keywords
 --         -- 'mingw32', 'gcc', 'msvcrt', 'mingwex',
 --         'ucrt', 'libstdc++',
 --     }
+
 
 
 -- post build change DOS stub + sign
@@ -1083,6 +1080,17 @@ project "steamclient_experimental_loader"
     location "%{wks.location}/%{prj.name}"
     targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/steamclient_experimental")
     targetname "steamclient_loader_%{cfg.platform}"
+
+
+    --- common compiler/linker options
+    ---------
+    -- MinGW on Windows
+    filter { "action:gmake*", }
+        -- source: https://gcc.gnu.org/onlinedocs/gcc/Cygwin-and-MinGW-Options.html
+        linkoptions {
+            -- MinGW on Windows cannot link wWinMain by default
+            "-municode",
+        }
 
 
     -- include dir
