@@ -348,10 +348,10 @@ filter { "action:vs*", }
 -- GNU make common compiler/linker options
 filter { "action:gmake*", }
     buildoptions  {
-        "-fvisibility=hidden", "-fexceptions", "-fno-jump-tables" , "-Wno-switch"
+        "-fvisibility=hidden", "-fexceptions", "-fno-jump-tables" , "-Wno-switch",
     }
     linkoptions {
-        "-Wl,--exclude-libs,ALL"
+        "-Wl,--exclude-libs,ALL",
     }
 -- this is made separate because GCC complains but not CLANG
 filter { "action:gmake*" , "files:*.cpp or *.cc or *.hpp", }

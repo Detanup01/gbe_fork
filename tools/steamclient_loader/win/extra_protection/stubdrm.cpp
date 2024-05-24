@@ -129,7 +129,7 @@ static uint8_t *exe_addr_base = (uint8_t *)GetModuleHandleW(NULL);
 static uint8_t *bind_addr_base = nullptr;
 static uint8_t *bind_addr_end = nullptr;
 
-bool restore_win32_apis();
+static bool restore_win32_apis();
 
 // stub v2 needs manual change for .text, section must have write access
 static void change_mem_pages_access()
@@ -256,9 +256,9 @@ static bool redirect_win32_apis()
     if (DetourTransactionBegin() != NO_ERROR) return false;
     if (DetourUpdateThread(GetCurrentThread()) != NO_ERROR) return false;
 
-    if (DetourAttach((PVOID *)&actual_GetTickCount, GetTickCount_hook) != NO_ERROR) return false;
-    if (DetourAttach((PVOID *)&actual_GetModuleHandleA, GetModuleHandleA_hook) != NO_ERROR) return false;
-    if (DetourAttach((PVOID *)&actual_GetModuleHandleExA, GetModuleHandleExA_hook) != NO_ERROR) return false;
+    if (DetourAttach((PVOID *)&actual_GetTickCount, (PVOID)GetTickCount_hook) != NO_ERROR) return false;
+    if (DetourAttach((PVOID *)&actual_GetModuleHandleA, (PVOID)GetModuleHandleA_hook) != NO_ERROR) return false;
+    if (DetourAttach((PVOID *)&actual_GetModuleHandleExA, (PVOID)GetModuleHandleExA_hook) != NO_ERROR) return false;
     bool ret = DetourTransactionCommit() == NO_ERROR;
     if (ret) {
         GetTickCount_hooked = true;
@@ -277,9 +277,9 @@ static bool restore_win32_apis()
     if (DetourTransactionBegin() != NO_ERROR) return false;
     if (DetourUpdateThread(GetCurrentThread()) != NO_ERROR) return false;
 
-    DetourDetach((PVOID *)&actual_GetTickCount, GetTickCount_hook);
-    DetourDetach((PVOID *)&actual_GetModuleHandleA, GetModuleHandleA_hook);
-    DetourDetach((PVOID *)&actual_GetModuleHandleExA, GetModuleHandleExA_hook);
+    DetourDetach((PVOID *)&actual_GetTickCount, (PVOID)GetTickCount_hook);
+    DetourDetach((PVOID *)&actual_GetModuleHandleA, (PVOID)GetModuleHandleA_hook);
+    DetourDetach((PVOID *)&actual_GetModuleHandleExA, (PVOID)GetModuleHandleExA_hook);
     return DetourTransactionCommit() == NO_ERROR;
 }
 
