@@ -574,7 +574,6 @@ project "api_experimental"
             x32_deps_include,
             x32_deps_overlay_include,
         }
-
     -- x64 include dir
     filter { "platforms:x64", }
         includedirs {
@@ -969,9 +968,9 @@ project "lib_game_overlay_renderer"
 if os.target() == "windows" then
 
 
--- Project steamclient_experimental_stub_win (Windows only)
+-- Project steamclient_experimental_stub
 ---------
-project "steamclient_experimental_stub_win"
+project "steamclient_experimental_stub"
     -- https://stackoverflow.com/a/63228027
     kind "SharedLib"
     location "%{wks.location}/%{prj.name}"
@@ -1002,11 +1001,11 @@ project "steamclient_experimental_stub_win"
         files {
             "resources/win/client/64/resources.rc"
         }
--- End steamclient_experimental_stub_win (Windows only)
+-- End steamclient_experimental_stub
 
 
--- Project steamclient_experimental_extra_win
-project "steamclient_experimental_extra_win"
+-- Project steamclient_experimental_extra
+project "steamclient_experimental_extra"
     kind "SharedLib"
     location "%{wks.location}/%{prj.name}"
     targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/steamclient_experimental/extra_dlls")
@@ -1054,11 +1053,11 @@ project "steamclient_experimental_extra_win"
         files {
             "resources/win/client/64/resources.rc"
         }
--- End steamclient_experimental_extra_win
+-- End steamclient_experimental_extra
 
 
--- Project steamclient_experimental_loader_win
-project "steamclient_experimental_loader_win"
+-- Project steamclient_experimental_loader
+project "steamclient_experimental_loader"
     kind "WindowedApp"
     location "%{wks.location}/%{prj.name}"
     targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/steamclient_experimental")
@@ -1112,7 +1111,7 @@ project "steamclient_experimental_loader_win"
         -- common_link_win,
         'user32',
     }
--- End steamclient_experimental_loader_win
+-- End steamclient_experimental_loader
 
 
 -- Project file_dos_stub_changer
@@ -1150,9 +1149,9 @@ end
 -- LINUX ONLY TARGETS START
 if os.target() == "linux" then
 
--- Project steamclient_regular_linux (Linux only)
+-- Project steamclient_regular
 ---------
-project "steamclient_regular_linux"
+project "steamclient_regular"
     kind "SharedLib"
     location "%{wks.location}/%{prj.name}"
     targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/regular/%{cfg.platform}")
@@ -1214,7 +1213,7 @@ project "steamclient_regular_linux"
         libdirs {
             x64_deps_libdir,
         }
--- End steamclient_regular_linux (Linux only)
+-- End steamclient_regular
 
 end
 -- End LINUX ONLY TARGETS
