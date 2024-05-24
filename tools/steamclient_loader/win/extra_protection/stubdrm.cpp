@@ -6,6 +6,14 @@
 #include <mutex>
 #include <intrin.h>
 
+// MinGW doesn't implement _AddressOfReturnAddress(), throws linker error
+// https://gcc.gnu.org/onlinedocs/gcc/Return-Address.html
+#if defined(__GNUC__) && (defined(__MINGW32__) || defined(__MINGW64__))
+    #define ADDR_OF_RET_ADDR() ((void*)((char*)__builtin_frame_address(0) + sizeof(void*)))
+#else // regular windows
+    #define ADDR_OF_RET_ADDR() _AddressOfReturnAddress()
+#endif
+
 typedef struct SnrUnit {
     std::string search_patt{};
     std::string replace_patt{};
@@ -204,7 +212,7 @@ static DWORD WINAPI GetTickCount_hook()
     std::lock_guard lk(mtx_win32_api);
 
     if (GetTickCount_hooked) { // american truck doesn't call GetModuleHandleA
-        void* *ret_ptr = (void**)_AddressOfReturnAddress();
+        void* *ret_ptr = (void**)ADDR_OF_RET_ADDR();
         patch_if_possible(*ret_ptr);
     }
 
@@ -223,7 +231,7 @@ static HMODULE WINAPI GetModuleHandleA_hook(
     if (GetModuleHandleA_hooked &&
         lpModuleName  &&
         common_helpers::ends_with_i(lpModuleName, "ntdll.dll")) {
-        void* *ret_ptr = (void**)_AddressOfReturnAddress();
+        void* *ret_ptr = (void**)ADDR_OF_RET_ADDR();
         patch_if_possible(*ret_ptr);
     }
 
@@ -244,7 +252,7 @@ static BOOL WINAPI GetModuleHandleExA_hook(
     if (GetModuleHandleExA_hooked &&
         (dwFlags == (GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT)) &&
         ((uint8_t *)lpModuleName >= bind_addr_base && (uint8_t *)lpModuleName < bind_addr_end)) {
-        void* *ret_ptr = (void**)_AddressOfReturnAddress();
+        void* *ret_ptr = (void**)ADDR_OF_RET_ADDR();
         patch_if_possible(*ret_ptr);
     }
 
