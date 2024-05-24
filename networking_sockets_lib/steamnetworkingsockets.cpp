@@ -25,7 +25,7 @@ const std::chrono::time_point<std::chrono::system_clock> startup_time = std::chr
             auto __prnt_dbg_micro = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::micro>>(__prnt_dbg_duration);                  \
             auto __prnt_dbg_ms = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::milli>>(__prnt_dbg_duration);                     \
             auto __prnt_dbg_f = fopen("NETWORKING_SOCKET_LIB_LOG.txt", "a");                                                                                 \
-            fprintf(__prnt_dbg_f, "[%llu ms, %llu us] [tid %lu] " a, __prnt_dbg_ms.count(), __prnt_dbg_micro.count(), GetCurrentThreadId(), __VA_ARGS__);    \
+            fprintf(__prnt_dbg_f, "[%llu ms, %llu us] [tid %lu] " a, __prnt_dbg_ms.count(), __prnt_dbg_micro.count(), GetCurrentThreadId(), #__VA_ARGS__);    \
             fclose(__prnt_dbg_f);                                                                                                                            \
         } while (0)
     #else
