@@ -201,7 +201,7 @@ local common_files = {
 ---------
 local common_link_win = {
     -- os specific
-    "Ws2_32", "Iphlpapi", "Wldap32", "Winmm", "Bcrypt", "Dbghelp",
+    "Ws2_32", "Iphlpapi", "Wldap32", "Winmm", "Bcrypt", "Dbghelp", "Xinput",
     -- deps
     "ssq",
     "zlibstatic",
