@@ -49,10 +49,8 @@ end)
 local os_iden = '' -- identifier
 if os.target() == "windows" then
     os_iden = 'win'
-    deps_folder = "build/deps/win"
 elseif os.target() == "linux" then
     os_iden = 'linux'
-    deps_folder = "build/deps/linux"
 else
     error('Unsupported os target: "' .. os.target() .. '"')
 end
@@ -376,7 +374,6 @@ filter { "configurations:*debug" }
     defines {
         "DEBUG",
     }
-
 -- Windows defines
 filter { "system:windows", }
     defines {
