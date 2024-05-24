@@ -345,7 +345,6 @@ filter { "action:vs*", }
         -- source of emittoolversioninfo: https://developercommunity.visualstudio.com/t/add-linker-option-to-strip-rich-stamp-from-exe-hea/740443
         "/NOLOGO", "/emittoolversioninfo:no"
     }
-
 -- GNU make common compiler/linker options
 filter { "action:gmake*", }
     buildoptions  {
@@ -359,11 +358,24 @@ filter { "action:gmake*" , "files:*.cpp or *.cc or *.hpp", }
     buildoptions  {
         "-fno-char8_t", -- GCC gives a warning when a .c file is compiled with this
     }
--- MinGw on Windows cannot compile 'creatwth.cpp' from Detours lib (error: 'DWordMult' was not declared in this scope)
--- because intsafe.h isn't included by default
+-- MinGw on Windows common compiler/linker options
 filter { "system:windows", "action:gmake*", }
     buildoptions  {
-        "-include intsafe.h"
+        -- MinGw on Windows cannot compile 'creatwth.cpp' from Detours lib (error: 'DWordMult' was not declared in this scope)
+        -- because intsafe.h isn't included by default
+        "-include intsafe.h",
+    }
+    -- source: https://gcc.gnu.org/onlinedocs/gcc/Cygwin-and-MinGW-Options.html
+    linkoptions {
+        -- MinGW on Windows cannot link wWinMain by default
+        "-municode",
+        -- from docs: "specifies that the typical Microsoft Windows predefined macros are to be set in the pre-processor,
+        --             but does not influence the choice of runtime library/startup code"
+        -- optional really
+       '-mwin32',
+    }
+filter { "system:windows", "action:gmake*", "platforms:x64" }
+    buildoptions  {
     }
 filter {} -- reset the filter and remove all active keywords
 

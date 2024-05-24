@@ -15,6 +15,7 @@
 #include <filesystem>
 #include <set>
 #include <thread>
+#include <algorithm>
 
 
 static std::wstring IniFile{};
@@ -60,7 +61,7 @@ std::wstring get_ini_value(LPCWSTR section, LPCWSTR key, LPCWSTR default_val = N
 static std::vector<uint8_t> get_pe_header(const std::wstring &filepath)
 {
     try {
-        std::ifstream file(filepath, std::ios::binary);
+        std::ifstream file(std::filesystem::path(filepath), std::ios::binary);
         if (!file.is_open()) throw;
 
         file.seekg(0, std::ios::beg);
