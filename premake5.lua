@@ -1114,11 +1114,11 @@ project "steamclient_experimental_loader"
 -- End steamclient_experimental_loader
 
 
--- Project file_dos_stub_changer
-project "file_dos_stub_changer"
+-- Project tool_file_dos_stub_changer
+project "tool_file_dos_stub_changer"
     kind "ConsoleApp"
     location "%{wks.location}/%{prj.name}"
-    targetdir("resources/win/file_dos_stub")
+    targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/file_dos_stub_changer")
     targetname "file_dos_stub_%{cfg.platform}"
 
 
@@ -1139,7 +1139,7 @@ project "file_dos_stub_changer"
         "helpers/pe_helpers.cpp",
         "helpers/common_helpers.cpp",
     }
--- End file_dos_stub_changer
+-- End tool_file_dos_stub_changer
 
 end
 -- End WINDOWS ONLY TARGETS
