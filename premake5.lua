@@ -294,6 +294,7 @@ local x64_deps_overlay_libdir = {
 -- stuff defined globally will affect all workspaces & projects
 -- https://premake.github.io/docs/Scopes-and-Inheritance/
 
+filter {} -- reset the filter and remove all active keywords
 configurations { "debug", "release", }
 platforms { "x64", "x32", }
 language("C++")
@@ -373,9 +374,6 @@ filter { "system:windows", "action:gmake*", }
         --             but does not influence the choice of runtime library/startup code"
         -- optional really
        '-mwin32',
-    }
-filter { "system:windows", "action:gmake*", "platforms:x64" }
-    buildoptions  {
     }
 filter {} -- reset the filter and remove all active keywords
 
