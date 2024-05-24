@@ -458,7 +458,7 @@ static void redirect_crackdll()
 {
     DetourTransactionBegin();
     DetourUpdateThread( GetCurrentThread() );
-    DetourAttach( &(PVOID &)Real_GetModuleHandleA, Mine_GetModuleHandleA );
+    DetourAttach( reinterpret_cast<PVOID*>(&Real_GetModuleHandleA), reinterpret_cast<PVOID>(Mine_GetModuleHandleA) );
     DetourTransactionCommit();
 }
 
@@ -466,7 +466,7 @@ static void unredirect_crackdll()
 {
     DetourTransactionBegin();
     DetourUpdateThread( GetCurrentThread() );
-    DetourDetach( &(PVOID &)Real_GetModuleHandleA, Mine_GetModuleHandleA );
+    DetourDetach( reinterpret_cast<PVOID*>(&Real_GetModuleHandleA), reinterpret_cast<PVOID>(Mine_GetModuleHandleA) );
     DetourTransactionCommit();
 }
 
@@ -604,16 +604,16 @@ BOOL WINAPI DllMain( HINSTANCE, DWORD dwReason, LPVOID )
                 PRINT_DEBUG("Hooking lan only functions");
                 DetourTransactionBegin();
                 DetourUpdateThread( GetCurrentThread() );
-                DetourAttach( &(PVOID &)Real_SendTo, Mine_SendTo );
-                DetourAttach( &(PVOID &)Real_Connect, Mine_Connect );
-                DetourAttach( &(PVOID &)Real_WSAConnect, Mine_WSAConnect );
+                DetourAttach( reinterpret_cast<PVOID*>(&Real_SendTo), reinterpret_cast<PVOID>(Mine_SendTo) );
+                DetourAttach( reinterpret_cast<PVOID*>(&Real_Connect), reinterpret_cast<PVOID>(Mine_Connect) );
+                DetourAttach( reinterpret_cast<PVOID*>(&Real_WSAConnect), reinterpret_cast<PVOID>(Mine_WSAConnect) );
 
                 HMODULE winhttp = GetModuleHandleA("winhttp.dll");
                 if (winhttp) {
                     Real_WinHttpConnect = (decltype(Real_WinHttpConnect))GetProcAddress(winhttp, "WinHttpConnect");
-                    DetourAttach( &(PVOID &)Real_WinHttpConnect, Mine_WinHttpConnect );
+                    DetourAttach( reinterpret_cast<PVOID*>(&Real_WinHttpConnect), reinterpret_cast<PVOID>(Mine_WinHttpConnect) );
                     // Real_WinHttpOpenRequest = (decltype(Real_WinHttpOpenRequest))GetProcAddress(winhttp, "WinHttpOpenRequest");
-                    // DetourAttach( &(PVOID &)Real_WinHttpOpenRequest, Mine_WinHttpOpenRequest );
+                    // DetourAttach( reinterpret_cast<PVOID*>(&Real_WinHttpOpenRequest), reinterpret_cast<PVOID>(Mine_WinHttpOpenRequest) );
                 }
     
                 DetourTransactionCommit();
@@ -628,12 +628,12 @@ BOOL WINAPI DllMain( HINSTANCE, DWORD dwReason, LPVOID )
             if (network_functions_attached) {
                 DetourTransactionBegin();
                 DetourUpdateThread( GetCurrentThread() );
-                DetourDetach( &(PVOID &)Real_SendTo, Mine_SendTo );
-                DetourDetach( &(PVOID &)Real_Connect, Mine_Connect );
-                DetourDetach( &(PVOID &)Real_WSAConnect, Mine_WSAConnect );
+                DetourDetach( reinterpret_cast<PVOID*>(&Real_SendTo), reinterpret_cast<PVOID>(Mine_SendTo) );
+                DetourDetach( reinterpret_cast<PVOID*>(&Real_Connect), reinterpret_cast<PVOID>(Mine_Connect) );
+                DetourDetach( reinterpret_cast<PVOID*>(&Real_WSAConnect), reinterpret_cast<PVOID>(Mine_WSAConnect) );
                 if (Real_WinHttpConnect) {
-                    DetourDetach( &(PVOID &)Real_WinHttpConnect, Mine_WinHttpConnect );
-                    // DetourDetach( &(PVOID &)Real_WinHttpOpenRequest, Mine_WinHttpOpenRequest );
+                    DetourDetach( reinterpret_cast<PVOID*>(&Real_WinHttpConnect), reinterpret_cast<PVOID>(Mine_WinHttpConnect) );
+                    // DetourDetach( reinterpret_cast<PVOID*>(&Real_WinHttpOpenRequest), reinterpret_cast<PVOID>(Mine_WinHttpOpenRequest) );
                 }
                 DetourTransactionCommit();
             }

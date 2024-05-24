@@ -101,6 +101,7 @@
 
     #ifdef EMU_EXPERIMENTAL_BUILD
         #include <winhttp.h>
+        #include <intsafe.h> // MinGW cannot find DWordMult()
         #include "detours/detours.h"
     #endif
 

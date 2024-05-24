@@ -359,6 +359,12 @@ filter { "action:gmake*" , "files:*.cpp or *.cc or *.hpp", }
     buildoptions  {
         "-fno-char8_t", -- GCC gives a warning when a .c file is compiled with this
     }
+-- MinGw on Windows cannot compile 'creatwth.cpp' from Detours lib (error: 'DWordMult' was not declared in this scope)
+-- because intsafe.h isn't included by default
+filter { "system:windows", "action:gmake*", }
+    buildoptions  {
+        "-include intsafe.h"
+    }
 filter {} -- reset the filter and remove all active keywords
 
 
