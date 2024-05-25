@@ -496,7 +496,7 @@ if _OPTIONS["build-protobuf"] or _OPTIONS["all-build"] then
         }))
     end
 end
--- TODO COMPLETE THIS
+
 if _OPTIONS["build-mbedtls"] or _OPTIONS["all-build"] then
     local mbedtls_common_defs = {
         "USE_STATIC_MBEDTLS_LIBRARY=ON",
@@ -516,5 +516,51 @@ if _OPTIONS["build-mbedtls"] or _OPTIONS["all-build"] then
     end
     if _OPTIONS["64-build"] then
         cmake_build('mbedtls', false, mbedtls_common_defs)
+    end
+end
+
+if _OPTIONS["build-ingame_overlay"] or _OPTIONS["all-build"] then
+    -- fixes 32-bit compilation of DX12
+    local overaly_imgui_cfg_file = os.realpath(path.join(deps_dir, 'ingame_overlay', 'imconfig.imcfg'))
+    if not os.isfile(overaly_imgui_cfg_file) then
+        if not io.writefile(overaly_imgui_cfg_file, [[
+            #pragma once
+            #define ImTextureID ImU64
+        ]]) then
+            error('failed to create ImGui config file for overlay: ' .. overaly_imgui_cfg_file)
+        end
+    end
+
+    local ingame_overlay_common_defs = {
+        'IMGUI_USER_CONFIG="' .. overaly_imgui_cfg_file:gsub('\\', '/') .. '"',
+        'INGAMEOVERLAY_USE_SYSTEM_LIBRARIES=OFF',
+        'INGAMEOVERLAY_USE_SPDLOG=OFF',
+        'INGAMEOVERLAY_BUILD_TESTS=OFF',
+    }
+    -- fix missing standard include/header file for gcc/clang
+    local ingame_overlay_missing_inc = {}
+    if string.match(_ACTION, 'gmake.*') then
+        ingame_overlay_missing_inc = {
+            'CMAKE_CXX_FLAGS_RELEASE="-include cstdint -include cinttypes"'
+        }
+    end
+
+    if _OPTIONS["32-build"] then
+        cmake_build('ingame_overlay/deps/System', true, merge_list(ingame_overlay_missing_inc, {
+            'BUILD_SYSTEMLIB_TESTS=OFF',
+        }))
+        cmake_build('ingame_overlay/deps/mini_detour', true, {
+            'BUILD_MINIDETOUR_TESTS=OFF',
+        })
+        cmake_build('ingame_overlay', true, merge_list(ingame_overlay_missing_inc, ingame_overlay_common_defs))
+    end
+    if _OPTIONS["64-build"] then
+        cmake_build('ingame_overlay/deps/System', false, merge_list(ingame_overlay_missing_inc, {
+            'BUILD_SYSTEMLIB_TESTS=OFF',
+        }))
+        cmake_build('ingame_overlay/deps/mini_detour', false, {
+            'BUILD_MINIDETOUR_TESTS=OFF',
+        })
+        cmake_build('ingame_overlay', false, merge_list(ingame_overlay_missing_inc, ingame_overlay_common_defs))
     end
 end
