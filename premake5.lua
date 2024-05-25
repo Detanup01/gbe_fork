@@ -238,7 +238,7 @@ local overlay_link_linux = {
 ---------
 local x32_ssq_libdir = deps_dir .. "libssq/build32"
 local x64_ssq_libdir = deps_dir .. "libssq/build64"
-if os.target() == "windows" then
+if string.match(_ACTION, 'vs.+') then
     x32_ssq_libdir = x32_ssq_libdir .. "/Release"
     x64_ssq_libdir = x64_ssq_libdir .. "/Release"
 end
