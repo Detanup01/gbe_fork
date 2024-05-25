@@ -251,7 +251,7 @@ int Steam_Friends::GetFriendCount( int iFriendFlags )
     PRINT_DEBUG("%i", iFriendFlags);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     int count = 0;
-    if (ok_friend_flags(iFriendFlags)) count = friends.size();
+    if (ok_friend_flags(iFriendFlags)) count = static_cast<int>(friends.size());
     PRINT_DEBUG("count %i", count);
     return count;
 }
@@ -871,7 +871,7 @@ int Steam_Friends::GetFriendRichPresenceKeyCount( CSteamID steamIDFriend )
         f = find_friend(steamIDFriend);
     }
 
-    if (f && is_appid_compatible(f)) num = f->rich_presence().size();
+    if (f && is_appid_compatible(f)) num = static_cast<int>(f->rich_presence().size());
     
     return num;
 }
@@ -1199,7 +1199,7 @@ void Steam_Friends::RunCallbacks()
 void Steam_Friends::Callback(Common_Message *msg)
 {
     if (msg->has_low_level()) {
-        if (msg->low_level().type() == Low_Level::DISCONNECT) {
+        if (msg->low_level().type() & Low_Level::DISCONNECT) {
             PRINT_DEBUG("Disconnect");
             uint64 id = msg->source_id();
             auto f = std::find_if(friends.begin(), friends.end(), [&id](Friend const& item) { return item.id() == id; });
@@ -1210,7 +1210,7 @@ void Steam_Friends::Callback(Common_Message *msg)
             }
         }
 
-        if (msg->low_level().type() == Low_Level::CONNECT) {
+        if (msg->low_level().type() & Low_Level::CONNECT) {
             PRINT_DEBUG("Connect %llu", (uint64)msg->source_id());
             Common_Message msg_;
             msg_.set_source_id(settings->get_local_steam_id().ConvertToUint64());
@@ -1254,7 +1254,7 @@ void Steam_Friends::Callback(Common_Message *msg)
     }
 
     if (msg->has_friend_messages()) {
-        if (msg->friend_messages().type() == Friend_Messages::LOBBY_INVITE) {
+        if (msg->friend_messages().type() & Friend_Messages::LOBBY_INVITE) {
             PRINT_DEBUG("Got Lobby Invite");
             Friend *f = find_friend((uint64)msg->source_id());
             if (f) {
@@ -1280,7 +1280,7 @@ void Steam_Friends::Callback(Common_Message *msg)
             }
         }
 
-        if (msg->friend_messages().type() == Friend_Messages::GAME_INVITE) {
+        if (msg->friend_messages().type() & Friend_Messages::GAME_INVITE) {
             PRINT_DEBUG("Got Game Invite");
             //TODO: I'm pretty sure that the user should accept the invite before this is posted but we do like above
             if (overlay->Ready() && !settings->hasOverlayAutoAcceptInviteFromFriend(msg->source_id()))

@@ -221,7 +221,7 @@ int Steam_Networking_Messages::ReceiveMessagesOnChannel( int nLocalChannel, Stea
         if (chan != conn.second.data.end()) {
             while (!chan->second.empty() && message_counter < nMaxMessages) {
                 SteamNetworkingMessage_t *pMsg = new SteamNetworkingMessage_t(); //TODO size is wrong
-                unsigned long size = chan->second.front().size();
+                unsigned long size = static_cast<unsigned long>(chan->second.front().size());
                 pMsg->m_pData = malloc(size);
                 pMsg->m_cbSize = size;
                 memcpy(pMsg->m_pData, chan->second.front().data(), size);
@@ -382,18 +382,18 @@ void Steam_Networking_Messages::RunCallbacks()
 void Steam_Networking_Messages::Callback(Common_Message *msg)
 {
     if (msg->has_low_level()) {
-        if (msg->low_level().type() == Low_Level::CONNECT) {
+        if (msg->low_level().type() & Low_Level::CONNECT) {
             
         }
 
-        if (msg->low_level().type() == Low_Level::DISCONNECT) {
+        if (msg->low_level().type() & Low_Level::DISCONNECT) {
             end_connection((uint64)msg->source_id());
         }
     }
 
     if (msg->has_networking_messages()) {
         PRINT_DEBUG("got network socket msg %u", msg->networking_messages().type());
-        if (msg->networking_messages().type() == Networking_Messages::CONNECTION_NEW) {
+        if (msg->networking_messages().type() & Networking_Messages::CONNECTION_NEW) {
             SteamNetworkingIdentity identity;
             identity.SetSteamID64(msg->source_id());
             auto conn = find_or_create_message_connection(identity, true, false);
@@ -401,18 +401,18 @@ void Steam_Networking_Messages::Callback(Common_Message *msg)
             conn->second.dead = false;
         }
 
-        if (msg->networking_messages().type() == Networking_Messages::CONNECTION_ACCEPT) {
+        if (msg->networking_messages().type() & Networking_Messages::CONNECTION_ACCEPT) {
             auto conn = connections.find((uint64)msg->source_id());
             if (conn != connections.end()) {
                 conn->second.remote_id = msg->networking_messages().id_from();
             }
         }
 
-        if (msg->networking_messages().type() == Networking_Messages::CONNECTION_END) {
+        if (msg->networking_messages().type() & Networking_Messages::CONNECTION_END) {
             end_connection((uint64)msg->source_id());
         }
 
-        if (msg->networking_messages().type() == Networking_Messages::DATA) {
+        if (msg->networking_messages().type() & Networking_Messages::DATA) {
             incoming_data.push_back(Common_Message(*msg));
         }
     }

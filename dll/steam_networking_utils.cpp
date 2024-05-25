@@ -264,7 +264,7 @@ SteamNetworkingMicroseconds Steam_Networking_Utils::GetLocalTimestamp()
 {
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - initialized_time).count() + (SteamNetworkingMicroseconds)24*3600*30*1e6;
+    return static_cast<SteamNetworkingMicroseconds>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - initialized_time).count() + (SteamNetworkingMicroseconds)24*3600*30*1e6);
 }
 
 
@@ -493,7 +493,7 @@ bool Steam_Networking_Utils::SteamNetworkingIPAddr_ParseString( SteamNetworkingI
         if (inet_pton(AF_INET, ip, &ipv4_addr) == 1)
         {
             valid = true;
-            pAddr->SetIPv4(ntohl(ipv4_addr.s_addr), strtoul(port, nullptr, 10));
+            pAddr->SetIPv4(ntohl(ipv4_addr.s_addr), static_cast<uint16>(strtoul(port, nullptr, 10)));
         }
     } else {// Try ipv4 without port
         in_addr ipv4_addr;
@@ -657,7 +657,7 @@ bool Steam_Networking_Utils::SteamNetworkingIdentity_ParseString( SteamNetworkin
                     valid = true;
                     length /= 2;
                     pIdentity->m_eType = k_ESteamNetworkingIdentityType_GenericBytes;
-                    pIdentity->m_cbSize = length;
+                    pIdentity->m_cbSize = static_cast<int>(length);
                     uint8* pBytes = pIdentity->m_genericBytes;
 
                     char hex[3] = { 0,0,0 };
@@ -666,7 +666,7 @@ bool Steam_Networking_Utils::SteamNetworkingIdentity_ParseString( SteamNetworkin
                         hex[0] = end[0];
                         hex[1] = end[1];
                         // Steam doesn't check if wasn't a hex char
-                        *pBytes = strtol(hex, nullptr, 16);
+                        *pBytes = static_cast<uint8>(strtol(hex, nullptr, 16));
 
                         ++pBytes;
                         end += 2;
@@ -715,11 +715,11 @@ void Steam_Networking_Utils::RunCallbacks()
 void Steam_Networking_Utils::Callback(Common_Message *msg)
 {
     if (msg->has_low_level()) {
-        if (msg->low_level().type() == Low_Level::CONNECT) {
+        if (msg->low_level().type() & Low_Level::CONNECT) {
             
         }
 
-        if (msg->low_level().type() == Low_Level::DISCONNECT) {
+        if (msg->low_level().type() & Low_Level::DISCONNECT) {
 
         }
     }

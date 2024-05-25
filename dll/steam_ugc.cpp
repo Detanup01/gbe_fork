@@ -144,7 +144,7 @@ bool Steam_UGC::write_ugc_favorites()
         ss.flush();
     }
     auto file_data = ss.str();
-    int stored = local_storage->store_data("", ugc_favorits_file, &file_data[0], file_data.size());
+    int stored = local_storage->store_data("", ugc_favorits_file, &file_data[0], static_cast<unsigned int>(file_data.size()));
     return (size_t)stored == file_data.size();
 }
 
@@ -261,8 +261,8 @@ SteamAPICall_t Steam_UGC::SendQueryUGCRequest( UGCQueryHandle_t handle )
     SteamUGCQueryCompleted_t data = {};
     data.m_handle = handle;
     data.m_eResult = k_EResultOK;
-    data.m_unNumResultsReturned = request->results.size();
-    data.m_unTotalMatchingResults = request->results.size();
+    data.m_unNumResultsReturned = static_cast<uint32>(request->results.size());
+    data.m_unTotalMatchingResults = static_cast<uint32>(request->results.size());
     data.m_bCachedData = false;
     
     auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
@@ -315,7 +315,7 @@ uint32 Steam_UGC::GetQueryUGCNumTags( UGCQueryHandle_t handle, uint32 index )
     if (handle == k_UGCQueryHandleInvalid) return 0;
     
     auto res = get_query_ugc_tags(handle, index);
-    return res.has_value() ? res.value().size() : 0;
+    return res.has_value() ? static_cast<uint32>(res.value().size()) : 0;
 }
 
 bool Steam_UGC::GetQueryUGCTag( UGCQueryHandle_t handle, uint32 index, uint32 indexTag, STEAM_OUT_STRING_COUNT( cchValueSize ) char* pchValue, uint32 cchValueSize )

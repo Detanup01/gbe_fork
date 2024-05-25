@@ -121,7 +121,7 @@ HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, IS
     std::string list{};
     if (file_size) {
         list.resize(file_size);
-        Local_Storage::get_file_data(file_path, (char *)&list[0], file_size, 0);
+        Local_Storage::get_file_data(file_path, (char *)&list[0], static_cast<unsigned int>(file_size), 0);
     } else {
         return id;
     }
@@ -451,7 +451,7 @@ int Steam_Matchmaking_Servers::GetServerCount( HServerListRequest hRequest )
     auto g = std::begin(requests);
     while (g != std::end(requests)) {
         if (g->id == hRequest) {
-            size = g->gameservers_filtered.size();
+            size = static_cast<int>(g->gameservers_filtered.size());
             break;
         }
 
@@ -639,9 +639,9 @@ void Steam_Matchmaking_Servers::server_details(Gameserver *g, gameserveritem_t *
                 if (ssq_a2s_info->vac) g->set_secure(true);
                 else g->set_secure(false);
                 g->set_num_players(ssq_a2s_info->players);
-                g->set_version(std::stoull(ssq_a2s_info->version, NULL, 0));
+                g->set_version(static_cast<uint32_t>(std::stoull(ssq_a2s_info->version, NULL, 0)));
                 if (ssq_info_has_port(ssq_a2s_info)) g->set_port(ssq_a2s_info->port);
-                if (ssq_info_has_gameid(ssq_a2s_info)) g->set_appid(ssq_a2s_info->gameid);
+                if (ssq_info_has_gameid(ssq_a2s_info)) g->set_appid(static_cast<uint32_t>(ssq_a2s_info->gameid));
                 else g->set_appid(ssq_a2s_info->id);
                 g->set_offline(false);
             } else {
@@ -732,7 +732,7 @@ void Steam_Matchmaking_Servers::server_details_players(Gameserver *g, Steam_Matc
         PRINT_DEBUG("  players: %u", number_players);
         const auto &players = get_steam_client()->steam_gameserver->get_players();
         auto player = players->cbegin();
-        for (int i = 0; i < number_players && player != players->end(); ++i, ++player) {
+        for (uint32_t i = 0; i < number_players && player != players->end(); ++i, ++player) {
             float playtime = static_cast<float>(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - player->second.join_time).count());
             PRINT_DEBUG("  PLAYER [%u] '%s' %u %f", i, player->second.name.c_str(), player->second.score, playtime);
             r->players_response->AddPlayerToList(player->second.name.c_str(), player->second.score, playtime);

@@ -263,7 +263,7 @@ bool Steam_Networking::IsP2PPacketAvailable( uint32 *pcubMsgSize, int nChannel)
     PRINT_DEBUG("Messages %zu %p", messages.size(), &messages);
     for (auto &msg : messages) {
         if (connection_exists((uint64)msg.source_id()) && msg.mutable_network()->channel() == nChannel && msg.network().processed()) {
-            uint32 size = msg.mutable_network()->data().size();
+            uint32 size = static_cast<uint32>(msg.mutable_network()->data().size());
             if (pcubMsgSize) *pcubMsgSize = size;
             PRINT_DEBUG("available with size: %u", size);
             return true;
@@ -299,7 +299,7 @@ bool Steam_Networking::ReadP2PPacket( void *pubDest, uint32 cubDest, uint32 *pcu
     auto msg = std::begin(messages);
     while (msg != std::end(messages)) {
         if (connection_exists((uint64)msg->source_id()) && msg->network().channel() == nChannel && msg->network().processed()) {
-            uint32 msg_size = msg->network().data().size();
+            uint32 msg_size = static_cast<uint32>(msg->network().data().size());
             if (msg_size > cubDest) msg_size = cubDest;
             if (pcubMsgSize) *pcubMsgSize = msg_size;
             memcpy(pubDest, msg->network().data().data(), msg_size);
@@ -593,7 +593,7 @@ bool Steam_Networking::IsDataAvailableOnSocket( SNetSocket_t hSocket, uint32 *pc
     }
 
     if (socket->data_packets.size() == 0) return false;
-    if (pcubMsgSize) *pcubMsgSize = socket->data_packets[0].data().size();
+    if (pcubMsgSize) *pcubMsgSize = static_cast<uint32>(socket->data_packets[0].data().size());
     return true;
 }
 
@@ -611,7 +611,7 @@ bool Steam_Networking::RetrieveDataFromSocket( SNetSocket_t hSocket, void *pubDe
 
     auto msg = std::begin(socket->data_packets);
     if (msg != std::end(socket->data_packets)) {
-        uint32 msg_size = msg->data().size();
+        uint32 msg_size = static_cast<uint32>(msg->data().size());
         if (msg_size > cubDest) msg_size = cubDest;
         if (pcubMsgSize) *pcubMsgSize = msg_size;
         memcpy(pubDest, msg->data().data(), msg_size);
@@ -635,7 +635,7 @@ bool Steam_Networking::IsDataAvailable( SNetListenSocket_t hListenSocket, uint32
 
     for (auto & socket : connection_sockets) {
         if (socket.listen_id == hListenSocket && socket.data_packets.size()) {
-            if (pcubMsgSize) *pcubMsgSize = socket.data_packets[0].data().size();
+            if (pcubMsgSize) *pcubMsgSize = static_cast<uint32>(socket.data_packets[0].data().size());
             if (phSocket) *phSocket = socket.id;
             return true;
         }
@@ -661,7 +661,7 @@ bool Steam_Networking::RetrieveData( SNetListenSocket_t hListenSocket, void *pub
         if (socket.listen_id == hListenSocket && socket.data_packets.size()) {
             auto msg = std::begin(socket.data_packets);
             if (msg != std::end(socket.data_packets)) {
-                uint32 msg_size = msg->data().size();
+                uint32 msg_size = static_cast<uint32>(msg->data().size());
                 if (msg_size > cubDest) msg_size = cubDest;
                 if (pcubMsgSize) *pcubMsgSize = msg_size;
                 if (phSocket) *phSocket = socket.id;
@@ -858,11 +858,11 @@ void Steam_Networking::Callback(Common_Message *msg)
         PRINT_DEBUG("msg data: '%s'",
             common_helpers::uint8_vector_to_hex_string(std::vector<uint8_t>(msg->network().data().begin(), msg->network().data().end())).c_str());
 
-        if (msg->network().type() == Network_pb::DATA) {
+        if (msg->network().type() & Network_pb::DATA) {
             unprocessed_messages.push_back(Common_Message(*msg));
         }
 
-        if (msg->network().type() == Network_pb::NEW_CONNECTION) {
+        if (msg->network().type() & Network_pb::NEW_CONNECTION) {
             std::lock_guard<std::recursive_mutex> lock(messages_mutex);
             auto msg_temp = std::begin(messages);
             while (msg_temp != std::end(messages)) {
@@ -878,10 +878,10 @@ void Steam_Networking::Callback(Common_Message *msg)
 
     if (msg->has_network_old()) {
         PRINT_DEBUG("got network socket msg %u", msg->network_old().type());
-        if (msg->network_old().type() == Network_Old::CONNECTION_REQUEST_IP) {
+        if (msg->network_old().type() & Network_Old::CONNECTION_REQUEST_IP) {
             for (auto & listen : listen_sockets) {
                 if (listen.nPort == msg->network_old().port()) {
-                    SNetSocket_t new_sock = create_connection_socket((uint64)msg->source_id(), 0, 0, msg->network_old().port(), listen.id, SOCKET_CONNECTED, msg->network_old().connection_id_from());
+                    SNetSocket_t new_sock = create_connection_socket((uint64)msg->source_id(), 0, 0, msg->network_old().port(), listen.id, SOCKET_CONNECTED, static_cast<SNetSocket_t>(msg->network_old().connection_id_from()));
                     if (new_sock) {
                         struct SocketStatusCallback_t data;
                         data.m_hSocket = new_sock;
@@ -892,10 +892,10 @@ void Steam_Networking::Callback(Common_Message *msg)
                     }
                 }
             }
-        } else if (msg->network_old().type() == Network_Old::CONNECTION_REQUEST_STEAMID) {
+        } else if (msg->network_old().type() & Network_Old::CONNECTION_REQUEST_STEAMID) {
             for (auto & listen : listen_sockets) {
                 if (listen.nVirtualP2PPort == msg->network_old().port()) {
-                    SNetSocket_t new_sock = create_connection_socket((uint64)msg->source_id(), msg->network_old().port(), 0, 0, listen.id, SOCKET_CONNECTED, msg->network_old().connection_id_from());
+                    SNetSocket_t new_sock = create_connection_socket((uint64)msg->source_id(), msg->network_old().port(), 0, 0, listen.id, SOCKET_CONNECTED, static_cast<SNetSocket_t>(msg->network_old().connection_id_from()));
                     if (new_sock) {
                         struct SocketStatusCallback_t data;
                         data.m_hSocket = new_sock;
@@ -907,15 +907,15 @@ void Steam_Networking::Callback(Common_Message *msg)
                 }
             }
 
-        } else if (msg->network_old().type() == Network_Old::CONNECTION_ACCEPTED) {
-            struct steam_connection_socket *socket = get_connection_socket(msg->network_old().connection_id());
+        } else if (msg->network_old().type() & Network_Old::CONNECTION_ACCEPTED) {
+            struct steam_connection_socket *socket = get_connection_socket(static_cast<SNetSocket_t>(msg->network_old().connection_id()));
             if (socket && socket->nPort && socket->status == SOCKET_CONNECTING && !socket->target.IsValid()) {
                 socket->target = (uint64)msg->source_id();
             }
 
             if (socket && socket->status == SOCKET_CONNECTING && msg->source_id() == socket->target.ConvertToUint64()) {
                 socket->status = SOCKET_CONNECTED;
-                socket->other_id = msg->network_old().connection_id_from();
+                socket->other_id = static_cast<SNetSocket_t>(msg->network_old().connection_id_from());
                 struct SocketStatusCallback_t data;
                 data.m_hSocket = socket->id;
                 data.m_hListenSocket = socket->listen_id;
@@ -923,8 +923,8 @@ void Steam_Networking::Callback(Common_Message *msg)
                 data.m_eSNetSocketState = k_ESNetSocketStateConnected; //TODO is this the right state?
                 callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
             }
-        } else if (msg->network_old().type() == Network_Old::CONNECTION_END) {
-            struct steam_connection_socket *socket = get_connection_socket(msg->network_old().connection_id());
+        } else if (msg->network_old().type() & Network_Old::CONNECTION_END) {
+            struct steam_connection_socket *socket = get_connection_socket(static_cast<SNetSocket_t>(msg->network_old().connection_id()));
             if (socket && socket->status == SOCKET_CONNECTED && msg->source_id() == socket->target.ConvertToUint64()) {
                 struct SocketStatusCallback_t data;
                 socket->status = SOCKET_DISCONNECTED;
@@ -935,7 +935,7 @@ void Steam_Networking::Callback(Common_Message *msg)
                 callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
             }
         } else if (msg->network_old().type() == Network_Old::DATA) {
-            struct steam_connection_socket *socket = get_connection_socket(msg->network_old().connection_id());
+            struct steam_connection_socket *socket = get_connection_socket(static_cast<SNetSocket_t>(msg->network_old().connection_id()));
             if (socket && socket->status == SOCKET_CONNECTED && msg->source_id() == socket->target.ConvertToUint64()) {
                 socket->data_packets.push_back(msg->network_old());
             }
@@ -943,7 +943,7 @@ void Steam_Networking::Callback(Common_Message *msg)
     }
 
     if (msg->has_low_level()) {
-        if (msg->low_level().type() == Low_Level::DISCONNECT) {
+        if (msg->low_level().type() & Low_Level::DISCONNECT) {
             CSteamID source_id((uint64)msg->source_id());
             if (connection_exists(source_id)) {
                 P2PSessionConnectFail_t data;
@@ -965,7 +965,7 @@ void Steam_Networking::Callback(Common_Message *msg)
             }
         } else
 
-        if (msg->low_level().type() == Low_Level::CONNECT) {
+        if (msg->low_level().type() & Low_Level::CONNECT) {
             
         }
     }

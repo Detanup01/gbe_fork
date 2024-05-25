@@ -199,7 +199,7 @@ static void FillProofOfPurchaseKey( AppProofOfPurchaseKeyResponse_t& data, AppId
             ? key.size() < k_cubAppProofOfPurchaseKeyMax
             : k_cubAppProofOfPurchaseKeyMax - 1; // -1 because we need space for null
         data.m_eResult = EResult::k_EResultOK;
-        data.m_cchKeyLength = min_len;
+        data.m_cchKeyLength = static_cast<uint32>(min_len);
         memcpy(data.m_rgchKey, key.c_str(), min_len);
         data.m_rgchKey[min_len] = 0;
     } else {
@@ -307,7 +307,7 @@ uint32 Steam_Apps::GetAppInstallDir( AppId_t appID, char *pchFolder, uint32 cchF
         installed_path.copy(pchFolder, cchFolderBufferSize - 1);
     }
 
-    return installed_path.length(); //Real steam always returns the actual path length, not the copied one.
+    return static_cast<uint32>(installed_path.length()); //Real steam always returns the actual path length, not the copied one.
 }
 
 // returns true if that app is installed (not necessarily owned)
@@ -387,7 +387,7 @@ void Steam_Apps::RequestAllProofOfPurchaseKeys()
 
     // DLCs
     const auto count = settings->DLCCount();
-    for (size_t i = 0; i < settings->DLCCount(); i++) {
+    for (unsigned int i = 0; i < settings->DLCCount(); i++) {
         AppId_t app_id;
         bool available;
         std::string name;

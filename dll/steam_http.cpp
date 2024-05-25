@@ -58,7 +58,7 @@ HTTPRequestHandle Steam_HTTP::CreateHTTPRequest( EHTTPMethod eHTTPRequestMethod,
         if (url.back() == '/') url += "index.html";
         std::string file_path = Local_Storage::get_game_settings_path() + "http" + PATH_SEPARATOR + Local_Storage::sanitize_string(url.substr(url_index));
         request.target_filepath = file_path;
-        unsigned long long file_size = file_size_(file_path);
+        unsigned int file_size = file_size_(file_path);
         if (file_size) {
             request.response.resize(file_size);
             long long read = Local_Storage::get_file_data(file_path, (char *)&request.response[0], file_size, 0);
@@ -170,7 +170,7 @@ void Steam_HTTP::online_http_request(Steam_Http_Request *request, SteamAPICall_t
         struct HTTPRequestCompleted_t data{};
         data.m_hRequest = request->handle;
         data.m_ulContextValue = request->context_value;
-        data.m_unBodySize = request->response.size();
+        data.m_unBodySize = static_cast<uint32>(request->response.size());
         if (request->response.empty() && !settings->force_steamhttp_success) {
             data.m_bRequestSuccessful = false;
             data.m_eStatusCode = k_EHTTPStatusCode404NotFound;
@@ -346,7 +346,7 @@ bool Steam_HTTP::SendHTTPRequest( HTTPRequestHandle hRequest, SteamAPICall_t *pC
         struct HTTPRequestCompleted_t data{};
         data.m_hRequest = request->handle;
         data.m_ulContextValue = request->context_value;
-        data.m_unBodySize = request->response.size();
+        data.m_unBodySize = static_cast<uint32>(request->response.size());
         if (request->response.empty() && !settings->force_steamhttp_success) {
             data.m_bRequestSuccessful = false;
             data.m_eStatusCode = k_EHTTPStatusCode404NotFound;

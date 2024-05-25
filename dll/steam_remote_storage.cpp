@@ -247,7 +247,7 @@ bool Steam_Remote_Storage::FileWriteStreamClose( UGCFileWriteStreamHandle_t writ
     if (stream_writes.end() == request)
         return false;
 
-    local_storage->store_data(Local_Storage::remote_storage_folder, request->file_name, request->file_data.data(), request->file_data.size());
+    local_storage->store_data(Local_Storage::remote_storage_folder, request->file_name, request->file_data.data(), static_cast<unsigned int>(request->file_data.size()));
     stream_writes.erase(request);
     return true;
 }
@@ -353,7 +353,7 @@ bool Steam_Remote_Storage::GetQuota( int32 *pnTotalBytes, int32 *puAvailableByte
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    uint64 quota = 2 << 26;
+    int32 quota = 2 << 26;
     if (pnTotalBytes) *pnTotalBytes = quota;
     if (puAvailableBytes) *puAvailableBytes = (quota);
     return true;

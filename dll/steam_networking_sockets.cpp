@@ -40,7 +40,7 @@ SteamNetworkingMessage_t* Steam_Networking_Sockets::get_steam_message_connection
     if (connect_socket == sbcs->connect_sockets.end()) return NULL;
     if (connect_socket->second.data.empty()) return NULL;
     SteamNetworkingMessage_t *pMsg = new SteamNetworkingMessage_t();
-    unsigned long size = connect_socket->second.data.top().data().size();
+    unsigned long size = static_cast<unsigned long>(connect_socket->second.data.top().data().size());
     pMsg->m_pData = malloc(size);
     pMsg->m_cbSize = size;
     memcpy(pMsg->m_pData, connect_socket->second.data.top().data().data(), size);
@@ -938,8 +938,8 @@ EResult Steam_Networking_Sockets::GetConnectionRealTimeStatus( HSteamNetConnecti
         pStatus->m_flOutBytesPerSec = 0.0;
         pStatus->m_flInPacketsPerSec = 0.0;
         pStatus->m_flInBytesPerSec = 0.0;
-        pStatus->m_cbSentUnackedReliable = 0.0;
-        pStatus->m_usecQueueTime = 0.0;
+        pStatus->m_cbSentUnackedReliable = 0;
+        pStatus->m_usecQueueTime = static_cast<SteamNetworkingMicroseconds>(0.0f);
 
         //Note some games (volcanoids) might not allocate a struct the whole size of SteamNetworkingQuickConnectionStatus
         //keep this in mind in future interface updates
@@ -2052,26 +2052,26 @@ void Steam_Networking_Sockets::Callback(Common_Message *msg)
                 if (connect_socket == sbcs->connect_sockets.end()) {
                     SteamNetworkingIdentity identity;
                     identity.SetSteamID64(msg->source_id());
-                    HSteamNetConnection new_connection = new_connect_socket(identity, virtual_port, real_port, CONNECT_SOCKET_NOT_ACCEPTED, conn->socket_id, msg->networking_sockets().connection_id_from());
+                    HSteamNetConnection new_connection = new_connect_socket(identity, virtual_port, real_port, CONNECT_SOCKET_NOT_ACCEPTED, conn->socket_id, static_cast<HSteamNetConnection>(msg->networking_sockets().connection_id_from()));
                     launch_callback(new_connection, CONNECT_SOCKET_NO_CONNECTION);
                 }
             }
 
         } else if (msg->networking_sockets().type() == Networking_Sockets::CONNECTION_ACCEPTED) {
-            auto connect_socket = sbcs->connect_sockets.find(msg->networking_sockets().connection_id());
+            auto connect_socket = sbcs->connect_sockets.find(static_cast<HSteamNetConnection>(msg->networking_sockets().connection_id()));
             if (connect_socket != sbcs->connect_sockets.end()) {
                 if (connect_socket->second.remote_identity.GetSteamID64() == 0) {
                     connect_socket->second.remote_identity.SetSteamID64(msg->source_id());
                 }
 
                 if (connect_socket->second.remote_identity.GetSteamID64() == msg->source_id() && connect_socket->second.status == CONNECT_SOCKET_CONNECTING) {
-                    connect_socket->second.remote_id = msg->networking_sockets().connection_id_from();
+                    connect_socket->second.remote_id = static_cast<HSteamNetConnection>(msg->networking_sockets().connection_id_from());
                     connect_socket->second.status = CONNECT_SOCKET_CONNECTED;
                     launch_callback(connect_socket->first, CONNECT_SOCKET_CONNECTING);
                 }
             }
         } else if (msg->networking_sockets().type() == Networking_Sockets::DATA) {
-            auto connect_socket = sbcs->connect_sockets.find(msg->networking_sockets().connection_id());
+            auto connect_socket = sbcs->connect_sockets.find(static_cast<HSteamNetConnection>(msg->networking_sockets().connection_id()));
             if (connect_socket != sbcs->connect_sockets.end()) {
                 if (connect_socket->second.remote_identity.GetSteamID64() == msg->source_id() && (connect_socket->second.status == CONNECT_SOCKET_CONNECTED)) {
                     PRINT_DEBUG("got data len %zu, num " "%" PRIu64 " on connection %u", msg->networking_sockets().data().size(), msg->networking_sockets().message_number(), connect_socket->first);
@@ -2085,7 +2085,7 @@ void Steam_Networking_Sockets::Callback(Common_Message *msg)
                 }
             }
         } else if (msg->networking_sockets().type() == Networking_Sockets::CONNECTION_END) {
-            auto connect_socket = sbcs->connect_sockets.find(msg->networking_sockets().connection_id());
+            auto connect_socket = sbcs->connect_sockets.find(static_cast<HSteamNetConnection>(msg->networking_sockets().connection_id()));
             if (connect_socket != sbcs->connect_sockets.end()) {
                 if (connect_socket->second.remote_identity.GetSteamID64() == msg->source_id() && connect_socket->second.status == CONNECT_SOCKET_CONNECTED) {
                     enum connect_socket_status old_status = connect_socket->second.status;

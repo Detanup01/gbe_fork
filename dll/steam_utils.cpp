@@ -102,7 +102,7 @@ bool Steam_Utils::GetImageRGBA( int iImage, uint8 *pubDest, int nDestBufferSize 
     auto image = settings->images.find(iImage);
     if (image == settings->images.end()) return false;
 
-    unsigned size = image->second.data.size();
+    unsigned size = static_cast<unsigned>(image->second.data.size());
     if (nDestBufferSize < size) size = nDestBufferSize;
     image->second.data.copy((char *)pubDest, nDestBufferSize);
     return true;
@@ -415,7 +415,7 @@ int Steam_Utils::FilterText( ETextFilteringContext eContext, CSteamID sourceStea
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!nByteSizeOutFilteredText) return 0;
-    unsigned len = strlen(pchInputMessage);
+    unsigned len = static_cast<unsigned>(strlen(pchInputMessage));
     if (!len) return 0;
     len += 1;
     if (len > nByteSizeOutFilteredText) len = nByteSizeOutFilteredText;

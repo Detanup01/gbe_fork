@@ -201,7 +201,7 @@ void Steam_Controller::background_rumble(Rumble_Thread_Data *data)
             }
         }
 
-        GamepadSetRumble((GAMEPAD_DEVICE)gamepad, ((double)left) / 65535.0, ((double)right) / 65535.0, rumble_length_ms);
+        GamepadSetRumble((GAMEPAD_DEVICE)gamepad, ((float)left) / 65535.0f, ((float)right) / 65535.0f, rumble_length_ms);
     }
 }
 
@@ -734,9 +734,9 @@ ControllerAnalogActionData_t Steam_Controller::GetAnalogActionData( ControllerHa
                 int mov_y = (int)GamepadButtonDown(device, BUTTON_DPAD_UP) - (int)GamepadButtonDown(device, BUTTON_DPAD_DOWN);
                 int mov_x = (int)GamepadButtonDown(device, BUTTON_DPAD_RIGHT) - (int)GamepadButtonDown(device, BUTTON_DPAD_LEFT);
                 if (mov_y || mov_x) {
-                    data.x = mov_x;
-                    data.y = mov_y;
-                    double length = 1.0 / std::sqrt(data.x * data.x + data.y * data.y);
+                    data.x = static_cast<float>(mov_x);
+                    data.y = static_cast<float>(mov_y);
+                    float length = 1.0f / std::sqrt(data.x * data.x + data.y * data.y);
                     data.x = data.x * length;
                     data.y = data.y * length;
                 }
@@ -877,7 +877,7 @@ void Steam_Controller::TriggerVibration( ControllerHandle_t controllerHandle, un
     rumble_length_ms = 100;
 #endif
 
-    unsigned gamepad_device = (controllerHandle - 1);
+    unsigned gamepad_device = (static_cast<unsigned int>(controllerHandle) - 1);
     if (gamepad_device > GAMEPAD_COUNT) return;
     rumble_thread_data->rumble_mutex.lock();
     rumble_thread_data->data[gamepad_device].new_data = true;
@@ -910,7 +910,7 @@ int Steam_Controller::GetGamepadIndexForController( ControllerHandle_t ulControl
     auto controller = controllers.find(ulControllerHandle);
     if (controller == controllers.end()) return -1;
 
-    return ulControllerHandle - 1;
+    return static_cast<int>(ulControllerHandle) - 1;
 }
 
 

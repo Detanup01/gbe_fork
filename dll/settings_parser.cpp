@@ -61,7 +61,7 @@ static void save_global_ini_value(class Local_Storage *local_storage, const char
     auto sz = local_storage->data_settings_size(filename);
     if (sz > 0) {
         std::vector<char> ini_file_data(sz);
-        auto read = local_storage->get_data_settings(filename, &ini_file_data[0], ini_file_data.size());
+        auto read = local_storage->get_data_settings(filename, &ini_file_data[0], static_cast<unsigned int>(ini_file_data.size()));
         if (read == sz) {
             new_ini.LoadData(&ini_file_data[0], ini_file_data.size());
         }
@@ -96,7 +96,7 @@ static void save_global_ini_value(class Local_Storage *local_storage, const char
 
     std::string ini_buff{};
     if (new_ini.Save(ini_buff, false) == SI_OK) {
-        local_storage->store_data_settings(filename, &ini_buff[0], ini_buff.size());
+        local_storage->store_data_settings(filename, &ini_buff[0], static_cast<unsigned int>(ini_buff.size()));
     }
     
 }
@@ -545,7 +545,7 @@ static bool parse_local_save(std::string &save_path)
 // main::connectivity::listen_port
 static uint16 parse_listen_port(class Local_Storage *local_storage)
 {
-    uint16 port = ini.GetLongValue("main::connectivity", "listen_port");
+    uint16 port = static_cast<uint16>(ini.GetLongValue("main::connectivity", "listen_port"));
     if (port == 0) {
         port = DEFAULT_PORT;
         save_global_ini_value(

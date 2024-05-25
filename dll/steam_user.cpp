@@ -164,8 +164,8 @@ EVoiceResult Steam_User::GetAvailableVoice( uint32 *pcbCompressed, uint32 *pcbUn
     if (pcbUncompressed_Deprecated) *pcbUncompressed_Deprecated = 0;
     if (!recording) return k_EVoiceResultNotRecording;
     double seconds = std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - last_get_voice).count();
-    if (pcbCompressed) *pcbCompressed = seconds * 1024.0 * 64.0 / 8.0;
-    if (pcbUncompressed_Deprecated) *pcbUncompressed_Deprecated = seconds * (double)nUncompressedVoiceDesiredSampleRate_Deprecated * 2.0;
+    if (pcbCompressed) *pcbCompressed = static_cast<uint32>(seconds * 1024.0 * 64.0 / 8.0);
+    if (pcbUncompressed_Deprecated) *pcbUncompressed_Deprecated = static_cast<uint32>(seconds * (double)nUncompressedVoiceDesiredSampleRate_Deprecated * 2.0);
 
     return k_EVoiceResultOK;
 }
@@ -203,7 +203,7 @@ EVoiceResult Steam_User::GetVoice( bool bWantCompressed, void *pDestBuffer, uint
     if (!recording) return k_EVoiceResultNotRecording;
     double seconds = std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - last_get_voice).count();
     if (bWantCompressed) {
-        uint32 towrite = seconds * 1024.0 * 64.0 / 8.0;
+        uint32 towrite = static_cast<uint32>(seconds * 1024.0 * 64.0 / 8.0);
         if (cbDestBufferSize < towrite) towrite = cbDestBufferSize;
         if (pDestBuffer) memset(pDestBuffer, 0, towrite);
         if (nBytesWritten) *nBytesWritten = towrite;
@@ -239,7 +239,7 @@ EVoiceResult Steam_User::DecompressVoice( const void *pCompressed, uint32 cbComp
 {
     PRINT_DEBUG_ENTRY();
     if (!recording) return k_EVoiceResultNotRecording;
-    uint32 uncompressed = (double)cbCompressed * ((double)nDesiredSampleRate / 8192.0);
+    uint32 uncompressed = static_cast<uint32>((double)cbCompressed * ((double)nDesiredSampleRate / 8192.0));
     if(nBytesWritten) *nBytesWritten = uncompressed;
     if (uncompressed > cbDestBufferSize) uncompressed = cbDestBufferSize;
     if (pDestBuffer) memset(pDestBuffer, 0, uncompressed);
@@ -358,7 +358,7 @@ void Steam_User::AdvertiseGame( CSteamID steamIDGameServer, uint32 unIPServer, u
     server->set_ip(unIPServer);
     server->set_port(usPortServer);
     server->set_query_port(usPortServer);
-    server->set_appid(settings->get_local_game_id().ToUint64());
+    server->set_appid(settings->get_local_game_id().AppID());
     
     if (settings->matchmaking_server_list_always_lan_type)
         server->set_type(eLANServer);
@@ -394,7 +394,7 @@ SteamAPICall_t Steam_User::RequestEncryptedAppTicket( void *pDataToInclude, int 
 
     ticket.TicketV2.TicketVersion = 4;
     ticket.TicketV2.SteamID = settings->get_local_steam_id().ConvertToUint64();
-    ticket.TicketV2.TicketIssueTime = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    ticket.TicketV2.TicketIssueTime = static_cast<uint32>(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count());
     ticket.TicketV2.TicketValidityEnd = ticket.TicketV2.TicketIssueTime + (21 * 24 * 60 * 60);
 
     for (int i = 0; i < 140; ++i)
@@ -415,7 +415,7 @@ SteamAPICall_t Steam_User::RequestEncryptedAppTicket( void *pDataToInclude, int 
     pb.set_ticket_version_no(1);
     pb.set_crc_encryptedticket(0); // TODO: Find out how to compute the CRC
     pb.set_cb_encrypteduserdata(cbDataToInclude);
-    pb.set_cb_encrypted_appownershipticket(serialized.size() - 16);
+    pb.set_cb_encrypted_appownershipticket(static_cast<uint32>(serialized.size()) - 16);
     pb.mutable_encrypted_ticket()->assign(serialized.begin(), serialized.end()); // TODO: Find how to encrypt datas
 
     encrypted_app_ticket = pb.SerializeAsString();
@@ -427,7 +427,7 @@ SteamAPICall_t Steam_User::RequestEncryptedAppTicket( void *pDataToInclude, int 
 bool Steam_User::GetEncryptedAppTicket( void *pTicket, int cbMaxTicket, uint32 *pcbTicket )
 {
     PRINT_DEBUG("%i", cbMaxTicket);
-    unsigned int ticket_size = encrypted_app_ticket.size();
+    unsigned int ticket_size = static_cast<unsigned int>(encrypted_app_ticket.size());
     if (!cbMaxTicket) {
         if (!pcbTicket) return false;
         *pcbTicket = ticket_size;

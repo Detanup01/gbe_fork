@@ -178,7 +178,7 @@ bool Steam_Inventory::GetResultItems( SteamInventoryResult_t resultHandle,
                 if (!max_items) break;
                 auto it = user_items.find(std::to_string(itemid));
                 if (it != user_items.end()) {
-                    pOutItemsArray->m_iDefinition = itemid;
+                    pOutItemsArray->m_iDefinition = static_cast<int32>(itemid);
                     pOutItemsArray->m_itemId = itemid;
 
                     try
@@ -196,14 +196,14 @@ bool Steam_Inventory::GetResultItems( SteamInventoryResult_t resultHandle,
             }
         }
 
-        *punOutItemsArraySize = pOutItemsArray - items_array_base;
+        *punOutItemsArraySize = static_cast<uint32>(pOutItemsArray - items_array_base);
     }
     else if (punOutItemsArraySize != nullptr)
     {
         if (request->full_query) {
-            *punOutItemsArraySize = user_items.size();
+            *punOutItemsArraySize = static_cast<uint32>(user_items.size());
         } else {
-            *punOutItemsArraySize = std::count_if(request->instance_ids.begin(), request->instance_ids.end(), [this](SteamItemInstanceID_t item_id){ return user_items.find(std::to_string(item_id)) != user_items.end();});
+            *punOutItemsArraySize = static_cast<uint32>(std::count_if(request->instance_ids.begin(), request->instance_ids.end(), [this](SteamItemInstanceID_t item_id){ return user_items.find(std::to_string(item_id)) != user_items.end();}));
         }
     }
 
@@ -634,11 +634,11 @@ bool Steam_Inventory::GetItemDefinitionIDs(
 
     if (pItemDefIDs == nullptr || *punItemDefIDsArraySize == 0)
     {
-        *punItemDefIDsArraySize = defined_items.size();
+        *punItemDefIDsArraySize = static_cast<uint32>(defined_items.size());
         return true;
     }
 
-    if (*punItemDefIDsArraySize < defined_items.size())
+    if (*punItemDefIDsArraySize < static_cast<uint32>(defined_items.size()))
         return false;
 
     for (auto i = defined_items.begin(); i != defined_items.end(); ++i)
@@ -694,7 +694,7 @@ bool Steam_Inventory::GetItemDefinitionProperty( SteamItemDef_t iDefinition, con
                 else
                 {
                     // Set punValueBufferSizeOut to the property size
-                    *punValueBufferSizeOut = val.length() + 1;
+                    *punValueBufferSizeOut = static_cast<uint32>(val.length()) + 1;
                 }
 
                 if (pchValueBuffer != nullptr)
@@ -719,7 +719,7 @@ bool Steam_Inventory::GetItemDefinitionProperty( SteamItemDef_t iDefinition, con
                 // Should I check for punValueBufferSizeOut == nullptr ?
                 *punValueBufferSizeOut = 0;
                 for (auto i = item.value().begin(); i != item.value().end(); ++i)
-                    *punValueBufferSizeOut += i.key().length() + 1; // Size of key + comma, and the last is not a comma but null char
+                    *punValueBufferSizeOut += static_cast<uint32>(i.key().length()) + 1; // Size of key + comma, and the last is not a comma but null char
             }
             else
             {
