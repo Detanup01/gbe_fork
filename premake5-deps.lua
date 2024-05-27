@@ -580,12 +580,11 @@ if _OPTIONS["build-mbedtls"] or _OPTIONS["all-build"] then
     end
 
     if _OPTIONS["32-build"] then
-        local mbedtls_all_defs_32 = table.deepcopy(mbedtls_common_defs) -- we want a copy to avoid changing the original list
-        if string.match(_ACTION, 'gmake.*') then
-            table.insert(mbedtls_all_defs_32, 'CMAKE_C_FLAGS_INIT="-mpclmul -msse2 -maes"')
-            table.insert(mbedtls_all_defs_32, 'CMAKE_CXX_FLAGS_INIT="-mpclmul -msse2 -maes"')
-        end
-        cmake_build('mbedtls', true, mbedtls_all_defs_32)
+        cmake_build('mbedtls', true, mbedtls_common_defs, {
+            '-mpclmul',
+            '-msse2',
+            '-maes',
+        })
     end
     if _OPTIONS["64-build"] then
         cmake_build('mbedtls', false, mbedtls_common_defs)
