@@ -310,6 +310,17 @@ flags {
     "NoPCH", -- no precompiled header on Windows
 }
 targetprefix ("") -- prevent adding the prefix libxxx on linux
+vpaths { -- just for visual niceness, see: https://premake.github.io/docs/vpaths/
+    ["headers/*"] = {
+        "**.h", "**.hxx", "**.hpp",
+    },
+    ["src/*"] = {
+        "**.c", "**.cxx", "**.cpp", "**.cc",
+    },
+    ["asm/*"] = {
+        "**.s", "**.asm",
+    },
+}
 
 
 -- arch
@@ -353,7 +364,7 @@ filter { "action:gmake*", }
         "-Wl,--exclude-libs,ALL",
     }
 -- this is made separate because GCC complains but not CLANG
-filter { "action:gmake*" , "files:*.cpp or *.cc or *.hpp", }
+filter { "action:gmake*" , "files:*.cpp or *.cxx or *.cc or *.hpp", }
     buildoptions  {
         "-fno-char8_t", -- GCC gives a warning when a .c file is compiled with this
     }
