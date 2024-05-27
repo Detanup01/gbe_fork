@@ -458,13 +458,16 @@ if _OPTIONS["build-curl"] or _OPTIONS["all-build"] then
         "BUILD_STATIC_LIBS=ON",
         "CURL_USE_OPENSSL=OFF",
         "CURL_ZLIB=ON",
-        "ENABLE_UNICODE=ON",
-        "CURL_STATIC_CRT=ON",
         "CURL_USE_LIBSSH2=OFF",
         "CURL_USE_LIBPSL=OFF",
         "USE_LIBIDN2=OFF",
         "CURL_DISABLE_LDAP=ON",
     }
+    if os.target() == 'windows' then
+        table.insert(curl_common_defs, "CURL_STATIC_CRT=ON")
+        table.insert(curl_common_defs, "ENABLE_UNICODE=ON")
+    end
+
     if _OPTIONS["32-build"] then
         cmake_build('curl', true, merge_list(merge_list(curl_common_defs, wild_zlib_32), {
             'CMAKE_SHARED_LINKER_FLAGS_INIT="' .. wild_zlib_path_32 .. '"',
@@ -507,11 +510,15 @@ if _OPTIONS["build-mbedtls"] or _OPTIONS["all-build"] then
     local mbedtls_common_defs = {
         "USE_STATIC_MBEDTLS_LIBRARY=ON",
         "USE_SHARED_MBEDTLS_LIBRARY=OFF",
-        "MSVC_STATIC_RUNTIME=ON",
         "ENABLE_TESTING=OFF",
         "ENABLE_PROGRAMS=OFF",
-        "LINK_WITH_PTHREAD=ON",
     }
+    if os.target() == 'windows' then
+        table.insert(mbedtls_common_defs, "MSVC_STATIC_RUNTIME=ON")
+    else -- linux or macos
+        table.insert(mbedtls_common_defs, "LINK_WITH_PTHREAD=ON")
+    end
+
     if _OPTIONS["32-build"] then
         local mbedtls_all_defs_32 = table.deepcopy(mbedtls_common_defs) -- we want a copy to avoid changing the original list
         if string.match(_ACTION, 'gmake.*') then
