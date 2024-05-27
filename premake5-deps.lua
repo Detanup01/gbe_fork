@@ -363,10 +363,12 @@ for _, dep in pairs(deps_to_extract) do
         error('extraction failed')
     end
 
+    -- flatten dir by moving all folders contents outside (one level above)
+    print('flattening dir: ' .. out_folder)
     local folders = os.matchdirs(out_folder .. '/*')
-    for _, vv in pairs(folders) do
-        local inner_folder = os.realpath(vv)
-        local ok = os.execute('{COPYDIR} "' .. inner_folder  .. '" "' .. out_folder .. '"')
+    for _, inner_folder in pairs(folders) do
+        -- the weird "/*" at the end is not a mistake, premake uses cp cpmmand on linux, which won't copy inner dir otherwise
+        local ok = os.execute('{COPYDIR} "' .. inner_folder  .. '"/* "' .. out_folder .. '"')
         if not ok then
             error('copy dir failed, src=' .. inner_folder .. ', dest=' .. out_folder)
         end
