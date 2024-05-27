@@ -355,9 +355,9 @@ for _, dep in pairs(deps_to_extract) do
     local ext = string.lower(string.sub(archive_file, -7)) -- ".tar.gz"
     local ok_cmd = false
     if ext == ".tar.gz" then
-        ok_cmd = os.execute(extractor .. ' x "' .. archive_file .. '" -so | "' .. extractor .. '" x -si -ttar -y -aoa -o"' .. out_folder .. '"')
+        ok_cmd = os.execute(extractor .. ' -bso0 -bse2 x "' .. archive_file .. '" -so | "' .. extractor .. '" -bso0 -bse2 x -si -ttar -y -aoa -o"' .. out_folder .. '"')
     else
-        ok_cmd = os.execute(extractor .. ' x "' .. archive_file .. '" -y -aoa -o"' .. out_folder .. '"')
+        ok_cmd = os.execute(extractor .. ' -bso0 -bse2 x "' .. archive_file .. '" -y -aoa -o"' .. out_folder .. '"')
     end
     if not ok_cmd then
         error('extraction failed')
