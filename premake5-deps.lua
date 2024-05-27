@@ -594,17 +594,15 @@ end
 if _OPTIONS["build-ingame_overlay"] or _OPTIONS["all-build"] then
     -- fixes 32-bit compilation of DX12
     local overaly_imgui_cfg_file = path.join(deps_dir, 'ingame_overlay', 'imconfig.imcfg')
-    if not os.isfile(overaly_imgui_cfg_file) then
-        if not io.writefile(overaly_imgui_cfg_file, [[
-            #pragma once
-            #define ImTextureID ImU64
-        ]]) then
-            error('failed to create ImGui config file for overlay: ' .. overaly_imgui_cfg_file)
-        end
+    if not io.writefile(overaly_imgui_cfg_file, [[
+        #pragma once
+        #define ImTextureID ImU64
+    ]]) then
+        error('failed to create ImGui config file for overlay: ' .. overaly_imgui_cfg_file)
     end
 
     local ingame_overlay_common_defs = {
-        'IMGUI_USER_CONFIG="' .. overaly_imgui_cfg_file:gsub('\\', '/') .. '"',
+        'IMGUI_USER_CONFIG="' .. overaly_imgui_cfg_file:gsub('\\', '/') .. '"', -- ensure we use '/' because this lib doesn't handle it well
         'INGAMEOVERLAY_USE_SYSTEM_LIBRARIES=OFF',
         'INGAMEOVERLAY_USE_SPDLOG=OFF',
         'INGAMEOVERLAY_BUILD_TESTS=OFF',
