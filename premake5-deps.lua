@@ -1,5 +1,13 @@
 require("premake", ">=5.0.0-beta2")
 
+-- don't forget to set env var CMAKE_GENERATOR to one of these values:
+-- https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html#manual:cmake-generators(7)
+-- common ones
+-- ============
+-- Unix Makefiles
+-- Visual Studio 17 2022
+-- MSYS Makefiles
+
 local os_iden = '' -- identifier
 if os.target() == "windows" then
     os_iden = 'win'
@@ -12,10 +20,16 @@ end
 
 -- options
 ---------
--- verbose
+-- general
 newoption {
+    category = "general",
     trigger = "verbose",
     description = "Verbose output",
+}
+newoption {
+    category = "general",
+    trigger = "clean",
+    description = "Cleanup before any action",
 }
 
 -- local tools
@@ -32,11 +46,6 @@ newoption {
     category = "extract",
     trigger = "all-ext",
     description = "Extract all deps",
-}
-newoption {
-    category = "extract",
-    trigger = "clean-ext",
-    description = "Clean folder before extraction",
 }
 
 newoption {
@@ -75,11 +84,6 @@ newoption {
     category = "build",
     trigger = "all-build",
     description = "Build all deps",
-}
-newoption {
-    category = "build",
-    trigger = "clean-build",
-    description = "Clean folder before building",
 }
 newoption {
     category = "build",
@@ -142,11 +146,10 @@ end
 
 -- common defs
 ---------
-
-local deps_dir = os.realpath(path.join('build', 'deps', os_iden))
-local third_party_dir = os.realpath('third-party')
-local third_party_deps_dir = os.realpath(path.join(third_party_dir, 'deps', os_iden))
-local third_party_common_dir = os.realpath(path.join(third_party_dir, 'deps', 'common'))
+local deps_dir = path.getabsolute(path.join('build', 'deps', os_iden), _MAIN_SCRIPT_DIR)
+local third_party_dir = path.getabsolute('third-party')
+local third_party_deps_dir = path.join(third_party_dir, 'deps', os_iden)
+local third_party_common_dir = path.join(third_party_dir, 'deps', 'common')
 local extractor = os.realpath(path.join(third_party_deps_dir, '7za', '7za'))
 local mycmake = os.realpath(path.join(third_party_deps_dir, 'cmake', 'bin', 'cmake'))
 
@@ -169,8 +172,9 @@ if os.target() == 'windows' then
     table.insert(cmake_common_defs, 'CMAKE_CXX_FLAGS_RELEASE="-MT -D_MT"')
 end
 
+
 local function cmake_build(dep_folder, is_32, extra_defs)
-    dep_base = os.realpath(path.join(deps_dir, dep_folder))
+    local dep_base = path.getabsolute(path.join(deps_dir, dep_folder))
     local arch_iden = ''
     if is_32 then
         arch_iden = '32'
@@ -178,10 +182,10 @@ local function cmake_build(dep_folder, is_32, extra_defs)
         arch_iden = '64'
     end
     
-    local build_dir = os.realpath(path.join(dep_base, 'build' .. arch_iden))
+    local build_dir = path.getabsolute(path.join(dep_base, 'build' .. arch_iden))
     
     -- clean if required
-    if _OPTIONS["clean-build"] then
+    if _OPTIONS["clean"] then
         print('cleaning dir: ' .. build_dir)
         os.rmdir(build_dir)
     end
@@ -191,20 +195,20 @@ local function cmake_build(dep_folder, is_32, extra_defs)
         return
     end
 
-    local install_dir = os.realpath(path.join(dep_base, 'install' .. arch_iden))
+    local install_dir = path.join(dep_base, 'install' .. arch_iden)
     local cmake_common_defs_str = '-D' .. table.concat(cmake_common_defs, ' -D') .. ' -DCMAKE_INSTALL_PREFIX="' .. install_dir .. '"'
     local cmd_gen = mycmake .. ' -S "' .. dep_base .. '" -B "' .. build_dir .. '" ' .. cmake_common_defs_str
 
     -- arch
     if string.match(_ACTION, 'gmake.*') then
         if is_32 then
-            local toolchain_file = os.realpath(path.join(deps_dir, 'toolchain_32.cmake'))
+            local toolchain_file = path.join(deps_dir, 'toolchain_32.cmake')
             if not os.isfile(toolchain_file) then
                 if not io.writefile(toolchain_file, [[
                     set(CMAKE_C_FLAGS_INIT   "-m32")
                     set(CMAKE_CXX_FLAGS_INIT "-m32")
                 ]]) then
-                    error("failed to create 32-bit cmake toolchain")
+                    error("failed to create 32-bit cmake toolchain (gmake)")
                     return
                 end
             end
@@ -263,7 +267,7 @@ local function cmake_build(dep_folder, is_32, extra_defs)
     end
 
     -- clean if required
-    if _OPTIONS["clean-build"] then
+    if _OPTIONS["clean"] then
         print('cleaning dir: ' .. install_dir)
         os.rmdir(install_dir)
     end
@@ -322,18 +326,18 @@ if _OPTIONS["ext-ingame_overlay"] or _OPTIONS["all-ext"] then
 end
 
 
-for _, v in pairs(deps_to_extract) do
+for _, dep in pairs(deps_to_extract) do
     -- check archive
-    local archive_file = os.realpath(third_party_common_dir .. '/' .. v[1])
+    local archive_file = path.join(third_party_common_dir, dep[1])
     if not os.isfile(archive_file) then
         error("archive not found: " .. archive_file)
         return
     end
 
-    local out_folder = os.realpath(deps_dir .. '/' .. v[2])
+    local out_folder = path.join(deps_dir, dep[2])
 
     -- clean if required
-    if _OPTIONS["clean-ext"] then
+    if _OPTIONS["clean"] then
         print('cleaning dir: ' .. out_folder)
         os.rmdir(out_folder)
     end
@@ -422,25 +426,25 @@ if os.target() == 'windows' then
 else
     zlib_name = 'libz'
 end
--- ext
+-- extension
 if string.match(_ACTION, 'vs.+') then
     zlib_name = zlib_name .. '.lib'
 else
     zlib_name = zlib_name .. '.a'
 end
 
-local wild_zlib_path_32 = os.realpath(path.join(deps_dir, 'zlib', 'install32', 'lib', zlib_name))
+local wild_zlib_path_32 = path.join(deps_dir, 'zlib', 'install32', 'lib', zlib_name)
 local wild_zlib_32 = {
     'ZLIB_USE_STATIC_LIBS=ON',
-    'ZLIB_ROOT="' .. os.realpath(path.join(deps_dir, 'zlib', 'install32')) .. '"',
-    'ZLIB_INCLUDE_DIR="' .. os.realpath(path.join(deps_dir, 'zlib', 'install32', 'include')) .. '"',
+    'ZLIB_ROOT="' .. path.join(deps_dir, 'zlib', 'install32') .. '"',
+    'ZLIB_INCLUDE_DIR="' .. path.join(deps_dir, 'zlib', 'install32', 'include') .. '"',
     'ZLIB_LIBRARY="' .. wild_zlib_path_32 .. '"',
 }
-local wild_zlib_path_64 = os.realpath(path.join(deps_dir, 'zlib', 'install64', 'lib', zlib_name))
+local wild_zlib_path_64 = path.join(deps_dir, 'zlib', 'install64', 'lib', zlib_name)
 local wild_zlib_64 = {
     'ZLIB_USE_STATIC_LIBS=ON',
-    'ZLIB_ROOT="' .. os.realpath(path.join(deps_dir, 'zlib', 'install64')) .. '"',
-    'ZLIB_INCLUDE_DIR="' .. os.realpath(path.join(deps_dir, 'zlib', 'install64', 'include')) .. '"',
+    'ZLIB_ROOT="' .. path.join(deps_dir, 'zlib', 'install64') .. '"',
+    'ZLIB_INCLUDE_DIR="' .. path.join(deps_dir, 'zlib', 'install64', 'include') .. '"',
     'ZLIB_LIBRARY="' .. wild_zlib_path_64 .. '"',
 }
 
@@ -521,7 +525,7 @@ end
 
 if _OPTIONS["build-ingame_overlay"] or _OPTIONS["all-build"] then
     -- fixes 32-bit compilation of DX12
-    local overaly_imgui_cfg_file = os.realpath(path.join(deps_dir, 'ingame_overlay', 'imconfig.imcfg'))
+    local overaly_imgui_cfg_file = path.join(deps_dir, 'ingame_overlay', 'imconfig.imcfg')
     if not os.isfile(overaly_imgui_cfg_file) then
         if not io.writefile(overaly_imgui_cfg_file, [[
             #pragma once
