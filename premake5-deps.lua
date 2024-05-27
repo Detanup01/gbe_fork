@@ -183,11 +183,9 @@ local cmake_common_defs = {
     'CMAKE_BUILD_TYPE=Release',
     'CMAKE_POSITION_INDEPENDENT_CODE=True',
     'BUILD_SHARED_LIBS=OFF',
-    'CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded',
 }
 if os.target() == 'windows' then
-    table.insert(cmake_common_defs, 'CMAKE_C_FLAGS_RELEASE="-MT -D_MT"')
-    table.insert(cmake_common_defs, 'CMAKE_CXX_FLAGS_RELEASE="-MT -D_MT"')
+    table.insert(cmake_common_defs, 'CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded')
 end
 
 
@@ -237,6 +235,18 @@ local function cmake_build(dep_folder, is_32, extra_defs)
         else
             cmd_gen = cmd_gen .. ' -A x64'
         end
+        
+        local toolchain_file = path.join(deps_dir, 'toolchain_vs.cmake')
+        -- these 2 are needed because mbedtls doesn't care about 'CMAKE_MSVC_RUNTIME_LIBRARY' for some reason
+        if not io.writefile(toolchain_file, [[
+            set(CMAKE_C_FLAGS_INIT   "-MT -D_MT")
+            set(CMAKE_CXX_FLAGS_INIT "-MT -D_MT")
+        ]]) then
+            error("failed to create vs cmake toolchain")
+            return
+        end
+
+        cmd_gen = cmd_gen .. ' -DCMAKE_TOOLCHAIN_FILE="' .. toolchain_file .. '"'
     else
         error("unsupported action: " .. _ACTION)
         return
