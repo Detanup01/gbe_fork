@@ -288,11 +288,10 @@ static int send_packet_to(sock_t sock, IP_PORT ip_port, char *data, unsigned lon
 {
     PRINT_DEBUG("send: %lu %hhu.%hhu.%hhu.%hhu:%hu", length, ((unsigned char *)&ip_port.ip)[0], ((unsigned char *)&ip_port.ip)[1], ((unsigned char *)&ip_port.ip)[2], ((unsigned char *)&ip_port.ip)[3], htons(ip_port.port));
     struct sockaddr_storage addr;
-    size_t addrsize = 0;
     struct sockaddr_in *addr4 = (struct sockaddr_in *)&addr;
 
 #if defined(STEAM_WIN32) 
-    int addrsize = sizeof(struct sockaddr_in); 
+    size_t addrsize = sizeof(struct sockaddr_in); 
  #else 
     socklen_t addrsize = sizeof(struct sockaddr_in); 
  #endif 
@@ -377,11 +376,9 @@ static void buffers_set(sock_t sock)
 static bool bind_socket(sock_t sock, uint16 port)
 {
     struct sockaddr_storage addr = {};
-    size_t addrsize;
-
     struct sockaddr_in *addr4 = (struct sockaddr_in *)&addr;
 #if defined(STEAM_WIN32) 
-    int addrsize = sizeof(struct sockaddr_in); 
+    size_t addrsize = sizeof(struct sockaddr_in); 
  #else 
     socklen_t addrsize = sizeof(struct sockaddr_in); 
  #endif 
@@ -401,15 +398,17 @@ static bool socket_reuseaddr(sock_t sock)
 static void connect_socket(sock_t sock, IP_PORT ip_port)
 {
     struct sockaddr_storage addr;
-    size_t addrsize = 0;
     struct sockaddr_in *addr4 = (struct sockaddr_in *)&addr;
-
-    addrsize = sizeof(struct sockaddr_in);
+#if defined(STEAM_WIN32) 
+    size_t addrsize = sizeof(struct sockaddr_in); 
+ #else 
+    socklen_t addrsize = sizeof(struct sockaddr_in); 
+ #endif 
     addr4->sin_family = AF_INET;
     addr4->sin_addr.s_addr = ip_port.ip;
     addr4->sin_port = ip_port.port;
 
-    connect(sock, (struct sockaddr *)&addr, static_cast<int>(addrsize));
+    connect(sock, (struct sockaddr *)&addr, addrsize);
 }
 
 unsigned int receive_buffer_amount(sock_t sock)
