@@ -203,14 +203,12 @@ local function cmake_build(dep_folder, is_32, extra_defs)
     if string.match(_ACTION, 'gmake.*') then
         if is_32 then
             local toolchain_file = path.join(deps_dir, 'toolchain_32.cmake')
-            if not os.isfile(toolchain_file) then
-                if not io.writefile(toolchain_file, [[
-                    set(CMAKE_C_FLAGS_INIT   "-m32")
-                    set(CMAKE_CXX_FLAGS_INIT "-m32")
-                ]]) then
-                    error("failed to create 32-bit cmake toolchain (gmake)")
-                    return
-                end
+            if not io.writefile(toolchain_file, [[
+                set(CMAKE_C_FLAGS_INIT   "-m32")
+                set(CMAKE_CXX_FLAGS_INIT "-m32")
+            ]]) then
+                error("failed to create 32-bit cmake toolchain (gmake)")
+                return
             end
 
             cmd_gen = cmd_gen .. ' -DCMAKE_TOOLCHAIN_FILE="' .. toolchain_file .. '"'
