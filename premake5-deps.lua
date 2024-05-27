@@ -277,7 +277,7 @@ local function cmake_build(dep_folder, is_32, extra_defs)
         return
     end
 
-    local cmd_install = mycmake.. ' --install "' .. build_dir .. '" --prefix "' .. install_dir
+    local cmd_install = mycmake.. ' --install "' .. build_dir .. '" --prefix "' .. install_dir .. '"'
     print(cmd_install)
     local ok = os.execute(cmd_install)
     if not ok then
