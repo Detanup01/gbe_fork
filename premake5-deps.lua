@@ -189,7 +189,7 @@ if os.target() == 'windows' then
 end
 
 
-local function cmake_build(dep_folder, is_32, extra_defs)
+local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_flags_init)
     local dep_base = path.getabsolute(path.join(deps_dir, dep_folder))
     local arch_iden = ''
     if is_32 then
@@ -215,55 +215,89 @@ local function cmake_build(dep_folder, is_32, extra_defs)
     local cmake_common_defs_str = '-D' .. table.concat(cmake_common_defs, ' -D') .. ' -DCMAKE_INSTALL_PREFIX="' .. install_dir .. '"'
     local cmd_gen = mycmake .. ' -S "' .. dep_base .. '" -B "' .. build_dir .. '" ' .. cmake_common_defs_str
 
-    -- arch
+    local all_cflags_init = {}
+    local all_cxxflags_init = {}
+
+    -- c/cxx init flags based on arch/action
     if string.match(_ACTION, 'gmake.*') then
         if is_32 then
-            local toolchain_file = path.join(deps_dir, 'toolchain_32.cmake')
-            if not io.writefile(toolchain_file, [[
-                set(CMAKE_C_FLAGS_INIT   "-m32")
-                set(CMAKE_CXX_FLAGS_INIT "-m32")
-            ]]) then
-                error("failed to create 32-bit cmake toolchain (gmake)")
-                return
-            end
-
-            cmd_gen = cmd_gen .. ' -DCMAKE_TOOLCHAIN_FILE="' .. toolchain_file .. '"'
+            table.insert(all_cflags_init, '-m32')
+            table.insert(all_cxxflags_init, '-m32')
         end
     elseif string.match(_ACTION, 'vs.+') then
+        -- these 2 are needed because mbedtls doesn't care about 'CMAKE_MSVC_RUNTIME_LIBRARY' for some reason
+        table.insert(all_cflags_init, '-MT')
+        table.insert(all_cflags_init, '-D_MT')
+
+        table.insert(all_cxxflags_init, '-MT')
+        table.insert(all_cxxflags_init, '-D_MT')
+        
         if is_32 then
             cmd_gen = cmd_gen .. ' -A Win32'
         else
             cmd_gen = cmd_gen .. ' -A x64'
         end
-        
-        local toolchain_file = path.join(deps_dir, 'toolchain_vs.cmake')
-        -- these 2 are needed because mbedtls doesn't care about 'CMAKE_MSVC_RUNTIME_LIBRARY' for some reason
-        if not io.writefile(toolchain_file, [[
-            set(CMAKE_C_FLAGS_INIT   "-MT -D_MT")
-            set(CMAKE_CXX_FLAGS_INIT "-MT -D_MT")
-        ]]) then
-            error("failed to create vs cmake toolchain")
+    else
+        error("unsupported action for cmake build: " .. _ACTION)
+        return
+    end
+    
+    -- add c/cxx extra init flags
+    if c_flags_init then
+        if type(c_flags_init) ~= 'table' then
+            error("unsupported type for c_flags_init: " .. type(c_flags_init))
             return
         end
+        for _, cval in pairs(c_flags_init) do
+            table.insert(all_cflags_init, cval)
+        end
+    end
+    if cxx_flags_init then
+        if type(cxx_flags_init) ~= 'table' then
+            error("unsupported type for cxx_flags_init: " .. type(cxx_flags_init))
+            return
+        end
+        for _, cval in pairs(cxx_flags_init) do
+            table.insert(all_cxxflags_init, cval)
+        end
+    end
+    -- convert to space-delimited str
+    local cflags_init_str = ''
+    if #all_cflags_init > 0 then
+        cflags_init_str = '"' .. table.concat(all_cflags_init, " ") .. '"'
+    end
+    local cxxflags_init_str = ''
+    if #all_cxxflags_init > 0 then
+        cxxflags_init_str = '"' .. table.concat(all_cxxflags_init, " ") .. '"'
+    end
 
+    -- write toolchain file
+    local toolchain_file_content = ''
+    if #cflags_init_str > 0 then
+        toolchain_file_content = toolchain_file_content .. 'set(CMAKE_C_FLAGS_INIT ' .. cflags_init_str .. ' )\n'
+    end
+    if #cxxflags_init_str > 0 then
+        toolchain_file_content = toolchain_file_content .. 'set(CMAKE_CXX_FLAGS_INIT ' .. cxxflags_init_str .. ' )\n'
+    end
+
+    if #toolchain_file_content > 0 then
+        local toolchain_file = path.join(dep_base, 'toolchain_' .. tostring(is_32) .. '_' .. _ACTION .. '_' .. _OS .. '.precmt')
+        if not io.writefile(toolchain_file, toolchain_file_content) then
+            error("failed to write cmake toolchain")
+            return
+        end
         cmd_gen = cmd_gen .. ' -DCMAKE_TOOLCHAIN_FILE="' .. toolchain_file .. '"'
-    else
-        error("unsupported action: " .. _ACTION)
-        return
     end
 
     -- add extra defs
-    if extra_defs then
-        if type(extra_defs) == 'table' then
-            if #extra_defs > 0 then
-                local extra_defs_str = ' -D' .. table.concat(extra_defs, ' -D')
-                cmd_gen = cmd_gen .. extra_defs_str
-            end
-        elseif type(extra_defs) == 'string' then
-            cmd_gen = cmd_gen .. ' ' .. extra_defs
-        else
-            error("unsupported type for extra_defs: " .. type(extra_defs))
+    if extra_cmd_defs then
+        if type(extra_cmd_defs) ~= 'table' then
+            error("unsupported type for extra_cmd_defs: " .. type(extra_cmd_defs))
             return
+        end
+        if #extra_cmd_defs > 0 then
+            local extra_defs_str = ' -D' .. table.concat(extra_cmd_defs, ' -D')
+            cmd_gen = cmd_gen .. extra_defs_str
         end
     end
 
