@@ -156,6 +156,24 @@ local mycmake = os.realpath(path.join(third_party_deps_dir, 'cmake', 'bin', 'cma
 if _OPTIONS["custom-cmake"] then
     mycmake = _OPTIONS["custom-cmake"]
     print('using custom cmake: ' .. _OPTIONS["custom-cmake"])
+else
+    if os.host() == 'windows' then
+        mycmake = mycmake .. '.exe'
+    end
+    if not os.isfile(mycmake) then
+        error('cmake is missing from third-party dir, you can specify custom cmake location, run the script with --help. cmake: ' .. mycmake)
+    end
+end
+
+if not third_party_dir or not os.isdir(third_party_dir) then
+    error('third-party dir is missing')
+end
+
+if os.host() == 'windows' then
+    extractor = extractor .. '.exe'
+end
+if not extractor or not os.isfile(extractor) then
+    error('extractor is missing from third-party dir. extractor: ' .. extractor)
 end
 
 
