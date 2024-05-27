@@ -109,8 +109,7 @@ static void log_exception(LPEXCEPTION_POINTERS ex_pointers)
     auto now = std::chrono::system_clock::now();
     auto t_now = std::chrono::system_clock::to_time_t(now);
     auto gm_time = std::gmtime(&t_now);
-    auto asc_time = std::asctime(gm_time);
-    auto time = std::string(asc_time);
+    auto time = std::string(asc_time ? asc_time : "");
     time.pop_back(); // remove the trailing '\n' added by asctime
     common_helpers::write(file, "[" + time + "]");
     {

@@ -291,11 +291,16 @@ static int send_packet_to(sock_t sock, IP_PORT ip_port, char *data, unsigned lon
     size_t addrsize = 0;
     struct sockaddr_in *addr4 = (struct sockaddr_in *)&addr;
 
-    addrsize = sizeof(struct sockaddr_in);
+#if defined(STEAM_WIN32) 
+    int addrsize = sizeof(struct sockaddr_in); 
+ #else 
+    socklen_t addrsize = sizeof(struct sockaddr_in); 
+ #endif 
     addr4->sin_family = AF_INET;
     addr4->sin_addr.s_addr = ip_port.ip;
     addr4->sin_port = ip_port.port;
-    return sendto(sock, data, length, 0, (struct sockaddr *)&addr, static_cast<int>(addrsize));
+
+    return sendto(sock, data, length, 0, (struct sockaddr *)&addr, addrsize);
 }
 
 static int receive_packet(sock_t sock, IP_PORT *ip_port, char *data, unsigned long max_length)
@@ -375,12 +380,16 @@ static bool bind_socket(sock_t sock, uint16 port)
     size_t addrsize;
 
     struct sockaddr_in *addr4 = (struct sockaddr_in *)&addr;
-    addrsize = sizeof(struct sockaddr_in);
+#if defined(STEAM_WIN32) 
+    int addrsize = sizeof(struct sockaddr_in); 
+ #else 
+    socklen_t addrsize = sizeof(struct sockaddr_in); 
+ #endif 
     addr4->sin_family = AF_INET;
     addr4->sin_port = htons(port);
     addr4->sin_addr.s_addr = 0;
 
-    return !bind(sock, (struct sockaddr *)&addr, static_cast<int>(addrsize));
+    return !bind(sock, (struct sockaddr *)&addr, addrsize);
 }
 
 static bool socket_reuseaddr(sock_t sock)
@@ -470,7 +479,7 @@ static bool unbuffer_tcp(struct TCP_Socket &socket, Common_Message *msg)
 static bool recv_tcp(struct TCP_Socket &socket)
 {
     if (is_socket_valid(socket.sock)) {
-        unsigned int size = receive_buffer_amount(socket.sock), old_size = static_cast<uint32>(socket.send_buffer.size());
+        unsigned int size = receive_buffer_amount(socket.sock), old_size = static_cast<uint32>(socket.recv_buffer.size());
         int len;
         socket.recv_buffer.resize(old_size + size);
         if (size > 0) {
@@ -707,7 +716,7 @@ bool Networking::handle_announce(Common_Message *msg, IP_PORT ip_port)
 
     conn->last_received = std::chrono::high_resolution_clock::now();
 
-    if (msg->announce().type() & Announce::PING) {
+    if (msg->announce().type() == Announce::PING) {
         Common_Message msg = create_announce(false);
         size_t size = msg.ByteSizeLong(); 
         char *buffer = new char[size];
@@ -724,7 +733,7 @@ bool Networking::handle_announce(Common_Message *msg, IP_PORT ip_port)
             send_packet_to(udp_socket, ip_port, buffer, static_cast<unsigned long>(size));
             delete[] buffer;
         }
-    } else if (msg->announce().type() & Announce::PONG) {
+    } else if (msg->announce().type() == Announce::PONG) {
         conn->udp_ip_port = ip_port;
         conn->udp_pinged = true;
     }

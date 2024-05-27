@@ -877,7 +877,7 @@ void Steam_Controller::TriggerVibration( ControllerHandle_t controllerHandle, un
     rumble_length_ms = 100;
 #endif
 
-    unsigned gamepad_device = (static_cast<unsigned int>(controllerHandle) - 1);
+    unsigned gamepad_device = static_cast<unsigned int>(controllerHandle - 1);
     if (gamepad_device > GAMEPAD_COUNT) return;
     rumble_thread_data->rumble_mutex.lock();
     rumble_thread_data->data[gamepad_device].new_data = true;

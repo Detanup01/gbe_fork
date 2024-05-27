@@ -858,11 +858,11 @@ void Steam_Networking::Callback(Common_Message *msg)
         PRINT_DEBUG("msg data: '%s'",
             common_helpers::uint8_vector_to_hex_string(std::vector<uint8_t>(msg->network().data().begin(), msg->network().data().end())).c_str());
 
-        if (msg->network().type() & Network_pb::DATA) {
+        if (msg->network().type() == Network_pb::DATA) {
             unprocessed_messages.push_back(Common_Message(*msg));
         }
 
-        if (msg->network().type() & Network_pb::NEW_CONNECTION) {
+        if (msg->network().type() == Network_pb::NEW_CONNECTION) {
             std::lock_guard<std::recursive_mutex> lock(messages_mutex);
             auto msg_temp = std::begin(messages);
             while (msg_temp != std::end(messages)) {
@@ -878,7 +878,7 @@ void Steam_Networking::Callback(Common_Message *msg)
 
     if (msg->has_network_old()) {
         PRINT_DEBUG("got network socket msg %u", msg->network_old().type());
-        if (msg->network_old().type() & Network_Old::CONNECTION_REQUEST_IP) {
+        if (msg->network_old().type() == Network_Old::CONNECTION_REQUEST_IP) {
             for (auto & listen : listen_sockets) {
                 if (listen.nPort == msg->network_old().port()) {
                     SNetSocket_t new_sock = create_connection_socket((uint64)msg->source_id(), 0, 0, msg->network_old().port(), listen.id, SOCKET_CONNECTED, static_cast<SNetSocket_t>(msg->network_old().connection_id_from()));
@@ -892,7 +892,7 @@ void Steam_Networking::Callback(Common_Message *msg)
                     }
                 }
             }
-        } else if (msg->network_old().type() & Network_Old::CONNECTION_REQUEST_STEAMID) {
+        } else if (msg->network_old().type() == Network_Old::CONNECTION_REQUEST_STEAMID) {
             for (auto & listen : listen_sockets) {
                 if (listen.nVirtualP2PPort == msg->network_old().port()) {
                     SNetSocket_t new_sock = create_connection_socket((uint64)msg->source_id(), msg->network_old().port(), 0, 0, listen.id, SOCKET_CONNECTED, static_cast<SNetSocket_t>(msg->network_old().connection_id_from()));
@@ -907,7 +907,7 @@ void Steam_Networking::Callback(Common_Message *msg)
                 }
             }
 
-        } else if (msg->network_old().type() & Network_Old::CONNECTION_ACCEPTED) {
+        } else if (msg->network_old().type() == Network_Old::CONNECTION_ACCEPTED) {
             struct steam_connection_socket *socket = get_connection_socket(static_cast<SNetSocket_t>(msg->network_old().connection_id()));
             if (socket && socket->nPort && socket->status == SOCKET_CONNECTING && !socket->target.IsValid()) {
                 socket->target = (uint64)msg->source_id();
@@ -923,7 +923,7 @@ void Steam_Networking::Callback(Common_Message *msg)
                 data.m_eSNetSocketState = k_ESNetSocketStateConnected; //TODO is this the right state?
                 callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
             }
-        } else if (msg->network_old().type() & Network_Old::CONNECTION_END) {
+        } else if (msg->network_old().type() == Network_Old::CONNECTION_END) {
             struct steam_connection_socket *socket = get_connection_socket(static_cast<SNetSocket_t>(msg->network_old().connection_id()));
             if (socket && socket->status == SOCKET_CONNECTED && msg->source_id() == socket->target.ConvertToUint64()) {
                 struct SocketStatusCallback_t data;
@@ -943,7 +943,7 @@ void Steam_Networking::Callback(Common_Message *msg)
     }
 
     if (msg->has_low_level()) {
-        if (msg->low_level().type() & Low_Level::DISCONNECT) {
+        if (msg->low_level().type() == Low_Level::DISCONNECT) {
             CSteamID source_id((uint64)msg->source_id());
             if (connection_exists(source_id)) {
                 P2PSessionConnectFail_t data;
@@ -965,7 +965,7 @@ void Steam_Networking::Callback(Common_Message *msg)
             }
         } else
 
-        if (msg->low_level().type() & Low_Level::CONNECT) {
+        if (msg->low_level().type() == Low_Level::CONNECT) {
             
         }
     }

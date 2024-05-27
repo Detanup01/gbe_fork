@@ -870,11 +870,11 @@ bool Auth_Manager::endAuth(CSteamID id)
 void Auth_Manager::Callback(Common_Message *msg)
 {
     if (msg->has_low_level()) {
-        if (msg->low_level().type() & Low_Level::CONNECT) {
+        if (msg->low_level().type() == Low_Level::CONNECT) {
             
         }
 
-        if (msg->low_level().type() & Low_Level::DISCONNECT) {
+        if (msg->low_level().type() == Low_Level::DISCONNECT) {
             PRINT_DEBUG("TICKET DISCONNECT");
             auto t = std::begin(inbound);
             while (t != std::end(inbound)) {
@@ -889,7 +889,7 @@ void Auth_Manager::Callback(Common_Message *msg)
     }
 
     if (msg->has_auth_ticket()) {
-        if (msg->auth_ticket().type() & Auth_Ticket::CANCEL) {
+        if (msg->auth_ticket().type() == Auth_Ticket::CANCEL) {
             PRINT_DEBUG("TICKET CANCEL " "%" PRIu64, msg->source_id());
             uint32 number = msg->auth_ticket().number();
             auto t = std::begin(inbound);

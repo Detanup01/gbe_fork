@@ -715,11 +715,11 @@ void Steam_Networking_Utils::RunCallbacks()
 void Steam_Networking_Utils::Callback(Common_Message *msg)
 {
     if (msg->has_low_level()) {
-        if (msg->low_level().type() & Low_Level::CONNECT) {
+        if (msg->low_level().type() == Low_Level::CONNECT) {
             
         }
 
-        if (msg->low_level().type() & Low_Level::DISCONNECT) {
+        if (msg->low_level().type() == Low_Level::DISCONNECT) {
 
         }
     }

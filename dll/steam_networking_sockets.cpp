@@ -939,7 +939,7 @@ EResult Steam_Networking_Sockets::GetConnectionRealTimeStatus( HSteamNetConnecti
         pStatus->m_flInPacketsPerSec = 0.0;
         pStatus->m_flInBytesPerSec = 0.0;
         pStatus->m_cbSentUnackedReliable = 0;
-        pStatus->m_usecQueueTime = static_cast<SteamNetworkingMicroseconds>(0.0f);
+        pStatus->m_usecQueueTime = 0;
 
         //Note some games (volcanoids) might not allocate a struct the whole size of SteamNetworkingQuickConnectionStatus
         //keep this in mind in future interface updates
