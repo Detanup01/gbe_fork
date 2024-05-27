@@ -611,26 +611,27 @@ if _OPTIONS["build-ingame_overlay"] or _OPTIONS["all-build"] then
     local ingame_overlay_missing_inc = {}
     if string.match(_ACTION, 'gmake.*') then
         ingame_overlay_missing_inc = {
-            'CMAKE_CXX_FLAGS_RELEASE="-include cstdint -include cinttypes"'
+            '-include cstdint',
+            '-include cinttypes',
         }
     end
 
     if _OPTIONS["32-build"] then
-        cmake_build('ingame_overlay/deps/System', true, merge_list(ingame_overlay_missing_inc, {
+        cmake_build('ingame_overlay/deps/System', true, {
             'BUILD_SYSTEMLIB_TESTS=OFF',
-        }))
+        }, nil, ingame_overlay_missing_inc)
         cmake_build('ingame_overlay/deps/mini_detour', true, {
             'BUILD_MINIDETOUR_TESTS=OFF',
         })
-        cmake_build('ingame_overlay', true, merge_list(ingame_overlay_missing_inc, ingame_overlay_common_defs))
+        cmake_build('ingame_overlay', true, ingame_overlay_common_defs, nil, ingame_overlay_missing_inc)
     end
     if _OPTIONS["64-build"] then
-        cmake_build('ingame_overlay/deps/System', false, merge_list(ingame_overlay_missing_inc, {
+        cmake_build('ingame_overlay/deps/System', false, {
             'BUILD_SYSTEMLIB_TESTS=OFF',
-        }))
+        }, nil, ingame_overlay_missing_inc)
         cmake_build('ingame_overlay/deps/mini_detour', false, {
             'BUILD_MINIDETOUR_TESTS=OFF',
         })
-        cmake_build('ingame_overlay', false, merge_list(ingame_overlay_missing_inc, ingame_overlay_common_defs))
+        cmake_build('ingame_overlay', false, ingame_overlay_common_defs, nil, ingame_overlay_missing_inc)
     end
 end
