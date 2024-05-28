@@ -407,7 +407,10 @@ filter { "system:windows", "action:gmake*", }
     }
     -- source: https://gcc.gnu.org/onlinedocs/gcc/Cygwin-and-MinGW-Options.html
     linkoptions {
-        "-static-libgcc", "-static-libstdc++", "-static",
+        -- I don't know why but if libgcc/libstdc++ as well as pthreads are not statically linked
+        -- none of the output binary .dlls will reach their DllMain() in x64dbg
+        -- even when they're force-loaded in any process they immediately unload
+        "-static",
         -- from docs: "specifies that the typical Microsoft Windows predefined macros are to be set in the pre-processor,
         --             but does not influence the choice of runtime library/startup code"
         -- optional really
