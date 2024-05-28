@@ -326,6 +326,8 @@ staticruntime "on" -- /MT or /MTd
 runtime "Release" -- ensure we never link with /MTd, otherwise deps linking will fail
 flags {
     "NoPCH", -- no precompiled header on Windows
+    "MultiProcessorCompile", -- Enable Visual Studio to use multiple compiler processes when building
+    "RelativeLinks",
 }
 targetprefix ("") -- prevent adding the prefix libxxx on linux
 vpaths { -- just for visual niceness, see: https://premake.github.io/docs/vpaths/
@@ -366,7 +368,7 @@ filter {} -- reset the filter and remove all active keywords
 -- Visual Studio common compiler/linker options
 filter { "action:vs*", }
     buildoptions  {
-        "/permissive-", "/MP", "/DYNAMICBASE",
+        "/permissive-", "/DYNAMICBASE",
         "/utf-8", "/Zc:char8_t-", "/EHsc", "/GL-"
     }
     linkoptions  {
