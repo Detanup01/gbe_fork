@@ -80,6 +80,9 @@ typedef char SteamErrMsg[ k_cchMaxSteamErrMsg ];
 
 // function prototype
 #if defined( POSIX )
+#if defined( __cdecl )
+	#undef __cdecl
+#endif
 #define __cdecl
 #endif
 extern "C" typedef void (__cdecl *SteamAPIWarningMessageHook_t)(int, const char *);
