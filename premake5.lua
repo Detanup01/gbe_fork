@@ -834,6 +834,9 @@ project "tool_lobby_connect"
         common_emu_defines,
         "NO_DISK_WRITES", "LOBBY_CONNECT",
     }
+    removedefines {
+        "CONTROLLER_SUPPORT",
+    }
 
 
     -- include dir
@@ -862,6 +865,9 @@ project "tool_lobby_connect"
     files { -- added to all filters, later defines will be appended
         common_files,
         'tools/lobby_connect/lobby_connect.cpp'
+    }
+    removefiles {
+        "controller/gamepad.c",
     }
     -- Windows x32 common source files
     filter { "system:windows", "platforms:x32", "options:winrsrc", }
