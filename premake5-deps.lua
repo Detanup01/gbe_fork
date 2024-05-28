@@ -288,9 +288,9 @@ local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_
     if #cxxflags_init_str > 0 then
         toolchain_file_content = toolchain_file_content .. 'set(CMAKE_CXX_FLAGS_INIT ' .. cxxflags_init_str .. ' )\n'
     end
-
+    
     if #toolchain_file_content > 0 then
-        local toolchain_file = path.join(dep_base, 'toolchain_' .. tostring(is_32) .. '_' .. _ACTION .. '_' .. os.target() .. '.precmt')
+        local toolchain_file = path.join(dep_base, 'toolchain_' .. tostring(is_32) .. '_' .. _ACTION .. '_' .. os_iden .. '.precmt')
         if not io.writefile(toolchain_file, toolchain_file_content) then
             error("failed to write cmake toolchain")
             return
