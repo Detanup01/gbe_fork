@@ -200,15 +200,29 @@ local common_files = {
 
 -- libs to link
 ---------
+local lib_prefix = 'lib'
+local mingw_static_whole_archive = ''
+-- MinGW on Windows adds this prefix by default and linking ex: '-lssq' will look for 'libssq'
+-- so we have to ommit this prefix since it's automatically added
+if string.match(_ACTION, 'gmake.*') then
+    lib_prefix = ''
+    mingw_static_whole_archive = ':static_whole'
+end
 local common_link_win = {
     -- os specific
-    "Ws2_32", "Iphlpapi", "Wldap32", "Winmm", "Bcrypt", "Dbghelp", "Xinput",
+    "Ws2_32" .. mingw_static_whole_archive,
+    "Iphlpapi" .. mingw_static_whole_archive,
+    "Wldap32" .. mingw_static_whole_archive,
+    "Winmm" .. mingw_static_whole_archive,
+    "Bcrypt" .. mingw_static_whole_archive,
+    "Dbghelp" .. mingw_static_whole_archive,
+    "Xinput" .. mingw_static_whole_archive,
     -- deps
-    "ssq",
-    "zlibstatic",
-    "libcurl",
-    "libprotobuf-lite",
-    "mbedcrypto",
+    "ssq" .. mingw_static_whole_archive,
+    "zlibstatic" .. mingw_static_whole_archive,
+    lib_prefix .. "curl" .. mingw_static_whole_archive,
+    lib_prefix .. "protobuf-lite" .. mingw_static_whole_archive,
+    "mbedcrypto" .. mingw_static_whole_archive,
 }
 
 local common_link_linux = {
