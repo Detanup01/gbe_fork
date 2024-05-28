@@ -55,7 +55,7 @@ else
     error('Unsupported os target: "' .. os.target() .. '"')
 end
 
-local deps_dir = 'build/deps/' .. os_iden .. '/'
+local deps_dir = path.getabsolute(path.join('build', 'deps', os_iden, _ACTION), _MAIN_SCRIPT_DIR)
 
 newaction {
     trigger = "genproto",
