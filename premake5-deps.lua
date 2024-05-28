@@ -199,11 +199,14 @@ local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_
     print('\n\nbuilding dep: "' .. dep_base .. '"')
     
     local build_dir = path.getabsolute(path.join(dep_base, 'build' .. arch_iden))
+    local install_dir = path.join(dep_base, 'install' .. arch_iden)
     
     -- clean if required
     if _OPTIONS["clean"] then
         print('cleaning dir: ' .. build_dir)
         os.rmdir(build_dir)
+        print('cleaning dir: ' .. install_dir)
+        os.rmdir(install_dir)
     end
 
     if not os.mkdir(build_dir) then
@@ -211,7 +214,6 @@ local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_
         return
     end
 
-    local install_dir = path.join(dep_base, 'install' .. arch_iden)
     local cmake_common_defs_str = '-D' .. table.concat(cmake_common_defs, ' -D') .. ' -DCMAKE_INSTALL_PREFIX="' .. install_dir .. '"'
     local cmd_gen = mycmake .. ' -S "' .. dep_base .. '" -B "' .. build_dir .. '" ' .. cmake_common_defs_str
 
