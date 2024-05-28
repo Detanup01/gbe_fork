@@ -183,10 +183,8 @@ local cmake_common_defs = {
     'CMAKE_BUILD_TYPE=Release',
     'CMAKE_POSITION_INDEPENDENT_CODE=True',
     'BUILD_SHARED_LIBS=OFF',
+    'CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded',
 }
-if os.target() == 'windows' and string.match(_ACTION, 'vs.+') then
-    table.insert(cmake_common_defs, 'CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded')
-end
 
 
 local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_flags_init)
