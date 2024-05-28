@@ -216,7 +216,11 @@ local common_link_win = {
     "Winmm" .. mingw_static_whole_archive,
     "Bcrypt" .. mingw_static_whole_archive,
     "Dbghelp" .. mingw_static_whole_archive,
+    -- gamepad
     "Xinput" .. mingw_static_whole_archive,
+    -- imgui / overlay
+    "Gdi32" .. mingw_static_whole_archive,
+    "Dwmapi" .. mingw_static_whole_archive,
     -- deps
     "ssq" .. mingw_static_whole_archive,
     "zlibstatic" .. mingw_static_whole_archive,
