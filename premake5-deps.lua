@@ -618,30 +618,37 @@ if _OPTIONS["build-ingame_overlay"] or _OPTIONS["all-build"] then
         'INGAMEOVERLAY_BUILD_TESTS=OFF',
     }
     -- fix missing standard include/header file for gcc/clang
-    local ingame_overlay_missing_inc = {}
+    local ingame_overlay_fixes = {}
     if string.match(_ACTION, 'gmake.*') then
-        ingame_overlay_missing_inc = {
+        ingame_overlay_fixes = {
             '-include cstdint',
             '-include cinttypes',
         }
+        -- MinGW fixes
+        if os.target() == 'windows' then
+            -- MinGW throws this error: Library.cpp:77:26: error: invalid conversion from 'FARPROC' {aka 'long long int (*)()'} to 'void*' [-fpermissive]
+            table.insert(ingame_overlay_fixes, '-fpermissive')
+            -- MinGW throws this error: Filesystem.cpp:139:38: error: no matching function for call to 'stat::stat(const char*, stat*)
+            table.insert(ingame_overlay_fixes, '-include sys/stat.h')
+        end
     end
 
     if _OPTIONS["32-build"] then
         cmake_build('ingame_overlay/deps/System', true, {
             'BUILD_SYSTEMLIB_TESTS=OFF',
-        }, nil, ingame_overlay_missing_inc)
+        }, nil, ingame_overlay_fixes)
         cmake_build('ingame_overlay/deps/mini_detour', true, {
             'BUILD_MINIDETOUR_TESTS=OFF',
         })
-        cmake_build('ingame_overlay', true, ingame_overlay_common_defs, nil, ingame_overlay_missing_inc)
+        cmake_build('ingame_overlay', true, ingame_overlay_common_defs, nil, ingame_overlay_fixes)
     end
     if _OPTIONS["64-build"] then
         cmake_build('ingame_overlay/deps/System', false, {
             'BUILD_SYSTEMLIB_TESTS=OFF',
-        }, nil, ingame_overlay_missing_inc)
+        }, nil, ingame_overlay_fixes)
         cmake_build('ingame_overlay/deps/mini_detour', false, {
             'BUILD_MINIDETOUR_TESTS=OFF',
         })
-        cmake_build('ingame_overlay', false, ingame_overlay_common_defs, nil, ingame_overlay_missing_inc)
+        cmake_build('ingame_overlay', false, ingame_overlay_common_defs, nil, ingame_overlay_fixes)
     end
 end
