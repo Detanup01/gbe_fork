@@ -488,8 +488,14 @@ end
 local zlib_name = ''
 -- name
 if os.target() == 'windows' then
-    zlib_name = 'zlibstatic'
-else
+    if string.match(_ACTION, 'vs.+') then
+        zlib_name = 'zlibstatic'
+    elseif string.match(_ACTION, 'gmake.*') then
+        zlib_name = 'libzlibstatic'
+    else
+        error('unsupported os/action: ' .. os.target() .. ' / ' .. _ACTION)
+    end
+else -- linux or macos
     zlib_name = 'libz'
 end
 -- extension
