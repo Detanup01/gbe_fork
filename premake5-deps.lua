@@ -227,8 +227,6 @@ local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_
             table.insert(all_cxxflags_init, '-m32')
         end
         if os.target() == 'windows' then -- MinGW on Windows
-            table.insert(all_cflags_init, '-static')
-            table.insert(all_cxxflags_init, '-static')
             -- from docs: "specifies that the typical Microsoft Windows predefined macros are to be set in the pre-processor,
             --             but does not influence the choice of runtime library/startup code"
             -- optional really
