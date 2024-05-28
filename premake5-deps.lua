@@ -541,18 +541,10 @@ if _OPTIONS["build-curl"] or _OPTIONS["all-build"] then
     end
 
     if _OPTIONS["32-build"] then
-        cmake_build('curl', true, merge_list(merge_list(curl_common_defs, wild_zlib_32), {
-            'CMAKE_SHARED_LINKER_FLAGS_INIT="' .. wild_zlib_path_32 .. '"',
-            'CMAKE_MODULE_LINKER_FLAGS_INIT="' .. wild_zlib_path_32 .. '"',
-            'CMAKE_EXE_LINKER_FLAGS_INIT="' .. wild_zlib_path_32 .. '"',
-        }))
+        cmake_build('curl', true, merge_list(curl_common_defs, wild_zlib_32))
     end
     if _OPTIONS["64-build"] then
-        cmake_build('curl', false, merge_list(merge_list(curl_common_defs, wild_zlib_64), {
-            'CMAKE_SHARED_LINKER_FLAGS_INIT="' .. wild_zlib_path_64 .. '"',
-            'CMAKE_MODULE_LINKER_FLAGS_INIT="' .. wild_zlib_path_64 .. '"',
-            'CMAKE_EXE_LINKER_FLAGS_INIT="' .. wild_zlib_path_64 .. '"',
-        }))
+        cmake_build('curl', false, merge_list(curl_common_defs, wild_zlib_64))
     end
 end
 
@@ -563,18 +555,10 @@ if _OPTIONS["build-protobuf"] or _OPTIONS["all-build"] then
         "protobuf_WITH_ZLIB=ON",
     }
     if _OPTIONS["32-build"] then
-        cmake_build('protobuf', true, merge_list(merge_list(proto_common_defs, wild_zlib_32), {
-            'CMAKE_SHARED_LINKER_FLAGS_INIT="' .. wild_zlib_path_32 .. '"',
-            'CMAKE_MODULE_LINKER_FLAGS_INIT="' .. wild_zlib_path_32 .. '"',
-            'CMAKE_EXE_LINKER_FLAGS_INIT="' .. wild_zlib_path_32 .. '"',
-        }))
+        cmake_build('protobuf', true, merge_list(proto_common_defs, wild_zlib_32))
     end
     if _OPTIONS["64-build"] then
-        cmake_build('protobuf', false, merge_list(merge_list(proto_common_defs, wild_zlib_64), {
-            'CMAKE_SHARED_LINKER_FLAGS_INIT="' .. wild_zlib_path_64 .. '"',
-            'CMAKE_MODULE_LINKER_FLAGS_INIT="' .. wild_zlib_path_64 .. '"',
-            'CMAKE_EXE_LINKER_FLAGS_INIT="' .. wild_zlib_path_64 .. '"',
-        }))
+        cmake_build('protobuf', false, merge_list(proto_common_defs, wild_zlib_64))
     end
 end
 
