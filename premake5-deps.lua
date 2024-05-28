@@ -184,7 +184,7 @@ local cmake_common_defs = {
     'CMAKE_POSITION_INDEPENDENT_CODE=True',
     'BUILD_SHARED_LIBS=OFF',
 }
-if os.target() == 'windows' then
+if os.target() == 'windows' and string.match(_ACTION, 'vs.+') then
     table.insert(cmake_common_defs, 'CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded')
 end
 
@@ -527,7 +527,7 @@ if _OPTIONS["build-curl"] or _OPTIONS["all-build"] then
         "USE_LIBIDN2=OFF",
         "CURL_DISABLE_LDAP=ON",
     }
-    if os.target() == 'windows' then
+    if os.target() == 'windows' and string.match(_ACTION, 'vs.+') then
         table.insert(curl_common_defs, "CURL_STATIC_CRT=ON")
         table.insert(curl_common_defs, "ENABLE_UNICODE=ON")
     end
@@ -577,9 +577,9 @@ if _OPTIONS["build-mbedtls"] or _OPTIONS["all-build"] then
         "ENABLE_TESTING=OFF",
         "ENABLE_PROGRAMS=OFF",
     }
-    if os.target() == 'windows' then
+    if os.target() == 'windows' and string.match(_ACTION, 'vs.+') then
         table.insert(mbedtls_common_defs, "MSVC_STATIC_RUNTIME=ON")
-    else -- linux or macos
+    else -- linux or macos or MinGW on Windows
         table.insert(mbedtls_common_defs, "LINK_WITH_PTHREAD=ON")
     end
 
