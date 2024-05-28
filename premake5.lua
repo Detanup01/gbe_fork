@@ -442,6 +442,12 @@ filter { "system:windows", "action:gmake*", }
         -- even when they're force-loaded in any process they immediately unload
         "-static",
     }
+-- MinGw on Windows cannot compile 'creatwth.cpp' from Detours lib (error: 'DWordMult' was not declared in this scope)
+-- because intsafe.h isn't included by default
+filter { "system:windows", "action:gmake*", "files:**/detours/creatwth.cpp" }
+    buildoptions  {
+        "-include intsafe.h",
+    }
 
 
 
