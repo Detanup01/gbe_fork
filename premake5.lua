@@ -313,15 +313,15 @@ local x64_deps_overlay_libdir = {
 filter {} -- reset the filter and remove all active keywords
 configurations { "debug", "release", }
 platforms { "x64", "x32", }
-language("C++")
+language "C++"
 
-cppdialect("C++17")
-cdialect("C17")
+cppdialect "C++17"
+cdialect "C17"
 filter { "system:linux", "action:gmake*" , }
     cdialect("gnu17") -- gamepad.c relies on some linux-specific functions like strdup() and MAX_PATH
 filter {} -- reset the filter and remove all active keywords
 
-characterset("Unicode")
+characterset "Unicode"
 staticruntime "on" -- /MT or /MTd
 runtime "Release" -- ensure we never link with /MTd, otherwise deps linking will fail
 flags {
@@ -329,7 +329,7 @@ flags {
     "MultiProcessorCompile", -- Enable Visual Studio to use multiple compiler processes when building
     "RelativeLinks",
 }
-targetprefix ("") -- prevent adding the prefix libxxx on linux
+targetprefix "" -- prevent adding the prefix libxxx on linux
 vpaths { -- just for visual niceness, see: https://premake.github.io/docs/vpaths/
     ["headers/*"] = {
         "**.h", "**.hxx", "**.hpp",
@@ -730,7 +730,6 @@ project "steamclient_experimental"
         common_emu_defines,
         "STEAMCLIENT_DLL", "EMU_OVERLAY", "ImTextureID=ImU64",
     }
-
     -- Windows defines
     filter { "system:windows" }
         defines {
