@@ -418,41 +418,30 @@ filter {} -- reset the filter and remove all active keywords
 
 -- MinGw on Windows
 ---------
--- MinGw on Windows common compiler/linker options
 filter { "system:windows", "action:gmake*", }
-    buildoptions  {
-        -- MinGw on Windows cannot compile 'creatwth.cpp' from Detours lib (error: 'DWordMult' was not declared in this scope)
-        -- because intsafe.h isn't included by default
-        "-include intsafe.h",
-    }
+    -- MinGw on Windows common compiler/linker options
     -- source: https://gcc.gnu.org/onlinedocs/gcc/Cygwin-and-MinGW-Options.html
-    linkoptions {
-        -- I don't know why but if libgcc/libstdc++ as well as pthreads are not statically linked
-        -- none of the output binary .dlls will reach their DllMain() in x64dbg
-        -- even when they're force-loaded in any process they immediately unload
-        "-static",
+    buildoptions  {
         -- from docs: "specifies that the typical Microsoft Windows predefined macros are to be set in the pre-processor,
         --             but does not influence the choice of runtime library/startup code"
         -- optional really
         '-mwin32',
     }
--- MinGw on Windows common defines
--- MinGw on Windows doesn't have a definition for '_S_IFDIR' which is microsoft specific: https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/stat-functions
--- this is used in 'base.cpp' -> if ( buffer.st_mode & _S_IFDIR)
--- instead microsoft has an alternative but only enabled when _CRT_DECLARE_NONSTDC_NAMES is defined
--- https://learn.microsoft.com/en-us/cpp/c-runtime-library/compatibility
+    -- MinGw on Windows common defines
+    -- MinGw on Windows doesn't have a definition for '_S_IFDIR' which is microsoft specific: https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/stat-functions
+    -- this is used in 'base.cpp' -> if ( buffer.st_mode & _S_IFDIR)
+    -- instead microsoft has an alternative but only enabled when _CRT_DECLARE_NONSTDC_NAMES is defined
+    -- https://learn.microsoft.com/en-us/cpp/c-runtime-library/compatibility
     defines {
         -- '_CRT_NONSTDC_NO_WARNINGS',
         '_CRT_DECLARE_NONSTDC_NAMES',
     }
--- MinGw on Windows common libs to link
---     links {
---         -- CoreLibraryDependencies, copied from VS 2022
---         "kernel32", "user32", "gdi32", "winspool", "comdlg32", "advapi32", "shell32", "ole32", "oleaut32", "uuid", "odbc32", "odbccp32",
---         'Xinput',
---         -- 'mingw32', 'gcc', 'msvcrt', 'mingwex',
---         'ucrt', 'libstdc++',
---     }
+    linkoptions {
+        -- I don't know why but if libgcc/libstdc++ as well as pthreads are not statically linked
+        -- none of the output binary .dlls will reach their DllMain() in x64dbg
+        -- even when they're force-loaded in any process they immediately unload
+        "-static",
+    }
 
 
 
