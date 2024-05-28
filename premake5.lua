@@ -153,31 +153,31 @@ local common_include = {
 }
 
 local x32_deps_include = {
-    deps_dir .. "libssq/include",
-    deps_dir .. "curl/install32/include",
-    deps_dir .. "protobuf/install32/include",
-    deps_dir .. "zlib/install32/include",
-    deps_dir .. "mbedtls/install32/include",
+    path.join(deps_dir, "libssq/include"),
+    path.join(deps_dir, "curl/install32/include"),
+    path.join(deps_dir, "protobuf/install32/include"),
+    path.join(deps_dir, "zlib/install32/include"),
+    path.join(deps_dir, "mbedtls/install32/include"),
 }
 
 local x32_deps_overlay_include = {
-    deps_dir .. "ingame_overlay/install32/include",
-    deps_dir .. "ingame_overlay/deps/System/install32/include",
-    deps_dir .. "ingame_overlay/deps/mini_detour/install32/include",
+    path.join(deps_dir, "ingame_overlay/install32/include"),
+    path.join(deps_dir, "ingame_overlay/deps/System/install32/include"),
+    path.join(deps_dir, "ingame_overlay/deps/mini_detour/install32/include"),
 }
 
 local x64_deps_include = {
-    deps_dir .. "libssq/include",
-    deps_dir .. "curl/install64/include",
-    deps_dir .. "protobuf/install64/include",
-    deps_dir .. "zlib/install64/include",
-    deps_dir .. "mbedtls/install64/include",
+    path.join(deps_dir, "libssq/include"),
+    path.join(deps_dir, "curl/install64/include"),
+    path.join(deps_dir, "protobuf/install64/include"),
+    path.join(deps_dir, "zlib/install64/include"),
+    path.join(deps_dir, "mbedtls/install64/include"),
 }
 
 local x64_deps_overlay_include = {
-    deps_dir .. "ingame_overlay/install64/include",
-    deps_dir .. "ingame_overlay/deps/System/install64/include",
-    deps_dir .. "ingame_overlay/deps/mini_detour/install64/include",
+    path.join(deps_dir, "ingame_overlay/install64/include"),
+    path.join(deps_dir, "ingame_overlay/deps/System/install64/include"),
+    path.join(deps_dir, "ingame_overlay/deps/mini_detour/install64/include"),
 }
 
 
@@ -251,8 +251,8 @@ local overlay_link_linux = {
 
 -- dirs to custom libs
 ---------
-local x32_ssq_libdir = deps_dir .. "libssq/build32"
-local x64_ssq_libdir = deps_dir .. "libssq/build64"
+local x32_ssq_libdir = path.join(deps_dir, "libssq/build32")
+local x64_ssq_libdir = path.join(deps_dir, "libssq/build64")
 if string.match(_ACTION, 'vs.+') then
     x32_ssq_libdir = x32_ssq_libdir .. "/Release"
     x64_ssq_libdir = x64_ssq_libdir .. "/Release"
@@ -260,31 +260,31 @@ end
 
 local x32_deps_libdir = {
     x32_ssq_libdir,
-    deps_dir .. "curl/install32/lib",
-    deps_dir .. "protobuf/install32/lib",
-    deps_dir .. "zlib/install32/lib",
-    deps_dir .. "mbedtls/install32/lib",
+    path.join(deps_dir, "curl/install32/lib"),
+    path.join(deps_dir, "protobuf/install32/lib"),
+    path.join(deps_dir, "zlib/install32/lib"),
+    path.join(deps_dir, "mbedtls/install32/lib"),
 }
 
 local x32_deps_overlay_libdir = {
-    deps_dir .. "ingame_overlay/install32/lib",
-    deps_dir .. "ingame_overlay/deps/System/install32/lib",
-    deps_dir .. "ingame_overlay/deps/mini_detour/install32/lib",
+    path.join(deps_dir, "ingame_overlay/install32/lib"),
+    path.join(deps_dir, "ingame_overlay/deps/System/install32/lib"),
+    path.join(deps_dir, "ingame_overlay/deps/mini_detour/install32/lib"),
 }
 
 local x64_deps_libdir = {
     x64_ssq_libdir,
-    deps_dir .. "curl/install64/lib",
-    deps_dir .. "protobuf/install64/lib",
-    deps_dir .. "zlib/install64/lib",
-    deps_dir .. "mbedtls/install64/lib",
-    deps_dir .. "ingame_overlay/install64/lib",
+    path.join(deps_dir, "curl/install64/lib"),
+    path.join(deps_dir, "protobuf/install64/lib"),
+    path.join(deps_dir, "zlib/install64/lib"),
+    path.join(deps_dir, "mbedtls/install64/lib"),
+    path.join(deps_dir, "ingame_overlay/install64/lib"),
 }
 
 local x64_deps_overlay_libdir = {
-    deps_dir .. "ingame_overlay/install64/lib",
-    deps_dir .. "ingame_overlay/deps/System/install64/lib",
-    deps_dir .. "ingame_overlay/deps/mini_detour/install64/lib"
+    path.join(deps_dir, "ingame_overlay/install64/lib"),
+    path.join(deps_dir, "ingame_overlay/deps/System/install64/lib"),
+    path.join(deps_dir, "ingame_overlay/deps/mini_detour/install64/lib"),
 }
 
 
