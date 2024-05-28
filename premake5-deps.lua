@@ -146,7 +146,7 @@ end
 
 -- common defs
 ---------
-local deps_dir = path.getabsolute(path.join('build', 'deps', os_iden), _MAIN_SCRIPT_DIR)
+local deps_dir = path.getabsolute(path.join('build', 'deps', os_iden, _ACTION), _MAIN_SCRIPT_DIR)
 local third_party_dir = path.getabsolute('third-party')
 local third_party_deps_dir = path.join(third_party_dir, 'deps', os_iden)
 local third_party_common_dir = path.join(third_party_dir, 'deps', 'common')
@@ -350,6 +350,7 @@ local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_
     end
 end
 
+-- chmod tools
 if os.host() == "linux" then
     local ok_chmod, err_chmod = os.chmod(extractor, "777")
     if not ok_chmod then
