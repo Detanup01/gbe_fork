@@ -283,7 +283,7 @@ local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_
     end
 
     if #toolchain_file_content > 0 then
-        local toolchain_file = path.join(dep_base, 'toolchain_' .. tostring(is_32) .. '_' .. _ACTION .. '_' .. _OS .. '.precmt')
+        local toolchain_file = path.join(dep_base, 'toolchain_' .. tostring(is_32) .. '_' .. _ACTION .. '_' .. os.target() .. '.precmt')
         if not io.writefile(toolchain_file, toolchain_file_content) then
             error("failed to write cmake toolchain")
             return
