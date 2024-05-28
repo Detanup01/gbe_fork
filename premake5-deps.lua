@@ -197,6 +197,8 @@ local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_
     else
         arch_iden = '64'
     end
+
+    print('\n\nbuilding dep: "' .. dep_base .. '"')
     
     local build_dir = path.getabsolute(path.join(dep_base, 'build' .. arch_iden))
     
@@ -389,6 +391,8 @@ end
 for _, dep in pairs(deps_to_extract) do
     -- check archive
     local archive_file = path.join(third_party_common_dir, dep[1])
+    print('\n\nextracting dep archive: "' .. archive_file .. '"')
+
     if not os.isfile(archive_file) then
         error("archive not found: " .. archive_file)
         return
