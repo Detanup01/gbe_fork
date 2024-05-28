@@ -335,11 +335,6 @@ local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_
         return
     end
 
-    -- clean if required
-    if _OPTIONS["clean"] then
-        print('cleaning dir: ' .. install_dir)
-        os.rmdir(install_dir)
-    end
     -- create dir
     if not os.mkdir(install_dir) then
         error("failed to create install dir: " .. install_dir)
