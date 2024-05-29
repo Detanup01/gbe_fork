@@ -467,7 +467,7 @@ end
 
 local zlib_name = ''
 -- name
-if os.target() == 'windows' then
+if _ACTION and os.target() == 'windows' then
     if string.match(_ACTION, 'vs.+') then
         zlib_name = 'zlibstatic'
     elseif string.match(_ACTION, 'gmake.*') then
@@ -479,7 +479,7 @@ else -- linux or macos
     zlib_name = 'libz'
 end
 -- extension
-if string.match(_ACTION, 'vs.+') then
+if _ACTION and string.match(_ACTION, 'vs.+') then
     zlib_name = zlib_name .. '.lib'
 else
     zlib_name = zlib_name .. '.a'

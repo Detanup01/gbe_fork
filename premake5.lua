@@ -221,7 +221,7 @@ local lib_prefix = 'lib'
 local mingw_whole_archive = ''
 -- MinGW on Windows adds this prefix by default and linking ex: '-lssq' will look for 'libssq'
 -- so we have to ommit this prefix since it's automatically added
-if string.match(_ACTION, 'gmake.*') then
+if _ACTION and string.match(_ACTION, 'gmake.*') then
     lib_prefix = ''
     mingw_whole_archive = ':whole_archive'
 end
@@ -268,7 +268,7 @@ local overlay_link_linux = {
 ---------
 local x32_ssq_libdir = path.join(deps_dir, "libssq/build32")
 local x64_ssq_libdir = path.join(deps_dir, "libssq/build64")
-if string.match(_ACTION, 'vs.+') then
+if _ACTION and string.match(_ACTION, 'vs.+') then
     x32_ssq_libdir = x32_ssq_libdir .. "/Release"
     x64_ssq_libdir = x64_ssq_libdir .. "/Release"
 end
