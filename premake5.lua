@@ -218,32 +218,26 @@ local common_files = {
 -- libs to link
 ---------
 local lib_prefix = 'lib'
-local mingw_static_whole_archive = ''
+local mingw_whole_archive = ''
 -- MinGW on Windows adds this prefix by default and linking ex: '-lssq' will look for 'libssq'
 -- so we have to ommit this prefix since it's automatically added
 if string.match(_ACTION, 'gmake.*') then
     lib_prefix = ''
-    mingw_static_whole_archive = ':static_whole'
+    mingw_whole_archive = ':whole_archive'
 end
 local common_link_win = {
     -- os specific
-    "Ws2_32" .. mingw_static_whole_archive,
-    "Iphlpapi" .. mingw_static_whole_archive,
-    "Wldap32" .. mingw_static_whole_archive,
-    "Winmm" .. mingw_static_whole_archive,
-    "Bcrypt" .. mingw_static_whole_archive,
-    "Dbghelp" .. mingw_static_whole_archive,
+    "Ws2_32", "Iphlpapi", "Wldap32", "Winmm", "Bcrypt", "Dbghelp",
     -- gamepad
-    "Xinput" .. mingw_static_whole_archive,
+    "Xinput",
     -- imgui / overlay
-    "Gdi32" .. mingw_static_whole_archive,
-    "Dwmapi" .. mingw_static_whole_archive,
+    "Gdi32", "Dwmapi",
     -- deps
-    "ssq" .. mingw_static_whole_archive,
-    "zlibstatic" .. mingw_static_whole_archive,
-    lib_prefix .. "curl" .. mingw_static_whole_archive,
-    lib_prefix .. "protobuf-lite" .. mingw_static_whole_archive,
-    "mbedcrypto" .. mingw_static_whole_archive,
+    "ssq" .. mingw_whole_archive,
+    "zlibstatic" .. mingw_whole_archive,
+    lib_prefix .. "curl" .. mingw_whole_archive,
+    lib_prefix .. "protobuf-lite" .. mingw_whole_archive,
+    "mbedcrypto" .. mingw_whole_archive,
 }
 
 local common_link_linux = {
@@ -457,7 +451,8 @@ filter { "system:windows", "action:gmake*", }
         -- I don't know why but if libgcc/libstdc++ as well as pthreads are not statically linked
         -- none of the output binary .dlls will reach their DllMain() in x64dbg
         -- even when they're force-loaded in any process they immediately unload
-        "-static",
+        -- '-static-libgcc' ,'-static-libstdc++',
+        '-static',
     }
 -- MinGw on Windows cannot compile 'creatwth.cpp' from Detours lib (error: 'DWordMult' was not declared in this scope)
 -- because intsafe.h isn't included by default
