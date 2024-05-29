@@ -325,13 +325,11 @@ filter {} -- reset the filter and remove all active keywords
 configurations { "debug", "release", }
 platforms { "x64", "x32", }
 language "C++"
-
 cppdialect "C++17"
 cdialect "C17"
 filter { "system:linux", "action:gmake*" , }
     cdialect("gnu17") -- gamepad.c relies on some linux-specific functions like strdup() and MAX_PATH
 filter {} -- reset the filter and remove all active keywords
-
 characterset "Unicode"
 staticruntime "on" -- /MT or /MTd
 runtime "Release" -- ensure we never link with /MTd, otherwise deps linking will fail
@@ -362,11 +360,11 @@ filter { "platforms:x32", }
     architecture "x86" 
 filter { "platforms:x64", }
     architecture "x86_64"
-filter {} -- reset the filter and remove all active keywords
 
 
 -- debug/optimization flags
 ---------
+filter {} -- reset the filter and remove all active keywords
 intrinsics "On"
 filter { "configurations:*debug", }
     symbols "On"
@@ -374,7 +372,6 @@ filter { "configurations:*debug", }
 filter { "configurations:*release", }
     symbols "Off"
     optimize "On"
-filter {} -- reset the filter and remove all active keywords
 
 
 --- common compiler/linker options
@@ -428,7 +425,6 @@ filter { "system:linux" }
     defines {
         "GNUC",
     }
-filter {} -- reset the filter and remove all active keywords
 
 
 -- MinGw on Windows
