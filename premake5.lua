@@ -251,12 +251,12 @@ local common_link_linux = {
     "mbedcrypto:static_whole",
 }
 
+-- overlay libs
 local overlay_link_win = {
-    "ingame_overlay",
-    "system", -- ingame_overlay dependency
-    "mini_detour", -- ingame_overlay dependency
+    "ingame_overlay" .. mingw_whole_archive,
+    "system" .. mingw_whole_archive, -- ingame_overlay dependency
+    "mini_detour" .. mingw_whole_archive, -- ingame_overlay dependency
 }
-
 local overlay_link_linux = {
     "ingame_overlay:static_whole",
     "system:static_whole", -- ingame_overlay dependency
