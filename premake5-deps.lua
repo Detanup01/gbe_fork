@@ -214,11 +214,11 @@ local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_
         end
     elseif string.match(_ACTION, 'vs.+') then
         -- these 2 are needed because mbedtls doesn't care about 'CMAKE_MSVC_RUNTIME_LIBRARY' for some reason
-        table.insert(all_cflags_init, '-MT')
-        table.insert(all_cflags_init, '-D_MT')
+        table.insert(all_cflags_init, '/MT')
+        table.insert(all_cflags_init, '/D_MT')
 
-        table.insert(all_cxxflags_init, '-MT')
-        table.insert(all_cxxflags_init, '-D_MT')
+        table.insert(all_cxxflags_init, '/MT')
+        table.insert(all_cxxflags_init, '/D_MT')
         
         if is_32 then
             cmd_gen = cmd_gen .. ' -A Win32'
@@ -252,20 +252,24 @@ local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_
     -- convert to space-delimited str
     local cflags_init_str = ''
     if #all_cflags_init > 0 then
-        cflags_init_str = '"' .. table.concat(all_cflags_init, " ") .. '"'
+        cflags_init_str = table.concat(all_cflags_init, " ")
     end
     local cxxflags_init_str = ''
     if #all_cxxflags_init > 0 then
-        cxxflags_init_str = '"' .. table.concat(all_cxxflags_init, " ") .. '"'
+        cxxflags_init_str = table.concat(all_cxxflags_init, " ")
     end
 
     -- write toolchain file
     local toolchain_file_content = ''
     if #cflags_init_str > 0 then
-        toolchain_file_content = toolchain_file_content .. 'set(CMAKE_C_FLAGS_INIT ' .. cflags_init_str .. ' )\n'
+        toolchain_file_content = toolchain_file_content .. 'set(CMAKE_C_FLAGS_INIT "${CMAKE_C_FLAGS_INIT} ' .. cflags_init_str .. '" )\n'
     end
     if #cxxflags_init_str > 0 then
-        toolchain_file_content = toolchain_file_content .. 'set(CMAKE_CXX_FLAGS_INIT ' .. cxxflags_init_str .. ' )\n'
+        toolchain_file_content = toolchain_file_content .. 'set(CMAKE_CXX_FLAGS_INIT "${CMAKE_CXX_FLAGS_INIT} ' .. cxxflags_init_str .. '" )\n'
+    end
+    if string.match(_ACTION, 'vs.+') then -- because libssq doesn't care about CMAKE_C/XX_FLAGS_INIT
+        toolchain_file_content = toolchain_file_content .. 'set(CMAKE_C_FLAGS_RELEASE  "${CMAKE_C_FLAGS_RELEASE} /MT /D_MT" ) \n'
+        toolchain_file_content = toolchain_file_content .. 'set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /D_MT" ) \n'
     end
     
     if #toolchain_file_content > 0 then
