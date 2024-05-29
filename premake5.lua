@@ -10,6 +10,7 @@ premake.override(premake.tools.gcc, "getlinks", function(originalFn, cfg, system
     -- https://github.com/premake/premake-core/blob/d842e671c7bc7e09f2eeaafd199fd01e48b87ee7/src/tools/gcc.lua#L568C15-L568C22
 
     local result = originalFn(cfg, systemonly, nogroups)
+    local whole_syslibs = {"-Wl,--whole-archive"}
     local static_whole_syslibs = {"-Wl,--whole-archive -Wl,-Bstatic"}
 
     local endswith = function(s, ptrn)
@@ -21,6 +22,10 @@ premake.override(premake.tools.gcc, "getlinks", function(originalFn, cfg, system
         if endswith(name, ":static_whole") then
             name = string.sub(name, 0, -14)
             table.insert(static_whole_syslibs, name) -- it already includes '-l'
+            table.insert(idx_to_remove, idx)
+        elseif endswith(name, ":whole_archive") then
+            name = string.sub(name, 0, -15)
+            table.insert(whole_syslibs, name) -- it already includes '-l'
             table.insert(idx_to_remove, idx)
         end
     end
@@ -35,12 +40,24 @@ premake.override(premake.tools.gcc, "getlinks", function(originalFn, cfg, system
         for i = 1, #a1 do a2[t + i] = a1[i] end
     end
 
+    local new_result = {}
+    if #whole_syslibs > 1 then
+        table.insert(whole_syslibs, "-Wl,--no-whole-archive")
+        move(whole_syslibs, new_result)
+    end
     if #static_whole_syslibs > 1 then
         table.insert(static_whole_syslibs, "-Wl,-Bdynamic -Wl,--no-whole-archive")
-        move(static_whole_syslibs, result)
+        move(static_whole_syslibs, new_result)
     end
 
-    return result
+    -- https://stackoverflow.com/a/71719579
+    -- because of the dumb way linux handles linking, the order becomes important
+    -- I've encountered a problem with linking and it was failing with error "undefined reference to `__imp_WSACloseEvent'"
+    -- despite 'Ws2_32' being added to the list of libraries, turns out some symbols from 'Ws2_32' were being stripped,
+    -- because no library before it (on the command line) mentioned any of its symbols, the static libs were being appended afterwards on the command line,
+    -- and they were mentioning some of the now-stripped symbols
+    move(result, new_result)
+    return new_result
 end)
 
 
