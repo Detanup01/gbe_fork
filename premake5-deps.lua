@@ -550,6 +550,7 @@ if _OPTIONS["build-mbedtls"] or _OPTIONS["all-build"] then
         "USE_SHARED_MBEDTLS_LIBRARY=OFF",
         "ENABLE_TESTING=OFF",
         "ENABLE_PROGRAMS=OFF",
+        "MBEDTLS_FATAL_WARNINGS=OFF",
     }
     if os.target() == 'windows' and string.match(_ACTION, 'vs.+') then
         table.insert(mbedtls_common_defs, "MSVC_STATIC_RUNTIME=ON")
