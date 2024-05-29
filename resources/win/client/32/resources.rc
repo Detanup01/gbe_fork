@@ -30,7 +30,7 @@ FILESUBTYPE    0x0L // VFT2_UNKNOWN
 
     BLOCK "VarFileInfo"
     {
-        VALUE "Translation", 0x0409 0x04B0 // English language (0x409) in the Windows ANSI codepage (1252)
+        VALUE "Translation", 0x0409, 0x04B0 // English language (0x409) in the Windows ANSI codepage (1252)
     }
 }
 
@@ -65,7 +65,7 @@ FILESUBTYPE    0x0L // VFT2_UNKNOWN
 
     BLOCK "VarFileInfo"
     {
-        VALUE "Translation", 0x0409 0x04B0 // English language (0x409) in the Windows ANSI codepage (1252)
+        VALUE "Translation", 0x0409, 0x04B0 // English language (0x409) in the Windows ANSI codepage (1252)
     }
 }
 
