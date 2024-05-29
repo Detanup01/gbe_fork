@@ -341,6 +341,8 @@ flags {
     "RelativeLinks",
 }
 targetprefix "" -- prevent adding the prefix libxxx on linux
+visibility "Hidden" -- hide all symbols by default on GCC (unless they are marked visible)
+exceptionhandling "On" -- "Enable exception handling. ... although it does not affect execution."
 vpaths { -- just for visual niceness, see: https://premake.github.io/docs/vpaths/
     ["headers/*"] = {
         "**.h", "**.hxx", "**.hpp",
@@ -365,6 +367,7 @@ filter {} -- reset the filter and remove all active keywords
 
 -- debug/optimization flags
 ---------
+intrinsics "On"
 filter { "configurations:*debug", }
     symbols "On"
     optimize "Off"
@@ -389,7 +392,8 @@ filter { "action:vs*", }
 -- GNU make common compiler/linker options
 filter { "action:gmake*", }
     buildoptions  {
-        "-fvisibility=hidden", "-fexceptions", "-fno-jump-tables" , "-Wno-switch",
+        -- https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html
+        "-fno-jump-tables" , "-Wno-switch",
     }
     linkoptions {
         "-Wl,--exclude-libs,ALL",
