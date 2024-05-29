@@ -192,6 +192,13 @@ static inline void reset_LastError()
     //#define PRINT_DEBUG(...) fprintf(stdout, __VA_ARGS__)
     extern const std::string dbg_log_file;
     extern const std::chrono::time_point<std::chrono::high_resolution_clock> startup_counter;
+
+    #if defined(__LINUX__) || defined(GNUC) || defined(__MINGW32__) || defined(__MINGW64__) // MinGw
+        #define EMU_FUN_NAME __PRETTY_FUNCTION__
+    #else
+        #define EMU_FUN_NAME __FUNCTION__##"()"
+    #endif
+
     #if defined(__WINDOWS__)
         #define PRINT_DEBUG(a, ...) do {                                                                                                                     \
             auto __prnt_dbg_ctr = std::chrono::high_resolution_clock::now();                                                                                 \
@@ -200,8 +207,8 @@ static inline void reset_LastError()
             auto __prnt_dbg_ms = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::milli>>(__prnt_dbg_duration);                     \
             auto __prnt_dbg_f = fopen(dbg_log_file.c_str(), "a");                                                                                            \
             if (!__prnt_dbg_f) break;                                                                                                                        \
-            fprintf(__prnt_dbg_f, "[%llu ms, %llu us] [tid %lu] %s() " a "\n",                                                                               \
-                __prnt_dbg_ms.count(), __prnt_dbg_micro.count(), GetCurrentThreadId(), __FUNCTION__, ##__VA_ARGS__);                                           \
+            fprintf(__prnt_dbg_f, "[%llu ms, %llu us] [tid %lu] %s " a "\n",                                                                                 \
+                __prnt_dbg_ms.count(), __prnt_dbg_micro.count(), GetCurrentThreadId(), EMU_FUN_NAME, ##__VA_ARGS__);                                         \
             fclose(__prnt_dbg_f);                                                                                                                            \
             WSASetLastError(0);                                                                                                                              \
         } while (0)
@@ -214,8 +221,8 @@ static inline void reset_LastError()
             auto __prnt_dbg_ms = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::milli>>(__prnt_dbg_duration);                     \
             auto __prnt_dbg_f = fopen(dbg_log_file.c_str(), "a");                                                                                            \
             if (!__prnt_dbg_f) break;                                                                                                                        \
-            fprintf(__prnt_dbg_f, "[%llu ms, %llu us] [tid %ld] %s " a "\n",                                                                               \
-                __prnt_dbg_ms.count(), __prnt_dbg_micro.count(), syscall(SYS_gettid), __PRETTY_FUNCTION__, ##__VA_ARGS__);                                          \
+            fprintf(__prnt_dbg_f, "[%llu ms, %llu us] [tid %ld] %s " a "\n",                                                                                 \
+                __prnt_dbg_ms.count(), __prnt_dbg_micro.count(), syscall(SYS_gettid), EMU_FUN_NAME, ##__VA_ARGS__);                                          \
             fclose(__prnt_dbg_f);                                                                                                                            \
         } while (0)
     #else
