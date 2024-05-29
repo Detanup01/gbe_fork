@@ -432,16 +432,9 @@ filter {} -- reset the filter and remove all active keywords
 
 
 -- MinGw on Windows
+-- common compiler/linker options: source: https://gcc.gnu.org/onlinedocs/gcc/Cygwin-and-MinGW-Options.html
 ---------
 filter { "system:windows", "action:gmake*", }
-    -- MinGw on Windows common compiler/linker options
-    -- source: https://gcc.gnu.org/onlinedocs/gcc/Cygwin-and-MinGW-Options.html
-    buildoptions  {
-        -- from docs: "specifies that the typical Microsoft Windows predefined macros are to be set in the pre-processor,
-        --             but does not influence the choice of runtime library/startup code"
-        -- optional really
-        '-mwin32',
-    }
     -- MinGw on Windows common defines
     -- MinGw on Windows doesn't have a definition for '_S_IFDIR' which is microsoft specific: https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/stat-functions
     -- this is used in 'base.cpp' -> if ( buffer.st_mode & _S_IFDIR)
