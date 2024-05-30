@@ -31,6 +31,14 @@ newoption {
     trigger = "clean",
     description = "Cleanup before any action",
 }
+-- tools
+newoption {
+    category = "tools",
+    trigger = "custom-cmake",
+    description = "Use custom cmake",
+    value = 'path/to/cmake.exe',
+    default = nil
+}
 
 -- deps extraction
 newoption {
@@ -144,11 +152,17 @@ local third_party_common_dir = path.join(third_party_dir, 'deps', 'common')
 local extractor = os.realpath(path.join(third_party_deps_dir, '7za', '7za'))
 local mycmake = os.realpath(path.join(third_party_deps_dir, 'cmake', 'bin', 'cmake'))
 
-if os.host() == 'windows' then
-    mycmake = mycmake .. '.exe'
-end
-if not os.isfile(mycmake) then
-    error('cmake is missing from third-party dir, you can specify custom cmake location, run the script with --help. cmake: ' .. mycmake)
+if _OPTIONS["custom-cmake"] then
+    mycmake = _OPTIONS["custom-cmake"]
+    print('using custom cmake: ' .. _OPTIONS["custom-cmake"])
+else
+    if os.host() == 'windows' then
+    if os.host() == 'windows' then
+        mycmake = mycmake .. '.exe'
+    end
+    if not os.isfile(mycmake) then
+        error('cmake is missing from third-party dir, you can specify custom cmake location, run the script with --help. cmake: ' .. mycmake)
+    end
 end
 
 if not third_party_dir or not os.isdir(third_party_dir) then
@@ -341,10 +355,12 @@ if os.host() == "linux" then
         return
     end
 
-    local ok_chmod, err_chmod = os.chmod(mycmake, "777")
-    if not ok_chmod then
-        error("cannot chmod: " .. err_chmod)
-        return
+    if not _OPTIONS["custom-cmake"] then
+        local ok_chmod, err_chmod = os.chmod(mycmake, "777")
+        if not ok_chmod then
+            error("cannot chmod: " .. err_chmod)
+            return
+        end
     end
 end
 
