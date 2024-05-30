@@ -65,17 +65,31 @@ You can also find instructions here in [README.release.md](./post_build/README.r
  ```
 
 ### For Windows:
-* You need Windows 10 or 8.1
-* Install `Visual Studio 2022 Community`: https://visualstudio.microsoft.com/vs/community/
+* You need Windows 10 or 8.1 + WDK
+* Using Visual Studio, install `Visual Studio 2022 Community`: https://visualstudio.microsoft.com/vs/community/
    * Select the Workload `Desktop development with C++`
    * In the `Individual componenets` scroll to the buttom and select the **latest** version of `Windows XX SDK (XX.X...)`  
-     For example `Windows 11 SDK (10.0.22621.0)`
-* *(Optional)* Install a GUI for Git like [GitHub Desktop](https://desktop.github.com/), or [Sourcetree](https://www.sourcetreeapp.com/)
+      For example `Windows 11 SDK (10.0.22621.0)`
+* Using `MSYS2` (very limited support): https://www.msys2.org/  
+  * To build 64-bit binaries use either the [environment](https://www.msys2.org/docs/environments/) `UCRT64` or `MINGW64` then install the GCC toolchain  
+    `UCRT64`  
+    ```shell
+    pacman -S mingw-w64-ucrt-x86_64-gcc
+    ```
+    `MINGW64`  
+    ```shell
+    pacman -S mingw-w64-i686-gcc
+    ```
+  * To build 32-bit binaries use the environment `MINGW32` then install the GCC toolchain  
+    ```shell
+    pacman -S mingw-w64-i686-gcc
+    ```  
 * Python 3.10 or above: https://www.python.org/downloads/windows/  
    After installation, make sure it works
    ```batch
    python --version
    ```
+* *(Optional)* Install a GUI for Git like [GitHub Desktop](https://desktop.github.com/), or [Sourcetree](https://www.sourcetreeapp.com/)
 
 ### For Linux:
 
@@ -99,155 +113,91 @@ The only times you'll need to rebuild them is either when their separete build f
 <br/>
 
 #### On Windows:
-Open CMD in the repo folder, then run the batch script
+Open CMD in the repo folder, then run the following
+* To build using `Visual Studio`
 ```batch
-build_win_deps.bat
+set "CMAKE_GENERATOR=Visual Studio 17 2022"
+third-party\common\win\premake\premake5.exe --file=premake5-deps.lua --64-build --32-build --all-ext --all-build --verbose --os=windows vs2022
+```
+* To build 64-bit binaries using `MSYS2` (`UCRT64` or `MINGW64`)
+```shell
+export CMAKE_GENERATOR="MSYS Makefiles"
+./third-party/common/win/premake/premake5.exe --file=premake5-deps.lua --64-build --all-ext --all-build --verbose --os=windows gmake2
+```
+* To build 32-bit binaries using `MSYS2` (`MINGW32`)
+```shell
+export CMAKE_GENERATOR="MSYS Makefiles"
+./third-party/common/win/premake/premake5.exe --file=premake5-deps.lua --32-build --all-ext --all-build --verbose --os=windows gmake2
 ```
 This will:
 * Extract all third party dependencies from the folder `third-party` into the folder `build\deps\win` 
 * Build all dependencies  
 
-Additional arguments you can pass to this script:
-* `-j <n>`: build with `<n>` parallel jobs, by default 70% of the available threads
-* `-verbose`: output compiler/linker commands used by `CMAKE`
-
 #### On Linux:
-Open bash terminal in the repo folder, then run the bash script
+Open a terminal in the repo folder, then run the following
 ```shell
-sudo ./build_linux_deps.sh
+export CMAKE_GENERATOR="Unix Makefiles"
+./third-party/common/linux/premake/premake5 --file=premake5-deps.lua --64-build --32-build --all-ext --all-build --verbose --os=linux gmake2
 ```
 This will:
-* Install the required Linux packages via `apt install` (compiler + build tools/libraries)
 * Extract all third party dependencies from the folder `third-party` into the folder `build/deps/linux` 
-* Build all dependencies  
-
-Additional arguments you can pass to this script:
-* `-j <n>`: build with `<n>` parallel jobs, by default 70% of the available threads
-* `-verbose`: output compiler/linker commands used by `CMAKE`
-* `-packages_skip`: skip package installation via `apt install` and continue build
-* `-packages_only`: install the required Linux packages via `apt install` and exit (don't rebuild)
+* Build all dependencies (32-bit and 64-bit)  
 
 ---
 
 ## **Building the emu**
 ### On Windows:
-Open CMD in the repo folder, then run the batch script
-```batch
-build_win.bat release
-```
-This will build a release build of the emu in the folder `build\win\release`
+Open CMD in the repo folder, then run the following
+* For `MSYS2`
+  ```shell
+  ./third-party/common/win/premake/premake5.exe --file=premake5.lua --os=windows gmake2
 
-<br/>
+  cd ./build/project/gmake2/win
+  ```
+  * 64-bit build (`UCRT64` or `MINGW64`)
+    ```shell
+    make config=release_x64 -j 8 all
+    ```
+  * 32-bit build (`MINGW32`)
+    ```shell
+    make config=release_x32 -j 8 all
+    ```
+  To see all possible build targets
+  ```shell
+  make help
+  ```
+* For `Visual Studio 2022`
+  ```batch
+  third-party\common\win\premake\premake5.exe --file=premake5.lua --os=windows vs2022
+  ```  
+  You can then go to the folder `build\project\vs2022\win` and open the produced `.sln` file in Visual Studio.  
+  Or, if you prefer to do it from command line, open the `Developer Command Prompt for VS 2022` inside the above folder, then:  
+  ```batch
+  msbuild /nologo /v:n /p:Configuration=release,Platform=Win32 gbe.sln
 
-Arguments you can pass to this script:
-* `release`: build the emu in release mode
-* `debug`: build the emu in debug mode, which writes events to a log file, and includes `.pdb` files,  
-  check the debug build readme: [README.debug.md](./post_build/README.debug.md)
-* `clean`: clean the build folder before building again, otherwise the script will retain everything from previous builds
+  msbuild /nologo /v:n /p:Configuration=release,Platform=x64 gbe.sln
+  ```
+  
 
->>>>>>>>>  ___
-
-* `-j <n>`: build with `<n>` parallel jobs, by default 70% of the available threads
-* `+build_str <str>`: add an identification string to the build (default date-time)
-* `-verbose`: output compiler/linker commands
-
->>>>>>>>>  ___
-
-* `+lib-32`: build normal `steam_api.dll`
-* `+lib-64`: build normal `steam_api64.dll`
-
->>>>>>>>>  ___
-
-* `+ex-lib-32`: build experimental `steam_api.dll`
-* `+ex-lib-64`: build experimental `steam_api64.dll`
-
->>>>>>>>>  ___
-
-* `+ex-client-32`: build experimental `steamclient.dll`
-* `+ex-client-64`: build experimental `steamclient64.dll`
-
->>>>>>>>>  ___
-
-* `+exclient-32`: build steamclient `steamclient.dll`
-* `+exclient-64`: build steamclient `steamclient64.dll`
-* `+exclient-ldr-32`: build steamclient loader (32) `steamclient_loader_32.exe`
-* `+exclient-ldr-64`: build steamclient loader (64) `steamclient_loader_64.exe`
-
->>>>>>>>>  ___
-
-* `+exclient-extra-32`: build the 32 bit version of the additional dll `steamclient_extra.dll` which is injected by the client loader
-* `+exclient-extra-64`: build the 64 bit version of the additional dll `steamclient_extra64.dll` which is injected by the client loader
-
->>>>>>>>>  ___
-
-* `+tool-itf` build the tool `find_interfaces`
-* `+tool-lobby`: build the tool `lobby_connect`
-
->>>>>>>>>  ___
-
-* `+lib-netsockets-32` *(experimental)*: build a standalone networking sockets library (32-bit)
-* `+lib-netsockets-64` *(experimental)*: build a standalone networking sockets library (64-bit)
-
->>>>>>>>>  ___
-
-* `+lib-gameoverlay-32` *(experimental)*: build a standalone stub/mock GameOverlayRenderer.dll library (32-bit)
-* `+lib-gameoverlay-64` *(experimental)*: build a standalone stub/mock GameOverlayRenderer64.dll library (64-bit)
+This will build a release version of the emu in the folder `build\win\<toolchain>\release`  
 
 <br/>
 
 ### On Linux:
-Open bash terminal in the repo folder, then run the bash script (without sudo)
+Open a terminal in the repo folder, then run the following
 ```shell
-./build_linux.sh release
-```
-This will build a release build of the emu in the folder `build/linux/release`
+./third-party/common/linux/premake/premake5 --file=premake5.lua --os=linux gmake2
+cd ./build/project/gmake2/linux
+make config=release_x32 -j 8 all
+make config=release_x64 -j 8 all
+```  
 
-<br/>
+To see all possible build targets
+```shell
+make help
+```  
 
-Arguments you can pass to this script:
-* `release`: build the emu in release mode
-* `debug`: build the emu in debug mode, which writes events to a log file, and includes `.pdb` files,  
-  check the debug build readme: [README.debug.md](./post_build/README.debug.md)
-* `clean`: clean the build folder before building again, otherwise the script will retain everything from previous builds
-
->>>>>>>>>  ___
-
-* `-j <n>`: build with `<n>` parallel jobs, by default 70% of the available threads
-* `+build_str <str>`: add an identification string to the build (default date-time)
-* `-verbose`: output compiler/linker commands
-
->>>>>>>>>  ___
-
-* `+lib-32`: build normal 32-bit `libsteam_api.so`
-* `+lib-64`: build normal 64-bit `libsteam_api.so`
-
->>>>>>>>>  ___
-
-* `+client-32`: build steam client 32-bit `steamclient.so`
-* `+client-64`: build steam client 64-bit `steamclient.so`
-
->>>>>>>>>  ___
-
-* `+exp-lib-32`: build experimental 32-bit `libsteam_api.so`
-* `+exp-lib-64`: build experimental 64-bit `libsteam_api.so`
-* `+exp-client-32`: build experimental steam client 32-bit `steamclient.so`
-* `+exp-client-64`: build experimental steam client 64-bit `steamclient.so`
-
->>>>>>>>>  ___
-
-* `+tool-clientldr`: copy the tool `steamclient_loader`
-
->>>>>>>>>  ___
-
-* `+tool-itf-32`: build the tool 32-bit `find_interfaces`
-* `+tool-itf-64`: build the tool 64-bit `find_interfaces`
-* `+tool-lobby-32`: build the tool 32-bit `lobby_connect`
-* `+tool-lobby-64`: build the tool 64-bit `lobby_connect`
-
->>>>>>>>>  ___
-
-* `+lib-netsockets-32` *(experimental)*: build a standalone networking sockets library (32-bit)
-* `+lib-netsockets-64` *(experimental)*: build a standalone networking sockets library (64-bit)
+This will build a release version of the emu in the folder `build/linux/<toolchain>/release`
 
 ---
 
