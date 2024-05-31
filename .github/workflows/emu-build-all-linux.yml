@@ -87,21 +87,13 @@ jobs:
           ls -la ./build/deps/linux/gmake2/protobuf/install32/bin/*
           ls -la ./build/deps/linux/gmake2/protobuf/install64/bin/*
 
-### generate from .proto file
-      - name: Generate from .proto file
-        shell: bash
-        working-directory: ${{ github.workspace }}
-        run: |
-          sudo chmod 777 ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5
-          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5.lua --os=linux genproto
-
 ### generate project files
       - name: Generate project files
         shell: bash
         working-directory: ${{ github.workspace }}
         run: |
           sudo chmod 777 ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5
-          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5.lua --emubuild=${{ github.sha }} --os=linux gmake2
+          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5.lua --genproto --emubuild=${{ github.sha }} --os=linux gmake2
 
 ## mandatory Linux packages
       - name: Install required packages

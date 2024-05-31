@@ -178,7 +178,7 @@ This will:
 Open CMD in the repo folder, then run the following
 * For `MSYS2`
   ```shell
-  ./third-party/common/win/premake/premake5.exe --file=premake5.lua --os=windows gmake2
+  ./third-party/common/win/premake/premake5.exe --file=premake5.lua --genproto --os=windows gmake2
 
   cd ./build/project/gmake2/win
   ```
@@ -201,7 +201,7 @@ Open CMD in the repo folder, then run the following
   ```
 * For `Visual Studio 2022`
   ```batch
-  third-party\common\win\premake\premake5.exe --file=premake5.lua --os=windows vs2022
+  third-party\common\win\premake\premake5.exe --file=premake5.lua --genproto --os=windows vs2022
   ```  
   You can then go to the folder `build\project\vs2022\win` and open the produced `.sln` file in Visual Studio.  
   Or, if you prefer to do it from command line, open the `Developer Command Prompt for VS 2022` inside the above folder, then:  
@@ -219,7 +219,7 @@ This will build a release version of the emu in the folder `build\win\<toolchain
 ### On Linux:
 Open a terminal in the repo folder, then run the following
 ```shell
-./third-party/common/linux/premake/premake5 --file=premake5.lua --os=linux gmake2
+./third-party/common/linux/premake/premake5 --file=premake5.lua --genproto --os=linux gmake2
 cd ./build/project/gmake2/linux
 ```  
 *(Optional)* You can use `Clang` compiler instead of `GCC` by running these 2 commands in the current terminal instance

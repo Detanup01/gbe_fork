@@ -74,79 +74,81 @@ end
 
 local deps_dir = path.getabsolute(path.join('build', 'deps', os_iden, _ACTION), _MAIN_SCRIPT_DIR)
 
-newaction {
-    trigger = "genproto",
-    description = "Generate .cpp/.h files from .proto file",
+function genproto()
+    local deps_install_prefix = ''
+    if os.is64bit() then
+        deps_install_prefix = 'install64'
+    else
+        deps_install_prefix = 'install32'
+    end
+    local protoc_exe = path.join(deps_dir, 'protobuf', deps_install_prefix, 'bin', 'protoc')
 
-    onStart = function ()
-        local deps_install_prefix = ''
-        if os.is64bit() then
-            deps_install_prefix = 'install64'
-        else
-            deps_install_prefix = 'install32'
-        end
-        local protoc_exe = path.join(deps_dir, 'protobuf', deps_install_prefix, 'bin', 'protoc')
+    local out_dir = 'dll/proto_gen/' .. os_iden
 
-        local out_dir = 'dll/proto_gen/' .. os_iden
+    if os.host() == "windows" then
+        protoc_exe = protoc_exe .. '.exe'
+    end
 
-        if os.host() == "windows" then
-            protoc_exe = protoc_exe .. '.exe'
-        end
+    if not os.isfile(protoc_exe) then
+        error("protoc not found! " .. protoc_exe)
+        return
+    end
 
-        if not os.isfile(protoc_exe) then
-            error("protoc not found! " .. protoc_exe)
+    print("Generating from .proto file!")
+    local ok_mk, err_mk = os.mkdir(out_dir)
+    if not ok_mk then
+        error("Error: " .. err_mk)
+        return
+    end
+    
+    if os.host() == "linux" then
+        local ok_chmod, err_chmod = os.chmod(protoc_exe, "777")
+        if not ok_chmod then
+            error("Error: " .. err_chmod)
             return
-        end
-
-        print("Generating from .proto file!")
-        local ok_mk, err_mk = os.mkdir(out_dir)
-        if not ok_mk then
-            error("Error: " .. err_mk)
-            return
-        end
-        
-        if os.host() == "linux" then
-            local ok_chmod, err_chmod = os.chmod(protoc_exe, "777")
-            if not ok_chmod then
-                error("Error: " .. err_chmod)
-                return
-            end
-        end
-
-        local ok_cmd = os.execute(protoc_exe .. ' dll/net.proto -I./dll/ --cpp_out=' .. out_dir)
-        if ok_cmd then
-            print("Success!")
-        else
-            error("protoc error")
         end
     end
+
+    return os.execute(protoc_exe .. ' dll/net.proto -I./dll/ --cpp_out=' .. out_dir)
+end
+
+newoption {
+    category = 'protobuf files',
+    trigger = "genproto",
+    description = "Generate .cc/.h files from .proto file",
 }
 
 newoption {
+    category = 'build',
     trigger = "emubuild",
     description = "Set the EMU_BUILD_STRING",
     value = "your_string",
     default = os.date("%Y_%m_%d-%H_%M_%S"),
 }
 
+-- windows options
+if os.target() == 'windows' then
+
 newoption {
-    category = "win build",
+    category = "build",
     trigger = "dosstub",
     description = "Change the DOS stub of the Windows builds",
 }
 
 newoption {
-    category = "win build",
+    category = "build",
     trigger = "winsign",
     description = "Sign Windows builds with a fake certificate",
 }
 
 newoption {
-    category = "win build",
+    category = "build",
     trigger = "winrsrc",
     description = "Add resources to Windows builds",
 }
 
+end
+-- End windows options
 
 
 -- common defines
@@ -301,6 +303,16 @@ local x64_deps_overlay_libdir = {
     path.join(deps_dir, "ingame_overlay/deps/System/install64/lib"),
     path.join(deps_dir, "ingame_overlay/deps/mini_detour/install64/lib"),
 }
+
+-- generate proto
+if _OPTIONS["genproto"] then
+    if genproto() then
+        print("Success!")
+    else
+        error("protoc error")
+    end
+end
+-- End generate proto
 
 
 
