@@ -85,15 +85,6 @@ jobs:
           ref: 'third-party/build/win'
           path: "${{env.THIRD_PARTY_BASE_DIR}}/build/win"
 
-### debug print dirs
-      - name: Debug print dirs
-        shell: cmd
-        working-directory: ${{ github.workspace }}
-        run: |
-          dir /b /a build\deps\win\vs2022\*
-          dir /b /a build\deps\win\vs2022\protobuf\install32\bin\*
-          dir /b /a build\deps\win\vs2022\protobuf\install64\bin\*
-
 ### generate project files
       - name: Generate project files
         shell: cmd
@@ -106,7 +97,7 @@ jobs:
         shell: cmd
         working-directory: ${{ github.workspace }}/build/project/vs2022/win
         run: |
-          msbuild /nologo /target:${{ matrix.prj }} /m:2 /v:n /p:Configuration=${{ matrix.cfg }},Platform=${{ matrix.arch }} GBE.sln
+          msbuild /nologo /target:${{ matrix.prj }} /m:2 /v:n /p:Configuration=${{ matrix.cfg }},Platform=${{ matrix.arch }} gbe.sln
 
 ### upload artifact/package to github Actions (for targets)
       - name: Upload build package (for targets)

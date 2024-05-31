@@ -78,15 +78,6 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: sudo chmod -R 777 "${{ github.workspace }}"
 
-### debug print dirs
-      - name: Debug print dirs
-        shell: bash
-        working-directory: ${{ github.workspace }}
-        run: |
-          ls -la ./build/deps/linux/*
-          ls -la ./build/deps/linux/gmake2/protobuf/install32/bin/*
-          ls -la ./build/deps/linux/gmake2/protobuf/install64/bin/*
-
 ### generate project files
       - name: Generate project files
         shell: bash
