@@ -61,6 +61,7 @@ jobs:
     - name: Install required packages
       shell: bash
       run: |
+        sudo apt update -y
         sudo apt install -y coreutils # echo, printf, etc...
         sudo apt install -y build-essential
         sudo apt install -y gcc-multilib # needed for 32-bit builds
