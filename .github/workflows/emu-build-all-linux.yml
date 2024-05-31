@@ -78,6 +78,31 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: sudo chmod -R 777 "${{ github.workspace }}"
 
+### debug print dirs
+      - name: Debug print dirs
+        shell: bash
+        working-directory: ${{ github.workspace }}
+        run: |
+          ls -la ./build/deps/linux/*
+          ls -la ./build/deps/linux/gmake2/protobuf/install32/bin/*
+          ls -la ./build/deps/linux/gmake2/protobuf/install64/bin/*
+
+### generate from .proto file
+      - name: Generate from .proto file
+        shell: bash
+        working-directory: ${{ github.workspace }}
+        run: |
+          sudo chmod 777 ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5
+          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5.lua --os=linux genproto
+
+### generate project files
+      - name: Generate project files
+        shell: bash
+        working-directory: ${{ github.workspace }}
+        run: |
+          sudo chmod 777 ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5
+          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5.lua --emubuild=${{ github.sha }} --os=linux gmake2
+
 ## mandatory Linux packages
       - name: Install required packages
         shell: bash
@@ -92,17 +117,8 @@ jobs:
           sudo apt install -y libgl-dev # needed for overlay build (header files such as GL/gl.h)
           # sudo apt install -y binutils # (optional) contains the tool 'readelf' mainly, and other usefull binary stuff
 
-### generate from .proto file
-      - name: Generate from .proto file
-        shell: bash
-        working-directory: ${{ github.workspace }}
-        run: |
-          sudo chmod 777 ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5
-          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5.lua --os=linux genproto
-          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5.lua --emubuild=${{ github.sha }} --os=linux gmake2
-
-### build target(s)
-      - name: Build target(s)
+### build target
+      - name: Build target
         shell: bash
         working-directory: ${{ github.workspace }}/build/project/gmake2/linux
         run: |

@@ -85,7 +85,7 @@ newaction {
         else
             deps_install_prefix = 'install32'
         end
-        local protoc_exe = path.getabsolute(path.join(deps_dir, 'protobuf', deps_install_prefix, 'bin', 'protoc'), _MAIN_SCRIPT_DIR)
+        local protoc_exe = path.join(deps_dir, 'protobuf', deps_install_prefix, 'bin', 'protoc')
 
         local out_dir = 'dll/proto_gen/' .. os_iden
 
@@ -94,7 +94,7 @@ newaction {
         end
 
         if not os.isfile(protoc_exe) then
-            error("Error: protoc not found!")
+            error("protoc not found! " .. protoc_exe)
             return
         end
 

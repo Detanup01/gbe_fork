@@ -85,16 +85,31 @@ jobs:
           ref: 'third-party/build/win'
           path: "${{env.THIRD_PARTY_BASE_DIR}}/build/win"
 
+### debug print dirs
+      - name: Debug print dirs
+        shell: cmd
+        working-directory: ${{ github.workspace }}
+        run: |
+          dir /b /a build\deps\win\vs2022\*
+          dir /b /a build\deps\win\vs2022\protobuf\install32\bin\*
+          dir /b /a build\deps\win\vs2022\protobuf\install64\bin\*
+
 ### generate from .proto file
       - name: Generate from .proto file
         shell: cmd
         working-directory: ${{ github.workspace }}
         run: |
           "${{env.THIRD_PARTY_BASE_DIR}}\common\win\premake\premake5.exe" --file=premake5.lua --os=windows genproto
+
+### generate project files
+      - name: Generate project files
+        shell: cmd
+        working-directory: ${{ github.workspace }}
+        run: |
           "${{env.THIRD_PARTY_BASE_DIR}}\common\win\premake\premake5.exe" --file=premake5.lua --emubuild=${{ github.sha }} --dosstub --winrsrc --winsign --os=windows vs2022
 
-### build target(s)
-      - name: Build target(s)
+### build target
+      - name: Build target
         shell: cmd
         working-directory: ${{ github.workspace }}/build/project/vs2022/win
         run: |

@@ -95,20 +95,20 @@ You can also find instructions here in [README.release.md](./post_build/README.r
 
 * Ubuntu 22.04 LTS: https://ubuntu.com/download/desktop
 * Ubuntu required packages:
-```shell
-sudo apt update -y
-sudo apt install -y coreutils # echo, printf, etc...
-sudo apt install -y build-essential
-sudo apt install -y gcc-multilib # needed for 32-bit builds
-sudo apt install -y g++-multilib
-sudo apt install -y libglx-dev # needed for overlay build (header files such as GL/glx.h)
-sudo apt install -y libgl-dev # needed for overlay build (header files such as GL/gl.h)
-```
-*(Optional)* Additional packages
-```shell
-sudo apt install -y clang # clang compiler
-sudo apt install -y binutils # contains the tool 'readelf' mainly, and other usefull binary stuff
-```
+  ```shell
+  sudo apt update -y
+  sudo apt install -y coreutils # echo, printf, etc...
+  sudo apt install -y build-essential
+  sudo apt install -y gcc-multilib # needed for 32-bit builds
+  sudo apt install -y g++-multilib
+  sudo apt install -y libglx-dev # needed for overlay build (header files   such as GL/glx.h)
+  sudo apt install -y libgl-dev # needed for overlay build (header files   such as GL/gl.h)
+  ```
+  *(Optional)* Additional packages
+  ```shell
+  sudo apt install -y clang # clang compiler
+  sudo apt install -y binutils # contains the tool 'readelf' mainly, and   other usefull binary stuff
+  ```
 * Python 3.10 or above
    ```shell
    sudo add-apt-repository ppa:deadsnakes/ppa -y
