@@ -3,7 +3,9 @@ name: Prepare release
 on:
   push:
     tags:        
-      - release*
+      - release-*
+  workflow_dispatch:
+    # allows manual trigger
 
 permissions:
   contents: write
@@ -52,13 +54,13 @@ jobs:
       - name: Package build (release)
         shell: cmd
         working-directory: ${{ github.workspace }}
-        run: package_win.bat release
+        run: package_win.bat vs2022\release
 
 ### package (debug mode)
       - name: Package build (debug)
         shell: cmd
         working-directory: ${{ github.workspace }}
-        run: package_win.bat debug
+        run: package_win.bat vs2022\debug
 
 ### release (debug + release modes) if this is a tag push
       - name: Release
@@ -66,6 +68,17 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: "build/package/win/**/*"
+
+### upload artifact/package if this is a manual run
+      - name: Upload release package
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: "release-emu-win-${{ github.sha }}"
+          path: "build/package/win/**/*"
+          if-no-files-found: 'error'
+          compression-level: 9
+          retention-days: 1
 
 
 
@@ -107,13 +120,13 @@ jobs:
       - name: Package build (release)
         shell: bash
         working-directory: ${{ github.workspace }}
-        run: sudo ./package_linux.sh release
+        run: sudo ./package_linux.sh gmake2/release
 
 ### package (debug mode)
       - name: Package build (debug)
         shell: bash
         working-directory: ${{ github.workspace }}
-        run: sudo ./package_linux.sh debug
+        run: sudo ./package_linux.sh gmake2/debug
 
 ### release (debug + release modes) if this is a tag push
       - name: Release
@@ -121,6 +134,17 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: "build/package/linux/**/*"
+
+### upload artifact/package if this is a manual run
+      - name: Upload release package
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: "release-emu-linux-${{ github.sha }}"
+          path: "build/package/linux/**/*"
+          if-no-files-found: 'error'
+          compression-level: 9
+          retention-days: 1
 
 
 
@@ -173,6 +197,17 @@ jobs:
         with:
           files: "tools/generate_emu_config/bin/package/win/**/*"
 
+### upload artifact/package if this is a manual run
+      - name: Upload release package
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: "release-generate_emu_config-win-${{ github.sha }}"
+          path: "tools/generate_emu_config/bin/package/win/**/*"
+          if-no-files-found: 'error'
+          compression-level: 9
+          retention-days: 1
+
 
 
   gen_emu_script-linux:
@@ -215,6 +250,17 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: "tools/generate_emu_config/bin/package/linux/**/*"
+
+### upload artifact/package if this is a manual run
+      - name: Upload release package
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: "release-generate_emu_config-linux-${{ github.sha }}"
+          path: "tools/generate_emu_config/bin/package/linux/**/*"
+          if-no-files-found: 'error'
+          compression-level: 9
+          retention-days: 1
 
 
 
@@ -267,6 +313,17 @@ jobs:
         with:
           files: "tools/migrate_gse/bin/package/win/**/*"
 
+### upload artifact/package if this is a manual run
+      - name: Upload release package
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: "release-migrate_gse-win-${{ github.sha }}"
+          path: "tools/migrate_gse/bin/package/win/**/*"
+          if-no-files-found: 'error'
+          compression-level: 9
+          retention-days: 1
+
 
 
   migrate_gse_script-linux:
@@ -309,6 +366,17 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: "tools/migrate_gse/bin/package/linux/**/*"
+
+### upload artifact/package if this is a manual run
+      - name: Upload release package
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: "release-migrate_gse-linux-${{ github.sha }}"
+          path: "tools/migrate_gse/bin/package/linux/**/*"
+          if-no-files-found: 'error'
+          compression-level: 9
+          retention-days: 1
 
 
 

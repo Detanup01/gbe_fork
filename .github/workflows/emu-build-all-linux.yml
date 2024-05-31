@@ -110,8 +110,8 @@ jobs:
           echo "actual run..."
           make -j 2 config=${{ matrix.cfg }}_${{ matrix.arch }} ${{ matrix.prj }}
 
-### upload artifact/package to github Actions (for targets)
-      - name: Upload build package (for targets)
+### upload artifact/package to github Actions
+      - name: Upload target package
         uses: actions/upload-artifact@v4
         with:
           name: "emu-linux-${{ matrix.prj }}-${{ matrix.cfg }}-${{ matrix.arch }}-${{ github.sha }}"
