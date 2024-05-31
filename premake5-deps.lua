@@ -157,7 +157,6 @@ if _OPTIONS["custom-cmake"] then
     print('using custom cmake: ' .. _OPTIONS["custom-cmake"])
 else
     if os.host() == 'windows' then
-    if os.host() == 'windows' then
         mycmake = mycmake .. '.exe'
     end
     if not os.isfile(mycmake) then
