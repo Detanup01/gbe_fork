@@ -35,6 +35,13 @@ jobs:
       if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
       uses: actions/checkout@v4
 
+    - name: Clone third-party deps (common/linux)
+      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+      uses: actions/checkout@v4
+      with:
+        ref: 'third-party/common/linux'
+        path: "${{env.THIRD_PARTY_BASE_DIR}}/common/linux"
+
     - name: Clone third-party deps (deps/linux)
       if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
       uses: actions/checkout@v4
