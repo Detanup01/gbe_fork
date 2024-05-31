@@ -275,10 +275,10 @@ local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_
     -- write toolchain file
     local toolchain_file_content = ''
     if #cflags_init_str > 0 then
-        toolchain_file_content = toolchain_file_content .. 'set(CMAKE_C_FLAGS_INIT "${CMAKE_C_FLAGS_INIT} ' .. cflags_init_str .. '" )\n'
+        toolchain_file_content = toolchain_file_content .. 'set(CMAKE_C_FLAGS_INIT "' .. cflags_init_str .. '" )\n'
     end
     if #cxxflags_init_str > 0 then
-        toolchain_file_content = toolchain_file_content .. 'set(CMAKE_CXX_FLAGS_INIT "${CMAKE_CXX_FLAGS_INIT} ' .. cxxflags_init_str .. '" )\n'
+        toolchain_file_content = toolchain_file_content .. 'set(CMAKE_CXX_FLAGS_INIT "' .. cxxflags_init_str .. '" )\n'
     end
     if string.match(_ACTION, 'vs.+') then -- because libssq doesn't care about CMAKE_C/XX_FLAGS_INIT
         toolchain_file_content = toolchain_file_content .. 'set(CMAKE_C_FLAGS_RELEASE  "${CMAKE_C_FLAGS_RELEASE} /MT /D_MT" ) \n'
