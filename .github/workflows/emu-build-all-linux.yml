@@ -10,6 +10,7 @@ permissions:
   contents: write
 
 env:
+  PREMAKE_ACTION: gmake2
   DEPS_CACHE_KEY: emu-deps-linux
   DEPS_CACHE_DIR: build/deps/linux
 
@@ -34,7 +35,7 @@ jobs:
       matrix:
         prj: [
           # regular api
-          'api_regular', 'steamclient_regular_linux',
+          'api_regular', 'steamclient_regular',
           # api + client (experimental)
           'api_experimental', 'steamclient_experimental',
           # tools
@@ -54,13 +55,8 @@ jobs:
         id: emu-deps-cache-step
         uses: actions/cache@v4
         with:
-          key: ${{ env.DEPS_CACHE_KEY }}
-          path: ${{ env.DEPS_CACHE_DIR }}
-
-## mandatory Linux packages, installed via sudo apt install ...
-      - name: Install required packages
-        shell: bash
-        run: sudo chmod 777 build_linux_deps.sh && sudo ./build_linux_deps.sh -verbose -packages_only
+          key: ${{ env.DEPS_CACHE_KEY }}-${{ env.PREMAKE_ACTION }}
+          path: ${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}
 
 ## extra helpers/tools, these are not built inside the deps build dir
       - name: Clone third-party build helpers (common/linux)
@@ -80,11 +76,23 @@ jobs:
       - name: Give all permissions to repo folder
         shell: bash
         working-directory: ${{ github.workspace }}
-        run:  sudo chmod -R 777 "${{ github.workspace }}"
+        run: sudo chmod -R 777 "${{ github.workspace }}"
 
-### generate project files
-## TODO gen proto action is broken, always returns error = 1
-      - name: Generate project files
+## mandatory Linux packages
+      - name: Install required packages
+        shell: bash
+        run: |
+          sudo apt install -y coreutils # echo, printf, etc...
+          sudo apt install -y build-essential
+          sudo apt install -y gcc-multilib # needed for 32-bit builds
+          sudo apt install -y g++-multilib
+          # sudo apt install -y clang
+          sudo apt install -y libglx-dev # needed for overlay build (header files such as GL/glx.h)
+          sudo apt install -y libgl-dev # needed for overlay build (header files such as GL/gl.h)
+          # sudo apt install -y binutils # (optional) contains the tool 'readelf' mainly, and other usefull binary stuff
+
+### generate from .proto file
+      - name: Generate from .proto file
         shell: bash
         working-directory: ${{ github.workspace }}
         run: |
@@ -98,9 +106,9 @@ jobs:
         working-directory: ${{ github.workspace }}/build/project/gmake2/linux
         run: |
           echo "dry run..."
-          CC=clang CXX=clang++ make -n -j 2 config=${{ matrix.cfg }}_${{ matrix.arch }} ${{ matrix.prj }}
+          make -n -j 2 config=${{ matrix.cfg }}_${{ matrix.arch }} ${{ matrix.prj }}
           echo "actual run..."
-          CC=clang CXX=clang++ make -j 2 config=${{ matrix.cfg }}_${{ matrix.arch }} ${{ matrix.prj }}
+          make -j 2 config=${{ matrix.cfg }}_${{ matrix.arch }} ${{ matrix.prj }}
 
 ### upload artifact/package to github Actions (for targets)
       - name: Upload build package (for targets)

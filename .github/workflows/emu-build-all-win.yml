@@ -10,6 +10,7 @@ permissions:
   contents: write
 
 env:
+  PREMAKE_ACTION: vs2022
   DEPS_CACHE_KEY: emu-deps-win
   DEPS_CACHE_DIR: build/deps/win
   
@@ -34,11 +35,11 @@ jobs:
         prj: [
           # regular api
           'api_regular',
-          # api + client (experimental)
-          'api_experimental', 'steamclient_experimental_stub_win',
+          # (experimental) api + client
+          'api_experimental', 'steamclient_experimental_stub',
           # client (experimental) + loader + extra dll + gameoverlaylib
-          'steamclient_experimental', 'steamclient_experimental_loader_win',
-          'steamclient_experimental_extra_win', 'lib_game_overlay_renderer',
+          'steamclient_experimental', 'steamclient_experimental_loader',
+          'steamclient_experimental_extra', 'lib_game_overlay_renderer',
           # tools
           'tool_lobby_connect', 'tool_generate_interfaces',
         ]
@@ -68,8 +69,8 @@ jobs:
         id: emu-deps-cache-step
         uses: actions/cache@v4
         with:
-          key: ${{ env.DEPS_CACHE_KEY }}
-          path: ${{ env.DEPS_CACHE_DIR }}
+          key: ${{ env.DEPS_CACHE_KEY }}-${{ env.PREMAKE_ACTION }}
+          path: ${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}
 
 ## extra helpers/tools, these are not built inside the deps build dir
       - name: Clone third-party build helpers (common/win)
@@ -84,14 +85,13 @@ jobs:
           ref: 'third-party/build/win'
           path: "${{env.THIRD_PARTY_BASE_DIR}}/build/win"
 
-### generate project files
-## TODO gen proto action is broken, always returns error = 1
-      - name: Generate project files
+### generate from .proto file
+      - name: Generate from .proto file
         shell: cmd
         working-directory: ${{ github.workspace }}
         run: |
           "${{env.THIRD_PARTY_BASE_DIR}}\common\win\premake\premake5.exe" --file=premake5.lua --os=windows genproto
-          "${{env.THIRD_PARTY_BASE_DIR}}\common\win\premake\premake5.exe" --file=premake5.lua --emubuild=${{ github.sha }} --os=windows vs2022
+          "${{env.THIRD_PARTY_BASE_DIR}}\common\win\premake\premake5.exe" --file=premake5.lua --emubuild=${{ github.sha }} --dosstub --winrsrc --winsign --os=windows vs2022
 
 ### build target(s)
       - name: Build target(s)
