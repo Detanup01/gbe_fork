@@ -161,9 +161,9 @@ STEAMAPI_API HSteamUser SteamAPI_GetHSteamUser()
     return CLIENT_HSTEAMUSER;
 }
 
-#ifndef STEAMCLIENT_DLL // api
+#ifdef STEAMCLIENT_DLL // client
 ISteamClient *g_pSteamClientGameServer{};
-#else // client
+#else // api
 STEAMAPI_API ISteamClient *g_pSteamClientGameServer{};
 #endif
 

@@ -48,6 +48,7 @@
     #endif
 #endif
 
+// we need this otherwise 'S_API_EXPORT' will be dllimport
 #define STEAM_API_EXPORTS
 
 // C/C++ includes
