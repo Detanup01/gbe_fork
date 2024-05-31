@@ -119,22 +119,35 @@ Open CMD in the repo folder, then run the following
 set "CMAKE_GENERATOR=Visual Studio 17 2022"
 third-party\common\win\premake\premake5.exe --file=premake5-deps.lua --64-build --32-build --all-ext --all-build --verbose --os=windows vs2022
 ```
-* To build 64-bit binaries using `MSYS2` (`UCRT64` or `MINGW64`)
-```shell
-export CMAKE_GENERATOR="MSYS Makefiles"
-./third-party/common/win/premake/premake5.exe --file=premake5-deps.lua --64-build --all-ext --all-build --verbose --os=windows gmake2
-```
-* To build 32-bit binaries using `MSYS2` (`MINGW32`)
-```shell
-export CMAKE_GENERATOR="MSYS Makefiles"
-./third-party/common/win/premake/premake5.exe --file=premake5-deps.lua --32-build --all-ext --all-build --verbose --os=windows gmake2
-```
+* To build using `MSYS2`  
+  *(Optional)* In both cases below, you can use `Clang` compiler instead of `GCC` by running these 2 commands in the same terminal instance
+  ```shell
+  export CC="clang"
+  export CXX="clang++"
+   ```
+  * To build 64-bit binaries (`UCRT64` or `MINGW64`)
+  ```shell
+  export CMAKE_GENERATOR="MSYS Makefiles"
+  ./third-party/common/win/premake/premake5.exe --file=premake5-deps.lua --64-build --all-ext --all-build --verbose   --os=windows gmake2
+  ```
+  * To build 32-bit binaries (`MINGW32`)
+  ```shell
+  export CMAKE_GENERATOR="MSYS Makefiles"
+  ./third-party/common/win/premake/premake5.exe --file=premake5-deps.lua --32-build --all-ext --all-build --verbose   --os=windows gmake2
+  ```
+
 This will:
 * Extract all third party dependencies from the folder `third-party` into the folder `build\deps\win` 
 * Build all dependencies  
 
 #### On Linux:
-Open a terminal in the repo folder, then run the following
+Open a terminal in the repo folder
+*(Optional)* You can use `Clang` compiler instead of `GCC` by running these 2 commands in the current terminal instance
+```shell
+export CC="clang"
+export CXX="clang++"
+```
+Then run the following
 ```shell
 export CMAKE_GENERATOR="Unix Makefiles"
 ./third-party/common/linux/premake/premake5 --file=premake5-deps.lua --64-build --32-build --all-ext --all-build --verbose --os=linux gmake2
@@ -154,6 +167,11 @@ Open CMD in the repo folder, then run the following
 
   cd ./build/project/gmake2/win
   ```
+  *(Optional)* You can use `Clang` compiler instead of `GCC` by running these 2 commands in the current terminal instance
+  ```shell
+  export CC="clang"
+  export CXX="clang++"
+  ```  
   * 64-bit build (`UCRT64` or `MINGW64`)
     ```shell
     make config=release_x64 -j 8 all
@@ -188,6 +206,14 @@ Open a terminal in the repo folder, then run the following
 ```shell
 ./third-party/common/linux/premake/premake5 --file=premake5.lua --os=linux gmake2
 cd ./build/project/gmake2/linux
+```  
+*(Optional)* You can use `Clang` compiler instead of `GCC` by running these 2 commands in the current terminal instance
+```shell
+export CC="clang"
+export CXX="clang++"
+```  
+Then run the following
+```shell
 make config=release_x32 -j 8 all
 make config=release_x64 -j 8 all
 ```  
