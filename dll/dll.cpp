@@ -353,6 +353,16 @@ STEAMAPI_API steam_bool S_CALLTYPE SteamAPI_InitAnonymousUser()
 STEAMAPI_API void S_CALLTYPE SteamAPI_Shutdown()
 {
     PRINT_DEBUG_ENTRY();
+    
+    // if nothing is initialized just return, see the note in SteamGameServer_Shutdown()
+    // guard against sloppy games programming
+    // don't shutdown if this isn't a client app (maybe gameserver?)
+    if (!user_steam_pipe &&
+        !(steamclient_instance && steamclient_instance->IsUserLogIn())) {
+        PRINT_DEBUG("[WARNING] app is trying to shutdown as client, but it isn't initialzed (is this a gameserver?)");
+        return;
+    }
+
     get_steam_client()->clientShutdown();
     get_steam_client()->BReleaseSteamPipe(user_steam_pipe);
     get_steam_client()->BShutdownIfAllPipesClosed();
@@ -952,12 +962,27 @@ STEAMAPI_API steam_bool SteamGameServer_Init( uint32 unIP, uint16 usSteamPort, u
 STEAMAPI_API void SteamGameServer_Shutdown()
 {
     PRINT_DEBUG_ENTRY();
+
+    // appid 35140 despite being a regular game (not a server) will still call this function
+    // its steam_api.dll (old api) will check first if "g_pSteamClientGameServer" is null, and if so it just returns
+    // hence avoiding sloppy programming
+    
+    // if nothing is initialized just return
+    // don't shutdown if this isn't a gameserver app (maybe client?)
+    if (!server_steam_pipe &&
+        !g_pSteamClientGameServer && // old steam_api.dll checks for this
+        !(steamclient_instance && steamclient_instance->IsServerInit())) {
+        PRINT_DEBUG("[WARNING] app is trying to shutdown as gameserver, but it isn't initialzed (is this a client?)");
+        return;
+    }
+
     get_steam_client()->serverShutdown();
     get_steam_client()->BReleaseSteamPipe(server_steam_pipe);
     get_steam_client()->BShutdownIfAllPipesClosed();
+
     server_steam_pipe = 0;
     --global_counter;
-    g_pSteamClientGameServer = NULL; //TODO: check if this actually gets nulled when SteamGameServer_Shutdown is called
+    g_pSteamClientGameServer = NULL; // old steam_api.dll sets this to null when SteamGameServer_Shutdown is called
     old_gameserver_instance = NULL;
     old_gamserver_utils_instance = NULL;
     old_gamserver_networking_instance = NULL;
