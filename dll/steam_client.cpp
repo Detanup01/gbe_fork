@@ -137,6 +137,8 @@ Steam_Client::~Steam_Client()
 {
     #define DEL_INST(_obj_ins) do if (_obj_ins) { delete _obj_ins; _obj_ins = nullptr; } while(0)
 
+    DEL_INST(background_thread);
+
     DEL_INST(steam_gameserver);
     DEL_INST(steam_gameserver_utils);
     DEL_INST(steam_gameserverstats);
