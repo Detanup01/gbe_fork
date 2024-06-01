@@ -135,62 +135,66 @@ Steam_Client::Steam_Client()
 
 Steam_Client::~Steam_Client()
 {
-    delete steam_gameserver; steam_gameserver = nullptr;
-    delete steam_gameserver_utils; steam_gameserver_utils = nullptr;
-    delete steam_gameserverstats; steam_gameserverstats = nullptr;
-    delete steam_gameserver_networking; steam_gameserver_networking = nullptr;
-    delete steam_gameserver_http; steam_gameserver_http = nullptr;
-    delete steam_gameserver_inventory; steam_gameserver_inventory = nullptr;
-    delete steam_gameserver_ugc; steam_gameserver_ugc = nullptr;
-    delete steam_gameserver_apps; steam_gameserver_apps = nullptr;
-    delete steam_gameserver_networking_sockets; steam_gameserver_networking_sockets = nullptr;
-    delete steam_gameserver_networking_sockets_serialized; steam_gameserver_networking_sockets_serialized = nullptr;
-    delete steam_gameserver_networking_messages; steam_gameserver_networking_messages = nullptr;
-    delete steam_gameserver_game_coordinator; steam_gameserver_game_coordinator = nullptr;
-    delete steam_masterserver_updater; steam_masterserver_updater = nullptr;
+    #define DEL_INST(_obj_ins) do if (_obj_ins) { delete _obj_ins; _obj_ins = nullptr; } while(0)
 
-    delete steam_matchmaking; steam_matchmaking = nullptr;
-    delete steam_matchmaking_servers; steam_matchmaking_servers = nullptr;
-    delete steam_user_stats; steam_user_stats = nullptr;
-    delete steam_apps; steam_apps = nullptr;
-    delete steam_networking; steam_networking = nullptr;
-    delete steam_remote_storage; steam_remote_storage = nullptr;
-    delete steam_screenshots; steam_screenshots = nullptr;
-    delete steam_http; steam_http = nullptr;
-    delete steam_controller; steam_controller = nullptr;
-    delete steam_ugc; steam_ugc = nullptr;
-    delete steam_applist; steam_applist = nullptr;
-    delete steam_music; steam_music = nullptr;
-    delete steam_musicremote; steam_musicremote = nullptr;
-    delete steam_HTMLsurface; steam_HTMLsurface = nullptr;
-    delete steam_inventory; steam_inventory = nullptr;
-    delete steam_video; steam_video = nullptr;
-    delete steam_parental; steam_parental = nullptr;
-    delete steam_networking_sockets; steam_networking_sockets = nullptr;
-    delete steam_networking_sockets_serialized; steam_networking_sockets_serialized = nullptr;
-    delete steam_networking_messages; steam_networking_messages = nullptr;
-    delete steam_game_coordinator; steam_game_coordinator = nullptr;
-    delete steam_networking_utils; steam_networking_utils = nullptr;
-    delete steam_unified_messages; steam_unified_messages = nullptr;
-    delete steam_game_search; steam_game_search = nullptr;
-    delete steam_parties; steam_parties = nullptr;
-    delete steam_remoteplay; steam_remoteplay = nullptr;
-    delete steam_tv; steam_tv = nullptr;
+    DEL_INST(steam_gameserver);
+    DEL_INST(steam_gameserver_utils);
+    DEL_INST(steam_gameserverstats);
+    DEL_INST(steam_gameserver_networking);
+    DEL_INST(steam_gameserver_http);
+    DEL_INST(steam_gameserver_inventory);
+    DEL_INST(steam_gameserver_ugc);
+    DEL_INST(steam_gameserver_apps);
+    DEL_INST(steam_gameserver_networking_sockets);
+    DEL_INST(steam_gameserver_networking_sockets_serialized);
+    DEL_INST(steam_gameserver_networking_messages);
+    DEL_INST(steam_gameserver_game_coordinator);
+    DEL_INST(steam_masterserver_updater);
 
-    delete steam_utils; steam_utils = nullptr;
-    delete steam_friends; steam_friends = nullptr;
-    delete steam_user; steam_user = nullptr;
-    delete steam_overlay; steam_overlay = nullptr;
+    DEL_INST(steam_matchmaking);
+    DEL_INST(steam_matchmaking_servers);
+    DEL_INST(steam_user_stats);
+    DEL_INST(steam_apps);
+    DEL_INST(steam_networking);
+    DEL_INST(steam_remote_storage);
+    DEL_INST(steam_screenshots);
+    DEL_INST(steam_http);
+    DEL_INST(steam_controller);
+    DEL_INST(steam_ugc);
+    DEL_INST(steam_applist);
+    DEL_INST(steam_music);
+    DEL_INST(steam_musicremote);
+    DEL_INST(steam_HTMLsurface);
+    DEL_INST(steam_inventory);
+    DEL_INST(steam_video);
+    DEL_INST(steam_parental);
+    DEL_INST(steam_networking_sockets);
+    DEL_INST(steam_networking_sockets_serialized);
+    DEL_INST(steam_networking_messages);
+    DEL_INST(steam_game_coordinator);
+    DEL_INST(steam_networking_utils);
+    DEL_INST(steam_unified_messages);
+    DEL_INST(steam_game_search);
+    DEL_INST(steam_parties);
+    DEL_INST(steam_remoteplay);
+    DEL_INST(steam_tv);
 
-    delete ugc_bridge; ugc_bridge = nullptr;
+    DEL_INST(steam_utils);
+    DEL_INST(steam_friends);
+    DEL_INST(steam_user);
+    DEL_INST(steam_overlay);
 
-    delete callbacks_server; callbacks_server = nullptr;
-    delete callbacks_client; callbacks_client = nullptr;
-    delete callback_results_server; callback_results_server = nullptr;
-    delete callback_results_client; callback_results_client = nullptr;
+    DEL_INST(ugc_bridge);
 
-    delete network; network = nullptr;
-    delete run_every_runcb; run_every_runcb = nullptr;
+    DEL_INST(callbacks_server);
+    DEL_INST(callbacks_client);
+    DEL_INST(callback_results_server);
+    DEL_INST(callback_results_client);
+
+    DEL_INST(network);
+    DEL_INST(run_every_runcb);
+
+    #undef DEL_INST
 }
 
 void Steam_Client::userLogIn()
