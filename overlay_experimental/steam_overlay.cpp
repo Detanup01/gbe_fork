@@ -1750,6 +1750,7 @@ void Steam_Overlay::UnSetupOverlay()
 {
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (settings->disable_overlay) return;
 
     bool already_called = true;
     if (setup_overlay_called.compare_exchange_weak(already_called, false)) {

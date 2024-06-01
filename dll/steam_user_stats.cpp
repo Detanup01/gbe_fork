@@ -1232,7 +1232,7 @@ SteamAPICall_t Steam_User_Stats::RequestUserStats( CSteamID steamIDUser )
 // requests stat information for a user, usable after a successful call to RequestUserStats()
 bool Steam_User_Stats::GetUserStat( CSteamID steamIDUser, const char *pchName, int32 *pData )
 {
-    PRINT_DEBUG("%s %llu", pchName, steamIDUser.ConvertToUint64());
+    PRINT_DEBUG("'%s' %llu", pchName, steamIDUser.ConvertToUint64());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName) return false;

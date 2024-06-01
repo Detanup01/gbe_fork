@@ -81,6 +81,13 @@ public ISteamClient019,
 public ISteamClient020,
 public ISteamClient
 {
+private:
+    bool user_logged_in = false;
+    bool server_init = false;
+    
+    std::atomic_bool cb_run_active = false;
+    std::atomic<unsigned long long> last_cb_run{};
+
 public:
     Networking *network{};
     SteamCallResults *callback_results_server{}, *callback_results_client{};
@@ -139,15 +146,11 @@ public:
 
     Steam_Overlay* steam_overlay{};
 
-    bool user_logged_in = false;
-    bool server_init = false;
     bool steamclient_server_inited = false;
 
     bool gameserver_has_ipv6_functions{};
     
     std::thread background_keepalive{};
-    std::atomic<unsigned long long> last_cb_run{};
-    std::atomic_bool cb_run_active = false;
 
     unsigned steam_pipe_counter = 1;
     std::map<HSteamPipe, enum Steam_Pipe> steam_pipes{};
@@ -316,6 +319,10 @@ public:
     bool IsUserLogIn();
 
     void DestroyAllInterfaces();
+
+    bool runcallbacks_active() const;
+    unsigned long long get_last_runcallbacks_time() const;
+    void set_last_runcallbacks_time(unsigned long long time_ms);
 };
 
 #endif // __INCLUDED_STEAM_CLIENT_H__

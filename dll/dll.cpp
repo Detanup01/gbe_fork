@@ -157,7 +157,7 @@ static void load_old_steam_interfaces()
 STEAMAPI_API HSteamUser SteamAPI_GetHSteamUser()
 {
     PRINT_DEBUG_ENTRY();
-    if (!get_steam_client()->user_logged_in) return 0;
+    if (!get_steam_client()->IsUserLogIn()) return 0;
     return CLIENT_HSTEAMUSER;
 }
 
@@ -187,7 +187,7 @@ void destroy_client()
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (steamclient_instance) {
         delete steamclient_instance;
-        steamclient_instance = NULL;
+        steamclient_instance = nullptr;
     }
 }
 
@@ -257,13 +257,17 @@ static void *create_client_interface(const char *ver)
 STEAMAPI_API void * S_CALLTYPE SteamInternal_CreateInterface( const char *ver )
 {
     PRINT_DEBUG("%s", ver);
-    if (!get_steam_client()->user_logged_in && !get_steam_client()->IsServerInit()) return NULL;
+    if (!get_steam_client()->IsUserLogIn() && !get_steam_client()->IsServerInit()) return NULL;
 
     return create_client_interface(ver);
 }
 
-static uintp global_counter;
-struct ContextInitData { void (*pFn)(void* pCtx); uintp counter; CSteamAPIContext ctx; };
+static uintp global_counter{};
+struct ContextInitData {
+    void (*pFn)(void* pCtx) = nullptr;
+    uintp counter{};
+    CSteamAPIContext ctx{};
+};
 
 STEAMAPI_API void * S_CALLTYPE SteamInternal_ContextInit( void *pContextInitData )
 {
@@ -513,7 +517,7 @@ STEAMAPI_API void S_CALLTYPE SteamAPI_UnregisterCallback( class CCallbackBase *p
 // Internal functions used by the utility CCallResult objects to receive async call results
 STEAMAPI_API void S_CALLTYPE SteamAPI_RegisterCallResult( class CCallbackBase *pCallback, SteamAPICall_t hAPICall )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("%llu %p", hAPICall, pCallback);
     if (!hAPICall)
         return;
 
@@ -633,7 +637,7 @@ STEAMAPI_API ISteamClient *SteamClient()
     PRINT_DEBUG("old");
     // call this first since it loads old interfaces
     Steam_Client* client = get_steam_client();
-    if (!client->user_logged_in) return NULL;
+    if (!client->IsUserLogIn()) return NULL;
     return (ISteamClient *)SteamInternal_CreateInterface(old_client);
 }
 
@@ -830,7 +834,7 @@ STEAMAPI_API void * S_CALLTYPE SteamGameServerInternal_CreateInterface( const ch
     return SteamInternal_CreateInterface(ver);
 }
 
-static HSteamPipe server_steam_pipe;
+static HSteamPipe server_steam_pipe = 0;
 STEAMAPI_API HSteamPipe S_CALLTYPE SteamGameServer_GetHSteamPipe()
 {
     PRINT_DEBUG_ENTRY();
@@ -840,7 +844,7 @@ STEAMAPI_API HSteamPipe S_CALLTYPE SteamGameServer_GetHSteamPipe()
 STEAMAPI_API HSteamUser S_CALLTYPE SteamGameServer_GetHSteamUser()
 {
     PRINT_DEBUG_ENTRY();
-    if (!get_steam_client()->server_init) return 0;
+    if (!get_steam_client()->IsServerInit()) return 0;
     return SERVER_HSTEAMUSER;
 }
 

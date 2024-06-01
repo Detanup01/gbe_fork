@@ -297,10 +297,13 @@ void Steam_Client::setAppID(uint32 appid)
 HSteamPipe Steam_Client::CreateSteamPipe()
 {
     PRINT_DEBUG_ENTRY();
-    HSteamPipe pipe = steam_pipe_counter++;
-    PRINT_DEBUG("  pipe handle %i", pipe);
+    if (!steam_pipe_counter) ++steam_pipe_counter;
+    HSteamPipe pipe = steam_pipe_counter;
+    ++steam_pipe_counter;
+    PRINT_DEBUG("  returned pipe handle %i", pipe);
 
     steam_pipes[pipe] = Steam_Pipe::NO_USER;
+    
     return pipe;
 }
 
@@ -330,7 +333,6 @@ HSteamUser Steam_Client::ConnectToGlobalUser( HSteamPipe hSteamPipe )
 
     userLogIn();
     
-    if (!settings_client->disable_overlay) steam_overlay->SetupOverlay();
     
     // games like appid 1740720 and 2379780 do not call SteamAPI_RunCallbacks() or SteamAPI_ManualDispatch_RunFrame() or Steam_BGetCallback()
     // hence all run_callbacks() will never run, which might break the assumption that these callbacks are always run
@@ -341,6 +343,7 @@ HSteamUser Steam_Client::ConnectToGlobalUser( HSteamPipe hSteamPipe )
         PRINT_DEBUG("spawned background thread *********");
     }
 
+    steam_overlay->SetupOverlay();
     steam_pipes[hSteamPipe] = Steam_Pipe::CLIENT;
     return CLIENT_HSTEAMUSER;
 }
@@ -435,11 +438,11 @@ bool Steam_Client::BShutdownIfAllPipesClosed()
 
     steam_controller->Shutdown();
 
-    if(!settings_client->disable_overlay) steam_overlay->UnSetupOverlay();
 
     if (joinable) {
         background_keepalive.join();
     }
+    steam_overlay->UnSetupOverlay();
 
     PRINT_DEBUG("all pipes closed");
     return true;
@@ -978,4 +981,19 @@ void Steam_Client::RunCallbacks(bool runClientCB, bool runGameserverCB)
 void Steam_Client::DestroyAllInterfaces()
 {
     PRINT_DEBUG_TODO();
+}
+
+bool Steam_Client::runcallbacks_active() const
+{
+    return cb_run_active;
+}
+
+unsigned long long Steam_Client::get_last_runcallbacks_time() const
+{
+    return last_cb_run;
+}
+
+void Steam_Client::set_last_runcallbacks_time(unsigned long long time_ms)
+{
+    last_cb_run = time_ms;
 }
