@@ -214,39 +214,39 @@ static void *create_client_interface(const char *ver)
 
     if (strstr(ver, "SteamClient") == ver) {
         if (strcmp(ver, "SteamClient007") == 0) {
-            steam_client = (ISteamClient007 *)get_steam_client();
+            steam_client = static_cast<ISteamClient007 *>(get_steam_client());
         } else if (strcmp(ver, "SteamClient008") == 0) {
-            steam_client = (ISteamClient008 *)get_steam_client();
+            steam_client = static_cast<ISteamClient008 *>(get_steam_client());
         } else if (strcmp(ver, "SteamClient009") == 0) {
-            steam_client = (ISteamClient009 *)get_steam_client();
+            steam_client = static_cast<ISteamClient009 *>(get_steam_client());
         } else if (strcmp(ver, "SteamClient010") == 0) {
-            steam_client = (ISteamClient010 *)get_steam_client();
+            steam_client = static_cast<ISteamClient010 *>(get_steam_client());
         } else if (strcmp(ver, "SteamClient011") == 0) {
-            steam_client = (ISteamClient011 *)get_steam_client();
+            steam_client = static_cast<ISteamClient011 *>(get_steam_client());
         } else if (strcmp(ver, "SteamClient012") == 0) {
-            steam_client = (ISteamClient012 *)get_steam_client();
+            steam_client = static_cast<ISteamClient012 *>(get_steam_client());
         } else if (strcmp(ver, "SteamClient013") == 0) {
-            steam_client = (ISteamClient013 *)get_steam_client();
+            steam_client = static_cast<ISteamClient013 *>(get_steam_client());
         } else if (strcmp(ver, "SteamClient014") == 0) {
-            steam_client = (ISteamClient014 *)get_steam_client();
+            steam_client = static_cast<ISteamClient014 *>(get_steam_client());
         } else if (strcmp(ver, "SteamClient015") == 0) {
-            steam_client = (ISteamClient015 *)get_steam_client();
+            steam_client = static_cast<ISteamClient015 *>(get_steam_client());
         } else if (strcmp(ver, "SteamClient016") == 0) {
-            steam_client = (ISteamClient016 *)get_steam_client();
+            steam_client = static_cast<ISteamClient016 *>(get_steam_client());
         } else if (strcmp(ver, "SteamClient017") == 0) {
-            steam_client = (ISteamClient017 *)get_steam_client();
+            steam_client = static_cast<ISteamClient017 *>(get_steam_client());
         } else if (strcmp(ver, "SteamClient018") == 0) {
-            steam_client = (ISteamClient018 *)get_steam_client();
+            steam_client = static_cast<ISteamClient018 *>(get_steam_client());
         } else if (strcmp(ver, "SteamClient019") == 0) {
-            steam_client = (ISteamClient019 *)get_steam_client();
+            steam_client = static_cast<ISteamClient019 *>(get_steam_client());
         } else if (strcmp(ver, "SteamClient020") == 0) {
-            steam_client = (ISteamClient020 *)get_steam_client();
+            steam_client = static_cast<ISteamClient020 *>(get_steam_client());
         } else if (strcmp(ver, STEAMCLIENT_INTERFACE_VERSION) == 0) {
-            steam_client = (ISteamClient *)get_steam_client();
+            steam_client = static_cast<ISteamClient *>(get_steam_client());
             steamclient_has_ipv6_functions_flag = true;
         } else {
             PRINT_DEBUG("requested unknown steamclient version '%s'", ver);
-            steam_client = (ISteamClient *)get_steam_client();
+            steam_client = static_cast<ISteamClient *>(get_steam_client());
             steamclient_has_ipv6_functions_flag = true;
         }
     }
