@@ -310,6 +310,9 @@ HSteamUser Steam_Client::CreateLocalUser( HSteamPipe *phSteamPipe, EAccountType 
     //} else { //k_EAccountTypeGameServer
     serverInit();
 
+    // gameservers don't call ConnectToGlobalUser(), instead they call this function
+    background_thread->start(this);
+
     HSteamPipe pipe = CreateSteamPipe();
     if (phSteamPipe) *phSteamPipe = pipe;
     steam_pipes[pipe] = Steam_Pipe::SERVER;
