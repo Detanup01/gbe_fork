@@ -19,60 +19,13 @@
 #include "dll/settings_parser.h"
 
 
-static std::mutex kill_background_thread_mutex{};
-static std::condition_variable kill_background_thread_cv{};
-static bool kill_background_thread{};
-static void background_thread(Steam_Client *client)
-{
-    // max allowed time in which RunCallbacks() might not be called
-    constexpr const static auto max_stall_ms = std::chrono::milliseconds(300);
-
-    // wait 1 sec
-    {
-        std::unique_lock<std::mutex> lck(kill_background_thread_mutex);
-        if (kill_background_thread || kill_background_thread_cv.wait_for(lck, std::chrono::seconds(1)) != std::cv_status::timeout) {
-            if (kill_background_thread) {
-                PRINT_DEBUG("early exit");
-                return;
-            }
-        }
-    }
-
-    PRINT_DEBUG("starting");
-
-    while (1) {
-        {
-            std::unique_lock lck(kill_background_thread_mutex);
-            if (kill_background_thread || kill_background_thread_cv.wait_for(lck, max_stall_ms) != std::cv_status::timeout) {
-                if (kill_background_thread) {
-                    PRINT_DEBUG("exit");
-                    return;
-                }
-            }
-        }
-
-        auto now_ms = (unsigned long long)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
-
-        // if our time exceeds last run time of callbacks and it wasn't processing already
-        if (!client->cb_run_active && (now_ms >= (client->last_cb_run + max_stall_ms.count()))) {
-            global_mutex.lock();
-            PRINT_DEBUG("run @@@@@@@@@@@@@@@@@@@@@@@@@@@");
-            client->last_cb_run = now_ms; // update the time counter just to avoid overlap
-            client->network->Run(); // networking must run first since it receives messages used by each run_callback()
-            client->run_every_runcb->run(); // call each run_callback()
-            global_mutex.unlock();
-        }
-    }
-}
-
-
-
 Steam_Client::Steam_Client()
 {
     PRINT_DEBUG("start ----------");
     uint32 appid = create_localstorage_settings(&settings_client, &settings_server, &local_storage);
     local_storage->update_save_filenames(Local_Storage::remote_storage_folder);
 
+    background_thread = new Client_Background_Thread();
     network = new Networking(settings_server->get_local_steam_id(), appid, settings_server->get_port(), &(settings_server->custom_broadcasts), settings_server->disable_networking);
 
     run_every_runcb = new RunEveryRunCB();
@@ -333,17 +286,14 @@ HSteamUser Steam_Client::ConnectToGlobalUser( HSteamPipe hSteamPipe )
 
     userLogIn();
     
-    
     // games like appid 1740720 and 2379780 do not call SteamAPI_RunCallbacks() or SteamAPI_ManualDispatch_RunFrame() or Steam_BGetCallback()
     // hence all run_callbacks() will never run, which might break the assumption that these callbacks are always run
     // also networking callbacks won't run
     // hence we spawn the background thread here which trigger all run_callbacks() and run networking callbacks
-    if (!background_keepalive.joinable()) {
-        background_keepalive = std::thread(background_thread, this);
-        PRINT_DEBUG("spawned background thread *********");
-    }
+    background_thread->start(this);
 
     steam_overlay->SetupOverlay();
+    
     steam_pipes[hSteamPipe] = Steam_Pipe::CLIENT;
     return CLIENT_HSTEAMUSER;
 }
@@ -427,21 +377,8 @@ bool Steam_Client::BShutdownIfAllPipesClosed()
     PRINT_DEBUG_ENTRY();
     if (steam_pipes.size()) return false; // not all pipes are released via BReleaseSteamPipe() yet
     
-    bool joinable = background_keepalive.joinable();
-    if (joinable) {
-        {
-            std::lock_guard lk(kill_background_thread_mutex);
-            kill_background_thread = true;
-        }
-        kill_background_thread_cv.notify_one();
-    }
-
+    background_thread->kill();
     steam_controller->Shutdown();
-
-
-    if (joinable) {
-        background_keepalive.join();
-    }
     steam_overlay->UnSetupOverlay();
 
     PRINT_DEBUG("all pipes closed");

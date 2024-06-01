@@ -64,6 +64,35 @@ enum Steam_Pipe {
     SERVER
 };
 
+class Steam_Client;
+class Client_Background_Thread
+{
+private:
+    // don't run immediately, give the game some time to initialize
+    constexpr const static auto initial_delay = std::chrono::seconds(2);
+    // max allowed time in which RunCallbacks() might not be called
+    constexpr const static auto max_stall_ms = std::chrono::milliseconds(300);
+
+    std::thread background_keepalive{};
+    std::mutex kill_background_thread_mutex{};
+    std::condition_variable kill_background_thread_cv{};
+    bool kill_background_thread{};
+    
+    Steam_Client *client_instance{};
+    
+    void thread_proc();
+
+public:
+    Client_Background_Thread();
+    ~Client_Background_Thread();
+
+    // spawn the thread if necessary, never call this inside the ctor of Steam_Client
+    // since the thread will attempt to get the global client pointer during initialization (which will still be under construction)
+    void start(Steam_Client *client_instance);
+    // kill the thread if necessary
+    void kill();
+};
+
 class Steam_Client :
 public ISteamClient007,
 public ISteamClient008,
@@ -144,14 +173,14 @@ public:
     Steam_Masterserver_Updater *steam_masterserver_updater{};
     Steam_AppTicket *steam_app_ticket{};
 
+    Client_Background_Thread *background_thread{};
+
     Steam_Overlay* steam_overlay{};
 
     bool steamclient_server_inited = false;
 
     bool gameserver_has_ipv6_functions{};
     
-    std::thread background_keepalive{};
-
     unsigned steam_pipe_counter = 1;
     std::map<HSteamPipe, enum Steam_Pipe> steam_pipes{};
 
