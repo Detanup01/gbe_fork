@@ -161,11 +161,11 @@ STEAMAPI_API HSteamUser SteamAPI_GetHSteamUser()
     return CLIENT_HSTEAMUSER;
 }
 
-#ifdef STEAMCLIENT_DLL // client
-ISteamClient *g_pSteamClientGameServer{};
-#else // api
+// declare "g_pSteamClientGameServer" as an export for API library, then actually define it
+#if !defined(STEAMCLIENT_DLL) // api
 STEAMAPI_API ISteamClient *g_pSteamClientGameServer;
 #endif
+ISteamClient *g_pSteamClientGameServer{};
 
 static Steam_Client *steamclient_instance{};
 Steam_Client *get_steam_client()
