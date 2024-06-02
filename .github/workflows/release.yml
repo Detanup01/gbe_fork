@@ -84,13 +84,22 @@ jobs:
         with:
           files: "build/package/win/**/*"
 
-### upload artifact/package if this is a manual run
+### upload artifacts/packages if this is a manual run
       - name: Upload release package
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v4
         with:
           name: "release-emu-win-${{ github.sha }}"
-          path: "build/package/win/**/*"
+          path: "build/package/win/**/release*"
+          if-no-files-found: 'error'
+          compression-level: 9
+          retention-days: 1
+      - name: Upload release package
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: "release-emu-win-${{ github.sha }}"
+          path: "build/package/win/**/debug*"
           if-no-files-found: 'error'
           compression-level: 9
           retention-days: 1
@@ -165,13 +174,22 @@ jobs:
         with:
           files: "build/package/linux/**/*"
 
-### upload artifact/package if this is a manual run
+### upload artifacts/packages if this is a manual run
       - name: Upload release package
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v4
         with:
           name: "release-emu-linux-${{ github.sha }}"
-          path: "build/package/linux/**/*"
+          path: "build/package/linux/**/release*"
+          if-no-files-found: 'error'
+          compression-level: 9
+          retention-days: 1
+      - name: Upload release package
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: "release-emu-linux-${{ github.sha }}"
+          path: "build/package/linux/**/debug*"
           if-no-files-found: 'error'
           compression-level: 9
           retention-days: 1
