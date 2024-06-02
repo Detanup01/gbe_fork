@@ -325,13 +325,13 @@ Open CMD in the repos's directory, then run this script
 ```batch
 package_win.bat <build_folder>
 ```
-`build_folder` is any folder inside `build\win`, for example: `release`  
-The above example will create a `.7z` archive inside `build\package\win\release`
+`build_folder` is any folder inside `build\win`, for example: `vs2022\release`  
+The above example will create a `.7z` archive inside `build\package\win\`
 
 ### On Linux:
 Open bash terminal in the repos's directory, then run this script
 ```shell
 package_linux.sh <build_folder>
 ```
-`build_folder` is any folder inside `build/linux`, for example: `release`  
-The above example will create a compressed `.tar` archive inside `build/package/linux/release`
+`build_folder` is any folder inside `build/linux`, for example: `gmake2/release`  
+The above example will create a compressed `.tar` archive inside `build/package/linux/`
