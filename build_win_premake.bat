@@ -75,25 +75,25 @@ if not exist "%sln_file%" (
 
 :: -v:n make it so we can actually see what commands it runs
 echo: & echo building debug x64
-call "%my_vs_path%" /nologo "%sln_file%" /p:Configuration=debug /p:Platform=x64 -v:n /MP%build_threads%
+call "%my_vs_path%" /nologo "%sln_file%" /p:Configuration=debug /p:Platform=x64 -v:n -m:%build_threads%
 if %errorlevel% neq 0 (
   goto :end_script_with_err
 )
 
 echo: & echo building debug x32
-call "%my_vs_path%" /nologo "%sln_file%" /p:Configuration=debug /p:Platform=Win32 -v:n /MP%build_threads%
+call "%my_vs_path%" /nologo "%sln_file%" /p:Configuration=debug /p:Platform=Win32 -v:n -m:%build_threads%
 if %errorlevel% neq 0 (
   goto :end_script_with_err
 )
 
 echo: & echo building release x64
-call "%my_vs_path%" /nologo "%sln_file%" /p:Configuration=release /p:Platform=x64 -v:n /MP%build_threads%
+call "%my_vs_path%" /nologo "%sln_file%" /p:Configuration=release /p:Platform=x64 -v:n -m:%build_threads%
 if %errorlevel% neq 0 (
   goto :end_script_with_err
 )
 
 echo: & echo building release x32
-call "%my_vs_path%" /nologo "%sln_file%" /p:Configuration=release /p:Platform=Win32 -v:n /MP%build_threads%
+call "%my_vs_path%" /nologo "%sln_file%" /p:Configuration=release /p:Platform=Win32 -v:n -m:%build_threads%
 if %errorlevel% neq 0 (
   goto :end_script_with_err
 )
