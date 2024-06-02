@@ -89,19 +89,19 @@ jobs:
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v4
         with:
-          name: "release-emu-win-${{ github.sha }}"
-          path: "build/package/win/**/release*"
+          name: "release-emu-win-release-${{ github.sha }}"
+          path: "build/package/win/**/release/*"
           if-no-files-found: 'error'
-          compression-level: 9
+          compression-level: 0
           retention-days: 1
       - name: Upload release package
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v4
         with:
-          name: "release-emu-win-${{ github.sha }}"
-          path: "build/package/win/**/debug*"
+          name: "release-emu-win-debug-${{ github.sha }}"
+          path: "build/package/win/**/debug/*"
           if-no-files-found: 'error'
-          compression-level: 9
+          compression-level: 0
           retention-days: 1
 
 
@@ -179,19 +179,19 @@ jobs:
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v4
         with:
-          name: "release-emu-linux-${{ github.sha }}"
-          path: "build/package/linux/**/release*"
+          name: "release-emu-linux-release-${{ github.sha }}"
+          path: "build/package/linux/**/release/*"
           if-no-files-found: 'error'
-          compression-level: 9
+          compression-level: 0
           retention-days: 1
       - name: Upload release package
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v4
         with:
-          name: "release-emu-linux-${{ github.sha }}"
-          path: "build/package/linux/**/debug*"
+          name: "release-emu-linux-debug-${{ github.sha }}"
+          path: "build/package/linux/**/debug/*"
           if-no-files-found: 'error'
-          compression-level: 9
+          compression-level: 0
           retention-days: 1
 
 
