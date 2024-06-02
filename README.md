@@ -213,6 +213,7 @@ Open CMD in the repo folder, then run the following
   
 
 This will build a release version of the emu in the folder `build\win\<toolchain>\release`  
+An example script `build_win_premake.bat` is available, check it out  
 
 <br/>
 
@@ -238,7 +239,8 @@ To see all possible build targets
 make help
 ```  
 
-This will build a release version of the emu in the folder `build/linux/<toolchain>/release`
+This will build a release version of the emu in the folder `build/linux/<toolchain>/release`  
+An example script `build_linux_premake.sh` is available, check it out  
 
 ---
 
