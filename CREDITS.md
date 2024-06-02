@@ -6,6 +6,7 @@
 - simpleini (https://github.com/brofield/simpleini/tree/f7862c3dd7ad35becc2741f268e3402e89a37666)
 - stb (https://github.com/nothings/stb)
 - utf (https://github.com/nemtrif/utfcpp)
+- wswhere (https://github.com/microsoft/vswhere/releases/tag/3.1.7)
 - curl (https://github.com/curl/curl/releases/tag/curl-8_4_0)
 - ingame_overlay (https://github.com/Nemirtingas/ingame_overlay/tree/50953c380fb877da783414397a64241dd9a76c45)
 - libssq (https://github.com/BinaryAlien/libssq/releases/tag/v3.0.0)
@@ -159,6 +160,16 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
+
+### wswhere License
+The MIT License (MIT) 
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### curl License
 COPYRIGHT AND PERMISSION NOTICE
