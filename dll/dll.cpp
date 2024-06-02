@@ -1347,13 +1347,13 @@ STEAMCLIENT_API void Breakpad_SteamSetSteamID( uint64 ulSteamID )
 
 STEAMCLIENT_API void Breakpad_SteamWriteMiniDumpSetComment( const char *pchMsg )
 {
-    PRINT_DEBUG_TODO();
+    PRINT_DEBUG("'%s'", pchMsg);
     PRINT_DEBUG("  app is writing a crash dump comment! [XXXXXXXXXXXXXXXXXXXXXXXXXXX]");
 }
 
 STEAMCLIENT_API void Breakpad_SteamWriteMiniDumpUsingExceptionInfoWithBuildId( int a, int b )
 {
-    PRINT_DEBUG_TODO();
+    PRINT_DEBUG("%i -- %i", a, b);
     PRINT_DEBUG("  app is writing a crash dump! [XXXXXXXXXXXXXXXXXXXXXXXXXXX]");
 }
 
