@@ -1,13 +1,27 @@
-* **[Detanup01]** added premake build scripts, allowing the project to be built with different toolsets with ease on diffrerent platforms.
+* **[Detanup01]** added `premake` build scripts, allowing the project to be built with different toolsets with ease on diffrerent platforms
 * **[schmurger]** added progress bar for achievements that are not earned yet in the achievements list of the overlay
-* **[Detanup01]** added missing interfaces `ISteamScreenshot` `001` and `002`
+* **[Detanup01]** added missing interfaces `ISteamScreenshot` `v001` and `v002` +  fixed lots of build warnings on Visual Studio
+* initial support for building with `MSYS2` on Windows, this is still highly experimental and not everything might work as expected, example the overlay will crash at runtime
+* third-party dependencies could now be built with a `premake` script, offering more flexibility.  
+  for example you can choose to extract or build certain libraries only
+  
+  ---
+  
+  **check the updated readme**  
+  **rebuild your dependencies + project!**
+  
+  ---
+
+* enable controller support by default for the regular emu build
+* fixed an old buffer overrun bug in `Steam_User_Stats::UpdateAvgRateStat`
+* fixed an old bug in the shutdown functions, now they will refuse incorrect requests like the original API library
+* fixed a mistake which led to a missing export `g_pSteamClientGameServer` for the API library
 * for Windows ColdClientLoader: allow loading `.ini` file with the same name as the loader  
   ex: if the loader is named `game_cold_loader.exe`, then it will first try to load `game_cold_loader.ini`,  
   if that doesn't exist, it will fallback to `ColdClientLoader.ini`
-* fixed a buffer overrun in `Steam_User_Stats::UpdateAvgRateStat`
-* corrected callback vs call result in `Steam_Apps::RequestAllProofOfPurchaseKeys()` + added missing callback in `Steam_UGC::RequestUGCDetails()`
-* enable controller support by default for the regular emu build
-* make all switches in build scripts opt-in, nothing is built by default
+* added missing callback in `Steam_UGC::RequestUGCDetails()`
+* re-implemented the way the background thread is spawned & terminated to fix its cleanup sequence + spawn it for gameservers as well
+* corrected callback vs call result in `Steam_Apps::RequestAllProofOfPurchaseKeys()`
 * deprecated and removed the special Git branches `ci-build-*`, they were intended for automation but no longer maintained
 
 ---
