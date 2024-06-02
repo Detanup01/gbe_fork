@@ -164,10 +164,10 @@ STEAMAPI_API HSteamUser SteamAPI_GetHSteamUser()
 #ifdef STEAMCLIENT_DLL // client
 ISteamClient *g_pSteamClientGameServer{};
 #else // api
-STEAMAPI_API ISteamClient *g_pSteamClientGameServer{};
+STEAMAPI_API ISteamClient *g_pSteamClientGameServer;
 #endif
 
-static Steam_Client *steamclient_instance;
+static Steam_Client *steamclient_instance{};
 Steam_Client *get_steam_client()
 {
     if (!steamclient_instance) {
@@ -201,7 +201,7 @@ Steam_Client *get_steam_clientserver_old()
     return get_steam_client();
 }
 
-static bool steamclient_has_ipv6_functions_flag;
+static bool steamclient_has_ipv6_functions_flag{};
 bool steamclient_has_ipv6_functions()
 {
     return get_steam_client()->gameserver_has_ipv6_functions || steamclient_has_ipv6_functions_flag;
