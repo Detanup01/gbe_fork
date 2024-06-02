@@ -94,7 +94,7 @@ jobs:
           if-no-files-found: 'error'
           compression-level: 0
           retention-days: 1
-      - name: Upload release package
+      - name: Upload debug package
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v4
         with:
@@ -184,7 +184,7 @@ jobs:
           if-no-files-found: 'error'
           compression-level: 0
           retention-days: 1
-      - name: Upload release package
+      - name: Upload debug package
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v4
         with:
