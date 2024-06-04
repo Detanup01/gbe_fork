@@ -133,7 +133,7 @@ void get_challenge(std::vector<uint8_t> &challenge_buff)
 
 std::vector<uint8_t> Source_Query::handle_source_query(const void* buffer, size_t len, Gameserver const& gs)
 {
-    std::vector<uint8_t> output_buffer;
+    std::vector<uint8_t> output_buffer{};
 
     if (len < source_query_header_size) // its not at least 5 bytes long (0xFF 0xFF 0xFF 0xFF 0x??)
         return output_buffer;
@@ -206,7 +206,7 @@ std::vector<uint8_t> Source_Query::handle_source_query(const void* buffer, size_
                 serialize_response(output_buffer, source_response_header::A2S_PLAYER);
                 serialize_response(output_buffer, static_cast<uint8_t>(players.size())); // num_players
 
-                for (int i = 0; i < players.size(); ++i) {
+                for (unsigned i = 0; i < players.size(); ++i) {
                     serialize_response(output_buffer, static_cast<uint8_t>(i)); // player index
                     serialize_response(output_buffer, players[i].second.name); // player name
                     serialize_response(output_buffer, players[i].second.score); // player score

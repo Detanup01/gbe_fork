@@ -147,15 +147,13 @@ bool Steam_Remote_Storage::FileReadAsyncComplete( SteamAPICall_t hReadCall, void
     if (cubToRead < a_read->to_read)
         return false;
 
-    char *temp = new char[a_read->size];
-    int read_data = local_storage->get_data(Local_Storage::remote_storage_folder, a_read->file_name, (char* )temp, a_read->size);
-    if (read_data < a_read->to_read + a_read->offset) {
-        delete[] temp;
+    std::vector<char> temp(a_read->size);
+    int read_data = local_storage->get_data(Local_Storage::remote_storage_folder, a_read->file_name, (char* )&temp[0], a_read->size);
+    if (read_data < 0 || (static_cast<uint32>(read_data) < (a_read->to_read + a_read->offset))) {
         return false;
     }
 
-    memcpy(pvBuffer, temp + a_read->offset, a_read->to_read);
-    delete[] temp;
+    memcpy(pvBuffer, &temp[0] + a_read->offset, a_read->to_read);
     async_reads.erase(a_read);
     return true;
 }

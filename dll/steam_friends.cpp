@@ -272,7 +272,11 @@ CSteamID Steam_Friends::GetFriendByIndex( int iFriend, int iFriendFlags )
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     CSteamID id = k_steamIDNil;
-    if (ok_friend_flags(iFriendFlags)) if (iFriend < friends.size()) id = CSteamID((uint64)friends[iFriend].id());
+    if (ok_friend_flags(iFriendFlags)) {
+        if (iFriend >= 0 && static_cast<size_t>(iFriend) < friends.size()) {
+            id = CSteamID((uint64)friends[iFriend].id());
+        }
+    }
     
     return id;
 }
@@ -933,7 +937,7 @@ const char* Steam_Friends::GetFriendRichPresenceKeyByIndex( CSteamID steamIDFrie
         f = find_friend(steamIDFriend);
     }
 
-    if (f && is_appid_compatible(f) && f->rich_presence().size() > iKey && iKey >= 0) {
+    if (iKey >= 0 && f && is_appid_compatible(f) && f->rich_presence().size() > static_cast<size_t>(iKey)) {
         auto friend_data = f->rich_presence().begin();
         for (int i = 0; i < iKey; ++i) ++friend_data;
         key = friend_data->first.c_str();

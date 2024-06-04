@@ -726,10 +726,14 @@ int Steam_GameServer::GetNextOutgoingPacket( void *pOut, int cbMaxOut, uint32 *p
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (settings->disable_source_query) return 0;
-    if (outgoing_packets.size() == 0) return 0;
+    if (outgoing_packets.empty()) return 0;
 
-    if (outgoing_packets.back().data.size() < cbMaxOut) cbMaxOut = static_cast<int>(outgoing_packets.back().data.size());
-    if (pOut) memcpy(pOut, outgoing_packets.back().data.data(), cbMaxOut);
+    if (cbMaxOut > 0) {
+        if (outgoing_packets.back().data.size() < static_cast<size_t>(cbMaxOut)) {
+            cbMaxOut = static_cast<int>(outgoing_packets.back().data.size());
+        }
+        if (pOut) memcpy(pOut, outgoing_packets.back().data.data(), cbMaxOut);
+    }
     if (pNetAdr) *pNetAdr = outgoing_packets.back().ip;
     if (pPort) *pPort = outgoing_packets.back().port;
     outgoing_packets.pop_back();

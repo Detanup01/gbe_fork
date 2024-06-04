@@ -63,7 +63,7 @@ HTTPRequestHandle Steam_HTTP::CreateHTTPRequest( EHTTPMethod eHTTPRequestMethod,
             request.response.resize(file_size);
             long long read = Local_Storage::get_file_data(file_path, (char *)&request.response[0], file_size, 0);
             if (read < 0) read = 0;
-            if (read != file_size) request.response.resize(read);
+            if (read != file_size) request.response.resize(static_cast<size_t>(read));
         }
     }
 
@@ -318,7 +318,7 @@ void Steam_HTTP::online_http_request(Steam_Http_Request *request, SteamAPICall_t
     if (file_size) {
         long long read = Local_Storage::get_file_data(request->target_filepath, (char *)&request->response[0], file_size, 0);
         if (read < 0) read = 0;
-        request->response.resize(read);
+        request->response.resize(static_cast<size_t>(read));
     }
     
     send_callresult();

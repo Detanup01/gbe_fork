@@ -104,8 +104,8 @@ HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, IS
         return id;
     }
 
-    std::string file_path;
-    unsigned long long file_size;
+    std::string file_path{};
+    unsigned int file_size{};
     if (type == eInternetServer || type == eSpectatorServer) {
         file_path = local_storage->get_current_save_directory() + "7" + PATH_SEPARATOR + Local_Storage::remote_storage_folder + PATH_SEPARATOR + "serverbrowser.txt";
         file_size = file_size_(file_path);
@@ -117,29 +117,29 @@ HServerListRequest Steam_Matchmaking_Servers::RequestServerList(AppId_t iApp, IS
         file_size = file_size_(file_path);
     }
 
-    PRINT_DEBUG("list file '%s' [%llu bytes]", file_path.c_str(), file_size);
+    PRINT_DEBUG("list file '%s' [%u bytes]", file_path.c_str(), file_size);
     std::string list{};
     if (file_size) {
         list.resize(file_size);
-        Local_Storage::get_file_data(file_path, (char *)&list[0], static_cast<unsigned int>(file_size), 0);
+        Local_Storage::get_file_data(file_path, (char *)&list[0], file_size, 0);
     } else {
         return id;
     }
 
     std::istringstream list_ss(list);
-    std::string list_ip;
+    std::string list_ip{};
     while (std::getline(list_ss, list_ip)) {
         if (list_ip.length() <= 0) continue;
 
-        unsigned int byte4, byte3, byte2, byte1, byte0;
-        uint32 ip_int;
-        uint16 port_int;
-        char newip[24];
+        unsigned int byte4{}, byte3{}, byte2{}, byte1{}, byte0{};
+        uint32 ip_int{};
+        uint16 port_int{};
+        char newip[24]{};
         if (sscanf(list_ip.c_str(), "%u.%u.%u.%u:%u", &byte3, &byte2, &byte1, &byte0, &byte4) == 5) {
             ip_int = (byte3 << 24) + (byte2 << 16) + (byte1 << 8) + byte0;
             port_int = byte4;
 
-            unsigned char ip_tmp[4];
+            unsigned char ip_tmp[4]{};
             ip_tmp[0] = ip_int & 0xFF;
             ip_tmp[1] = (ip_int >> 8) & 0xFF;
             ip_tmp[2] = (ip_int >> 16) & 0xFF;
@@ -390,7 +390,7 @@ gameserveritem_t *Steam_Matchmaking_Servers::GetServerDetails( HServerListReques
         ++g;
     }
 
-    if (iServer >= gameservers_filtered.size() || iServer < 0) {
+    if (iServer < 0 || static_cast<size_t>(iServer) >= gameservers_filtered.size()) {
         return NULL;
     }
 
@@ -593,14 +593,14 @@ void Steam_Matchmaking_Servers::server_details(Gameserver *g, gameserveritem_t *
 
     if (settings->matchmaking_server_details_via_source_query && !(g->ip() < 0) && !(g->query_port() < 0)) {
         unsigned char ip[4]{};
-        char newip[24];
+        char newip[24]{};
         ip[0] = g->ip() & 0xFF;
         ip[1] = (g->ip() >> 8) & 0xFF;
         ip[2] = (g->ip() >> 16) & 0xFF;
         ip[3] = (g->ip() >> 24) & 0xFF;
         snprintf(newip, sizeof(newip), "%d.%d.%d.%d", ip[3], ip[2], ip[1], ip[0]);
 
-        PRINT_DEBUG("  connecting to ssq server on  %s:%u", newip, g->query_port());
+        PRINT_DEBUG("  connecting to ssq server on %s:%u", newip, g->query_port());
         SSQ_SERVER *ssq = ssq_server_new(newip, g->query_port());
         if (ssq != NULL && ssq_server_eok(ssq)) {
             PRINT_DEBUG("  ssq server connection ok");
@@ -733,7 +733,8 @@ void Steam_Matchmaking_Servers::server_details_players(Gameserver *g, Steam_Matc
         const auto &players = get_steam_client()->steam_gameserver->get_players();
         auto player = players->cbegin();
         for (uint32_t i = 0; i < number_players && player != players->end(); ++i, ++player) {
-            float playtime = static_cast<float>(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - player->second.join_time).count());
+            auto duration = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - player->second.join_time);
+            float playtime = static_cast<float>(duration.count());
             PRINT_DEBUG("  PLAYER [%u] '%s' %u %f", i, player->second.name.c_str(), player->second.score, playtime);
             r->players_response->AddPlayerToList(player->second.name.c_str(), player->second.score, playtime);
         }

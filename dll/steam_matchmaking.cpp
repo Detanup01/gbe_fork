@@ -291,7 +291,7 @@ int Steam_Matchmaking::GetFavoriteGameCount()
 {
     PRINT_DEBUG_ENTRY();
     std::string file_path = local_storage->get_current_save_directory() + "7" + PATH_SEPARATOR + Local_Storage::remote_storage_folder + PATH_SEPARATOR + "serverbrowser_favorites.txt";
-    unsigned long long file_size = file_size_(file_path);
+    unsigned int file_size = file_size_(file_path);
     if (file_size) {
         std::string list{};
         list.resize(file_size);
@@ -321,35 +321,32 @@ int Steam_Matchmaking::AddFavoriteGame( AppId_t nAppID, uint32 nIP, uint16 nConn
 {
     PRINT_DEBUG("%u %u %hu %hu %u %u", nAppID, nIP, nConnPort, nQueryPort, unFlags, rTime32LastPlayedOnServer);
 
-    std::string file_path;
-    unsigned long long file_size;
+    std::string file_path{};
+    unsigned int file_size{};
 
     if (unFlags == 1) {
         file_path = local_storage->get_current_save_directory() + "7" + PATH_SEPARATOR + Local_Storage::remote_storage_folder + PATH_SEPARATOR + "serverbrowser_favorites.txt";
         file_size = file_size_(file_path);
-    }
-    else if (unFlags == 2) {
+    } else if (unFlags == 2) {
         file_path = local_storage->get_current_save_directory() + "7" + PATH_SEPARATOR + Local_Storage::remote_storage_folder + PATH_SEPARATOR + "serverbrowser_history.txt";
         file_size = file_size_(file_path);
-    }
-    else {
+    } else {
         return 0;
     }
 
-    unsigned char ip[4];
+    unsigned char ip[4]{};
     ip[0] = nIP & 0xFF;
     ip[1] = (nIP >> 8) & 0xFF;
     ip[2] = (nIP >> 16) & 0xFF;
     ip[3] = (nIP >> 24) & 0xFF;
-    char newip[24];
+    char newip[24]{};
     snprintf(newip, sizeof(newip), "%d.%d.%d.%d:%d\n", ip[3], ip[2], ip[1], ip[0], nConnPort);
-    std::string newip_string;
-    newip_string.append(newip);
+    std::string newip_string(newip);
 
     if (file_size) {
         std::string list{};
         list.resize(file_size);
-        Local_Storage::get_file_data(file_path, (char *)&list[0], file_size, 0);
+        Local_Storage::get_file_data(file_path, (char*)&list[0], file_size, 0);
         auto list_lines = std::count(list.begin(), list.end(), '\n');
         list_lines += (!list.empty() && list.back() != '\n');
 
@@ -358,7 +355,7 @@ int Steam_Matchmaking::AddFavoriteGame( AppId_t nAppID, uint32 nIP, uint16 nConn
             list.append(newip_string);
             list.append("\n");
  
-            std::size_t file_directory = file_path.rfind("/");
+            std::size_t file_directory = file_path.find_last_of("/\\");
             std::string directory_path;
             std::string file_name;
             if (file_directory != std::string::npos) {
@@ -371,11 +368,10 @@ int Steam_Matchmaking::AddFavoriteGame( AppId_t nAppID, uint32 nIP, uint16 nConn
         }
 
         return list_lines;
-    }
-    else {
+    } else {
         newip_string.append("\n");
 
-        std::size_t file_directory = file_path.rfind("/");
+        std::size_t file_directory = file_path.find_last_of("/\\");
         std::string directory_path;
         std::string file_name;
         if (file_directory != std::string::npos) {
@@ -394,43 +390,40 @@ bool Steam_Matchmaking::RemoveFavoriteGame( AppId_t nAppID, uint32 nIP, uint16 n
 {
     PRINT_DEBUG_ENTRY();
 
-    std::string file_path;
-    unsigned long long file_size;
+    std::string file_path{};
+    unsigned int file_size{};
 
     if (unFlags == 1) {
         file_path = local_storage->get_current_save_directory() + "7" + PATH_SEPARATOR + Local_Storage::remote_storage_folder + "serverbrowser_favorites.txt";
         file_size = file_size_(file_path);
-    }
-    else if (unFlags == 2) {
+    } else if (unFlags == 2) {
         file_path = local_storage->get_current_save_directory() + "7" + PATH_SEPARATOR + Local_Storage::remote_storage_folder + "serverbrowser_history.txt";
         file_size = file_size_(file_path);
-    }
-    else {
+    } else {
         return false;
     }
 
     if (file_size) {
         std::string list{};
         list.resize(file_size);
-        Local_Storage::get_file_data(file_path, (char *)&list[0], file_size, 0);
+        Local_Storage::get_file_data(file_path, (char*)&list[0], file_size, 0);
 
-        unsigned char ip[4];
+        unsigned char ip[4]{};
         ip[0] = nIP & 0xFF;
         ip[1] = (nIP >> 8) & 0xFF;
         ip[2] = (nIP >> 16) & 0xFF;
         ip[3] = (nIP >> 24) & 0xFF;
-        char newip[24];
+        char newip[24]{};
         snprintf((char *)newip, sizeof(newip), "%d.%d.%d.%d:%d\n", ip[3], ip[2], ip[1], ip[0], nConnPort);
-        std::string newip_string;
-        newip_string.append(newip);
+        std::string newip_string(newip);
 
         std::size_t list_ip = list.find(newip_string);
         if (list_ip != std::string::npos) {
             list.erase(list_ip, newip_string.length());
 
-            std::size_t file_directory = file_path.rfind("/");
-            std::string directory_path;
-            std::string file_name;
+            std::size_t file_directory = file_path.find_last_of("/\\");
+            std::string directory_path{};
+            std::string file_name{};
             if (file_directory != std::string::npos) {
                 directory_path = file_path.substr(0, file_directory);
                 file_name = file_path.substr(file_directory);
@@ -600,7 +593,9 @@ CSteamID Steam_Matchmaking::GetLobbyByIndex( int iLobby )
     PRINT_DEBUG("%i", iLobby);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     CSteamID id = k_steamIDNil;
-    if (0 <= iLobby && iLobby < filtered_lobbies.size()) id = filtered_lobbies[iLobby];
+    if (iLobby >= 0 && static_cast<size_t>(iLobby) < filtered_lobbies.size()) {
+        id = filtered_lobbies[iLobby];
+    }
     PRINT_DEBUG("found lobby %llu", id.ConvertToUint64());
     return id;
 }
@@ -868,7 +863,7 @@ bool Steam_Matchmaking::GetLobbyDataByIndex( CSteamID steamIDLobby, int iLobbyDa
     Lobby *lobby = get_lobby(steamIDLobby);
     bool ret = false;
 
-    if (lobby && lobby->values().size() > iLobbyData && iLobbyData >= 0) {
+    if (iLobbyData >= 0 && lobby && lobby->values().size() > static_cast<size_t>(iLobbyData)) {
         auto lobby_data = lobby->values().begin();
         for (int i = 0; i < iLobbyData; ++i) ++lobby_data;
         if (pchKey && cchKeyBufferSize > 0) {
@@ -914,7 +909,7 @@ const char* Steam_Matchmaking::GetLobbyMemberData( CSteamID steamIDLobby, CSteam
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!pchKey) return "";
 
-    struct Lobby_Member *member = get_lobby_member(get_lobby(steamIDLobby), steamIDUser);
+    Lobby_Member *member = get_lobby_member(get_lobby(steamIDLobby), steamIDUser);
     const char *ret = "";
     if (member) {
         if (steamIDUser == settings->get_local_steam_id()) {
@@ -1009,12 +1004,12 @@ int Steam_Matchmaking::GetLobbyChatEntry( CSteamID steamIDLobby, int iChatID, ST
 {
     PRINT_DEBUG("%llu %i %p %p %i %p", steamIDLobby.ConvertToUint64(), iChatID, pSteamIDUser, pvData, cubData, peChatEntryType);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (iChatID >= chat_entries.size() || iChatID < 0 || cubData < 0) return 0;
+    if (iChatID < 0 || cubData < 0 || static_cast<size_t>(iChatID) >= chat_entries.size()) return 0;
     if (chat_entries[iChatID].lobby_id != steamIDLobby) return 0;
     if (pSteamIDUser) *pSteamIDUser = chat_entries[iChatID].user_id;
     if (peChatEntryType) *peChatEntryType = chat_entries[iChatID].type;
     if (pvData) {
-        if (chat_entries[iChatID].message.size() <= cubData) {
+        if (chat_entries[iChatID].message.size() <= static_cast<size_t>(cubData)) {
             cubData = chat_entries[iChatID].message.size();
             memcpy(pvData, chat_entries[iChatID].message.data(), cubData);
             PRINT_DEBUG("  Returned chat of len: %i", cubData);
@@ -1357,7 +1352,7 @@ void Steam_Matchmaking::RunCallbacks()
                             int compare_to = 0;
                             //TODO: check if this is how real steam behaves
                             if (value->second.size()) {
-                                compare_to = std::stoll(value->second, 0, 0);
+                                compare_to = static_cast<int>(std::stoll(value->second, 0, 0));
                             }
                             PRINT_DEBUG("Compare Values %i %i", compare_to, f.value_int);
                             if (f.eComparisonType == k_ELobbyComparisonEqual) {

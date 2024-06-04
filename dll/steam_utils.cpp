@@ -82,7 +82,7 @@ bool Steam_Utils::GetImageSize( int iImage, uint32 *pnWidth, uint32 *pnHeight )
     if (!iImage || !pnWidth || !pnHeight) return false;
 
     auto image = settings->images.find(iImage);
-    if (image == settings->images.end()) return false;
+    if (settings->images.end() == image) return false;
 
     *pnWidth = image->second.width;
     *pnHeight = image->second.height;
@@ -94,16 +94,14 @@ bool Steam_Utils::GetImageSize( int iImage, uint32 *pnWidth, uint32 *pnHeight )
 // the destination buffer size should be 4 * height * width * sizeof(char)
 bool Steam_Utils::GetImageRGBA( int iImage, uint8 *pubDest, int nDestBufferSize )
 {
-    PRINT_DEBUG("%i", iImage);
+    PRINT_DEBUG("%i %p %i", iImage, pubDest, nDestBufferSize);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    if (!iImage || !pubDest || !nDestBufferSize) return false;
+    if (!iImage || !pubDest || nDestBufferSize <= 0) return false;
 
     auto image = settings->images.find(iImage);
-    if (image == settings->images.end()) return false;
+    if (settings->images.end() == image) return false;
 
-    unsigned size = static_cast<unsigned>(image->second.data.size());
-    if (nDestBufferSize < size) size = nDestBufferSize;
     image->second.data.copy((char *)pubDest, nDestBufferSize);
     return true;
 }
@@ -111,7 +109,7 @@ bool Steam_Utils::GetImageRGBA( int iImage, uint8 *pubDest, int nDestBufferSize 
 // returns the IP of the reporting server for valve - currently only used in Source engine games
 bool Steam_Utils::GetCSERIPPort( uint32 *unIP, uint16 *usPort )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
@@ -122,7 +120,7 @@ uint8 Steam_Utils::GetCurrentBatteryPower()
 {
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return 255;
+    return 255; // AC
 }
 
 

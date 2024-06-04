@@ -514,7 +514,7 @@ bool Steam_Networking_Utils::SteamNetworkingIPAddr_ParseString( SteamNetworkingI
         size_t sep_pos = 0;
         std::string ip;
         int sep_count = 0;
-        for (int i = 0; i < str.length(); ++i) {
+        for (unsigned i = 0; i < str.length(); ++i) {
             if (str[i] == ':') {
                 sep_pos = i;
                 ++sep_count;

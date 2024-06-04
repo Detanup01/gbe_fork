@@ -539,7 +539,7 @@ Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo
     oldcount += flCountThisSession;
     oldsessionlength += dSessionLength;
 
-    float average = oldcount / oldsessionlength;
+    float average = static_cast<float>(oldcount / oldsessionlength);
     memcpy(data, &average, sizeof(average));
     memcpy(data + sizeof(float), &oldcount, sizeof(oldcount));
     memcpy(data + sizeof(float) * 2, &oldsessionlength, sizeof(oldsessionlength));
@@ -1421,7 +1421,7 @@ const char * Steam_User_Stats::GetLeaderboardName( SteamLeaderboard_t hSteamLead
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return "";
 
-    return cached_leaderboards[hSteamLeaderboard - 1].name.c_str();
+    return cached_leaderboards[static_cast<unsigned>(hSteamLeaderboard - 1)].name.c_str();
 }
 
 
@@ -1432,7 +1432,7 @@ int Steam_User_Stats::GetLeaderboardEntryCount( SteamLeaderboard_t hSteamLeaderb
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return 0;
 
-    return (int)cached_leaderboards[hSteamLeaderboard - 1].entries.size();
+    return (int)cached_leaderboards[static_cast<unsigned>(hSteamLeaderboard - 1)].entries.size();
 }
 
 
@@ -1443,7 +1443,7 @@ ELeaderboardSortMethod Steam_User_Stats::GetLeaderboardSortMethod( SteamLeaderbo
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return k_ELeaderboardSortMethodNone;
 
-    return cached_leaderboards[hSteamLeaderboard - 1].sort_method; 
+    return cached_leaderboards[static_cast<unsigned>(hSteamLeaderboard - 1)].sort_method;
 }
 
 
@@ -1454,7 +1454,7 @@ ELeaderboardDisplayType Steam_User_Stats::GetLeaderboardDisplayType( SteamLeader
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return k_ELeaderboardDisplayTypeNone;
 
-    return cached_leaderboards[hSteamLeaderboard - 1].display_type; 
+    return cached_leaderboards[static_cast<unsigned>(hSteamLeaderboard - 1)].display_type;
 }
 
 
@@ -1473,7 +1473,7 @@ SteamAPICall_t Steam_User_Stats::DownloadLeaderboardEntries( SteamLeaderboard_t 
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return k_uAPICallInvalid; //might return callresult even if hSteamLeaderboard is invalid
 
-    int entries_count = (int)cached_leaderboards[hSteamLeaderboard - 1].entries.size();
+    int entries_count = (int)cached_leaderboards[static_cast<unsigned>(hSteamLeaderboard - 1)].entries.size();
     // https://partner.steamgames.com/doc/api/ISteamUserStats#ELeaderboardDataRequest
     if (eLeaderboardDataRequest != k_ELeaderboardDataRequestFriends) {
         int required_count = nRangeEnd - nRangeStart + 1;
@@ -1502,7 +1502,7 @@ SteamAPICall_t Steam_User_Stats::DownloadLeaderboardEntriesForUsers( SteamLeader
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return k_uAPICallInvalid; //might return callresult even if hSteamLeaderboard is invalid
 
-    auto &board = cached_leaderboards[hSteamLeaderboard - 1];
+    auto& board = cached_leaderboards[static_cast<unsigned>(hSteamLeaderboard - 1)];
     bool ok = true;
     int total_count = 0;
     if (prgUsers && cUsers > 0) {
@@ -1553,8 +1553,8 @@ bool Steam_User_Stats::GetDownloadedLeaderboardEntry( SteamLeaderboardEntries_t 
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboardEntries > cached_leaderboards.size() || hSteamLeaderboardEntries <= 0) return false;
     
-    const auto &board = cached_leaderboards[hSteamLeaderboardEntries - 1];
-    if (index < 0 || index >= board.entries.size()) return false;
+    const auto &board = cached_leaderboards[static_cast<unsigned>(hSteamLeaderboardEntries - 1)];
+    if (index < 0 || static_cast<size_t>(index) >= board.entries.size()) return false;
 
     const auto &target_entry = board.entries[index];
     
@@ -1568,7 +1568,7 @@ bool Steam_User_Stats::GetDownloadedLeaderboardEntry( SteamLeaderboardEntries_t 
     }
     
     if (pDetails && cDetailsMax > 0) {
-        for (int i = 0; i < target_entry.score_details.size() && i < cDetailsMax; ++i) {
+        for (unsigned i = 0; i < target_entry.score_details.size() && i < static_cast<unsigned>(cDetailsMax); ++i) {
             pDetails[i] = target_entry.score_details[i];
         }
     }
@@ -1588,7 +1588,7 @@ SteamAPICall_t Steam_User_Stats::UploadLeaderboardScore( SteamLeaderboard_t hSte
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return k_uAPICallInvalid; //TODO: might return callresult even if hSteamLeaderboard is invalid
 
-    auto &board = cached_leaderboards[hSteamLeaderboard - 1];
+    auto &board = cached_leaderboards[static_cast<unsigned>(hSteamLeaderboard - 1)];
     auto my_entry = board.find_recent_entry(settings->get_local_steam_id());
     int current_rank = my_entry
         ? 1 + (int)(my_entry - &board.entries[0])
@@ -1756,7 +1756,7 @@ int Steam_User_Stats::GetNextMostAchievedAchievementInfo( int iIteratorPrevious,
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (iIteratorPrevious < 0) return -1;
     
-    int iIteratorCurrent = iIteratorPrevious + 1;
+    unsigned iIteratorCurrent = static_cast<unsigned>(iIteratorPrevious + 1);
     if (iIteratorCurrent >= defined_achievements.size()) return -1;
 
     std::string name(GetAchievementName(iIteratorCurrent));
@@ -1776,7 +1776,7 @@ int Steam_User_Stats::GetNextMostAchievedAchievementInfo( int iIteratorPrevious,
         *pbAchieved = achieved;
     }
 
-    return iIteratorCurrent;
+    return static_cast<int>(iIteratorCurrent);
 }
 
 

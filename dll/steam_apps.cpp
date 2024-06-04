@@ -243,11 +243,12 @@ bool Steam_Apps::GetCurrentBetaName( char *pchName, int cchNameBufferSize )
 {
     PRINT_DEBUG("%p [%i]", pchName, cchNameBufferSize);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (pchName && cchNameBufferSize > settings->current_branch_name.size()) {
+    if (pchName && cchNameBufferSize > 0 && static_cast<size_t>(cchNameBufferSize) > settings->current_branch_name.size()) {
         memset(pchName, 0, cchNameBufferSize);
         memcpy(pchName, settings->current_branch_name.c_str(), settings->current_branch_name.size());
     }
 
+    PRINT_DEBUG("returned '%s'", pchName);
     return settings->is_beta_branch;
 }
 

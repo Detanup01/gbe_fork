@@ -177,7 +177,7 @@ bool AppTicketV4::Deserialize(const uint8_t* pBuffer, size_t size)
         return false;
 
     uint16_t appid_count = *reinterpret_cast<const uint16_t*>(pBuffer);
-    if (size < (appid_count * 4 + 2) || appid_count >= 140)
+    if (size < static_cast<size_t>(appid_count * 4 + 2) || appid_count >= 140u)
         return false;
 
     AppIDs.resize(appid_count);

@@ -229,7 +229,7 @@ static BOOL DirectoryExists(LPCWSTR szPath)
 
 static void createDirectoryRecursively(std::wstring path)
 {
-  unsigned long long pos = 0;
+  size_t pos = 0;
   do
   {
     pos = path.find_first_of(L"\\/", pos + 1);
@@ -765,7 +765,7 @@ bool Local_Storage::iterate_file(std::string folder, int index, char *output_fil
     }
 
     std::vector<struct File_Data> files = get_filenames_recursive(save_directory + appid + folder);
-    if (index < 0 || index >= files.size()) return false;
+    if (index < 0 || static_cast<size_t>(index) >= files.size()) return false;
 
     std::string name(desanitize_file_name(files[index].name));
     if (output_size) *output_size = file_size(folder, name);
@@ -807,7 +807,7 @@ bool Local_Storage::load_json(std::string full_path, nlohmann::json& json)
     // If there is a file and we opened it
     if (inventory_file) {
         inventory_file.seekg(0, std::ios::end);
-        size_t size = inventory_file.tellg();
+        size_t size = static_cast<size_t>(inventory_file.tellg());
         std::string buffer(size, '\0');
         inventory_file.seekg(0);
         // Read it entirely, if the .json file gets too big,
