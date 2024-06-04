@@ -14,7 +14,6 @@
 #include <utility>
 #include <random>
 
-#include "InGameOverlay/ImGui/imgui.h"
 #include "InGameOverlay/RendererDetector.h"
 
 #include "dll/dll.h"
@@ -33,6 +32,10 @@ static constexpr int max_window_id = 10000;
 static constexpr int base_notif_window_id  = 0 * max_window_id;
 static constexpr int base_friend_window_id = 1 * max_window_id;
 static constexpr int base_friend_item_id   = 2 * max_window_id;
+
+static const std::set<InGameOverlay::ToggleKey> overlay_toggle_keys = {
+    InGameOverlay::ToggleKey::SHIFT, InGameOverlay::ToggleKey::TAB
+};
 
 // look for the column 'API language code' here: https://partner.steamgames.com/doc/store/localization/languages
 static constexpr const char* valid_languages[] = {
@@ -69,18 +72,6 @@ static constexpr const char* valid_languages[] = {
     "indonesian",
 };
 
-static ImFontAtlas fonts_atlas{};
-static ImFont *font_default{};
-static ImFont *font_notif{};
-
-static std::recursive_mutex overlay_mutex{};
-static std::atomic<bool> setup_overlay_called = false;
-
-static std::map<std::string, std::vector<char>> wav_files{
-    { "overlay_achievement_notification.wav", std::vector<char>{} },
-    { "overlay_friend_notification.wav", std::vector<char>{} },
-};
-
 
 // ListBoxHeader() is deprecated and inlined inside <imgui.h>
 // Helper to calculate size from items_count and height_in_items
@@ -115,6 +106,25 @@ Steam_Overlay::Steam_Overlay(Settings* settings, Local_Storage *local_storage, S
     // don't even bother initializing the overlay
     if (settings->disable_overlay) return;
 
+    renderer_hook_init_thread = common_helpers::KillableWorker(
+        [this](void *){ return renderer_hook_proc(); },
+        std::chrono::milliseconds(0),
+        std::chrono::milliseconds(renderer_detector_polling_ms),
+        [this] { return !setup_overlay_called; }
+    );
+    
+    renderer_detector_delay_thread = common_helpers::KillableWorker(
+        [this](void *){
+            request_renderer_detector();
+            set_renderer_hook_timeout();
+            renderer_hook_init_thread.start();
+            return true;
+        },
+        std::chrono::milliseconds(settings->overlay_hook_delay_sec * 1000),
+        std::chrono::milliseconds(0),
+        [this] { return !setup_overlay_called; }
+    );
+    
     strncpy(username_text, settings->get_local_name(), sizeof(username_text));
 
     // we need these copies to show the warning only once, then disable the flag
@@ -145,6 +155,8 @@ Steam_Overlay::~Steam_Overlay()
 {
     if (settings->disable_overlay) return;
 
+    UnSetupOverlay();
+
     this->network->rmCallback(CALLBACK_ID_STEAM_MESSAGES, settings->get_local_steam_id(), &Steam_Overlay::overlay_networking_callback, this);
     this->run_every_runcb->remove(&Steam_Overlay::overlay_run_callback, this);
 }
@@ -156,46 +168,33 @@ void Steam_Overlay::request_renderer_detector()
     future_renderer = InGameOverlay::DetectRenderer();
 }
 
-void Steam_Overlay::renderer_detector_delay_thread()
+void Steam_Overlay::set_renderer_hook_timeout()
 {
-    PRINT_DEBUG("waiting for %i seconds", settings->overlay_hook_delay_sec);
-    // give games some time to init their renderer (DirectX, OpenGL, etc...)
-    int timeout_ctr = settings->overlay_hook_delay_sec /*seconds*/ * 1000 /*milli per second*/ / renderer_detector_polling_ms;
-    while (timeout_ctr > 0 && setup_overlay_called ) {
-        --timeout_ctr;
-        std::this_thread::sleep_for(std::chrono::milliseconds(renderer_detector_polling_ms));
-    }
-
-    // early exit before we get a chance to do anything
-    if (!setup_overlay_called) {
-        PRINT_DEBUG("early exit before renderer detection");
-        return;
-    }
-    
-    // request renderer detection
-    request_renderer_detector();
-    renderer_hook_init_thread();
+    renderer_hook_timeout_ctr = settings->overlay_renderer_detector_timeout_sec /*seconds*/ * 1000 /*milli per second*/ / renderer_detector_polling_ms;
 }
 
-void Steam_Overlay::renderer_hook_init_thread()
+void Steam_Overlay::cleanup_renderer_hook()
 {
-    PRINT_DEBUG_ENTRY();
-    int timeout_ctr = settings->overlay_renderer_detector_timeout_sec /*seconds*/ * 1000 /*milli per second*/ / renderer_detector_polling_ms;
-    while (timeout_ctr > 0 && setup_overlay_called && future_renderer.wait_for(std::chrono::milliseconds(renderer_detector_polling_ms)) != std::future_status::ready) {
-        --timeout_ctr;
+    InGameOverlay::StopRendererDetection();
+    InGameOverlay::FreeDetector();
+}
+
+bool Steam_Overlay::renderer_hook_proc()
+{
+    if (renderer_hook_timeout_ctr > 0 && future_renderer.wait_for(std::chrono::milliseconds(renderer_detector_polling_ms)) != std::future_status::ready) {
+        return false;
     }
 
     // free detector resources and check for failure
-    InGameOverlay::StopRendererDetection();
-    InGameOverlay::FreeDetector();
+    cleanup_renderer_hook();
     // exit on failure
-    bool final_chance = (future_renderer.wait_for(std::chrono::milliseconds(1)) == std::future_status::ready) && future_renderer.valid();
+    bool final_chance = future_renderer.wait_for(std::chrono::milliseconds(1)) == std::future_status::ready;
     // again check for 'setup_overlay_called' to be extra sure that the overlay wasn't deinitialized
-    if (!setup_overlay_called || !final_chance || timeout_ctr <= 0) {
-        PRINT_DEBUG("failed to detect renderer, ctr=%i, overlay was set up=%i, hook intance state=%i",
-            timeout_ctr, (int)setup_overlay_called, (int)final_chance
+    if (!setup_overlay_called || !final_chance || renderer_hook_timeout_ctr <= 0) {
+        PRINT_DEBUG("failed to detect renderer, ctr=%i, overlay was set up=%i",
+            renderer_hook_timeout_ctr, (int)setup_overlay_called
         );
-        return;
+        return true;
     }
 
     // do a one time initialization
@@ -203,7 +202,7 @@ void Steam_Overlay::renderer_hook_init_thread()
     _renderer = future_renderer.get();
     if (!_renderer) { // is this even possible?
         PRINT_DEBUG("renderer hook was null!");
-        return;
+        return true;
     }
     PRINT_DEBUG("got renderer hook %p for '%s'", _renderer, _renderer->GetLibraryName().c_str());
     
@@ -213,9 +212,6 @@ void Steam_Overlay::renderer_hook_init_thread()
     create_fonts();
     
     // setup renderer callbacks
-    const static std::set<InGameOverlay::ToggleKey> overlay_toggle_keys = {
-        InGameOverlay::ToggleKey::SHIFT, InGameOverlay::ToggleKey::TAB
-    };
     auto overlay_toggle_callback = [this]() { open_overlay_hook(true); };
     _renderer->OverlayProc = [this]() { overlay_render_proc(); };
     _renderer->OverlayHookReady = [this](InGameOverlay::OverlayHookState state) {
@@ -225,6 +221,8 @@ void Steam_Overlay::renderer_hook_init_thread()
 
     bool started = _renderer->StartHook(overlay_toggle_callback, overlay_toggle_keys, &fonts_atlas);
     PRINT_DEBUG("started renderer hook (result=%i)", (int)started);
+    
+    return true;
 }
 
 // note: make sure to load all relevant strings before creating the font(s), otherwise some glyphs ranges will be missing
@@ -238,7 +236,6 @@ void Steam_Overlay::create_fonts()
 
     float font_size = settings->overlay_appearance.font_size;
 
-    static ImFontConfig font_cfg{};
     font_cfg.FontDataOwnedByAtlas = false; // https://github.com/ocornut/imgui/blob/master/docs/FONTS.md#loading-font-data-from-memory
     font_cfg.PixelSnapH = true;
     font_cfg.OversampleH = 1;
@@ -248,7 +245,6 @@ void Steam_Overlay::create_fonts()
     font_cfg.GlyphExtraSpacing.x = settings->overlay_appearance.font_glyph_extra_spacing_x; 
     font_cfg.GlyphExtraSpacing.y = settings->overlay_appearance.font_glyph_extra_spacing_y;
 
-    static ImFontGlyphRangesBuilder font_builder{};
     for (const auto &ach : achievements) {
         font_builder.AddText(ach.title.c_str());
         font_builder.AddText(ach.description.c_str());
@@ -292,7 +288,6 @@ void Steam_Overlay::create_fonts()
     }
     font_builder.AddRanges(fonts_atlas.GetGlyphRangesDefault());
 
-    static ImVector<ImWchar> ranges{};
     font_builder.BuildRanges(&ranges);
     font_cfg.GlyphRanges = ranges.Data;
 
@@ -645,9 +640,10 @@ bool Steam_Overlay::submit_notification(notification_type type, const std::strin
 
 void Steam_Overlay::add_chat_message_notification(std::string const &message)
 {
+    if (settings->disable_overlay_friend_notification) return;
+
     PRINT_DEBUG("'%s'", message.c_str());
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (settings->disable_overlay_friend_notification) return;
 
     submit_notification(notification_type::message, message);
 }
@@ -965,7 +961,7 @@ float Steam_Overlay::animate_factor(std::chrono::milliseconds elapsed)
     return factor;
 }
 
-void Steam_Overlay::build_notifications(int width, int height)
+void Steam_Overlay::build_notifications(float width, float height)
 {
     auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
     std::queue<Friend> friend_actions_temp{};
@@ -978,7 +974,7 @@ void Steam_Overlay::build_notifications(int width, int height)
     for (auto it = notifications.begin(); it != notifications.end(); ++it) {
         auto elapsed_notif = now - it->start_time;
 
-        set_next_notification_pos({(float)width, (float)height}, elapsed_notif, *it, coords);
+        set_next_notification_pos({width, height}, elapsed_notif, *it, coords);
 
         if ( elapsed_notif < Notification::fade_in) { // still appearing (fading in)
             float alpha = settings->overlay_appearance.notification_a * (elapsed_notif.count() / static_cast<float>(Notification::fade_in.count()));
@@ -1127,9 +1123,10 @@ void Steam_Overlay::add_auto_accept_invite_notification()
 
 void Steam_Overlay::add_invite_notification(std::pair<const Friend, friend_window_state>& wnd_state)
 {
+    if (settings->disable_overlay_friend_notification) return;
+    
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (settings->disable_overlay_friend_notification) return;
     if (!Ready()) return;
     
     char tmp[TRANSLATION_BUFFER_SIZE]{};
@@ -1142,9 +1139,10 @@ void Steam_Overlay::add_invite_notification(std::pair<const Friend, friend_windo
 
 void Steam_Overlay::post_achievement_notification(Overlay_Achievement &ach)
 {
+    if (settings->disable_overlay_achievement_notification) return;
+
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (settings->disable_overlay_achievement_notification) return;
     if (!Ready()) return;
     
     try_load_ach_icon(ach, true);
@@ -1186,12 +1184,14 @@ bool Steam_Overlay::try_load_ach_icon(Overlay_Achievement &ach, bool achieved)
             file_path = Local_Storage::get_game_settings_path() + Steam_Overlay::ACH_FALLBACK_DIR + PATH_SEPARATOR + icon_name;
             file_size = file_size_(file_path);
         }
+
+        int icon_size = static_cast<int>(settings->overlay_appearance.icon_size);
         if (file_size) {
-            std::string img(Local_Storage::load_image_resized(file_path, "", settings->overlay_appearance.icon_size));
+            std::string img(Local_Storage::load_image_resized(file_path, "", icon_size));
             if (img.size()) {
                 icon_rsrc = _renderer->CreateImageResource(
                     (void*)img.c_str(),
-                    settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size);
+                    icon_size, icon_size);
                 
                 if (!icon_rsrc.expired()) load_trials = Overlay_Achievement::ICON_LOAD_MAX_TRIALS;
                 PRINT_DEBUG("'%s' (result=%i)", ach.name.c_str(), (int)!icon_rsrc.expired());
@@ -1729,54 +1729,51 @@ void Steam_Overlay::steam_run_callback()
 
 void Steam_Overlay::SetupOverlay()
 {
+    if (settings->disable_overlay) return;
+
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (settings->disable_overlay) return;
 
     bool not_called_yet = false;
     if (setup_overlay_called.compare_exchange_weak(not_called_yet, true)) {
         if (settings->overlay_hook_delay_sec > 0) {
-            std::thread([this]() { renderer_detector_delay_thread(); }).detach();
+            PRINT_DEBUG("waiting %i seconds", settings->overlay_hook_delay_sec);
+            renderer_detector_delay_thread.start();
         } else {
             // "HITMAN 3" fails if the detector was started later (after a delay)
             // so request the renderer detector immediately (the old behavior)
             request_renderer_detector();
-            std::thread([this]() { renderer_hook_init_thread(); }).detach();
+            set_renderer_hook_timeout();
+            renderer_hook_init_thread.start();
         }
     }
 }
 
 void Steam_Overlay::UnSetupOverlay()
 {
+    if (settings->disable_overlay) return;
+
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (settings->disable_overlay) return;
 
     bool already_called = true;
     if (setup_overlay_called.compare_exchange_weak(already_called, false)) {
         is_ready = false;
+
+        renderer_hook_init_thread.kill();
+        renderer_detector_delay_thread.kill();
 
         // stop internal frame processing & restore cursor
         if (_renderer) {
             // for some reason this gets triggered after the overlay instance has been destroyed
             // I assume because the game de-initializes DX later after closing Steam APIs
             // this hacky solution just sets it to an empty function
-            _renderer->OverlayHookReady = [](InGameOverlay::OverlayHookState state){};
+            _renderer->OverlayHookReady = [](InGameOverlay::OverlayHookState){};
             
             allow_renderer_frame_processing(false, true);
             obscure_game_input(false);
-        }
-
-        // allow the future_renderer thread to exit if needed
-        // std::this_thread::sleep_for(std::chrono::milliseconds((int)(renderer_detector_polling_ms * 1.3f)));
-        common_helpers::thisThreadYieldFor(
-            std::chrono::duration_cast<std::chrono::microseconds>(
-                std::chrono::milliseconds((int)(renderer_detector_polling_ms * 1.3f))
-            )
-        );
-        
-        if (_renderer) {
-            PRINT_DEBUG("free-ing any images resources");
+            
+            PRINT_DEBUG("releasing any images resources");
             for (auto &ach : achievements) {
                 if (!ach.icon.expired()) {
                     _renderer->ReleaseImageResource(ach.icon);
@@ -1792,15 +1789,10 @@ void Steam_Overlay::UnSetupOverlay()
             _renderer = nullptr;
         }
 
-        // cleanup everything
-        fonts_atlas.Clear();
-        memset(&fonts_atlas, 0, sizeof(fonts_atlas));
-        font_default = nullptr;
-        font_notif = nullptr;
-        for (auto &kv : wav_files) {
-            kv.second.clear();
-        }
+        cleanup_renderer_hook();
     }
+    
+    PRINT_DEBUG("done *********");
 }
 
 bool Steam_Overlay::Ready() const
@@ -1816,18 +1808,20 @@ bool Steam_Overlay::NeedPresent() const
 
 void Steam_Overlay::SetNotificationPosition(ENotificationPosition eNotificationPosition)
 {
+    if (settings->disable_overlay) return;
+
     PRINT_DEBUG("TODO %i", (int)eNotificationPosition);
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (settings->disable_overlay) return;
 
     notif_position = eNotificationPosition;
 }
 
 void Steam_Overlay::SetNotificationInset(int nHorizontalInset, int nVerticalInset)
 {
+    if (settings->disable_overlay) return;
+
     PRINT_DEBUG("TODO x=%i y=%i", nHorizontalInset, nVerticalInset);
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (settings->disable_overlay) return;
 
     h_inset = nHorizontalInset;
     v_inset = nVerticalInset;
@@ -1927,9 +1921,10 @@ void Steam_Overlay::SetRichInvite(Friend friendId, const char* connect_str)
 
 void Steam_Overlay::FriendConnect(Friend _friend)
 {
+    if (settings->disable_overlay) return;
+
     PRINT_DEBUG("%" PRIu64 "", _friend.id());
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (settings->disable_overlay) return;
 
     // players connections might happen earlier before the overlay is ready
     // we don't want to miss them
@@ -1950,9 +1945,10 @@ void Steam_Overlay::FriendConnect(Friend _friend)
 
 void Steam_Overlay::FriendDisconnect(Friend _friend)
 {
+    if (settings->disable_overlay) return;
+
     PRINT_DEBUG("%" PRIu64 "", _friend.id());
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (settings->disable_overlay) return;
     
     // players connections might happen earlier before the overlay is ready
     // we don't want to miss them
@@ -1966,6 +1962,8 @@ void Steam_Overlay::FriendDisconnect(Friend _friend)
 // show a notification when the user unlocks an achievement
 void Steam_Overlay::AddAchievementNotification(const std::string &ach_name, nlohmann::json const &ach)
 {
+    if (settings->disable_overlay) return;
+
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     if (!Ready()) return;

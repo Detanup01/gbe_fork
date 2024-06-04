@@ -11,6 +11,7 @@
 #include <atomic>
 #include <memory>
 #include "InGameOverlay/RendererHook.h"
+#include "InGameOverlay/ImGui/imgui.h"
 
 static constexpr size_t max_chat_len = 768;
 
@@ -109,6 +110,8 @@ class Steam_Overlay
     constexpr static const char ACH_SOUNDS_FOLDER[] = "sounds";
     constexpr static const char ACH_FALLBACK_DIR[] = "achievement_images";
 
+    constexpr static const int renderer_detector_polling_ms = 100;
+
     class Settings* settings;
     class Local_Storage* local_storage;
     class SteamCallResults* callback_results;
@@ -164,9 +167,28 @@ class Steam_Overlay
     // changed only when overlay is shown/hidden, true means overlay is shown
     std::atomic_uint32_t obscure_cursor_requests = 0;
     
-    constexpr static const int renderer_detector_polling_ms = 100;
     std::future<InGameOverlay::RendererHook_t *> future_renderer{};
     InGameOverlay::RendererHook_t *_renderer{};
+
+    common_helpers::KillableWorker renderer_detector_delay_thread{};
+    common_helpers::KillableWorker renderer_hook_init_thread{};
+    int renderer_hook_timeout_ctr{};
+
+    // font stuff
+    ImFontAtlas fonts_atlas{};
+    ImFont *font_default{};
+    ImFont *font_notif{};
+    ImFontConfig font_cfg{};
+    ImFontGlyphRangesBuilder font_builder{};
+    ImVector<ImWchar> ranges{};
+
+    std::recursive_mutex overlay_mutex{};
+    std::atomic<bool> setup_overlay_called = false;
+
+    std::map<std::string, std::vector<char>> wav_files{
+        { "overlay_achievement_notification.wav", std::vector<char>{} },
+        { "overlay_friend_notification.wav", std::vector<char>{} },
+    };
 
     Steam_Overlay(Steam_Overlay const&) = delete;
     Steam_Overlay(Steam_Overlay&&) = delete;
@@ -193,13 +215,14 @@ class Steam_Overlay
     void set_next_notification_pos(std::pair<float, float> scrn_size, std::chrono::milliseconds elapsed, const Notification &noti, struct NotificationsCoords &coords);
     // factor controlling the amount of sliding during the animation, 0 means disabled
     float animate_factor(std::chrono::milliseconds elapsed);
-    void build_notifications(int width, int height);
+    void build_notifications(float width, float height);
     // invite a single friend
     void invite_friend(uint64 friend_id, class Steam_Friends* steamFriends, class Steam_Matchmaking* steamMatchmaking);
 
     void request_renderer_detector();
-    void renderer_detector_delay_thread();
-    void renderer_hook_init_thread();
+    void set_renderer_hook_timeout();
+    void cleanup_renderer_hook();
+    bool renderer_hook_proc();
     
     // note: make sure to load all relevant strings before creating the font(s), otherwise some glyphs ranges will be missing
     void create_fonts();
