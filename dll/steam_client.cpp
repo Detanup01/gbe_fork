@@ -19,13 +19,33 @@
 #include "dll/settings_parser.h"
 
 
+void Steam_Client::background_thread_proc()
+{
+    auto now_ms = (unsigned long long)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+
+    // if our time exceeds last run time of callbacks and it wasn't processing already
+    const auto runcallbacks_timeout_ms = last_cb_run + max_stall_ms.count();
+    if (!cb_run_active && (now_ms >= runcallbacks_timeout_ms)) {
+        std::lock_guard lock(global_mutex);
+
+        PRINT_DEBUG("run @@@@@@@@@@@@@@@@@@@@@@@@@@@");
+        last_cb_run = now_ms; // update the time counter just to avoid overlap
+        network->Run(); // networking must run first since it receives messages used by each run_callback()
+        run_every_runcb->run(); // call each run_callback()
+    }
+}
+
 Steam_Client::Steam_Client()
 {
     PRINT_DEBUG("start ----------");
     uint32 appid = create_localstorage_settings(&settings_client, &settings_server, &local_storage);
     local_storage->update_save_filenames(Local_Storage::remote_storage_folder);
 
-    background_thread = new Client_Background_Thread();
+    background_thread = new common_helpers::KillableWorker(
+        [this](void *){background_thread_proc(); return false;},
+        std::chrono::duration_cast<std::chrono::milliseconds>(initial_delay),
+        std::chrono::duration_cast<std::chrono::milliseconds>(max_stall_ms)
+    );
     network = new Networking(settings_server->get_local_steam_id(), appid, settings_server->get_port(), &(settings_server->custom_broadcasts), settings_server->disable_networking);
 
     run_every_runcb = new RunEveryRunCB();
@@ -296,6 +316,7 @@ HSteamUser Steam_Client::ConnectToGlobalUser( HSteamPipe hSteamPipe )
     // hence all run_callbacks() will never run, which might break the assumption that these callbacks are always run
     // also networking callbacks won't run
     // hence we spawn the background thread here which trigger all run_callbacks() and run networking callbacks
+    PRINT_DEBUG("started background thread");
     background_thread->start(this);
 
     steam_overlay->SetupOverlay();
@@ -317,6 +338,7 @@ HSteamUser Steam_Client::CreateLocalUser( HSteamPipe *phSteamPipe, EAccountType 
     serverInit();
 
     // gameservers don't call ConnectToGlobalUser(), instead they call this function
+    PRINT_DEBUG("started background thread");
     background_thread->start(this);
 
     HSteamPipe pipe = CreateSteamPipe();
@@ -386,7 +408,10 @@ bool Steam_Client::BShutdownIfAllPipesClosed()
     PRINT_DEBUG_ENTRY();
     if (steam_pipes.size()) return false; // not all pipes are released via BReleaseSteamPipe() yet
     
+    PRINT_DEBUG("killing background thread...");
     background_thread->kill();
+    PRINT_DEBUG("killed background thread");
+
     steam_controller->Shutdown();
     steam_overlay->UnSetupOverlay();
 
@@ -927,19 +952,4 @@ void Steam_Client::RunCallbacks(bool runClientCB, bool runGameserverCB)
 void Steam_Client::DestroyAllInterfaces()
 {
     PRINT_DEBUG_TODO();
-}
-
-bool Steam_Client::runcallbacks_active() const
-{
-    return cb_run_active;
-}
-
-unsigned long long Steam_Client::get_last_runcallbacks_time() const
-{
-    return last_cb_run;
-}
-
-void Steam_Client::set_last_runcallbacks_time(unsigned long long time_ms)
-{
-    last_cb_run = time_ms;
 }

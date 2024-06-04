@@ -64,35 +64,6 @@ enum Steam_Pipe {
     SERVER
 };
 
-class Steam_Client;
-class Client_Background_Thread
-{
-private:
-    // don't run immediately, give the game some time to initialize
-    constexpr const static auto initial_delay = std::chrono::seconds(2);
-    // max allowed time in which RunCallbacks() might not be called
-    constexpr const static auto max_stall_ms = std::chrono::milliseconds(300);
-
-    std::thread background_keepalive{};
-    std::mutex kill_background_thread_mutex{};
-    std::condition_variable kill_background_thread_cv{};
-    bool kill_background_thread{};
-    
-    Steam_Client *client_instance{};
-    
-    void thread_proc();
-
-public:
-    Client_Background_Thread();
-    ~Client_Background_Thread();
-
-    // spawn the thread if necessary, never call this inside the ctor of Steam_Client
-    // since the thread will attempt to get the global client pointer during initialization (which will still be under construction)
-    void start(Steam_Client *client_instance);
-    // kill the thread if necessary
-    void kill();
-};
-
 class Steam_Client :
 public ISteamClient007,
 public ISteamClient008,
@@ -116,6 +87,14 @@ private:
     
     std::atomic_bool cb_run_active = false;
     std::atomic<unsigned long long> last_cb_run{};
+
+    // don't run immediately, give the game some time to initialize
+    constexpr const static auto initial_delay = std::chrono::seconds(2);
+    // max allowed time in which RunCallbacks() might not be called
+    constexpr const static auto max_stall_ms = std::chrono::milliseconds(300);
+
+    common_helpers::KillableWorker *background_thread{};
+    void background_thread_proc();
 
 public:
     Networking *network{};
@@ -172,8 +151,6 @@ public:
     Steam_Game_Coordinator *steam_gameserver_game_coordinator{};
     Steam_Masterserver_Updater *steam_masterserver_updater{};
     Steam_AppTicket *steam_app_ticket{};
-
-    Client_Background_Thread *background_thread{};
 
     Steam_Overlay* steam_overlay{};
 
@@ -349,9 +326,6 @@ public:
 
     void DestroyAllInterfaces();
 
-    bool runcallbacks_active() const;
-    unsigned long long get_last_runcallbacks_time() const;
-    void set_last_runcallbacks_time(unsigned long long time_ms);
 };
 
 #endif // __INCLUDED_STEAM_CLIENT_H__

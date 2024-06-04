@@ -2,8 +2,93 @@
 #include <fstream>
 #include <cwchar>
 #include <algorithm>
-#include <thread>
 #include <cctype>
+
+namespace common_helpers {
+
+KillableWorker::KillableWorker(
+    std::function<bool(void *)> thread_job,
+    std::chrono::milliseconds initial_delay,
+    std::chrono::milliseconds polling_time,
+    std::function<bool()> should_kill)
+{
+    this->thread_job = thread_job;
+    this->initial_delay = initial_delay;
+    this->polling_time = polling_time;
+    this->should_kill = should_kill;
+}
+
+KillableWorker::~KillableWorker()
+{
+    kill();
+}
+
+KillableWorker& KillableWorker::operator=(const KillableWorker &other)
+{
+    if (&other == this) {
+        return *this;
+    }
+    
+    kill();
+
+    thread_obj = {};
+    initial_delay = other.initial_delay;
+    polling_time = other.polling_time;
+    should_kill = other.should_kill;
+    thread_job = other.thread_job;
+
+    return *this;
+}
+
+void KillableWorker::thread_proc(void *data)
+{
+    // wait for some time
+    if (initial_delay.count() > 0) {
+        std::unique_lock lck(kill_thread_mutex);
+        if (kill_thread_cv.wait_for(lck, initial_delay, [this]{ return this->kill_thread || (this->should_kill && this->should_kill()); })) {
+            return;
+        }
+    }
+
+    while (1) {
+        if (polling_time.count() > 0) {
+            std::unique_lock lck(kill_thread_mutex);
+            if (kill_thread_cv.wait_for(lck, polling_time, [this]{ return this->kill_thread || (this->should_kill && this->should_kill()); })) {
+                return;
+            }
+        }
+
+        if (thread_job(data)) { // job is done
+            return;
+        }
+        
+    }
+}
+
+bool KillableWorker::start(void *data)
+{
+    if (!thread_job) return false; // no work to do
+    if (thread_obj.joinable()) return true; // alrady spawned
+    
+    kill_thread = false;
+    thread_obj = std::thread([this, data] { thread_proc(data); });
+    return true;
+}
+
+void KillableWorker::kill()
+{
+    if (!thread_job || !thread_obj.joinable()) return; // already killed
+    
+    {
+        std::lock_guard lk(kill_thread_mutex);
+        kill_thread = true;
+    }
+
+    kill_thread_cv.notify_one();
+    thread_obj.join();
+}
+
+}
 
 static bool create_dir_impl(std::filesystem::path &dirpath)
 {

@@ -7,8 +7,48 @@
 #include <filesystem>
 #include <chrono>
 #include <vector>
+#include <functional>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 namespace common_helpers {
+
+class KillableWorker
+{
+private:
+    std::thread thread_obj{};
+
+    // don't run immediately, wait some time
+    std::chrono::milliseconds initial_delay{};
+    // time between each invokation
+    std::chrono::milliseconds polling_time{};
+
+    std::function<bool()> should_kill{};
+
+    std::function<bool(void *)> thread_job;
+
+    std::mutex kill_thread_mutex{};
+    std::condition_variable kill_thread_cv{};
+    bool kill_thread{};
+    
+    void thread_proc(void *data);
+
+public:
+    KillableWorker(
+        std::function<bool(void *)> thread_proc = {},
+        std::chrono::milliseconds initial_delay = {},
+        std::chrono::milliseconds polling_time = {},
+        std::function<bool()> should_kill = {});
+    ~KillableWorker();
+
+    KillableWorker& operator=(const KillableWorker &other);
+
+    // spawn the thread if necessary
+    bool start(void *data = nullptr);
+    // kill the thread if necessary
+    void kill();
+};
 
 bool create_dir(const std::string_view &dir);
 bool create_dir(const std::wstring_view &dir);

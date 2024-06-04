@@ -161,6 +161,7 @@ STEAMAPI_API HSteamUser SteamAPI_GetHSteamUser()
     return CLIENT_HSTEAMUSER;
 }
 
+
 // declare "g_pSteamClientGameServer" as an export for API library, then actually define it
 #if !defined(STEAMCLIENT_DLL) // api
 STEAMAPI_API ISteamClient *g_pSteamClientGameServer;
@@ -600,10 +601,16 @@ STEAMAPI_API HSteamUser Steam_GetHSteamUserCurrent()
 STEAMAPI_API const char *SteamAPI_GetSteamInstallPath()
 {
     PRINT_DEBUG_ENTRY();
-    static char steam_folder[1024];
-    std::string path = Local_Storage::get_program_path();
-    strcpy(steam_folder, path.c_str());
-    steam_folder[path.length() - 1] = 0;
+    static char steam_folder[4096]{};
+    std::string path(get_env_variable("SteamPath"));
+    if (path.empty()) {
+        path = Local_Storage::get_program_path();
+    }
+
+    auto count = path.copy(steam_folder, sizeof(steam_folder) - 1);
+    steam_folder[count] = '\0';
+
+    PRINT_DEBUG("returned path '%s'", steam_folder);
     return steam_folder;
 }
 
@@ -638,8 +645,7 @@ STEAMAPI_API HSteamUser GetHSteamUser()
 STEAMAPI_API steam_bool S_CALLTYPE SteamAPI_InitSafe()
 {
     PRINT_DEBUG_ENTRY();
-    SteamAPI_Init();
-    return true;
+    return SteamAPI_Init();
 }
 
 STEAMAPI_API ISteamClient *SteamClient()
