@@ -641,8 +641,10 @@ void Steam_Matchmaking_Servers::server_details(Gameserver *g, gameserveritem_t *
                 g->set_num_players(ssq_a2s_info->players);
                 g->set_version(static_cast<uint32_t>(std::stoull(ssq_a2s_info->version, NULL, 0)));
                 if (ssq_info_has_port(ssq_a2s_info)) g->set_port(ssq_a2s_info->port);
-                if (ssq_info_has_gameid(ssq_a2s_info)) g->set_appid(ssq_a2s_info->gameid);
+
+                if (ssq_info_has_gameid(ssq_a2s_info)) g->set_appid(CGameID((uint64)ssq_a2s_info->gameid).AppID());
                 else g->set_appid(ssq_a2s_info->id);
+                
                 g->set_offline(false);
             } else {
                 PRINT_DEBUG("  ssq server info failed: %s", ssq_server_emsg(ssq));
