@@ -270,6 +270,7 @@ public:
     int overlay_renderer_detector_timeout_sec = 15; // "Saints Row (2022)" takes almost ~8 sec to detect renderer (DX12)
     bool disable_overlay_achievement_notification = false;
     bool disable_overlay_friend_notification = false;
+    bool disable_overlay_achievement_progress = false;
     //warn people who use local save
     bool overlay_warn_local_save = false;
     //disable overlay warning for local save

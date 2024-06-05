@@ -645,6 +645,7 @@ static std::set<std::string> parse_supported_languages(class Local_Storage *loca
     // if the current emu language is not in the supported languages list
     if (!supported_languages.count(language)) {
         if (first_language.size()) { // get the first supported language if the list wasn't empty
+            PRINT_DEBUG("[?] Your language '%s' isn't found in supported_languages.txt, using '%s' instead", language.c_str(), first_language.c_str());
             language = first_language;
         } else { // otherwise just lie and add it then!
             supported_languages.insert(language);
@@ -1221,6 +1222,9 @@ static void parse_overlay_general_config(class Settings *settings_client, class 
 
     settings_client->disable_overlay_friend_notification = ini.GetBoolValue("overlay::general", "disable_friend_notification", settings_client->disable_overlay_friend_notification);
     settings_server->disable_overlay_friend_notification = ini.GetBoolValue("overlay::general", "disable_friend_notification", settings_server->disable_overlay_friend_notification);
+
+    settings_client->disable_overlay_achievement_progress = ini.GetBoolValue("overlay::general", "disable_achievement_progress", settings_client->disable_overlay_achievement_progress);
+    settings_server->disable_overlay_achievement_progress = ini.GetBoolValue("overlay::general", "disable_achievement_progress", settings_server->disable_overlay_achievement_progress);
 
     settings_client->disable_overlay_warning_any = ini.GetBoolValue("overlay::general", "disable_warning_any", settings_client->disable_overlay_warning_any);
     settings_server->disable_overlay_warning_any = ini.GetBoolValue("overlay::general", "disable_warning_any", settings_server->disable_overlay_warning_any);
