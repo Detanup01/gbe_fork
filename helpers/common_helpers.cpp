@@ -3,6 +3,7 @@
 #include <cwchar>
 #include <algorithm>
 #include <cctype>
+#include <random>
 
 namespace common_helpers {
 
@@ -395,4 +396,14 @@ bool common_helpers::dir_exist(const std::wstring &dirpath)
 {
     if (dirpath.empty()) return false;
     return dir_exist(std::filesystem::path(dirpath));
+}
+
+size_t common_helpers::rand_number(size_t max)
+{
+    // https://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution
+    std::random_device rd{};  // a seed source for the random number engine
+    std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
+    std::uniform_int_distribution<size_t> distrib(0, max);
+
+    return distrib(gen);
 }

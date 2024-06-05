@@ -98,4 +98,7 @@ bool dir_exist(const std::filesystem::path &dirpath);
 bool dir_exist(const std::string &dirpath);
 bool dir_exist(const std::wstring &dirpath);
 
+// between 0 and max, 0 and max are included
+size_t rand_number(size_t max);
+
 }
