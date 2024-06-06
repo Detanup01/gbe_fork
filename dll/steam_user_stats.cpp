@@ -1855,9 +1855,17 @@ int32 Steam_User_Stats::GetGlobalStatHistory( const char *pchStatName, STEAM_ARR
 // have been made, to show a progress notification to the user.
 bool Steam_User_Stats::GetAchievementProgressLimits( const char *pchName, int32 *pnMinProgress, int32 *pnMaxProgress )
 {
-    PRINT_DEBUG_TODO();
+    PRINT_DEBUG("'%s'", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return false;
+    
+    float fMinProgress{};
+    float fMaxProgress{};
+    bool ret = GetAchievementProgressLimits(pchName, &fMinProgress, &fMaxProgress);
+    if (ret) {
+        if (pnMinProgress) *pnMinProgress = static_cast<int32>(fMinProgress);
+        if (pnMaxProgress) *pnMaxProgress = static_cast<int32>(fMaxProgress);
+    }
+    return ret;
 }
 
 bool Steam_User_Stats::GetAchievementProgressLimits( const char *pchName, float *pfMinProgress, float *pfMaxProgress )
