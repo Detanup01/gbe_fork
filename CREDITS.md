@@ -9,7 +9,7 @@
 - utf (https://github.com/nemtrif/utfcpp)
 - wswhere (https://github.com/microsoft/vswhere/releases/tag/3.1.7)
 - curl (https://github.com/curl/curl/releases/tag/curl-8_8_0)
-- ingame_overlay (https://github.com/Nemirtingas/ingame_overlay/tree/50953c380fb877da783414397a64241dd9a76c45)
+- ingame_overlay (https://github.com/Nemirtingas/ingame_overlay/tree/ba723a0810a35c4c1a2b12ffcb9b11d27dc0f2c1)
 - libssq (https://github.com/BinaryAlien/libssq/releases/tag/v3.0.0)
 - mbedtls (https://github.com/Mbed-TLS/mbedtls/releases/tag/v3.5.1)
 - protobuf (https://github.com/protocolbuffers/protobuf/releases/tag/v21.12)
