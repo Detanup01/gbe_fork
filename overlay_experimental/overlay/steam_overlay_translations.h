@@ -1168,6 +1168,102 @@ const char translationRenderer[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   
 };
 
+const char translationToggleUserInfo[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"Toggle User Info",
+
+	// 1 - Arabic
+  u8"Toggle User Info",
+
+	// 2 - Bulgarian
+  u8"Toggle User Info",
+
+	// 3 - Simplified Chinese
+  u8"Toggle User Info",
+
+	// 4 - Traditional Chinese
+  u8"Toggle User Info",
+
+	// 5 - Czech
+  u8"Toggle User Info",
+
+	// 6 - Danish
+  u8"Toggle User Info",
+
+	// 7 - Dutch
+  u8"Toggle User Info",
+
+	// 8 - Finnish
+  u8"Toggle User Info",
+
+	// 9 - French
+  u8"Toggle User Info",
+
+	// 10 - German
+  u8"Toggle User Info",
+
+	// 11 - Greek
+  u8"Toggle User Info",
+
+	// 12 - Hungarian
+  u8"Toggle User Info",
+
+	// 13 - Italian
+  u8"Toggle User Info",
+
+	// 14 - Japanese
+  u8"Toggle User Info",
+
+	// 15 - Korean
+  u8"Toggle User Info",
+
+	// 16 - Norwegian
+  u8"Toggle User Info",
+
+	// 17 - Polish
+  u8"Toggle User Info",
+
+	// 18 - Portuguese
+  u8"Toggle User Info",
+
+	// 19 - Brazilian Portuguese
+  u8"Toggle User Info",
+
+	// 20 - Romanian
+  u8"Toggle User Info",
+
+	// 21 - Russian
+  u8"Toggle User Info",
+
+	// 22 - Spanish
+  u8"Toggle User Info",
+
+	// 23 - Latin American
+  u8"Toggle User Info",
+
+	// 24 - Swedish
+  u8"Toggle User Info",
+
+	// 25 - Thai
+  u8"Toggle User Info",
+
+	// 26 - Turkish
+  u8"Toggle User Info",
+
+	// 27 - Ukrainian
+  u8"Toggle User Info",
+
+	// 28 - Vietnamese
+  u8"Toggle User Info",
+
+	// 29 - Croatian
+  u8"Toggle User Info",
+  
+  // 30 - Indonesian
+  u8"Toggle User Info",
+  
+};
+
 const char translationShowAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
   u8"Show Achievements",

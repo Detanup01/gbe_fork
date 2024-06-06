@@ -132,9 +132,9 @@ class Steam_Overlay
     std::vector<Overlay_Achievement> achievements{};
     
     bool show_overlay = false;
+    bool show_user_info = false;
     bool show_achievements = false;
     bool show_settings = false;
-    bool show_test_ach = false;
 
     // warn when using local save
     bool warn_local_save = false;
@@ -238,6 +238,7 @@ class Steam_Overlay
     void add_invite_notification(std::pair<const Friend, friend_window_state> &wnd_state);
     void post_achievement_notification(Overlay_Achievement &ach);
     void add_chat_message_notification(std::string const& message);
+    void show_test_achievement();
 
     bool open_overlay_hook(bool toggle);
 

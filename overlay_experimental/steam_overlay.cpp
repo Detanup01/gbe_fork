@@ -12,7 +12,6 @@
 #include <sstream>
 #include <cctype>
 #include <utility>
-#include <random>
 
 #include "InGameOverlay/RendererDetector.h"
 
@@ -648,6 +647,34 @@ void Steam_Overlay::add_chat_message_notification(std::string const &message)
     submit_notification(notification_type::message, message);
 }
 
+void Steam_Overlay::show_test_achievement()
+{
+    PRINT_DEBUG_ENTRY();
+    Overlay_Achievement ach{};
+    ach.title = translationTestAchievement[current_language];
+    ach.description = "~~~ " + ach.title + " ~~~";
+    ach.achieved = true;
+
+    if (achievements.size()) {
+        size_t rand_idx = common_helpers::rand_number(achievements.size() - 1);
+        ach.icon = achievements[rand_idx].icon;
+    }
+
+    bool for_progress = false;
+    // randomly add progress
+    if (common_helpers::rand_number(1000) % 2) {
+        for_progress = true;
+        float progress = common_helpers::rand_number(500) / 10.0f + 50; // [50.0, 100.0]
+        ach.max_progress = 100;
+        ach.progress = progress;
+        ach.achieved = false;
+    }
+    
+    post_achievement_notification(ach, for_progress);
+    // here we always play the sound for testing
+    notify_sound_user_achievement();
+}
+
 bool Steam_Overlay::is_friend_joinable(std::pair<const Friend, friend_window_state> &f)
 {
     PRINT_DEBUG("%" PRIu64 "", f.first.id());
@@ -1237,13 +1264,6 @@ void Steam_Overlay::render_main_window()
     ImGui::PushFont(font_default);
     bool show = true;
 
-    char tmp[TRANSLATION_BUFFER_SIZE]{};
-    snprintf(tmp, sizeof(tmp), translationRenderer[current_language], (_renderer == nullptr ? "Unknown" : _renderer->GetLibraryName().c_str()));
-    std::string windowTitle{};
-    // Note: don't translate this, project and author names are nouns, they must be kept intact for proper referral
-    // think of it as translating "Protobuf - Google"
-    windowTitle.append("Ingame Overlay project - Nemirtingas (").append(tmp).append(")");
-
     int style_color_stack = 0;
     if ((settings->overlay_appearance.background_r >= 0) &&
         (settings->overlay_appearance.background_g >= 0) &&
@@ -1311,27 +1331,43 @@ void Steam_Overlay::render_main_window()
         style_color_stack += 5;
     }
 
+    char tmp[TRANSLATION_BUFFER_SIZE]{};
+    snprintf(tmp, sizeof(tmp), translationRenderer[current_language], (_renderer == nullptr ? "Unknown" : _renderer->GetLibraryName().c_str()));
+    std::string windowTitle{};
+    // Note: don't translate this, project and author names are nouns, they must be kept intact for proper referral
+    // think of it as translating "Protobuf - Google"
+    windowTitle.append("Ingame Overlay project - Nemirtingas (").append(tmp).append(")");
+
     if (ImGui::Begin(windowTitle.c_str(), &show,
             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
             ImGuiWindowFlags_NoBringToFrontOnFocus)) {
-        ImGui::LabelText("##playinglabel", translationUserPlaying[current_language],
-            settings->get_local_name(),
-            settings->get_local_steam_id().ConvertToUint64(),
-            settings->get_local_game_id().AppID());
+        if (show_user_info) {
+            ImGui::LabelText("##playinglabel", translationUserPlaying[current_language],
+                settings->get_local_name(),
+                settings->get_local_steam_id().ConvertToUint64(),
+                settings->get_local_game_id().AppID());
+        }
+
+        ImGui::Spacing();
+        
+        ImGui::SameLine();
+        // user clicked on "toggle user info"
+        if (ImGui::Button(translationToggleUserInfo[current_language])) {
+            show_user_info = !show_user_info;
+        }
 
         ImGui::SameLine();
-        ImGui::Spacing();
         // user clicked on "show achievements"
         if (ImGui::Button(translationShowAchievements[current_language])) {
-            show_achievements = true;
+            show_achievements = !show_achievements;
         }
 
         ImGui::SameLine();
-        // user clicked on "settings"
-        if (ImGui::Button(translationSettings[current_language])) {
-            show_settings = true;
+        // user clicked on "test achievement"
+        if (ImGui::Button(translationTestAchievement[current_language])) {
+            show_test_achievement();
         }
-        
+
         ImGui::SameLine();
         // user clicked on "copy id" on themselves
         if (ImGui::Button(translationCopyId[current_language])) {
@@ -1340,26 +1376,11 @@ void Steam_Overlay::render_main_window()
         }
 
         ImGui::SameLine();
-        // user clicked on "test achievement"
-        if (ImGui::Button(translationTestAchievement[current_language])) {
-            Overlay_Achievement ach{};
-            ach.title = translationTestAchievement[current_language];
-            ach.description = "~~~ " + ach.title + " ~~~";
-
-            if (achievements.size()) {
-                // https://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution
-                std::random_device rd{};  // a seed source for the random number engine
-                std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
-                std::uniform_int_distribution<> distrib(0, achievements.size() - 1);
-
-                size_t rand_idx = distrib(gen);
-                ach.icon = achievements[rand_idx].icon;
-            }
-            
-            post_achievement_notification(ach);
-            notify_sound_user_achievement();
+        // user clicked on "settings"
+        if (ImGui::Button(translationSettings[current_language])) {
+            show_settings = !show_settings;
         }
-
+        
         ImGui::Spacing();
         ImGui::Spacing();
         ImGui::LabelText("##label", "%s", translationFriends[current_language]);
@@ -1373,7 +1394,7 @@ void Steam_Overlay::render_main_window()
                 }
             }
 
-            if (ImGuiHelper_BeginListBox("##label", friends.size())) {
+            if (ImGuiHelper_BeginListBox("##label", static_cast<int>(friends.size()))) {
                 std::for_each(friends.begin(), friends.end(), [this](std::pair<Friend const, friend_window_state> &i) {
                     ImGui::PushID(i.second.id-base_friend_window_id+base_friend_item_id);
 
