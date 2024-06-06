@@ -319,7 +319,7 @@ public:
     void FriendConnect(Friend _friend) {}
     void FriendDisconnect(Friend _friend) {}
 
-    void AddAchievementNotification(const std::string &ach_name, nlohmann::json const& ach) {}
+    void AddAchievementNotification(const std::string &ach_name, nlohmann::json const& ach, bool for_progress) {}
 };
 
 #endif // EMU_OVERLAY
