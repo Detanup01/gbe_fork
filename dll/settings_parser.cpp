@@ -360,6 +360,8 @@ static void load_overlay_appearance(class Settings *settings_client, class Setti
                 auto pos = Overlay_Appearance::translate_notification_position(value);
                 settings_client->overlay_appearance.chat_msg_pos = pos;
                 settings_server->overlay_appearance.chat_msg_pos = pos;
+            } else {
+                PRINT_DEBUG("unknown overlay appearance setting");
             }
 
         } catch (...) { }

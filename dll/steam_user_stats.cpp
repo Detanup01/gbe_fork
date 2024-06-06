@@ -605,7 +605,7 @@ Steam_User_Stats::InternalSetResult<bool> Steam_User_Stats::set_achievement_inte
 
             result.notify_server = !settings->disable_sharing_stats_with_gameserver;
 
-            overlay->AddAchievementNotification(internal_name, user_achievements[internal_name]);
+            overlay->AddAchievementNotification(internal_name, user_achievements[internal_name], false);
 
         }
     } catch (...) {}
@@ -1154,7 +1154,7 @@ bool Steam_User_Stats::IndicateAchievementProgress( const char *pchName, uint32 
         user_achievements[actual_ach_name]["progress"] = nCurProgress;
         user_achievements[actual_ach_name]["max_progress"] = nMaxProgress;
         save_achievements();
-        overlay->AddAchievementNotification(actual_ach_name, user_achievements[actual_ach_name]);
+        overlay->AddAchievementNotification(actual_ach_name, user_achievements[actual_ach_name], true);
     } catch (...) {}
 
     {

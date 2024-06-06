@@ -593,7 +593,11 @@ int find_free_notification_id(std::vector<Notification> const& notifications)
     return find_free_id(ids, base_friend_window_id);
 }
 
-bool Steam_Overlay::submit_notification(notification_type type, const std::string &msg, std::pair<const Friend, friend_window_state> *frd, const std::weak_ptr<uint64_t> &icon)
+bool Steam_Overlay::submit_notification(
+    notification_type type,
+    const std::string &msg,
+    std::pair<const Friend, friend_window_state> *frd,
+    Overlay_Achievement *ach)
 {
     PRINT_DEBUG("%i", (int)type);
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
@@ -611,7 +615,7 @@ bool Steam_Overlay::submit_notification(notification_type type, const std::strin
     notif.type = (uint8)type;
     notif.message = msg;
     notif.frd = frd;
-    notif.icon = icon;
+    if (ach) notif.ach = *ach;
     
     notifications.emplace_back(notif);
     allow_renderer_frame_processing(true);
@@ -623,6 +627,7 @@ bool Steam_Overlay::submit_notification(notification_type type, const std::strin
         break;
 
         // not effective
+        case notification_type::achievement_progress:
         case notification_type::achievement:
         case notification_type::auto_accept_invite:
         case notification_type::message:
@@ -881,11 +886,12 @@ void Steam_Overlay::set_next_notification_pos(std::pair<float, float> scrn_size,
         false,
         noti_width - padding_all_sides - global_style.ItemSpacing.x
     ).y;
-    float noti_height = msg_height + 2 * global_style.WindowPadding.y;
+    float noti_height = msg_height;
     
     // get the required position
     Overlay_Appearance::NotificationPosition pos = Overlay_Appearance::default_pos;
     switch ((notification_type)noti.type) {
+    case notification_type::achievement_progress:
     case notification_type::achievement: {
         pos = settings->overlay_appearance.ach_earned_pos;
 
@@ -895,12 +901,18 @@ void Steam_Overlay::set_next_notification_pos(std::pair<float, float> scrn_size,
             false,
             noti_width - padding_all_sides - global_style.ItemSpacing.x - settings->overlay_appearance.icon_size
         ).y;
-        const float new_noti_height = new_msg_height + 2 * global_style.WindowPadding.y;
+        const float new_noti_height = new_msg_height;
 
-        float biggest_noti_height = settings->overlay_appearance.icon_size + 2 * global_style.WindowPadding.y;
+        float biggest_noti_height = settings->overlay_appearance.icon_size;
         if (biggest_noti_height < new_noti_height) biggest_noti_height = new_noti_height;
 
         noti_height = biggest_noti_height;
+
+        if ((notification_type)noti.type == notification_type::achievement_progress) {
+            if (!noti.ach.value().achieved && noti.ach.value().max_progress > 0) {
+                noti_height += settings->overlay_appearance.font_size + global_style.WindowPadding.y;
+            }
+        }
     }
     break;
 
@@ -908,6 +920,8 @@ void Steam_Overlay::set_next_notification_pos(std::pair<float, float> scrn_size,
     case notification_type::message: pos = settings->overlay_appearance.chat_msg_pos; break;
     default: /* satisfy compiler warning */ break;
     }
+    // add some y padding for niceness
+    noti_height += 2 * global_style.WindowPadding.y;
 
     // 0 on the y-axis is top, 0 on the x-axis is left
     float x = 0.0f;
@@ -988,6 +1002,15 @@ float Steam_Overlay::animate_factor(std::chrono::milliseconds elapsed)
     return factor;
 }
 
+void Steam_Overlay::add_ach_progressbar(const Overlay_Achievement &ach)
+{
+    if (!ach.achieved && ach.max_progress > 0) {
+        char buf[32]{};
+        sprintf(buf, "%.1f/%.1f", ach.progress, ach.max_progress);
+        ImGui::ProgressBar(ach.progress / ach.max_progress, { -1 , settings->overlay_appearance.font_size }, buf);
+    }
+}
+
 void Steam_Overlay::build_notifications(float width, float height)
 {
     auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
@@ -1024,6 +1047,7 @@ void Steam_Overlay::build_notifications(float width, float height)
         switch ((notification_type)it->type) {
             // games like "Mafia Definitive Edition" will pause the entire game/scene if focus was stolen
             // be less intrusive for notifications that do not require interaction
+            case notification_type::achievement_progress:
             case notification_type::achievement:
             case notification_type::auto_accept_invite:
             case notification_type::message:
@@ -1043,21 +1067,28 @@ void Steam_Overlay::build_notifications(float width, float height)
         if (ImGui::Begin(wnd_name.c_str(), nullptr,
             ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | extra_flags)) {
             switch ((notification_type)it->type) {
+                case notification_type::achievement_progress:
                 case notification_type::achievement: {
-                    if (!it->icon.expired() && ImGui::BeginTable("imgui_table", 2)) {
+                    const auto &ach = it->ach.value();
+                    const auto &msg = ach.title + "\n" + ach.description;
+                    if (!ach.icon.expired() && ImGui::BeginTable("imgui_table", 2)) {
                         ImGui::TableSetupColumn("imgui_table_image", ImGuiTableColumnFlags_WidthFixed, settings->overlay_appearance.icon_size);
                         ImGui::TableSetupColumn("imgui_table_text");
                         ImGui::TableNextRow(ImGuiTableRowFlags_None, settings->overlay_appearance.icon_size);
 
                         ImGui::TableSetColumnIndex(0);
-                        ImGui::Image((ImTextureID)*it->icon.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
+                        ImGui::Image((ImTextureID)*ach.icon.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
 
                         ImGui::TableSetColumnIndex(1);
-                        ImGui::TextWrapped("%s", it->message.c_str());
+                        ImGui::TextWrapped("%s", msg.c_str());
 
                         ImGui::EndTable();
                     } else {
-                        ImGui::TextWrapped("%s", it->message.c_str());
+                        ImGui::TextWrapped("%s", msg.c_str());
+                    }
+
+                    if ((notification_type)it->type == notification_type::achievement_progress) {
+                        add_ach_progressbar(ach);
                     }
                 }
                 break;
@@ -1110,6 +1141,7 @@ void Steam_Overlay::build_notifications(float width, float height)
                 break;
 
                 // not effective
+                case notification_type::achievement_progress:
                 case notification_type::achievement:
                 case notification_type::auto_accept_invite:
                 case notification_type::message:
@@ -1164,7 +1196,7 @@ void Steam_Overlay::add_invite_notification(std::pair<const Friend, friend_windo
     submit_notification(notification_type::invite, tmp, &wnd_state);
 }
 
-void Steam_Overlay::post_achievement_notification(Overlay_Achievement &ach)
+void Steam_Overlay::post_achievement_notification(Overlay_Achievement &ach, bool for_progress)
 {
     if (settings->disable_overlay_achievement_notification) return;
 
@@ -1172,12 +1204,12 @@ void Steam_Overlay::post_achievement_notification(Overlay_Achievement &ach)
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     if (!Ready()) return;
     
-    try_load_ach_icon(ach, true);
+    try_load_ach_icon(ach, !for_progress);
     submit_notification(
-        notification_type::achievement,
-        ach.title + "\n" + ach.description,
+        for_progress ? notification_type::achievement_progress : notification_type::achievement,
         {},
-        ach.icon
+        {},
+        &ach
     );
 }
 
@@ -1487,12 +1519,8 @@ void Steam_Overlay::render_main_window()
                         ImGui::TextColored(ImVec4(0, 255, 0, 255), translationAchievedOn[current_language], buffer);
                     } else {
                         ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationNotAchieved[current_language]);
-                        if (x.max_progress > 0) {
-                            char buf[32]{};
-                            sprintf(buf, "%d/%d", (int)x.progress, (int)x.max_progress);
-                            ImGui::ProgressBar(x.progress / x.max_progress, { -1 , settings->overlay_appearance.font_size }, buf);
-                        }
                     }
+                    add_ach_progressbar(x);
 
                     if (could_create_ach_table_entry) ImGui::EndTable();
 
@@ -1988,9 +2016,10 @@ void Steam_Overlay::FriendDisconnect(Friend _friend)
 }
 
 // show a notification when the user unlocks an achievement
-void Steam_Overlay::AddAchievementNotification(const std::string &ach_name, nlohmann::json const &ach)
+void Steam_Overlay::AddAchievementNotification(const std::string &ach_name, nlohmann::json const &ach, bool for_progress)
 {
     if (settings->disable_overlay) return;
+    if (for_progress && settings->disable_overlay_achievement_progress) return;
 
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
@@ -2004,14 +2033,16 @@ void Steam_Overlay::AddAchievementNotification(const std::string &ach_name, nloh
 
     for (auto &a : achievements) {
         if (a.name == ach_name) {
-            a.achieved = ach.value("earned", false);
-            a.unlock_time = ach.value("earned_time", static_cast<uint32>(0));
-            a.progress = ach.value("progress", static_cast<float>(0));
-            a.max_progress = ach.value("max_progress", static_cast<float>(0));
+            try {
+                a.achieved = ach.value("earned", false);
+                a.unlock_time = ach.value("earned_time", static_cast<uint32>(0));
+                a.progress = ach.value("progress", static_cast<float>(0));
+                a.max_progress = ach.value("max_progress", static_cast<float>(0));
+            } catch(...) {}
 
             if (a.achieved) {
-                post_achievement_notification(a);
-                notify_sound_user_achievement();
+                post_achievement_notification(a, for_progress);
+                if (!for_progress) notify_sound_user_achievement();
             }
             break;
         }

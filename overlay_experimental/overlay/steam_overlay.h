@@ -57,23 +57,8 @@ enum class notification_type
     message = 0,
     invite,
     achievement,
+    achievement_progress,
     auto_accept_invite,
-};
-
-struct Notification
-{
-    static constexpr float width_percent = 0.25f; // percentage from total width
-    static constexpr std::chrono::milliseconds fade_in   = std::chrono::milliseconds(2000);
-    static constexpr std::chrono::milliseconds fade_out  = std::chrono::milliseconds(2000);
-    static constexpr std::chrono::milliseconds show_time = std::chrono::milliseconds(6000) + fade_in + fade_out;
-    static constexpr std::chrono::milliseconds fade_out_start = show_time - fade_out;
-
-    int id{};
-    uint8 type{};
-    std::chrono::milliseconds start_time{};
-    std::string message{};
-    std::pair<const Friend, friend_window_state>* frd{};
-    std::weak_ptr<uint64_t> icon{};
 };
 
 struct Overlay_Achievement
@@ -96,6 +81,22 @@ struct Overlay_Achievement
 
     uint8_t icon_load_trials = ICON_LOAD_MAX_TRIALS;
     uint8_t icon_gray_load_trials = ICON_LOAD_MAX_TRIALS;
+};
+
+struct Notification
+{
+    static constexpr float width_percent = 0.25f; // percentage from total width
+    static constexpr std::chrono::milliseconds fade_in   = std::chrono::milliseconds(2000);
+    static constexpr std::chrono::milliseconds fade_out  = std::chrono::milliseconds(2000);
+    static constexpr std::chrono::milliseconds show_time = std::chrono::milliseconds(6000) + fade_in + fade_out;
+    static constexpr std::chrono::milliseconds fade_out_start = show_time - fade_out;
+
+    int id{};
+    uint8 type{};
+    std::chrono::milliseconds start_time{};
+    std::string message{};
+    std::pair<const Friend, friend_window_state>* frd{};
+    std::optional<Overlay_Achievement> ach{};
 };
 
 // notification coordinates { x, y }
@@ -201,7 +202,12 @@ class Steam_Overlay
     bool is_friend_joinable(std::pair<const Friend, friend_window_state> &f);
     bool got_lobby();
 
-    bool submit_notification(notification_type type, const std::string &msg, std::pair<const Friend, friend_window_state> *frd = nullptr, const std::weak_ptr<uint64_t> &icon = {});
+    bool submit_notification(
+        notification_type type,
+        const std::string &msg,
+        std::pair<const Friend, friend_window_state> *frd = nullptr,
+        Overlay_Achievement *ach = nullptr
+    );
 
     void notify_sound_user_invite(friend_window_state& friend_state);
     void notify_sound_user_achievement();
@@ -215,6 +221,7 @@ class Steam_Overlay
     void set_next_notification_pos(std::pair<float, float> scrn_size, std::chrono::milliseconds elapsed, const Notification &noti, struct NotificationsCoords &coords);
     // factor controlling the amount of sliding during the animation, 0 means disabled
     float animate_factor(std::chrono::milliseconds elapsed);
+    void add_ach_progressbar(const Overlay_Achievement &ach);
     void build_notifications(float width, float height);
     // invite a single friend
     void invite_friend(uint64 friend_id, class Steam_Friends* steamFriends, class Steam_Matchmaking* steamMatchmaking);
@@ -236,7 +243,7 @@ class Steam_Overlay
 
     void add_auto_accept_invite_notification();
     void add_invite_notification(std::pair<const Friend, friend_window_state> &wnd_state);
-    void post_achievement_notification(Overlay_Achievement &ach);
+    void post_achievement_notification(Overlay_Achievement &ach, bool for_progress);
     void add_chat_message_notification(std::string const& message);
     void show_test_achievement();
 
@@ -278,7 +285,7 @@ public:
     void FriendConnect(Friend _friend);
     void FriendDisconnect(Friend _friend);
 
-    void AddAchievementNotification(const std::string &ach_name, nlohmann::json const& ach);
+    void AddAchievementNotification(const std::string &ach_name, nlohmann::json const& ach, bool for_progress);
 };
 
 #else // EMU_OVERLAY
