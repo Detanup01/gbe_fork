@@ -291,9 +291,9 @@ static int send_packet_to(sock_t sock, IP_PORT ip_port, char *data, unsigned lon
     struct sockaddr_in *addr4 = (struct sockaddr_in *)&addr;
 
 #if defined(STEAM_WIN32) 
-    size_t addrsize = sizeof(struct sockaddr_in); 
+    int addrsize = (int)sizeof(struct sockaddr_in); 
  #else 
-    socklen_t addrsize = sizeof(struct sockaddr_in); 
+    socklen_t addrsize = (socklen_t)sizeof(struct sockaddr_in);
  #endif 
     addr4->sin_family = AF_INET;
     addr4->sin_addr.s_addr = ip_port.ip;
@@ -378,9 +378,9 @@ static bool bind_socket(sock_t sock, uint16 port)
     struct sockaddr_storage addr = {};
     struct sockaddr_in *addr4 = (struct sockaddr_in *)&addr;
 #if defined(STEAM_WIN32) 
-    size_t addrsize = sizeof(struct sockaddr_in); 
+    int addrsize = (int)sizeof(struct sockaddr_in);
  #else 
-    socklen_t addrsize = sizeof(struct sockaddr_in); 
+    socklen_t addrsize = (socklen_t)sizeof(struct sockaddr_in);
  #endif 
     addr4->sin_family = AF_INET;
     addr4->sin_port = htons(port);
@@ -400,9 +400,9 @@ static void connect_socket(sock_t sock, IP_PORT ip_port)
     struct sockaddr_storage addr;
     struct sockaddr_in *addr4 = (struct sockaddr_in *)&addr;
 #if defined(STEAM_WIN32) 
-    size_t addrsize = sizeof(struct sockaddr_in); 
+    int addrsize = (int)sizeof(struct sockaddr_in); 
  #else 
-    socklen_t addrsize = sizeof(struct sockaddr_in); 
+    socklen_t addrsize = (socklen_t)sizeof(struct sockaddr_in);
  #endif 
     addr4->sin_family = AF_INET;
     addr4->sin_addr.s_addr = ip_port.ip;

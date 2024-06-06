@@ -298,7 +298,7 @@ int Steam_Matchmaking::GetFavoriteGameCount()
         Local_Storage::get_file_data(file_path, (char *)&list[0], file_size, 0);
         auto list_lines = std::count(list.begin(), list.end(), '\n');
         list_lines += (!list.empty() && list.back() != '\n');
-        return list_lines;
+        return static_cast<int>(list_lines);
     }
     return 0;
 }
@@ -364,10 +364,11 @@ int Steam_Matchmaking::AddFavoriteGame( AppId_t nAppID, uint32 nIP, uint16 nConn
             }
             Local_Storage::store_file_data(directory_path, file_name, (char *)list.data(), list.size());
 
-            return ++list_lines;
+            ++list_lines;
+            return static_cast<int>(list_lines);
         }
 
-        return list_lines;
+        return static_cast<int>(list_lines);
     } else {
         newip_string.append("\n");
 
@@ -847,7 +848,7 @@ int Steam_Matchmaking::GetLobbyDataCount( CSteamID steamIDLobby )
 
     Lobby *lobby = get_lobby(steamIDLobby);
     int size = 0;
-    if (lobby) size = lobby->values().size();
+    if (lobby) size = static_cast<int>(lobby->values().size());
 
     
     return size;
@@ -1010,7 +1011,7 @@ int Steam_Matchmaking::GetLobbyChatEntry( CSteamID steamIDLobby, int iChatID, ST
     if (peChatEntryType) *peChatEntryType = chat_entries[iChatID].type;
     if (pvData) {
         if (chat_entries[iChatID].message.size() <= static_cast<size_t>(cubData)) {
-            cubData = chat_entries[iChatID].message.size();
+            cubData = static_cast<int>(chat_entries[iChatID].message.size());
             memcpy(pvData, chat_entries[iChatID].message.data(), cubData);
             PRINT_DEBUG("  Returned chat of len: %i", cubData);
             return cubData;
@@ -1387,7 +1388,7 @@ void Steam_Matchmaking::RunCallbacks()
                 PRINT_DEBUG("returning lobby search results, count=%zu", filtered_lobbies.size());
                 searching = false;
                 LobbyMatchList_t data{};
-                data.m_nLobbiesMatching = filtered_lobbies.size();
+                data.m_nLobbiesMatching = static_cast<uint32>(filtered_lobbies.size());
                 callback_results->addCallResult(search_call_api_id, data.k_iCallback, &data, sizeof(data));
                 callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
                 search_call_api_id = 0;
@@ -1398,7 +1399,7 @@ void Steam_Matchmaking::RunCallbacks()
     if (searching && check_timedout(lobby_last_search, LOBBY_SEARCH_TIMEOUT)) {
         PRINT_DEBUG("LOBBY_SEARCH_TIMEOUT %zu", filtered_lobbies.size());
         LobbyMatchList_t data{};
-        data.m_nLobbiesMatching = filtered_lobbies.size();
+        data.m_nLobbiesMatching = static_cast<uint32>(filtered_lobbies.size());
         callback_results->addCallResult(search_call_api_id, data.k_iCallback, &data, sizeof(data));
         callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
         searching = false;
@@ -1617,7 +1618,7 @@ void Steam_Matchmaking::Callback(Common_Message *msg)
                     data.m_ulSteamIDLobby = msg->lobby_messages().id();
                     data.m_ulSteamIDUser = msg->source_id();
                     data.m_eChatEntryType = entry.type;
-                    data.m_iChatID = chat_entries.size();
+                    data.m_iChatID = static_cast<uint32>(chat_entries.size());
                     chat_entries.push_back(entry);
                     callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
                 }

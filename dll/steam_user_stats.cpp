@@ -227,7 +227,8 @@ void Steam_User_Stats::save_my_leaderboard_entry(const Steam_Leaderboard &leader
     }
 
     std::string leaderboard_name(common_helpers::ascii_to_lowercase(leaderboard.name));
-    local_storage->store_data(Local_Storage::leaderboard_storage_folder, leaderboard_name, (char* )&output[0], output.size() * sizeof(output[0]));
+    unsigned int buffer_size = static_cast<unsigned int>(output.size() * sizeof(output[0])); // in bytes
+    local_storage->store_data(Local_Storage::leaderboard_storage_folder, leaderboard_name, (char* )&output[0], buffer_size);
 }
 
 Steam_Leaderboard_Entry* Steam_User_Stats::update_leaderboard_entry(Steam_Leaderboard &leaderboard, const Steam_Leaderboard_Entry &entry, bool overwrite)
@@ -283,7 +284,7 @@ unsigned int Steam_User_Stats::cache_leaderboard_ifneeded(const std::string &nam
 
     // save it in memory for later
     cached_leaderboards.push_back(new_board);
-    board_handle = cached_leaderboards.size();
+    board_handle = static_cast<unsigned int>(cached_leaderboards.size());
 
     PRINT_DEBUG("cached a new leaderboard '%s' %i %i",
         new_board.name.c_str(), (int)eLeaderboardSortMethod, (int)eLeaderboardDisplayType
@@ -1164,14 +1165,16 @@ bool Steam_User_Stats::IndicateAchievementProgress( const char *pchName, uint32 
         callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
     }
 
-    UserAchievementStored_t data{};
-    data.m_nGameID = settings->get_local_game_id().ToUint64();
-    data.m_bGroupAchievement = false;
-    data.m_nCurProgress = nCurProgress;
-    data.m_nMaxProgress = nMaxProgress;
-    ach_name.copy(data.m_rgchAchievementName, sizeof(data.m_rgchAchievementName) - 1);
+    {
+        UserAchievementStored_t data{};
+        data.m_nGameID = settings->get_local_game_id().ToUint64();
+        data.m_bGroupAchievement = false;
+        data.m_nCurProgress = nCurProgress;
+        data.m_nMaxProgress = nMaxProgress;
+        ach_name.copy(data.m_rgchAchievementName, sizeof(data.m_rgchAchievementName) - 1);
 
-    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    }
     // callback_results->addCallResult(data.k_iCallback, &data, sizeof(data)); // TODO was this correct?
     return true;
 }

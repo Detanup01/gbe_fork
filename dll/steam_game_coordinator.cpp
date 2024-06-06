@@ -21,8 +21,8 @@ void Steam_Game_Coordinator::push_incoming(std::string message)
 {
     outgoing_messages.push(message);
 
-    struct GCMessageAvailable_t data;
-    data.m_nMessageSize = message.size();
+    struct GCMessageAvailable_t data{};
+    data.m_nMessageSize = static_cast<uint32>(message.size());
     callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
 }
 
@@ -88,7 +88,7 @@ bool Steam_Game_Coordinator::IsMessageAvailable( uint32 *pcubMsgSize )
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (outgoing_messages.size()) {
-        if (pcubMsgSize) *pcubMsgSize = outgoing_messages.front().size();
+        if (pcubMsgSize) *pcubMsgSize = static_cast<uint32>(outgoing_messages.front().size());
         return true;
     } else {
         return false;
@@ -109,7 +109,7 @@ EGCResults Steam_Game_Coordinator::RetrieveMessage( uint32 *punMsgType, void *pu
         }
 
         outgoing_messages.front().copy((char *)pubDest, cubDest);
-        if (pcubMsgSize) *pcubMsgSize = outgoing_messages.front().size();
+        if (pcubMsgSize) *pcubMsgSize = static_cast<uint32>(outgoing_messages.front().size());
         if (punMsgType && outgoing_messages.front().size() >= sizeof(uint32)) {
             outgoing_messages.front().copy((char *)punMsgType, sizeof(uint32));
             *punMsgType = ntohl(*punMsgType);
