@@ -1257,14 +1257,9 @@ void Steam_Overlay::overlay_render_proc()
 
 }
 
-// Try to make this function as short as possible or it might affect game's fps.
-void Steam_Overlay::render_main_window()
+uint32 Steam_Overlay::apply_global_style_color()
 {
-    //ImGui::SetNextWindowFocus();
-    ImGui::PushFont(font_default);
-    bool show = true;
-
-    int style_color_stack = 0;
+    uint32 style_color_stack = 0;
     if ((settings->overlay_appearance.background_r >= 0) &&
         (settings->overlay_appearance.background_g >= 0) &&
         (settings->overlay_appearance.background_b >= 0) &&
@@ -1331,12 +1326,24 @@ void Steam_Overlay::render_main_window()
         style_color_stack += 5;
     }
 
+    return style_color_stack;
+}
+
+// Try to make this function as short as possible or it might affect game's fps.
+void Steam_Overlay::render_main_window()
+{
+    //ImGui::SetNextWindowFocus();
+    ImGui::PushFont(font_default);
+    uint32 style_color_stack = apply_global_style_color();
+    
     char tmp[TRANSLATION_BUFFER_SIZE]{};
     snprintf(tmp, sizeof(tmp), translationRenderer[current_language], (_renderer == nullptr ? "Unknown" : _renderer->GetLibraryName().c_str()));
     std::string windowTitle{};
     // Note: don't translate this, project and author names are nouns, they must be kept intact for proper referral
     // think of it as translating "Protobuf - Google"
     windowTitle.append("Ingame Overlay project - Nemirtingas (").append(tmp).append(")");
+
+    bool show = true;
 
     if (ImGui::Begin(windowTitle.c_str(), &show,
             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |

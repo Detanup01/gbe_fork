@@ -245,6 +245,7 @@ class Steam_Overlay
     bool try_load_ach_icon(Overlay_Achievement &ach, bool achieved);
 
     void overlay_render_proc();
+    uint32 apply_global_style_color();
     void render_main_window();
     void networking_msg_received(Common_Message* msg);
     void steam_run_callback();
