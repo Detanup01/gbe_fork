@@ -459,6 +459,7 @@ flags {
 }
 targetprefix "" -- prevent adding the prefix libxxx on linux
 visibility "Hidden" -- hide all symbols by default on GCC (unless they are marked visible)
+linkgroups "On" -- turn off the awful order dependent linking on gcc/clang, causes the linker to go back and forth to find missing symbols
 exceptionhandling "On" -- "Enable exception handling. ... although it does not affect execution."
 vpaths { -- just for visual niceness, see: https://premake.github.io/docs/vpaths/
     ["headers/*"] = {
