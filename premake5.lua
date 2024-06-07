@@ -499,7 +499,7 @@ filter { "configurations:*release", }
 -- Visual Studio common compiler/linker options
 filter { "action:vs*", }
     buildoptions  {
-        "/permissive-", "/DYNAMICBASE",
+        "/permissive-", "/DYNAMICBASE", "/bigobj",
         "/utf-8", "/Zc:char8_t-", "/EHsc", "/GL-"
     }
     linkoptions  {
