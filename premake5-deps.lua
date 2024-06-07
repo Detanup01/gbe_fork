@@ -386,7 +386,7 @@ if _OPTIONS["ext-ingame_overlay"] or _OPTIONS["all-ext"] then
     table.insert(deps_to_extract, { 'ingame_overlay/ingame_overlay.tar.gz', 'ingame_overlay' })
 end
 
-
+-- start extraction
 for _, dep in pairs(deps_to_extract) do
     -- check archive
     local archive_file = path.join(third_party_common_dir, dep[1])
@@ -418,7 +418,7 @@ for _, dep in pairs(deps_to_extract) do
     local ext = string.lower(string.sub(archive_file, -7)) -- ".tar.gz"
     local ok_cmd = false
     if ext == ".tar.gz" then
-        ok_cmd = os.execute(extractor .. ' -bso0 -bse2 x "' .. archive_file .. '" -so | "' .. extractor .. '" -bso0 -bse2 x -si -ttar -y -aoa -o"' .. out_folder .. '"')
+        ok_cmd = os.execute(extractor .. ' -bso0 -bse2 x "' .. archive_file .. '" -so | "' .. extractor .. '" -bso0 -bse2 x -si -ttar -y -aoa -o"' .. deps_dir .. '"')
     else
         ok_cmd = os.execute(extractor .. ' -bso0 -bse2 x "' .. archive_file .. '" -y -aoa -o"' .. out_folder .. '"')
     end
@@ -427,16 +427,16 @@ for _, dep in pairs(deps_to_extract) do
     end
 
     -- flatten dir by moving all folders contents outside (one level above)
-    print('flattening dir: ' .. out_folder)
-    local folders = os.matchdirs(out_folder .. '/*')
-    for _, inner_folder in pairs(folders) do
-        -- the weird "/*" at the end is not a mistake, premake uses cp cpmmand on linux, which won't copy inner dir otherwise
-        local ok = os.execute('{COPYDIR} "' .. inner_folder  .. '"/* "' .. out_folder .. '"')
-        if not ok then
-            error('copy dir failed, src=' .. inner_folder .. ', dest=' .. out_folder)
-        end
-        os.rmdir(inner_folder)
-    end
+    -- print('flattening dir: ' .. out_folder)
+    -- local folders = os.matchdirs(out_folder .. '/*')
+    -- for _, inner_folder in pairs(folders) do
+    --     -- the weird "/*" at the end is not a mistake, premake uses cp cpmmand on linux, which won't copy inner dir otherwise
+    --     local ok = os.execute('{COPYDIR} "' .. inner_folder  .. '"/* "' .. out_folder .. '"')
+    --     if not ok then
+    --         error('copy dir failed, src=' .. inner_folder .. ', dest=' .. out_folder)
+    --     end
+    --     os.rmdir(inner_folder)
+    -- end
 
 end
 
@@ -551,10 +551,22 @@ end
 
 if _OPTIONS["build-protobuf"] or _OPTIONS["all-build"] then
     local proto_common_defs = {
+        "ABSL_PROPAGATE_CXX_STD=ON",
+        "protobuf_BUILD_PROTOBUF_BINARIES=ON",
+        "protobuf_BUILD_PROTOC_BINARIES=ON",
+        "protobuf_BUILD_LIBPROTOC=OFF",
+        "protobuf_BUILD_LIBUPB=OFF",
         "protobuf_BUILD_TESTS=OFF",
+        "protobuf_BUILD_EXAMPLES=OFF",
+        "protobuf_DISABLE_RTTI=ON",
+        "protobuf_BUILD_CONFORMANCE=OFF",
         "protobuf_BUILD_SHARED_LIBS=OFF",
         "protobuf_WITH_ZLIB=ON",
     }
+    if os.target() == 'windows' and string.match(_ACTION, 'gmake.*') then
+        table.insert(proto_common_defs, 'protobuf_MSVC_STATIC_RUNTIME=ON')
+    end
+
     if _OPTIONS["32-build"] then
         cmake_build('protobuf', true, merge_list(proto_common_defs, wild_zlib_32))
     end
