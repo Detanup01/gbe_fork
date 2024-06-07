@@ -52,11 +52,7 @@ static void exception_handler(int signal, siginfo_t *info, void *context, struct
     
     std::ofstream file(logs_filepath, std::ios::app);
 
-    auto now = std::chrono::system_clock::now();
-    auto t_now = std::chrono::system_clock::to_time_t(now);
-    auto gm_time = std::gmtime(&t_now);
-    auto time = std::string(std::asctime(gm_time));
-    time.pop_back(); // remove the trailing '\n' added by asctime
+    std::string time(common_helpers::get_utc_time());
     common_helpers::write(file, "[" + time + "]");
     {
         std::stringstream ss{};

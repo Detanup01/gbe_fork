@@ -5,6 +5,11 @@
 #include <cctype>
 #include <random>
 
+// for gmtime_s()
+#define __STDC_WANT_LIB_EXT1__ 1
+#include <time.h>
+
+
 namespace common_helpers {
 
 KillableWorker::KillableWorker(
@@ -406,4 +411,25 @@ size_t common_helpers::rand_number(size_t max)
     std::uniform_int_distribution<size_t> distrib(0, max);
 
     return distrib(gen);
+}
+
+std::string common_helpers::get_utc_time()
+{
+    // https://en.cppreference.com/w/cpp/chrono/c/strftime
+    std::time_t time = std::time({});
+    std::tm utc_time{};
+
+    bool is_ok{};
+#if defined(__GNUC__) || defined(POSIX)
+    is_ok = !!gmtime_s(&time, &utc_time);
+#else
+    is_ok = !gmtime_s(&utc_time, &time);
+#endif
+    std::string time_str(4 +1 +2 +1 +2 +3 +2 +1 +2 +1 +2 +1, '\0');
+    if (is_ok) {
+        constexpr const static char fmt[] = "%Y/%m/%d - %H:%M:%S";
+        size_t chars = std::strftime(&time_str[0], time_str.size(), fmt, &utc_time);
+        time_str.resize(chars);
+    }
+    return time_str;
 }
