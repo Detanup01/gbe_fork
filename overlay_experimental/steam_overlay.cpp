@@ -2019,7 +2019,6 @@ void Steam_Overlay::FriendDisconnect(Friend _friend)
 void Steam_Overlay::AddAchievementNotification(const std::string &ach_name, nlohmann::json const &ach, bool for_progress)
 {
     if (settings->disable_overlay) return;
-    if (for_progress && settings->disable_overlay_achievement_progress) return;
 
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
@@ -2028,12 +2027,12 @@ void Steam_Overlay::AddAchievementNotification(const std::string &ach_name, nloh
     // don't return early when disable_overlay_achievement_notification is true
     // otherwise when you open the achievements list/menu you won't see the new unlock status
 
-    // adjust the local 'is_achieved' and 'unlock_time'
-    std::lock_guard<std::recursive_mutex> lock2(global_mutex);
-
     for (auto &a : achievements) {
         if (a.name == ach_name) {
             try {
+                // lock to prevent modifications to this json object
+                std::lock_guard<std::recursive_mutex> lock2(global_mutex);
+
                 a.achieved = ach.value("earned", false);
                 a.unlock_time = ach.value("earned_time", static_cast<uint32>(0));
                 a.progress = ach.value("progress", static_cast<float>(0));
@@ -2041,8 +2040,14 @@ void Steam_Overlay::AddAchievementNotification(const std::string &ach_name, nloh
             } catch(...) {}
 
             if (a.achieved) {
-                post_achievement_notification(a, for_progress);
-                if (!for_progress) notify_sound_user_achievement();
+                // post notification if this isn't a progress, or a progress and the user didn't disable these notifications
+                if (!for_progress || !settings->disable_overlay_achievement_progress) {
+                    post_achievement_notification(a, for_progress);
+                }
+                // don't play sound if this is progress
+                if (!for_progress) {
+                    notify_sound_user_achievement();
+                }
             }
             break;
         }
