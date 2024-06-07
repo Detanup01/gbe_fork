@@ -608,16 +608,13 @@ if _OPTIONS["build-ingame_overlay"] or _OPTIONS["all-build"] then
     -- fix missing standard include/header file for gcc/clang
     local ingame_overlay_fixes = {}
     if string.match(_ACTION, 'gmake.*') then
-        ingame_overlay_fixes = {
-            '-include cstdint',
-            '-include cinttypes',
-        }
         -- MinGW fixes
         if os.target() == 'windows' then
-            -- MinGW throws this error: Library.cpp:77:26: error: invalid conversion from 'FARPROC' {aka 'long long int (*)()'} to 'void*' [-fpermissive]
-            table.insert(ingame_overlay_fixes, '-fpermissive')
+            -- MinGW doesn't define _M_AMD64 or _M_IX86, which makes SystemDetector.h fail to recognize os
             -- MinGW throws this error: Filesystem.cpp:139:38: error: no matching function for call to 'stat::stat(const char*, stat*)
             table.insert(ingame_overlay_fixes, '-include sys/stat.h')
+            -- MinGW throws this error: Library.cpp:77:26: error: invalid conversion from 'FARPROC' {aka 'long long int (*)()'} to 'void*' [-fpermissive]
+            table.insert(ingame_overlay_fixes, '-fpermissive')
         end
     end
 
