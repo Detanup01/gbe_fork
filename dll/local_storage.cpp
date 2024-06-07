@@ -490,7 +490,7 @@ std::string Local_Storage::get_user_appdata_path()
 
 static std::string replace_with(std::string s, std::string const &old, const char *new_str)
 {
-    int pos;
+    size_t pos{};
     while ((pos = s.find(old)) != std::string::npos)
         s.replace(pos, old.length(), new_str);
 

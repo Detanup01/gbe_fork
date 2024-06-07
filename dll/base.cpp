@@ -16,6 +16,8 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "dll/base.h"
+#include "dll/settings_parser.h"
+
 
 std::recursive_mutex global_mutex{};
 // some arbitrary counter/time for reference
@@ -298,6 +300,7 @@ unsigned int file_size_(const std::string &full_path)
 #endif
     return buffer.st_size;
 }
+
 
 #ifdef EMU_EXPERIMENTAL_BUILD
 #ifdef __WINDOWS__
@@ -591,9 +594,6 @@ HINTERNET WINAPI Mine_WinHttpOpenRequest(
 }
 
 
-
-#include "dll/settings_parser.h"
-
 static bool network_functions_attached = false;
 BOOL WINAPI DllMain( HINSTANCE, DWORD dwReason, LPVOID )
 {
@@ -659,3 +659,4 @@ void set_whitelist_ips(uint32_t *from, uint32_t *to, unsigned num_ips)
 }
 
 #endif
+

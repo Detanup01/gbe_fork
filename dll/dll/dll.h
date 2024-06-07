@@ -36,4 +36,5 @@ HSteamPipe flat_hsteampipe();
 HSteamUser flat_gs_hsteamuser();
 HSteamPipe flat_gs_hsteampipe();
 
+
 #endif // __INCLUDED_DLL_H__

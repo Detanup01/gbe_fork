@@ -53,9 +53,12 @@ bool file_exists_(const std::string &full_path);
 unsigned int file_size_(const std::string &full_path);
 
 void set_whitelist_ips(uint32_t *from, uint32_t *to, unsigned num_ips);
+
+
 #ifdef EMU_EXPERIMENTAL_BUILD
 bool crack_SteamAPI_RestartAppIfNecessary(uint32 unOwnAppID);
 bool crack_SteamAPI_Init();
 #endif
+
 
 #endif // BASE_INCLUDE_H

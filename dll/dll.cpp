@@ -241,10 +241,11 @@ static void *create_client_interface(const char *ver)
         } else if (strcmp(ver, "SteamClient019") == 0) {
             steam_client = static_cast<ISteamClient019 *>(get_steam_client());
         } else if (strcmp(ver, "SteamClient020") == 0) {
+            steamclient_has_ipv6_functions_flag = true;
             steam_client = static_cast<ISteamClient020 *>(get_steam_client());
         } else if (strcmp(ver, STEAMCLIENT_INTERFACE_VERSION) == 0) {
-            steam_client = static_cast<ISteamClient *>(get_steam_client());
             steamclient_has_ipv6_functions_flag = true;
+            steam_client = static_cast<ISteamClient *>(get_steam_client());
         } else {
             PRINT_DEBUG("requested unknown steamclient version '%s'", ver);
             steam_client = static_cast<ISteamClient *>(get_steam_client());
