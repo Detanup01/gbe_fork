@@ -730,25 +730,27 @@ Steam_User_Stats::Steam_User_Stats(Settings *settings, class Networking *network
             std::string name = static_cast<std::string const&>(it["name"]);
             sorted_achievement_names.push_back(name);
 
-            achievement_trigger trig;
-            trig.name = name;
-            trig.value_operation = static_cast<std::string const&>(it["progress"]["value"]["operation"]);
-            std::string stat_name = common_helpers::ascii_to_lowercase(static_cast<std::string const&>(it["progress"]["value"]["operand1"]));
-            trig.min_value = static_cast<std::string const&>(it["progress"]["min_val"]);
-            trig.max_value = static_cast<std::string const&>(it["progress"]["max_val"]);
-            achievement_stat_trigger[stat_name].push_back(trig);
-
+            achievement_trigger trig{};
+            try {
+                trig.name = name;
+                trig.value_operation = static_cast<std::string const&>(it["progress"]["value"]["operation"]);
+                std::string stat_name = common_helpers::ascii_to_lowercase(static_cast<std::string const&>(it["progress"]["value"]["operand1"]));
+                trig.min_value = static_cast<std::string const&>(it["progress"]["min_val"]);
+                trig.max_value = static_cast<std::string const&>(it["progress"]["max_val"]);
+                achievement_stat_trigger[stat_name].push_back(trig);
+            } catch(...) {}
+            
             if (user_achievements.find(name) == user_achievements.end()) {
                 user_achievements[name]["earned"] = false;
                 user_achievements[name]["earned_time"] = static_cast<uint32>(0);
                 user_achievements[name]["progress"] = std::stoi(trig.min_value);
                 user_achievements[name]["max_progress"] = std::stoi(trig.max_value);
             }
-        } catch (...) {}
+        } catch(...) {}
 
         try {
             it["hidden"] = std::to_string(it["hidden"].get<int>());
-        } catch (...) {}
+        } catch(...) {}
 
         it["displayName"] = get_value_for_language(it, "displayName", settings->get_language());
         it["description"] = get_value_for_language(it, "description", settings->get_language());
