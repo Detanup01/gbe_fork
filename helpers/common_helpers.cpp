@@ -420,7 +420,7 @@ std::string common_helpers::get_utc_time()
     std::tm utc_time{};
 
     bool is_ok{};
-#if defined(__GNUC__) || defined(POSIX)
+#if defined(__linux__) || defined(linux)
     is_ok = !!gmtime_s(&time, &utc_time);
 #else
     is_ok = !gmtime_s(&utc_time, &time);
