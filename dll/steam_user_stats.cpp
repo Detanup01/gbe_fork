@@ -660,6 +660,8 @@ Steam_User_Stats::InternalSetResult<bool> Steam_User_Stats::clear_achievement_in
 
             result.notify_server = !settings->disable_sharing_stats_with_gameserver;
 
+            overlay->AddAchievementNotification(internal_name, user_achievements[internal_name], false);
+
         }
     } catch (...) {}
 
