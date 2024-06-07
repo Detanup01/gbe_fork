@@ -419,9 +419,15 @@ std::string common_helpers::get_utc_time()
     std::time_t time = std::time({});
     std::tm utc_time{};
 
-    bool is_ok{};
+    bool is_ok = false;
 #if defined(__linux__) || defined(linux)
-    is_ok = !!gmtime_s(&time, &utc_time);
+    {
+        auto utc_ptr = std::gmtime(&time);
+        if (utc_ptr) {
+            utc_time = *utc_ptr;
+            is_ok = true;
+        }
+    }
 #else
     is_ok = !gmtime_s(&utc_time, &time);
 #endif
