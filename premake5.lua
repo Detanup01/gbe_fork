@@ -60,6 +60,12 @@ premake.override(premake.tools.gcc, "getlinks", function(originalFn, cfg, system
     return new_result
 end)
 
+local function table_append(table_dest, table_src)
+    local dest_start = #table_dest
+    for idx = 1, #table_src do
+        table_dest[dest_start + idx] = table_src[idx]
+    end
+end
 
 -- pre-define stuff
 
@@ -74,7 +80,7 @@ end
 
 local deps_dir = path.getabsolute(path.join('build', 'deps', os_iden, _ACTION), _MAIN_SCRIPT_DIR)
 
-function genproto()
+local function genproto()
     local deps_install_prefix = ''
     if os.is64bit() then
         deps_install_prefix = 'install64'
@@ -220,50 +226,151 @@ local common_files = {
 -- libs to link
 ---------
 local lib_prefix = 'lib'
-local mingw_whole_archive = ''
--- MinGW on Windows adds this prefix by default and linking ex: '-lssq' will look for 'libssq'
+local static_postfix = ''
+-- GCC/Clang add this prefix by default and linking ex: '-lssq' will look for 'libssq'
 -- so we have to ommit this prefix since it's automatically added
 if _ACTION and string.match(_ACTION, 'gmake.*') then
     lib_prefix = ''
-    mingw_whole_archive = ':whole_archive'
+    if os.target() ~= 'windows' then -- for MinGw we compile everything with -static, and this conflicts with it
+        static_postfix = ':static'
+    end
 end
+
+local zlib_archive_name = 'z'
+if os.target() == 'windows' then
+    zlib_archive_name = 'zlibstatic' -- even on MinGw we need this name
+end
+
+local deps_link = {
+    "ssq"                .. static_postfix,
+    zlib_archive_name    .. static_postfix,
+    lib_prefix .. "curl" .. static_postfix,
+    "mbedcrypto"         .. static_postfix,
+}
+-- add protobuf libs
+table_append(deps_link, {
+    lib_prefix .. "protobuf-lite"                 .. static_postfix,
+    "absl_bad_any_cast_impl"                      .. static_postfix,
+    "absl_bad_optional_access"                    .. static_postfix,
+    "absl_bad_variant_access"                     .. static_postfix,
+    "absl_base"                                   .. static_postfix,
+    "absl_city"                                   .. static_postfix,
+    "absl_civil_time"                             .. static_postfix,
+    "absl_cord"                                   .. static_postfix,
+    "absl_cordz_functions"                        .. static_postfix,
+    "absl_cordz_handle"                           .. static_postfix,
+    "absl_cordz_info"                             .. static_postfix,
+    "absl_cordz_sample_token"                     .. static_postfix,
+    "absl_cord_internal"                          .. static_postfix,
+    "absl_crc32c"                                 .. static_postfix,
+    "absl_crc_cord_state"                         .. static_postfix,
+    "absl_crc_cpu_detect"                         .. static_postfix,
+    "absl_crc_internal"                           .. static_postfix,
+    "absl_debugging_internal"                     .. static_postfix,
+    "absl_demangle_internal"                      .. static_postfix,
+    "absl_die_if_null"                            .. static_postfix,
+    "absl_examine_stack"                          .. static_postfix,
+    "absl_exponential_biased"                     .. static_postfix,
+    "absl_failure_signal_handler"                 .. static_postfix,
+    "absl_flags_commandlineflag"                  .. static_postfix,
+    "absl_flags_commandlineflag_internal"         .. static_postfix,
+    "absl_flags_config"                           .. static_postfix,
+    "absl_flags_internal"                         .. static_postfix,
+    "absl_flags_marshalling"                      .. static_postfix,
+    "absl_flags_parse"                            .. static_postfix,
+    "absl_flags_private_handle_accessor"          .. static_postfix,
+    "absl_flags_program_name"                     .. static_postfix,
+    "absl_flags_reflection"                       .. static_postfix,
+    "absl_flags_usage"                            .. static_postfix,
+    "absl_flags_usage_internal"                   .. static_postfix,
+    "absl_graphcycles_internal"                   .. static_postfix,
+    "absl_hash"                                   .. static_postfix,
+    "absl_hashtablez_sampler"                     .. static_postfix,
+    "absl_int128"                                 .. static_postfix,
+    "absl_kernel_timeout_internal"                .. static_postfix,
+    "absl_leak_check"                             .. static_postfix,
+    "absl_log_entry"                              .. static_postfix,
+    "absl_log_flags"                              .. static_postfix,
+    "absl_log_globals"                            .. static_postfix,
+    "absl_log_initialize"                         .. static_postfix,
+    "absl_log_internal_check_op"                  .. static_postfix,
+    "absl_log_internal_conditions"                .. static_postfix,
+    "absl_log_internal_fnmatch"                   .. static_postfix,
+    "absl_log_internal_format"                    .. static_postfix,
+    "absl_log_internal_globals"                   .. static_postfix,
+    "absl_log_internal_log_sink_set"              .. static_postfix,
+    "absl_log_internal_message"                   .. static_postfix,
+    "absl_log_internal_nullguard"                 .. static_postfix,
+    "absl_log_internal_proto"                     .. static_postfix,
+    "absl_log_severity"                           .. static_postfix,
+    "absl_log_sink"                               .. static_postfix,
+    "absl_low_level_hash"                         .. static_postfix,
+    "absl_malloc_internal"                        .. static_postfix,
+    "absl_periodic_sampler"                       .. static_postfix,
+    "absl_random_distributions"                   .. static_postfix,
+    "absl_random_internal_distribution_test_util" .. static_postfix,
+    "absl_random_internal_platform"               .. static_postfix,
+    "absl_random_internal_pool_urbg"              .. static_postfix,
+    "absl_random_internal_randen"                 .. static_postfix,
+    "absl_random_internal_randen_hwaes"           .. static_postfix,
+    "absl_random_internal_randen_hwaes_impl"      .. static_postfix,
+    "absl_random_internal_randen_slow"            .. static_postfix,
+    "absl_random_internal_seed_material"          .. static_postfix,
+    "absl_random_seed_gen_exception"              .. static_postfix,
+    "absl_random_seed_sequences"                  .. static_postfix,
+    "absl_raw_hash_set"                           .. static_postfix,
+    "absl_raw_logging_internal"                   .. static_postfix,
+    "absl_scoped_set_env"                         .. static_postfix,
+    "absl_spinlock_wait"                          .. static_postfix,
+    "absl_stacktrace"                             .. static_postfix,
+    "absl_status"                                 .. static_postfix,
+    "absl_statusor"                               .. static_postfix,
+    "absl_strerror"                               .. static_postfix,
+    "absl_strings"                                .. static_postfix,
+    "absl_strings_internal"                       .. static_postfix,
+    "absl_string_view"                            .. static_postfix,
+    "absl_str_format_internal"                    .. static_postfix,
+    "absl_symbolize"                              .. static_postfix,
+    "absl_synchronization"                        .. static_postfix,
+    "absl_throw_delegate"                         .. static_postfix,
+    "absl_time"                                   .. static_postfix,
+    "absl_time_zone"                              .. static_postfix,
+    "absl_vlog_config_internal"                   .. static_postfix,
+    "utf8_range"                                  .. static_postfix,
+    "utf8_validity"                               .. static_postfix,
+})
+
 local common_link_win = {
     -- os specific
-    "Ws2_32", "Iphlpapi", "Wldap32", "Winmm", "Bcrypt", "Dbghelp",
+    "Ws2_32"   .. static_postfix,
+    "Iphlpapi" .. static_postfix,
+    "Wldap32"  .. static_postfix,
+    "Winmm"    .. static_postfix,
+    "Bcrypt"   .. static_postfix,
+    "Dbghelp"  .. static_postfix,
     -- gamepad
-    "Xinput",
+    "Xinput"   .. static_postfix,
     -- imgui / overlay
-    "Gdi32", "Dwmapi",
-    -- deps
-    "ssq" .. mingw_whole_archive,
-    "zlibstatic" .. mingw_whole_archive,
-    lib_prefix .. "curl" .. mingw_whole_archive,
-    lib_prefix .. "protobuf-lite" .. mingw_whole_archive,
-    "mbedcrypto" .. mingw_whole_archive,
+    "Gdi32"    .. static_postfix,
+    "Dwmapi"   .. static_postfix,
 }
+-- add deps to win
+table_append(common_link_win, deps_link)
 
 local common_link_linux = {
     -- os specific
     "pthread", "dl",
-    -- deps
-    "ssq:static_whole",
-    "z:static_whole", -- libz library
-    "curl:static_whole",
-    "protobuf-lite:static_whole",
-    "mbedcrypto:static_whole",
 }
+-- add deps to linux
+table_append(common_link_linux, deps_link)
 
 -- overlay libs
-local overlay_link_win = {
-    "ingame_overlay" .. mingw_whole_archive,
-    "system" .. mingw_whole_archive, -- ingame_overlay dependency
-    "mini_detour" .. mingw_whole_archive, -- ingame_overlay dependency
+local overlay_link = {
+    "ingame_overlay",
+    "system", -- ingame_overlay dependency
+    "mini_detour", -- ingame_overlay dependency
 }
-local overlay_link_linux = {
-    "ingame_overlay:static_whole",
-    "system:static_whole", -- ingame_overlay dependency
-    "mini_detour:static_whole", -- ingame_overlay dependency
-}
+-- we add them later when needed
 
 
 -- dirs to custom libs
@@ -679,18 +786,20 @@ project "api_experimental"
 
     -- libs to link
     ---------
+    filter {} -- reset the filter and remove all active keywords
+        links {
+            overlay_link,
+        }
     -- Windows libs to link
     filter { "system:windows", }
         links {
             common_link_win,
-            overlay_link_win,
         }
 
     -- Linux libs to link
     filter { "system:linux", }
         links {
             common_link_linux,
-            overlay_link_linux,
         }
 
 
@@ -803,18 +912,20 @@ project "steamclient_experimental"
 
     -- libs to link
     ---------
+    filter {} -- reset the filter and remove all active keywords
+        links {
+            overlay_link,
+        }
     -- Windows libs to link
     filter { "system:windows", }
         links {
             common_link_win,
-            overlay_link_win,
         }
 
     -- Linux libs to link
     filter { "system:linux", }
         links {
             common_link_linux,
-            overlay_link_linux,
         }
 
 

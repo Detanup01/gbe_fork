@@ -12,7 +12,7 @@
 - ingame_overlay (https://github.com/Nemirtingas/ingame_overlay/tree/2d992cfe36908923f83b05f2be9cd98ac49bdf91)
 - libssq (https://github.com/BinaryAlien/libssq/releases/tag/v3.0.0)
 - mbedtls (https://github.com/Mbed-TLS/mbedtls/releases/tag/v3.5.1)
-- protobuf (https://github.com/protocolbuffers/protobuf/releases/tag/v21.12)
+- protobuf (https://github.com/protocolbuffers/protobuf/releases/tag/v27.1)
 - Gamepad Input Library (???)
 - zlib (https://github.com/madler/zlib/releases/tag/v1.3)
 - cmake (https://github.com/Kitware/CMake/releases/tag/v3.27.7)
