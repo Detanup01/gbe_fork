@@ -365,7 +365,7 @@ void Steam_Overlay::load_achievements_data()
             ach.max_progress = pnMaxProgress;
         }
 
-        achievements.push_back(ach);
+        achievements.emplace_back(ach);
         
         if (!setup_overlay_called) return;
     }
