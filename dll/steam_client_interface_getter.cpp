@@ -17,6 +17,7 @@
 
 #include "dll/steam_client.h"
 
+
 // retrieves the ISteamUser interface associated with the handle
 ISteamUser *Steam_Client::GetISteamUser( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
@@ -53,11 +54,9 @@ ISteamUser *Steam_Client::GetISteamUser( HSteamUser hSteamUser, HSteamPipe hStea
         return reinterpret_cast<ISteamUser *>(static_cast<ISteamUser022 *>(steam_user));
     } else if (strcmp(pchVersion, STEAMUSER_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamUser *>(static_cast<ISteamUser *>(steam_user));
-    } else {
-        return reinterpret_cast<ISteamUser *>(static_cast<ISteamUser *>(steam_user));
     }
-    
-    return reinterpret_cast<ISteamUser *>(static_cast<ISteamUser *>(steam_user));
+
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // retrieves the ISteamGameServer interface associated with the handle
@@ -93,12 +92,9 @@ ISteamGameServer *Steam_Client::GetISteamGameServer( HSteamUser hSteamUser, HSte
     } else if (strcmp(pchVersion, STEAMGAMESERVER_INTERFACE_VERSION) == 0) {
         gameserver_has_ipv6_functions = true;
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer *>(steam_gameserver));
-    } else {
-        gameserver_has_ipv6_functions = true;
-        return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer *>(steam_gameserver));
     }
     
-    return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer *>(steam_gameserver));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // returns the ISteamFriends interface
@@ -137,13 +133,9 @@ ISteamFriends *Steam_Client::GetISteamFriends( HSteamUser hSteamUser, HSteamPipe
         return reinterpret_cast<ISteamFriends *>(static_cast<ISteamFriends016 *>(steam_friends)); // SteamFriends016 Not found in public Archive, must be between 1.42-1.43
     } else if (strcmp(pchVersion, STEAMFRIENDS_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamFriends *>(static_cast<ISteamFriends *>(steam_friends));
-    } else {
-        return reinterpret_cast<ISteamFriends *>(static_cast<ISteamFriends *>(steam_friends));
     }
     
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamFriends *>(static_cast<ISteamFriends *>(steam_friends));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // returns the ISteamUtils interface
@@ -178,13 +170,9 @@ ISteamUtils *Steam_Client::GetISteamUtils( HSteamPipe hSteamPipe, const char *pc
         return reinterpret_cast<ISteamUtils *>(static_cast<ISteamUtils009 *>(steam_utils_temp));
     } else if (strcmp(pchVersion, STEAMUTILS_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamUtils *>(static_cast<ISteamUtils *>(steam_utils_temp));
-    } else {
-        return reinterpret_cast<ISteamUtils *>(static_cast<ISteamUtils *>(steam_utils_temp));
     }
     
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamUtils *>(static_cast<ISteamUtils *>(steam_utils_temp));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // returns the ISteamMatchmaking interface
@@ -212,13 +200,9 @@ ISteamMatchmaking *Steam_Client::GetISteamMatchmaking( HSteamUser hSteamUser, HS
         return reinterpret_cast<ISteamMatchmaking *>(static_cast<ISteamMatchmaking008 *>(steam_matchmaking));
     } else if (strcmp(pchVersion, STEAMMATCHMAKING_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamMatchmaking *>(static_cast<ISteamMatchmaking *>(steam_matchmaking));
-    } else {
-        return reinterpret_cast<ISteamMatchmaking *>(static_cast<ISteamMatchmaking *>(steam_matchmaking));
     }
     
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamMatchmaking *>(static_cast<ISteamMatchmaking *>(steam_matchmaking));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // returns the ISteamMatchmakingServers interface
@@ -231,13 +215,9 @@ ISteamMatchmakingServers *Steam_Client::GetISteamMatchmakingServers( HSteamUser 
         return reinterpret_cast<ISteamMatchmakingServers *>(static_cast<ISteamMatchmakingServers001 *>(steam_matchmaking_servers));
     } else if (strcmp(pchVersion, STEAMMATCHMAKINGSERVERS_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamMatchmakingServers *>(static_cast<ISteamMatchmakingServers *>(steam_matchmaking_servers));
-    } else {
-        return reinterpret_cast<ISteamMatchmakingServers *>(static_cast<ISteamMatchmakingServers *>(steam_matchmaking_servers));
     }
     
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamMatchmakingServers *>(static_cast<ISteamMatchmakingServers *>(steam_matchmaking_servers));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // returns the a generic interface
@@ -250,6 +230,7 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
     if (steam_pipes[hSteamPipe] == Steam_Pipe::SERVER) {
         server = true;
     } else {
+        // if this is a user pipe, and version != "SteamNetworkingUtils", and version != "SteamUtils"
         if ((strstr(pchVersion, "SteamNetworkingUtils") != pchVersion) && (strstr(pchVersion, "SteamUtils") != pchVersion)) {
             if (!hSteamUser) return NULL;
         }
@@ -274,8 +255,6 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
         } else if (strcmp(pchVersion, "SteamNetworkingSocketsSerialized004") == 0) {
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingSocketsSerialized004 *>(steam_networking_sockets_serialized_temp));
         } else if (strcmp(pchVersion, "SteamNetworkingSocketsSerialized005") == 0) {
-            return reinterpret_cast<void *>(static_cast<ISteamNetworkingSocketsSerialized005 *>(steam_networking_sockets_serialized_temp));
-        } else {
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingSocketsSerialized005 *>(steam_networking_sockets_serialized_temp));
         }
     } else if (strstr(pchVersion, "SteamNetworkingSockets") == pchVersion) {
@@ -308,8 +287,6 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
 
         } else if (strcmp(pchVersion, STEAMNETWORKINGSOCKETS_INTERFACE_VERSION) == 0) {
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingSockets *>( steam_networking_sockets_temp));
-        } else {
-            return reinterpret_cast<void *>(static_cast<ISteamNetworkingSockets *>( steam_networking_sockets_temp));
         }
     } else if (strstr(pchVersion, "SteamNetworkingMessages") == pchVersion) {
         Steam_Networking_Messages *steam_networking_messages_temp{};
@@ -321,8 +298,6 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
 
         if (strcmp(pchVersion, STEAMNETWORKINGMESSAGES_INTERFACE_VERSION) == 0) {
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingMessages *>(steam_networking_messages_temp));
-        } else {
-            return reinterpret_cast<void *>(static_cast<ISteamNetworkingMessages *>(steam_networking_messages_temp));
         }
     } else if (strstr(pchVersion, "SteamNetworkingUtils") == pchVersion) {
         if (strcmp(pchVersion, "SteamNetworkingUtils001") == 0) {
@@ -332,8 +307,6 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
         } else if (strcmp(pchVersion, "SteamNetworkingUtils003") == 0) {
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingUtils003 *>(steam_networking_utils));
         } else if (strcmp(pchVersion, STEAMNETWORKINGUTILS_INTERFACE_VERSION) == 0) {
-            return reinterpret_cast<void *>(static_cast<ISteamNetworkingUtils *>(steam_networking_utils));
-        } else {
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingUtils *>(steam_networking_utils));
         }
     } else if (strstr(pchVersion, "SteamNetworking") == pchVersion) {
@@ -348,13 +321,9 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
 
         if (strcmp(pchVersion, STEAMGAMECOORDINATOR_INTERFACE_VERSION) == 0) {
             return reinterpret_cast<void *>(static_cast<ISteamGameCoordinator *>(steam_game_coordinator_temp));
-        } else {
-            return reinterpret_cast<void *>(static_cast<ISteamGameCoordinator *>(steam_game_coordinator_temp));
         }
     } else if (strstr(pchVersion, "STEAMTV_INTERFACE_V") == pchVersion) {
         if (strcmp(pchVersion, STEAMTV_INTERFACE_VERSION) == 0) {
-            return reinterpret_cast<void *>(static_cast<ISteamTV *>(steam_tv));
-        } else {
             return reinterpret_cast<void *>(static_cast<ISteamTV *>(steam_tv));
         }
     } else if (strstr(pchVersion, "STEAMREMOTESTORAGE_INTERFACE_VERSION") == pchVersion) {
@@ -413,15 +382,10 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
         return GetISteamParentalSettings(hSteamUser, hSteamPipe, pchVersion);
     } else if (strstr(pchVersion, "STEAMAPPTICKET_INTERFACE_VERSION") == pchVersion) {
         return GetAppTicket(hSteamUser, hSteamPipe, pchVersion);
-    } else {
-        PRINT_DEBUG("No interface: %s", pchVersion);
-        //TODO: all the interfaces
-        return NULL;
     }
     
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Invalid handling for interface: %s", pchVersion);
-    return NULL;
+    PRINT_DEBUG("No interface: %s", pchVersion);
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // returns the ISteamUserStats interface
@@ -430,13 +394,8 @@ ISteamUserStats *Steam_Client::GetISteamUserStats( HSteamUser hSteamUser, HSteam
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
-    if (strcmp(pchVersion, "STEAMUSERSTATS_INTERFACE_VERSION001") == 0) {
-        //TODO
-        return reinterpret_cast<ISteamUserStats *>(static_cast<ISteamUserStats003 *>(steam_user_stats)); // Not found in public Archive, must be before 1.00
-    } else if (strcmp(pchVersion, "STEAMUSERSTATS_INTERFACE_VERSION002") == 0) {
-        //TODO
-        return reinterpret_cast<ISteamUserStats *>(static_cast<ISteamUserStats003 *>(steam_user_stats)); // Not found in public Archive, must be before 1.00
-    } else if (strcmp(pchVersion, "STEAMUSERSTATS_INTERFACE_VERSION003") == 0) {
+     // v001, v002 Not found in public Archive, must be before 1.00
+    if (strcmp(pchVersion, "STEAMUSERSTATS_INTERFACE_VERSION003") == 0) {
         return reinterpret_cast<ISteamUserStats *>(static_cast<ISteamUserStats003 *>(steam_user_stats));
     } else if (strcmp(pchVersion, "STEAMUSERSTATS_INTERFACE_VERSION004") == 0) {
         return reinterpret_cast<ISteamUserStats *>(static_cast<ISteamUserStats004 *>(steam_user_stats));
@@ -456,13 +415,9 @@ ISteamUserStats *Steam_Client::GetISteamUserStats( HSteamUser hSteamUser, HSteam
         return reinterpret_cast<ISteamUserStats *>(static_cast<ISteamUserStats011 *>(steam_user_stats));
     } else if (strcmp(pchVersion, STEAMUSERSTATS_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamUserStats *>(static_cast<ISteamUserStats *>(steam_user_stats));
-    } else {
-        return reinterpret_cast<ISteamUserStats *>(static_cast<ISteamUserStats *>(steam_user_stats));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamUserStats *>(static_cast<ISteamUserStats *>(steam_user_stats));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // returns the ISteamGameServerStats interface
@@ -473,13 +428,9 @@ ISteamGameServerStats *Steam_Client::GetISteamGameServerStats( HSteamUser hSteam
     
     if (strcmp(pchVersion, STEAMGAMESERVERSTATS_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamGameServerStats *>(static_cast<ISteamGameServerStats *>(steam_gameserverstats));
-    } else {
-        return reinterpret_cast<ISteamGameServerStats *>(static_cast<ISteamGameServerStats *>(steam_gameserverstats));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamGameServerStats *>(static_cast<ISteamGameServerStats *>(steam_gameserverstats));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // returns apps interface
@@ -511,13 +462,9 @@ ISteamApps *Steam_Client::GetISteamApps( HSteamUser hSteamUser, HSteamPipe hStea
         return reinterpret_cast<ISteamApps *>(static_cast<ISteamApps007 *>(steam_apps_temp));
     } else if (strcmp(pchVersion, STEAMAPPS_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamApps *>(static_cast<ISteamApps *>(steam_apps_temp));
-    } else {
-        return reinterpret_cast<ISteamApps *>(static_cast<ISteamApps *>(steam_apps_temp));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamApps *>(static_cast<ISteamApps *>(steam_apps_temp));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // networking
@@ -546,13 +493,9 @@ ISteamNetworking *Steam_Client::GetISteamNetworking( HSteamUser hSteamUser, HSte
         return reinterpret_cast<ISteamNetworking *>(static_cast<ISteamNetworking005 *>(steam_networking_temp));
     } else if (strcmp(pchVersion, STEAMNETWORKING_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamNetworking *>(static_cast<ISteamNetworking *>(steam_networking_temp));
-    } else {
-        return reinterpret_cast<ISteamNetworking *>(static_cast<ISteamNetworking *>(steam_networking_temp));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamNetworking *>(static_cast<ISteamNetworking *>(steam_networking_temp));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // remote storage
@@ -594,13 +537,9 @@ ISteamRemoteStorage *Steam_Client::GetISteamRemoteStorage( HSteamUser hSteamuser
 
     } else if (strcmp(pchVersion, STEAMREMOTESTORAGE_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamRemoteStorage *>(static_cast<ISteamRemoteStorage *>(steam_remote_storage));
-    } else {
-        return reinterpret_cast<ISteamRemoteStorage *>(static_cast<ISteamRemoteStorage *>(steam_remote_storage));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamRemoteStorage *>(static_cast<ISteamRemoteStorage *>(steam_remote_storage));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // user screenshots
@@ -615,13 +554,9 @@ ISteamScreenshots *Steam_Client::GetISteamScreenshots( HSteamUser hSteamuser, HS
         return reinterpret_cast<ISteamScreenshots *>(static_cast<ISteamScreenshots002 *>(steam_screenshots));
     } else if (strcmp(pchVersion, STEAMSCREENSHOTS_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamScreenshots *>(static_cast<ISteamScreenshots *>(steam_screenshots));
-    } else {
-        return reinterpret_cast<ISteamScreenshots *>(static_cast<ISteamScreenshots *>(steam_screenshots));
     }
     
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamScreenshots *>(static_cast<ISteamScreenshots *>(steam_screenshots));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 
@@ -644,13 +579,9 @@ ISteamHTTP *Steam_Client::GetISteamHTTP( HSteamUser hSteamuser, HSteamPipe hStea
         return reinterpret_cast<ISteamHTTP *>(static_cast<ISteamHTTP002 *>(steam_http_temp));
     } else if (strcmp(pchVersion, STEAMHTTP_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamHTTP *>(static_cast<ISteamHTTP *>(steam_http_temp));
-    } else {
-        return reinterpret_cast<ISteamHTTP *>(static_cast<ISteamHTTP *>(steam_http_temp));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamHTTP *>(static_cast<ISteamHTTP *>(steam_http_temp));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // Deprecated - the ISteamUnifiedMessages interface is no longer intended for public consumption.
@@ -661,13 +592,9 @@ void *Steam_Client::DEPRECATED_GetISteamUnifiedMessages( HSteamUser hSteamuser, 
 
     if (strcmp(pchVersion, STEAMUNIFIEDMESSAGES_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<void *>(static_cast<ISteamUnifiedMessages *>(steam_unified_messages));
-    } else {
-        return reinterpret_cast<void *>(static_cast<ISteamUnifiedMessages *>(steam_unified_messages));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<void *>(static_cast<ISteamUnifiedMessages *>(steam_unified_messages));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 ISteamUnifiedMessages *Steam_Client::GetISteamUnifiedMessages( HSteamUser hSteamuser, HSteamPipe hSteamPipe, const char *pchVersion )
@@ -677,13 +604,9 @@ ISteamUnifiedMessages *Steam_Client::GetISteamUnifiedMessages( HSteamUser hSteam
 
     if (strcmp(pchVersion, STEAMUNIFIEDMESSAGES_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamUnifiedMessages *>(static_cast<ISteamUnifiedMessages *>(steam_unified_messages));
-    } else {
-        return reinterpret_cast<ISteamUnifiedMessages *>(static_cast<ISteamUnifiedMessages *>(steam_unified_messages));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return steam_unified_messages;
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // Exposes the ISteamController interface
@@ -706,13 +629,9 @@ ISteamController *Steam_Client::GetISteamController( HSteamUser hSteamUser, HSte
         return reinterpret_cast<ISteamController *>(static_cast<ISteamController007 *>(steam_controller));
     } else if (strcmp(pchVersion, STEAMCONTROLLER_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamController *>(static_cast<ISteamController *>(steam_controller));
-    } else {
-        return reinterpret_cast<ISteamController *>(static_cast<ISteamController *>(steam_controller));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamController *>(static_cast<ISteamController *>(steam_controller));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // Exposes the ISteamUGC interface
@@ -768,13 +687,9 @@ ISteamUGC *Steam_Client::GetISteamUGC( HSteamUser hSteamUser, HSteamPipe hSteamP
         return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC017 *>(steam_ugc_temp));
     } else if (strcmp(pchVersion, STEAMUGC_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC *>(steam_ugc_temp));
-    } else {
-        return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC *>(steam_ugc_temp));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC *>(steam_ugc_temp));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // returns app list interface, only available on specially registered apps
@@ -785,13 +700,9 @@ ISteamAppList *Steam_Client::GetISteamAppList( HSteamUser hSteamUser, HSteamPipe
     
     if (strcmp(pchVersion, STEAMAPPLIST_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamAppList *>(static_cast<ISteamAppList *>(steam_applist));
-    } else {
-        return reinterpret_cast<ISteamAppList *>(static_cast<ISteamAppList *>(steam_applist));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamAppList *>(static_cast<ISteamAppList *>(steam_applist));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // Music Player
@@ -802,13 +713,9 @@ ISteamMusic *Steam_Client::GetISteamMusic( HSteamUser hSteamuser, HSteamPipe hSt
 
     if (strcmp(pchVersion, STEAMMUSIC_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamMusic *>(static_cast<ISteamMusic *>(steam_music));
-    } else {
-        return reinterpret_cast<ISteamMusic *>(static_cast<ISteamMusic *>(steam_music));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamMusic *>(static_cast<ISteamMusic *>(steam_music));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // Music Player Remote
@@ -819,13 +726,9 @@ ISteamMusicRemote *Steam_Client::GetISteamMusicRemote(HSteamUser hSteamuser, HSt
     
     if (strcmp(pchVersion, STEAMMUSICREMOTE_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamMusicRemote *>(static_cast<ISteamMusicRemote *>(steam_musicremote));
-    } else {
-        return reinterpret_cast<ISteamMusicRemote *>(static_cast<ISteamMusicRemote *>(steam_musicremote));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamMusicRemote *>(static_cast<ISteamMusicRemote *>(steam_musicremote));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // html page display
@@ -844,13 +747,9 @@ ISteamHTMLSurface *Steam_Client::GetISteamHTMLSurface(HSteamUser hSteamuser, HSt
         return reinterpret_cast<ISteamHTMLSurface *>(static_cast<ISteamHTMLSurface004 *>(steam_HTMLsurface));
     } else if (strcmp(pchVersion, STEAMHTMLSURFACE_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamHTMLSurface *>(static_cast<ISteamHTMLSurface *>(steam_HTMLsurface));
-    } else {
-        return reinterpret_cast<ISteamHTMLSurface *>(static_cast<ISteamHTMLSurface *>(steam_HTMLsurface));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamHTMLSurface *>(static_cast<ISteamHTMLSurface *>(steam_HTMLsurface));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // inventory
@@ -872,13 +771,9 @@ ISteamInventory *Steam_Client::GetISteamInventory( HSteamUser hSteamuser, HSteam
         return reinterpret_cast<ISteamInventory *>(static_cast<ISteamInventory002 *>(steam_inventory_temp));
     } else if (strcmp(pchVersion, STEAMINVENTORY_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamInventory *>(static_cast<ISteamInventory *>(steam_inventory_temp));
-    } else {
-        return reinterpret_cast<ISteamInventory *>(static_cast<ISteamInventory *>(steam_inventory_temp));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamInventory *>(static_cast<ISteamInventory *>(steam_inventory_temp));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // Video
@@ -889,13 +784,9 @@ ISteamVideo *Steam_Client::GetISteamVideo( HSteamUser hSteamuser, HSteamPipe hSt
     
     if (strcmp(pchVersion, STEAMVIDEO_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamVideo *>(static_cast<ISteamVideo *>(steam_video));
-    } else {
-        return reinterpret_cast<ISteamVideo *>(static_cast<ISteamVideo *>(steam_video));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamVideo *>(static_cast<ISteamVideo *>(steam_video));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // Parental controls
@@ -906,13 +797,9 @@ ISteamParentalSettings *Steam_Client::GetISteamParentalSettings( HSteamUser hSte
     
     if (strcmp(pchVersion, STEAMPARENTALSETTINGS_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamParentalSettings *>(static_cast<ISteamParentalSettings *>(steam_parental));
-    } else {
-        return reinterpret_cast<ISteamParentalSettings *>(static_cast<ISteamParentalSettings *>(steam_parental));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamParentalSettings *>(static_cast<ISteamParentalSettings *>(steam_parental));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 ISteamMasterServerUpdater *Steam_Client::GetISteamMasterServerUpdater( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
@@ -922,13 +809,9 @@ ISteamMasterServerUpdater *Steam_Client::GetISteamMasterServerUpdater( HSteamUse
     
     if (strcmp(pchVersion, STEAMMASTERSERVERUPDATER_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamMasterServerUpdater *>(static_cast<ISteamMasterServerUpdater *>(steam_masterserver_updater));
-    } else {
-        return reinterpret_cast<ISteamMasterServerUpdater *>(static_cast<ISteamMasterServerUpdater *>(steam_masterserver_updater));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamMasterServerUpdater *>(static_cast<ISteamMasterServerUpdater *>(steam_masterserver_updater));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 ISteamContentServer *Steam_Client::GetISteamContentServer( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
@@ -946,13 +829,9 @@ ISteamGameSearch *Steam_Client::GetISteamGameSearch( HSteamUser hSteamuser, HSte
     
     if (strcmp(pchVersion, STEAMGAMESEARCH_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamGameSearch *>(static_cast<ISteamGameSearch *>(steam_game_search));
-    } else {
-        return reinterpret_cast<ISteamGameSearch *>(static_cast<ISteamGameSearch *>(steam_game_search));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamGameSearch *>(static_cast<ISteamGameSearch *>(steam_game_search));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // Exposes the Steam Input interface for controller support
@@ -969,13 +848,9 @@ ISteamInput *Steam_Client::GetISteamInput( HSteamUser hSteamUser, HSteamPipe hSt
         return reinterpret_cast<ISteamInput *>(static_cast<ISteamInput005 *>(steam_controller));
     } else if (strcmp(pchVersion, STEAMINPUT_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamInput *>(static_cast<ISteamInput *>(steam_controller));
-    } else {
-        return reinterpret_cast<ISteamInput *>(static_cast<ISteamInput *>(steam_controller));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamInput *>(static_cast<ISteamInput *>(steam_controller));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 // Steam Parties interface
@@ -986,13 +861,9 @@ ISteamParties *Steam_Client::GetISteamParties( HSteamUser hSteamUser, HSteamPipe
     
     if (strcmp(pchVersion, STEAMPARTIES_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamParties *>(static_cast<ISteamParties *>(steam_parties));
-    } else {
-        return reinterpret_cast<ISteamParties *>(static_cast<ISteamParties *>(steam_parties));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamParties *>(static_cast<ISteamParties *>(steam_parties));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 ISteamRemotePlay *Steam_Client::GetISteamRemotePlay( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
@@ -1004,13 +875,9 @@ ISteamRemotePlay *Steam_Client::GetISteamRemotePlay( HSteamUser hSteamUser, HSte
         return reinterpret_cast<ISteamRemotePlay *>(static_cast<ISteamRemotePlay001 *>(steam_remoteplay));
     } else if (strcmp(pchVersion, STEAMREMOTEPLAY_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamRemotePlay *>(static_cast<ISteamRemotePlay *>(steam_remoteplay));
-    } else {
-        return reinterpret_cast<ISteamRemotePlay *>(static_cast<ISteamRemotePlay *>(steam_remoteplay));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamRemotePlay *>(static_cast<ISteamRemotePlay *>(steam_remoteplay));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
 ISteamAppTicket *Steam_Client::GetAppTicket( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
@@ -1020,11 +887,42 @@ ISteamAppTicket *Steam_Client::GetAppTicket( HSteamUser hSteamUser, HSteamPipe h
 
     if (strcmp(pchVersion, STEAMAPPTICKET_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamAppTicket *>(static_cast<ISteamAppTicket *>(steam_app_ticket));
-    } else {
-        return reinterpret_cast<ISteamAppTicket *>(static_cast<ISteamAppTicket *>(steam_app_ticket));
     }
 
-    // we can get here if one of the if-statements didn't return in all paths
-    PRINT_DEBUG("Missing handling for interface: %s", pchVersion);
-    return reinterpret_cast<ISteamAppTicket *>(static_cast<ISteamAppTicket *>(steam_app_ticket));
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+}
+
+void Steam_Client::report_missing_impl_and_exit(std::string_view itf, std::string_view caller)
+{
+    PRINT_DEBUG("'%s' '%s'", itf.data(), caller.data());
+    std::lock_guard lck(global_mutex);
+    std::stringstream ss{};
+
+    try {
+        ss << "INTERFACE=" << itf << "\n";
+        ss << "CALLER FN=" << caller << "\n";
+
+        if (settings_client) {
+            ss << "APPID=" << settings_client->get_local_game_id().AppID() << "\n";
+        }
+
+        std::string time(common_helpers::get_utc_time());
+        if (time.size()) {
+           ss << "TIME=" << time << "\n";
+        }
+
+        ss << "--------------------\n" << std::endl;
+
+        std::ofstream report(std::filesystem::u8path(get_full_program_path() + "EMU_MISSING_INTERFACE.txt"), std::ios::out | std::ios::app);
+        if (report.is_open()) {
+            report << ss.str();
+        }
+    }
+    catch(...) { }
+
+#if defined(__WINDOWS__)
+    MessageBoxA(nullptr, ss.str().c_str(), "Missing interface", MB_OK);
+#endif
+    
+    std::exit(0x4155149); // MISSING :)
 }

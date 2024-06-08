@@ -326,6 +326,8 @@ public:
 
     void DestroyAllInterfaces();
 
+    [[noreturn]] void report_missing_impl_and_exit(std::string_view itf, std::string_view caller);
+
 };
 
 #endif // __INCLUDED_STEAM_CLIENT_H__

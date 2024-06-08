@@ -248,8 +248,7 @@ static void *create_client_interface(const char *ver)
             steam_client = static_cast<ISteamClient *>(get_steam_client());
         } else {
             PRINT_DEBUG("requested unknown steamclient version '%s'", ver);
-            steam_client = static_cast<ISteamClient *>(get_steam_client());
-            steamclient_has_ipv6_functions_flag = true;
+            get_steam_client()->report_missing_impl_and_exit(ver, EMU_FUNC_NAME);
         }
     }
     
