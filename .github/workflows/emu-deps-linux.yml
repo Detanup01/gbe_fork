@@ -85,4 +85,4 @@ jobs:
       run: |
         export CMAKE_GENERATOR="Unix Makefiles"
         sudo chmod 777 ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5
-        ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5-deps.lua --64-build --32-build --all-ext --all-build --verbose --clean --os=linux gmake2
+        ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5-deps.lua --64-build --32-build --all-ext --all-build --j=2 --verbose --clean --os=linux gmake2

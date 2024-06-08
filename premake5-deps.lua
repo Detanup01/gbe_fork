@@ -86,6 +86,11 @@ newoption {
 }
 newoption {
     category = "build",
+    trigger = "j",
+    description = "Parallel build jobs, by default the max possible",
+}
+newoption {
+    category = "build",
     trigger = "32-build",
     description = "Build for 32-bit arch",
 }
@@ -141,6 +146,10 @@ local function merge_list(src, dest)
     return res
 end
 
+
+if _OPTIONS['j'] and not string.match(_OPTIONS['j'], '^[1-9]+$') then
+    error("Invalid argument for --j")
+end
 
 
 -- common defs
@@ -325,7 +334,11 @@ local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_
     end
 
     -- build with cmake
-    local ok = os.execute(mycmake .. ' --build "' .. build_dir .. '" --config Release --parallel' .. verbose_build_str)
+    local parallel_str = ' --parallel'
+    if _OPTIONS['j'] then
+        parallel_str = parallel_str .. ' ' .. _OPTIONS['j']
+    end
+    local ok = os.execute(mycmake .. ' --build "' .. build_dir .. '" --config Release' .. parallel_str .. verbose_build_str)
     if not ok then
         error("failed to build")
         return
