@@ -13,6 +13,12 @@ Fork of https://gitlab.com/Mr_Goldberg/goldberg_emulator
 
 ---
 
+## **Compatibility**
+This fork is incompatible with the original repo, lots of things has changed and might be even broken.  
+If something doesn't work, feel free to create a pull request with the appropriate fix, otherwise ignore this fork and use the original emu.  
+
+---
+
 ## **Credits**
 Thanks to everyone contributing to this project in any way possible, we try to keep the [CHANGELOG.md](./CHANGELOG.md) updated with all the changes and their authors.  
 
