@@ -803,13 +803,13 @@ bool Local_Storage::update_save_filenames(std::string folder)
 
 bool Local_Storage::load_json(std::string full_path, nlohmann::json& json)
 {
-    std::ifstream inventory_file(std::filesystem::u8path(full_path));
+    std::ifstream inventory_file(std::filesystem::u8path(full_path), std::ios::binary | std::ios::in);
     // If there is a file and we opened it
     if (inventory_file) {
         inventory_file.seekg(0, std::ios::end);
         size_t size = static_cast<size_t>(inventory_file.tellg());
         std::string buffer(size, '\0');
-        inventory_file.seekg(0);
+        inventory_file.seekg(0, std::ios::beg);
         // Read it entirely, if the .json file gets too big,
         // I should look into this and split reads into smaller parts.
         inventory_file.read(&buffer[0], size);
@@ -851,7 +851,7 @@ bool Local_Storage::write_json_file(std::string folder, std::string const&file, 
 
     create_directory(inv_path);
 
-    std::ofstream inventory_file(std::filesystem::u8path(full_path), std::ios::trunc | std::ios::out);
+    std::ofstream inventory_file(std::filesystem::u8path(full_path), std::ios::trunc | std::ios::out | std::ios::binary);
     if (inventory_file) {
         inventory_file << std::setw(2) << json;
         return true;
@@ -865,8 +865,8 @@ bool Local_Storage::write_json_file(std::string folder, std::string const&file, 
 
 std::vector<image_pixel_t> Local_Storage::load_image(std::string const& image_path)
 {
-    std::vector<image_pixel_t> res;
-    int width, height;
+    std::vector<image_pixel_t> res{};
+    int width{}, height{};
     image_pixel_t* img = (image_pixel_t*)stbi_load(image_path.c_str(), &width, &height, nullptr, 4);
     if (img != nullptr)
     {
