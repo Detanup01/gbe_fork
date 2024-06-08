@@ -742,12 +742,12 @@ Steam_User_Stats::Steam_User_Stats(Settings *settings, class Networking *network
                 achievement_stat_trigger[stat_name].push_back(trig);
             } catch(...) {}
             
-            if (user_achievements.find(name) == user_achievements.end()) {
-                user_achievements[name]["earned"] = false;
-                user_achievements[name]["earned_time"] = static_cast<uint32>(0);
-                user_achievements[name]["progress"] = std::stoi(trig.min_value);
-                user_achievements[name]["max_progress"] = std::stoi(trig.max_value);
-            }
+            // default initial values, will only be added if they don't exist already
+            auto &user_ach = user_achievements[name]; // this will create a new json entry if the key didn't exist already
+            user_ach.emplace("earned", false);
+            user_ach.emplace("earned_time", static_cast<uint32>(0));
+            user_ach.emplace("progress", std::stof(trig.min_value));
+            user_ach.emplace("max_progress", std::stof(trig.max_value));
         } catch(...) {}
 
         try {
