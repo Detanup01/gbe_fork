@@ -1,38 +1,45 @@
-* **[Detanup01]** added `premake` build scripts, allowing the project to be built with different toolsets with ease on diffrerent platforms
+* **[Detanup01]** add `premake` build scripts, allowing the project to be built with different toolsets with ease on diffrerent platforms
   for example the project could be built with `Visual Studio` on Windows, or via the `make` tool on Linux
-* **[schmurger]** added progress bar in the achievements list, for achievements that are not earned yet in the overlay.  
-  also implemented notifications for these progress indications (whenever the game indicates a new progress).  
+* **[schmurger]** add progress bar to the achievements in the overlay, only for achievements that are not earned yet.  
+  also implement notifications for these progress indications (whenever the game indicates a new progress).  
   you can disable the achievement progress notifications via `disable_achievement_progress` inside `configs.overlay.ini`
-* **[schmurger]** implemented the function `Steam_User_Stats::GetAchievementProgressLimits()`
-* **[Detanup01]** added missing interfaces `ISteamScreenshot` `v001` and `v002` +  fixed lots of build warnings in Visual Studio
+* **[schmurger]** implement the function `Steam_User_Stats::GetAchievementProgressLimits()`
+* **[Detanup01]** add missing interfaces `ISteamScreenshot` `v001` and `v002`  
+  also fix lots of build warnings in Visual Studio
 * third-party dependencies could now be built with a `premake` script, offering more flexibility.  
-  for example you can choose to extract or build certain libraries only
+  for example you can choose to extract or build certain libraries only, you can also build 32-bit or 64-bit separately
   
   ---
   
   **check the updated readme**  
-  **rebuild your dependencies + project!**
+  **and re-clone the repo recursively again!**
   
   ---
 
 * initial support for building with `MSYS2` on Windows, this is still highly experimental and **non-functional**  
   the original SDK is created as `MSVC` library, and all games on Windows link with it.  
-  MinGW toolchain has a completely different ABI and the output binary will **not work**, this is more of tech demo at the moment
-* enable controller support by default for the regular emu build
-* fixed an old buffer overrun bug in `Steam_User_Stats::UpdateAvgRateStat()`
-* fixed an old bug in the shutdown functions, now they will refuse incorrect requests like the original API library, solving a crash in some games
-* fixed a mistake which led to a missing export `g_pSteamClientGameServer` for the API library
-* for Windows ColdClientLoader: allow loading `.ini` file with the same name as the loader  
+  MinGW toolchain has a completely different **ABI** and the output binary will **not work**, this is more of tech demo at the moment
+* enable controller support by default for the regular API library
+* fix an old buffer overrun bug in `Steam_User_Stats::UpdateAvgRateStat()`
+* fix an old bug in the shutdown functions, now they will refuse incorrect requests like the original API library, solving a crash in some games
+* restore a missing export `g_pSteamClientGameServer` for the API library, removed by mistake
+* avoid overriding `SteamPath` environment variable in `SteamAPI_GetSteamInstallPath()`
+* fix `gameid` decoding bug in matchmaking servers when using `libssq` (source server query)
+* enhance the overlay shutdown sequence, making it able to handle rapid init/shutdown sequence, fixing a crash in some games
+* for Windows `ColdClientLoader`: allow loading `.ini` file with the same name as the loader  
   ex: if the loader is named `game_cold_loader.exe`, then it will first try to load `game_cold_loader.ini`,  
   if that doesn't exist, it will fallback to `ColdClientLoader.ini`
-* added missing callback in `Steam_UGC::RequestUGCDetails()`
-* re-implemented the way the background thread is spawned & terminated to fix its cleanup sequence + spawn it for gameservers as well
-* enhanced the overlay shutdown sequence, making it able to handle rapid init/shutdown sequence, fixing a crash in some games
+* add missing callback in `Steam_UGC::RequestUGCDetails()`
+* re-implement the way the background thread is spawned & terminated to fix its cleanup sequence + spawn it for gameservers as well
 * corrected callback vs call result in `Steam_Apps::RequestAllProofOfPurchaseKeys()`
-* added new button to the overlay `toggle user info` to show/hide user info, also + make user info hidden by default
-* made all overlay popups toggleable, clicking its button another time will hide or show the popup, depending on its previous state
+* the emu will now termiante the process and generate a file called `EMU_MISSING_INTERFACE.txt` (beside the library) if an app requested a missing interface
+* reduce binaries sizes on Linux by avoiding `-Wl,--whole-archive` and using `-Wl,--start-group -lmylib1 -lmylib2 ... -Wl,--end-group` instead on all libraries,  
+  allowing the linker to go back and forth between them to resolve missing symbols
+* restore accidentally removed flag for ipv6, for `SteamClient020`
+* make the test achievement in the overlay include a random progress
+* add new button to the overlay `toggle user info` to show/hide user info, also make user info hidden by default
+* make all overlay popups toggleable, clicking its button another time will hide or show the popup, depending on its previous state
 * allow `Steam_User_Stats::ClearAchievement()` to reflect the status in the overlay
-* the emu will now close and generate a file called `EMU_MISSING_INTERFACE.txt` (beside the library) if an app requested a missing interface
 * deprecated and removed the special Git branches `ci-build-*`, they were intended for automation but no longer maintained
 
 ---
