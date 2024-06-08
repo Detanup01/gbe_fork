@@ -1330,12 +1330,22 @@ bool Steam_User_Stats::ResetAllStats( bool bAchievementsToo )
 
     if (bAchievementsToo) {
         bool needs_disk_write = false;
-        for (auto &item : user_achievements) {
-            // assume "earned" is true in case the json obj exists, but the key is absent
-            if (item.value("earned", true) == true) needs_disk_write = true;
+        for (auto &kv : user_achievements.items()) {
+            try {
+                auto &name = kv.key();
+                auto &item = kv.value();
+                // assume "earned" is true in case the json obj exists, but the key is absent
+                if (item.value("earned", true) == true) needs_disk_write = true;
 
-            item["earned"] = false;
-            item["earned_time"] = 0;
+                item["earned"] = false;
+                item["earned_time"] = static_cast<uint32>(0);
+                item["progress"] = static_cast<uint32>(0);
+                item["max_progress"] = static_cast<uint32>(0);
+
+                overlay->AddAchievementNotification(name, item, false);
+            } catch(const std::exception& e) {
+                PRINT_DEBUG("ERROR: %s", e.what());
+            }
         }
         if (needs_disk_write) save_achievements();
 

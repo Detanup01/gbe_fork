@@ -5,7 +5,6 @@
   you can disable the achievement progress notifications via `disable_achievement_progress` inside `configs.overlay.ini`
 * **[schmurger]** implemented the function `Steam_User_Stats::GetAchievementProgressLimits()`
 * **[Detanup01]** added missing interfaces `ISteamScreenshot` `v001` and `v002` +  fixed lots of build warnings in Visual Studio
-* initial support for building with `MSYS2` on Windows, this is still highly experimental and not everything might work as expected, for example the overlay will crash at runtime
 * third-party dependencies could now be built with a `premake` script, offering more flexibility.  
   for example you can choose to extract or build certain libraries only
   
@@ -16,6 +15,9 @@
   
   ---
 
+* initial support for building with `MSYS2` on Windows, this is still highly experimental and **non-functional**  
+  the original SDK is created as `MSVC` library, and all games on Windows link with it.  
+  MinGW toolchain has a completely different ABI and the output binary will **not work**, this is more of tech demo at the moment
 * enable controller support by default for the regular emu build
 * fixed an old buffer overrun bug in `Steam_User_Stats::UpdateAvgRateStat()`
 * fixed an old bug in the shutdown functions, now they will refuse incorrect requests like the original API library, solving a crash in some games
@@ -29,6 +31,8 @@
 * corrected callback vs call result in `Steam_Apps::RequestAllProofOfPurchaseKeys()`
 * added new button to the overlay `toggle user info` to show/hide user info, also + make user info hidden by default
 * made all overlay popups toggleable, clicking its button another time will hide or show the popup, depending on its previous state
+* allow `Steam_User_Stats::ClearAchievement()` to reflect the status in the overlay
+* the emu will now close and generate a file called `EMU_MISSING_INTERFACE.txt` (beside the library) if an app requested a missing interface
 * deprecated and removed the special Git branches `ci-build-*`, they were intended for automation but no longer maintained
 
 ---
