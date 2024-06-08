@@ -26,11 +26,6 @@ This project depends on many third-party libraries and tools, credits to them fo
 
 ---
 
-## Original README
-You can find the original README here: [README.md](./z_original_repo_files/README.md)
-
----
-
 # How to use the emu
 * **Always generate the interfaces file using the `find_interfaces` tool.**  
 * **Generate the proper app configuration using the `generate_emu_config` tool.**  
