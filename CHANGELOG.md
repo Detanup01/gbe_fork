@@ -1,3 +1,5 @@
+## 2024/6/12
+
 * **[Detanup01]** add `premake` build scripts, allowing the project to be built with different toolsets with ease on diffrerent platforms
   for example the project could be built with `Visual Studio` on Windows, or via the `make` tool on Linux
 * **[schmurger]** add progress bar to the achievements in the overlay, only for achievements that are not earned yet.  
@@ -16,9 +18,6 @@
   
   ---
 
-* initial support for building with `MSYS2` on Windows, this is still highly experimental and **non-functional**  
-  the original SDK is created as `MSVC` library, and all games on Windows link with it.  
-  MinGW toolchain has a completely different **ABI** and the output binary will **not work**, this is more of tech demo at the moment
 * enable controller support by default for the regular API library
 * fix an old buffer overrun bug in `Steam_User_Stats::UpdateAvgRateStat()`
 * fix an old bug in the shutdown functions, now they will refuse incorrect requests like the original API library, solving a crash in some games
@@ -40,6 +39,10 @@
 * add new button to the overlay `toggle user info` to show/hide user info, also make user info hidden by default
 * make all overlay popups toggleable, clicking its button another time will hide or show the popup, depending on its previous state
 * allow `Steam_User_Stats::ClearAchievement()` to reflect the status in the overlay
+* initial support for building with `MSYS2` on Windows.  
+  **this is still highly experimental and non-functional, this is more of tech demo at the moment**  
+  the original SDK is created as `MSVC` library, and all games on Windows link with it.  
+  MinGW toolchain has a completely different **ABI** and the output binary will **not work**
 * deprecated and removed the special Git branches `ci-build-*`, they were intended for automation but no longer maintained
 
 ---
