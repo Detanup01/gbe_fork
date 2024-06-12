@@ -14,6 +14,7 @@
 - mbedtls (https://github.com/Mbed-TLS/mbedtls/releases/tag/v3.5.1)
 - protobuf (https://github.com/protocolbuffers/protobuf/releases/tag/v27.1)
 - Gamepad Input Library (???)
+- Original version of ColdClientLoader by Rat431 (https://github.com/Rat431/ColdAPI_Steam)
 - zlib (https://github.com/madler/zlib/releases/tag/v1.3)
 - cmake (https://github.com/Kitware/CMake/releases/tag/v3.27.7)
 - 7-zip (https://www.7-zip.org/download.html)
