@@ -75,7 +75,7 @@ jobs:
       - name: Package build (debug)
         shell: cmd
         working-directory: ${{ github.workspace }}
-        run: package_win.bat vs2022\debug
+        run: package_win.bat vs2022\debug 1
 
 ### release (debug + release modes) if this is a tag push
       - name: Release
@@ -165,7 +165,7 @@ jobs:
       - name: Package build (debug)
         shell: bash
         working-directory: ${{ github.workspace }}
-        run: ./package_linux.sh gmake2/debug
+        run: ./package_linux.sh gmake2/debug 1
 
 ### release (debug + release modes) if this is a tag push
       - name: Release
