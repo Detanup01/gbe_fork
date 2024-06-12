@@ -37,8 +37,7 @@ When you use the emu at least once, some default configurations are saved inside
 
 ---
 
-
-## Saves location:
+## Saves/Settings location:
 * On Windows:  
    `%appdata%\GSE Saves\`  
    For example, if your user Windows user name is `Lion`, the save location would be:  
@@ -53,6 +52,14 @@ When you use the emu at least once, some default configurations are saved inside
 
 You can override the name of the base folder `GSE Saves` to whatever you want per game, to do this modify `configs.user.ini` inside your `steam_settings` folder and change the value of `saves_folder_name`.  
 Check the example file in `steam_settings.EXAMPLE\configs.EXAMPLE.ini`.  
+
+Any configurations inside your `steam_settings` folder will always override the global configurations.  
+
+---
+
+## Portable saves:
+
+If you decided to use local saves by specifying the parameter `local_save_path` inside your local `steam_settings/configs.user.ini`, the emu will completely ignore the global settings folder, allowing a full portable behavior
 
 ---
 

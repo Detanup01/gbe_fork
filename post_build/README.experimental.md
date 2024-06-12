@@ -2,7 +2,7 @@
 This build of the emulator:
 * Blocks all outgoing connections from the game to non **LAN** IPs 
 * Lets you use CPY cracks that use the `steam_api` dll to patch the exe in memory when the `SteamAPI_Init()` method is called
-* Can load extra dlls in memory via `LoadLibraryA()`
+* Can load extra dlls in memory via `LoadLibraryW()`
 
 * Mr.Goldberg's note:  
   > In this folder is an experimental build of the emulator with code that hooks a few windows socket functions. It should block all connections from the game to non LAN ips. This means the game should work without any problems for LAN play (even with VPN LAN as long as you use standard LAN ips 10.x.x.x, 192.168.x.x, etc...)  
