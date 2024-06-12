@@ -40,17 +40,40 @@ if not exist "%target_src_dir%" (
   goto :script_end
 )
 
-set "archive_file=%out_dir%\%~1\emu-win-%~1.7z"
-if exist "%archive_file%" (
-  del /f /q "%archive_file%"
+::::::::::::::::::::::::::::::::::::::::::
+echo // copying readmes + example files
+xcopy /y /s /e /r "post_build\steam_settings.EXAMPLE\" "%target_src_dir%\steam_settings.EXAMPLE\"
+copy /y "post_build\README.release.md" "%target_src_dir%\"
+copy /y "CHANGELOG.md" "%target_src_dir%\"
+if "%~2"=="1" (
+  copy /y "post_build\README.debug.md" "%target_src_dir%\"
 )
-set "archive_file_dirname="
-set "archive_file_basename="
-for %%A in ("%archive_file%") do (
-  set "archive_file_dirname=%%~dpA"
-  set "archive_file_basename=%%~nxA"
+if exist "%target_src_dir%\experimental\" (
+  copy /y "post_build\README.experimental.md" "%target_src_dir%\experimental\"
 )
-mkdir "%archive_file_dirname%"
+if exist "%target_src_dir%\steamclient_experimental\" (
+  xcopy /y /s /e /r "post_build\win\ColdClientLoader.EXAMPLE\" "%target_src_dir%\steamclient_experimental\dll_injection.EXAMPLE\"
+  copy /y "post_build\README.experimental_steamclient.md" "%target_src_dir%\steamclient_experimental\"
+  copy /y "tools\steamclient_loader\win\ColdClientLoader.ini" "%target_src_dir%\steamclient_experimental\"
+)
+if exist "%target_src_dir%\tools\generate_interfaces\" (
+  copy /y "post_build\README.generate_interfaces.md" "%target_src_dir%\tools\generate_interfaces\"
+)
+if exist "%target_src_dir%\tools\lobby_connect\" (
+  copy /y "post_build\README.lobby_connect.md" "%target_src_dir%\tools\lobby_connect\"
+)
+::::::::::::::::::::::::::::::::::::::::::
+
+set "archive_dir=%out_dir%\%~1"
+if exist "%archive_dir%\" (
+  rmdir /s /q "%archive_dir%"
+)
+set "archive_file="
+for %%A in ("%archive_dir%") do (
+  set "archive_file=%archive_dir%\emu-win-%%~nxA.7z"
+)
+
+mkdir "%archive_dir%"
 "%packager%" a "%archive_file%" ".\%target_src_dir%" -t7z -slp -ssw -mx -myx -mmemuse=p%MEM_PERCENT% -ms=on -mqs=off -mf=on -mhc+ -mhe- -m0=LZMA2:d=%DICT_SIZE_MB%m -mmt=%THREAD_COUNT% -mmtf+ -mtm- -mtc- -mta- -mtr+
 
 
