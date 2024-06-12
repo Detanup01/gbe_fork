@@ -62,7 +62,7 @@ You can also find instructions here in [README.release.md](./post_build/README.r
 
  It is adviseable to always checkout submodules every now and then, to make sure they're up to date
  ```shell
- git submodule update --recursive --remote
+ git submodule update --init --recursive --remote
  ```
 
 ### For Windows:
@@ -71,20 +71,25 @@ You can also find instructions here in [README.release.md](./post_build/README.r
    * Select the Workload `Desktop development with C++`
    * In the `Individual componenets` scroll to the buttom and select the **latest** version of `Windows XX SDK (XX.X...)`  
       For example `Windows 11 SDK (10.0.22621.0)`
-* Using `MSYS2` (very limited support): https://www.msys2.org/  
-  * To build 64-bit binaries use either the [environment](https://www.msys2.org/docs/environments/) `UCRT64` or `MINGW64` then install the GCC toolchain  
-    `UCRT64`  
-    ```shell
-    pacman -S mingw-w64-ucrt-x86_64-gcc
-    ```
-    `MINGW64`  
-    ```shell
-    pacman -S mingw-w64-i686-gcc
-    ```
-  * To build 32-bit binaries use the environment `MINGW32` then install the GCC toolchain  
-    ```shell
-    pacman -S mingw-w64-i686-gcc
-    ```  
+* Using `MSYS2` **this is currently experimental and will not work due to ABI differences**: https://www.msys2.org/  
+  <details>
+    <summary>steps</summary>
+    
+    * To build 64-bit binaries use either the [environment](https://www.msys2.org/docs/environments/) `UCRT64` or `MINGW64` then install the GCC toolchain  
+      `UCRT64`  
+      ```shell
+      pacman -S mingw-w64-ucrt-x86_64-gcc
+      ```
+      `MINGW64`  
+      ```shell
+      pacman -S mingw-w64-i686-gcc
+      ```
+    * To build 32-bit binaries use the environment `MINGW32` then install the GCC toolchain  
+      ```shell
+      pacman -S mingw-w64-i686-gcc
+      ``` 
+    
+  </details> 
 * Python 3.10 or above: https://www.python.org/downloads/windows/  
    After installation, make sure it works
    ```batch
@@ -131,26 +136,31 @@ The only times you'll need to rebuild them is either when their separete build f
 #### On Windows:
 Open CMD in the repo folder, then run the following
 * To build using `Visual Studio`
-```batch
-set "CMAKE_GENERATOR=Visual Studio 17 2022"
-third-party\common\win\premake\premake5.exe --file=premake5-deps.lua --64-build --32-build --all-ext --all-build --verbose --os=windows vs2022
-```
-* To build using `MSYS2`  
-  *(Optional)* In both cases below, you can use `Clang` compiler instead of `GCC` by running these 2 commands in the same terminal instance
-  ```shell
-  export CC="clang"
-  export CXX="clang++"
-   ```
-  * To build 64-bit binaries (`UCRT64` or `MINGW64`)
-  ```shell
-  export CMAKE_GENERATOR="MSYS Makefiles"
-  ./third-party/common/win/premake/premake5.exe --file=premake5-deps.lua --64-build --all-ext --all-build --verbose   --os=windows gmake2
+  ```batch
+  set "CMAKE_GENERATOR=Visual Studio 17 2022"
+  third-party\common\win\premake\premake5.exe --file=premake5-deps.lua --64-build --32-build   --all-ext --all-build --verbose --os=windows vs2022
   ```
-  * To build 32-bit binaries (`MINGW32`)
-  ```shell
-  export CMAKE_GENERATOR="MSYS Makefiles"
-  ./third-party/common/win/premake/premake5.exe --file=premake5-deps.lua --32-build --all-ext --all-build --verbose   --os=windows gmake2
-  ```
+* To build using `MSYS2` **this is currently experimental and will not work due to ABI differences**  
+  <details>
+    <summary>steps</summary>
+    
+    *(Optional)* In both cases below, you can use `Clang` compiler instead of `GCC` by running these 2 commands in the same terminal instance
+    ```shell
+    export CC="clang"
+    export CXX="clang++"
+    ```
+    * To build 64-bit binaries (`UCRT64` or `MINGW64`)
+    ```shell
+    export CMAKE_GENERATOR="MSYS Makefiles"
+    ./third-party/common/win/premake/premake5.exe --file=premake5-deps.lua --64-build --all-ext --all-build --verbose   --os=windows gmake2
+    ```
+    * To build 32-bit binaries (`MINGW32`)
+    ```shell
+    export CMAKE_GENERATOR="MSYS Makefiles"
+    ./third-party/common/win/premake/premake5.exe --file=premake5-deps.lua --32-build --all-ext --all-build --verbose   --os=windows gmake2
+    ```
+    
+  </details> 
 
 This will:
 * Extract all third party dependencies from the folder `third-party` into the folder `build\deps\win` 
@@ -177,29 +187,6 @@ This will:
 ## **Building the emu**
 ### On Windows:
 Open CMD in the repo folder, then run the following
-* For `MSYS2`
-  ```shell
-  ./third-party/common/win/premake/premake5.exe --file=premake5.lua --genproto --os=windows gmake2
-
-  cd ./build/project/gmake2/win
-  ```
-  *(Optional)* You can use `Clang` compiler instead of `GCC` by running these 2 commands in the current terminal instance
-  ```shell
-  export CC="clang"
-  export CXX="clang++"
-  ```  
-  * 64-bit build (`UCRT64` or `MINGW64`)
-    ```shell
-    make config=release_x64 -j 8 all
-    ```
-  * 32-bit build (`MINGW32`)
-    ```shell
-    make config=release_x32 -j 8 all
-    ```
-  To see all possible build targets
-  ```shell
-  make help
-  ```
 * For `Visual Studio 2022`
   ```batch
   third-party\common\win\premake\premake5.exe --file=premake5.lua --genproto --os=windows vs2022
@@ -212,6 +199,34 @@ Open CMD in the repo folder, then run the following
   msbuild /nologo /v:n /p:Configuration=release,Platform=x64 gbe.sln
   ```
   
+* For `MSYS2` **this is currently experimental and will not work due to ABI differences**  
+  <details>
+    <summary>steps</summary>
+    
+    ```shell
+    ./third-party/common/win/premake/premake5.exe --file=premake5.lua --genproto --os=windows gmake2
+
+    cd ./build/project/gmake2/win
+    ```
+    *(Optional)* You can use `Clang` compiler instead of `GCC` by running these 2 commands in the current terminal instance
+    ```shell
+    export CC="clang"
+    export CXX="clang++"
+    ```  
+    * 64-bit build (`UCRT64` or `MINGW64`)
+      ```shell
+      make config=release_x64 -j 8 all
+      ```
+    * 32-bit build (`MINGW32`)
+      ```shell
+      make config=release_x32 -j 8 all
+      ```
+    To see all possible build targets
+    ```shell
+    make help
+    ```
+    
+  </details> 
 
 This will build a release version of the emu in the folder `build\win\<toolchain>\release`  
 An example script `build_win_premake.bat` is available, check it out  
