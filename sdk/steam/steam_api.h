@@ -193,6 +193,18 @@
 #include "isteamnetworkingutils.h"
 #include "isteamtv.h"
 #include "steamnetworkingfakeip.h"
+#include "isteamgameserver.h"
+#include "isteamgameserver014.h"
+#include "isteamgameserver013.h"
+#include "isteamgameserver012.h"
+#include "isteamgameserver011.h"
+#include "isteamgameserver010.h"
+#include "isteamgameserver009.h"
+#include "isteamgameserver008.h"
+#include "isteamgameserver005.h"
+#include "isteamgameserver004.h"
+#include "isteamgameserverstats.h"
+#include "isteamgamestats.h"
 
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------//

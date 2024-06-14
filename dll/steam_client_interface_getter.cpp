@@ -18,6 +18,19 @@
 #include "dll/steam_client.h"
 
 
+// retrieves the ISteamGameStats interface associated with the handle
+ISteamGameStats *Steam_Client::GetISteamGameStats( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
+{
+    PRINT_DEBUG("%s", pchVersion);
+    if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return nullptr;
+
+    if (strcmp(pchVersion, STEAMGAMESTATS_INTERFACE_VERSION) == 0) {
+        return reinterpret_cast<ISteamGameStats *>(static_cast<ISteamGameStats *>(steam_gamestats));
+    }
+
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+}
+
 // retrieves the ISteamUser interface associated with the handle
 ISteamUser *Steam_Client::GetISteamUser( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
@@ -332,6 +345,8 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
         return GetISteamGameServerStats(hSteamUser, hSteamPipe, pchVersion);
     } else if (strstr(pchVersion, "SteamGameServer") == pchVersion) {
         return GetISteamGameServer(hSteamUser, hSteamPipe, pchVersion);
+    } else if (strstr(pchVersion, "SteamGameStats") == pchVersion) {
+        return GetISteamGameStats(hSteamUser, hSteamPipe, pchVersion);
     } else if (strstr(pchVersion, "SteamMatchMakingServers") == pchVersion) {
         return GetISteamMatchmakingServers(hSteamUser, hSteamPipe, pchVersion);
     } else if (strstr(pchVersion, "SteamMatchMaking") == pchVersion) {
