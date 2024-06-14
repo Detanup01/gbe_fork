@@ -21,7 +21,8 @@
 #include "base.h"
 
 class Steam_Video :
-public ISteamVideo
+public ISteamVideo,
+public ISteamVideo001
 {
 public:
 

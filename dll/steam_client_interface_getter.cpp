@@ -782,7 +782,10 @@ ISteamVideo *Steam_Client::GetISteamVideo( HSteamUser hSteamuser, HSteamPipe hSt
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
     
-    if (strcmp(pchVersion, STEAMVIDEO_INTERFACE_VERSION) == 0) {
+    if (strcmp(pchVersion, "STEAMVIDEO_INTERFACE_V00") == 0) {
+        return reinterpret_cast<ISteamVideo *>(static_cast<ISteamVideo001 *>(steam_video));
+    }
+    else if (strcmp(pchVersion, STEAMVIDEO_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamVideo *>(static_cast<ISteamVideo *>(steam_video));
     }
 

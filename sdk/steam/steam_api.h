@@ -177,6 +177,7 @@
 #include "isteaminventory001.h"
 #include "isteaminventory002.h"
 #include "isteamvideo.h"
+#include "isteamvideo001.h"
 #include "isteamparentalsettings.h"
 #include "isteamgamecoordinator.h"
 #include "isteammasterserverupdater.h"

@@ -5413,6 +5413,11 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_InspectItem( ISteamInventory* s
     return (ptr)->InspectItem(pResultHandle, pchItemToken);
 }
 
+STEAMAPI_API ISteamVideo *SteamAPI_SteamVideo_v001()
+{
+    return get_steam_client()->GetISteamVideo(flat_hsteamuser(), flat_hsteampipe(), "STEAMVIDEO_INTERFACE_V001");
+}
+
 STEAMAPI_API ISteamVideo *SteamAPI_SteamVideo_v002()
 {
     return get_steam_client()->GetISteamVideo(flat_hsteamuser(), flat_hsteampipe(), "STEAMVIDEO_INTERFACE_V002");
