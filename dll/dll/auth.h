@@ -5,12 +5,7 @@
 #define AUTH_INCLUDE_H
 
 #include "base.h"
-#include "mbedtls/pk.h"
-#include "mbedtls/x509.h"
-#include "mbedtls/error.h"
-#include "mbedtls/sha1.h"
-#include "mbedtls/entropy.h"
-#include "mbedtls/ctr_drbg.h"
+#include "include.wrap.mbedtls.h"
 
 
 // the data type is important, we depend on sizeof() for each one of them
