@@ -170,7 +170,7 @@ static inline void reset_LastError()
 // Other libs includes
 #include "json/json.hpp"
 #include "utfcpp/utf8.h"
-#include "controller/gamepad.h"
+#include "gamepad/gamepad.h"
 
 // common includes
 #include "common_helpers/common_helpers.hpp"
