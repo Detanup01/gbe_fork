@@ -89,7 +89,7 @@ local function genproto()
     end
     local protoc_exe = path.join(deps_dir, 'protobuf', deps_install_prefix, 'bin', 'protoc')
 
-    local out_dir = 'dll/proto_gen/' .. os_iden
+    local out_dir = 'proto_gen/' .. os_iden
 
     if os.host() == "windows" then
         protoc_exe = protoc_exe .. '.exe'
@@ -167,7 +167,7 @@ local common_emu_defines = { -- added to all filters, later defines will be appe
 ---------
 local common_include = {
     'dll',
-    'dll/proto_gen/' .. os_iden,
+    'proto_gen/' .. os_iden,
     'libs',
     'libs/utfcpp',
     'helpers',
@@ -212,10 +212,10 @@ local common_files = {
     -- dll/
     "dll/*.cpp", "dll/*.c",
     "dll/*.hpp", "dll/*.h",
-    -- dll/proto_gen/
-    'dll/proto_gen/' .. os_iden .. '/*.cc', 'dll/proto_gen/' .. os_iden .. '/*.h',
     -- controller
     "controller/gamepad.c", "controller/controller/gamepad.h",
+    -- proto_gen/
+    'proto_gen/' .. os_iden .. '/**',
     -- crash_printer/
     'crash_printer/' .. os_iden .. '.cpp', 'crash_printer/crash_printer/' .. os_iden .. '.hpp',
     -- helpers/
@@ -470,6 +470,9 @@ vpaths { -- just for visual niceness, see: https://premake.github.io/docs/vpaths
     },
     ["asm/*"] = {
         "**.s", "**.asm",
+    },
+    ["proto/*"] = {
+        "**.proto",
     },
 }
 
