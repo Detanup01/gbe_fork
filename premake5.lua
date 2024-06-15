@@ -67,6 +67,14 @@ local function table_append(table_dest, table_src)
     end
 end
 
+local function table_postfix_items(table, postfix)
+    local ret = {}
+    for idx = 1, #table do
+        ret[idx] = table[idx] .. postfix
+    end
+    return ret
+end
+
 -- pre-define stuff
 
 local os_iden = '' -- identifier
@@ -173,7 +181,6 @@ local common_include = {
     'helpers',
     'crash_printer',
     'sdk',
-    'controller',
     "overlay_experimental",
 }
 
@@ -210,16 +217,23 @@ local x64_deps_overlay_include = {
 ---------
 local common_files = {
     -- dll/
-    "dll/*.cpp", "dll/*.c",
-    "dll/*.hpp", "dll/*.h",
-    -- controller
-    "controller/gamepad.c", "controller/controller/gamepad.h",
+    "dll/**",
     -- proto_gen/
     'proto_gen/' .. os_iden .. '/**',
+    -- libs
+    "libs/**",
     -- crash_printer/
     'crash_printer/' .. os_iden .. '.cpp', 'crash_printer/crash_printer/' .. os_iden .. '.hpp',
-    -- helpers/
-    "helpers/common_helpers.cpp", "helpers/common_helpers/common_helpers.hpp",
+    -- helpers/common_helpers
+    "helpers/common_helpers.cpp", "helpers/common_helpers/**",
+}
+
+local overlay_files = {
+    "overlay_experimental/**",
+}
+
+local detours_files = {
+    "libs/detours/**",
 }
 
 
@@ -446,7 +460,7 @@ platforms { "x64", "x32", }
 language "C++"
 cppdialect "C++17"
 cdialect "C17"
-filter { "system:linux", "action:gmake*" , }
+filter { "system:not windows", "action:gmake*" , }
     cdialect("gnu17") -- gamepad.c relies on some linux-specific functions like strdup() and MAX_PATH
 filter {} -- reset the filter and remove all active keywords
 characterset "Unicode"
@@ -454,7 +468,7 @@ staticruntime "on" -- /MT or /MTd
 runtime "Release" -- ensure we never link with /MTd, otherwise deps linking will fail
 flags {
     "NoPCH", -- no precompiled header on Windows
-    "MultiProcessorCompile", -- Enable Visual Studio to use multiple compiler processes when building
+    "MultiProcessorCompile", -- /MP "Enable Visual Studio to use multiple compiler processes when building"
     "RelativeLinks",
 }
 targetprefix "" -- prevent adding the prefix libxxx on linux
@@ -473,6 +487,16 @@ vpaths { -- just for visual niceness, see: https://premake.github.io/docs/vpaths
     },
     ["proto/*"] = {
         "**.proto",
+    },
+    ["docs/*"] = {
+        -- post build
+        "post_build/**",
+        -- licence files
+        "**/LICENSE", "**/LICENCE",
+        "**.LICENSE", "**.LICENCE",
+        "**.mit",
+        -- anything else
+        "**.txt", "**.md",
     },
 }
 
@@ -519,7 +543,7 @@ filter { "action:gmake*", }
         "-Wl,--exclude-libs,ALL",
     }
 -- this is made separate because GCC complains but not CLANG
-filter { "action:gmake*" , "files:*.cpp or *.cxx or *.cc or *.hpp", }
+filter { "action:gmake*" , "files:*.cpp or *.cxx or *.cc or *.hpp or *.hxx", }
     buildoptions  {
         "-fno-char8_t", -- GCC gives a warning when a .c file is compiled with this
     }
@@ -544,7 +568,7 @@ filter { "system:windows", }
         "_CRT_SECURE_NO_WARNINGS",
     }
 -- Linux defines
-filter { "system:linux" }
+filter { "system:not windows" }
     defines {
         "GNUC",
     }
@@ -578,6 +602,38 @@ filter { "system:windows", "action:gmake*", "files:**/detours/creatwth.cpp" }
     }
 
 
+-- add extra files for clearance
+filter {} -- reset the filter and remove all active keywords
+files {
+    -- post build docs
+    'post_build/**',
+}
+-- deps
+filter { "platforms:x32", }
+    files {
+        table_postfix_items(x32_deps_include, '/**.h'),
+        table_postfix_items(x32_deps_include, '/**.hxx'),
+        table_postfix_items(x32_deps_include, '/**.hpp'),
+    }
+filter { "platforms:x64", }
+    files {
+        table_postfix_items(x64_deps_include, '/**.h'),
+        table_postfix_items(x64_deps_include, '/**.hxx'),
+        table_postfix_items(x64_deps_include, '/**.hpp'),
+    }
+filter { "system:not windows", }
+removefiles {
+    'post_build/win/**'
+}
+filter {} -- reset the filter and remove all active keywords
+
+
+-- disable warnings for external libraries/deps
+filter { 'files:proto_gen/** or libs/** or build/deps/**' }
+    warnings 'Off'
+filter {} -- reset the filter and remove all active keywords
+
+
 
 -- post build change DOS stub + sign
 ---------
@@ -597,13 +653,12 @@ filter { "system:windows", "options:winsign", }
         '"' .. signer_tool .. '" %[%{!cfg.buildtarget.abspath}]',
     }
 filter {} -- reset the filter and remove all active keywords
-
 end
+
 
 
 workspace "gbe"
     location("build/project/%{_ACTION}/" .. os_iden)
-
 
 
 -- Project api_regular
@@ -620,7 +675,7 @@ project "api_regular"
         targetname "steam_api"
     filter { "system:windows", "platforms:x64", }
         targetname "steam_api64"
-    filter { "system:linux", }
+    filter { "system:not windows", }
         targetname "libsteam_api"
 
 
@@ -658,6 +713,9 @@ project "api_regular"
     files { -- added to all filters, later defines will be appended
         common_files,
     }
+    removefiles {
+        detours_files,
+    }
     -- Windows common source files
     filter { "system:windows", }
         removefiles {
@@ -684,7 +742,7 @@ project "api_regular"
         }
 
     -- Linux libs to link
-    filter { "system:linux", }
+    filter { "system:not windows", }
         links {
             common_link_linux,
         }
@@ -719,7 +777,7 @@ project "api_experimental"
         targetname "steam_api"
     filter { "system:windows", "platforms:x64", }
         targetname "steam_api64"
-    filter { "system:linux", }
+    filter { "system:not windows", }
         targetname "libsteam_api"
 
 
@@ -764,15 +822,26 @@ project "api_experimental"
     filter {} -- reset the filter and remove all active keywords
     files { -- added to all filters, later defines will be appended
         common_files,
-        "overlay_experimental/**.cpp", "overlay_experimental/**.hpp",
-        "overlay_experimental/**.c", "overlay_experimental/**.h",
+        overlay_files,
+    }
+    -- deps
+    filter { "platforms:x32", }
+        files {
+            table_postfix_items(x32_deps_overlay_include, '/**.h'),
+            table_postfix_items(x32_deps_overlay_include, '/**.hxx'),
+            table_postfix_items(x32_deps_overlay_include, '/**.hpp'),
+        }
+    filter { "platforms:x64", }
+        files {
+            table_postfix_items(x64_deps_overlay_include, '/**.h'),
+            table_postfix_items(x64_deps_overlay_include, '/**.hxx'),
+            table_postfix_items(x64_deps_overlay_include, '/**.hpp'),
+        }
+    removefiles {
+        'libs/detours/uimports.cc',
     }
     -- Windows common source files
     filter { "system:windows", }
-        files {
-            "libs/detours/**.cpp", "libs/detours/**.hpp",
-            "libs/detours/**.c", "libs/detours/**.h",
-        }
         removefiles {
             "dll/wrap.cpp"
         }
@@ -785,6 +854,11 @@ project "api_experimental"
     filter { "system:windows", "platforms:x64", "options:winrsrc", }
         files {
             "resources/win/api/64/resources.rc"
+        }
+    -- Linux common source files
+    filter { "system:not windows", }
+        removefiles {
+            detours_files,
         }
 
 
@@ -801,7 +875,7 @@ project "api_experimental"
         }
 
     -- Linux libs to link
-    filter { "system:linux", }
+    filter { "system:not windows", }
         links {
             common_link_linux,
         }
@@ -834,7 +908,7 @@ project "steamclient_experimental"
     ---------
     filter { "system:windows", }
         targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/steamclient_experimental")
-    filter { "system:linux", }
+    filter { "system:not windows", }
         targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/experimental/%{cfg.platform}")
 
 
@@ -844,7 +918,7 @@ project "steamclient_experimental"
         targetname "steamclient"
     filter { "system:windows", "platforms:x64", }
         targetname "steamclient64"
-    filter { "system:linux", }
+    filter { "system:not windows", }
         targetname "steamclient"
     
 
@@ -890,15 +964,26 @@ project "steamclient_experimental"
     filter {} -- reset the filter and remove all active keywords
     files { -- added to all filters, later defines will be appended
         common_files,
-        "overlay_experimental/**.cpp", "overlay_experimental/**.hpp",
-        "overlay_experimental/**.c", "overlay_experimental/**.h",
+        overlay_files,
+    }
+    -- deps
+    filter { "platforms:x32", }
+        files {
+            table_postfix_items(x32_deps_overlay_include, '/**.h'),
+            table_postfix_items(x32_deps_overlay_include, '/**.hxx'),
+            table_postfix_items(x32_deps_overlay_include, '/**.hpp'),
+        }
+    filter { "platforms:x64", }
+        files {
+            table_postfix_items(x64_deps_overlay_include, '/**.h'),
+            table_postfix_items(x64_deps_overlay_include, '/**.hxx'),
+            table_postfix_items(x64_deps_overlay_include, '/**.hpp'),
+        }
+    removefiles {
+        'libs/detours/uimports.cc',
     }
     -- Windows common source files
     filter { "system:windows", }
-        files {
-            "libs/detours/**.cpp", "libs/detours/**.hpp",
-            "libs/detours/**.c", "libs/detours/**.h",
-        }
         removefiles {
             "dll/wrap.cpp"
         }
@@ -911,6 +996,11 @@ project "steamclient_experimental"
     filter { "system:windows", "platforms:x64", "options:winrsrc", }
         files {
             "resources/win/client/64/resources.rc"
+        }
+    -- Linux common source files
+    filter { "system:not windows", }
+        removefiles {
+            detours_files,
         }
 
 
@@ -927,7 +1017,7 @@ project "steamclient_experimental"
         }
 
     -- Linux libs to link
-    filter { "system:linux", }
+    filter { "system:not windows", }
         links {
             common_link_linux,
         }
@@ -999,7 +1089,8 @@ project "tool_lobby_connect"
         'tools/lobby_connect/lobby_connect.cpp'
     }
     removefiles {
-        "controller/gamepad.c",
+        "libs/gamepad/**",
+        detours_files,
     }
     -- Windows x32 common source files
     filter { "system:windows", "platforms:x32", "options:winrsrc", }
@@ -1023,7 +1114,7 @@ project "tool_lobby_connect"
         }
 
     -- Linux libs to link
-    filter { "system:linux", }
+    filter { "system:not windows", }
         links {
             common_link_linux,
         }
@@ -1055,7 +1146,7 @@ project "tool_generate_interfaces"
     -- common source & header files
     ---------
     files {
-        "tools/generate_interfaces/**"
+        "tools/generate_interfaces/generate_interfaces.cpp"
     }
 -- End tool_generate_interfaces
 
@@ -1096,7 +1187,7 @@ project "lib_game_overlay_renderer"
     ---------
     filter { "system:windows", }
         targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/steamclient_experimental")
-    filter { "system:linux", }
+    filter { "system:not windows", }
         targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/gameoverlayrenderer/%{cfg.platform}")
 
 
@@ -1106,7 +1197,7 @@ project "lib_game_overlay_renderer"
         targetname "GameOverlayRenderer"
     filter { "system:windows", "platforms:x64", }
         targetname "GameOverlayRenderer64"
-    filter { "system:linux", }
+    filter { "system:not windows", }
         targetname "gameoverlayrenderer"
 
     
@@ -1223,11 +1314,13 @@ project "steamclient_experimental_extra"
     filter {} -- reset the filter and remove all active keywords
     files {
         "tools/steamclient_loader/win/extra_protection/**",
-        "helpers/pe_helpers.cpp",
-        "helpers/common_helpers.cpp",
+        "helpers/pe_helpers.cpp", "helpers/pe_helpers/**",
+        "helpers/common_helpers.cpp", "helpers/common_helpers/**",
         -- detours
-        "libs/detours/**.cpp", "libs/detours/**.hpp",
-        "libs/detours/**.c", "libs/detours/**.h",
+        detours_files,
+    }
+    removefiles {
+        'libs/detours/uimports.cc',
     }
     -- x32 common source files
     filter { "platforms:x32", "options:winrsrc", }
@@ -1284,10 +1377,10 @@ project "steamclient_experimental_loader"
     ---------
     filter {} -- reset the filter and remove all active keywords
     files {
-        "tools/steamclient_loader/win/*.cpp",
-        "helpers/pe_helpers.cpp",
-        "helpers/common_helpers.cpp",
-        "helpers/dbg_log.cpp",
+        "tools/steamclient_loader/win/*",
+        "helpers/pe_helpers.cpp", "helpers/pe_helpers/**",
+        "helpers/common_helpers.cpp", "helpers/common_helpers/**",
+        "helpers/dbg_log.cpp", "helpers/dbg_log/**",
     }
     -- x32 common source files
     filter { "platforms:x32", "options:winrsrc", }
@@ -1333,8 +1426,8 @@ project "tool_file_dos_stub_changer"
     filter {} -- reset the filter and remove all active keywords
     files {
         "resources/win/file_dos_stub/file_dos_stub.cpp",
-        "helpers/pe_helpers.cpp",
-        "helpers/common_helpers.cpp",
+        "helpers/pe_helpers.cpp", "helpers/pe_helpers/**",
+        "helpers/common_helpers.cpp", "helpers/common_helpers/**",
     }
 -- End tool_file_dos_stub_changer
 
@@ -1388,6 +1481,9 @@ project "steamclient_regular"
     filter {} -- reset the filter and remove all active keywords
     files { -- added to all filters, later defines will be appended
         common_files,
+    }
+    removefiles {
+        detours_files,
     }
 
 
