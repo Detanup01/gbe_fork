@@ -29,6 +29,10 @@ static LONG WINAPI exception_handler(LPEXCEPTION_POINTERS ex_pointers)
     exit(1);
 }
 
+int* get_ptr()
+{
+    return nullptr;
+}
 
 int main()
 {
@@ -46,7 +50,7 @@ int main()
     }
 
     // simulate a crash
-    volatile int * volatile ptr = nullptr;
+    volatile int * volatile ptr = get_ptr();
     *ptr = 42;
 
     return 0;

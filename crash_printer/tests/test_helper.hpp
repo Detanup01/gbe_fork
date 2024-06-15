@@ -7,7 +7,7 @@
 
 static inline bool remove_file(const std::string &file)
 {
-    const std::filesystem::u8path p_file(std::filesystem::u8path(file));
+    const std::filesystem::path p_file(std::filesystem::u8path(file));
     if (!std::filesystem::exists(p_file)) {
         return true;
     }

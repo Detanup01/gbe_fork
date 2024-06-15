@@ -1441,6 +1441,60 @@ project "tool_file_dos_stub_changer"
     }
 -- End tool_file_dos_stub_changer
 
+
+-- Project test_crash_printer
+---------
+project "test_crash_printer"
+    kind "ConsoleApp"
+    location "%{wks.location}/%{prj.name}"
+    targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/tests/crash_printer")
+    targetname "test_crash_printer_%{cfg.platform}"
+
+
+    -- include dir
+    ---------
+    -- common include dir
+    filter {} -- reset the filter and remove all active keywords
+    includedirs {
+        'crash_printer',
+        'helpers',
+    }
+
+
+    -- common source & header files
+    ---------
+    filter {} -- reset the filter and remove all active keywords
+    files { -- added to all filters, later defines will be appended
+        'crash_printer/' .. os_iden .. '.cpp', 'crash_printer/crash_printer/' .. os_iden .. '.hpp',
+        'crash_printer/tests/test_helper.hpp',
+        -- helpers
+        'helpers/common_helpers.cpp', 'helpers/common_helpers/**',
+        -- test files
+        'crash_printer/tests/test_win.cpp',
+    }
+    removefiles {
+        'post_build/**',
+        'build/deps/**',
+    }
+
+
+    -- libs to link
+    ---------
+    filter {} -- reset the filter and remove all active keywords
+    -- Windows libs
+    links {
+        'Dbghelp',
+    }
+
+
+    -- post build
+    ---------
+    filter {} -- reset the filter and remove all active keywords
+    postbuildcommands {
+        '%[%{!cfg.buildtarget.abspath}]',
+    }
+-- End test_crash_printer
+
 end
 -- End WINDOWS ONLY TARGETS
 
@@ -1517,6 +1571,97 @@ project "steamclient_regular"
             x64_deps_libdir,
         }
 -- End steamclient_regular
+
+
+-- Project test_crash_printer_sa_handler
+---------
+project "test_crash_printer_sa_handler"
+    kind "ConsoleApp"
+    location "%{wks.location}/%{prj.name}"
+    targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/tests/crash_printer")
+    targetname "test_crash_printer_sa_handler_%{cfg.platform}"
+
+
+    -- include dir
+    ---------
+    -- common include dir
+    filter {} -- reset the filter and remove all active keywords
+    includedirs {
+        'crash_printer',
+        'helpers',
+    }
+
+
+    -- common source & header files
+    ---------
+    filter {} -- reset the filter and remove all active keywords
+    files { -- added to all filters, later defines will be appended
+        'crash_printer/' .. os_iden .. '.cpp', 'crash_printer/crash_printer/' .. os_iden .. '.hpp',
+        'crash_printer/tests/test_helper.hpp',
+        -- helpers
+        'helpers/common_helpers.cpp', 'helpers/common_helpers/**',
+        -- test files
+        'crash_printer/tests/test_linux_sa_handler.cpp',
+    }
+    removefiles {
+        'post_build/**',
+        'build/deps/**',
+    }
+
+
+    -- post build
+    ---------
+    filter {} -- reset the filter and remove all active keywords
+    postbuildcommands {
+        '%[%{!cfg.buildtarget.abspath}]',
+    }
+
+-- End test_crash_printer_sa_handler
+
+
+-- Project test_crash_printer_sa_sigaction
+---------
+project "test_crash_printer_sa_sigaction"
+    kind "ConsoleApp"
+    location "%{wks.location}/%{prj.name}"
+    targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/tests/crash_printer")
+    targetname "test_crash_printer_sa_sigaction_%{cfg.platform}"
+
+
+    -- include dir
+    ---------
+    -- common include dir
+    filter {} -- reset the filter and remove all active keywords
+    includedirs {
+        'crash_printer',
+        'helpers',
+    }
+
+
+    -- common source & header files
+    ---------
+    filter {} -- reset the filter and remove all active keywords
+    files { -- added to all filters, later defines will be appended
+        'crash_printer/' .. os_iden .. '.cpp', 'crash_printer/crash_printer/' .. os_iden .. '.hpp',
+        'crash_printer/tests/test_helper.hpp',
+        -- helpers
+        'helpers/common_helpers.cpp', 'helpers/common_helpers/**',
+        -- test files
+        'crash_printer/tests/test_linux_sa_sigaction.cpp',
+    }
+    removefiles {
+        'post_build/**',
+        'build/deps/**',
+    }
+
+
+    -- post build
+    ---------
+    filter {} -- reset the filter and remove all active keywords
+    postbuildcommands {
+        '%[%{!cfg.buildtarget.abspath}]',
+    }
+-- End test_crash_printer_sa_sigaction
 
 end
 -- End LINUX ONLY TARGETS
