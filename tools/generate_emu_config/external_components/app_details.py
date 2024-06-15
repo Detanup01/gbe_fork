@@ -1,4 +1,6 @@
 import os
+import sys
+import traceback
 import json
 import queue
 import threading
@@ -20,13 +22,15 @@ def __downloader_thread(q : queue.Queue[tuple[str, str]]):
         for download_trial in range(3):
             try:
                 r = requests.get(url)
+                r.raise_for_status()
                 if r.status_code == requests.codes.ok: # if download was successfull
                     with open(path, "wb") as f:
                         f.write(r.content)
 
                     break
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"Error downloading from '{url}'", file=sys.stderr)
+                traceback.print_exception(e, file=sys.stderr)
 
             time.sleep(0.1)
         

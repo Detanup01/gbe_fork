@@ -14,8 +14,7 @@ from steam.core.msg import MsgProto
 import os
 import sys
 import json
-import urllib.request
-import urllib.error
+import requests
 import threading
 import queue
 import shutil
@@ -357,16 +356,16 @@ def download_achievement_images(game_id : int, image_names : set[str], output_fo
             for u in ["https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/", "https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/apps/"]:
                 url = "{}{}/{}".format(u, game_id, name)
                 try:
-                    with urllib.request.urlopen(url) as response:
-                        image_data = response.read()
-                        with open(os.path.join(output_folder, name), "wb") as f:
-                            f.write(image_data)
-                        succeeded = True
-                        break
-                except urllib.error.HTTPError as e:
-                    print("HTTPError downloading", url, e.code)
-                except urllib.error.URLError as e:
-                    print("URLError downloading", url, e.code)
+                    response = requests.get(url, allow_redirects=True)
+                    response.raise_for_status()
+                    image_data = response.content
+                    with open(os.path.join(output_folder, name), "wb") as f:
+                        f.write(image_data)
+                    succeeded = True
+                    break
+                except Exception as e:
+                    print("HTTPError downloading", url, file=sys.stderr)
+                    traceback.print_exception(e, file=sys.stderr)
             if not succeeded:
                 print("error could not download", name)
             
@@ -422,9 +421,9 @@ def generate_achievement_stats(client, game_id : int, output_directory, backup_d
         if not os.path.exists(achievement_images_dir):
             os.makedirs(achievement_images_dir)
         if copy_default_unlocked_img:
-            shutil.copy("steam_default_icon_unlocked.jpg", achievement_images_dir)
+            shutil.copy(os.path.join(get_exe_dir(), "steam_default_icon_unlocked.jpg"), achievement_images_dir)
         if copy_default_locked_img:
-            shutil.copy("steam_default_icon_locked.jpg", achievement_images_dir)
+            shutil.copy(os.path.join(get_exe_dir(), "steam_default_icon_locked.jpg"), achievement_images_dir)
         download_achievement_images(game_id, images_to_download, achievement_images_dir)
 
     return achievements
@@ -462,12 +461,17 @@ def download_published_file(client, published_file_id, backup_directory):
         f.write(str(ugc_info.body))
 
     if len(file_details.file_url) > 0:
-        with urllib.request.urlopen(file_details.file_url) as response:
-            data = response.read()
+        try:
+            response = requests.get(file_details.file_url, allow_redirects=True)
+            response.raise_for_status()
+            data = response.content
             with open(os.path.join(backup_directory, file_details.filename.replace("/", "_").replace("\\", "_")), "wb") as f:
                 f.write(data)
             return data
-        return None
+        except Exception as e:
+            print(f"Error downloading from '{file_details.file_url}'", file=sys.stderr)
+            traceback.print_exception(e, file=sys.stderr)
+            return None
     else:
         print("Could not download file", published_file_id, "no url (you can ignore this if the game doesn't need a controller config)")
         return None
@@ -485,12 +489,12 @@ def generate_inventory(client, game_id):
 
     url = f"https://api.steampowered.com/IGameInventory/GetItemDefArchive/v0001?appid={game_id}&digest={inventory.body.digest}"
     try:
-        with urllib.request.urlopen(url) as response:
-            return response.read()
-    except urllib.error.HTTPError as e:
-        print("HTTPError getting", url, e.code)
-    except urllib.error.URLError as e:
-        print("URLError getting", url, e.code)
+        response = requests.get(url, allow_redirects=True)
+        response.raise_for_status()
+        return response.content
+    except Exception as e:
+        print(f"Error downloading from '{url}'", file=sys.stderr)
+        traceback.print_exception(e, file=sys.stderr)
     return None
 
 def get_dlc(raw_infos):
