@@ -140,6 +140,17 @@ newoption {
     default = os.date("%Y_%m_%d-%H_%M_%S"),
 }
 
+newoption {
+    category = 'visual-includes',
+    trigger = "incexamples",
+    description = "Add all example files in the projects (no impact on build)",
+}
+newoption {
+    category = 'visual-includes',
+    trigger = "incdeps",
+    description = "Add all header files from the third-party dependencies in the projects (no impact on build)",
+}
+
 -- windows options
 if os.target() == 'windows' then
 
@@ -482,9 +493,6 @@ vpaths { -- just for visual niceness, see: https://premake.github.io/docs/vpaths
     ["src/*"] = {
         "**.c", "**.cxx", "**.cpp", "**.cc",
     },
-    ["asm/*"] = {
-        "**.s", "**.asm",
-    },
     ["proto/*"] = {
         "**.proto",
     },
@@ -604,27 +612,29 @@ filter { "system:windows", "action:gmake*", "files:**/detours/creatwth.cpp" }
 
 -- add extra files for clearance
 filter {} -- reset the filter and remove all active keywords
-files {
-    -- post build docs
-    'post_build/**',
-}
+-- post build docs
+filter { 'options:incexamples', }
+    files {
+        'post_build/**',
+    }
+filter { 'options:incexamples', 'system:not windows', }
+    removefiles {
+        'post_build/win/**'
+    }
+
 -- deps
-filter { "platforms:x32", }
+filter { 'options:incdeps', "platforms:x32", }
     files {
         table_postfix_items(x32_deps_include, '/**.h'),
         table_postfix_items(x32_deps_include, '/**.hxx'),
         table_postfix_items(x32_deps_include, '/**.hpp'),
     }
-filter { "platforms:x64", }
+filter { 'options:incdeps', "platforms:x64", }
     files {
         table_postfix_items(x64_deps_include, '/**.h'),
         table_postfix_items(x64_deps_include, '/**.hxx'),
         table_postfix_items(x64_deps_include, '/**.hpp'),
     }
-filter { "system:not windows", }
-removefiles {
-    'post_build/win/**'
-}
 filter {} -- reset the filter and remove all active keywords
 
 
@@ -802,7 +812,6 @@ project "api_experimental"
     includedirs {
         common_include,
     }
-
     -- x32 include dir
     filter { "platforms:x32", }
         includedirs {
@@ -825,13 +834,13 @@ project "api_experimental"
         overlay_files,
     }
     -- deps
-    filter { "platforms:x32", }
+    filter { 'options:incdeps', "platforms:x32", }
         files {
             table_postfix_items(x32_deps_overlay_include, '/**.h'),
             table_postfix_items(x32_deps_overlay_include, '/**.hxx'),
             table_postfix_items(x32_deps_overlay_include, '/**.hpp'),
         }
-    filter { "platforms:x64", }
+    filter { 'options:incdeps', "platforms:x64", }
         files {
             table_postfix_items(x64_deps_overlay_include, '/**.h'),
             table_postfix_items(x64_deps_overlay_include, '/**.hxx'),
@@ -967,13 +976,13 @@ project "steamclient_experimental"
         overlay_files,
     }
     -- deps
-    filter { "platforms:x32", }
+    filter { 'options:incdeps', "platforms:x32", }
         files {
             table_postfix_items(x32_deps_overlay_include, '/**.h'),
             table_postfix_items(x32_deps_overlay_include, '/**.hxx'),
             table_postfix_items(x32_deps_overlay_include, '/**.hpp'),
         }
-    filter { "platforms:x64", }
+    filter { 'options:incdeps', "platforms:x64", }
         files {
             table_postfix_items(x64_deps_overlay_include, '/**.h'),
             table_postfix_items(x64_deps_overlay_include, '/**.hxx'),
