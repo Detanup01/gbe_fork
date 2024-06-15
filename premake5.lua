@@ -486,6 +486,7 @@ targetprefix "" -- prevent adding the prefix libxxx on linux
 visibility "Hidden" -- hide all symbols by default on GCC (unless they are marked visible)
 linkgroups "On" -- turn off the awful order dependent linking on gcc/clang, causes the linker to go back and forth to find missing symbols
 exceptionhandling "On" -- "Enable exception handling. ... although it does not affect execution."
+stringpooling "On" -- cache similar strings
 vpaths { -- just for visual niceness, see: https://premake.github.io/docs/vpaths/
     ["headers/*"] = {
         "**.h", "**.hxx", "**.hpp",
@@ -833,6 +834,9 @@ project "api_experimental"
         common_files,
         overlay_files,
     }
+    removefiles {
+        'libs/detours/uimports.cc',
+    }
     -- deps
     filter { 'options:incdeps', "platforms:x32", }
         files {
@@ -846,9 +850,6 @@ project "api_experimental"
             table_postfix_items(x64_deps_overlay_include, '/**.hxx'),
             table_postfix_items(x64_deps_overlay_include, '/**.hpp'),
         }
-    removefiles {
-        'libs/detours/uimports.cc',
-    }
     -- Windows common source files
     filter { "system:windows", }
         removefiles {
@@ -975,6 +976,9 @@ project "steamclient_experimental"
         common_files,
         overlay_files,
     }
+    removefiles {
+        'libs/detours/uimports.cc',
+    }
     -- deps
     filter { 'options:incdeps', "platforms:x32", }
         files {
@@ -988,9 +992,6 @@ project "steamclient_experimental"
             table_postfix_items(x64_deps_overlay_include, '/**.hxx'),
             table_postfix_items(x64_deps_overlay_include, '/**.hpp'),
         }
-    removefiles {
-        'libs/detours/uimports.cc',
-    }
     -- Windows common source files
     filter { "system:windows", }
         removefiles {
@@ -1386,7 +1387,7 @@ project "steamclient_experimental_loader"
     ---------
     filter {} -- reset the filter and remove all active keywords
     files {
-        "tools/steamclient_loader/win/*",
+        "tools/steamclient_loader/win/*", -- we want the .ini too
         "helpers/pe_helpers.cpp", "helpers/pe_helpers/**",
         "helpers/common_helpers.cpp", "helpers/common_helpers/**",
         "helpers/dbg_log.cpp", "helpers/dbg_log/**",
