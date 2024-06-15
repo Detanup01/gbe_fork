@@ -237,7 +237,7 @@ static inline void reset_LastError()
 
 // Emulator includes
 // add them here after the inline functions definitions
-#include "net.pb.h"
+#include "include.wrap.net.pb.h"
 #include "settings.h"
 #include "local_storage.h"
 #include "network.h"
