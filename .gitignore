@@ -1,30 +1,30 @@
-.vs/
-.vscode/
+/.vs/
+/.vscode/
 
-build/
+/build/
 
-dll/proto_gen/
+/proto_gen/
 
-crash_printer/tests/crash_test/
-resources/win/file_dos_stub/build/
+/crash_printer/tests/crash_test/
+/resources/win/file_dos_stub/build/
 
-tools/generate_emu_config/.py*/
-tools/generate_emu_config/.venv*/
-tools/generate_emu_config/.env*/
-tools/generate_emu_config/.vscode/
-tools/generate_emu_config/backup/
-tools/generate_emu_config/bin/
-tools/generate_emu_config/login_temp/
-tools/generate_emu_config/output/
-tools/generate_emu_config/**/__pycache__/
-tools/generate_emu_config/**/my_login.txt
-tools/generate_emu_config/top_owners_ids.txt
+/tools/generate_emu_config/.py*/
+/tools/generate_emu_config/.venv*/
+/tools/generate_emu_config/.env*/
+/tools/generate_emu_config/.vscode/
+/tools/generate_emu_config/backup/
+/tools/generate_emu_config/bin/
+/tools/generate_emu_config/login_temp/
+/tools/generate_emu_config/output/
+/tools/generate_emu_config/**/__pycache__/
+/tools/generate_emu_config/**/my_login.txt
+/tools/generate_emu_config/top_owners_ids.txt
 
-tools/migrate_gse/.py*/
-tools/migrate_gse/.venv*/
-tools/migrate_gse/.env*/
-tools/migrate_gse/.vscode/
-tools/migrate_gse/bin/
-tools/migrate_gse/**/__pycache__/
+/tools/migrate_gse/.py*/
+/tools/migrate_gse/.venv*/
+/tools/migrate_gse/.env*/
+/tools/migrate_gse/.vscode/
+/tools/migrate_gse/bin/
+/tools/migrate_gse/**/__pycache__/
 
-third-party/
+/third-party/
