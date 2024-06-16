@@ -180,7 +180,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: "release-emu-linux-release-${{ github.sha }}"
-          path: "build/package/linux/gmake2/release/emu-linux-gmake2/*"
+          path: "build/package/linux/gmake2/release/*"
           if-no-files-found: 'error'
           compression-level: 0
           retention-days: 1
@@ -189,7 +189,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: "release-emu-linux-debug-${{ github.sha }}"
-          path: "build/package/linux/gmake2/debug/emu-linux-gmake2/*"
+          path: "build/package/linux/gmake2/debug/*"
           if-no-files-found: 'error'
           compression-level: 0
           retention-days: 1
