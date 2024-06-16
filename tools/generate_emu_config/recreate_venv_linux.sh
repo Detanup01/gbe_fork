@@ -6,11 +6,13 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-python_package="python3.10"
+python_package="python3.12"
 venv=".env-linux"
 reqs_file="requirements.txt"
 script_dir=$( cd -- "$( dirname -- "${0}" )" &> /dev/null && pwd )
 
+apt update -y || exit 1
+apt install software-properties-common -y
 add-apt-repository ppa:deadsnakes/ppa -y
 apt update -y || exit 1
 apt install "$python_package" -y || exit 1

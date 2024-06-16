@@ -21,10 +21,10 @@ jobs:
     runs-on: windows-2022
 
     steps:
-    - name: Set up Python 3.10
+    - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: "3.10"
+        python-version: "3.12"
 
 ### on Windows Git will auto change line ending to CRLF, not preferable
     - name: Ensure LF line ending
