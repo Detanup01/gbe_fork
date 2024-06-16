@@ -90,7 +90,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: "release-emu-win-release-${{ github.sha }}"
-          path: "build/package/win/vs2022/release/emu-win-vs2022/*"
+          path: "build/package/win/vs2022/release/*"
           if-no-files-found: 'error'
           compression-level: 0
           retention-days: 1
@@ -99,7 +99,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: "release-emu-win-debug-${{ github.sha }}"
-          path: "build/package/win/vs2022/debug/emu-win-vs2022/*"
+          path: "build/package/win/vs2022/debug/*"
           if-no-files-found: 'error'
           compression-level: 0
           retention-days: 1
