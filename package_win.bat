@@ -70,10 +70,12 @@ if exist "%archive_dir%\" (
 )
 set "archive_file="
 for %%A in ("%archive_dir%") do (
-  set "archive_file=%archive_dir%\emu-win-%%~nxA.7z"
+  set "archive_file=%%~dpAemu-win-%%~nxA.7z"
 )
 
-mkdir "%archive_dir%"
+for %%A in ("%archive_dir%") do (
+  mkdir "%%~dpA"
+)
 "%packager%" a "%archive_file%" ".\%target_src_dir%" -t7z -slp -ssw -mx -myx -mmemuse=p%MEM_PERCENT% -ms=on -mqs=off -mf=on -mhc+ -mhe- -m0=LZMA2:d=%DICT_SIZE_MB%m -mmt=%THREAD_COUNT% -mmtf+ -mtm- -mtc- -mta- -mtr+
 
 
