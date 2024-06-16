@@ -16,7 +16,9 @@ apt install software-properties-common -y
 add-apt-repository ppa:deadsnakes/ppa -y
 apt update -y || exit 1
 apt install "$python_package" -y || exit 1
+apt install "$python_package-dev" -y || exit 1
 apt install "$python_package-venv" -y || exit 1
+apt install python3-dev -y || exit 1
 
 [[ -d "$script_dir/$venv" ]] && rm -r -f "$script_dir/$venv"
 
