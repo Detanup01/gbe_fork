@@ -1,6 +1,17 @@
+## 2024/6/17
+
+* **[Detanup01]** add more missing interfaces: `ISteamVideo`, `ISteamGameStats`
+* upgrade python runtime used by the scripts (`generate_emu_config` and `migrate_gse`) to v3.12  
+  due to recent problems with SSL library (`libsssl`), also switched to `requests` vs `urllib`  
+  solving a problem when grabbing achievements icons
+* wrap `prtotoc` generated files and external libraries headers to suppress compilation warnings,  
+  also refactored the structure a little
+
+---
+
 ## 2024/6/12
 
-* **[Detanup01]** add `premake` build scripts, allowing the project to be built with different toolsets with ease on diffrerent platforms
+* **[Detanup01]** add `premake` build scripts, allowing the project to be built with different toolsets with ease on different platforms
   for example the project could be built with `Visual Studio` on Windows, or via the `make` tool on Linux
 * **[schmurger]** add progress bar to the achievements in the overlay, only for achievements that are not earned yet.  
   also implement notifications for these progress indications (whenever the game indicates a new progress).  
@@ -31,13 +42,13 @@
 * add missing callback in `Steam_UGC::RequestUGCDetails()`
 * re-implement the way the background thread is spawned & terminated to fix its cleanup sequence + spawn it for gameservers as well
 * corrected callback vs call result in `Steam_Apps::RequestAllProofOfPurchaseKeys()`
-* the emu will now termiante the process and generate a file called `EMU_MISSING_INTERFACE.txt` (beside the library) if an app requested a missing interface
+* the emu will now terminate the process and generate a file called `EMU_MISSING_INTERFACE.txt` (beside the library) if an app requested a missing interface
 * reduce binaries sizes on Linux by avoiding `-Wl,--whole-archive` and using `-Wl,--start-group -lmylib1 -lmylib2 ... -Wl,--end-group` instead on all libraries,  
   allowing the linker to go back and forth between them to resolve missing symbols
 * restore accidentally removed flag for ipv6, for `SteamClient020`
 * make the test achievement in the overlay include a random progress
 * add new button to the overlay `toggle user info` to show/hide user info, also make user info hidden by default
-* make all overlay popups toggleable, clicking its button another time will hide or show the popup, depending on its previous state
+* make all overlay popups toggle-able, clicking its button another time will hide or show the popup, depending on its previous state
 * allow `Steam_User_Stats::ClearAchievement()` to reflect the status in the overlay
 * initial support for building with `MSYS2` on Windows.  
   **this is still highly experimental and non-functional, this is more of tech demo at the moment**  

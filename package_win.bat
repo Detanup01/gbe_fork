@@ -45,6 +45,7 @@ echo // copying readmes + example files
 xcopy /y /s /e /r "post_build\steam_settings.EXAMPLE\" "%target_src_dir%\steam_settings.EXAMPLE\"
 copy /y "post_build\README.release.md" "%target_src_dir%\"
 copy /y "CHANGELOG.md" "%target_src_dir%\"
+copy /y "CREDITS.md" "%target_src_dir%\"
 if "%~2"=="1" (
   copy /y "post_build\README.debug.md" "%target_src_dir%\"
 )

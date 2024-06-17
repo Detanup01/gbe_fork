@@ -21,6 +21,7 @@ echo "// copying readmes + example files"
 cp -f -r "post_build/steam_settings.EXAMPLE/" "$target_src_dir/"
 cp -f "post_build/README.release.md" "$target_src_dir/"
 cp -f "CHANGELOG.md" "$target_src_dir/"
+cp -f "CREDITS.md" "$target_src_dir/"
 if [[ "$2" = "1" ]]; then
   cp -f "post_build/README.debug.md" "$target_src_dir/"
 fi
