@@ -236,13 +236,7 @@ message GameServerStats_Messages {
         optional AvgStatInfo value_avg = 4; // only set when type != INT
     }
     message AchievementInfo {
-        // progress is always sent from user to server, not the opposite
-        message Progress {
-            float progress = 1;
-            float max_progress = 2;
-        }
         bool achieved = 1;
-        optional Progress progress = 2;
     }
 
     // --- requests & responses objects
