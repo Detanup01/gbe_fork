@@ -377,9 +377,6 @@ bool Steam_User_Stats::clear_stats_internal()
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     bool notify_server = false;
     
-    stats_cache_int.clear();
-    stats_cache_float.clear();
-
     for (const auto &stat : settings->getStats()) {
         std::string stat_name(common_helpers::ascii_to_lowercase(stat.first));
 
@@ -754,8 +751,11 @@ Steam_User_Stats::Steam_User_Stats(Settings *settings, class Networking *network
             auto &user_ach = user_achievements[name]; // this will create a new json entry if the key didn't exist already
             user_ach.emplace("earned", false);
             user_ach.emplace("earned_time", static_cast<uint32>(0));
-            user_ach.emplace("progress", std::stof(trig.min_value));
-            user_ach.emplace("max_progress", std::stof(trig.max_value));
+            // they will throw an exception for achievements with no progress
+            try {
+                user_ach.emplace("progress", std::stof(trig.min_value));
+                user_ach.emplace("max_progress", std::stof(trig.max_value));
+            } catch(...) {}
         } catch(...) {}
 
         try {
@@ -1129,11 +1129,12 @@ const char * Steam_User_Stats::GetAchievementDisplayAttribute( const char *pchNa
 // Calling this w/ N out of N progress will NOT set the achievement, the game must still do that.
 bool Steam_User_Stats::IndicateAchievementProgress( const char *pchName, uint32 nCurProgress, uint32 nMaxProgress )
 {
-    PRINT_DEBUG("%s", pchName);
+    PRINT_DEBUG("'%s' %u %u", pchName, nCurProgress, nMaxProgress);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName) return false;
     if (nCurProgress >= nMaxProgress) return false;
+
     std::string ach_name(pchName);
 
     // find in achievements.json
@@ -1964,6 +1965,7 @@ void Steam_User_Stats::steam_run_callback()
 // --- networking callbacks
 // only triggered when we have a message
 
+// server wants all stats
 void Steam_User_Stats::network_stats_initial(Common_Message *msg)
 {
     if (!msg->gameserver_stats_messages().has_initial_user_stats()) {
@@ -2038,6 +2040,7 @@ void Steam_User_Stats::network_stats_initial(Common_Message *msg)
 
 }
 
+// server has updated/new stats
 void Steam_User_Stats::network_stats_updated(Common_Message *msg)
 {
     if (!msg->gameserver_stats_messages().has_update_user_stats()) {
