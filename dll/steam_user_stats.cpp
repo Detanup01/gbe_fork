@@ -1164,14 +1164,19 @@ bool Steam_User_Stats::IndicateAchievementProgress( const char *pchName, uint32 
     if (achieved) return false;
 
     // save new progress
+    bool value_updated = false;
     try {
         auto old_progress = user_achievements.value(actual_ach_name, nlohmann::json{}).value("progress", ~nCurProgress);
-        if (old_progress == nCurProgress) return true;
-
-        user_achievements[actual_ach_name]["progress"] = nCurProgress;
-        user_achievements[actual_ach_name]["max_progress"] = nMaxProgress;
-        save_achievements();
-        overlay->AddAchievementNotification(actual_ach_name, user_achievements[actual_ach_name], true);
+        if (old_progress != nCurProgress) {
+            user_achievements[actual_ach_name]["progress"] = nCurProgress;
+            user_achievements[actual_ach_name]["max_progress"] = nMaxProgress;
+            
+            save_achievements();
+            
+            value_updated = true;
+            
+            overlay->AddAchievementNotification(actual_ach_name, user_achievements[actual_ach_name], true);
+        }
     } catch (...) {}
 
     {
@@ -1191,6 +1196,20 @@ bool Steam_User_Stats::IndicateAchievementProgress( const char *pchName, uint32 
 
         callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
     }
+
+    // progress is always sent from user to server, not the opposite
+    if (value_updated && !settings->disable_sharing_stats_with_gameserver) {
+        auto &new_ach = (*pending_server_updates.mutable_user_achievements())[actual_ach_name];
+        new_ach.set_achieved(false);
+
+        auto progress_msg = new GameServerStats_Messages::AchievementInfo::Progress();
+        progress_msg->set_progress((float)nCurProgress);
+        progress_msg->set_max_progress((float)nMaxProgress);
+        new_ach.set_allocated_progress(progress_msg);
+
+        if (settings->immediate_gameserver_stats) send_updated_stats();
+    }
+
     return true;
 }
 
@@ -1902,7 +1921,7 @@ bool Steam_User_Stats::GetAchievementProgressLimits( const char *pchName, float 
 
     if (!pchName) return false;
 
-    nlohmann::detail::iter_impl<nlohmann::json> it = defined_achievements.end();
+    auto it = defined_achievements.end();
     try {
         it = defined_achievements_find(pchName);
     }
@@ -1916,13 +1935,40 @@ bool Steam_User_Stats::GetAchievementProgressLimits( const char *pchName, float 
         std::string pch_name = it->value("name", std::string());
         auto ach = user_achievements.find(pch_name);
         if (user_achievements.end() != ach) {
-            if (pfMinProgress) *pfMinProgress = ach->value("progress", static_cast<float>(0));
-            if (pfMaxProgress) *pfMaxProgress = ach->value("max_progress", static_cast<float>(0));
+            auto it_progress = ach->find("progress");
+            auto it_max_progress = ach->find("max_progress");
+            if (ach->end() == it_progress || ach->end() == it_max_progress) return false;
+
+            if (pfMinProgress) {
+                try {
+                    if (it_progress->is_number()) {
+                        *pfMinProgress = it_progress->get<float>();
+                    } else {
+                        auto s_ptr = it_progress->get_ptr<std::string*>();
+                        if (s_ptr) {
+                            *pfMinProgress  = std::stof(*s_ptr);
+                        }
+                    }
+                }catch(...){}
+            }
+            if (pfMaxProgress) {
+                try {
+                    if (it_max_progress->is_number()) {
+                        *pfMaxProgress = it_max_progress->get<float>();
+                    } else {
+                        auto s_ptr = it_max_progress->get_ptr<std::string*>();
+                        if (s_ptr) {
+                            *pfMaxProgress  = std::stof(*s_ptr);
+                        }
+                    }
+                }catch(...){}
+            }
+            return true;
         }
     }
     catch (...) {}
 
-    return true;
+    return false;
 }
 
 
@@ -2011,9 +2057,23 @@ void Steam_User_Stats::network_stats_initial(Common_Message *msg)
     for (const auto &ach : defined_achievements) {
         const std::string &name = static_cast<const std::string &>( ach.value("name", std::string()) );
         auto &this_ach = achievements_map[name];
+
+        // achieved or not
         bool achieved = false;
         GetAchievement(name.c_str(), &achieved);
         this_ach.set_achieved(achieved);
+
+        // progress
+        if (!achieved) {
+            float progress = 0;
+            float max_progress = 0;
+            if (GetAchievementProgressLimits(name.c_str(), &progress, &max_progress) && max_progress > 0) {
+                auto progress_msg = new GameServerStats_Messages_AchievementInfo_Progress();
+                progress_msg->set_progress(progress);
+                progress_msg->set_max_progress(max_progress);
+                this_ach.set_allocated_progress(progress_msg);
+            }
+        }
     }
 
     auto initial_stats_msg = new GameServerStats_Messages::InitialAllStats();
