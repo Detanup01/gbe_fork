@@ -2039,15 +2039,13 @@ void Steam_Overlay::AddAchievementNotification(const std::string &ach_name, nloh
                 a.max_progress = ach.value("max_progress", static_cast<float>(0));
             } catch(...) {}
 
-            if (a.achieved) {
+            if (a.achieved && !for_progress) { // here we don't show the progress indications
+                post_achievement_notification(a, for_progress);
+                notify_sound_user_achievement();
+            } else if (for_progress && !settings->disable_overlay_achievement_progress) { // progress indication is shown for locked achievements only
                 // post notification if this isn't a progress, or a progress and the user didn't disable these notifications
-                if (!for_progress || !settings->disable_overlay_achievement_progress) {
-                    post_achievement_notification(a, for_progress);
-                }
-                // don't play sound if this is progress
-                if (!for_progress) {
-                    notify_sound_user_achievement();
-                }
+                post_achievement_notification(a, for_progress);
+                // don't play sound
             }
             break;
         }

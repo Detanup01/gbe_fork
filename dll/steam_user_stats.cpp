@@ -69,7 +69,7 @@ void Steam_Leaderboard::sort_entries()
 
 
 // --- achievement_trigger ---
-bool achievement_trigger::check_triggered(float stat) const
+bool achievement_trigger::should_unlock_ach(float stat) const
 {
     try {
         if (std::stof(max_value) <= stat) return true;
@@ -78,10 +78,30 @@ bool achievement_trigger::check_triggered(float stat) const
     return false;
 }
 
-bool achievement_trigger::check_triggered(int32 stat) const
+bool achievement_trigger::should_unlock_ach(int32 stat) const
 {
     try {
         if (std::stoi(max_value) <= stat) return true;
+    } catch (...) {}
+
+    return false;
+}
+
+bool achievement_trigger::should_indicate_progress(float stat) const
+{
+    // show progress if number < max
+    try {
+        if (std::stof(max_value) > stat) return true;
+    } catch (...) {}
+
+    return false;
+}
+
+bool achievement_trigger::should_indicate_progress(int32 stat) const
+{
+    // show progress if number < max
+    try {
+        if (std::stoi(max_value) > stat) return true;
     } catch (...) {}
 
     return false;
@@ -377,15 +397,6 @@ bool Steam_User_Stats::clear_stats_internal()
 
             stats_cache_int[stat_name] = data;
             
-            auto stat_trigger = achievement_stat_trigger.find(stat_name);
-            if (stat_trigger != achievement_stat_trigger.end()) {
-                for (auto &t : stat_trigger->second) {
-                    if (t.check_triggered(data)) {
-                        set_achievement_internal(t.name.c_str());
-                    }
-                }
-            }
-            
             if (needs_disk_write) local_storage->store_data(Local_Storage::stats_storage_folder, stat_name, (char *)&data, sizeof(data));
         }
         break;
@@ -402,15 +413,6 @@ bool Steam_User_Stats::clear_stats_internal()
             }
 
             stats_cache_float[stat_name] = data;
-            
-            auto stat_trigger = achievement_stat_trigger.find(stat_name);
-            if (stat_trigger != achievement_stat_trigger.end()) {
-                for (auto &t : stat_trigger->second) {
-                    if (t.check_triggered(data)) {
-                        set_achievement_internal(t.name.c_str());
-                    }
-                }
-            }
             
             if (needs_disk_write) local_storage->store_data(Local_Storage::stats_storage_folder, stat_name, (char *)&data, sizeof(data));
         }
@@ -451,8 +453,11 @@ Steam_User_Stats::InternalSetResult<int32> Steam_User_Stats::set_stat_internal( 
     auto stat_trigger = achievement_stat_trigger.find(stat_name);
     if (stat_trigger != achievement_stat_trigger.end()) {
         for (auto &t : stat_trigger->second) {
-            if (t.check_triggered(nData)) {
+            if (t.should_unlock_ach(nData)) {
                 set_achievement_internal(t.name.c_str());
+            }
+            if (t.should_indicate_progress(nData)) {
+                IndicateAchievementProgress(t.name.c_str(), nData, std::stoi(t.max_value));
             }
         }
     }
@@ -496,8 +501,11 @@ Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo
     auto stat_trigger = achievement_stat_trigger.find(stat_name);
     if (stat_trigger != achievement_stat_trigger.end()) {
         for (auto &t : stat_trigger->second) {
-            if (t.check_triggered(fData)) {
+            if (t.should_unlock_ach(fData)) {
                 set_achievement_internal(t.name.c_str());
+            }
+            if (t.should_indicate_progress(fData)) {
+                IndicateAchievementProgress(t.name.c_str(), fData, std::stof(t.max_value));
             }
         }
     }
@@ -1156,6 +1164,9 @@ bool Steam_User_Stats::IndicateAchievementProgress( const char *pchName, uint32 
 
     // save new progress
     try {
+        auto old_progress = user_achievements.value(actual_ach_name, nlohmann::json{}).value("progress", ~nCurProgress);
+        if (old_progress == nCurProgress) return true;
+
         user_achievements[actual_ach_name]["progress"] = nCurProgress;
         user_achievements[actual_ach_name]["max_progress"] = nMaxProgress;
         save_achievements();
@@ -1179,7 +1190,6 @@ bool Steam_User_Stats::IndicateAchievementProgress( const char *pchName, uint32 
 
         callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
     }
-    // callback_results->addCallResult(data.k_iCallback, &data, sizeof(data)); // TODO was this correct?
     return true;
 }
 
@@ -1340,7 +1350,6 @@ bool Steam_User_Stats::ResetAllStats( bool bAchievementsToo )
                 item["earned"] = false;
                 item["earned_time"] = static_cast<uint32>(0);
                 item["progress"] = static_cast<uint32>(0);
-                item["max_progress"] = static_cast<uint32>(0);
 
                 overlay->AddAchievementNotification(name, item, false);
             } catch(const std::exception& e) {
