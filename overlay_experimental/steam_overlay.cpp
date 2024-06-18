@@ -875,11 +875,10 @@ void Steam_Overlay::set_next_notification_pos(std::pair<float, float> scrn_size,
     const float scrn_width = scrn_size.first;
     const float scrn_height = scrn_size.second;
 
-    const float noti_width = scrn_width * Notification::width_percent;
-    
     auto &global_style = ImGui::GetStyle();
     const float padding_all_sides = 2 * (global_style.WindowPadding.y + global_style.WindowPadding.x);
 
+    const float noti_width = scrn_width * Notification::width_percent;
     const float msg_height = ImGui::CalcTextSize(
         noti.message.c_str(),
         noti.message.c_str() + noti.message.size(),
@@ -1070,7 +1069,6 @@ void Steam_Overlay::build_notifications(float width, float height)
                 case notification_type::achievement_progress:
                 case notification_type::achievement: {
                     const auto &ach = it->ach.value();
-                    const auto &msg = ach.title + "\n" + ach.description;
                     if (!ach.icon.expired() && ImGui::BeginTable("imgui_table", 2)) {
                         ImGui::TableSetupColumn("imgui_table_image", ImGuiTableColumnFlags_WidthFixed, settings->overlay_appearance.icon_size);
                         ImGui::TableSetupColumn("imgui_table_text");
@@ -1080,11 +1078,11 @@ void Steam_Overlay::build_notifications(float width, float height)
                         ImGui::Image((ImTextureID)*ach.icon.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
 
                         ImGui::TableSetColumnIndex(1);
-                        ImGui::TextWrapped("%s", msg.c_str());
+                        ImGui::TextWrapped("%s", it->message.c_str());
 
                         ImGui::EndTable();
                     } else {
-                        ImGui::TextWrapped("%s", msg.c_str());
+                        ImGui::TextWrapped("%s", it->message.c_str());
                     }
 
                     if ((notification_type)it->type == notification_type::achievement_progress) {
@@ -1207,7 +1205,7 @@ void Steam_Overlay::post_achievement_notification(Overlay_Achievement &ach, bool
     try_load_ach_icon(ach, !for_progress);
     submit_notification(
         for_progress ? notification_type::achievement_progress : notification_type::achievement,
-        {},
+        ach.title + "\n" + ach.description,
         {},
         &ach
     );
