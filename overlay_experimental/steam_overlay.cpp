@@ -1823,6 +1823,7 @@ void Steam_Overlay::UnSetupOverlay()
             // I assume because the game de-initializes DX later after closing Steam APIs
             // this hacky solution just sets it to an empty function
             _renderer->OverlayHookReady = [](InGameOverlay::OverlayHookState){};
+            _renderer->OverlayProc = [](){};
             
             allow_renderer_frame_processing(false, true);
             obscure_game_input(false);
