@@ -86,10 +86,7 @@ struct Overlay_Achievement
 struct Notification
 {
     static constexpr float width_percent = 0.25f; // percentage from total width
-    static constexpr std::chrono::milliseconds fade_in   = std::chrono::milliseconds(2000);
-    static constexpr std::chrono::milliseconds fade_out  = std::chrono::milliseconds(2000);
-    static constexpr std::chrono::milliseconds show_time = std::chrono::milliseconds(6000) + fade_in + fade_out;
-    static constexpr std::chrono::milliseconds fade_out_start = show_time - fade_out;
+    static constexpr std::chrono::milliseconds show_time = std::chrono::milliseconds(6000);
 
     int id{};
     uint8 type{};
@@ -222,6 +219,7 @@ class Steam_Overlay
     // factor controlling the amount of sliding during the animation, 0 means disabled
     float animate_factor(std::chrono::milliseconds elapsed);
     void add_ach_progressbar(const Overlay_Achievement &ach);
+    ImVec4 get_notification_bg_rgba_safe();
     void build_notifications(float width, float height);
     // invite a single friend
     void invite_friend(uint64 friend_id, class Steam_Friends* steamFriends, class Steam_Matchmaking* steamMatchmaking);

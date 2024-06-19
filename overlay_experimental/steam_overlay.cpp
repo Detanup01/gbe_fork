@@ -782,7 +782,7 @@ void Steam_Overlay::build_friend_window(Friend const& frd, friend_window_state& 
     ImGui::SetNextWindowSizeConstraints(ImVec2{ width, ImGui::GetFontSize()*8 + ImGui::GetFrameHeightWithSpacing()*4 },
         ImVec2{ std::numeric_limits<float>::max() , std::numeric_limits<float>::max() });
 
-    ImGui::SetNextWindowBgAlpha(0.9f);
+    ImGui::SetNextWindowBgAlpha(1.0f);
     // Window id is after the ###, the window title is the friend name
     std::string friend_window_id = std::move("###" + std::to_string(state.id));
     if (ImGui::Begin((state.window_title + friend_window_id).c_str(), &show)) {
@@ -917,7 +917,7 @@ void Steam_Overlay::set_next_notification_pos(std::pair<float, float> scrn_size,
 
     case notification_type::invite: pos = settings->overlay_appearance.invite_pos; break;
     case notification_type::message: pos = settings->overlay_appearance.chat_msg_pos; break;
-    default: /* satisfy compiler warning */ break;
+    default: PRINT_DEBUG("ERROR: unhandled notification type %i", (int)noti.type); break;
     }
     // add some y padding for niceness
     noti_height += 2 * global_style.WindowPadding.y;
@@ -975,7 +975,6 @@ void Steam_Overlay::set_next_notification_pos(std::pair<float, float> scrn_size,
 
     ImGui::SetNextWindowPos(ImVec2( x, y ));
     ImGui::SetNextWindowSize(ImVec2(noti_width, noti_height));
-    ImGui::SetNextWindowBgAlpha(0.95f);
 }
 
 float Steam_Overlay::animate_factor(std::chrono::milliseconds elapsed)
@@ -990,7 +989,7 @@ float Steam_Overlay::animate_factor(std::chrono::milliseconds elapsed)
         factor = 1.0f - (static_cast<float>(elapsed.count()) / animation_duration.count());
         // PRINT_DEBUG("SHOW FACTOR %f", factor);
     } else {
-         // time between sliding in/out animation
+        // time between sliding in/out animation
         auto steady_time = Notification::show_time - animation_duration;
         if (elapsed > steady_time) {
             factor = 1.0f - static_cast<float>((Notification::show_time - elapsed).count()) / animation_duration.count();
@@ -1010,6 +1009,30 @@ void Steam_Overlay::add_ach_progressbar(const Overlay_Achievement &ach)
     }
 }
 
+ImVec4 Steam_Overlay::get_notification_bg_rgba_safe()
+{
+    if (settings->overlay_appearance.notification_r >= 0 &&
+        settings->overlay_appearance.notification_g >= 0 &&
+        settings->overlay_appearance.notification_b >= 0 &&
+        settings->overlay_appearance.notification_a >= 0)
+    {
+        return ImVec4(
+            settings->overlay_appearance.notification_r,
+            settings->overlay_appearance.notification_g,
+            settings->overlay_appearance.notification_b,
+            settings->overlay_appearance.notification_a
+        );
+    }
+    
+    // fallback to dark-gray background
+    return ImVec4(
+        0.12f,
+        0.14f,
+        0.21f,
+        1.0f
+    );
+}
+
 void Steam_Overlay::build_notifications(float width, float height)
 {
     auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
@@ -1025,21 +1048,13 @@ void Steam_Overlay::build_notifications(float width, float height)
 
         set_next_notification_pos({width, height}, elapsed_notif, *it, coords);
 
-        if ( elapsed_notif < Notification::fade_in) { // still appearing (fading in)
-            float alpha = settings->overlay_appearance.notification_a * (elapsed_notif.count() / static_cast<float>(Notification::fade_in.count()));
-            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, alpha));
-            ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(settings->overlay_appearance.notification_r, settings->overlay_appearance.notification_g, settings->overlay_appearance.notification_b, alpha));
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 255, 255, alpha*2));
-        } else if ( elapsed_notif > Notification::fade_out_start) { // fading out 
-            float alpha = settings->overlay_appearance.notification_a * ((Notification::show_time - elapsed_notif).count() / static_cast<float>(Notification::fade_out.count()));
-            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, alpha));
-            ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(settings->overlay_appearance.notification_r, settings->overlay_appearance.notification_g, settings->overlay_appearance.notification_b, alpha));
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 255, 255, alpha*2));
-        } else { // still in the visible time limit
-            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, settings->overlay_appearance.notification_a));
-            ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(settings->overlay_appearance.notification_r, settings->overlay_appearance.notification_g, settings->overlay_appearance.notification_b, settings->overlay_appearance.notification_a));
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 255, 255, settings->overlay_appearance.notification_a*2));
-        }
+        float settings_noti_alpha = settings->overlay_appearance.notification_a >= 0.0f && settings->overlay_appearance.notification_a <= 1.0f
+            ? settings->overlay_appearance.notification_a
+            : 1.0f;
+        
+        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, settings_noti_alpha));
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, get_notification_bg_rgba_safe());
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 255, 255, settings_noti_alpha * 2));
        
         // some extra window flags for each notification type
         ImGuiWindowFlags extra_flags = ImGuiWindowFlags_NoFocusOnAppearing;
@@ -1452,7 +1467,7 @@ void Steam_Overlay::render_main_window()
         // user clicked on "show achievements" button
         if (show_achievements && achievements.size()) {
             ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 32, ImGui::GetFontSize() * 32), ImVec2(8192, 8192));
-            ImGui::SetNextWindowBgAlpha(0.9f);
+            ImGui::SetNextWindowBgAlpha(1.0f);
             bool show = show_achievements;
             if (ImGui::Begin(translationAchievementWindow[current_language], &show)) {
                 ImGui::Text("%s", translationListOfAchievements[current_language]);
@@ -1533,7 +1548,7 @@ void Steam_Overlay::render_main_window()
 
         // user clicked on "settings" button
         if (show_settings) {
-            ImGui::SetNextWindowBgAlpha(0.9f);
+            ImGui::SetNextWindowBgAlpha(1.0f);
             if (ImGui::Begin(translationGlobalSettingsWindow[current_language], &show_settings)) {
                 ImGui::Text("%s", translationGlobalSettingsWindowDescription[current_language]);
 
@@ -1565,7 +1580,7 @@ void Steam_Overlay::render_main_window()
         if (show_url.size()) {
             std::string url = show_url;
             bool show = true;
-            ImGui::SetNextWindowBgAlpha(0.9f);
+            ImGui::SetNextWindowBgAlpha(1.0f);
             if (ImGui::Begin(URL_WINDOW_NAME, &show)) {
                 ImGui::Text("%s", translationSteamOverlayURL[current_language]);
                 ImGui::Spacing();
@@ -1587,7 +1602,7 @@ void Steam_Overlay::render_main_window()
         if (show_warning) {
             ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 32, ImGui::GetFontSize() * 32), ImVec2(8192, 8192));
             ImGui::SetNextWindowFocus();
-            ImGui::SetNextWindowBgAlpha(0.9f);
+            ImGui::SetNextWindowBgAlpha(1.0f);
             if (ImGui::Begin(translationWarning[current_language], &show_warning)) {
                 if (warn_bad_appid) {
                     ImGui::TextColored(ImVec4(255, 0, 0, 255),
