@@ -1841,6 +1841,9 @@ void Steam_Overlay::UnSetupOverlay()
                 }
             }
 
+            // manually calling this dtor looks bad, but it actually prevents a lot of crashes on exit, don't remove it!
+            // many DX12 games will crash on exit if the hook wasn't manually removed (ex appid 2933080, 1583230)
+            _renderer->~RendererHook_t();
             _renderer = nullptr;
         }
 
