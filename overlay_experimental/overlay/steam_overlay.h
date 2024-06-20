@@ -54,7 +54,7 @@ struct Friend_Less
 
 enum class notification_type
 {
-    message = 0,
+    message,
     invite,
     achievement,
     achievement_progress,
@@ -86,10 +86,11 @@ struct Overlay_Achievement
 struct Notification
 {
     static constexpr float width_percent = 0.25f; // percentage from total width
-    static constexpr std::chrono::milliseconds show_time = std::chrono::milliseconds(6000);
+    static constexpr std::chrono::milliseconds default_show_time = std::chrono::milliseconds(6000);
 
     int id{};
     uint8 type{};
+    bool expired = false;
     std::chrono::milliseconds start_time{};
     std::string message{};
     std::pair<const Friend, friend_window_state>* frd{};
@@ -214,10 +215,11 @@ class Steam_Overlay
     void build_friend_context_menu(Friend const& frd, friend_window_state &state);
     // Double click on friend
     void build_friend_window(Friend const& frd, friend_window_state &state);
+    std::chrono::milliseconds get_notification_duration(notification_type type);
     // Notifications like achievements, chat and invitations
-    void set_next_notification_pos(std::pair<float, float> scrn_size, std::chrono::milliseconds elapsed, const Notification &noti, struct NotificationsCoords &coords);
+    void set_next_notification_pos(std::pair<float, float> scrn_size, std::chrono::milliseconds elapsed, std::chrono::milliseconds duration, const Notification &noti, struct NotificationsCoords &coords);
     // factor controlling the amount of sliding during the animation, 0 means disabled
-    float animate_factor(std::chrono::milliseconds elapsed);
+    float animate_factor(std::chrono::milliseconds elapsed, std::chrono::milliseconds duration);
     void add_ach_progressbar(const Overlay_Achievement &ach);
     ImVec4 get_notification_bg_rgba_safe();
     void build_notifications(float width, float height);

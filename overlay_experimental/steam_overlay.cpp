@@ -869,8 +869,33 @@ void Steam_Overlay::build_friend_window(Friend const& frd, friend_window_state& 
     ImGui::End();
 }
 
+
+std::chrono::milliseconds Steam_Overlay::get_notification_duration(notification_type type)
+{
+    switch (type)
+    {
+    case notification_type::message:
+        return std::chrono::milliseconds(settings->overlay_appearance.notification_duration_chat);
+    
+    case notification_type::invite:
+        return std::chrono::milliseconds(settings->overlay_appearance.notification_duration_invitation);
+    
+    case notification_type::achievement:
+        return std::chrono::milliseconds(settings->overlay_appearance.notification_duration_achievement);
+    
+    case notification_type::achievement_progress:
+        return std::chrono::milliseconds(settings->overlay_appearance.notification_duration_progress);
+    
+    case notification_type::auto_accept_invite:
+        return Notification::default_show_time;
+    }
+
+    PRINT_DEBUG("ERROR unhandled type %i", (int)type);
+    return Notification::default_show_time;
+}
+
 // set the position of the next notification
-void Steam_Overlay::set_next_notification_pos(std::pair<float, float> scrn_size, std::chrono::milliseconds elapsed, const Notification &noti, struct NotificationsCoords &coords)
+void Steam_Overlay::set_next_notification_pos(std::pair<float, float> scrn_size, std::chrono::milliseconds elapsed, std::chrono::milliseconds duration, const Notification &noti, struct NotificationsCoords &coords)
 {
     const float scrn_width = scrn_size.first;
     const float scrn_height = scrn_size.second;
@@ -932,19 +957,19 @@ void Steam_Overlay::set_next_notification_pos(std::pair<float, float> scrn_size,
     switch (pos) {
     // top
     case Overlay_Appearance::NotificationPosition::top_left:
-        animate_size = animate_factor(elapsed) * noti_width;
+        animate_size = animate_factor(elapsed, duration) * noti_width;
         x = margin_x - animate_size;
         y = coords.top_left.second + margin_y;
         coords.top_left.second = y + noti_height;
     break;
     case Overlay_Appearance::NotificationPosition::top_center:
-        animate_size = animate_factor(elapsed) * noti_height;
+        animate_size = animate_factor(elapsed, duration) * noti_height;
         x = (scrn_width / 2) - (noti_width / 2);
         y = coords.top_center.second + margin_y - animate_size;
         coords.top_center.second = y + noti_height;
     break;
     case Overlay_Appearance::NotificationPosition::top_right:
-        animate_size = animate_factor(elapsed) * noti_width;
+        animate_size = animate_factor(elapsed, duration) * noti_width;
         x = (scrn_width - noti_width - margin_x) + animate_size;
         y = coords.top_right.second + margin_y;
         coords.top_right.second = y + noti_height;
@@ -952,19 +977,19 @@ void Steam_Overlay::set_next_notification_pos(std::pair<float, float> scrn_size,
 
     // bot
     case Overlay_Appearance::NotificationPosition::bot_left:
-        animate_size = animate_factor(elapsed) * noti_width;
+        animate_size = animate_factor(elapsed, duration) * noti_width;
         x = margin_x - animate_size;
         y = scrn_height - coords.bot_left.second - margin_y - noti_height;
         coords.bot_left.second = scrn_height - y;
     break;
     case Overlay_Appearance::NotificationPosition::bot_center:
-        animate_size = animate_factor(elapsed) * noti_height;
+        animate_size = animate_factor(elapsed, duration) * noti_height;
         x = (scrn_width / 2) - (noti_width / 2);
         y = scrn_height - coords.bot_center.second - margin_y - noti_height + animate_size;
         coords.bot_center.second = scrn_height - y;
     break;
     case Overlay_Appearance::NotificationPosition::bot_right:
-        animate_size = animate_factor(elapsed) * noti_width;
+        animate_size = animate_factor(elapsed, duration) * noti_width;
         x = (scrn_width - noti_width - margin_x) + animate_size;
         y = scrn_height - coords.bot_right.second - margin_y - noti_height;
         coords.bot_right.second = scrn_height - y;
@@ -977,12 +1002,12 @@ void Steam_Overlay::set_next_notification_pos(std::pair<float, float> scrn_size,
     ImGui::SetNextWindowSize(ImVec2(noti_width, noti_height));
 }
 
-float Steam_Overlay::animate_factor(std::chrono::milliseconds elapsed)
+float Steam_Overlay::animate_factor(std::chrono::milliseconds elapsed, std::chrono::milliseconds duration)
 {
     if (settings->overlay_appearance.notification_animation <= 0) return 0.0f; // no animation
 
     std::chrono::milliseconds animation_duration(settings->overlay_appearance.notification_animation);
-    // PRINT_DEBUG("ELAPSED %u/%u", (uint32)elapsed.count(), (uint32)animation_duration.count());
+    // PRINT_DEBUG("ELAPSED %u/%u/%u", (uint32)elapsed.count(), (uint32)duration.count(), (uint32)animation_duration.count());
 
     float factor = 0.0f;
     if (elapsed < animation_duration) { // sliding in
@@ -990,9 +1015,14 @@ float Steam_Overlay::animate_factor(std::chrono::milliseconds elapsed)
         // PRINT_DEBUG("SHOW FACTOR %f", factor);
     } else {
         // time between sliding in/out animation
-        auto steady_time = Notification::show_time - animation_duration;
+        // here we add the animation duration because we want to count after the animation
+        // if we have 1 sec animation & 2 sec show time:
+        //   the duration will start at < 1 sec during the initial animation
+        //   after the animation (1 sec), the duration will be >= 1 sec
+        //   but since we want 2 sec show time, the duration must last 3 sec
+        auto steady_time = animation_duration + duration;
         if (elapsed > steady_time) {
-            factor = 1.0f - static_cast<float>((Notification::show_time - elapsed).count()) / animation_duration.count();
+            factor = static_cast<float>((elapsed - steady_time).count()) / animation_duration.count();
             // PRINT_DEBUG("HIDE FACTOR %f", factor);
         }
     }
@@ -1044,9 +1074,19 @@ void Steam_Overlay::build_notifications(float width, float height)
    
     NotificationsCoords coords{};
     for (auto it = notifications.begin(); it != notifications.end(); ++it) {
-        auto elapsed_notif = now - it->start_time;
+        auto noti_duration = get_notification_duration((notification_type)it->type);
+        if (noti_duration.count() <= 0) {
+            it->expired = true;
+            continue;
+        }
 
-        set_next_notification_pos({width, height}, elapsed_notif, *it, coords);
+        // *2 for sliding in & out animation
+        auto total_allowed_duration = noti_duration + std::chrono::milliseconds(settings->overlay_appearance.notification_animation * 2);
+        auto elapsed_notif = now - it->start_time;
+        if (elapsed_notif > total_allowed_duration) {
+            it->expired = true;
+            continue;
+        }
 
         float settings_noti_alpha = settings->overlay_appearance.notification_a >= 0.0f && settings->overlay_appearance.notification_a <= 1.0f
             ? settings->overlay_appearance.notification_a
@@ -1078,6 +1118,8 @@ void Steam_Overlay::build_notifications(float width, float height)
         }
 
         std::string wnd_name = "NotiPopupShow" + std::to_string(it->id);
+
+        set_next_notification_pos({width, height}, elapsed_notif, noti_duration, *it, coords);
         if (ImGui::Begin(wnd_name.c_str(), nullptr,
             ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | extra_flags)) {
             switch ((notification_type)it->type) {
@@ -1142,8 +1184,8 @@ void Steam_Overlay::build_notifications(float width, float height)
     ImGui::PopFont();
 
     // erase all notifications whose visible time exceeded the max
-    notifications.erase(std::remove_if(notifications.begin(), notifications.end(), [this, &now](Notification &item) {
-        if ((now - item.start_time) > Notification::show_time) {
+    notifications.erase(std::remove_if(notifications.begin(), notifications.end(), [this](const Notification &item) {
+        if (item.expired) {
             PRINT_DEBUG("removing a notification");
             allow_renderer_frame_processing(false);
             // uncomment this block to restore app input focus
