@@ -1282,21 +1282,12 @@ void Steam_Overlay::overlay_render_proc()
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     if (!Ready()) return;
 
-    ImGuiIO &io = ImGui::GetIO();
-
-    // Set the overlay windows to the size of the game window
-    // only if we have a reason (full overlay or just some notification)
-    if (show_overlay || notifications.size()) {
-        ImGui::SetNextWindowPos({ 0,0 });
-        ImGui::SetNextWindowSize({ io.DisplaySize.x, io.DisplaySize.y });
-        ImGui::SetNextWindowBgAlpha(0.55f);
-    }
-
     if (show_overlay) {
         render_main_window();
     }
 
     if (notifications.size()) {
+        ImGuiIO &io = ImGui::GetIO();
         build_notifications(io.DisplaySize.x, io.DisplaySize.y);
     }
 
@@ -1377,10 +1368,6 @@ uint32 Steam_Overlay::apply_global_style_color()
 // Try to make this function as short as possible or it might affect game's fps.
 void Steam_Overlay::render_main_window()
 {
-    //ImGui::SetNextWindowFocus();
-    ImGui::PushFont(font_default);
-    uint32 style_color_stack = apply_global_style_color();
-    
     char tmp[TRANSLATION_BUFFER_SIZE]{};
     snprintf(tmp, sizeof(tmp), translationRenderer[current_language], (_renderer == nullptr ? "Unknown" : _renderer->GetLibraryName().c_str()));
     std::string windowTitle{};
@@ -1390,6 +1377,13 @@ void Steam_Overlay::render_main_window()
 
     bool show = true;
 
+    ImGuiIO &io = ImGui::GetIO();
+
+    ImGui::PushFont(font_default);
+    uint32 style_color_stack = apply_global_style_color();
+
+    ImGui::SetNextWindowPos({ 0, 0 });
+    ImGui::SetNextWindowSize({ io.DisplaySize.x, io.DisplaySize.y });
     if (ImGui::Begin(windowTitle.c_str(), &show,
             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
             ImGuiWindowFlags_NoBringToFrontOnFocus)) {
