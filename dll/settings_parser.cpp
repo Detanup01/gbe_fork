@@ -281,6 +281,22 @@ static void load_overlay_appearance(class Settings *settings_client, class Setti
                 uint32 nnotification_animation = (uint32)(std::stof(value, NULL) * 1000.0f); // convert sec to milli
                 settings_client->overlay_appearance.notification_animation = nnotification_animation;
                 settings_server->overlay_appearance.notification_animation = nnotification_animation;
+            } else if (name.compare("Notification_Duration_Progress") == 0) {
+                uint32 time = (uint32)(std::stof(value, NULL) * 1000.0f); // convert sec to milli
+                settings_client->overlay_appearance.notification_duration_progress = time;
+                settings_server->overlay_appearance.notification_duration_progress = time;
+            } else if (name.compare("Notification_Duration_Achievement") == 0) {
+                uint32 time = (uint32)(std::stof(value, NULL) * 1000.0f); // convert sec to milli
+                settings_client->overlay_appearance.notification_duration_achievement = time;
+                settings_server->overlay_appearance.notification_duration_achievement = time;
+            } else if (name.compare("Notification_Duration_Invitation") == 0) {
+                uint32 time = (uint32)(std::stof(value, NULL) * 1000.0f); // convert sec to milli
+                settings_client->overlay_appearance.notification_duration_invitation = time;
+                settings_server->overlay_appearance.notification_duration_invitation = time;
+            } else if (name.compare("Notification_Duration_Chat") == 0) {
+                uint32 time = (uint32)(std::stof(value, NULL) * 1000.0f); // convert sec to milli
+                settings_client->overlay_appearance.notification_duration_chat = time;
+                settings_server->overlay_appearance.notification_duration_chat = time;
             } else if (name.compare("Achievement_Unlock_Datetime_Format") == 0) {
                 settings_client->overlay_appearance.ach_unlock_datetime_format = value;
                 settings_server->overlay_appearance.ach_unlock_datetime_format = value;

@@ -133,13 +133,17 @@ struct Overlay_Appearance {
     float notification_margin_y = 5.0f; // vertical margin
     
     uint32 notification_animation = 350; // sliding animation duration (millisec)
+    uint32 notification_duration_progress = 3500; // achievement progress indication duration (millisec)
+    uint32 notification_duration_achievement = 5000; // achievement unlocked duration (millisec)
+    uint32 notification_duration_invitation = 8000; // friend invitation duration (millisec)
+    uint32 notification_duration_chat = 4000; // sliding animation duration duration (millisec)
 
     std::string ach_unlock_datetime_format = "%Y/%m/%d - %H:%M:%S";
     
     float background_r = 0.12f;
     float background_g = 0.11f;
     float background_b = 0.11f;
-    float background_a = 1.0f;
+    float background_a = 0.55f;
 
     float element_r = 0.30f;
     float element_g = 0.32f;
