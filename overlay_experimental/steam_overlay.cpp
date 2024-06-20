@@ -1468,8 +1468,7 @@ void Steam_Overlay::render_main_window()
         if (show_achievements && achievements.size()) {
             ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 32, ImGui::GetFontSize() * 32), ImVec2(8192, 8192));
             ImGui::SetNextWindowBgAlpha(1.0f);
-            bool show = show_achievements;
-            if (ImGui::Begin(translationAchievementWindow[current_language], &show)) {
+            if (ImGui::Begin(translationAchievementWindow[current_language], &show_achievements)) {
                 ImGui::Text("%s", translationListOfAchievements[current_language]);
                 ImGui::BeginChild(translationAchievements[current_language]);
                 for (auto & x : achievements) {
@@ -1543,7 +1542,6 @@ void Steam_Overlay::render_main_window()
             }
             
             ImGui::End();
-            show_achievements = show;
         }
 
         // user clicked on "settings" button
@@ -1625,8 +1623,10 @@ void Steam_Overlay::render_main_window()
             }
 
             ImGui::End();
+            // if button closed, don't show the warning again
             if (!show_warning) {
                 warn_local_save = false;
+                warn_bad_appid = false;
             }
         }
     }
