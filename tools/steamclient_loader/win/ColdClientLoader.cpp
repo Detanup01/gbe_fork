@@ -88,11 +88,11 @@ static std::vector<std::wstring> collect_dlls_to_inject(const std::wstring &extr
 
         auto dll_path = dir_entry.path().wstring();
         // ignore this file if it is the load order file
-        if (common_helpers::to_upper(dll_path) == common_helpers::to_upper(load_order_file.wstring())) continue;
+        if (common_helpers::str_cmp_insensitive(dll_path, load_order_file.wstring())) continue;
         
         auto dll_header = get_pe_header(dll_path);
         if (dll_header.empty()) {
-            dbg_log::write(L"Failed to get PE header of dll: " + dll_path);
+            dbg_log::write(L"Failed to get PE header of dll: '" + dll_path + L"'");
             failed_dlls += dll_path + L"\n";
             continue;
         }
@@ -100,53 +100,47 @@ static std::vector<std::wstring> collect_dlls_to_inject(const std::wstring &extr
         bool is_dll_32 = pe_helpers::is_module_32((HMODULE)&dll_header[0]);
         bool is_dll_64 = pe_helpers::is_module_64((HMODULE)&dll_header[0]);
         if ((!is_dll_32 && !is_dll_64) || (is_dll_32 && is_dll_64)) { // ARM, or just a regular file
-            dbg_log::write(L"Dll " + dll_path + L" is neither 32 nor 64 bit and will be ignored");
+            dbg_log::write(L"Dll '" + dll_path + L"' is neither 32 nor 64 bit and will be ignored");
             failed_dlls += dll_path + L"\n";
             continue;
         }
 
         if (is_dll_32 == is_exe_32) { // same arch
             dlls_to_inject.push_back(dll_path);
-            dbg_log::write(L"Dll " + dll_path + L" will be injected");
+            dbg_log::write(L"Dll '" + dll_path + L"' is valid");
         } else {
-            dbg_log::write(L"Dll " + dll_path + L" has a different arch than the exe and will be ignored");
+            dbg_log::write(L"Dll '" + dll_path + L"' has a different arch than the exe and will be ignored");
             failed_dlls += dll_path + L"\n";
         }
     }
 
+    bool only_specified = false;
     std::vector<std::wstring> ordered_dlls_to_inject{};
     {
-        dbg_log::write(L"Searching for load order file: " + load_order_file.wstring());
+        dbg_log::write(L"Searching for load order file: '" + load_order_file.wstring() + L"'");
         auto f_order = std::wifstream(load_order_file, std::ios::in);
         if (f_order.is_open()) {
-            dbg_log::write(L"Reading load order file: " + load_order_file.wstring());
+            only_specified = true;
+            dbg_log::write(L"Reading load order file...");
             std::wstring line{};
             while (std::getline(f_order, line)) {
                 auto abs = common_helpers::to_absolute(line, extra_dlls_folder);
-                auto abs_upper = common_helpers::to_upper(abs);
-                dbg_log::write(L"Load order line: " + abs_upper);
-                auto it = std::find_if(dlls_to_inject.begin(), dlls_to_inject.end(), [&abs_upper](const std::wstring &dll_to_inject) {
-                    return  common_helpers::to_upper(dll_to_inject) == abs_upper;
+                dbg_log::write(L"Load order line: '" + abs + L"'");
+                auto it = std::find_if(dlls_to_inject.begin(), dlls_to_inject.end(), [&abs](const std::wstring &dll_to_inject) {
+                    return  common_helpers::str_cmp_insensitive(dll_to_inject, abs);
                 });
                 if (it != dlls_to_inject.end()) {
                     dbg_log::write("Found the dll specified by the load order line");
                     ordered_dlls_to_inject.push_back(*it);
-                    // mark for deletion
-                    it->clear();
                 }
             }
             f_order.close();
         }
     }
 
-    // add the remaining dlls
-    for (auto &dll : dlls_to_inject) {
-        if (dll.size()) {
-            ordered_dlls_to_inject.push_back(dll);
-        }
-    }
+    if (only_specified) return ordered_dlls_to_inject;
 
-    return ordered_dlls_to_inject;
+    return dlls_to_inject;
 }
 
 static void to_bool_ini_val(std::wstring &val)
