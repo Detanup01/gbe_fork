@@ -1,3 +1,37 @@
+## 2024/6/21
+
+* fix the conditions for achievement progress indication when a game updates a stat which is tied to an achievement  
+  now the user achievements will be updated and saved, and an overlay notification will be triggered  
+  you need `stats.txt` and `achievements.json` inside your local `steam_settings` folder for this feature to work properly
+* fix an old problem where games would crash on exit if the overlay was enabled, more prominent in `DirectX 12` games, also set the overlay hook procedure to an empty function before cleaning up the overlay
+* remove an invalid condition when resetting stats, only write to disk and share values with any gameserver if the stat value isn't already the default
+* add a try-catch block when initializing `current progress` and `max progress` during user achievements construction since they throw exception for achievements without progress
+* always trigger `UserStatsStored_t` and `UserAchievementStored_t` callbacks in `Steam_User_Stats::IndicateAchievementProgress()` even if the value wasn't updated, games my halt otherwise
+* return false in `Steam_User_Stats::GetAchievementProgressLimits()` if the achievement has no progress
+* remove invalid code in the overlay which made it ignore the background transparency/alpha set by the user (`Background_A=0.55`) in `configs.overlay.ini`, also fixed some internal defaults
+* fix a mistake in the overlay where the achievement description wasn't being set before posting the notification, the notification message/string is needed to calculate the height dynamically
+* remove an irritating transparency effect in the overlay which was added to all popup windows (settings, achievements list, etc...) making the text blended with the game's scene and unclear
+* allow specifying various notifications durations for the overlay, these are the new values in `configs.overlay.ini`
+  ```ini
+  # duration of achievement progress indication
+  Notification_Duration_Progress=3.5
+  # duration of achievement unlocked
+  Notification_Duration_Achievement=5.0
+  # duration of friend invitation
+  Notification_Duration_Invitation=8.0
+  # duration of chat message
+  Notification_Duration_Chat=4.0
+  ```  
+  you can set these values in the global settings, just like all the other settings in all `.ini` files  
+  you can also override them per-game by modifying your local `steam_settings/configs.overlay.ini`
+* for Windows `ColdClientLoader`: if the file `load_order.txt` is used, then only load the files mentioned with their respective order, otherwise load all valid PE files as usual  
+  this allows placing PE files (beside your target .dll) that are not supposed to be loaded early, or handled later by your .dll
+* avoid setting an early/initial window size and position for the overlay, only at the relevant place (slight optimization)
+* replace the overlay example font (in `steam_settings.EXAMPLE/fonts.EXAMPLE/`) with Google's `Roboto` medium, the built-in one is still the same!
+* in the overlay show the warning for bad appid only once until the user closes this warning
+
+---
+
 ## 2024/6/17
 
 * **[Detanup01]** add more missing interfaces: `ISteamVideo`, `ISteamGameStats`
