@@ -133,8 +133,8 @@ struct Overlay_Appearance {
     float notification_margin_y = 5.0f; // vertical margin
     
     uint32 notification_animation = 350; // sliding animation duration (millisec)
-    uint32 notification_duration_progress = 3500; // achievement progress indication duration (millisec)
-    uint32 notification_duration_achievement = 5000; // achievement unlocked duration (millisec)
+    uint32 notification_duration_progress = 6000; // achievement progress indication duration (millisec)
+    uint32 notification_duration_achievement = 7000; // achievement unlocked duration (millisec)
     uint32 notification_duration_invitation = 8000; // friend invitation duration (millisec)
     uint32 notification_duration_chat = 4000; // sliding animation duration duration (millisec)
 

@@ -1,7 +1,8 @@
 ## 2024/6/21
 
 * fix the conditions for achievement progress indication when a game updates a stat which is tied to an achievement  
-  now the user achievements will be updated and saved, and an overlay notification will be triggered  
+  now the user achievements will be updated and saved, and an overlay notification will be triggered.  
+  works with `Achievement Watcher by xan105` and the built-in overlay.  
   you need `stats.txt` and `achievements.json` inside your local `steam_settings` folder for this feature to work properly
 * fix an old problem where games would crash on exit if the overlay was enabled, more prominent in `DirectX 12` games, also set the overlay hook procedure to an empty function before cleaning up the overlay
 * remove an invalid condition when resetting stats, only write to disk and share values with any gameserver if the stat value isn't already the default
@@ -14,9 +15,9 @@
 * allow specifying various notifications durations for the overlay, these are the new values in `configs.overlay.ini`
   ```ini
   # duration of achievement progress indication
-  Notification_Duration_Progress=3.5
+  Notification_Duration_Progress=6.0
   # duration of achievement unlocked
-  Notification_Duration_Achievement=5.0
+  Notification_Duration_Achievement=7.0
   # duration of friend invitation
   Notification_Duration_Invitation=8.0
   # duration of chat message
