@@ -774,8 +774,11 @@ Steam_User_Stats::Steam_User_Stats(Settings *settings, class Networking *network
             user_ach.emplace("earned_time", static_cast<uint32>(0));
             // they will throw an exception for achievements with no progress
             try {
-                user_ach.emplace("progress", std::stof(trig.min_value));
-                user_ach.emplace("max_progress", std::stof(trig.max_value));
+                uint32 progress_min = std::stoul(trig.min_value);
+                uint32 progress_max = std::stoul(trig.max_value);
+                // if the above lines didn't throw exception then add the values
+                user_ach.emplace("progress", progress_min);
+                user_ach.emplace("max_progress", progress_max);
             } catch(...) {}
         } catch(...) {}
 
