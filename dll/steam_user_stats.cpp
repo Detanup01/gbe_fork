@@ -433,6 +433,13 @@ Steam_User_Stats::InternalSetResult<int32> Steam_User_Stats::set_stat_internal( 
 
     const auto &stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
+    if (stats_config.end() == stats_data && settings->allow_unknown_stats) {
+        Stat_config cfg{};
+        cfg.type = GameServerStats_Messages::StatInfo::STAT_TYPE_INT;
+        cfg.default_value_int = 0;
+        stats_data = settings->setStatDefiniton(stat_name, cfg);
+    }
+
     if (stats_config.end() == stats_data) return result;
     if (stats_data->second.type != GameServerStats_Messages::StatInfo::STAT_TYPE_INT) return result;
 
@@ -480,6 +487,13 @@ Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo
 
     const auto &stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
+    if (stats_config.end() == stats_data && settings->allow_unknown_stats) {
+        Stat_config cfg{};
+        cfg.type = GameServerStats_Messages::StatInfo::STAT_TYPE_FLOAT;
+        cfg.default_value_float = 0;
+        stats_data = settings->setStatDefiniton(stat_name, cfg);
+    }
+
     if (stats_config.end() == stats_data) return result;
     if (stats_data->second.type == GameServerStats_Messages::StatInfo::STAT_TYPE_INT) return result;
 
@@ -528,6 +542,13 @@ Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo
 
     const auto &stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
+    if (stats_config.end() == stats_data && settings->allow_unknown_stats) {
+        Stat_config cfg{};
+        cfg.type = GameServerStats_Messages::StatInfo::STAT_TYPE_AVGRATE;
+        cfg.default_value_float = 0;
+        stats_data = settings->setStatDefiniton(stat_name, cfg);
+    }
+
     if (stats_config.end() == stats_data) return result;
     if (stats_data->second.type == GameServerStats_Messages::StatInfo::STAT_TYPE_INT) return result;
 
@@ -822,6 +843,13 @@ bool Steam_User_Stats::GetStat( const char *pchName, int32 *pData )
 
     const auto &stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
+    if (stats_config.end() == stats_data && settings->allow_unknown_stats) {
+        Stat_config cfg{};
+        cfg.type = GameServerStats_Messages::StatInfo::STAT_TYPE_INT;
+        cfg.default_value_int = 0;
+        stats_data = settings->setStatDefiniton(stat_name, cfg);
+    }
+
     if (stats_config.end() == stats_data) return false;
     if (stats_data->second.type != GameServerStats_Messages::StatInfo::STAT_TYPE_INT) return false;
 
@@ -854,6 +882,13 @@ bool Steam_User_Stats::GetStat( const char *pchName, float *pData )
 
     const auto &stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
+    if (stats_config.end() == stats_data && settings->allow_unknown_stats) {
+        Stat_config cfg{};
+        cfg.type = GameServerStats_Messages::StatInfo::STAT_TYPE_FLOAT;
+        cfg.default_value_float = 0;
+        stats_data = settings->setStatDefiniton(stat_name, cfg);
+    }
+
     if (stats_config.end() == stats_data) return false;
     if (stats_data->second.type == GameServerStats_Messages::StatInfo::STAT_TYPE_INT) return false;
 

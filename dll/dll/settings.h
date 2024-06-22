@@ -229,6 +229,9 @@ public:
     // can use GC token for generation
     bool use_gc_token = false;
 
+    // allow stats not defined by the user?
+    bool allow_unknown_stats = false;
+
     // bypass to make SetAchievement() always return true, prevent some games from breaking
     bool achievement_bypass = false;
 
@@ -352,7 +355,7 @@ public:
 
     //stats
     const std::map<std::string, Stat_config>& getStats() const;
-    void setStatDefiniton(const std::string &name, const struct Stat_config &stat_config);
+    std::map<std::string, Stat_config>::const_iterator setStatDefiniton(const std::string &name, const struct Stat_config &stat_config);
 
     //images
     int add_image(const std::string &data, uint32 width, uint32 height);
