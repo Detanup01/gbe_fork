@@ -1391,8 +1391,23 @@ bool Steam_User_Stats::ResetAllStats( bool bAchievementsToo )
 
                 item["earned"] = false;
                 item["earned_time"] = static_cast<uint32>(0);
-                item["progress"] = static_cast<uint32>(0);
 
+                try {
+                    auto defined_ach_it = defined_achievements_find(name);
+                    if (defined_achievements.end() != defined_ach_it) {
+                        auto defined_progress_it = defined_ach_it->find("progress");
+                        if (defined_ach_it->end() != defined_progress_it) { // if the schema had "progress"
+                            uint32 val = 0;
+                            try {
+                                auto defined_min_val = defined_progress_it->value("min_val", std::string("0"));
+                                val = std::stoul(defined_min_val);
+                            } catch(...){}
+                            item["progress"] = val;
+                        }
+                    }
+                }catch(...){}
+                
+                // this won't actually trigger a notification, just updates the data
                 overlay->AddAchievementNotification(name, item, false);
             } catch(const std::exception& e) {
                 PRINT_DEBUG("ERROR: %s", e.what());
