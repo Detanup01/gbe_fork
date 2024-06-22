@@ -45,10 +45,10 @@ struct Steam_Leaderboard {
 };
 
 struct achievement_trigger {
-    std::string name{};
+    std::string name{}; // defined achievement name
     std::string value_operation{};
-    std::string min_value{};
-    std::string max_value{};
+    std::string min_value{}; // min progress
+    std::string max_value{}; // max progress
 
     bool should_unlock_ach(float stat) const;
     bool should_unlock_ach(int32 stat) const;

@@ -447,7 +447,7 @@ Steam_User_Stats::InternalSetResult<int32> Steam_User_Stats::set_stat_internal( 
     result.current_val = nData;
 
     auto cached_stat = stats_cache_int.find(stat_name);
-    if (cached_stat != stats_cache_int.end()) {
+    if (stats_cache_int.end() != cached_stat) {
         if (cached_stat->second == nData) {
             result.success = true;
             return result;
@@ -461,7 +461,26 @@ Steam_User_Stats::InternalSetResult<int32> Steam_User_Stats::set_stat_internal( 
                 set_achievement_internal(t.name.c_str());
             }
             if (t.should_indicate_progress(nData)) {
-                IndicateAchievementProgress(t.name.c_str(), nData, std::stoi(t.max_value));
+                bool indicate_progress = true;
+                // appid 1482380 needs that otherwise it will spam progress indications while driving
+                if (settings->save_only_higher_stat_achievement_progress) {
+                    try {
+                        auto user_ach_it =  user_achievements.find(t.name);
+                        if (user_achievements.end() != user_ach_it) {
+                            auto user_progress_it = user_ach_it->find("progress");
+                            if (user_ach_it->end() != user_progress_it) {
+                                int32 user_progress = *user_progress_it;
+                                if (nData <= user_progress) {
+                                    indicate_progress = false;
+                                }
+                            }
+                        }
+                    } catch(...){}
+                }
+
+                if (indicate_progress) {
+                    IndicateAchievementProgress(t.name.c_str(), nData, std::stoi(t.max_value));
+                }
             }
         }
     }
@@ -502,7 +521,7 @@ Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo
     result.current_val.second = fData;
 
     auto cached_stat = stats_cache_float.find(stat_name);
-    if (cached_stat != stats_cache_float.end()) {
+    if (stats_cache_float.end() != cached_stat) {
         if (cached_stat->second == fData) {
             result.success = true;
             return result;
@@ -516,7 +535,26 @@ Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo
                 set_achievement_internal(t.name.c_str());
             }
             if (t.should_indicate_progress(fData)) {
-                IndicateAchievementProgress(t.name.c_str(), fData, std::stof(t.max_value));
+                bool indicate_progress = true;
+                // appid 1482380 needs that otherwise it will spam progress indications while driving
+                if (settings->save_only_higher_stat_achievement_progress) {
+                    try {
+                        auto user_ach_it =  user_achievements.find(t.name);
+                        if (user_achievements.end() != user_ach_it) {
+                            auto user_progress_it = user_ach_it->find("progress");
+                            if (user_ach_it->end() != user_progress_it) {
+                                float user_progress = *user_progress_it;
+                                if (fData <= user_progress) {
+                                    indicate_progress = false;
+                                }
+                            }
+                        }
+                    } catch(...){}
+                }
+
+                if (indicate_progress) {
+                    IndicateAchievementProgress(t.name.c_str(), (uint32)fData, (uint32)std::stof(t.max_value));
+                }
             }
         }
     }
@@ -1353,10 +1391,10 @@ bool Steam_User_Stats::GetUserAchievementAndUnlockTime( CSteamID steamIDUser, co
 // Reset stats 
 bool Steam_User_Stats::ResetAllStats( bool bAchievementsToo )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("bAchievementsToo = %i", (int)bAchievementsToo);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    clear_stats_internal();
+    clear_stats_internal(); // this will save stats to disk if necessary
     if (!settings->disable_sharing_stats_with_gameserver) {
         for (const auto &stat : settings->getStats()) {
             std::string stat_name(common_helpers::ascii_to_lowercase(stat.first));
