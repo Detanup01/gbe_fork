@@ -2073,7 +2073,7 @@ void Steam_Overlay::AddAchievementNotification(const std::string &ach_name, nloh
 {
     if (settings->disable_overlay) return;
 
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("'%s' %i", ach_name.c_str(), (int)for_progress);
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     if (!Ready()) return;
 
