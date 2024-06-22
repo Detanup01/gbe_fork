@@ -361,8 +361,8 @@ void Steam_Overlay::load_achievements_data()
         
         float pnMinProgress = 0, pnMaxProgress = 0;
         if (steamUserStats->GetAchievementProgressLimits(ach.name.c_str(), &pnMinProgress, &pnMaxProgress)) {
-            ach.progress = pnMinProgress;
-            ach.max_progress = pnMaxProgress;
+            ach.progress = (uint32)pnMinProgress;
+            ach.max_progress = (uint32)pnMaxProgress;
         }
 
         achievements.emplace_back(ach);
@@ -669,7 +669,7 @@ void Steam_Overlay::show_test_achievement()
     // randomly add progress
     if (common_helpers::rand_number(1000) % 2) {
         for_progress = true;
-        float progress = common_helpers::rand_number(500) / 10.0f + 50; // [50.0, 100.0]
+        uint32 progress = (uint32)(common_helpers::rand_number(500) / 10 + 50); // [50, 100]
         ach.max_progress = 100;
         ach.progress = progress;
         ach.achieved = false;
@@ -1034,8 +1034,8 @@ void Steam_Overlay::add_ach_progressbar(const Overlay_Achievement &ach)
 {
     if (!ach.achieved && ach.max_progress > 0) {
         char buf[32]{};
-        sprintf(buf, "%.1f/%.1f", ach.progress, ach.max_progress);
-        ImGui::ProgressBar(ach.progress / ach.max_progress, { -1 , settings->overlay_appearance.font_size }, buf);
+        sprintf(buf, "%u/%u", ach.progress, ach.max_progress);
+        ImGui::ProgressBar((float)ach.progress / ach.max_progress, { -1 , settings->overlay_appearance.font_size }, buf);
     }
 }
 
@@ -2088,8 +2088,8 @@ void Steam_Overlay::AddAchievementNotification(const std::string &ach_name, nloh
 
                 a.achieved = ach.value("earned", false);
                 a.unlock_time = ach.value("earned_time", static_cast<uint32>(0));
-                a.progress = ach.value("progress", static_cast<float>(0));
-                a.max_progress = ach.value("max_progress", static_cast<float>(0));
+                a.progress = ach.value("progress", static_cast<uint32>(0));
+                a.max_progress = ach.value("max_progress", static_cast<uint32>(0));
             } catch(...) {}
 
             if (a.achieved && !for_progress) { // here we don't show the progress indications
