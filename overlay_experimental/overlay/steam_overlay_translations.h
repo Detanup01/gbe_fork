@@ -207,10 +207,10 @@ const char translationTestAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"Test achievement",
 
 	// 3 - Simplified Chinese
-  u8"Test achievement",
+  u8"测试成就",
 
 	// 4 - Traditional Chinese
-  u8"Test achievement",
+  u8"測試成就",
 
 	// 5 - Czech
   u8"Test achievement",
@@ -1179,10 +1179,10 @@ const char translationToggleUserInfo[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATIO
   u8"Toggle User Info",
 
 	// 3 - Simplified Chinese
-  u8"Toggle User Info",
+  u8"显示/隐藏用户信息",
 
 	// 4 - Traditional Chinese
-  u8"Toggle User Info",
+  u8"顯示/隱藏使用者資訊",
 
 	// 5 - Czech
   u8"Toggle User Info",
@@ -3103,10 +3103,10 @@ const char translationSteamOverlayURL[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"The game tried to get the steam overlay to open this url:",
 
 	// 3 - Simplified Chinese
-  u8"此游戏尝试使用蒸汽界面打开这个链接：",
+  u8"此游戏尝试使用 Steam 社区界面打开这个链接：",
 
 	// 4 - Traditional Chinese
-  u8"此遊戲嘗試使用 Steam 內嵌介面開啟這個連結：",
+  u8"此遊戲嘗試使用 Steam 社群內嵌介面開啟這個連結：",
 
 	// 5 - Czech
   u8"Hra se pokusila otevřít v rozhraní překrytí služby Steam tuto webovou adresu:",
