@@ -233,7 +233,7 @@ public:
     bool allow_unknown_stats = false;
 
     // when a stat that's tied to an achievement gets a new value, should the emu save that progress only if it's higher?
-    // the stat itself is always saved regardless of that flag, obly affects the achievement progress
+    // the stat itself is always saved regardless of that flag, only affects the achievement progress
     bool save_only_higher_stat_achievement_progress = true;
 
     // bypass to make SetAchievement() always return true, prevent some games from breaking
