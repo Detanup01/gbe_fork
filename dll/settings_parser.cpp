@@ -719,7 +719,7 @@ static void parse_app_paths(class Settings *settings_client, Settings *settings_
         auto val_ptr = ini.GetValue("app::paths", id.pItem);
         if (!val_ptr || !val_ptr[0]) continue;
 
-        AppId_t appid = std::stol(id.pItem);
+        AppId_t appid = (AppId_t)std::stoul(id.pItem);
         std::string rel_path(val_ptr);
         std::string path = canonical_path(program_path + rel_path);
 

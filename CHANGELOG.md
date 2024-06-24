@@ -1,8 +1,21 @@
+* **[qingchunnh]** update Chinese translations for the overlay
+* add a new option `allow_unknown_stats` in `configs.main.ini` to allow games to change unknown stats.  
+  the emu by default rejects any changes to a stat not mentioned inside `steam_settings/stats.txt`, this option allows these changes
+* add a new option `save_only_higher_stat_achievement_progress` in `configs.main.ini` and enable it by default.  
+  this option will prevent the emu from updating the progress of any achievement due to a stat change/update, if the new value is less than or equal the current one.  
+  this solves an overlay spam problem and avoids *some* useless disk write operations.  
+  
+  unfortunately some games abuse stats and update them a lot during gameplay with useless and disposable values, this will cause a lot of disk write operations and cannot be avoided unless you remove the definition of that stat from `steam_settings/stats.txt`, or avoiding that definition file altogether and forget about stats
+* in `Steam_User_Stats::ResetAllStats()` reset the achievement `progress` only if it was defined in the original schema in `steam_settings/achievements.json`
+* save achievement progress/max progress as `uint32` instead of `float`
+
+---
+
 ## 2024/6/21
 
 * fix the conditions for achievement progress indication when a game updates a stat which is tied to an achievement  
   now the user achievements will be updated and saved, and an overlay notification will be triggered.  
-  works with `Achievement Watcher by xan105` and the built-in overlay.  
+  works with **[Achievement Watcher by xan105](https://github.com/xan105/Achievement-Watcher)** and the built-in overlay.  
   you need `stats.txt` and `achievements.json` inside your local `steam_settings` folder for this feature to work properly
 * fix an old problem where games would crash on exit if the overlay was enabled, more prominent in `DirectX 12` games, also set the overlay hook procedure to an empty function before cleaning up the overlay
 * remove an invalid condition when resetting stats, only write to disk and share values with any gameserver if the stat value isn't already the default

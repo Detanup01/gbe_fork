@@ -14,7 +14,7 @@ https://gitlab.com/Mr_Goldberg/goldberg_emulator
    then move it inside the folder `steam_settings`
 4. Move the entire folder `steam_settings` beside the emu .dll/.so.
 5. Copy the the example files `steam_settings.EXAMPLE\configs.xxx.EXAMPLE.ini` and paste them inside your own `steam_settings` folder, then the postfix `.EXAMPLE`.  
-  Make sure to only keep the options you need, don't sepecify everything
+6. Make sure to keep the **only** options you need, do **NOT** sepecify everything inside these .ini files
 
 
 Mr.Goldberg's note:
@@ -59,7 +59,7 @@ Any configurations inside your `steam_settings` folder will always override the 
 
 ## Portable saves:
 
-If you decided to use local saves by specifying the parameter `local_save_path` inside your local `steam_settings/configs.user.ini`, the emu will completely ignore the global settings folder, allowing a full portable behavior
+If you want to use local/portable saves, specify the parameter `local_save_path` inside your local `steam_settings/configs.user.ini`, the emu will completely ignore the global settings folder, allowing a full portable behavior
 
 ---
 
@@ -188,13 +188,11 @@ An example can be found in `steam_settings.EXAMPLE`
 ---
 
 ## Stats:
-By default this emulators assumes all stats do not exist unless they have been written once by the game.  
-This works for the majority of games but some games might read a stat for the first time
-and expect a default value to be read when doing so.  
+By default this emulator assumes all stats do not exist unless the option `allow_unknown_stats` in `configs.main.ini` is set to 1.  
 
-To set the type for each stat along with the default value, put a `stats.txt` file in the `steam_settings` folder.  
+To properly define the stats of a game, put a `stats.txt` file in the `steam_settings` folder.  
 The format is:  
-`STAT_NAME=type=default value`  
+`stat_name=type=default value`  
 
 The type can be
 * int
