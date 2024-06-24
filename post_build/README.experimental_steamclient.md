@@ -75,6 +75,7 @@ If this file is created then the loader will only inject the .dll files mentione
 This folder contains an experimental dll which, when injected, will attempt to patch the Stub drm in memory, mainly for newer variants but it also works on some of the older ones.  
 
 This isn't a complete solution, just a different method.  
+This dll is meant to be injected during **startup** only, it must **not** be placed inside `steam_settings/load_dlls`, otherwise it would cause a huge FPS drop.  
 
 ---
 
