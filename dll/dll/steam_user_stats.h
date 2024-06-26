@@ -110,7 +110,7 @@ private:
     void save_achievements();
 
     nlohmann::detail::iter_impl<nlohmann::json> defined_achievements_find(const std::string &key);
-    std::string get_value_for_language(nlohmann::json &json, std::string key, std::string language);
+    std::string get_value_for_language(const nlohmann::json &json, std::string_view key, std::string_view language);
 
     std::vector<Steam_Leaderboard_Entry> load_leaderboard_entries(const std::string &name);
     void save_my_leaderboard_entry(const Steam_Leaderboard &leaderboard);

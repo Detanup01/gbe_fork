@@ -138,36 +138,41 @@ nlohmann::detail::iter_impl<nlohmann::json> Steam_User_Stats::defined_achievemen
     );
 }
 
-std::string Steam_User_Stats::get_value_for_language(nlohmann::json &json, std::string key, std::string language)
+std::string Steam_User_Stats::get_value_for_language(const nlohmann::json &json, std::string_view key, std::string_view language)
 {
-    auto x = json.find(key);
-    if (x == json.end()) return "";
-    if (x.value().is_string()) {
+    auto x = json.find(key); // find "displayName", or "description", etc ...
+    if (json.end() == x) return "";
+
+    if (x.value().is_string()) { // ex: "displayName": "some description"
         return x.value().get<std::string>();
     } else if (x.value().is_object()) {
-        auto l = x.value().find(language);
-        if (l != x.value().end()) {
-            return l.value().get<std::string>();
+        const auto &obj_kv_pairs = x.value().items();
+
+        // try to find target language
+        auto obj_itr = std::find_if(obj_kv_pairs.begin(), obj_kv_pairs.end(), [&]( decltype(*obj_kv_pairs.begin()) item ) {
+            return common_helpers::str_cmp_insensitive(item.key(), language);
+        });
+        if (obj_itr != obj_kv_pairs.end()) {
+            return obj_itr.value().get<std::string>();
         }
 
-        l = x.value().find("english");
-        if (l != x.value().end()) {
-            return l.value().get<std::string>();
+        // try to find english language
+        obj_itr = std::find_if(obj_kv_pairs.begin(), obj_kv_pairs.end(), [&]( decltype(*obj_kv_pairs.begin()) item ) {
+            return common_helpers::str_cmp_insensitive(item.key(), "english");
+        });
+        if (obj_itr != obj_kv_pairs.end()) {
+            return obj_itr.value().get<std::string>();
         }
 
-        l = x.value().begin();
-        if (l != x.value().end()) {
-            if (l.key() == "token") {
-                std::string token_value = l.value().get<std::string>();
-                l++;
-                if (l != x.value().end()) {
-                    return l.value().get<std::string>();
-                }
-
-                return token_value;
+        // try to find the first available language (not "token"),
+        // if not languages exist, try to find "token"
+        for (bool search_for_token : { false, true }) {
+            obj_itr = std::find_if(obj_kv_pairs.begin(), obj_kv_pairs.end(), [&]( decltype(*obj_kv_pairs.begin()) item ) {
+                return common_helpers::str_cmp_insensitive(item.key(), "token") == search_for_token;
+            });
+            if (obj_itr != obj_kv_pairs.end()) {
+                return obj_itr.value().get<std::string>();
             }
-
-            return l.value().get<std::string>();
         }
     }
 
