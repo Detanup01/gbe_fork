@@ -826,7 +826,7 @@ def main():
                 for lang in langs:
                     support: str = langs[lang].get("supported", "").lower()
                     if support == "true" or support == "1":
-                        languages.append(lang)
+                        languages.append(f'{lang}'.lower())
 
         if languages:
             with open(os.path.join(emu_settings_dir, "supported_languages.txt"), 'wt', encoding='utf-8') as f:

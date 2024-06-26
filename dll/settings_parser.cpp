@@ -643,11 +643,11 @@ static std::set<std::string> parse_supported_languages(class Local_Storage *loca
     if (input.is_open()) {
         common_helpers::consume_bom(input);
         for( std::string line; getline( input, line ); ) {
-            if (!line.empty() && line[line.length()-1] == '\n') {
+            if (!line.empty() && line.back() == '\n') {
                 line.pop_back();
             }
 
-            if (!line.empty() && line[line.length()-1] == '\r') {
+            if (!line.empty() && line.back() == '\r') {
                 line.pop_back();
             }
 
