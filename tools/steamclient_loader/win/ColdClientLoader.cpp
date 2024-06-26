@@ -44,7 +44,7 @@ std::wstring get_ini_value(LPCWSTR section, LPCWSTR key, LPCWSTR default_val = N
     std::vector<wchar_t> buff(INT16_MAX);
     DWORD read_chars = GetPrivateProfileStringW(section, key, default_val, &buff[0], (DWORD)buff.size(), IniFile.c_str());
     if (!read_chars) {
-        std::wstring();
+        return {};
     }
 
     // "If neither lpAppName nor lpKeyName is NULL and the supplied destination buffer is too small to hold the requested string, the return value is equal to nSize minus one"
