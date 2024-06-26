@@ -80,7 +80,7 @@ std::vector<std::string> Local_Storage::get_folders_path(std::string path)
     return std::vector<std::string>();
 }
 
-void Local_Storage::set_saves_folder_name(const std::string_view &str)
+void Local_Storage::set_saves_folder_name(std::string_view str)
 {
 
 }
@@ -631,7 +631,7 @@ std::vector<std::string> Local_Storage::get_folders_path(std::string path)
     return output;
 }
 
-void Local_Storage::set_saves_folder_name(const std::string_view &str)
+void Local_Storage::set_saves_folder_name(std::string_view str)
 {
     Local_Storage::saves_folder_name = str;
 }

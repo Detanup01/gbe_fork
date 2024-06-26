@@ -464,7 +464,7 @@ const std::wstring& pe_helpers::get_current_exe_name_w()
     return modulename_w;
 }
 
-bool pe_helpers::ends_with_i(PUNICODE_STRING target, const std::wstring_view &query)
+bool pe_helpers::ends_with_i(PUNICODE_STRING target, std::wstring_view query)
 {
     return common_helpers::ends_with_i(
         std::wstring_view( target->Buffer, target->Length / sizeof(target->Buffer[0]) ),

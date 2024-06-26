@@ -110,19 +110,19 @@ static bool create_dir_impl(std::filesystem::path &dirpath)
     return std::filesystem::create_directories(dirpath);
 }
 
-bool common_helpers::create_dir(const std::string_view &filepath)
+bool common_helpers::create_dir(std::string_view filepath)
 {
     std::filesystem::path parent(std::filesystem::u8path(filepath).parent_path());
     return create_dir_impl(parent);
 }
 
-bool common_helpers::create_dir(const std::wstring_view &filepath)
+bool common_helpers::create_dir(std::wstring_view filepath)
 {
     std::filesystem::path parent(std::filesystem::path(filepath).parent_path());
     return create_dir_impl(parent);
 }
 
-void common_helpers::write(std::ofstream &file, const std::string_view &data)
+void common_helpers::write(std::ofstream &file, std::string_view data)
 {
     if (!file.is_open()) {
         return;
@@ -131,7 +131,7 @@ void common_helpers::write(std::ofstream &file, const std::string_view &data)
     file << data << std::endl;
 }
 
-std::wstring common_helpers::str_to_w(const std::string_view &str)
+std::wstring common_helpers::str_to_w(std::string_view str)
 {
     if (str.empty()) return std::wstring();
     auto cvt_state = std::mbstate_t();
@@ -142,7 +142,7 @@ std::wstring common_helpers::str_to_w(const std::string_view &str)
     return res.substr(0, conversion_bytes);
 }
 
-std::string common_helpers::wstr_to_a(const std::wstring_view &wstr)
+std::string common_helpers::wstr_to_a(std::wstring_view wstr)
 {
     if (wstr.empty()) return std::string();
     auto cvt_state = std::mbstate_t();
@@ -153,7 +153,7 @@ std::string common_helpers::wstr_to_a(const std::wstring_view &wstr)
     return res.substr(0, conversion_bytes);
 }
 
-bool common_helpers::starts_with_i(const std::string_view &target, const std::string_view &query)
+bool common_helpers::starts_with_i(std::string_view target, std::string_view query)
 {
     if (target.size() < query.size()) {
         return false;
@@ -162,7 +162,7 @@ bool common_helpers::starts_with_i(const std::string_view &target, const std::st
     return str_cmp_insensitive(target.substr(0, query.size()), query);
 }
 
-bool common_helpers::starts_with_i(const std::wstring_view &target, const std::wstring_view &query)
+bool common_helpers::starts_with_i(std::wstring_view target, std::wstring_view query)
 {
     if (target.size() < query.size()) {
         return false;
@@ -171,7 +171,7 @@ bool common_helpers::starts_with_i(const std::wstring_view &target, const std::w
     return str_cmp_insensitive(target.substr(0, query.size()), query);
 }
 
-bool common_helpers::ends_with_i(const std::string_view &target, const std::string_view &query)
+bool common_helpers::ends_with_i(std::string_view target, std::string_view query)
 {
     if (target.size() < query.size()) {
         return false;
@@ -181,7 +181,7 @@ bool common_helpers::ends_with_i(const std::string_view &target, const std::stri
     return str_cmp_insensitive(target.substr(target_offset), query);
 }
 
-bool common_helpers::ends_with_i(const std::wstring_view &target, const std::wstring_view &query)
+bool common_helpers::ends_with_i(std::wstring_view target, std::wstring_view query)
 {
     if (target.size() < query.size()) {
         return false;
@@ -191,7 +191,7 @@ bool common_helpers::ends_with_i(const std::wstring_view &target, const std::wst
     return str_cmp_insensitive(target.substr(target_offset), query);
 }
 
-std::string common_helpers::string_strip(const std::string_view &str)
+std::string common_helpers::string_strip(std::string_view str)
 {
     static constexpr const char whitespaces[] = " \t\r\n";
     
@@ -227,7 +227,7 @@ std::string common_helpers::uint8_vector_to_hex_string(const std::vector<uint8_t
     return result;
 }
 
-bool common_helpers::str_cmp_insensitive(const std::string_view &str1, const std::string_view &str2)
+bool common_helpers::str_cmp_insensitive(std::string_view str1, std::string_view str2)
 {
     if (str1.size() != str2.size()) return false;
 
@@ -236,7 +236,7 @@ bool common_helpers::str_cmp_insensitive(const std::string_view &str1, const std
     });
 }
 
-bool common_helpers::str_cmp_insensitive(const std::wstring_view &str1, const std::wstring_view &str2)
+bool common_helpers::str_cmp_insensitive(std::wstring_view str1, std::wstring_view str2)
 {
     if (str1.size() != str2.size()) return false;
 
@@ -275,7 +275,7 @@ void common_helpers::consume_bom(std::ifstream &input)
     }
 }
 
-std::string common_helpers::to_lower(const std::string_view &str)
+std::string common_helpers::to_lower(std::string_view str)
 {
     if (str.empty()) return {};
     
@@ -284,7 +284,7 @@ std::string common_helpers::to_lower(const std::string_view &str)
     return _str;
 }
 
-std::wstring common_helpers::to_lower(const std::wstring_view &wstr)
+std::wstring common_helpers::to_lower(std::wstring_view wstr)
 {
     if (wstr.empty()) return {};
     
@@ -293,7 +293,7 @@ std::wstring common_helpers::to_lower(const std::wstring_view &wstr)
     return _wstr;
 }
 
-std::string common_helpers::to_upper(const std::string_view &str)
+std::string common_helpers::to_upper(std::string_view str)
 {
     if (str.empty()) return {};
 
@@ -302,7 +302,7 @@ std::string common_helpers::to_upper(const std::string_view &str)
     return _str;
 }
 
-std::wstring common_helpers::to_upper(const std::wstring_view &wstr)
+std::wstring common_helpers::to_upper(std::wstring_view wstr)
 {
     if (wstr.empty()) return {};
     
@@ -320,7 +320,7 @@ static std::filesystem::path to_absolute_impl(const std::filesystem::path &path,
     return std::filesystem::absolute(base / path);
 }
 
-std::string common_helpers::to_absolute(const std::string_view &path, const std::string_view &base)
+std::string common_helpers::to_absolute(std::string_view path, std::string_view base)
 {
     if (path.empty()) return {};
     auto path_abs = to_absolute_impl(
@@ -330,7 +330,7 @@ std::string common_helpers::to_absolute(const std::string_view &path, const std:
     return path_abs.u8string();
 }
 
-std::wstring common_helpers::to_absolute(const std::wstring_view &path, const std::wstring_view &base)
+std::wstring common_helpers::to_absolute(std::wstring_view path, std::wstring_view base)
 {
     if (path.empty()) return {};
     auto path_abs = to_absolute_impl(

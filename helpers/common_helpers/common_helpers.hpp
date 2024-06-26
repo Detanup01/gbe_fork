@@ -50,26 +50,26 @@ public:
     void kill();
 };
 
-bool create_dir(const std::string_view &dir);
-bool create_dir(const std::wstring_view &dir);
+bool create_dir(std::string_view dir);
+bool create_dir(std::wstring_view dir);
 
-void write(std::ofstream &file, const std::string_view &data);
+void write(std::ofstream &file, std::string_view data);
 
-std::wstring str_to_w(const std::string_view &str);
-std::string wstr_to_a(const std::wstring_view &wstr);
+std::wstring str_to_w(std::string_view str);
+std::string wstr_to_a(std::wstring_view wstr);
 
-bool starts_with_i(const std::string_view &target, const std::string_view &query);
-bool starts_with_i(const std::wstring_view &target, const std::wstring_view &query);
+bool starts_with_i(std::string_view target, std::string_view query);
+bool starts_with_i(std::wstring_view target, std::wstring_view query);
 
-bool ends_with_i(const std::string_view &target, const std::string_view &query);
-bool ends_with_i(const std::wstring_view &target, const std::wstring_view &query);
+bool ends_with_i(std::string_view target, std::string_view query);
+bool ends_with_i(std::wstring_view target, std::wstring_view query);
 
-std::string string_strip(const std::string_view &str);
+std::string string_strip(std::string_view str);
 
 std::string uint8_vector_to_hex_string(const std::vector<uint8_t> &v);
 
-bool str_cmp_insensitive(const std::string_view &str1, const std::string_view &str2);
-bool str_cmp_insensitive(const std::wstring_view &str1, const std::wstring_view &str2);
+bool str_cmp_insensitive(std::string_view str1, std::string_view str2);
+bool str_cmp_insensitive(std::wstring_view str1, std::wstring_view str2);
 
 std::string ascii_to_lowercase(std::string data);
 
@@ -77,14 +77,14 @@ void thisThreadYieldFor(std::chrono::microseconds u);
 
 void consume_bom(std::ifstream &input);
 
-std::string to_lower(const std::string_view &str);
-std::wstring to_lower(const std::wstring_view &wstr);
+std::string to_lower(std::string_view str);
+std::wstring to_lower(std::wstring_view wstr);
 
-std::string to_upper(const std::string_view &str);
-std::wstring to_upper(const std::wstring_view &wstr);
+std::string to_upper(std::string_view str);
+std::wstring to_upper(std::wstring_view wstr);
 
-std::string to_absolute(const std::string_view &path, const std::string_view &base = std::string_view());
-std::wstring to_absolute(const std::wstring_view &path, const std::wstring_view &base = std::wstring_view());
+std::string to_absolute(std::string_view path, std::string_view base = std::string_view());
+std::wstring to_absolute(std::wstring_view path, std::wstring_view base = std::wstring_view());
 
 bool file_exist(const std::filesystem::path &filepath);
 bool file_exist(const std::string &filepath);

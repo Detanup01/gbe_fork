@@ -63,7 +63,7 @@ public:
     static std::vector<std::string> get_filenames_path(std::string path);
     static std::vector<std::string> get_folders_path(std::string path);
 
-    static void set_saves_folder_name(const std::string_view &str);
+    static void set_saves_folder_name(std::string_view str);
     static const std::string& get_saves_folder_name();
 
 private:
