@@ -138,7 +138,7 @@ Steam_Overlay::Steam_Overlay(Settings* settings, Local_Storage *local_storage, S
 
     int i = 0;
     for (auto &lang : valid_languages) {
-        if (strcmp(lang, language) == 0) {
+        if (common_helpers::str_cmp_insensitive(lang, language)) {
             current_language = i;
             break;
         }
