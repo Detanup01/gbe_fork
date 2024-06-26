@@ -403,6 +403,30 @@ bool common_helpers::dir_exist(const std::wstring &dirpath)
     return dir_exist(std::filesystem::path(dirpath));
 }
 
+bool common_helpers::remove_file(const std::filesystem::path &filepath)
+{
+    if (!std::filesystem::exists(filepath)) {
+        return true;
+    }
+
+    if (std::filesystem::is_directory(filepath)) {
+        return false;
+    }
+
+    return std::filesystem::remove(filepath);
+}
+
+bool common_helpers::remove_file(const std::string &filepath)
+{
+    return remove_file(std::filesystem::u8path(filepath));
+}
+
+bool common_helpers::remove_file(const std::wstring &filepath)
+{
+    return remove_file(std::filesystem::path(filepath));
+}
+
+
 size_t common_helpers::rand_number(size_t max)
 {
     // https://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution

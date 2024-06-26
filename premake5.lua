@@ -1466,7 +1466,6 @@ project "test_crash_printer"
     filter {} -- reset the filter and remove all active keywords
     files { -- added to all filters, later defines will be appended
         'crash_printer/' .. os_iden .. '.cpp', 'crash_printer/crash_printer/' .. os_iden .. '.hpp',
-        'crash_printer/tests/test_helper.hpp',
         -- helpers
         'helpers/common_helpers.cpp', 'helpers/common_helpers/**',
         -- test files
@@ -1597,7 +1596,6 @@ project "test_crash_printer_sa_handler"
     filter {} -- reset the filter and remove all active keywords
     files { -- added to all filters, later defines will be appended
         'crash_printer/' .. os_iden .. '.cpp', 'crash_printer/crash_printer/' .. os_iden .. '.hpp',
-        'crash_printer/tests/test_helper.hpp',
         -- helpers
         'helpers/common_helpers.cpp', 'helpers/common_helpers/**',
         -- test files
@@ -1643,7 +1641,6 @@ project "test_crash_printer_sa_sigaction"
     filter {} -- reset the filter and remove all active keywords
     files { -- added to all filters, later defines will be appended
         'crash_printer/' .. os_iden .. '.cpp', 'crash_printer/crash_printer/' .. os_iden .. '.hpp',
-        'crash_printer/tests/test_helper.hpp',
         -- helpers
         'helpers/common_helpers.cpp', 'helpers/common_helpers/**',
         -- test files

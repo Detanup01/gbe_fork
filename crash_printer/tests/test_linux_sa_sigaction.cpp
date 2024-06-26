@@ -1,7 +1,6 @@
 
 #include "crash_printer/linux.hpp"
-#include "./test_helper.hpp"
-
+#include "common_helpers/common_helpers.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -42,7 +41,7 @@ int main()
     sigemptyset(&sa_SIGSEGV_prev.sa_mask); // all signals unblocked
     sigaction(SIGSEGV, &sa_SIGSEGV_prev, nullptr);
 
-    if (!remove_file(logs_filepath)) {
+    if (!common_helpers::remove_file(logs_filepath)) {
         std::cerr << "failed to remove log" << std::endl;
         return 1;
     }
