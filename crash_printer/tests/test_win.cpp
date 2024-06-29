@@ -13,7 +13,7 @@ std::string logs_filepath = "./crash_test/zxc.txt";
 
 static LONG WINAPI exception_handler(LPEXCEPTION_POINTERS ex_pointers)
 {
-    std::ifstream file(logs_filepath);
+    std::ifstream file(std::filesystem::u8path(logs_filepath));
     if (file.is_open()) {
         std::string line{};
         std::getline(file, line);

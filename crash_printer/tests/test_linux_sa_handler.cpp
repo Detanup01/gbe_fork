@@ -15,7 +15,7 @@ std::string logs_filepath = "./crash_test/asd.txt";
 // sa_sigaction handler for illegal instruction (SIGILL)
 void exception_handler_SIGILL(int signal)
 {
-    std::ifstream file(logs_filepath);
+    std::ifstream file(std::filesystem::u8path(logs_filepath));
     if (file.is_open()) {
         std::string line{};
         std::getline(file, line);

@@ -3,6 +3,7 @@
 #include <fstream>
 #include <streambuf>
 #include <iostream>
+#include <filesystem>
 
 // these are defined in dll.cpp at the top like this:
 // static char old_xxx[128] = ...
@@ -67,7 +68,7 @@ int main (int argc, char *argv[])
         return 1;
     }
 
-    std::ifstream steam_api_file(argv[1], std::ios::binary);
+    std::ifstream steam_api_file(std::filesystem::u8path(argv[1]), std::ios::binary);
     if (!steam_api_file.is_open()) {
         std::cerr << "Error opening file" << std::endl;
         return 1;
@@ -84,7 +85,7 @@ int main (int argc, char *argv[])
     }
 
     unsigned int total_matches = 0;
-    std::ofstream out_file("steam_interfaces.txt");
+    std::ofstream out_file(std::filesystem::u8path("steam_interfaces.txt"));
     if (!out_file.is_open()) {
         std::cerr << "Error opening output file" << std::endl;
         return 1;

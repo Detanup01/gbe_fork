@@ -1,6 +1,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <filesystem>
 
 #include "pe_helpers/pe_helpers.hpp"
 
@@ -57,7 +58,7 @@ int main(int argc, char* *argv)
 
     for (size_t i = 1; i < (size_t)argc; ++i) {
         auto arg = argv[i];
-        std::fstream file(arg, std::ios::in | std::ios::out | std::ios::binary);
+        std::fstream file(std::filesystem::u8path(arg), std::ios::in | std::ios::out | std::ios::binary);
         if (!file.is_open()) {
             std::cerr << "Failed to open file: '" << arg << "'" << std::endl;
             return 1;

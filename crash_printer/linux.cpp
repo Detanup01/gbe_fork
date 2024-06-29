@@ -50,7 +50,7 @@ static void exception_handler(int signal, siginfo_t *info, void *context, struct
         return;
     }
     
-    std::ofstream file(logs_filepath, std::ios::app);
+    std::ofstream file(std::filesystem::u8path(logs_filepath), std::ios::app);
 
     std::string time(common_helpers::get_utc_time());
     common_helpers::write(file, "[" + time + "]");

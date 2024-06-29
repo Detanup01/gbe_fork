@@ -109,19 +109,19 @@ top:
 
     auto readLobbyFile = [&lobbyFile]() {
         std::string data;
-        std::ifstream ifs(lobbyFile);
+        std::ifstream ifs(std::filesystem::u8path(lobbyFile));
         if (ifs.is_open())
             std::getline(ifs, data);
         return data;
     };
 
     auto writeLobbyFile = [&lobbyFile](const std::string& data) {
-        std::ofstream ofs(lobbyFile);
+        std::ofstream ofs(std::filesystem::u8path(lobbyFile));
         ofs << data << std::endl;
     };
 
     auto fileExists = [](const std::string& filename) {
-        std::ifstream ifs(filename);
+        std::ifstream ifs(std::filesystem::u8path(filename));
         return ifs.is_open();
     };
     
