@@ -237,6 +237,8 @@ local common_files = {
     'crash_printer/' .. os_iden .. '.cpp', 'crash_printer/crash_printer/' .. os_iden .. '.hpp',
     -- helpers/common_helpers
     "helpers/common_helpers.cpp", "helpers/common_helpers/**",
+    -- helpers/dbg_log
+    "helpers/dbg_log.cpp", "helpers/dbg_log/**",
 }
 
 local overlay_files = {
@@ -561,6 +563,10 @@ filter {} -- reset the filter and remove all active keywords
 
 -- defines
 ---------
+filter {} -- reset the filter and remove all active keywords
+defines { -- added to all filters, later defines will be appended
+    common_emu_defines,
+}
 -- release mode defines
 filter { "configurations:*release" }
     defines {
@@ -639,6 +645,15 @@ filter { 'options:incdeps', "platforms:x64", }
 filter {} -- reset the filter and remove all active keywords
 
 
+-- include dirs
+---------
+-- common include dir
+filter {} -- reset the filter and remove all active keywords
+includedirs {
+    common_include,
+}
+
+
 -- disable warnings for external libraries/deps
 filter { 'files:proto_gen/** or libs/** or build/deps/**' }
     warnings 'Off'
@@ -689,21 +704,6 @@ project "api_regular"
     filter { "system:not windows", }
         targetname "libsteam_api"
 
-
-    -- defines
-    ---------
-    filter {} -- reset the filter and remove all active keywords
-    defines { -- added to all filters, later defines will be appended
-        common_emu_defines,
-    }
-
-    -- include dir
-    ---------
-    -- common include dir
-    filter {} -- reset the filter and remove all active keywords
-    includedirs {
-        common_include,
-    }
 
     -- x32 include dir
     filter { "platforms:x32", }
@@ -796,7 +796,6 @@ project "api_experimental"
     ---------
     filter {} -- reset the filter and remove all active keywords
     defines { -- added to all filters, later defines will be appended
-        common_emu_defines,
         "EMU_OVERLAY", "ImTextureID=ImU64",
     }
     -- Windows defines
@@ -808,11 +807,6 @@ project "api_experimental"
 
     -- include dir
     ---------
-    -- common include dir
-    filter {} -- reset the filter and remove all active keywords
-    includedirs {
-        common_include,
-    }
     -- x32 include dir
     filter { "platforms:x32", }
         includedirs {
@@ -936,7 +930,6 @@ project "steamclient_experimental"
     ---------
     filter {} -- reset the filter and remove all active keywords
     defines { -- added to all filters, later defines will be appended
-        common_emu_defines,
         "STEAMCLIENT_DLL", "EMU_OVERLAY", "ImTextureID=ImU64",
     }
     -- Windows defines
@@ -948,12 +941,6 @@ project "steamclient_experimental"
 
     -- include dir
     ---------
-    -- common include dir
-    filter {} -- reset the filter and remove all active keywords
-    includedirs {
-        common_include,
-    }
-
     -- x32 include dir
     filter { "platforms:x32", }
         includedirs {
@@ -1063,7 +1050,6 @@ project "tool_lobby_connect"
     ---------
     filter {} -- reset the filter and remove all active keywords
     defines { -- added to all filters, later defines will be appended
-        common_emu_defines,
         "NO_DISK_WRITES", "LOBBY_CONNECT",
     }
     removedefines {
@@ -1074,10 +1060,6 @@ project "tool_lobby_connect"
     -- include dir
     ---------
     -- common include dir
-    filter {} -- reset the filter and remove all active keywords
-    includedirs {
-        common_include,
-    }
     -- x32 include dir
     filter { "platforms:x32", }
         includedirs {
@@ -1169,18 +1151,12 @@ project "lib_steamnetworkingsockets"
     targetname "steamnetworkingsockets"
 
 
-    -- include dir
-    ---------
-    -- common include dir
-    includedirs {
-        common_include,
-    }
-
-
     -- common source & header files
     ---------
     files {
         "networking_sockets_lib/**",
+        "helpers/dbg_log.cpp", "helpers/dbg_log/**",
+        'helpers/common_helpers.cpp', 'helpers/common_helpers/**',
     }
 
 
@@ -1213,11 +1189,6 @@ project "lib_game_overlay_renderer"
     
     -- include dir
     ---------
-    -- common include dir
-    filter {} -- reset the filter and remove all active keywords
-    includedirs {
-        common_include,
-    }
     -- x32 include dir
     filter { "platforms:x32", }
         includedirs {
@@ -1301,12 +1272,6 @@ project "steamclient_experimental_extra"
 
     -- include dir
     ---------
-    -- common include dir
-    filter {} -- reset the filter and remove all active keywords
-    includedirs {
-        common_include,
-        'tools/steamclient_loader/win/extra_protection',
-    }
     -- x32 include dir
     filter { "platforms:x32", }
         includedirs {
@@ -1364,25 +1329,6 @@ project "steamclient_experimental_loader"
         }
 
 
-    -- include dir
-    ---------
-    -- common include dir
-    filter {} -- reset the filter and remove all active keywords
-    includedirs {
-        common_include,
-    }
-    -- x32 include dir
-    filter { "platforms:x32", }
-        includedirs {
-            x32_deps_include,
-        }
-    -- x64 include dir
-    filter { "platforms:x64", }
-        includedirs {
-            x64_deps_include,
-        }
-
-
     -- common source & header files
     ---------
     filter {} -- reset the filter and remove all active keywords
@@ -1391,6 +1337,7 @@ project "steamclient_experimental_loader"
         "helpers/pe_helpers.cpp", "helpers/pe_helpers/**",
         "helpers/common_helpers.cpp", "helpers/common_helpers/**",
         "helpers/dbg_log.cpp", "helpers/dbg_log/**",
+        "libs/simpleini/**",
     }
     -- x32 common source files
     filter { "platforms:x32", "options:winrsrc", }
@@ -1422,15 +1369,6 @@ project "tool_file_dos_stub_changer"
     targetname "file_dos_stub_%{cfg.platform}"
 
 
-    -- include dir
-    ---------
-    -- common include dir
-    filter {} -- reset the filter and remove all active keywords
-    includedirs {
-        common_include,
-    }
-
-
     -- common source & header files
     ---------
     filter {} -- reset the filter and remove all active keywords
@@ -1449,16 +1387,6 @@ project "test_crash_printer"
     location "%{wks.location}/%{prj.name}"
     targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/tests/crash_printer")
     targetname "test_crash_printer_%{cfg.platform}"
-
-
-    -- include dir
-    ---------
-    -- common include dir
-    filter {} -- reset the filter and remove all active keywords
-    includedirs {
-        'crash_printer',
-        'helpers',
-    }
 
 
     -- common source & header files
@@ -1515,18 +1443,12 @@ project "steamclient_regular"
     ---------
     filter {} -- reset the filter and remove all active keywords
     defines { -- added to all filters, later defines will be appended
-        common_emu_defines,
         "STEAMCLIENT_DLL",
     }
 
 
     -- include dir
     ---------
-    -- common include dir
-    filter {} -- reset the filter and remove all active keywords
-    includedirs {
-        common_include,
-    }
     -- x32 include dir
     filter { "platforms:x32", }
         includedirs {
@@ -1581,16 +1503,6 @@ project "test_crash_printer_sa_handler"
     targetname "test_crash_printer_sa_handler_%{cfg.platform}"
 
 
-    -- include dir
-    ---------
-    -- common include dir
-    filter {} -- reset the filter and remove all active keywords
-    includedirs {
-        'crash_printer',
-        'helpers',
-    }
-
-
     -- common source & header files
     ---------
     filter {} -- reset the filter and remove all active keywords
@@ -1624,16 +1536,6 @@ project "test_crash_printer_sa_sigaction"
     location "%{wks.location}/%{prj.name}"
     targetdir("build/" .. os_iden .. "/%{_ACTION}/%{cfg.buildcfg}/tests/crash_printer")
     targetname "test_crash_printer_sa_sigaction_%{cfg.platform}"
-
-
-    -- include dir
-    ---------
-    -- common include dir
-    filter {} -- reset the filter and remove all active keywords
-    includedirs {
-        'crash_printer',
-        'helpers',
-    }
 
 
     -- common source & header files
