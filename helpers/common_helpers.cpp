@@ -1,9 +1,11 @@
 #include "common_helpers/common_helpers.hpp"
+#include "utfcpp/utf8.h"
 #include <fstream>
 #include <cwchar>
 #include <algorithm>
 #include <cctype>
 #include <random>
+#include <iterator>
 
 // for gmtime_s()
 #define __STDC_WANT_LIB_EXT1__ 1
@@ -462,4 +464,38 @@ std::string common_helpers::get_utc_time()
         time_str.resize(chars);
     }
     return time_str;
+}
+
+
+std::wstring common_helpers::to_wstr(std::string_view str)
+{
+    // test a path like this: "C:\test\命定奇谭ğğğğğÜÜÜÜ"
+    if (str.empty() || !utf8::is_valid(str)) {
+        return {};
+    }
+
+    try {
+        std::wstring wstr{};
+        utf8::utf8to16(str.begin(), str.end(), std::back_inserter(wstr));
+        return wstr;
+    }
+    catch (...) {}
+
+    return {};
+}
+
+std::string common_helpers::to_str(std::wstring_view wstr)
+{
+    // test a path like this: "C:\test\命定奇谭ğğğğğÜÜÜÜ"
+    if (wstr.empty()) {
+        return {};
+    }
+
+    try {
+        std::string str{};
+        utf8::utf16to8(wstr.begin(), wstr.end(), std::back_inserter(str));
+        return str;
+    } catch(...) { }
+
+    return {};
 }

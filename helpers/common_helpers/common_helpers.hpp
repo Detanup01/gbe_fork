@@ -107,4 +107,7 @@ size_t rand_number(size_t max);
 
 std::string get_utc_time();
 
+std::wstring to_wstr(std::string_view str);
+std::string to_str(std::wstring_view wstr);
+
 }
