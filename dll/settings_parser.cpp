@@ -1146,12 +1146,12 @@ static void parse_crash_printer_location()
 {
     std::string line(common_helpers::string_strip(ini.GetValue("main::general", "crash_printer_location", "")));
     if (line.size()) {
-        auto crash_path = utf8_decode(common_helpers::to_absolute(line, get_full_program_path()));
+        auto crash_path = common_helpers::to_absolute(line, get_full_program_path());
         if (crash_path.size()) {
             if (crash_printer::init(crash_path)) {
-                PRINT_DEBUG("Unhandled crashes will be saved to '%s'", utf8_encode(crash_path).c_str());
+                PRINT_DEBUG("Unhandled crashes will be saved to '%s'", crash_path.c_str());
             } else {
-                PRINT_DEBUG("Failed to setup unhandled crash printer with path: '%s'", utf8_encode(crash_path).c_str());
+                PRINT_DEBUG("Failed to setup unhandled crash printer with path: '%s'", crash_path.c_str());
             }
         }
     }
