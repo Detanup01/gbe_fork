@@ -1,20 +1,32 @@
 #pragma once
 
 #include <string>
+#include <string_view>
+#include <mutex>
+#include <cstdio>
+#include <chrono>
 
-namespace dbg_log
+class dbg_log
 {
+private:
+    std::recursive_mutex f_mtx{};
+    std::string filepath{};
+    std::FILE *out_file{};
+    const std::chrono::high_resolution_clock::time_point start_time = std::chrono::high_resolution_clock::now();
 
-bool init(const wchar_t *path);
+    void open();
+    void write_stamp();
 
-bool init(const char *path);
+public:
+    dbg_log(std::string_view path);
+    dbg_log(std::wstring_view path);
+    ~dbg_log();
 
-void write(const std::wstring &str);
+    void write(std::string_view str);
+    void write(std::wstring_view str);
 
-void write(const std::string &str);
+    void write(const char* fmt, ...);
+    void write(const wchar_t* fmt, ...);
 
-void write(const char* fmt, ...);
-
-void close();
-    
-}
+    void close();
+};
