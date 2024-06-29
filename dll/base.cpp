@@ -18,11 +18,19 @@
 #include "dll/base.h"
 #include "dll/settings_parser.h"
 
+#ifndef EMU_RELEASE_BUILD
+#include "dbg_log/dbg_log.hpp"
+#endif
+
 
 std::recursive_mutex global_mutex{};
 // some arbitrary counter/time for reference
 const std::chrono::time_point<std::chrono::high_resolution_clock> startup_counter = std::chrono::high_resolution_clock::now();
 const std::chrono::time_point<std::chrono::system_clock> startup_time = std::chrono::system_clock::now();
+
+#ifndef EMU_RELEASE_BUILD
+dbg_log dbg_logger(get_full_program_path() + "STEAM_LOG.txt");
+#endif
 
 
 #ifdef __WINDOWS__
@@ -101,10 +109,6 @@ bool set_env_variable(const std::string &name, const std::string &value)
 
 #endif
 
-
-#ifndef EMU_RELEASE_BUILD
-const std::string dbg_log_file = get_full_program_path() + "STEAM_LOG.txt";
-#endif
 
 unsigned generate_account_id()
 {

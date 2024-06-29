@@ -163,6 +163,7 @@ static inline void reset_LastError()
 
 // PRINT_DEBUG definition
 #ifndef EMU_RELEASE_BUILD
+    #include "dbg_log/dbg_log.hpp"
     // we need this for printf specifiers for intptr_t such as PRIdPTR
     #include <inttypes.h>
     
@@ -181,21 +182,11 @@ static inline void reset_LastError()
         #define PRINT_DEBUG_CLEANUP() (void)0
     #endif
 
-    //#define PRINT_DEBUG(...) fprintf(stdout, __VA_ARGS__)
-    extern const std::string dbg_log_file;
-    extern const std::chrono::time_point<std::chrono::high_resolution_clock> startup_counter;
+    extern dbg_log dbg_logger;
 
-    #define PRINT_DEBUG(a, ...) do {                                                                                                                     \
-        auto __prnt_dbg_ctr = std::chrono::high_resolution_clock::now();                                                                                 \
-        auto __prnt_dbg_duration = __prnt_dbg_ctr - startup_counter;                                                                                     \
-        auto __prnt_dbg_micro = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::micro>>(__prnt_dbg_duration);                  \
-        auto __prnt_dbg_ms = std::chrono::duration_cast<std::chrono::duration<unsigned long long, std::milli>>(__prnt_dbg_duration);                     \
-        auto __prnt_dbg_f = fopen(dbg_log_file.c_str(), "a");                                                                                            \
-        if (!__prnt_dbg_f) break;                                                                                                                        \
-        fprintf(__prnt_dbg_f, "[%llu ms, %lld us] [tid %lld] %s " a "\n",                                                                                \
-            __prnt_dbg_ms.count(), __prnt_dbg_micro.count(), PRINT_DEBUG_TID(), EMU_FUNC_NAME, ##__VA_ARGS__);                                           \
-        fclose(__prnt_dbg_f);                                                                                                                            \
-        PRINT_DEBUG_CLEANUP();                                                                                                                           \
+    #define PRINT_DEBUG(a, ...) do {                                                                \
+        dbg_logger.write("[tid %lld] %s " a, PRINT_DEBUG_TID(), EMU_FUNC_NAME, ##__VA_ARGS__);      \
+        PRINT_DEBUG_CLEANUP();                                                                      \
     } while (0)
 
 #else // EMU_RELEASE_BUILD
