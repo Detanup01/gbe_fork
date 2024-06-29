@@ -617,7 +617,7 @@ std::vector<std::string> Local_Storage::get_folders_path(std::string path)
     std::vector<std::string> output{};
     try
     {
-        const std::filesystem::path path_p(std::filesystem::u8path(path));
+        const auto path_p(std::filesystem::u8path(path));
         if (!common_helpers::dir_exist(path_p)) return output;
 
         for (const auto &dir_entry :

@@ -33,11 +33,11 @@ static void copy_file(const std::string &src_filepath, const std::string &dst_fi
     try
     {
         PRINT_DEBUG("copying file '%s' to '%s'", src_filepath.c_str(), dst_filepath.c_str());
-        const std::filesystem::path src_p(std::filesystem::u8path(src_filepath));
+        const auto src_p(std::filesystem::u8path(src_filepath));
         
         if (!common_helpers::file_exist(src_p)) return;
         
-        const std::filesystem::path dst_p(std::filesystem::u8path(dst_filepath));
+        const auto dst_p(std::filesystem::u8path(dst_filepath));
         std::filesystem::create_directories(dst_p.parent_path()); // make the folder tree if needed
         std::filesystem::copy_file(src_p, dst_p, std::filesystem::copy_options::overwrite_existing);
     } catch(...) {}

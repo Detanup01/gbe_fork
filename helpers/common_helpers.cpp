@@ -98,7 +98,7 @@ void KillableWorker::kill()
 
 }
 
-static bool create_dir_impl(std::filesystem::path &dirpath)
+static bool create_dir_impl(const std::filesystem::path &dirpath)
 {
     if (std::filesystem::is_directory(dirpath))
     {
@@ -114,13 +114,13 @@ static bool create_dir_impl(std::filesystem::path &dirpath)
 
 bool common_helpers::create_dir(std::string_view filepath)
 {
-    std::filesystem::path parent(std::filesystem::u8path(filepath).parent_path());
+    const auto parent(std::filesystem::u8path(filepath).parent_path());
     return create_dir_impl(parent);
 }
 
 bool common_helpers::create_dir(std::wstring_view filepath)
 {
-    std::filesystem::path parent(std::filesystem::path(filepath).parent_path());
+    const auto parent(std::filesystem::path(filepath).parent_path());
     return create_dir_impl(parent);
 }
 
