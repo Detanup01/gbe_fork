@@ -58,6 +58,11 @@
 #include <filesystem>
 #include <optional>
 
+// common includes
+#include "common_helpers/common_helpers.hpp"
+#include "json/json.hpp"
+#include "utfcpp/utf8.h"
+
 // OS specific includes + definitions
 #if defined(__WINDOWS__)
     #include <winsock2.h>
@@ -89,21 +94,13 @@
 // Convert a wide Unicode string to an UTF8 string
 static inline std::string utf8_encode(const std::wstring &wstr)
 {
-    if( wstr.empty() ) return std::string();
-    int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
-    std::string strTo( size_needed, 0 );
-    WideCharToMultiByte                  (CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
-    return strTo;
+    return common_helpers::to_str(wstr);
 }
 
 // Convert UTF8 string to a wide Unicode String
 static inline std::wstring utf8_decode(const std::string &str)
 {
-    if( str.empty() ) return std::wstring();
-    int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
-    std::wstring wstrTo( size_needed, 0 );
-    MultiByteToWideChar                  (CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
-    return wstrTo;
+    return common_helpers::to_wstr(str);
 }
 
 static inline void reset_LastError()
@@ -148,12 +145,7 @@ static inline void reset_LastError()
 #endif
 
 // Other libs includes
-#include "json/json.hpp"
-#include "utfcpp/utf8.h"
 #include "gamepad/gamepad.h"
-
-// common includes
-#include "common_helpers/common_helpers.hpp"
 
 // Steamsdk includes
 #include "steam/steam_api.h"
