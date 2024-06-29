@@ -14,7 +14,7 @@
 
 static LPTOP_LEVEL_EXCEPTION_FILTER originalExceptionFilter = nullptr;
 
-static std::wstring logs_filepath{};
+static std::string logs_filepath{};
 
 static void print_stacktrace(std::ofstream &file, CONTEXT* context) {
     auto this_proc = GetCurrentProcess();
@@ -104,7 +104,7 @@ static void log_exception(LPEXCEPTION_POINTERS ex_pointers)
         return;
     }
     
-    std::ofstream file(std::filesystem::path(logs_filepath), std::ios::app);
+    std::ofstream file(std::filesystem::u8path(logs_filepath), std::ios::out | std::ios::app);
 
     std::string time(common_helpers::get_utc_time());
     common_helpers::write(file, "[" + time + "]");
@@ -133,7 +133,7 @@ static LONG WINAPI exception_handler(LPEXCEPTION_POINTERS ex_pointers)
 }
 
 
-bool crash_printer::init(const std::wstring &log_file)
+bool crash_printer::init(const std::string &log_file)
 {
     logs_filepath = log_file;
     originalExceptionFilter = SetUnhandledExceptionFilter(exception_handler);

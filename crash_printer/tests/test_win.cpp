@@ -8,7 +8,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-std::wstring logs_filepath = L"./crash_test/zxc.txt";
+std::string logs_filepath = "./crash_test/zxc.txt";
 
 
 static LONG WINAPI exception_handler(LPEXCEPTION_POINTERS ex_pointers)

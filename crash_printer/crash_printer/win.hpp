@@ -6,7 +6,7 @@
 
 namespace crash_printer {
 
-bool init(const std::wstring &log_file);
+bool init(const std::string &log_file);
 
 void deinit();
 
