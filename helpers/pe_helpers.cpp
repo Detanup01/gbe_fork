@@ -286,16 +286,24 @@ PIMAGE_SECTION_HEADER pe_helpers::get_section_header_with_name(HMODULE hModule, 
     return nullptr;
 }
 
-DWORD pe_helpers::loadlib_remote(HANDLE hProcess, const std::wstring &lib_fullpath, const char** err_reason)
+DWORD pe_helpers::loadlib_remote(HANDLE hProcess, const std::string &fullpath, const char** err_reason)
 {
+    const auto lib_fullpath = common_helpers::to_wstr(fullpath);
+    if (lib_fullpath.empty()) {
+        if (err_reason) {
+            *err_reason = "Failed to convert path to wide string";
+        }
+        return ERROR_INVALID_PARAMETER;
+    }
+
     // create a remote page
-    const size_t lib_path_str_bytes = lib_fullpath.size() * sizeof(lib_fullpath[0]);
+    const size_t lib_path_str_bytes = (lib_fullpath.size() + 1) * sizeof(lib_fullpath[0]);
     LPVOID lib_remote_page = VirtualAllocEx(
-    hProcess,
-    NULL,
-    lib_path_str_bytes + sizeof(lib_fullpath[0]) * 2, // *2 just to be safe
-    MEM_RESERVE | MEM_COMMIT,
-    PAGE_READWRITE
+        hProcess,
+        NULL,
+        lib_path_str_bytes + sizeof(lib_fullpath[0]) * 2, // *2 just to be safe
+        MEM_RESERVE | MEM_COMMIT,
+        PAGE_READWRITE
     );
 
     if (!lib_remote_page) {
@@ -314,13 +322,14 @@ DWORD pe_helpers::loadlib_remote(HANDLE hProcess, const std::wstring &lib_fullpa
         &bytes_written
     );
 
-    if (!written || bytes_written < lib_path_str_bytes) {
+    if (!written || (bytes_written < lib_path_str_bytes)) {
         // cleanup allcoated page
         VirtualFreeEx(
             hProcess,
             lib_remote_page,
             0,
-            MEM_RELEASE);
+            MEM_RELEASE
+        );
 
         if (err_reason) {
             *err_reason = "Failed to remotely write dll path with WriteProcessMemory()";
@@ -336,7 +345,8 @@ DWORD pe_helpers::loadlib_remote(HANDLE hProcess, const std::wstring &lib_fullpa
         (LPTHREAD_START_ROUTINE)LoadLibraryW,
         lib_remote_page,
         0,
-        NULL);
+        NULL
+    );
 
     if (!remote_thread) {
         // cleanup allcoated page
@@ -344,7 +354,8 @@ DWORD pe_helpers::loadlib_remote(HANDLE hProcess, const std::wstring &lib_fullpa
             hProcess,
             lib_remote_page,
             0,
-            MEM_RELEASE);
+            MEM_RELEASE
+        );
 
         if (err_reason) {
             *err_reason = "Failed to create/run remote thread with CreateRemoteThread()";
@@ -361,7 +372,8 @@ DWORD pe_helpers::loadlib_remote(HANDLE hProcess, const std::wstring &lib_fullpa
         hProcess,
         lib_remote_page,
         0,
-        MEM_RELEASE);
+        MEM_RELEASE
+    );
 
     return ERROR_SUCCESS;
 }
@@ -381,32 +393,20 @@ size_t pe_helpers::get_pe_size(HMODULE hModule)
     return size;
 }
 
-static std::wstring path_w{};
 static std::string path_a{};
-
-static std::wstring modulename_w{};
 static std::string modulename_a{};
 
 
 const std::string& pe_helpers::get_current_exe_path()
 {
-    if (path_a.empty()) {
-        get_current_exe_path_w();
-    }
-
-    return path_a;
-}
-
-const std::wstring& pe_helpers::get_current_exe_path_w()
-{
     static std::recursive_mutex path_mtx{};
-    if (path_w.empty()) {
+    if (path_a.empty()) {
         std::lock_guard lk(path_mtx);
 
-        if (path_w.empty()) {
+        if (path_a.empty()) {
             DWORD err = GetLastError();
 
-            path_w.resize(8192);
+            std::wstring path_w(8192, '\0');
             DWORD read_chars = GetModuleFileNameW(GetModuleHandleW(nullptr), &path_w[0], (DWORD)path_w.size());
             if (read_chars >= path_w.size()) {
                 path_w.resize(read_chars);
@@ -415,53 +415,24 @@ const std::wstring& pe_helpers::get_current_exe_path_w()
 
             if ((read_chars < path_w.size()) && path_w[0]) {
                 auto modulename_idx = path_w.find_last_of(L"\\/") + 1;
-                modulename_w = path_w.substr(modulename_idx, read_chars - modulename_idx);
-                path_w = path_w.substr(0, modulename_idx);
-
-                {
-                    auto cvt_state = std::mbstate_t();
-                    const wchar_t* src = &path_w[0];
-                    size_t conversion_bytes = std::wcsrtombs(nullptr, &src, 0, &cvt_state);
-                    path_a.resize(conversion_bytes + 1);
-                    std::wcsrtombs(&path_a[0], &src, path_a.size(), &cvt_state);
-                    path_a = path_a.substr(0, conversion_bytes);
-                }
-
-                {
-                    auto cvt_state = std::mbstate_t();
-                    const wchar_t* src = &modulename_w[0];
-                    size_t conversion_bytes = std::wcsrtombs(nullptr, &src, 0, &cvt_state);
-                    modulename_a.resize(conversion_bytes + 1);
-                    std::wcsrtombs(&modulename_a[0], &src, modulename_a.size(), &cvt_state);
-                    modulename_a = modulename_a.substr(0, conversion_bytes);
-                }
-            } else {
-                path_w.clear();
+                modulename_a = common_helpers::to_str(path_w.substr(modulename_idx, read_chars - modulename_idx));
+                path_a = common_helpers::to_str(path_w.substr(0, modulename_idx));
             }
 
             SetLastError(err);
         }
     }
 
-    return path_w;
+    return path_a;
 }
 
 const std::string& pe_helpers::get_current_exe_name()
 {
     if (modulename_a.empty()) {
-        get_current_exe_path_w();
+        get_current_exe_path();
     }
 
     return modulename_a;
-}
-
-const std::wstring& pe_helpers::get_current_exe_name_w()
-{
-    if (modulename_w.empty()) {
-        get_current_exe_path_w();
-    }
-
-    return modulename_w;
 }
 
 bool pe_helpers::ends_with_i(PUNICODE_STRING target, std::wstring_view query)

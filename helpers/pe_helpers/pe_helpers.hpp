@@ -38,17 +38,13 @@ SectionHeadersResult get_section_headers(HMODULE hModule);
 
 PIMAGE_SECTION_HEADER get_section_header_with_name(HMODULE hModule, const char* name);
 
-DWORD loadlib_remote(HANDLE hProcess, const std::wstring &lib_fullpath, const char** err_reason = nullptr);
+DWORD loadlib_remote(HANDLE hProcess, const std::string &fullpath, const char** err_reason = nullptr);
 
 size_t get_pe_size(HMODULE hModule);
 
 const std::string& get_current_exe_path();
 
-const std::wstring& get_current_exe_path_w();
-
 const std::string& get_current_exe_name();
-
-const std::wstring& get_current_exe_name_w();
 
 bool ends_with_i(PUNICODE_STRING target, std::wstring_view query);
 
