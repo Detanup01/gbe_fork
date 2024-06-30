@@ -700,6 +700,8 @@ ISteamUGC *Steam_Client::GetISteamUGC( HSteamUser hSteamUser, HSteamPipe hSteamP
         return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC016 *>(steam_ugc_temp));
     } else if (strcmp(pchVersion, "STEAMUGC_INTERFACE_VERSION017") == 0) {
         return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC017 *>(steam_ugc_temp));
+    } else if (strcmp(pchVersion, "STEAMUGC_INTERFACE_VERSION018") == 0) {
+        return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC018 *>(steam_ugc_temp));
     } else if (strcmp(pchVersion, STEAMUGC_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC *>(steam_ugc_temp));
     }
@@ -799,6 +801,9 @@ ISteamVideo *Steam_Client::GetISteamVideo( HSteamUser hSteamuser, HSteamPipe hSt
     
     if (strcmp(pchVersion, "STEAMVIDEO_INTERFACE_V001") == 0) {
         return reinterpret_cast<ISteamVideo *>(static_cast<ISteamVideo001 *>(steam_video));
+    }
+    if (strcmp(pchVersion, "STEAMVIDEO_INTERFACE_V002") == 0) {
+        return reinterpret_cast<ISteamVideo *>(static_cast<ISteamVideo002 *>(steam_video));
     }
     else if (strcmp(pchVersion, STEAMVIDEO_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamVideo *>(static_cast<ISteamVideo *>(steam_video));

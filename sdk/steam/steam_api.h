@@ -167,6 +167,7 @@
 #include "isteamugc015.h"
 #include "isteamugc016.h"
 #include "isteamugc017.h"
+#include "isteamugc018.h"
 #include "isteamapplist.h"
 #include "isteamhtmlsurface.h"
 #include "isteamhtmlsurface001.h"
@@ -178,6 +179,7 @@
 #include "isteaminventory002.h"
 #include "isteamvideo.h"
 #include "isteamvideo001.h"
+#include "isteamvideo002.h"
 #include "isteamparentalsettings.h"
 #include "isteamgamecoordinator.h"
 #include "isteammasterserverupdater.h"
@@ -205,6 +207,7 @@
 #include "isteamgameserver004.h"
 #include "isteamgameserverstats.h"
 #include "isteamgamestats.h"
+#include "isteamtimeline.h"
 
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------//

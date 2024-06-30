@@ -470,6 +470,42 @@ bool Steam_Apps::SetDlcContext( AppId_t nAppID )
     return true;
 }
 
+// returns total number of known app beta branches (including default "public" branch )
+int Steam_Apps::GetNumBetas( int *pnAvailable, int *pnPrivate )
+{
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    // There is no "betas.txt" we, we always return 1 since "public" branch
+    return 1;
+}
+
+// return beta branch details, name, description, current BuildID and state flags (EBetaBranchFlags)
+bool Steam_Apps::GetBetaInfo( int iBetaIndex, uint32 *punFlags, uint32 *punBuildID, char *pchBetaName, int cchBetaName, char *pchDescription, int cchDescription ) // iterate through
+{
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    *punFlags = 27; // Default | Available | Selected | Installed
+    *punBuildID = 0;
+    if (pchBetaName && cchBetaName > 0 && static_cast<size_t>(cchBetaName) > settings->current_branch_name.size()) {
+        memset(pchBetaName, 0, cchBetaName);
+        memcpy(pchBetaName, settings->current_branch_name.c_str(), settings->current_branch_name.size());
+    }
+    std::string description = "public";
+    if (pchDescription && cchDescription > 0) {
+        memset(pchDescription, 0, cchDescription);
+        memcpy(pchDescription, description.c_str(), description.size());
+    }
+    return true;
+}
+
+// select this beta branch for this app as active, might need the game to restart so Steam can update to that branch
+bool Steam_Apps::SetActiveBeta( const char *pchBetaName )
+{
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    return true;
+}
+
 
 #ifdef _PS3
 	// Result returned in a RegisterActivationCodeResponse_t callresult

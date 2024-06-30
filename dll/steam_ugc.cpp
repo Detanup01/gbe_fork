@@ -105,6 +105,9 @@ void Steam_UGC::set_details(PublishedFileId_t id, SteamUGCDetails_t *pDetails)
 
             // TODO should we enable this?
             // pDetails->m_unNumChildren = mod.numChildren;
+
+            // TODO make the filesize is good (have a custom json shit I guess)
+            pDetails->m_ulTotalFilesSize = mod.primaryFileSize + mod.previewFileSize;
         } else {
             PRINT_DEBUG("  mod isn't installed, returning failure");
             pDetails->m_eResult = k_EResultFail;
@@ -492,6 +495,30 @@ bool Steam_UGC::GetQueryUGCKeyValueTag( UGCQueryHandle_t handle, uint32 index, c
     return false;
 }
 
+uint32 Steam_UGC::GetNumSupportedGameVersions( UGCQueryHandle_t handle, uint32 index )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return 0;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return 0;
+    
+    return 1;
+}
+
+bool GetSupportedGameVersionData( UGCQueryHandle_t handle, uint32 index, uint32 versionIndex, STEAM_OUT_STRING_COUNT( cchGameBranchSize ) char *pchGameBranchMin, STEAM_OUT_STRING_COUNT( cchGameBranchSize ) char *pchGameBranchMax, uint32 cchGameBranchSize )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
+    
+    return false;
+}
+
 uint32 Steam_UGC::GetQueryUGCContentDescriptors( UGCQueryHandle_t handle, uint32 index, EUGCContentDescriptorID *pvecDescriptors, uint32 cMaxEntries )
 {
     PRINT_DEBUG_TODO();
@@ -673,6 +700,18 @@ bool Steam_UGC::SetLanguage( UGCQueryHandle_t handle, const char *pchLanguage )
 
 
 bool Steam_UGC::SetAllowCachedResponse( UGCQueryHandle_t handle, uint32 unMaxAgeSeconds )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
+    
+    return true;
+}
+
+bool Steam_UGC::SetAdminQuery( UGCUpdateHandle_t handle, bool bAdminQuery )
 {
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
@@ -1001,6 +1040,14 @@ bool Steam_UGC::AddContentDescriptor( UGCUpdateHandle_t handle, EUGCContentDescr
 bool Steam_UGC::RemoveContentDescriptor( UGCUpdateHandle_t handle, EUGCContentDescriptorID descid )
 {
     PRINT_DEBUG("%llu %u", handle, descid);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    return false;
+}
+
+bool Steam_UGC::SetRequiredGameVersions( UGCUpdateHandle_t handle, const char *pszGameBranchMin, const char *pszGameBranchMax )
+{
+    PRINT_DEBUG("%llu %s %s", handle, pszGameBranchMin, pszGameBranchMax);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     return false;

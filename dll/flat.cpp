@@ -2529,6 +2529,21 @@ STEAMAPI_API steam_bool SteamAPI_ISteamApps_SetDlcContext( ISteamApps* self, App
     return self->SetDlcContext(nAppID);
 }
 
+STEAMAPI_API int SteamAPI_ISteamApps_GetNumBetas( ISteamApps* self, AppId_t unAppID, int * pnAvailable, int * pnPrivate )
+{
+    return self->GetNumBetas(nAppID, pnAvailable, pnPrivate);
+}
+
+STEAMAPI_API steam_bool SteamAPI_ISteamApps_GetBetaInfo( ISteamApps* self, AppId_t unAppID, int iBetaIndex, uint32 * punFlags, uint32 * punBuildID, char * pchBetaName, int cchBetaName, char * pchDescription, int cchDescription )
+{
+    return self->GetBetaInfo(unAppID, iBetaIndex, punFlags, punBuildID, pchBetaName, cchBetaName, pchDescription, cchDescription);
+}
+
+STEAMAPI_API steam_bool SteamAPI_ISteamApps_SetActiveBeta( ISteamApps* self, AppId_t unAppID, const char * pchBetaName )
+{
+    return self->SetActiveBeta(nAppID, pchBetaName);
+}
+
 STEAMAPI_API ISteamNetworking *SteamAPI_SteamNetworking_v006()
 {
     return get_steam_client()->GetISteamNetworking(flat_hsteamuser(), flat_hsteampipe(), "SteamNetworking006");
@@ -3530,6 +3545,11 @@ STEAMAPI_API ISteamUGC *SteamAPI_SteamUGC_v018()
     return get_steam_client()->GetISteamUGC(flat_hsteamuser(), flat_hsteampipe(), "STEAMUGC_INTERFACE_VERSION018");
 }
 
+STEAMAPI_API ISteamUGC *SteamAPI_SteamUGC_v020()
+{
+    return get_steam_client()->GetISteamUGC(flat_hsteamuser(), flat_hsteampipe(), "STEAMUGC_INTERFACE_VERSION020");
+}
+
 STEAMAPI_API ISteamUGC *SteamAPI_SteamGameServerUGC_v014()
 {
     return get_steam_client()->GetISteamUGC(flat_gs_hsteamuser(), flat_gs_hsteampipe(), "STEAMUGC_INTERFACE_VERSION014");
@@ -3553,6 +3573,11 @@ STEAMAPI_API ISteamUGC *SteamAPI_SteamGameServerUGC_v017()
 STEAMAPI_API ISteamUGC *SteamAPI_SteamGameServerUGC_v018()
 {
     return get_steam_client()->GetISteamUGC(flat_gs_hsteamuser(), flat_gs_hsteampipe(), "STEAMUGC_INTERFACE_VERSION018");
+}
+
+STEAMAPI_API ISteamUGC *SteamAPI_SteamGameServerUGC_v020()
+{
+    return get_steam_client()->GetISteamUGC(flat_gs_hsteamuser(), flat_gs_hsteampipe(), "STEAMUGC_INTERFACE_VERSION020");
 }
 
 STEAMAPI_API UGCQueryHandle_t SteamAPI_ISteamUGC_CreateQueryUserUGCRequest( ISteamUGC* self, AccountID_t unAccountID, EUserUGCList eListType, EUGCMatchingUGCType eMatchingUGCType, EUserUGCListSortOrder eSortOrder, AppId_t nCreatorAppID, AppId_t nConsumerAppID, uint32 unPage )
@@ -3807,6 +3832,30 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryFirstUGCKeyValueTag( ISteamUG
     return (ptr)->GetQueryUGCKeyValueTag(handle, index, pchKey, pchValue, cchValueSize);
 }
 
+STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetNumSupportedGameVersions( ISteamUGC* self, UGCQueryHandle_t handle, uint32 index )
+{
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    auto ptr = get_steam_client()->steam_gameserver_ugc;
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
+        ptr = get_steam_client()->steam_ugc;
+    }
+
+    return (ptr)->GetNumSupportedGameVersions(handle, index);
+}
+
+STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetSupportedGameVersionData( ISteamUGC* self, UGCQueryHandle_t handle, uint32 index, uint32 versionIndex, char * pchGameBranchMin, char * pchGameBranchMax, uint32 cchGameBranchSize )
+{
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    auto ptr = get_steam_client()->steam_gameserver_ugc;
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
+        ptr = get_steam_client()->steam_ugc;
+    }
+
+    return (ptr)->GetSupportedGameVersionData(handle, index, versionIndex, pchGameBranchMin, pchGameBranchMax, cchGameBranchSize);
+}
+
 STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetQueryUGCContentDescriptors( ISteamUGC* self, UGCQueryHandle_t handle, uint32 index, EUGCContentDescriptorID * pvecDescriptors, uint32 cMaxEntries )
 {
     long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
@@ -3985,6 +4034,18 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetAllowCachedResponse( ISteamUGC* se
     }
 
     return (ptr)->SetAllowCachedResponse(handle, unMaxAgeSeconds);
+}
+
+STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetAdminQuery( ISteamUGC* self, UGCUpdateHandle_t handle, bool bAdminQuery )
+{
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    auto ptr = get_steam_client()->steam_gameserver_ugc;
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
+        ptr = get_steam_client()->steam_ugc;
+    }
+
+    return (ptr)->SetAdminQuery(handle, bAdminQuery);
 }
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetCloudFileNameFilter( ISteamUGC* self, UGCQueryHandle_t handle, const char * pMatchCloudFileName )
@@ -4335,6 +4396,18 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_RemoveContentDescriptor( ISteamUGC* s
     }
 
     return (ptr)->RemoveContentDescriptor(handle, descid);
+}
+
+STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetRequiredGameVersions( ISteamUGC* self, UGCUpdateHandle_t handle, const char * pszGameBranchMin, const char * pszGameBranchMax )
+{
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
+    auto ptr = get_steam_client()->steam_gameserver_ugc;
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
+        ptr = get_steam_client()->steam_ugc;
+    }
+
+    return (ptr)->SetRequiredGameVersions(handle, pszGameBranchMin, pszGameBranchMax);
 }
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_SubmitItemUpdate( ISteamUGC* self, UGCUpdateHandle_t handle, const char * pchChangeNote )
@@ -5413,6 +5486,31 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_InspectItem( ISteamInventory* s
     return (ptr)->InspectItem(pResultHandle, pchItemToken);
 }
 
+STEAMAPI_API ISteamTimeline *SteamAPI_SteamTimeline_v001()
+{
+    return get_steam_client()->GetISteamTimeline(flat_hsteamuser(), flat_hsteampipe(), "STEAMTIMELINE_INTERFACE_V001");
+}
+
+STEAMAPI_API void SteamAPI_ISteamTimeline_SetTimelineStateDescription( ISteamTimeline* self, const char * pchDescription, float flTimeDelta )
+{
+    return self->SetTimelineStateDescription(pchDescription, flTimeDelta);
+}
+
+STEAMAPI_API void SteamAPI_ISteamTimeline_ClearTimelineStateDescription( ISteamTimeline* self, float flTimeDelta );
+{
+    return self->ClearTimelineStateDescription(flTimeDelta);
+}
+
+STEAMAPI_API void SteamAPI_ISteamTimeline_AddTimelineEvent( ISteamTimeline* self, const char * pchIcon, const char * pchTitle, const char * pchDescription, uint32 unPriority, float flStartOffsetSeconds, float flDurationSeconds, ETimelineEventClipPriority ePossibleClip );
+{
+    return self->AddTimelineEvent(pchIcon, pchTitle, pchDescripchDescription, unPriority, flStartOffsetSeconds, flDurationSeconds, ePossibleClipption);
+}
+
+STEAMAPI_API void SteamAPI_ISteamTimeline_SetTimelineGameMode( ISteamTimeline* self, ETimelineGameMode eMode );
+{
+    return self->SetTimelineGameMode(eMode);
+}
+
 STEAMAPI_API ISteamVideo *SteamAPI_SteamVideo_v001()
 {
     return get_steam_client()->GetISteamVideo(flat_hsteamuser(), flat_hsteampipe(), "STEAMVIDEO_INTERFACE_V001");
@@ -5421,6 +5519,11 @@ STEAMAPI_API ISteamVideo *SteamAPI_SteamVideo_v001()
 STEAMAPI_API ISteamVideo *SteamAPI_SteamVideo_v002()
 {
     return get_steam_client()->GetISteamVideo(flat_hsteamuser(), flat_hsteampipe(), "STEAMVIDEO_INTERFACE_V002");
+}
+
+STEAMAPI_API ISteamVideo *SteamAPI_SteamVideo_v007()
+{
+    return get_steam_client()->GetISteamVideo(flat_hsteamuser(), flat_hsteampipe(), "STEAMVIDEO_INTERFACE_V007");
 }
 
 STEAMAPI_API void SteamAPI_ISteamVideo_GetVideoURL( ISteamVideo* self, AppId_t unVideoAppID )
