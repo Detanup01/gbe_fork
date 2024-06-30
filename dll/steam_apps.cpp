@@ -82,9 +82,9 @@ bool Steam_Apps::BIsSubscribedApp( AppId_t appID )
 {
     PRINT_DEBUG("%u", appID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (appID == 0) return true; //I think appid 0 is always owned
-    if (appID == UINT32_MAX) return false; // check Steam_Apps::BIsAppInstalled()
-    if (appID == settings->get_local_game_id().AppID()) return true;
+    if (appID == 0) return false; // steam returns false
+    if (appID == UINT32_MAX) return true; // steam returns true
+    if (appID == settings->get_local_game_id().AppID()) return true; // steam returns true
     return settings->hasDLC(appID);
 }
 
@@ -94,12 +94,12 @@ bool Steam_Apps::BIsDlcInstalled( AppId_t appID )
 {
     PRINT_DEBUG("%u", appID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (appID == 0) return true;
-    if (appID == UINT32_MAX) return false; // check Steam_Apps::BIsAppInstalled()
+    if (appID == 0) return false; // steam returns false (also appid 1958220 expects false otherwise it hangs in loading screen)
+    if (appID == UINT32_MAX) return false; // steam returns false
     
     // Age of Empires 2: Definitive Edition expects the app itself to be an owned DLC.
     // otherwise it will only load the "Return of Rome" game mode, also most options are disabled
-    if (appID == settings->get_local_game_id().AppID()) return true;
+    if (appID == settings->get_local_game_id().AppID()) return true; // steam returns true
 
     return settings->hasDLC(appID);
 }
@@ -110,8 +110,8 @@ uint32 Steam_Apps::GetEarliestPurchaseUnixTime( AppId_t nAppID )
 {
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (nAppID == 0) return 0; //TODO is this correct?
-    if (nAppID == UINT32_MAX) return 0; // check Steam_Apps::BIsAppInstalled() TODO is this correct?
+    if (nAppID == 0) return 0; // steam returns 0
+    if (nAppID == UINT32_MAX) return 0; // steam returns 0
     if (nAppID == settings->get_local_game_id().AppID() || settings->hasDLC(nAppID)) {
         auto t =
             // 4 days ago
@@ -319,12 +319,10 @@ bool Steam_Apps::BIsAppInstalled( AppId_t appID )
     PRINT_DEBUG("%u", appID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    // "0 Base Goldsource Shared Binaries"
-    // https://developer.valvesoftware.com/wiki/Steam_Application_IDs
-    if (appID == 0) return true;
+    if (appID == 0) return false; // steam returns false
     // game LEGO 2K Drive (app id 1451810) checks for a proper steam behavior by sending uint32_max and expects false in return
-    if (appID == UINT32_MAX) return false;
-    if (appID == settings->get_local_game_id().AppID()) return true;
+    if (appID == UINT32_MAX) return false; // steam returns false
+    if (appID == settings->get_local_game_id().AppID()) return true; // steam returns true
 
     // TODO is this correct?
     // the docs say that this function won't work on DLCs, but HITMAN 3 uses it on every DLC

@@ -265,7 +265,7 @@ bool Steam_Remote_Storage::FileWriteStreamCancel( UGCFileWriteStreamHandle_t wri
 // file information
 bool Steam_Remote_Storage::FileExists( const char *pchFile )
 {
-    PRINT_DEBUG("%s", pchFile);
+    PRINT_DEBUG("'%s'", pchFile);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!pchFile || !pchFile[0]) return false;
     
@@ -274,7 +274,7 @@ bool Steam_Remote_Storage::FileExists( const char *pchFile )
 
 bool Steam_Remote_Storage::FilePersisted( const char *pchFile )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("'%s'", pchFile);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!pchFile || !pchFile[0]) return false;
     
@@ -283,7 +283,7 @@ bool Steam_Remote_Storage::FilePersisted( const char *pchFile )
 
 int32 Steam_Remote_Storage::GetFileSize( const char *pchFile )
 {
-    PRINT_DEBUG("%s", pchFile);
+    PRINT_DEBUG("'%s'", pchFile);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!pchFile || !pchFile[0]) return 0;
     
@@ -301,7 +301,7 @@ int64 Steam_Remote_Storage::GetFileTimestamp( const char *pchFile )
 
 ERemoteStoragePlatform Steam_Remote_Storage::GetSyncPlatforms( const char *pchFile )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("'%s'", pchFile);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     return k_ERemoteStoragePlatformAll;
