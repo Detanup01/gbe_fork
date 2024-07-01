@@ -792,7 +792,7 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamFriends_RequestEquippedProfileItems( 
     return (get_steam_client()->steam_friends)->RequestEquippedProfileItems(steamID);
 }
 
-STEAMAPI_API bool SteamAPI_ISteamFriends_BHasEquippedProfileItem( ISteamFriends* self, uint64_steamid steamID, ECommunityProfileItemType itemType )
+STEAMAPI_API steam_bool SteamAPI_ISteamFriends_BHasEquippedProfileItem( ISteamFriends* self, uint64_steamid steamID, ECommunityProfileItemType itemType )
 {
     return (get_steam_client()->steam_friends)->BHasEquippedProfileItem(steamID, itemType);
 }

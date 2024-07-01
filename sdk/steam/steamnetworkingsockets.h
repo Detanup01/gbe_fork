@@ -7,7 +7,7 @@
 
 #ifndef STEAMNETWORKINGSOCKETS
 #define STEAMNETWORKINGSOCKETS
-#ifdef _WIN32
+#ifdef STEAM_WIN32
 #pragma once
 #endif
 

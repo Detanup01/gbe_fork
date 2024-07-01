@@ -1,4 +1,4 @@
-//====== Copyright � Valve Corporation, All rights reserved. =======
+//====== Copyright © Valve Corporation, All rights reserved. =======
 //
 // Purpose: interface to Steam Timeline
 //
@@ -6,7 +6,7 @@
 
 #ifndef ISTEAMTIMELINE_H
 #define ISTEAMTIMELINE_H
-#ifdef _WIN32
+#ifdef STEAM_WIN32
 #pragma once
 #endif
 
@@ -107,9 +107,11 @@ public:
 
 #define STEAMTIMELINE_INTERFACE_VERSION "STEAMTIMELINE_INTERFACE_V001"
 
+#ifndef STEAM_API_EXPORTS
 // Global interface accessor
 inline ISteamTimeline *SteamTimeline();
 STEAM_DEFINE_USER_INTERFACE_ACCESSOR( ISteamTimeline *, SteamTimeline, STEAMTIMELINE_INTERFACE_VERSION );
+#endif
 
 
 #pragma pack( pop )

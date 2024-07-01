@@ -85,8 +85,8 @@ typedef char SteamErrMsg[ k_cchMaxSteamErrMsg ];
 #endif
 #define __cdecl
 #endif
-extern "C" typedef void (__cdecl *SteamAPIWarningMessageHook_t)(int, const char *);
-extern "C" typedef uint32 ( *SteamAPI_CheckCallbackRegistered_t )( int iCallbackNum );
+extern "C" typedef void ( __cdecl *SteamAPIWarningMessageHook_t )( int, const char *);
+extern "C" typedef uint32 ( __cdecl *SteamAPI_CheckCallbackRegistered_t )( int iCallbackNum );
 #if defined( __SNC__ )
 	#pragma diag_suppress=1700	   // warning 1700: class "%s" has virtual functions but non-virtual destructor
 #endif

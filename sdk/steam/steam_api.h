@@ -177,6 +177,7 @@
 #include "isteaminventory.h"
 #include "isteaminventory001.h"
 #include "isteaminventory002.h"
+#include "isteamtimeline.h"
 #include "isteamvideo.h"
 #include "isteamvideo001.h"
 #include "isteamvideo002.h"
