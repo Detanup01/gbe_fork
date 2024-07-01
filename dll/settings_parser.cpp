@@ -1015,6 +1015,8 @@ static void try_parse_mods_file(class Settings *settings_client, Settings *setti
             }
             newMod.previewFileSize = mod.value().value("preview_filesize", preview_filesize);
 
+            newMod.total_files_sizes = mod.value().value("total_files_sizes", primary_filesize);
+            
             newMod.workshopItemURL = mod.value().value("workshop_item_url", "https://steamcommunity.com/sharedfiles/filedetails/?id=" + std::string(mod.key()));
             newMod.votesUp = mod.value().value("upvotes", (uint32)500);
             newMod.votesDown = mod.value().value("downvotes", (uint32)12);
@@ -1043,6 +1045,7 @@ static void try_parse_mods_file(class Settings *settings_client, Settings *setti
             PRINT_DEBUG("    preview_filename: '%s'", newMod.previewFileName.c_str());
             PRINT_DEBUG("    preview_filesize: %i bytes", newMod.previewFileSize);
             PRINT_DEBUG("    preview file handle: %llu", settings_client->getMod(newMod.id).handlePreviewFile);
+            PRINT_DEBUG("    total_files_sizes: %llu", settings_client->getMod(newMod.id).total_files_sizes);
             PRINT_DEBUG("    workshop_item_url: '%s'", newMod.workshopItemURL.c_str());
             PRINT_DEBUG("    preview_url: '%s'", newMod.previewURL.c_str());
         } catch (std::exception& e) {
@@ -1085,6 +1088,8 @@ static void try_detect_mods_folder(class Settings *settings_client, Settings *se
             newMod.previewFileName = mod_preview_files.size() ? mod_preview_files[0] : "";
             newMod.previewFileSize = (int32)get_file_size_safe(newMod.previewFileName, mod_images_fullpath);
 
+            newMod.total_files_sizes = newMod.primaryFileSize;
+
             newMod.workshopItemURL =  "https://steamcommunity.com/sharedfiles/filedetails/?id=" + mod_folder;
             newMod.votesUp = (uint32)500;
             newMod.votesDown = (uint32)12;
@@ -1105,6 +1110,7 @@ static void try_detect_mods_folder(class Settings *settings_client, Settings *se
             PRINT_DEBUG("    preview_filename: '%s'", newMod.previewFileName.c_str());
             PRINT_DEBUG("    preview_filesize: %i bytes", newMod.previewFileSize);
             PRINT_DEBUG("    preview file handle: %llu", settings_client->getMod(newMod.id).handlePreviewFile);
+            PRINT_DEBUG("    total_files_sizes: '%s'", newMod.total_files_sizes);
             PRINT_DEBUG("    workshop_item_url: '%s'", newMod.workshopItemURL.c_str());
             PRINT_DEBUG("    preview_url: '%s'", newMod.previewURL.c_str());
         } catch (...) {}

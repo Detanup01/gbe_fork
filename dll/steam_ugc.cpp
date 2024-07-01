@@ -106,8 +106,8 @@ void Steam_UGC::set_details(PublishedFileId_t id, SteamUGCDetails_t *pDetails)
             // TODO should we enable this?
             // pDetails->m_unNumChildren = mod.numChildren;
 
-            // TODO make the filesize is good (have a custom json shit I guess)
-            pDetails->m_ulTotalFilesSize = mod.primaryFileSize + mod.previewFileSize;
+            // TODO make the filesize is good
+            pDetails->m_ulTotalFilesSize = mod.total_files_sizes;
         } else {
             PRINT_DEBUG("  mod isn't installed, returning failure");
             pDetails->m_eResult = k_EResultFail;

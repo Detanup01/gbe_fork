@@ -54,6 +54,9 @@ struct Mod_entry {
     int32 primaryFileSize{};
     std::string previewFileName{};
     int32 previewFileSize{};
+
+    uint64 total_files_sizes{}; // added in sdk 1.60, "Total size of all files (non-legacy), excluding the preview file"
+
     std::string workshopItemURL{};
 
     // voting information
