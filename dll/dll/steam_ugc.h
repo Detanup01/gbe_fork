@@ -46,6 +46,7 @@ public ISteamUGC014,
 public ISteamUGC015,
 public ISteamUGC016,
 public ISteamUGC017,
+public ISteamUGC018,
 public ISteamUGC
 {
     constexpr static const char ugc_favorits_file[] = "favorites.txt";
@@ -134,6 +135,10 @@ public:
 
     bool GetQueryUGCKeyValueTag( UGCQueryHandle_t handle, uint32 index, const char *pchKey, STEAM_OUT_STRING_COUNT(cchValueSize) char *pchValue, uint32 cchValueSize );
 
+    uint32 Steam_UGC::GetNumSupportedGameVersions( UGCQueryHandle_t handle, uint32 index );
+
+    bool GetSupportedGameVersionData( UGCQueryHandle_t handle, uint32 index, uint32 versionIndex, STEAM_OUT_STRING_COUNT( cchGameBranchSize ) char *pchGameBranchMin, STEAM_OUT_STRING_COUNT( cchGameBranchSize ) char *pchGameBranchMax, uint32 cchGameBranchSize );
+
     uint32 GetQueryUGCContentDescriptors( UGCQueryHandle_t handle, uint32 index, EUGCContentDescriptorID *pvecDescriptors, uint32 cMaxEntries );
 
     // Release the request to free up memory, after retrieving results
@@ -166,6 +171,8 @@ public:
     bool SetLanguage( UGCQueryHandle_t handle, const char *pchLanguage );
 
     bool SetAllowCachedResponse( UGCQueryHandle_t handle, uint32 unMaxAgeSeconds );
+
+    bool Steam_UGC::SetAdminQuery( UGCUpdateHandle_t handle, bool bAdminQuery );
 
     // Options only for querying user UGC
     bool SetCloudFileNameFilter( UGCQueryHandle_t handle, const char *pMatchCloudFileName );
@@ -260,6 +267,8 @@ public:
 
     bool RemoveContentDescriptor( UGCUpdateHandle_t handle, EUGCContentDescriptorID descid );
 
+    bool Steam_UGC::SetRequiredGameVersions( UGCUpdateHandle_t handle, const char *pszGameBranchMin, const char *pszGameBranchMax );
+    
     STEAM_CALL_RESULT( SubmitItemUpdateResult_t )
     SteamAPICall_t SubmitItemUpdate( UGCUpdateHandle_t handle, const char *pchChangeNote );
     // commit update process started with StartItemUpdate()
