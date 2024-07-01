@@ -2531,17 +2531,26 @@ STEAMAPI_API steam_bool SteamAPI_ISteamApps_SetDlcContext( ISteamApps* self, App
 
 STEAMAPI_API int SteamAPI_ISteamApps_GetNumBetas( ISteamApps* self, AppId_t unAppID, int * pnAvailable, int * pnPrivate )
 {
-    return self->GetNumBetas(nAppID, pnAvailable, pnPrivate);
+    // in SDK 1.60 param unAppID is unused
+    if (get_steam_client()->settings_client->get_local_game_id().AppID() != unAppID) return false;
+
+    return self->GetNumBetas(pnAvailable, pnPrivate);
 }
 
 STEAMAPI_API steam_bool SteamAPI_ISteamApps_GetBetaInfo( ISteamApps* self, AppId_t unAppID, int iBetaIndex, uint32 * punFlags, uint32 * punBuildID, char * pchBetaName, int cchBetaName, char * pchDescription, int cchDescription )
 {
-    return self->GetBetaInfo(unAppID, iBetaIndex, punFlags, punBuildID, pchBetaName, cchBetaName, pchDescription, cchDescription);
+    // in SDK 1.60 param unAppID is unused
+    if (get_steam_client()->settings_client->get_local_game_id().AppID() != unAppID) return false;
+
+    return self->GetBetaInfo(iBetaIndex, punFlags, punBuildID, pchBetaName, cchBetaName, pchDescription, cchDescription);
 }
 
 STEAMAPI_API steam_bool SteamAPI_ISteamApps_SetActiveBeta( ISteamApps* self, AppId_t unAppID, const char * pchBetaName )
 {
-    return self->SetActiveBeta(nAppID, pchBetaName);
+    // in SDK 1.60 param unAppID is unused
+    if (get_steam_client()->settings_client->get_local_game_id().AppID() != unAppID) return false;
+
+    return self->SetActiveBeta(pchBetaName);
 }
 
 STEAMAPI_API ISteamNetworking *SteamAPI_SteamNetworking_v006()
@@ -5496,19 +5505,19 @@ STEAMAPI_API void SteamAPI_ISteamTimeline_SetTimelineStateDescription( ISteamTim
     return self->SetTimelineStateDescription(pchDescription, flTimeDelta);
 }
 
-STEAMAPI_API void SteamAPI_ISteamTimeline_ClearTimelineStateDescription( ISteamTimeline* self, float flTimeDelta );
+STEAMAPI_API void SteamAPI_ISteamTimeline_ClearTimelineStateDescription( ISteamTimeline* self, float flTimeDelta )
 {
     return self->ClearTimelineStateDescription(flTimeDelta);
 }
 
-STEAMAPI_API void SteamAPI_ISteamTimeline_AddTimelineEvent( ISteamTimeline* self, const char * pchIcon, const char * pchTitle, const char * pchDescription, uint32 unPriority, float flStartOffsetSeconds, float flDurationSeconds, ETimelineEventClipPriority ePossibleClip );
+STEAMAPI_API void SteamAPI_ISteamTimeline_AddTimelineEvent( ISteamTimeline* self, const char * pchIcon, const char * pchTitle, const char * pchDescription, uint32 unPriority, float flStartOffsetSeconds, float flDurationSeconds, ETimelineEventClipPriority ePossibleClip )
 {
-    return self->AddTimelineEvent(pchIcon, pchTitle, pchDescripchDescription, unPriority, flStartOffsetSeconds, flDurationSeconds, ePossibleClipption);
+    self->AddTimelineEvent(pchIcon, pchTitle, pchDescription, unPriority, flStartOffsetSeconds, flDurationSeconds, ePossibleClip);
 }
 
-STEAMAPI_API void SteamAPI_ISteamTimeline_SetTimelineGameMode( ISteamTimeline* self, ETimelineGameMode eMode );
+STEAMAPI_API void SteamAPI_ISteamTimeline_SetTimelineGameMode( ISteamTimeline* self, ETimelineGameMode eMode )
 {
-    return self->SetTimelineGameMode(eMode);
+    self->SetTimelineGameMode(eMode);
 }
 
 STEAMAPI_API ISteamVideo *SteamAPI_SteamVideo_v001()
