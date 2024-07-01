@@ -139,7 +139,7 @@ public:
 	int  GetNumBetas( int *pnAvailable, int *pnPrivate ); //
 
 	// return beta branch details, name, description, current BuildID and state flags (EBetaBranchFlags)
-	bool GetBetaInfo( int iBetaIndex, uint32 *punFlags, uint32 *punBuildID, char *pchBetaName, int cchBetaName, char *pchDescription, int cchDescription ) // iterate through
+	bool GetBetaInfo( int iBetaIndex, uint32 *punFlags, uint32 *punBuildID, char *pchBetaName, int cchBetaName, char *pchDescription, int cchDescription ); // iterate through
 
 	// select this beta branch for this app as active, might need the game to restart so Steam can update to that branch
 	bool SetActiveBeta( const char *pchBetaName );
