@@ -123,6 +123,7 @@ Steam_Client::Steam_Client()
     steam_remoteplay = new Steam_RemotePlay(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
     steam_tv = new Steam_TV(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
     steam_gamestats = new Steam_GameStats(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
+    steam_timeline = new Steam_Timeline(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
 
     // server
     PRINT_DEBUG("init gameserver");
@@ -202,6 +203,7 @@ Steam_Client::~Steam_Client()
     DEL_INST(steam_remoteplay);
     DEL_INST(steam_tv);
     DEL_INST(steam_gamestats);
+    DEL_INST(steam_timeline);
 
     DEL_INST(steam_utils);
     DEL_INST(steam_friends);

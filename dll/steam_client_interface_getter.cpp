@@ -18,6 +18,19 @@
 #include "dll/steam_client.h"
 
 
+// retrieves the ISteamTimeline interface associated with the handle
+ISteamTimeline *Steam_Client::GetISteamTimeline( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
+{
+    PRINT_DEBUG("%s", pchVersion);
+    if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return nullptr;
+
+    if (strcmp(pchVersion, STEAMTIMELINE_INTERFACE_VERSION) == 0) {
+        return reinterpret_cast<ISteamTimeline *>(static_cast<ISteamTimeline *>(steam_timeline));
+    }
+
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+}
+
 // retrieves the ISteamGameStats interface associated with the handle
 ISteamGameStats *Steam_Client::GetISteamGameStats( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {

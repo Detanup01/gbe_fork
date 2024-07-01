@@ -55,6 +55,7 @@
 #include "steam_gameserver.h"
 #include "steam_gameserverstats.h"
 #include "steam_gamestats.h"
+#include "steam_timeline.h"
 #include "steam_masterserver_updater.h"
 
 #include "overlay/steam_overlay.h"
@@ -138,6 +139,7 @@ public:
     Steam_RemotePlay *steam_remoteplay{};
     Steam_TV *steam_tv{};
     Steam_GameStats *steam_gamestats{};
+    Steam_Timeline *steam_timeline{};
 
     Steam_GameServer *steam_gameserver{};
     Steam_Utils *steam_gameserver_utils{};
@@ -235,6 +237,9 @@ public:
 
 	// game stats
 	ISteamGameStats *GetISteamGameStats( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion );
+
+	// game timeline
+	ISteamTimeline *GetISteamTimeline( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion );
 
 
 	// Deprecated. Applications should use SteamAPI_RunCallbacks() or SteamGameServer_RunCallbacks() instead.
