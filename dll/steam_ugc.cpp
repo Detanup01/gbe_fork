@@ -507,16 +507,17 @@ uint32 Steam_UGC::GetNumSupportedGameVersions( UGCQueryHandle_t handle, uint32 i
     return 1;
 }
 
-bool GetSupportedGameVersionData( UGCQueryHandle_t handle, uint32 index, uint32 versionIndex, STEAM_OUT_STRING_COUNT( cchGameBranchSize ) char *pchGameBranchMin, STEAM_OUT_STRING_COUNT( cchGameBranchSize ) char *pchGameBranchMax, uint32 cchGameBranchSize )
+bool Steam_UGC::GetSupportedGameVersionData( UGCQueryHandle_t handle, uint32 index, uint32 versionIndex, STEAM_OUT_STRING_COUNT( cchGameBranchSize ) char *pchGameBranchMin, STEAM_OUT_STRING_COUNT( cchGameBranchSize ) char *pchGameBranchMax, uint32 cchGameBranchSize )
 {
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (handle == k_UGCQueryHandleInvalid) return false;
+    if (index != 0) return false; // TODO ??
 
     auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
     if (ugc_queries.end() == request) return false;
     
-    return false;
+    return false; // TODO ??
 }
 
 uint32 Steam_UGC::GetQueryUGCContentDescriptors( UGCQueryHandle_t handle, uint32 index, EUGCContentDescriptorID *pvecDescriptors, uint32 cMaxEntries )
@@ -1047,8 +1048,13 @@ bool Steam_UGC::RemoveContentDescriptor( UGCUpdateHandle_t handle, EUGCContentDe
 
 bool Steam_UGC::SetRequiredGameVersions( UGCUpdateHandle_t handle, const char *pszGameBranchMin, const char *pszGameBranchMax )
 {
-    PRINT_DEBUG("%llu %s %s", handle, pszGameBranchMin, pszGameBranchMax);
+    PRINT_DEBUG("%llu '%s' '%s' // TODO", handle, pszGameBranchMin, pszGameBranchMax);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) return false;
     
     return false;
 }
