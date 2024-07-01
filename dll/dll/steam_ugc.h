@@ -135,7 +135,7 @@ public:
 
     bool GetQueryUGCKeyValueTag( UGCQueryHandle_t handle, uint32 index, const char *pchKey, STEAM_OUT_STRING_COUNT(cchValueSize) char *pchValue, uint32 cchValueSize );
 
-    uint32 Steam_UGC::GetNumSupportedGameVersions( UGCQueryHandle_t handle, uint32 index );
+    uint32 GetNumSupportedGameVersions( UGCQueryHandle_t handle, uint32 index );
 
     bool GetSupportedGameVersionData( UGCQueryHandle_t handle, uint32 index, uint32 versionIndex, STEAM_OUT_STRING_COUNT( cchGameBranchSize ) char *pchGameBranchMin, STEAM_OUT_STRING_COUNT( cchGameBranchSize ) char *pchGameBranchMax, uint32 cchGameBranchSize );
 
@@ -172,7 +172,7 @@ public:
 
     bool SetAllowCachedResponse( UGCQueryHandle_t handle, uint32 unMaxAgeSeconds );
 
-    bool Steam_UGC::SetAdminQuery( UGCUpdateHandle_t handle, bool bAdminQuery );
+    bool SetAdminQuery( UGCUpdateHandle_t handle, bool bAdminQuery );
 
     // Options only for querying user UGC
     bool SetCloudFileNameFilter( UGCQueryHandle_t handle, const char *pMatchCloudFileName );
@@ -267,7 +267,7 @@ public:
 
     bool RemoveContentDescriptor( UGCUpdateHandle_t handle, EUGCContentDescriptorID descid );
 
-    bool Steam_UGC::SetRequiredGameVersions( UGCUpdateHandle_t handle, const char *pszGameBranchMin, const char *pszGameBranchMax );
+    bool SetRequiredGameVersions( UGCUpdateHandle_t handle, const char *pszGameBranchMin, const char *pszGameBranchMax );
     
     STEAM_CALL_RESULT( SubmitItemUpdateResult_t )
     SteamAPICall_t SubmitItemUpdate( UGCUpdateHandle_t handle, const char *pchChangeNote );
