@@ -22,6 +22,7 @@
 
 class Steam_Video :
 public ISteamVideo001,
+public ISteamVideo002,
 public ISteamVideo
 {
 public:
