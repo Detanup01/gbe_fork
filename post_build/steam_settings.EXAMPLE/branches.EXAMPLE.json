@@ -1,0 +1,37 @@
+[
+  {
+    "name": "public",
+    "description": "",
+    "protected": false,
+    "build_id": 14864281,
+    "time_updated": 1719527543
+  },
+  {
+    "name": "1.21.3.1",
+    "description": "",
+    "protected": true,
+    "build_id": 611429,
+    "time_updated": 1719901851
+  },
+  {
+    "name": "1.39.9.9",
+    "description": "1.39.9.9",
+    "protected": false,
+    "build_id": 13791849,
+    "time_updated": 1710893615
+  },
+  {
+    "name": "1.37.7.4",
+    "description": "",
+    "protected": false,
+    "build_id": 0,
+    "time_updated": 1719901851
+  },
+  {
+    "name": "csgo_legacy",
+    "description": "Legacy Version of CS:GO",
+    "protected": false,
+    "build_id": 12426195,
+    "time_updated": 1697161396
+  }
+]
