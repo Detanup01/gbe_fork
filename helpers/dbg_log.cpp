@@ -21,7 +21,7 @@ void dbg_log::open()
 		// https://en.cppreference.com/w/cpp/filesystem/path/u8path
 		const auto fsp = std::filesystem::u8path(filepath);
 #if defined(__WINDOWS__)
-		out_file = _wfopen(fsp.c_str(), L"a");
+		out_file = _wfopen(fsp.c_str(), L"at");
 #else
 		out_file = std::fopen(fsp.c_str(), "a");
 #endif
@@ -72,20 +72,20 @@ dbg_log::~dbg_log()
 
 }
 
-void dbg_log::write(std::string_view str)
+void dbg_log::write(const std::string &str)
 {
 
 #ifndef EMU_RELEASE_BUILD
-	write(str.data());
+	write("%s", str.c_str());
 #endif
 
 }
 
-void dbg_log::write(std::wstring_view str)
+void dbg_log::write(const std::wstring &str)
 {
 
 #ifndef EMU_RELEASE_BUILD
-	write(str.data());
+	write("%s", str.c_str());
 #endif
 
 }

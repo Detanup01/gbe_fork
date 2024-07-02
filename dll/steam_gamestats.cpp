@@ -143,7 +143,7 @@ Steam_GameStats::Attribute_t *Steam_GameStats::get_or_create_row_att(uint64 ulRo
 {
     Attribute_t *att{};
     {
-        auto &row = table.rows[ulRowID];
+        auto &row = table.rows[static_cast<unsigned>(ulRowID)];
         auto att_itr = row.attributes.find(att_name);
         if (att_itr != row.attributes.end()) {
             att = &att_itr->second;
@@ -211,7 +211,7 @@ SteamAPICall_t Steam_GameStats::EndSession( uint64 ulSessionID, RTime32 rtTimeEn
         return ret;
     }
 
-    auto &session = sessions[ulSessionID - 1];
+    auto& session = sessions[static_cast<unsigned>(ulSessionID - 1)];
     if (session.ended) {
         GameStatsSessionClosed_t data_invalid{};
         data_invalid.m_eResult = EResult::k_EResultExpired; // TODO is this correct?
@@ -244,7 +244,7 @@ EResult Steam_GameStats::AddSessionAttributeInt( uint64 ulSessionID, const char*
 
     if (ulSessionID == 0 || ulSessionID > sessions.size() || !pstrName) return EResult::k_EResultInvalidParam; // TODO is this correct?
     
-    auto &session = sessions[ulSessionID - 1];
+    auto& session = sessions[static_cast<unsigned>(ulSessionID - 1)];
     if (session.ended) return EResult::k_EResultExpired; // TODO is this correct?
 
     auto att = get_or_create_session_att(pstrName, session, AttributeType_t::Int);
@@ -261,7 +261,7 @@ EResult Steam_GameStats::AddSessionAttributeString( uint64 ulSessionID, const ch
 
     if (ulSessionID == 0 || ulSessionID > sessions.size() || !pstrName || !pstrData) return EResult::k_EResultInvalidParam; // TODO is this correct?
     
-    auto &session = sessions[ulSessionID - 1];
+    auto& session = sessions[static_cast<unsigned>(ulSessionID - 1)];
     if (session.ended) return EResult::k_EResultExpired; // TODO is this correct?
 
     auto att = get_or_create_session_att(pstrName, session, AttributeType_t::Str);
@@ -278,7 +278,7 @@ EResult Steam_GameStats::AddSessionAttributeFloat( uint64 ulSessionID, const cha
 
     if (ulSessionID == 0 || ulSessionID > sessions.size() || !pstrName) return EResult::k_EResultInvalidParam; // TODO is this correct?
     
-    auto &session = sessions[ulSessionID - 1];
+    auto& session = sessions[static_cast<unsigned>(ulSessionID - 1)];
     if (session.ended) return EResult::k_EResultExpired; // TODO is this correct?
 
     auto att = get_or_create_session_att(pstrName, session, AttributeType_t::Float);
@@ -296,7 +296,7 @@ EResult Steam_GameStats::AddNewRow( uint64 *pulRowID, uint64 ulSessionID, const 
 
     if (ulSessionID == 0 || ulSessionID > sessions.size() || !pstrTableName) return EResult::k_EResultInvalidParam; // TODO is this correct?
     
-    auto &session = sessions[ulSessionID - 1];
+    auto& session = sessions[static_cast<unsigned>(ulSessionID - 1)];
     if (session.ended) return EResult::k_EResultExpired; // TODO is this correct?
 
     auto table = get_or_create_session_table(session, pstrTableName);
@@ -318,7 +318,7 @@ EResult Steam_GameStats::CommitRow( uint64 ulRowID )
     if (ulRowID >= table.rows.size()) return EResult::k_EResultInvalidParam; // TODO is this correct?
 
     // TODO what if it was already committed ?
-    auto &row = table.rows[ulRowID];
+    auto& row = table.rows[static_cast<unsigned>(ulRowID)];
     row.committed = true;
     
     return EResult::k_EResultOK;
@@ -331,7 +331,7 @@ EResult Steam_GameStats::CommitOutstandingRows( uint64 ulSessionID )
     
     if (ulSessionID == 0 || ulSessionID > sessions.size()) return EResult::k_EResultInvalidParam; // TODO is this correct?
     
-    auto &session = sessions[ulSessionID - 1];
+    auto& session = sessions[static_cast<unsigned>(ulSessionID - 1)];
     if (session.ended) return EResult::k_EResultExpired; // TODO is this correct?
 
     if (session.tables.size()) {
@@ -411,7 +411,7 @@ EResult Steam_GameStats::AddSessionAttributeInt64( uint64 ulSessionID, const cha
 
     if (ulSessionID == 0 || ulSessionID > sessions.size() || !pstrName) return EResult::k_EResultInvalidParam; // TODO is this correct?
     
-    auto &session = sessions[ulSessionID - 1];
+    auto& session = sessions[static_cast<unsigned>(ulSessionID - 1)];
     if (session.ended) return EResult::k_EResultExpired; // TODO is this correct?
 
     auto att = get_or_create_session_att(pstrName, session, AttributeType_t::Int64);

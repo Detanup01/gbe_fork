@@ -91,7 +91,7 @@ public:
 
     bool update_save_filenames(std::string folder);
 
-    bool load_json(std::string full_path, nlohmann::json& json);
+    bool load_json(const std::string &full_path, nlohmann::json& json);
     bool load_json_file(std::string folder, std::string const& file, nlohmann::json& json);
     bool write_json_file(std::string folder, std::string const& file, nlohmann::json const& json);
 

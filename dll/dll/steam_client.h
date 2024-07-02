@@ -238,7 +238,7 @@ public:
 	// game stats
 	ISteamGameStats *GetISteamGameStats( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion );
 
-	// game timeline
+	// steam timeline
 	ISteamTimeline *GetISteamTimeline( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion );
 
 

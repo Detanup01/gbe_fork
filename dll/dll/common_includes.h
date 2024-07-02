@@ -57,6 +57,7 @@
 #include <stdio.h>
 #include <filesystem>
 #include <optional>
+#include <numeric>
 
 // common includes
 #include "common_helpers/common_helpers.hpp"

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <string>
 #include <string_view>
 #include <mutex>
 #include <cstdio>
@@ -22,8 +23,8 @@ public:
     dbg_log(std::wstring_view path);
     ~dbg_log();
 
-    void write(std::string_view str);
-    void write(std::wstring_view str);
+    void write(const std::string &str);
+    void write(const std::wstring &str);
 
     void write(const char* fmt, ...);
     void write(const wchar_t* fmt, ...);

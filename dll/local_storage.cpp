@@ -175,7 +175,7 @@ bool Local_Storage::update_save_filenames(std::string folder)
     return true;
 }
 
-bool Local_Storage::load_json(std::string full_path, nlohmann::json& json)
+bool Local_Storage::load_json(const std::string &full_path, nlohmann::json& json)
 {
     return false;
 }
@@ -801,25 +801,16 @@ bool Local_Storage::update_save_filenames(std::string folder)
     return true;
 }
 
-bool Local_Storage::load_json(std::string full_path, nlohmann::json& json)
+bool Local_Storage::load_json(const std::string &full_path, nlohmann::json& json)
 {
-    std::ifstream inventory_file(std::filesystem::u8path(full_path), std::ios::binary | std::ios::in);
+    std::ifstream inventory_file(std::filesystem::u8path(full_path), std::ios::in | std::ios::binary);
     // If there is a file and we opened it
     if (inventory_file) {
-        inventory_file.seekg(0, std::ios::end);
-        size_t size = static_cast<size_t>(inventory_file.tellg());
-        std::string buffer(size, '\0');
-        inventory_file.seekg(0, std::ios::beg);
-        // Read it entirely, if the .json file gets too big,
-        // I should look into this and split reads into smaller parts.
-        inventory_file.read(&buffer[0], size);
-        inventory_file.close();
-
         try {
-            json = std::move(nlohmann::json::parse(buffer));
+            json = nlohmann::json::parse(inventory_file);
             PRINT_DEBUG("Loaded json '%s' (%zu items)", full_path.c_str(), json.size());
             return true;
-        } catch (std::exception& e) {
+        } catch (const std::exception& e) {
             PRINT_DEBUG("Error while parsing '%s' json error: %s", full_path.c_str(), e.what());
         }
     } else {
