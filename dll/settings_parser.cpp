@@ -1135,18 +1135,6 @@ static void parse_mods_folder(class Settings *settings_client, Settings *setting
 
 
 
-// app::general::build_id
-static void parse_build_id(class Settings *settings_client, class Settings *settings_server)
-{
-    std::string line(common_helpers::string_strip(ini.GetValue("app::general", "build_id", "")));
-    if (line.size()) {
-        int build_id = std::stoi(line);
-        PRINT_DEBUG(" setting build id = %i", build_id);
-        settings_client->build_id = build_id;
-        settings_server->build_id = build_id;
-    }
-}
-
 // main::general::crash_printer_location
 static void parse_crash_printer_location()
 {
@@ -1193,6 +1181,96 @@ static void parse_auto_accept_invite(class Settings *settings_client, class Sett
             settings_server->acceptAnyOverlayInvites(false);
         }
     }
+}
+
+// branches.json
+static bool parse_branches_file(
+    const std::string &base_path, const bool force_load,
+    class Settings *settings_client, class Settings *settings_server, class Local_Storage *local_storage)
+{
+    static constexpr auto branches_json_file = "branches.json";
+
+    std::vector<Branch_Info> result{};
+    long public_branch_idx = -1;
+    long user_branch_idx = -1;
+
+    std::string branches_file = base_path + branches_json_file;
+    auto branches = nlohmann::json{};
+    if (!local_storage->load_json(branches_file, branches) && !force_load) {
+        return false;
+    }
+
+    // app::general::branch_name
+    std::string selected_branch = common_helpers::string_strip(ini.GetValue("app::general", "branch_name", ""));
+    if (selected_branch.empty()) {
+        selected_branch = "public";
+        PRINT_DEBUG("no branch name specified, defaulting to 'public'");
+    }
+    PRINT_DEBUG("selected branch name '%s'", selected_branch.c_str());
+
+    PRINT_DEBUG("loaded %zu branches from file '%s'", branches.size(), branches_file.c_str());
+    auto current_epoch = (uint32)std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    for (const auto &branch_data : branches) {
+        auto &new_banch = result.emplace_back(Branch_Info{});
+        
+        new_banch.name = branch_data.value("name", new_banch.name);
+        new_banch.description = branch_data.value("description", new_banch.description);
+        new_banch.branch_protected = branch_data.value("protected", new_banch.branch_protected);
+        new_banch.build_id = branch_data.value("build_id", new_banch.build_id);
+        new_banch.time_updated_epoch = branch_data.value("time_updated", new_banch.time_updated_epoch);
+        
+        new_banch.flags = EBetaBranchFlags::k_EBetaBranch_Available;
+        if (new_banch.branch_protected) {
+            new_banch.flags = static_cast<EBetaBranchFlags>(new_banch.flags | EBetaBranchFlags::k_EBetaBranch_Private);
+        }
+        if (public_branch_idx < 0 && common_helpers::str_cmp_insensitive("public", new_banch.name)) {
+            public_branch_idx = static_cast<long>(result.size() - 1);
+            PRINT_DEBUG("found default 'public' branch [%li]", public_branch_idx);
+        }
+        if (user_branch_idx < 0 && common_helpers::str_cmp_insensitive(selected_branch, new_banch.name)) {
+            user_branch_idx = static_cast<long>(result.size() - 1);
+            PRINT_DEBUG("found your branch '%s' [%li]", selected_branch.c_str(), user_branch_idx);
+        }
+
+        PRINT_DEBUG("added branch '%s'", new_banch.name.c_str());
+        PRINT_DEBUG("    description '%s'", new_banch.description.c_str());
+        PRINT_DEBUG("    branch_protected %i", (int)new_banch.branch_protected);
+        PRINT_DEBUG("    build_id %u", new_banch.build_id);
+        PRINT_DEBUG("    time_updated_epoch %u", new_banch.time_updated_epoch);
+    }
+
+    if (public_branch_idx < 0) {
+        PRINT_DEBUG("[?] 'public' branch not found, adding it");
+        auto &public_branch = result.emplace_back(Branch_Info{});
+        public_branch_idx = static_cast<long>(result.size() - 1);
+    }
+
+    if (user_branch_idx < 0) {
+        PRINT_DEBUG("[?] selected branch '%s' wasn't loaded, forcing selection to the default 'public'", selected_branch.c_str());
+        user_branch_idx = public_branch_idx;
+    }
+
+    {
+        auto& public_branch = result[public_branch_idx];
+        public_branch.name = "public";
+        public_branch.flags = static_cast<EBetaBranchFlags>(public_branch.flags | EBetaBranchFlags::k_EBetaBranch_Default | EBetaBranchFlags::k_EBetaBranch_Available);
+    }
+
+    {
+        auto& user_branch = result[user_branch_idx];
+        user_branch.active = true;
+        user_branch.flags = static_cast<EBetaBranchFlags>(user_branch.flags | EBetaBranchFlags::k_EBetaBranch_Available | EBetaBranchFlags::k_EBetaBranch_Installed | EBetaBranchFlags::k_EBetaBranch_Selected);
+    }
+
+    settings_client->branches = result;
+    settings_server->branches = result;
+
+    settings_client->selected_branch_idx = user_branch_idx;
+    settings_server->selected_branch_idx = user_branch_idx;
+
+    PRINT_DEBUG("selected branch index in the list [%li]", user_branch_idx);
+
+    return true;
 }
 
 // user::general::ip_country
@@ -1264,16 +1342,6 @@ static void parse_overlay_general_config(class Settings *settings_client, class 
 // mainly enable/disable features
 static void parse_simple_features(class Settings *settings_client, class Settings *settings_server)
 {
-    // app::general::branch_name
-    {
-        std::string line(common_helpers::string_strip(ini.GetValue("app::general", "branch_name", "")));
-        if (line.size()) {
-            settings_client->current_branch_name = line;
-            settings_server->current_branch_name = line;
-            PRINT_DEBUG("setting current branch name to '%s'", line.c_str());
-        }
-    }
-
     // [main::general]
     settings_client->enable_new_app_ticket = ini.GetBoolValue("main::general", "new_app_ticket", settings_client->enable_new_app_ticket);
     settings_server->enable_new_app_ticket = ini.GetBoolValue("main::general", "new_app_ticket", settings_server->enable_new_app_ticket);
@@ -1595,8 +1663,6 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     settings_client->set_supported_languages(supported_languages);
     settings_server->set_supported_languages(supported_languages);
 
-    parse_build_id(settings_client, settings_server);
-
     parse_simple_features(settings_client, settings_server);
 
     parse_dlc(settings_client, settings_server);
@@ -1614,6 +1680,11 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     load_gamecontroller_settings(settings_client);
     parse_auto_accept_invite(settings_client, settings_server);
     parse_ip_country(local_storage, settings_client, settings_server);
+    
+    // try local "steam_settings" then saves path, on second trial force load defaults
+    if (!parse_branches_file(steam_settings_path, false, settings_client, settings_server, local_storage)) {
+        parse_branches_file(local_storage->get_global_settings_path(), true, settings_client, settings_server, local_storage);
+    }
 
     parse_overlay_general_config(settings_client, settings_server);
     load_overlay_appearance(settings_client, settings_server, local_storage);

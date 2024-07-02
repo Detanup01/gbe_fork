@@ -243,9 +243,11 @@ bool Steam_Apps::GetCurrentBetaName( char *pchName, int cchNameBufferSize )
 {
     PRINT_DEBUG("%p [%i]", pchName, cchNameBufferSize);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (pchName && cchNameBufferSize > 0 && static_cast<size_t>(cchNameBufferSize) > settings->current_branch_name.size()) {
+
+    const auto &current_branch_name = settings->branches[settings->selected_branch_idx].name;
+    if (pchName && cchNameBufferSize > 0 && static_cast<size_t>(cchNameBufferSize) > current_branch_name.size()) {
         memset(pchName, 0, cchNameBufferSize);
-        memcpy(pchName, settings->current_branch_name.c_str(), settings->current_branch_name.size());
+        memcpy(pchName, current_branch_name.c_str(), current_branch_name.size());
     }
 
     PRINT_DEBUG("returned '%s'", pchName);
@@ -365,7 +367,7 @@ int Steam_Apps::GetAppBuildId()
 {
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return this->settings->build_id;
+    return static_cast<int>(this->settings->branches[settings->selected_branch_idx].build_id);
 }
 
 
@@ -462,24 +464,53 @@ bool Steam_Apps::BIsTimedTrial( uint32* punSecondsAllowed, uint32* punSecondsPla
     return false;
 }
 
+// TODO no public docs
 // set current DLC AppID being played (or 0 if none). Allows Steam to track usage of major DLC extensions
 bool Steam_Apps::SetDlcContext( AppId_t nAppID )
 {
-    PRINT_DEBUG("%u", nAppID);
+    PRINT_DEBUG("%u // TODO", nAppID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return true;
+
+    if (nAppID == 0) return false; // TODO is this correct? (see Steam_Apps::BIsDlcInstalled)
+    if (nAppID == UINT32_MAX) return false; // TODO is this correct? (see Steam_Apps::BIsDlcInstalled)
+
+    if (nAppID == settings->get_local_game_id().AppID()) return true; // TODO is this correct?
+
+    return settings->hasDLC(nAppID);
 }
 
+// TODO no public docs
 // returns total number of known app beta branches (including default "public" branch )
 int Steam_Apps::GetNumBetas( int *pnAvailable, int *pnPrivate )
 {
     PRINT_DEBUG("%p, %p", pnAvailable, pnPrivate);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    if (pnAvailable) *pnAvailable = 1; // TODO what is this?
-    if (pnPrivate) *pnPrivate = 0; // TODO what is this?
-    // There is no "betas.txt" we, we always return 1 since "public" branch
-    return 1;
+    // I assume 'available' means installed on the user's disk and could be used
+    // in that case only 1 should be *available* since the user can only have 1 active and usable branch with the emu, unlike real steam
+    // the user can switch the active (available) branch from configs.app.ini
+    // right??
+    if (pnAvailable) { // TODO what is this?
+        *pnAvailable = 0;
+        for (const auto &item : settings->branches) {
+            if (item.flags & EBetaBranchFlags::k_EBetaBranch_Available) {
+                *pnAvailable += 1;
+            }
+        }
+        PRINT_DEBUG("available branches = %i", *pnAvailable);
+    }
+
+    if (pnPrivate) {
+        *pnPrivate = 0;
+        for (const auto &item : settings->branches) {
+            if (item.flags & EBetaBranchFlags::k_EBetaBranch_Private) {
+                *pnPrivate += 1;
+            }
+        }
+        PRINT_DEBUG("private branches = %i", *pnPrivate);
+    }
+
+    return static_cast<int>(settings->branches.size()); // we always return at least 1 since "public" branch
 }
 
 // TODO no public docs
@@ -487,45 +518,57 @@ int Steam_Apps::GetNumBetas( int *pnAvailable, int *pnPrivate )
 bool Steam_Apps::GetBetaInfo( int iBetaIndex, uint32 *punFlags, uint32 *punBuildID, char *pchBetaName, int cchBetaName, char *pchDescription, int cchDescription ) // iterate through
 {
     // I assume this API is like "Steam_User_Stats::GetNextMostAchievedAchievementInfo()", it returns 'ok' until index is out of range
-    PRINT_DEBUG("%i %p %p --- %p %i --- %p %i", iBetaIndex, punFlags, punBuildID, pchBetaName, cchBetaName, pchDescription, cchDescription);
+    PRINT_DEBUG("[%i] %p %p --- %p %i --- %p %i", iBetaIndex, punFlags, punBuildID, pchBetaName, cchBetaName, pchDescription, cchDescription);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (iBetaIndex < 0) return false;
-    if (iBetaIndex != 0) return false; // TODO remove this once we have a proper betas/branches list
-    // if (iBetaIndex >= settings->beta_branches.size()) return false; // TODO implement this
+    if (static_cast<size_t>(iBetaIndex) >= settings->branches.size()) return false;
     
-    if (punFlags) {
-        *punFlags = EBetaBranchFlags::k_EBetaBranch_Default | EBetaBranchFlags::k_EBetaBranch_Available |
-                    EBetaBranchFlags::k_EBetaBranch_Selected | EBetaBranchFlags::k_EBetaBranch_Installed;
-    }
+    const auto &branch = settings->branches[iBetaIndex];
+
+    if (punFlags) *punFlags = branch.flags;
+    if (punBuildID) *punBuildID = branch.build_id;
     
-    if (punBuildID) *punBuildID = 0;
-    
-    if (pchBetaName && cchBetaName > 0 && static_cast<size_t>(cchBetaName) > settings->current_branch_name.size()) {
+    if (pchBetaName && cchBetaName > 0 && static_cast<size_t>(cchBetaName) > branch.name.size()) {
         memset(pchBetaName, 0, cchBetaName);
-        memcpy(pchBetaName, settings->current_branch_name.c_str(), settings->current_branch_name.size());
+        memcpy(pchBetaName, branch.name.c_str(), branch.name.size());
     }
 
-    std::string description = "public";
-    if (pchDescription && cchDescription > 0 && static_cast<size_t>(cchDescription) > description.size()) {
+    if (pchDescription && cchDescription > 0 && static_cast<size_t>(cchDescription) > branch.description.size()) {
         memset(pchDescription, 0, cchDescription);
-        memcpy(pchDescription, description.c_str(), description.size());
+        memcpy(pchDescription, branch.description.c_str(), branch.description.size());
     }
 
     return true;
 }
 
+// TODO no public docs
 // select this beta branch for this app as active, might need the game to restart so Steam can update to that branch
 bool Steam_Apps::SetActiveBeta( const char *pchBetaName )
 {
     PRINT_DEBUG("'%s'", pchBetaName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    if (!pchBetaName || !pchBetaName[0]) return false;
+    // (sdk 1.60) apparently steam doesn't verify this condition, tested by 'universal963' on appid 480
+    //if (!pchBetaName) return false;
 
-    // TODO check if branch name in betas.txt once we implement that
+    std::string beta_name = pchBetaName ? pchBetaName : "";
+    auto branch_it = std::find_if(settings->branches.begin(), settings->branches.end(), [&beta_name](const Branch_Info &item){
+        return common_helpers::str_cmp_insensitive(beta_name, item.name);
+    });
 
-    return true;
+    if (settings->branches.end() != branch_it) {
+        // reset the 'active' flag for all branches
+        for (auto &item : settings->branches) {
+            item.active = false;
+        }
+        // then set the flag for this branch
+        branch_it->active = true;
+        PRINT_DEBUG("game changed active beta branch!");
+        return true;
+    }
+
+    return true; // (sdk 1.60) apparently steam doesn't even care and just returns true anyway, tested by 'universal963' on appid 480
 }
 
 
