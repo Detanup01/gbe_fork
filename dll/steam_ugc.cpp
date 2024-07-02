@@ -106,7 +106,7 @@ void Steam_UGC::set_details(PublishedFileId_t id, SteamUGCDetails_t *pDetails)
             // TODO should we enable this?
             // pDetails->m_unNumChildren = mod.numChildren;
 
-            // TODO make the filesize is good
+            // TODO make sure the filesize is good
             pDetails->m_ulTotalFilesSize = mod.total_files_sizes;
         } else {
             PRINT_DEBUG("  mod isn't installed, returning failure");
@@ -364,8 +364,9 @@ bool Steam_UGC::GetQueryUGCPreviewURL( UGCQueryHandle_t handle, uint32 index, ST
     auto res = get_query_ugc(handle, index);
     if (!res.has_value()) return false;
 
-    auto mod = res.value();
+    auto &mod = res.value();
     PRINT_DEBUG("Steam_UGC:GetQueryUGCPreviewURL: '%s'", mod.previewURL.c_str());
+    memset(pchURL, 0, cchURLSize);
     mod.previewURL.copy(pchURL, cchURLSize - 1);
     return true;
 }
@@ -495,29 +496,47 @@ bool Steam_UGC::GetQueryUGCKeyValueTag( UGCQueryHandle_t handle, uint32 index, c
     return false;
 }
 
+// TODO no public docs
+// Some items can specify that they have a version that is valid for a range of game versions (Steam branch)
 uint32 Steam_UGC::GetNumSupportedGameVersions( UGCQueryHandle_t handle, uint32 index )
 {
-    PRINT_DEBUG_TODO();
+    PRINT_DEBUG("%llu %u // TODO", handle, index);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (handle == k_UGCQueryHandleInvalid) return 0;
 
-    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
-    if (ugc_queries.end() == request) return 0;
+    auto res = get_query_ugc(handle, index);
+    if (!res.has_value()) return 0;
     
     return 1;
 }
 
+// TODO no public docs
 bool Steam_UGC::GetSupportedGameVersionData( UGCQueryHandle_t handle, uint32 index, uint32 versionIndex, STEAM_OUT_STRING_COUNT( cchGameBranchSize ) char *pchGameBranchMin, STEAM_OUT_STRING_COUNT( cchGameBranchSize ) char *pchGameBranchMax, uint32 cchGameBranchSize )
 {
-    PRINT_DEBUG_TODO();
+    PRINT_DEBUG("%llu %u %u // TODO", handle, index, versionIndex);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (handle == k_UGCQueryHandleInvalid) return false;
-    if (index != 0) return false; // TODO ??
 
-    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
-    if (ugc_queries.end() == request) return false;
+    if (versionIndex != 0) { // TODO I assume this is supposed to be an index in the range [ 0, GetNumSupportedGameVersions() )
+        return false;
+    }
     
-    return false; // TODO ??
+    auto res = get_query_ugc(handle, index);
+    if (!res.has_value()) return false;
+
+    auto &mod = res.value();
+
+    // TODO I assume each mod/workshop item has a min version and max version for the game
+    if (pchGameBranchMin && static_cast<size_t>(cchGameBranchSize) > mod.min_game_branch.size()) {
+        memset(pchGameBranchMin, 0, cchGameBranchSize);
+        memcpy(pchGameBranchMin, mod.min_game_branch.c_str(), mod.min_game_branch.size());
+    }
+    if (pchGameBranchMax && static_cast<size_t>(cchGameBranchSize) > mod.max_game_branch.size()) {
+        memset(pchGameBranchMax, 0, cchGameBranchSize);
+        memcpy(pchGameBranchMax, mod.max_game_branch.c_str(), mod.max_game_branch.size());
+    }
+
+    return true;
 }
 
 uint32 Steam_UGC::GetQueryUGCContentDescriptors( UGCQueryHandle_t handle, uint32 index, EUGCContentDescriptorID *pvecDescriptors, uint32 cMaxEntries )
@@ -526,9 +545,9 @@ uint32 Steam_UGC::GetQueryUGCContentDescriptors( UGCQueryHandle_t handle, uint32
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (handle == k_UGCQueryHandleInvalid) return 0;
 
-    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
-    if (ugc_queries.end() == request) return 0;
-    
+    auto res = get_query_ugc(handle, index);
+    if (!res.has_value()) return 0;
+
     return 0;
 }
 
@@ -712,15 +731,18 @@ bool Steam_UGC::SetAllowCachedResponse( UGCQueryHandle_t handle, uint32 unMaxAge
     return true;
 }
 
+// TODO no public docs
+// allow ISteamUGC to be used in a tools like environment for users who have the appropriate privileges for the calling appid
 bool Steam_UGC::SetAdminQuery( UGCUpdateHandle_t handle, bool bAdminQuery )
 {
-    PRINT_DEBUG_TODO();
+    PRINT_DEBUG("%llu %i // TODO", handle, (int)bAdminQuery);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (handle == k_UGCQueryHandleInvalid) return false;
 
     auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
     if (ugc_queries.end() == request) return false;
     
+    request->admin_query = bAdminQuery;
     return true;
 }
 
@@ -1046,6 +1068,7 @@ bool Steam_UGC::RemoveContentDescriptor( UGCUpdateHandle_t handle, EUGCContentDe
     return false;
 }
 
+// TODO no public docs
 bool Steam_UGC::SetRequiredGameVersions( UGCUpdateHandle_t handle, const char *pszGameBranchMin, const char *pszGameBranchMax )
 {
     PRINT_DEBUG("%llu '%s' '%s' // TODO", handle, pszGameBranchMin, pszGameBranchMax);
@@ -1056,7 +1079,9 @@ bool Steam_UGC::SetRequiredGameVersions( UGCUpdateHandle_t handle, const char *p
     auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
     if (ugc_queries.end() == request) return false;
     
-    return false;
+    if (pszGameBranchMin) request->min_branch = pszGameBranchMin;
+    if (pszGameBranchMax) request->max_branch = pszGameBranchMax;
+    return true;
 }
 
 STEAM_CALL_RESULT( SubmitItemUpdateResult_t )

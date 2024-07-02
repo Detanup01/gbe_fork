@@ -56,6 +56,8 @@ struct Mod_entry {
     int32 previewFileSize{};
 
     uint64 total_files_sizes{}; // added in sdk 1.60, "Total size of all files (non-legacy), excluding the preview file"
+    std::string min_game_branch{}; // added in sdk 1.60
+    std::string max_game_branch{}; // added in sdk 1.60
 
     std::string workshopItemURL{};
 

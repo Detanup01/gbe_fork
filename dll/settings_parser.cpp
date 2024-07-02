@@ -1016,6 +1016,8 @@ static void try_parse_mods_file(class Settings *settings_client, Settings *setti
             newMod.previewFileSize = mod.value().value("preview_filesize", preview_filesize);
 
             newMod.total_files_sizes = mod.value().value("total_files_sizes", primary_filesize);
+            newMod.min_game_branch = mod.value().value("min_game_branch", "");
+            newMod.max_game_branch = mod.value().value("max_game_branch", "");
             
             newMod.workshopItemURL = mod.value().value("workshop_item_url", "https://steamcommunity.com/sharedfiles/filedetails/?id=" + std::string(mod.key()));
             newMod.votesUp = mod.value().value("upvotes", (uint32)500);
@@ -1046,6 +1048,8 @@ static void try_parse_mods_file(class Settings *settings_client, Settings *setti
             PRINT_DEBUG("    preview_filesize: %i bytes", newMod.previewFileSize);
             PRINT_DEBUG("    preview file handle: %llu", settings_client->getMod(newMod.id).handlePreviewFile);
             PRINT_DEBUG("    total_files_sizes: %llu", settings_client->getMod(newMod.id).total_files_sizes);
+            PRINT_DEBUG("    min_game_branch: '%s'", settings_client->getMod(newMod.id).min_game_branch.c_str());
+            PRINT_DEBUG("    max_game_branch: '%s'", settings_client->getMod(newMod.id).max_game_branch.c_str());
             PRINT_DEBUG("    workshop_item_url: '%s'", newMod.workshopItemURL.c_str());
             PRINT_DEBUG("    preview_url: '%s'", newMod.previewURL.c_str());
         } catch (std::exception& e) {
@@ -1111,6 +1115,8 @@ static void try_detect_mods_folder(class Settings *settings_client, Settings *se
             PRINT_DEBUG("    preview_filesize: %i bytes", newMod.previewFileSize);
             PRINT_DEBUG("    preview file handle: %llu", settings_client->getMod(newMod.id).handlePreviewFile);
             PRINT_DEBUG("    total_files_sizes: '%s'", newMod.total_files_sizes);
+            PRINT_DEBUG("    min_game_branch: '%s'", newMod.min_game_branch.c_str());
+            PRINT_DEBUG("    max_game_branch: '%s'", newMod.max_game_branch.c_str());
             PRINT_DEBUG("    workshop_item_url: '%s'", newMod.workshopItemURL.c_str());
             PRINT_DEBUG("    preview_url: '%s'", newMod.previewURL.c_str());
         } catch (...) {}

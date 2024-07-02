@@ -27,6 +27,10 @@ struct UGC_query {
     bool return_all_subscribed{};
 
     std::set<PublishedFileId_t> results{};
+    
+    bool admin_query = false; // added in sdk 1.60 (currently unused)
+    std::string min_branch{}; // added in sdk 1.60 (currently unused)
+    std::string max_branch{}; // added in sdk 1.60 (currently unused)
 };
 
 class Steam_UGC :
@@ -135,6 +139,7 @@ public:
 
     bool GetQueryUGCKeyValueTag( UGCQueryHandle_t handle, uint32 index, const char *pchKey, STEAM_OUT_STRING_COUNT(cchValueSize) char *pchValue, uint32 cchValueSize );
 
+	// Some items can specify that they have a version that is valid for a range of game versions (Steam branch)
     uint32 GetNumSupportedGameVersions( UGCQueryHandle_t handle, uint32 index );
 
     bool GetSupportedGameVersionData( UGCQueryHandle_t handle, uint32 index, uint32 versionIndex, STEAM_OUT_STRING_COUNT( cchGameBranchSize ) char *pchGameBranchMin, STEAM_OUT_STRING_COUNT( cchGameBranchSize ) char *pchGameBranchMax, uint32 cchGameBranchSize );
@@ -172,6 +177,7 @@ public:
 
     bool SetAllowCachedResponse( UGCQueryHandle_t handle, uint32 unMaxAgeSeconds );
 
+    // allow ISteamUGC to be used in a tools like environment for users who have the appropriate privileges for the calling appid
     bool SetAdminQuery( UGCUpdateHandle_t handle, bool bAdminQuery );
 
     // Options only for querying user UGC
