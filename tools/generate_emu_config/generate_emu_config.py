@@ -497,15 +497,55 @@ def generate_inventory(client, game_id):
         traceback.print_exception(e, file=sys.stderr)
     return None
 
-def get_dlc(raw_infos):
+def parse_branches(branches: dict) -> list[dict]:
+    ret = []
+    for branch_name in  branches:
+        branch_data: dict = branches[branch_name]
+        branch_info = {
+            'name': branch_name,
+            'description': f'{branch_data.get("description", "")}',
+            'protected': False,
+            'build_id': 0, # dummy
+            'time_updated': int(time.time()), # dummy
+        }
+        # password protected
+        if 'pwdrequired' in branch_data:
+            try:
+                protected = f'{branch_data["pwdrequired"]}'.lower()
+                branch_info["protected"] = protected == "true" or protected == "1"
+            except Exception as e:
+                pass
+        
+        # build id
+        try:
+            buildid = int( f'{branch_data.get("buildid", 0)}' )
+            branch_info["build_id"] = buildid
+        except Exception as e:
+            pass
+        
+        # time updated
+        if 'timeupdated' in branch_data:
+            try:
+                timeupdated = int( f'{branch_data["timeupdated"]}' )
+                branch_info["time_updated"] = timeupdated
+            except Exception as e:
+                pass
+        
+        ret.append(branch_info)
+    
+    return ret
+
+# DLC, Depots, Branches
+def get_depots_infos(raw_infos):
     try:
         dlc_list = set()
         depot_app_list = set()
         all_depots = set()
+        all_branches = []
         try:
             dlc_list = set(map(lambda a: int(f"{a}".strip()), raw_infos["extended"]["listofdlc"].split(",")))
         except Exception:
-            dlc_list = set()
+            pass
         
         if "depots" in raw_infos:
             depots : dict[str, object] = raw_infos["depots"]
@@ -515,10 +555,13 @@ def get_dlc(raw_infos):
                     dlc_list.add(int(depot_info["dlcappid"]))
                 if "depotfromapp" in depot_info:
                     depot_app_list.add(int(depot_info["depotfromapp"]))
+                
                 if dep.isnumeric():
                     all_depots.add(int(dep))
+                elif f'{dep}'.lower() == 'branches':
+                    all_branches.extend(parse_branches(depot_info))
         
-        return (dlc_list, depot_app_list, all_depots)
+        return (dlc_list, depot_app_list, all_depots, all_branches)
     except Exception:
         print("could not get dlc infos, are there any dlcs ?")
         return (set(), set(), set())
@@ -836,23 +879,8 @@ def main():
         with open(os.path.join(emu_settings_dir, "steam_appid.txt"), 'w') as f:
             f.write(str(appid))
 
-        if "depots" in game_info:
-            if "branches" in game_info["depots"]:
-                if "public" in game_info["depots"]["branches"]:
-                    if "buildid" in game_info["depots"]["branches"]["public"]:
-                        buildid = game_info["depots"]["branches"]["public"]["buildid"]
-                        merge_dict(out_config_app_ini, {
-                            'configs.app.ini': {
-                                'app::general': {
-                                    'build_id': (buildid, 'allow the app/game to show the correct build id'),
-                                }
-                            }
-                        })
-                        # write the data as soon as possible in case a later step caused an exception
-                        write_ini_file(emu_settings_dir, out_config_app_ini)
-
         dlc_config_list : list[tuple[int, str]] = []
-        dlc_list, depot_app_list, all_depots = get_dlc(game_info)
+        dlc_list, depot_app_list, all_depots, all_branches = get_depots_infos(game_info)
         dlc_raw = {}
         if dlc_list:
             dlc_raw = client.get_product_info(apps=dlc_list)["apps"]
@@ -893,6 +921,26 @@ def main():
                 for game_depot in all_depots:
                     f.write(f"{game_depot}\n")
         
+        # try to read "build_id" from "public" branch
+        # .FirstOrDefault("public")
+        public_branch: dict = next(( branch for branch in all_branches if branch['name'].lower() == 'public' ), None)
+        if public_branch is not None:
+            buildid = str(public_branch['build_id'])
+            if buildid != '0':
+                merge_dict(out_config_app_ini, {
+                    'configs.app.ini': {
+                        'app::general': {
+                            'build_id': (buildid, 'allow the app/game to show the correct build id'),
+                        }
+                    }
+                })
+                # write the data as soon as possible in case a later step caused an exception
+                write_ini_file(emu_settings_dir, out_config_app_ini)
+        if all_branches:
+            with open(os.path.join(emu_settings_dir, "branches.json"), "wt", encoding='utf-8') as f:
+                json.dump(all_branches, f, ensure_ascii=False, indent=2)
+
+
         config_generated = False
         if "config" in game_info:
             if not SKIP_CONTROLLER and "steamcontrollerconfigdetails" in game_info["config"]:
