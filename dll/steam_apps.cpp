@@ -549,10 +549,10 @@ bool Steam_Apps::SetActiveBeta( const char *pchBetaName )
     PRINT_DEBUG("'%s'", pchBetaName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    // (sdk 1.60) apparently steam doesn't verify this condition, tested by 'universal963' on appid 480
-    //if (!pchBetaName) return false;
+    // (sdk 1.60) apparently steam always returns true if the string is null or empty, tested by 'universal963' on appid 480
+    if (!pchBetaName || !pchBetaName[0]) return true;
 
-    std::string beta_name = pchBetaName ? pchBetaName : "";
+    std::string beta_name = pchBetaName;
     auto branch_it = std::find_if(settings->branches.begin(), settings->branches.end(), [&beta_name](const Branch_Info &item){
         return common_helpers::str_cmp_insensitive(beta_name, item.name);
     });
@@ -568,7 +568,7 @@ bool Steam_Apps::SetActiveBeta( const char *pchBetaName )
         return true;
     }
 
-    return true; // (sdk 1.60) apparently steam doesn't even care and just returns true anyway, tested by 'universal963' on appid 480
+    return false;
 }
 
 

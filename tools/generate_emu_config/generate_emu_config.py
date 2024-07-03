@@ -921,21 +921,6 @@ def main():
                 for game_depot in all_depots:
                     f.write(f"{game_depot}\n")
         
-        # try to read "build_id" from "public" branch
-        # .FirstOrDefault("public")
-        public_branch: dict = next(( branch for branch in all_branches if branch['name'].lower() == 'public' ), None)
-        if public_branch is not None:
-            buildid = str(public_branch['build_id'])
-            if buildid != '0':
-                merge_dict(out_config_app_ini, {
-                    'configs.app.ini': {
-                        'app::general': {
-                            'build_id': (buildid, 'allow the app/game to show the correct build id'),
-                        }
-                    }
-                })
-                # write the data as soon as possible in case a later step caused an exception
-                write_ini_file(emu_settings_dir, out_config_app_ini)
         if all_branches:
             with open(os.path.join(emu_settings_dir, "branches.json"), "wt", encoding='utf-8') as f:
                 json.dump(all_branches, f, ensure_ascii=False, indent=2)
