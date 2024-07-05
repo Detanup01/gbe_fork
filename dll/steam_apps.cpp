@@ -471,7 +471,10 @@ bool Steam_Apps::SetDlcContext( AppId_t nAppID )
     PRINT_DEBUG("%u // TODO", nAppID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    if (nAppID == 0) return false; // TODO is this correct? (see Steam_Apps::BIsDlcInstalled)
+    // TODO this one is very odd, in all other functions of this interface they were returning false
+    // tested by `universal963` on real steam
+    if (nAppID == 0) return true;
+
     if (nAppID == UINT32_MAX) return false; // TODO is this correct? (see Steam_Apps::BIsDlcInstalled)
 
     if (nAppID == settings->get_local_game_id().AppID()) return true; // TODO is this correct?
