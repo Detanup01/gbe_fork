@@ -1,4 +1,22 @@
+## 2024/7/7
+
+* **[Detanup01]** implement SDK v1.60, also thanks to **[universal963]** for the help in testing some functions
+* **[Detanup01]** add implementation for new interfaces:
+  - `ISteamUGC020`
+  - `ISteamVideo007`
 * **[qingchunnh]** update Chinese translations for the overlay
+* update the tool `generate_emu_config` to generate a new file `steam_settings/branches.json` which contain all info about the branches of the game, needed by SDK v1.60  
+  this json file could be put inside the global settings folder, but **not recommended**, it is meant to be generated per-game basis
+* deprecate the setting `build_id` in `configs.app.ini`, the user selected branch (`branch_name`) is now used to grab the build id of that branch from `branches.json`.  
+  if no `branch_name` is specified, the emu will use the default branch called `public`.  
+  if `branches.json` is missing the `public` branch, the emu will force add it in memory with a default build id = 10
+* add new properties to `mods.json`:  
+  - `min_game_branch`
+  - `max_game_branch`
+  - `total_files_sizes`  
+  
+  unclear how they're used for now, but they're introduced in SDK v1.60
+* add a somewhat useless/stub implementation for the new interface `ISteamTimeline001` (introduced in SDK v1.60), could be extended later to interact with the built-in overlay or save the info to disk for external applications to listen to events
 * add a new option `allow_unknown_stats` in `configs.main.ini` to allow games to change unknown stats.  
   the emu by default rejects any changes to a stat not mentioned inside `steam_settings/stats.txt`, this option allows these changes
 * add a new option `save_only_higher_stat_achievement_progress` in `configs.main.ini` and enable it by default.  
@@ -6,7 +24,18 @@
   this solves an overlay spam problem and avoids *some* useless disk write operations.  
   
   unfortunately some games abuse stats and update them a lot during gameplay with useless and disposable values, this will cause a lot of disk write operations and cannot be avoided unless you remove the definition of that stat from `steam_settings/stats.txt`, or avoiding that definition file altogether and forget about stats
+* fix conditions for app/DLCs ownership APIs:
+  - `Steam_Apps::BIsSubscribedApp()`
+  - `Steam_Apps::BIsDlcInstalled()`
+  - `Steam_Apps::BIsAppInstalled()`  
+
+  allowing more games/apps to work
+* fix a problem when searching for the user selected language during the initialization of the overlay, leading to invalid language selection in some cases
+* fix a potential problem when searching for the user selected language in the achievements schema, which might lead to invalid language selection in some cases
+* fix a problem with `utf-8` path handling in ColdClientLoader for Windows, also fix more `utf-8` related problems in the emu and use the library `utfcpp` to convert `utf8` <---> `utf16` strings instead of using Win32 APIs
 * in `Steam_User_Stats::ResetAllStats()` reset the achievement `progress` only if it was defined in the original schema in `steam_settings/achievements.json`
+* implement a new debug logger to fix a problem where the debug log wasn't being generated when the path contained non-Latin characters.
+* re-wrote the code of ColdClientLoader for Windows to use the library `SimpleIni` like the emu instead of relying on Win32 APIs, much easier and intuitive
 * save achievement progress/max progress as `uint32` instead of `float`
 
 ---
