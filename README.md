@@ -1,9 +1,3 @@
-# ⚠️ Repo archival ⚠️
-Due to lack of interest and some recent events  
-the repo will be archived on `1 / July / 2024`  
-At a later time it might be removed.
----
-
 ## :large_orange_diamond: **This is a fork**
 Fork of https://gitlab.com/Mr_Goldberg/goldberg_emulator  
 
