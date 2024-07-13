@@ -35,7 +35,7 @@ chmod 777 "$premake_exe"
 # build deps
 if [[ $BUILD_DEPS = 1 ]]; then
   export CMAKE_GENERATOR="Unix Makefiles"
-  "$premake_exe" --file="premake5-deps.lua" --all-ext --all-build --64-build --32-build --verbose --clean --os=linux gmake2 || {
+  "$premake_exe" --file="premake5-deps.lua" --all-ext --all-build --64-build --32-build --verbose --clean --j=$build_threads --os=linux gmake2 || {
     exit 1;
   }
 fi

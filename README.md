@@ -123,12 +123,17 @@ You can also find instructions here in [README.release.md](./post_build/README.r
   ```
 * Python 3.10 or above
    ```shell
+   sudo apt update -y
+   sudo apt install -y software-properties-common
    sudo add-apt-repository ppa:deadsnakes/ppa -y
    sudo apt update -y
-   sudo apt install python3.10 -y
+   sudo apt install -y "python3.12"
+   sudo apt install -y "python3.12-dev"
+   sudo apt install -y "python3.12-venv"
+   sudo apt install -y python3-dev
    
    # make sure it works
-   python3.10 --version
+   python3.12 --version
    ```
 
 ### **Building dependencies**
@@ -291,7 +296,7 @@ Open bash terminal then:
    You might need to edit this script to use a different python version.  
    Find this line and change it:
    ```shell
-   python_package="python3.10"
+   python_package="python3.12"
    ``` 
 2. Build the tool using `pyinstaller`  
    ```shell
