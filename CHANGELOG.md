@@ -1,3 +1,7 @@
+
+* **[Detanup01]** Fix GetISteamGenericInterface when asking for Interface: STEAMTIMELINE_INTERFACE_V001
+* **[KGHTW]** Fixing Steam Datagram Error. 
+
 ## 2024/7/7
 
 * **[Detanup01]** implement SDK v1.60, also thanks to **[universal963]** for the help in testing some functions

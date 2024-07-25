@@ -35,7 +35,17 @@ public ISteamNetworkingUtils
     std::chrono::time_point<std::chrono::steady_clock> initialized_time = std::chrono::steady_clock::now();
     FSteamNetworkingSocketsDebugOutput debug_function{};
     bool relay_initialized = false;
-    bool init_relay = false;
+    bool init_relay = true; //  Initializing relay immediately when we ask for it. Fixing Elden Ring SeamlessCoop
+    // NOTE from Detanup01: They should call InitializeRelayAccess BTW. Whoever write that mod cannot read valve docs.
+    /*
+    Valve docs:
+    If you know that you are going to be using the relay network
+    (for example, because you anticipate making P2P connections), 
+    call this to initialize the relay network. 
+    If you do not call this, the initialization will be delayed until
+    the first time you use a feature that requires access to the relay network, 
+    which will delay that first access.
+    */
 
     static void free_steam_message_data(SteamNetworkingMessage_t *pMsg);
     static void delete_steam_message(SteamNetworkingMessage_t *pMsg);
