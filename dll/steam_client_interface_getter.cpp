@@ -410,7 +410,7 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
         return GetISteamParentalSettings(hSteamUser, hSteamPipe, pchVersion);
     } else if (strstr(pchVersion, "STEAMAPPTICKET_INTERFACE_VERSION") == pchVersion) {
         return GetAppTicket(hSteamUser, hSteamPipe, pchVersion);
-    } else if (strstr(pchVersion, "STEAMTIMELINE_INTERFACE_VERSION") == pchVersion) {
+    } else if (strstr(pchVersion, "STEAMTIMELINE_INTERFACE") == pchVersion) {
         return GetISteamTimeline(hSteamUser, hSteamPipe, pchVersion);
     }
     
