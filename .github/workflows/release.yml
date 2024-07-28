@@ -93,7 +93,7 @@ jobs:
           path: "build/package/win/vs2022/*release*"
           if-no-files-found: 'error'
           compression-level: 0
-          retention-days: 1
+          retention-days: 7
       - name: Upload debug package
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v4
@@ -102,7 +102,7 @@ jobs:
           path: "build/package/win/vs2022/*debug*"
           if-no-files-found: 'error'
           compression-level: 0
-          retention-days: 1
+          retention-days: 7
 
 
 
@@ -183,7 +183,7 @@ jobs:
           path: "build/package/linux/gmake2/*release*"
           if-no-files-found: 'error'
           compression-level: 0
-          retention-days: 1
+          retention-days: 7
       - name: Upload debug package
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v4
@@ -192,7 +192,7 @@ jobs:
           path: "build/package/linux/gmake2/*debug*"
           if-no-files-found: 'error'
           compression-level: 0
-          retention-days: 1
+          retention-days: 7
 
 
 
@@ -254,7 +254,7 @@ jobs:
           path: "tools/generate_emu_config/bin/package/win/**/*"
           if-no-files-found: 'error'
           compression-level: 9
-          retention-days: 1
+          retention-days: 7
 
 
 
@@ -308,7 +308,7 @@ jobs:
           path: "tools/generate_emu_config/bin/package/linux/**/*"
           if-no-files-found: 'error'
           compression-level: 9
-          retention-days: 1
+          retention-days: 7
 
 
 
@@ -370,7 +370,7 @@ jobs:
           path: "tools/migrate_gse/bin/package/win/**/*"
           if-no-files-found: 'error'
           compression-level: 9
-          retention-days: 1
+          retention-days: 7
 
 
 
@@ -424,7 +424,7 @@ jobs:
           path: "tools/migrate_gse/bin/package/linux/**/*"
           if-no-files-found: 'error'
           compression-level: 9
-          retention-days: 1
+          retention-days: 7
 
 
 
