@@ -91,7 +91,7 @@ static std::vector<std::string> collect_dlls_to_inject(const bool is_exe_32, std
     const auto load_order_file = std::filesystem::u8path(DllsToInjectFolder) / "load_order.txt";
     std::vector<std::string> dlls_to_inject{};
     for (const auto &dir_entry :
-        std::filesystem::recursive_directory_iterator(DllsToInjectFolder, std::filesystem::directory_options::follow_directory_symlink)
+        std::filesystem::recursive_directory_iterator(std::filesystem::u8path(DllsToInjectFolder), std::filesystem::directory_options::follow_directory_symlink)
     ) {
         if (std::filesystem::is_directory(dir_entry.path())) continue;
 
@@ -582,15 +582,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         return 1;
     }
 
-    if (!patch_registry_hklm()) {
-        cleanup_registry_hkcu();
-        MessageBoxA(NULL, "Unable to patch Registry (HKLM).", "ColdClientLoader", MB_ICONERROR);
-        return 1;
-    }
+    // this fails due to admin rights when Steam isn't installed, not a big deal
+    // ----------------------------------------------
+    patch_registry_hklm();
+    // if (!patch_registry_hklm()) {
+    //     cleanup_registry_hkcu();
+    //     cleanup_registry_hklm();
+    //     MessageBoxA(NULL, "Unable to patch Registry (HKLM).", "ColdClientLoader", MB_ICONERROR);
+    //     return 1;
+    // }
 
-    patch_registry_hkcs();
     // this fails due to admin rights, not a big deal
     // ----------------------------------------------
+    patch_registry_hkcs();
     // if (!patch_registry_hkcs()) {
     //     cleanup_registry_hkcu();
     //     cleanup_registry_hklm();
