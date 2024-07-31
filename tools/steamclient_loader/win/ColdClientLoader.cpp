@@ -227,7 +227,9 @@ bool patch_registry_hklm()
         return false;
     }
 
-    const auto my_path = common_helpers::to_wstr(pe_helpers::get_current_exe_path());
+    auto path_no_backslash = pe_helpers::get_current_exe_path();
+    path_no_backslash = path_no_backslash.substr(0, path_no_backslash.size() - 1);
+    const auto my_path = common_helpers::to_wstr(path_no_backslash);
     RegSetValueExW(Registrykey, L"InstallPath", NULL, REG_SZ, (const BYTE*)my_path.c_str(), static_cast<DWORD>((my_path.size() + 1) * sizeof(my_path[0])));
     RegSetValueExW(Registrykey, L"SteamPID", NULL, REG_DWORD, (const BYTE *)&ProcessID, sizeof(DWORD));
     RegSetValueExW(Registrykey, L"Universe", NULL, REG_SZ, (const BYTE *)STEAM_UNIVERSE, (DWORD)sizeof(STEAM_UNIVERSE));
