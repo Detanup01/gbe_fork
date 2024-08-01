@@ -34,16 +34,16 @@ static dbg_log logger{pe_helpers::get_current_exe_path() + pe_helpers::get_curre
 constexpr static const wchar_t STEAM_UNIVERSE[] = L"Public";
 constexpr static const wchar_t STEAM_URL_PROTOCOL[] = L"URL:steam protocol";
 
-const bool loader_is_32 = pe_helpers::is_module_32(GetModuleHandleW(NULL));
+const static bool loader_is_32 = pe_helpers::is_module_32(GetModuleHandleW(NULL));
 
-const std::wstring hklm_path(loader_is_32
+const static std::wstring hklm_path(loader_is_32
     ? L"SOFTWARE\\Valve\\Steam"
     : L"SOFTWARE\\WOW6432Node\\Valve\\Steam"
 );
 
 // Declare some variables to be used for Steam registry.
-const DWORD UserId = 0x03100004771F810D & 0xffffffff;
-const DWORD ProcessID = GetCurrentProcessId();
+const static DWORD UserId = 0x03100004771F810D & 0xffffffff;
+const static DWORD ProcessID = GetCurrentProcessId();
 
 static std::string IniFile{};
 static std::string ClientPath{};
@@ -154,20 +154,26 @@ static std::vector<std::string> collect_dlls_to_inject(const bool is_exe_32, std
     }
 }
 
-bool orig_steam_hkcu = false;
-WCHAR OrgSteamCDir_hkcu[8192] = { 0 };
-DWORD Size1_hkcu = _countof(OrgSteamCDir_hkcu);
-WCHAR OrgSteamCDir64_hkcu[8192] = { 0 };
-DWORD Size2_hkcu = _countof(OrgSteamCDir64_hkcu);
-bool patch_registry_hkcu()
+static bool orig_steam_hkcu = false;
+static WCHAR OrgSteamCDir_hkcu[8192] = { 0 };
+static DWORD Size1_hkcu = sizeof(OrgSteamCDir_hkcu);
+static WCHAR OrgSteamCDir64_hkcu[8192] = { 0 };
+static DWORD Size2_hkcu = sizeof(OrgSteamCDir64_hkcu);
+static DWORD OrgSteamActiveUser_hkcu = 0;
+static WCHAR OrgSteamUniverse_hkcu[8192] = { 0 };
+static DWORD Size4_hkcu = sizeof(OrgSteamUniverse_hkcu);
+static bool patch_registry_hkcu()
 {
     HKEY Registrykey = { 0 };
     if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Valve\\Steam\\ActiveProcess", 0, KEY_ALL_ACCESS, &Registrykey) == ERROR_SUCCESS) {
         orig_steam_hkcu = true;
         // Get original values to restore later.
         DWORD keyType = REG_SZ;
-        RegQueryValueExW(Registrykey, L"SteamClientDll", 0, &keyType, (LPBYTE)&OrgSteamCDir_hkcu, &Size1_hkcu);
-        RegQueryValueExW(Registrykey, L"SteamClientDll64", 0, &keyType, (LPBYTE)&OrgSteamCDir64_hkcu, &Size2_hkcu);
+        RegQueryValueExW(Registrykey, L"SteamClientDll", 0, &keyType, (LPBYTE)OrgSteamCDir_hkcu, &Size1_hkcu);
+        RegQueryValueExW(Registrykey, L"SteamClientDll64", 0, &keyType, (LPBYTE)OrgSteamCDir64_hkcu, &Size2_hkcu);
+        DWORD SizeActiveUser_hkcu = sizeof(DWORD);
+        RegQueryValueExW(Registrykey, L"ActiveUser", 0, &keyType, (LPBYTE)&OrgSteamActiveUser_hkcu, &SizeActiveUser_hkcu);
+        RegQueryValueExW(Registrykey, L"Universe", 0, &keyType, (LPBYTE)OrgSteamUniverse_hkcu, &Size4_hkcu);
         logger.write("Found previous registry entry (HKCU) for Steam");
     } else if (RegCreateKeyExW(HKEY_CURRENT_USER, L"Software\\Valve\\Steam\\ActiveProcess", 0, 0, REG_OPTION_NON_VOLATILE,
             KEY_ALL_ACCESS, NULL, &Registrykey, NULL) == ERROR_SUCCESS) {
@@ -177,18 +183,18 @@ bool patch_registry_hkcu()
         return false;
     }
 
-    RegSetValueExW(Registrykey, L"ActiveUser", NULL, REG_DWORD, (const BYTE *)&UserId, sizeof(DWORD));
-    RegSetValueExW(Registrykey, L"pid", NULL, REG_DWORD, (const BYTE *)&ProcessID, sizeof(DWORD));
     auto client_path = common_helpers::to_wstr(ClientPath);
     auto client64_path = common_helpers::to_wstr(Client64Path);
+    RegSetValueExW(Registrykey, L"pid", NULL, REG_DWORD, (const BYTE *)&ProcessID, sizeof(DWORD));
     RegSetValueExW(Registrykey, L"SteamClientDll", NULL, REG_SZ, (const BYTE*)(client_path).c_str(), static_cast<DWORD>((client_path.size() + 1) * sizeof(client_path[0])));
     RegSetValueExW(Registrykey, L"SteamClientDll64", NULL, REG_SZ, (const BYTE*)client64_path.c_str(), static_cast<DWORD>((client64_path.size() + 1) * sizeof(client64_path[0])));
+    RegSetValueExW(Registrykey, L"ActiveUser", NULL, REG_DWORD, (const BYTE *)&UserId, sizeof(DWORD));
     RegSetValueExW(Registrykey, L"Universe", NULL, REG_SZ, (const BYTE *)STEAM_UNIVERSE, (DWORD)sizeof(STEAM_UNIVERSE));
     RegCloseKey(Registrykey);
     return true;
 }
 
-void cleanup_registry_hkcu()
+static void cleanup_registry_hkcu()
 {
     if (!orig_steam_hkcu) return;
 
@@ -196,8 +202,10 @@ void cleanup_registry_hkcu()
     HKEY Registrykey = { 0 };
     if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Valve\\Steam\\ActiveProcess", 0, KEY_ALL_ACCESS, &Registrykey) == ERROR_SUCCESS) {
         // Restore the values.
-        RegSetValueExW(Registrykey, L"SteamClientDll", NULL, REG_SZ, (LPBYTE)OrgSteamCDir_hkcu, Size1_hkcu);
-        RegSetValueExW(Registrykey, L"SteamClientDll64", NULL, REG_SZ, (LPBYTE)OrgSteamCDir64_hkcu, Size2_hkcu);
+        RegSetValueExW(Registrykey, L"SteamClientDll", NULL, REG_SZ, (const BYTE *)OrgSteamCDir_hkcu, Size1_hkcu);
+        RegSetValueExW(Registrykey, L"SteamClientDll64", NULL, REG_SZ, (const BYTE *)OrgSteamCDir64_hkcu, Size2_hkcu);
+        RegSetValueExW(Registrykey, L"ActiveUser", NULL, REG_DWORD, (const BYTE *)&OrgSteamActiveUser_hkcu, sizeof(DWORD));
+        RegSetValueExW(Registrykey, L"Universe", NULL, REG_SZ, (const BYTE *)OrgSteamUniverse_hkcu, Size4_hkcu);
 
         // Close the HKEY Handle.
         RegCloseKey(Registrykey);
@@ -207,17 +215,78 @@ void cleanup_registry_hkcu()
 }
 
 
-bool orig_steam_hklm = false;
-WCHAR OrgInstallPath_hklm[8192] = { 0 };
-DWORD Size1_hklm = _countof(OrgInstallPath_hklm);
-bool patch_registry_hklm()
+static bool orig_steam_hkcu_2 = false;
+static WCHAR OrgSteamModDir_hkcu_2[8192] = { 0 };
+static DWORD Size1_hkcu_2 = sizeof(OrgSteamModDir_hkcu_2);
+static WCHAR OrgSteamPath_hkcu_2[8192] = { 0 };
+static DWORD Size2_hkcu_2 = sizeof(OrgSteamPath_hkcu_2);
+static WCHAR OrgSteamExe_2[8192] = { 0 };
+static DWORD Size3_hkcu_2 = sizeof(OrgSteamExe_2);
+static bool patch_registry_hkcu_2()
+{
+    HKEY Registrykey = { 0 };
+    if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Valve\\Steam", 0, KEY_ALL_ACCESS, &Registrykey) == ERROR_SUCCESS) {
+        orig_steam_hkcu_2 = true;
+        // Get original values to restore later.
+        DWORD keyType = REG_SZ;
+        RegQueryValueExW(Registrykey, L"SourceModInstallPath", 0, &keyType, (LPBYTE)OrgSteamModDir_hkcu_2, &Size1_hkcu_2);
+        RegQueryValueExW(Registrykey, L"SteamPath", 0, &keyType, (LPBYTE)OrgSteamPath_hkcu_2, &Size2_hkcu_2);
+        RegQueryValueExW(Registrykey, L"SteamExe", 0, &keyType, (LPBYTE)OrgSteamExe_2, &Size3_hkcu_2);
+        logger.write("Found previous registry entry (HKCU #2) for Steam");
+    } else if (RegCreateKeyExW(HKEY_CURRENT_USER, L"Software\\Valve\\Steam", 0, 0, REG_OPTION_NON_VOLATILE,
+            KEY_ALL_ACCESS, NULL, &Registrykey, NULL) == ERROR_SUCCESS) {
+        logger.write("Created new registry entry (HKCU #2) for Steam");
+    } else {
+        logger.write("Unable to patch Registry (HKCU #2), error = " + std::to_string(GetLastError()));
+        return false;
+    }
+
+    auto my_path = common_helpers::to_wstr(pe_helpers::get_current_exe_path());
+    my_path.pop_back(); // remove last '\\'
+    const auto my_exe = common_helpers::to_wstr(pe_helpers::get_current_exe_path() + pe_helpers::get_current_exe_name());
+    const auto appid_dword = std::stoul(AppId);
+    RegSetValueExW(Registrykey, L"RunningAppID", NULL, REG_DWORD, (const BYTE *)&appid_dword, sizeof(DWORD));
+    RegSetValueExW(Registrykey, L"SourceModInstallPath", NULL, REG_SZ, (const BYTE*)my_path.c_str(), static_cast<DWORD>((my_path.size() + 1) * sizeof(my_path[0])));
+    RegSetValueExW(Registrykey, L"SteamPath", NULL, REG_SZ, (const BYTE*)my_path.c_str(), static_cast<DWORD>((my_path.size() + 1) * sizeof(my_path[0])));
+    RegSetValueExW(Registrykey, L"SteamExe", NULL, REG_SZ, (const BYTE*)my_exe.c_str(), static_cast<DWORD>((my_exe.size() + 1) * sizeof(my_exe[0])));
+    RegCloseKey(Registrykey);
+    return true;
+}
+
+static void cleanup_registry_hkcu_2()
+{
+    if (!orig_steam_hkcu_2) return;
+
+    logger.write("restoring registry entries (HKCU #2)");
+    HKEY Registrykey = { 0 };
+    if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Valve\\Steam", 0, KEY_ALL_ACCESS, &Registrykey) == ERROR_SUCCESS) {
+        // Restore the values.
+        RegSetValueExW(Registrykey, L"SourceModInstallPath", NULL, REG_SZ, (LPBYTE)OrgSteamModDir_hkcu_2, Size1_hkcu_2);
+        RegSetValueExW(Registrykey, L"SteamPath", NULL, REG_SZ, (LPBYTE)OrgSteamPath_hkcu_2, Size2_hkcu_2);
+        RegSetValueExW(Registrykey, L"SteamExe", NULL, REG_SZ, (LPBYTE)OrgSteamExe_2, Size3_hkcu_2);
+
+        // Close the HKEY Handle.
+        RegCloseKey(Registrykey);
+    } else {
+        logger.write("Unable to restore the original registry entry (HKCU #2), error = " + std::to_string(GetLastError()));
+    }
+}
+
+
+static bool orig_steam_hklm = false;
+static WCHAR OrgInstallPath_hklm[8192] = { 0 };
+static DWORD Size1_hklm = sizeof(OrgInstallPath_hklm);
+static WCHAR OrgUniverse_hklm[8192] = { 0 };
+static DWORD Size2_hklm = sizeof(OrgUniverse_hklm);
+static bool patch_registry_hklm()
 {
     HKEY Registrykey = { 0 };
     if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, hklm_path.c_str(), 0, KEY_ALL_ACCESS, &Registrykey) == ERROR_SUCCESS) {
         orig_steam_hklm = true;
         // Get original values to restore later.
         DWORD keyType = REG_SZ;
-        RegQueryValueExW(Registrykey, L"InstallPath", 0, &keyType, (LPBYTE)&OrgInstallPath_hklm, &Size1_hklm);
+        RegQueryValueExW(Registrykey, L"InstallPath", 0, &keyType, (LPBYTE)OrgInstallPath_hklm, &Size1_hklm);
+        RegQueryValueExW(Registrykey, L"Universe", 0, &keyType, (LPBYTE)OrgUniverse_hklm, &Size2_hklm);
         logger.write("Found previous registry entry (HKLM) for Steam");
     } else if (RegCreateKeyExW(HKEY_LOCAL_MACHINE, hklm_path.c_str(), 0, 0, REG_OPTION_NON_VOLATILE,
             KEY_ALL_ACCESS, NULL, &Registrykey, NULL) == ERROR_SUCCESS) {
@@ -227,17 +296,16 @@ bool patch_registry_hklm()
         return false;
     }
 
-    auto path_no_backslash = pe_helpers::get_current_exe_path();
-    path_no_backslash = path_no_backslash.substr(0, path_no_backslash.size() - 1);
-    const auto my_path = common_helpers::to_wstr(path_no_backslash);
-    RegSetValueExW(Registrykey, L"InstallPath", NULL, REG_SZ, (const BYTE*)my_path.c_str(), static_cast<DWORD>((my_path.size() + 1) * sizeof(my_path[0])));
+    auto my_path = common_helpers::to_wstr(pe_helpers::get_current_exe_path());
+    my_path.pop_back(); // remove last '\\'
     RegSetValueExW(Registrykey, L"SteamPID", NULL, REG_DWORD, (const BYTE *)&ProcessID, sizeof(DWORD));
+    RegSetValueExW(Registrykey, L"InstallPath", NULL, REG_SZ, (const BYTE*)my_path.c_str(), static_cast<DWORD>((my_path.size() + 1) * sizeof(my_path[0])));
     RegSetValueExW(Registrykey, L"Universe", NULL, REG_SZ, (const BYTE *)STEAM_UNIVERSE, (DWORD)sizeof(STEAM_UNIVERSE));
     RegCloseKey(Registrykey);
     return true;
 }
 
-void cleanup_registry_hklm()
+static void cleanup_registry_hklm()
 {
     if (!orig_steam_hklm) return;
 
@@ -245,6 +313,7 @@ void cleanup_registry_hklm()
     HKEY Registrykey = { 0 };
     if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, hklm_path.c_str(), 0, KEY_ALL_ACCESS, &Registrykey) == ERROR_SUCCESS) {
         RegSetValueExW(Registrykey, L"InstallPath", NULL, REG_SZ, (const BYTE *)OrgInstallPath_hklm, Size1_hklm);
+        RegSetValueExW(Registrykey, L"Universe", NULL, REG_SZ, (const BYTE *)OrgUniverse_hklm, Size2_hklm);
         RegCloseKey(Registrykey);
     } else {
         logger.write("Unable to restore the original registry entry (HKLM), error = " + std::to_string(GetLastError()));
@@ -252,15 +321,20 @@ void cleanup_registry_hklm()
 }
 
 
-bool orig_steam_hkcs_1 = false;
-bool orig_steam_hkcs_2 = false;
-WCHAR OrgCommand_hkcs[8192] = { 0 };
-DWORD Size1_hkcs = _countof(OrgCommand_hkcs);
-bool patch_registry_hkcs()
+static bool orig_steam_hkcs_1 = false;
+static bool orig_steam_hkcs_2 = false;
+static WCHAR OrgCommand_hkcs[8192] = { 0 };
+static DWORD Size1_hkcs = sizeof(OrgCommand_hkcs);
+static WCHAR OrgUrlProtocol_hkcs[8192] = { 0 };
+static DWORD Size2_hkcs = sizeof(OrgUrlProtocol_hkcs);
+static bool patch_registry_hkcs()
 {
     HKEY Registrykey = { 0 };
     if (RegOpenKeyExW(HKEY_CLASSES_ROOT, L"steam", 0, KEY_ALL_ACCESS, &Registrykey) == ERROR_SUCCESS) {
         orig_steam_hkcs_1 = true;
+        // Get original values to restore later.
+        DWORD keyType = REG_SZ;
+        RegQueryValueExW(Registrykey, L"URL Protocol", 0, &keyType, (LPBYTE)&OrgUrlProtocol_hkcs, &Size2_hkcs);
         logger.write("Found previous registry entry (HKCS) #1 for Steam");
     } else if (RegCreateKeyExW(HKEY_CLASSES_ROOT, L"steam", 0, 0, REG_OPTION_NON_VOLATILE,
             KEY_ALL_ACCESS, NULL, &Registrykey, NULL) == ERROR_SUCCESS) {
@@ -296,10 +370,10 @@ bool patch_registry_hkcs()
     return true;
 }
 
-void cleanup_registry_hkcs()
+static void cleanup_registry_hkcs()
 {
     if (orig_steam_hkcs_2) {
-        logger.write("restoring registry entries (HKCS) #1");
+        logger.write("restoring registry entries (HKCS) #2");
         HKEY Registrykey = { 0 };
         if (RegOpenKeyExW(HKEY_CLASSES_ROOT, L"steam\\Shell\\Open\\Command", 0, KEY_ALL_ACCESS, &Registrykey) == ERROR_SUCCESS) {
             RegSetValueExW(Registrykey, L"", NULL, REG_SZ, (const BYTE *)OrgCommand_hkcs, Size1_hkcs);
@@ -309,7 +383,16 @@ void cleanup_registry_hkcs()
         }
     }
 
-    if (!orig_steam_hkcs_1) {
+    if (orig_steam_hkcs_1) {
+        logger.write("restoring registry entries (HKCS) #1");
+        HKEY Registrykey = { 0 };
+        if (RegOpenKeyExW(HKEY_CLASSES_ROOT, L"steam", 0, KEY_ALL_ACCESS, &Registrykey) == ERROR_SUCCESS) {
+            RegSetValueExW(Registrykey, L"URL Protocol", NULL, REG_SZ, (const BYTE *)OrgUrlProtocol_hkcs, Size2_hkcs);
+            RegCloseKey(Registrykey);
+        } else {
+            logger.write("Unable to restore the original registry entry (HKCS) #1, error = " + std::to_string(GetLastError()));
+        }
+    } else {
         logger.write("removing registry entries (HKCS) #2 (added by loader)");
         HKEY Registrykey = { 0 };
         RegDeleteKeyW(HKEY_CLASSES_ROOT, L"steam");
@@ -318,7 +401,7 @@ void cleanup_registry_hkcs()
 
 
 
-void set_steam_env_vars(const std::string &AppId)
+static void set_steam_env_vars(const std::string &AppId)
 {
     SetEnvironmentVariableA("SteamAppId", AppId.c_str());
     SetEnvironmentVariableA("SteamGameId", AppId.c_str());
@@ -580,7 +663,24 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     }
 
     if (!patch_registry_hkcu()) {
+        cleanup_registry_hkcu();
+        cleanup_registry_hkcu_2();
+        cleanup_registry_hklm();
+        cleanup_registry_hkcs();
+    
+        logger.write("Unable to patch Registry (HKCU).");
         MessageBoxA(NULL, "Unable to patch Registry (HKCU).", "ColdClientLoader", MB_ICONERROR);
+        return 1;
+    }
+
+    if (!patch_registry_hkcu_2()) {
+        cleanup_registry_hkcu();
+        cleanup_registry_hkcu_2();
+        cleanup_registry_hklm();
+        cleanup_registry_hkcs();
+    
+        logger.write("Unable to patch Registry (HKCU #2).");
+        MessageBoxA(NULL, "Unable to patch Registry (HKCU #2).", "ColdClientLoader", MB_ICONERROR);
         return 1;
     }
 
@@ -589,7 +689,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     patch_registry_hklm();
     // if (!patch_registry_hklm()) {
     //     cleanup_registry_hkcu();
+    //     cleanup_registry_hkcu_2();
     //     cleanup_registry_hklm();
+    //     cleanup_registry_hkcs();
+    //
+    //     logger.write("Unable to patch Registry (HKLM).");
     //     MessageBoxA(NULL, "Unable to patch Registry (HKLM).", "ColdClientLoader", MB_ICONERROR);
     //     return 1;
     // }
@@ -599,7 +703,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     patch_registry_hkcs();
     // if (!patch_registry_hkcs()) {
     //     cleanup_registry_hkcu();
+    //     cleanup_registry_hkcu_2();
     //     cleanup_registry_hklm();
+    //     cleanup_registry_hkcs();
         
     //     logger.write("Unable to patch Registry (HKCS).");
     //     MessageBoxA(NULL, "Unable to patch Registry (HKCS).", "ColdClientLoader", MB_ICONERROR);
@@ -623,6 +729,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         if (!CreateProcessW(exe_file.c_str(), (LPWSTR)CommandLine.c_str(), NULL, NULL, TRUE, CREATE_SUSPENDED, NULL, common_helpers::to_wstr(ExeRunDir).c_str(), &info, &processInfo)) {
             logger.write("Unable to load the requested EXE file, error = " + std::to_string(GetLastError()));
             cleanup_registry_hkcu();
+            cleanup_registry_hkcu_2();
             cleanup_registry_hklm();
             cleanup_registry_hkcs();
             MessageBoxA(NULL, "Unable to load the requested EXE file.", "ColdClientLoader", MB_ICONERROR);
@@ -647,6 +754,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                     CloseHandle(processInfo.hThread);
 
                     cleanup_registry_hkcu();
+                    cleanup_registry_hkcu_2();
                     cleanup_registry_hklm();
                     cleanup_registry_hkcs();
 
@@ -686,8 +794,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         MessageBoxA(NULL, "Start the game, then press OK when you have finished playing to close the loader", "Cold Client Loader (waiting)", MB_OK);
     }
 
-    if (PersistentMode != 2 || AppId.empty()) { // persistent mode 0 or 1, or mode 2 without app id   
+    if (PersistentMode != 2 || AppId.empty()) { // persistent mode 0 or 1, or mode 2 without app id
         cleanup_registry_hkcu();
+        cleanup_registry_hkcu_2();
         cleanup_registry_hklm();
         cleanup_registry_hkcs();
     }
