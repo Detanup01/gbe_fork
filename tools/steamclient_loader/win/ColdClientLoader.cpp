@@ -244,8 +244,10 @@ static bool patch_registry_hkcu_2()
     auto my_path = common_helpers::to_wstr(pe_helpers::get_current_exe_path());
     my_path.pop_back(); // remove last '\\'
     const auto my_exe = common_helpers::to_wstr(pe_helpers::get_current_exe_path() + pe_helpers::get_current_exe_name());
-    const auto appid_dword = std::stoul(AppId);
-    RegSetValueExW(Registrykey, L"RunningAppID", NULL, REG_DWORD, (const BYTE *)&appid_dword, sizeof(DWORD));
+    if (AppId.size()) { // empty in persistent mode = 2
+        const auto appid_dword = std::stoul(AppId);
+        RegSetValueExW(Registrykey, L"RunningAppID", NULL, REG_DWORD, (const BYTE*)&appid_dword, sizeof(DWORD));
+    }
     RegSetValueExW(Registrykey, L"SourceModInstallPath", NULL, REG_SZ, (const BYTE*)my_path.c_str(), static_cast<DWORD>((my_path.size() + 1) * sizeof(my_path[0])));
     RegSetValueExW(Registrykey, L"SteamPath", NULL, REG_SZ, (const BYTE*)my_path.c_str(), static_cast<DWORD>((my_path.size() + 1) * sizeof(my_path[0])));
     RegSetValueExW(Registrykey, L"SteamExe", NULL, REG_SZ, (const BYTE*)my_exe.c_str(), static_cast<DWORD>((my_exe.size() + 1) * sizeof(my_exe[0])));
@@ -364,7 +366,7 @@ static bool patch_registry_hkcs()
     RegSetValueExW(Registrykey, L"URL Protocol", NULL, REG_SZ, (const BYTE *)L"", (DWORD)sizeof(L""));
     RegCloseKey(Registrykey);
 
-    const auto cmd = common_helpers::to_wstr(pe_helpers::get_current_exe_path() + "steam.exe -- \"%1\"");
+    const auto cmd = common_helpers::to_wstr("\"" + pe_helpers::get_current_exe_path() + pe_helpers::get_current_exe_name() + "\" -- \"%1\"");
     RegSetValueExW(Registrykey_2, L"", NULL, REG_SZ, (const BYTE*)cmd.c_str(), static_cast<DWORD>((cmd.size() + 1) * sizeof(cmd[0])));
     RegCloseKey(Registrykey_2);
     return true;
@@ -637,12 +639,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
             return 1;
         }
     } else { // steam://run/
-        constexpr const static wchar_t STEAM_LAUNCH_CMD_1[] = L"steam://run/";
+        constexpr const static wchar_t STEAM_LAUNCH_CMD_1[] = L"-- \"steam://run/";
         constexpr const static wchar_t STEAM_LAUNCH_CMD_2[] = L"-- \"steam://rungameid/";
         AppId.clear(); // we don't care about the app id in the ini
         auto my_cmd = lpCmdLine && lpCmdLine[0]
             ? std::wstring(lpCmdLine)
             : std::wstring();
+        //MessageBoxW(NULL, (my_cmd + L" ||| " + std::to_wstring(my_cmd.size())).c_str(), L"DEBUG ME", MB_OK);
         logger.write(L"persistent mode 2 detecting steam launch cmd from: '" + my_cmd + L"'");
         if (my_cmd.find(STEAM_LAUNCH_CMD_1) == 0) {
             AppId = common_helpers::to_str( my_cmd.substr(sizeof(STEAM_LAUNCH_CMD_1) / sizeof(STEAM_LAUNCH_CMD_1[0]), my_cmd.find_first_of(L" \t")) );
