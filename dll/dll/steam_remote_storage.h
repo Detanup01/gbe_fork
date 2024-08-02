@@ -84,6 +84,7 @@ private:
     class Ugc_Remote_Storage_Bridge *ugc_bridge{};
     class Local_Storage *local_storage{};
     class SteamCallResults *callback_results{};
+    class SteamCallBacks *callbacks{};
 
     std::vector<struct Async_Read> async_reads{};
     std::vector<struct Stream_Write> stream_writes{};
@@ -94,7 +95,7 @@ private:
 
 public:
 
-    Steam_Remote_Storage(class Settings *settings, class Ugc_Remote_Storage_Bridge *ugc_bridge, class Local_Storage *local_storage, class SteamCallResults *callback_results);
+    Steam_Remote_Storage(class Settings *settings, class Ugc_Remote_Storage_Bridge *ugc_bridge, class Local_Storage *local_storage, class SteamCallResults *callback_results, class SteamCallBacks *callbacks);
 
     // NOTE
     //

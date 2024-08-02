@@ -42,12 +42,13 @@ static void copy_file(const std::string &src_filepath, const std::string &dst_fi
     } catch(...) {}
 }
 
-Steam_Remote_Storage::Steam_Remote_Storage(class Settings *settings, class Ugc_Remote_Storage_Bridge *ugc_bridge, class Local_Storage *local_storage, class SteamCallResults *callback_results)
+Steam_Remote_Storage::Steam_Remote_Storage(class Settings *settings, class Ugc_Remote_Storage_Bridge *ugc_bridge, class Local_Storage *local_storage, class SteamCallResults *callback_results, class SteamCallBacks *callbacks)
 {
     this->settings = settings;
     this->ugc_bridge = ugc_bridge;
     this->local_storage = local_storage;
     this->callback_results = callback_results;
+    this->callbacks = callbacks;
 
     steam_cloud_enabled = true;
 }
@@ -100,7 +101,9 @@ SteamAPICall_t Steam_Remote_Storage::FileWriteAsync( const char *pchFile, const 
     RemoteStorageFileWriteAsyncComplete_t data;
     data.m_eResult = success ? k_EResultOK : k_EResultFail;
 
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.01);
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.01);
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.01);
+    return ret;
 }
 
 
@@ -129,7 +132,9 @@ SteamAPICall_t Steam_Remote_Storage::FileReadAsync( const char *pchFile, uint32 
     a_read.size = size;
 
     async_reads.push_back(a_read);
+
     callback_results->addCallResult(data.m_hFileReadAsync, data.k_iCallback, &data, sizeof(data), 0.0);
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.0);
     return data.m_hFileReadAsync;
 }
 
@@ -160,7 +165,7 @@ bool Steam_Remote_Storage::FileReadAsyncComplete( SteamAPICall_t hReadCall, void
 
 bool Steam_Remote_Storage::FileForget( const char *pchFile )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("'%s'", pchFile);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!pchFile || !pchFile[0]) return false;
 
@@ -169,7 +174,7 @@ bool Steam_Remote_Storage::FileForget( const char *pchFile )
 
 bool Steam_Remote_Storage::FileDelete( const char *pchFile )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("'%s'", pchFile);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!pchFile || !pchFile[0]) return false;
     
@@ -179,7 +184,7 @@ bool Steam_Remote_Storage::FileDelete( const char *pchFile )
 STEAM_CALL_RESULT( RemoteStorageFileShareResult_t )
 SteamAPICall_t Steam_Remote_Storage::FileShare( const char *pchFile )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("'%s'", pchFile);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!pchFile || !pchFile[0]) return k_uAPICallInvalid;
 
@@ -193,12 +198,14 @@ SteamAPICall_t Steam_Remote_Storage::FileShare( const char *pchFile )
         data.m_eResult = k_EResultFileNotFound;
     }
 
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 bool Steam_Remote_Storage::SetSyncPlatforms( const char *pchFile, ERemoteStoragePlatform eRemoteStoragePlatform )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("'%s' %i", pchFile, (int)eRemoteStoragePlatform);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!pchFile || !pchFile[0]) return false;
     
@@ -209,13 +216,15 @@ bool Steam_Remote_Storage::SetSyncPlatforms( const char *pchFile, ERemoteStorage
 // file operations that cause network IO
 UGCFileWriteStreamHandle_t Steam_Remote_Storage::FileWriteStreamOpen( const char *pchFile )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("'%s'", pchFile);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!pchFile || !pchFile[0]) return k_UGCFileStreamHandleInvalid;
     
-    static UGCFileWriteStreamHandle_t handle;
+    static UGCFileWriteStreamHandle_t handle = 0;
     ++handle;
-    struct Stream_Write stream_write;
+    if (!handle) handle = 1;
+
+    struct Stream_Write stream_write{};
     stream_write.file_name = std::string(pchFile);
     stream_write.write_stream_handle = handle;
     stream_writes.push_back(stream_write);
@@ -411,14 +420,15 @@ SteamAPICall_t Steam_Remote_Storage::UGCDownload( UGCHandle_t hContent, uint32 u
 
     RemoteStorageDownloadUGCResult_t data{};
     data.m_hFile = hContent;
+    data.m_nAppID = settings->get_local_game_id().AppID();
 
     if (shared_files.count(hContent)) {
         data.m_eResult = k_EResultOK;
-        data.m_nAppID = settings->get_local_game_id().AppID();
         data.m_ulSteamIDOwner = settings->get_local_steam_id().ConvertToUint64();
         data.m_nSizeInBytes = local_storage->file_size(Local_Storage::remote_storage_folder, shared_files[hContent]);
 
         shared_files[hContent].copy(data.m_pchFileName, sizeof(data.m_pchFileName) - 1);
+        PRINT_DEBUG("  FileShare data.m_pchFileName = '%s'", data.m_pchFileName);
 
         auto [ele_itr, _] = downloaded_files.insert_or_assign(hContent, Downloaded_File::DownloadSource::AfterFileShare);
         auto &ele = ele_itr->second;
@@ -434,24 +444,25 @@ SteamAPICall_t Steam_Remote_Storage::UGCDownload( UGCHandle_t hContent, uint32 u
             : mod.previewFileSize;
 
         data.m_eResult = k_EResultOK;
-        data.m_nAppID = settings->get_local_game_id().AppID();
         data.m_ulSteamIDOwner = mod.steamIDOwner;
         data.m_nSizeInBytes = mod_size;
         data.m_ulSteamIDOwner = mod.steamIDOwner;
 
         mod_name.copy(data.m_pchFileName, sizeof(data.m_pchFileName) - 1);
+        PRINT_DEBUG("  QueryUGCRequest data.m_pchFileName = '%s'", data.m_pchFileName);
         
         auto [ele_itr, _] = downloaded_files.insert_or_assign(hContent, Downloaded_File::DownloadSource::AfterSendQueryUGCRequest);
         auto &ele = ele_itr->second;
         ele.file = mod_name;
         ele.total_size = mod_size;
         ele.mod_query_info = query_res.value();
-        
     } else {
         data.m_eResult = k_EResultFileNotFound; //TODO: not sure if this is the right result
     }
 
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 STEAM_CALL_RESULT( RemoteStorageDownloadUGCResult_t )
@@ -790,12 +801,13 @@ SteamAPICall_t Steam_Remote_Storage::GetPublishedFileDetails( PublishedFileId_t 
         mod.tags.copy(data.m_rgchTags, sizeof(data.m_rgchTags) - 1);
         mod.title.copy(data.m_rgchTitle, sizeof(data.m_rgchTitle) - 1);
         mod.workshopItemURL.copy(data.m_rgchURL, sizeof(data.m_rgchURL) - 1);
-
     } else {
         data.m_eResult = EResult::k_EResultFail; // TODO is this correct?
     }
 
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 
     // return 0;
 /*
@@ -830,6 +842,7 @@ SteamAPICall_t Steam_Remote_Storage::EnumerateUserPublishedFiles( uint32 unStart
     PRINT_DEBUG("TODO %u", unStartIndex);
     // TODO is this implementation correct?
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
     RemoteStorageEnumerateUserPublishedFilesResult_t data{};
 
     // collect all published mods by this user
@@ -861,7 +874,9 @@ SteamAPICall_t Steam_Remote_Storage::EnumerateUserPublishedFiles( uint32 unStart
         data.m_nResultsReturned = iterated;
     }
 
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 STEAM_CALL_RESULT( RemoteStorageSubscribePublishedFileResult_t )
@@ -882,7 +897,9 @@ SteamAPICall_t Steam_Remote_Storage::SubscribePublishedFile( PublishedFileId_t u
         data.m_eResult = EResult::k_EResultFail; // TODO is this correct?
     }
 
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 STEAM_CALL_RESULT( RemoteStorageEnumerateUserSubscribedFilesResult_t )
@@ -914,7 +931,9 @@ SteamAPICall_t Steam_Remote_Storage::EnumerateUserSubscribedFiles( uint32 unStar
         data.m_nResultsReturned = iterated;
     }
 
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 STEAM_CALL_RESULT( RemoteStorageUnsubscribePublishedFileResult_t )
@@ -935,7 +954,9 @@ SteamAPICall_t Steam_Remote_Storage::UnsubscribePublishedFile( PublishedFileId_t
         data.m_eResult = k_EResultFail;
     }
 
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 bool Steam_Remote_Storage::UpdatePublishedFileSetChangeDescription( PublishedFileUpdateHandle_t updateHandle, const char *pchChangeDescription )
@@ -967,7 +988,9 @@ SteamAPICall_t Steam_Remote_Storage::GetPublishedItemVoteDetails( PublishedFileI
         data.m_eResult = EResult::k_EResultFail; // TODO is this correct?
     }
 
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 STEAM_CALL_RESULT( RemoteStorageUpdateUserPublishedItemVoteResult_t )
@@ -993,7 +1016,9 @@ SteamAPICall_t Steam_Remote_Storage::UpdateUserPublishedItemVote( PublishedFileI
         data.m_eResult = EResult::k_EResultFail; // TODO is this correct?
     }
 
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 STEAM_CALL_RESULT( RemoteStorageGetPublishedItemVoteDetailsResult_t )
@@ -1022,22 +1047,26 @@ SteamAPICall_t Steam_Remote_Storage::GetUserPublishedItemVoteDetails( PublishedF
         data.m_eResult = EResult::k_EResultFail; // TODO is this correct?
     }
 
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
-
-    return 0;
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 STEAM_CALL_RESULT( RemoteStorageEnumerateUserPublishedFilesResult_t )
 SteamAPICall_t Steam_Remote_Storage::EnumerateUserSharedWorkshopFiles( CSteamID steamId, uint32 unStartIndex, SteamParamStringArray_t *pRequiredTags, SteamParamStringArray_t *pExcludedTags )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
     RemoteStorageEnumerateUserPublishedFilesResult_t data{};
     data.m_eResult = k_EResultOK;
     data.m_nResultsReturned = 0;
     data.m_nTotalResultCount = 0;
     //data.m_rgPublishedFileId;
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 STEAM_CALL_RESULT( RemoteStorageEnumerateUserPublishedFilesResult_t )
@@ -1086,12 +1115,15 @@ SteamAPICall_t Steam_Remote_Storage::EnumeratePublishedWorkshopFiles( EWorkshopE
     PRINT_DEBUG_TODO();
     // TODO is this implementation correct?
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
     RemoteStorageEnumerateWorkshopFilesResult_t data{};
     data.m_eResult = EResult::k_EResultOK;
     data.m_nResultsReturned = 0;
     data.m_nTotalResultCount = 0;
     
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 
@@ -1145,7 +1177,9 @@ SteamAPICall_t Steam_Remote_Storage::UGCDownloadToLocation( UGCHandle_t hContent
         data.m_eResult = k_EResultFileNotFound; //TODO: not sure if this is the right result
     }
 
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 // Cloud dynamic state change notification
