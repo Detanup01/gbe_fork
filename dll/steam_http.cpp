@@ -180,7 +180,9 @@ void Steam_HTTP::online_http_request(Steam_Http_Request *request, SteamAPICall_t
             data.m_eStatusCode = k_EHTTPStatusCode200OK;
         }
 
-        if (pCallHandle) *pCallHandle = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1);
+        auto callres = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1);
+        if (pCallHandle) *pCallHandle = callres;
+
         callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.1);
     };
 
@@ -356,7 +358,9 @@ bool Steam_HTTP::SendHTTPRequest( HTTPRequestHandle hRequest, SteamAPICall_t *pC
             data.m_eStatusCode = k_EHTTPStatusCode200OK;
         }
 
-        if (pCallHandle) *pCallHandle = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1);
+        auto callres = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1);
+        if (pCallHandle) *pCallHandle = callres;
+        
         callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.1);
     }
 
