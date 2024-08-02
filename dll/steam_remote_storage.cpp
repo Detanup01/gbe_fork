@@ -18,14 +18,13 @@
 #include "dll/steam_remote_storage.h"
 
 
-Downloaded_File::Downloaded_File()
-{
+Downloaded_File::Downloaded_File(DownloadSource src)
+    :source(src)
+{ }
 
-}
-
-Downloaded_File::~Downloaded_File()
+Downloaded_File::DownloadSource Downloaded_File::get_source() const
 {
-    
+    return source;
 }
 
 static void copy_file(const std::string &src_filepath, const std::string &dst_filepath)
@@ -421,9 +420,10 @@ SteamAPICall_t Steam_Remote_Storage::UGCDownload( UGCHandle_t hContent, uint32 u
 
         shared_files[hContent].copy(data.m_pchFileName, sizeof(data.m_pchFileName) - 1);
 
-        downloaded_files[hContent].source = Downloaded_File::DownloadSource::AfterFileShare;
-        downloaded_files[hContent].file = shared_files[hContent];
-        downloaded_files[hContent].total_size = data.m_nSizeInBytes;
+        auto [ele_itr, _] = downloaded_files.insert_or_assign(hContent, Downloaded_File::DownloadSource::AfterFileShare);
+        auto &ele = ele_itr->second;
+        ele.file = shared_files[hContent];
+        ele.total_size = data.m_nSizeInBytes;
     } else if (auto query_res = ugc_bridge->get_ugc_query_result(hContent)) {
         auto mod = settings->getMod(query_res.value().mod_id);
         auto &mod_name = query_res.value().is_primary_file
@@ -441,11 +441,11 @@ SteamAPICall_t Steam_Remote_Storage::UGCDownload( UGCHandle_t hContent, uint32 u
 
         mod_name.copy(data.m_pchFileName, sizeof(data.m_pchFileName) - 1);
         
-        downloaded_files[hContent].source = Downloaded_File::DownloadSource::AfterSendQueryUGCRequest;
-        downloaded_files[hContent].file = mod_name;
-        downloaded_files[hContent].total_size = mod_size;
-        
-        downloaded_files[hContent].mod_query_info = query_res.value();
+        auto [ele_itr, _] = downloaded_files.insert_or_assign(hContent, Downloaded_File::DownloadSource::AfterSendQueryUGCRequest);
+        auto &ele = ele_itr->second;
+        ele.file = mod_name;
+        ele.total_size = mod_size;
+        ele.mod_query_info = query_res.value();
         
     } else {
         data.m_eResult = k_EResultFileNotFound; //TODO: not sure if this is the right result
@@ -512,7 +512,7 @@ int32 Steam_Remote_Storage::UGCRead( UGCHandle_t hContent, void *pvData, int32 c
     Downloaded_File &dwf = f_itr->second;
 
     // depending on the download source, we have to decide where to grab the content/data
-    switch (dwf.source)
+    switch (dwf.get_source())
     {
     case Downloaded_File::DownloadSource::AfterFileShare: {
         PRINT_DEBUG("  source = AfterFileShare '%s'", dwf.file.c_str());
@@ -523,14 +523,14 @@ int32 Steam_Remote_Storage::UGCRead( UGCHandle_t hContent, void *pvData, int32 c
     
     case Downloaded_File::DownloadSource::AfterSendQueryUGCRequest:
     case Downloaded_File::DownloadSource::FromUGCDownloadToLocation: {
-        PRINT_DEBUG("  source = AfterSendQueryUGCRequest || FromUGCDownloadToLocation [%i]", (int)dwf.source);
+        PRINT_DEBUG("  source = AfterSendQueryUGCRequest || FromUGCDownloadToLocation [%i]", (int)dwf.get_source());
         auto mod = settings->getMod(dwf.mod_query_info.mod_id);
         auto &mod_name = dwf.mod_query_info.is_primary_file
             ? mod.primaryFileName
             : mod.previewFileName;
 
         std::string mod_fullpath{};
-        if (dwf.source == Downloaded_File::DownloadSource::AfterSendQueryUGCRequest) {
+        if (dwf.get_source() == Downloaded_File::DownloadSource::AfterSendQueryUGCRequest) {
             std::string mod_base_path = dwf.mod_query_info.is_primary_file
                 ? mod.path
                 : Local_Storage::get_game_settings_path() + "mod_images" + PATH_SEPARATOR + std::to_string(mod.id);
@@ -547,7 +547,7 @@ int32 Steam_Remote_Storage::UGCRead( UGCHandle_t hContent, void *pvData, int32 c
     break;
     
     default:
-        PRINT_DEBUG("  unhandled download source %i", (int)dwf.source);
+        PRINT_DEBUG("  unhandled download source %i", (int)dwf.get_source());
         return -1; //TODO: is this the right return value?
     break;
     }
@@ -1134,12 +1134,12 @@ SteamAPICall_t Steam_Remote_Storage::UGCDownloadToLocation( UGCHandle_t hContent
         copy_file(mod_fullpath, pchLocation);
 
         // TODO not sure about this though
-        downloaded_files[hContent].source = Downloaded_File::DownloadSource::FromUGCDownloadToLocation;
-        downloaded_files[hContent].file = mod_name;
-        downloaded_files[hContent].total_size = mod_size;
-        
-        downloaded_files[hContent].mod_query_info = query_res.value();
-        downloaded_files[hContent].download_to_location_fullpath = pchLocation;
+        auto [ele_itr, _] = downloaded_files.insert_or_assign(hContent, Downloaded_File::DownloadSource::FromUGCDownloadToLocation);
+        auto &ele = ele_itr->second;
+        ele.file = mod_name;
+        ele.total_size = mod_size;
+        ele.mod_query_info = query_res.value();
+        ele.download_to_location_fullpath = pchLocation;
         
     } else {
         data.m_eResult = k_EResultFileNotFound; //TODO: not sure if this is the right result
