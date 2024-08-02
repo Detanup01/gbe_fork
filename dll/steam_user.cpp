@@ -445,6 +445,7 @@ bool Steam_User::GetEncryptedAppTicket( void *pTicket, int cbMaxTicket, uint32 *
     if (ticket_size > static_cast<uint32>(cbMaxTicket)) return false;
     encrypted_app_ticket.copy((char *)pTicket, cbMaxTicket);
 
+    PRINT_DEBUG("copied successfully");
     return true;
 }
 

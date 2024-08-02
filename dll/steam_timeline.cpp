@@ -47,6 +47,9 @@ Steam_Timeline::Steam_Timeline(class Settings *settings, class Networking *netwo
     
     // this->network->setCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_Timeline::steam_callback, this);
     this->run_every_runcb->add(&Steam_Timeline::steam_run_every_runcb, this);
+
+    // timeline starts with a default event as seen here: https://www.youtube.com/watch?v=YwBD0E4-EsI
+    SetTimelineGameMode(ETimelineGameMode::k_ETimelineGameMode_Invalid);
 }
 
 Steam_Timeline::~Steam_Timeline()
@@ -55,6 +58,20 @@ Steam_Timeline::~Steam_Timeline()
     this->run_every_runcb->remove(&Steam_Timeline::steam_run_every_runcb, this);
 }
 
+
+// Sets a description for the current game state in the timeline. These help the user to find specific
+// moments in the timeline when saving clips. Setting a new state description replaces any previous
+// description.
+// 
+// Examples could include:
+//  * Where the user is in the world in a single player game
+//  * Which round is happening in a multiplayer game
+//  * The current score for a sports game
+// 	
+// Parameters:
+// - pchDescription: provide a localized string in the language returned by SteamUtils()->GetSteamUILanguage()
+// - flTimeDelta: The time offset in seconds to apply to this event. Negative times indicate an 
+//			event that happened in the past.
 void Steam_Timeline::SetTimelineStateDescription( const char *pchDescription, float flTimeDelta )
 {
     PRINT_DEBUG("'%s' %f", pchDescription, flTimeDelta);
@@ -78,7 +95,6 @@ void Steam_Timeline::SetTimelineStateDescription( const char *pchDescription, fl
 
 }
 
-
 void Steam_Timeline::ClearTimelineStateDescription( float flTimeDelta )
 {
     PRINT_DEBUG("%f", flTimeDelta);
@@ -98,10 +114,35 @@ void Steam_Timeline::ClearTimelineStateDescription( float flTimeDelta )
 
 }
 
-
+// Use this to mark an event on the Timeline. The event can be instantaneous or take some amount of time
+// to complete, depending on the value passed in flDurationSeconds
+// 
+// Examples could include:
+//   * a boss battle
+//   * a cut scene
+//   * a large team fight
+//   * picking up a new weapon or ammunition
+//   * scoring a goal
+// 	
+// Parameters:
+// 
+// - pchIcon: specify the name of the icon uploaded through the Steamworks Partner Site for your title
+//   or one of the provided icons that start with steam_
+// - pchTitle & pchDescription: provide a localized string in the language returned by
+//	 SteamUtils()->GetSteamUILanguage()
+// - unPriority: specify how important this range is compared to other markers provided by the game. 
+//   Ranges with larger priority values will be displayed more prominently in the UI. This value
+//   may be between 0 and k_unMaxTimelinePriority.
+// - flStartOffsetSeconds: The time that this range started relative to now. Negative times 
+//   indicate an event that happened in the past.
+// - flDurationSeconds: How long the time range should be in seconds. For instantaneous events, this
+//   should be 0
+// - ePossibleClip: By setting this parameter to Featured or Standard, the game indicates to Steam that it
+//   would be appropriate to offer this range as a clip to the user. For instantaneous events, the
+//   suggested clip will be for a short time before and after the event itself.
 void Steam_Timeline::AddTimelineEvent( const char *pchIcon, const char *pchTitle, const char *pchDescription, uint32 unPriority, float flStartOffsetSeconds, float flDurationSeconds, ETimelineEventClipPriority ePossibleClip )
 {
-    PRINT_DEBUG("'%s' | '%s' - '%s', %u, [%f, %f) %i", pchIcon, pchTitle, pchDescription, unPriority, flStartOffsetSeconds, flDurationSeconds, (int)ePossibleClip);
+    PRINT_DEBUG("icon='%s' | '%s' - '%s', %u, [%f, %f) %i", pchIcon, pchTitle, pchDescription, unPriority, flStartOffsetSeconds, flDurationSeconds, (int)ePossibleClip);
     std::lock_guard lock(global_mutex);
 
     auto &new_event = timeline_events.emplace_back(TimelineEvent_t{});
@@ -112,24 +153,28 @@ void Steam_Timeline::AddTimelineEvent( const char *pchIcon, const char *pchTitle
 
     new_event.flStartOffsetSeconds = flStartOffsetSeconds;
     
-    // for instantanious event with flDurationSeconds=0 steam creates 8 sec clip
-    if (static_cast<long>(flDurationSeconds * 1000) <= 100) { // <= 100ms
-        flDurationSeconds = 8;
+    // make events last at least 1 sec
+    if (static_cast<long>(flDurationSeconds * 1000) < 1000) { // < 1000ms
+        flDurationSeconds = 1;
+    }
+    // for events with priority=ETimelineEventClipPriority::k_ETimelineEventClipPriority_Featured steam creates ~8 sec clip
+    // seen here: https://www.youtube.com/watch?v=YwBD0E4-EsI
+    if (flDurationSeconds < PRIORITY_CLIP_MIN_SEC && ePossibleClip == ETimelineEventClipPriority::k_ETimelineEventClipPriority_Featured) {
+        flDurationSeconds = PRIORITY_CLIP_MIN_SEC;
     }
     new_event.flDurationSeconds = flDurationSeconds;
 
     new_event.ePossibleClip = ePossibleClip;
 }
 
-
+// Changes the color of the timeline bar. See ETimelineGameMode comments for how to use each value
 void Steam_Timeline::SetTimelineGameMode( ETimelineGameMode eMode )
 {
     PRINT_DEBUG("%i", (int)eMode);
     std::lock_guard lock(global_mutex);
 
-    if (timeline_states.empty()) return;
-
-    timeline_states.back().bar_color = eMode;
+    auto &new_timeline_state = timeline_states.emplace_back(TimelineState_t{});
+    new_timeline_state.bar_color = eMode;
 }
 
 
