@@ -33,15 +33,15 @@ public ISteamGameStats
 
 	struct Attribute_t
 	{
-		AttributeType_t type{};
+		const AttributeType_t type;
 		union {
 			int32 n_data;
 			std::string s_data;
 			float f_data;
-			int64 ll_data{};
+			int64 ll_data;
 		};
 
-		Attribute_t();
+		Attribute_t(AttributeType_t type);
 		Attribute_t(const Attribute_t &other);
 		Attribute_t(Attribute_t &&other);
 		~Attribute_t();

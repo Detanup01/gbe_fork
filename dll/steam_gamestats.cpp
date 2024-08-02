@@ -24,39 +24,54 @@
 #include "dll/steam_gamestats.h"
 
 
-Steam_GameStats::Attribute_t::Attribute_t()
-{ }
+Steam_GameStats::Attribute_t::Attribute_t(AttributeType_t type)
+    :type(type)
+{
+    switch (type)
+    {
+    case AttributeType_t::Float: f_data = 0; break;
+    case AttributeType_t::Int64: ll_data = 0; break;
+    case AttributeType_t::Int: n_data = 0; break;
+    case AttributeType_t::Str: new (&s_data) std::string{}; break;
+    
+    default: PRINT_DEBUG("[X] invalid type %i", (int)type); break;
+    }
+}
 
 Steam_GameStats::Attribute_t::Attribute_t(const Attribute_t &other)
+    :type(type)
 {
-    type = other.type;
     switch (other.type)
     {
     case AttributeType_t::Int: n_data = other.n_data; break;
-    case AttributeType_t::Str: s_data = other.s_data; break;
+    case AttributeType_t::Str: new (&s_data) std::string(other.s_data); break;
     case AttributeType_t::Float: f_data = other.f_data; break;
     case AttributeType_t::Int64: ll_data = other.ll_data; break;
     
-    default: break;
+    default: PRINT_DEBUG("[X] invalid type %i", (int)other.type); break;
     }
 }
 
 Steam_GameStats::Attribute_t::Attribute_t(Attribute_t &&other)
+    :type(type)
 {
-    type = other.type;
     switch (other.type)
     {
     case AttributeType_t::Int: n_data = other.n_data; break;
-    case AttributeType_t::Str: s_data = std::move(other.s_data); break;
+    case AttributeType_t::Str: new (&s_data) std::string(std::move(other.s_data)); break;
     case AttributeType_t::Float: f_data = other.f_data; break;
     case AttributeType_t::Int64: ll_data = other.ll_data; break;
     
-    default: break;
+    default: PRINT_DEBUG("[X] invalid type %i", (int)other.type); break;
     }
 }
 
 Steam_GameStats::Attribute_t::~Attribute_t()
-{ }
+{
+    if (type == AttributeType_t::Str) {
+        s_data.~basic_string();
+    }
+}
 
 
 void Steam_GameStats::steam_gamestats_network_low_level(void *object, Common_Message *msg)
@@ -125,35 +140,15 @@ Steam_GameStats::Table_t *Steam_GameStats::get_or_create_session_table(Session_t
 
 Steam_GameStats::Attribute_t *Steam_GameStats::get_or_create_session_att(const char *att_name, Session_t &session, AttributeType_t type_if_create)
 {
-    Attribute_t *att{};
-    {
-        auto att_itr = session.attributes.find(att_name);
-        if (att_itr != session.attributes.end()) {
-            att = &att_itr->second;
-        } else {
-            att = &session.attributes[att_name];
-            att->type = type_if_create;
-        }
-    }
-
-    return att;
+    auto [ele_it, _] = session.attributes.emplace(att_name, type_if_create);
+    return &ele_it->second;
 }
 
 Steam_GameStats::Attribute_t *Steam_GameStats::get_or_create_row_att(uint64 ulRowID, const char *att_name, Table_t &table, AttributeType_t type_if_create)
 {
-    Attribute_t *att{};
-    {
-        auto &row = table.rows[static_cast<unsigned>(ulRowID)];
-        auto att_itr = row.attributes.find(att_name);
-        if (att_itr != row.attributes.end()) {
-            att = &att_itr->second;
-        } else {
-            att = &row.attributes[att_name];
-            att->type = type_if_create;
-        }
-    }
-
-    return att;
+    auto &row = table.rows[static_cast<unsigned>(ulRowID)];
+    auto [ele_it, _] = row.attributes.emplace(att_name, type_if_create);
+    return &ele_it->second;
 }
 
 
