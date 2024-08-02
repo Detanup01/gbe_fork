@@ -126,9 +126,11 @@ void Steam_User::RefreshSteam2Login()
 bool Steam_User::GetUserDataFolder( char *pchBuffer, int cubBuffer )
 {
     PRINT_DEBUG_ENTRY();
-    if (!cubBuffer) return false;
+    if (!cubBuffer || cubBuffer <= 0) return false;
 
     std::string user_data = local_storage->get_path(Local_Storage::user_data_storage);
+    if (static_cast<size_t>(cubBuffer) <= user_data.size()) return false;
+
     strncpy(pchBuffer, user_data.c_str(), cubBuffer - 1);
     pchBuffer[cubBuffer - 1] = 0;
     return true;
@@ -201,6 +203,7 @@ EVoiceResult Steam_User::GetVoice( bool bWantCompressed, void *pDestBuffer, uint
 {
     PRINT_DEBUG_ENTRY();
     if (!recording) return k_EVoiceResultNotRecording;
+
     double seconds = std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - last_get_voice).count();
     if (bWantCompressed) {
         uint32 towrite = static_cast<uint32>(seconds * 1024.0 * 64.0 / 8.0);
@@ -239,6 +242,7 @@ EVoiceResult Steam_User::DecompressVoice( const void *pCompressed, uint32 cbComp
 {
     PRINT_DEBUG_ENTRY();
     if (!recording) return k_EVoiceResultNotRecording;
+
     uint32 uncompressed = static_cast<uint32>((double)cbCompressed * ((double)nDesiredSampleRate / 8192.0));
     if(nBytesWritten) *nBytesWritten = uncompressed;
     if (uncompressed > cbDestBufferSize) uncompressed = cbDestBufferSize;
@@ -296,7 +300,7 @@ HAuthTicket Steam_User::GetAuthSessionTicket( void *pTicket, int cbMaxTicket, ui
 // the ticket will be returned in callback GetTicketForWebApiResponse_t
 HAuthTicket Steam_User::GetAuthTicketForWebApi( const char *pchIdentity )
 {
-    PRINT_DEBUG("%s", pchIdentity);
+    PRINT_DEBUG("'%s'", pchIdentity);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     return auth_manager->getWebApiTicket(pchIdentity);
@@ -377,7 +381,7 @@ void Steam_User::AdvertiseGame( CSteamID steamIDGameServer, uint32 unIPServer, u
 STEAM_CALL_RESULT( EncryptedAppTicketResponse_t )
 SteamAPICall_t Steam_User::RequestEncryptedAppTicket( void *pDataToInclude, int cbDataToInclude )
 {
-    PRINT_DEBUG("%i", cbDataToInclude);
+    PRINT_DEBUG("%i %p", cbDataToInclude, pDataToInclude);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     EncryptedAppTicketResponse_t data;
 	data.m_eResult = k_EResultOK;
@@ -420,7 +424,9 @@ SteamAPICall_t Steam_User::RequestEncryptedAppTicket( void *pDataToInclude, int 
 
     encrypted_app_ticket = pb.SerializeAsString();
 
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 // retrieve a finished ticket
@@ -471,7 +477,7 @@ int Steam_User::GetPlayerSteamLevel()
 STEAM_CALL_RESULT( StoreAuthURLResponse_t )
 SteamAPICall_t Steam_User::RequestStoreAuthURL( const char *pchRedirectURL )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG_TODO();
     return 0;
 }
 
@@ -506,7 +512,7 @@ bool Steam_User::BIsPhoneRequiringVerification()
 STEAM_CALL_RESULT( MarketEligibilityResponse_t )
 SteamAPICall_t Steam_User::GetMarketEligibility()
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG_TODO();
     return 0;
 }
 
@@ -514,7 +520,7 @@ SteamAPICall_t Steam_User::GetMarketEligibility()
 STEAM_CALL_RESULT( DurationControl_t )
 SteamAPICall_t Steam_User::GetDurationControl()
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG_TODO();
     return 0;
 }
 
