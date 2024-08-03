@@ -110,4 +110,6 @@ std::string get_utc_time();
 std::wstring to_wstr(std::string_view str);
 std::string to_str(std::wstring_view wstr);
 
+std::string str_replace_all(std::string_view source, std::string_view substr, std::string_view replace);
+
 }
