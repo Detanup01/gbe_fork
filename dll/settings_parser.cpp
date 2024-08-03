@@ -1370,6 +1370,9 @@ static void parse_simple_features(class Settings *settings_client, class Setting
     settings_client->allow_unknown_stats = ini.GetBoolValue("main::general", "allow_unknown_stats", settings_client->allow_unknown_stats);
     settings_server->allow_unknown_stats = ini.GetBoolValue("main::general", "allow_unknown_stats", settings_server->allow_unknown_stats);
 
+    settings_client->stat_achievement_progress_functionality = ini.GetBoolValue("main::general", "stat_achievement_progress_functionality", settings_client->stat_achievement_progress_functionality);
+    settings_server->stat_achievement_progress_functionality = ini.GetBoolValue("main::general", "stat_achievement_progress_functionality", settings_server->stat_achievement_progress_functionality);
+
     settings_client->save_only_higher_stat_achievement_progress = ini.GetBoolValue("main::general", "save_only_higher_stat_achievement_progress", settings_client->save_only_higher_stat_achievement_progress);
     settings_server->save_only_higher_stat_achievement_progress = ini.GetBoolValue("main::general", "save_only_higher_stat_achievement_progress", settings_server->save_only_higher_stat_achievement_progress);
 
