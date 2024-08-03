@@ -154,6 +154,8 @@ public:
     Steam_Networking_Messages *steam_gameserver_networking_messages{};
     Steam_Game_Coordinator *steam_gameserver_game_coordinator{};
     Steam_Masterserver_Updater *steam_masterserver_updater{};
+    Steam_GameStats *steam_gameserver_gamestats{};
+    
     Steam_AppTicket *steam_app_ticket{};
 
     Steam_Overlay* steam_overlay{};

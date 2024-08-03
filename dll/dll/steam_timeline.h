@@ -24,6 +24,8 @@ class Steam_Timeline :
 public ISteamTimeline
 {
 private:
+    constexpr const static float PRIORITY_CLIP_MIN_SEC = 8.0f;
+
     struct TimelineEvent_t
     {
         // emu specific: time when this event was added to the list via 'Steam_Timeline::AddTimelineEvent()'
@@ -68,7 +70,7 @@ private:
     class RunEveryRunCB *run_every_runcb{};
 
     std::vector<TimelineEvent_t> timeline_events{};
-    std::vector<TimelineState_t> timeline_states{TimelineState_t{}}; // it seems to always start with a default event
+    std::vector<TimelineState_t> timeline_states{};
 
     // unconditional periodic callback
     void RunCallbacks();

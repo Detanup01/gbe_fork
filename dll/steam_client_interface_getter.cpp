@@ -37,8 +37,16 @@ ISteamGameStats *Steam_Client::GetISteamGameStats( HSteamUser hSteamUser, HSteam
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return nullptr;
 
+    Steam_GameStats *steam_gamestats_tmp{};
+
+    if (steam_pipes[hSteamPipe] == Steam_Pipe::SERVER) {
+        steam_gamestats_tmp = steam_gameserver_gamestats;
+    } else {
+        steam_gamestats_tmp = steam_gamestats;
+    }
+
     if (strcmp(pchVersion, STEAMGAMESTATS_INTERFACE_VERSION) == 0) {
-        return reinterpret_cast<ISteamGameStats *>(static_cast<ISteamGameStats *>(steam_gamestats));
+        return reinterpret_cast<ISteamGameStats *>(static_cast<ISteamGameStats *>(steam_gamestats_tmp));
     }
 
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
@@ -249,13 +257,15 @@ ISteamMatchmakingServers *Steam_Client::GetISteamMatchmakingServers( HSteamUser 
 // returns the a generic interface
 void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
-    PRINT_DEBUG("%s", pchVersion);
+    PRINT_DEBUG("'%s' %i %i", pchVersion, hSteamUser, hSteamPipe);
     if (!steam_pipes.count(hSteamPipe)) return NULL;
 
     bool server = false;
     if (steam_pipes[hSteamPipe] == Steam_Pipe::SERVER) {
+        // PRINT_DEBUG("requesting interface with server pipe");
         server = true;
     } else {
+        // PRINT_DEBUG("requesting interface with client pipe");
         // if this is a user pipe, and version != "SteamNetworkingUtils", and version != "SteamUtils"
         if ((strstr(pchVersion, "SteamNetworkingUtils") != pchVersion) && (strstr(pchVersion, "SteamUtils") != pchVersion)) {
             if (!hSteamUser) return NULL;

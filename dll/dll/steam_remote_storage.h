@@ -36,30 +36,29 @@ struct Stream_Write {
 };
 
 struct Downloaded_File {
-    // --- these are needed due to the usage of union
-    Downloaded_File();
-    ~Downloaded_File();
-    // ---
-
-    enum DownloadSource {
+    enum class DownloadSource {
         AfterFileShare, // attempted download after a call to Steam_Remote_Storage::FileShare()
         AfterSendQueryUGCRequest, // attempted download after a call to Steam_UGC::SendQueryUGCRequest()
         FromUGCDownloadToLocation, // attempted download via Steam_Remote_Storage::UGCDownloadToLocation()
-    } source{};
+    };
+
+private:
+    DownloadSource source;
+
+public:
+    Downloaded_File(DownloadSource src);
+
+    DownloadSource get_source() const;
 
     // *** used in any case
     std::string file{};
     uint64 total_size{};
 
-    // put any additional data needed by other sources here
-    
-    union {
-        // *** used when source = SendQueryUGCRequest only
-        Ugc_Remote_Storage_Bridge::QueryInfo mod_query_info;
+    // *** used when source = AfterSendQueryUGCRequest and FromUGCDownloadToLocation
+    Ugc_Remote_Storage_Bridge::QueryInfo mod_query_info{};
 
-        // *** used when source = FromUGCDownloadToLocation only
-        std::string download_to_location_fullpath;
-    };
+    // *** used when source = FromUGCDownloadToLocation only
+    std::string download_to_location_fullpath{};
     
 };
 
@@ -85,6 +84,7 @@ private:
     class Ugc_Remote_Storage_Bridge *ugc_bridge{};
     class Local_Storage *local_storage{};
     class SteamCallResults *callback_results{};
+    class SteamCallBacks *callbacks{};
 
     std::vector<struct Async_Read> async_reads{};
     std::vector<struct Stream_Write> stream_writes{};
@@ -95,7 +95,7 @@ private:
 
 public:
 
-    Steam_Remote_Storage(class Settings *settings, class Ugc_Remote_Storage_Bridge *ugc_bridge, class Local_Storage *local_storage, class SteamCallResults *callback_results);
+    Steam_Remote_Storage(class Settings *settings, class Ugc_Remote_Storage_Bridge *ugc_bridge, class Local_Storage *local_storage, class SteamCallResults *callback_results, class SteamCallBacks *callbacks);
 
     // NOTE
     //

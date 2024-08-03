@@ -1123,7 +1123,10 @@ SteamAPICall_t Steam_UGC::SetUserItemVote( PublishedFileId_t nPublishedFileID, b
         ++mod.votesDown;
     }
     settings->addModDetails(nPublishedFileID, mod);
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 
@@ -1141,7 +1144,10 @@ SteamAPICall_t Steam_UGC::GetUserItemVote( PublishedFileId_t nPublishedFileID )
     data.m_bVotedDown = mod.votesDown;
     data.m_bVotedUp = mod.votesUp;
     data.m_bVoteSkipped = true;
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 
@@ -1166,7 +1172,9 @@ SteamAPICall_t Steam_UGC::AddItemToFavorites( AppId_t nAppId, PublishedFileId_t 
         data.m_eResult = EResult::k_EResultOK;
     }
     
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 
@@ -1191,7 +1199,9 @@ SteamAPICall_t Steam_UGC::RemoveItemFromFavorites( AppId_t nAppId, PublishedFile
         data.m_eResult = EResult::k_EResultOK;
     }
     
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 
@@ -1209,7 +1219,9 @@ SteamAPICall_t Steam_UGC::SubscribeItem( PublishedFileId_t nPublishedFileID )
     } else {
         data.m_eResult = k_EResultFail;
     }
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
  // subscribe to this item, will be installed ASAP
 
@@ -1228,7 +1240,9 @@ SteamAPICall_t Steam_UGC::UnsubscribeItem( PublishedFileId_t nPublishedFileID )
         ugc_bridge->remove_subbed_mod(nPublishedFileID);
     }
 
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
  // unsubscribe from this item, will be uninstalled after game quits
 
@@ -1383,7 +1397,10 @@ SteamAPICall_t Steam_UGC::StartPlaytimeTracking( PublishedFileId_t *pvecPublishe
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     StopPlaytimeTrackingResult_t data;
     data.m_eResult = k_EResultOK;
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 STEAM_CALL_RESULT( StopPlaytimeTrackingResult_t )
@@ -1393,7 +1410,10 @@ SteamAPICall_t Steam_UGC::StopPlaytimeTracking( PublishedFileId_t *pvecPublished
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     StopPlaytimeTrackingResult_t data;
     data.m_eResult = k_EResultOK;
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 STEAM_CALL_RESULT( StopPlaytimeTrackingResult_t )
@@ -1403,7 +1423,10 @@ SteamAPICall_t Steam_UGC::StopPlaytimeTrackingForAllItems()
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     StopPlaytimeTrackingResult_t data;
     data.m_eResult = k_EResultOK;
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 

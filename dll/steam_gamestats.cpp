@@ -24,39 +24,54 @@
 #include "dll/steam_gamestats.h"
 
 
-Steam_GameStats::Attribute_t::Attribute_t()
-{ }
+Steam_GameStats::Attribute_t::Attribute_t(AttributeType_t type)
+    :type(type)
+{
+    switch (type)
+    {
+    case AttributeType_t::Float: f_data = 0; break;
+    case AttributeType_t::Int64: ll_data = 0; break;
+    case AttributeType_t::Int: n_data = 0; break;
+    case AttributeType_t::Str: new (&s_data) std::string{}; break;
+    
+    default: PRINT_DEBUG("[X] invalid type %i", (int)type); break;
+    }
+}
 
 Steam_GameStats::Attribute_t::Attribute_t(const Attribute_t &other)
+    :type(type)
 {
-    type = other.type;
     switch (other.type)
     {
     case AttributeType_t::Int: n_data = other.n_data; break;
-    case AttributeType_t::Str: s_data = other.s_data; break;
+    case AttributeType_t::Str: new (&s_data) std::string(other.s_data); break;
     case AttributeType_t::Float: f_data = other.f_data; break;
     case AttributeType_t::Int64: ll_data = other.ll_data; break;
     
-    default: break;
+    default: PRINT_DEBUG("[X] invalid type %i", (int)other.type); break;
     }
 }
 
 Steam_GameStats::Attribute_t::Attribute_t(Attribute_t &&other)
+    :type(type)
 {
-    type = other.type;
     switch (other.type)
     {
     case AttributeType_t::Int: n_data = other.n_data; break;
-    case AttributeType_t::Str: s_data = std::move(other.s_data); break;
+    case AttributeType_t::Str: new (&s_data) std::string(std::move(other.s_data)); break;
     case AttributeType_t::Float: f_data = other.f_data; break;
     case AttributeType_t::Int64: ll_data = other.ll_data; break;
     
-    default: break;
+    default: PRINT_DEBUG("[X] invalid type %i", (int)other.type); break;
     }
 }
 
 Steam_GameStats::Attribute_t::~Attribute_t()
-{ }
+{
+    if (type == AttributeType_t::Str) {
+        s_data.~basic_string();
+    }
+}
 
 
 void Steam_GameStats::steam_gamestats_network_low_level(void *object, Common_Message *msg)
@@ -83,17 +98,25 @@ Steam_GameStats::Steam_GameStats(class Settings *settings, class Networking *net
     this->callbacks = callbacks;
     this->run_every_runcb = run_every_runcb;
     
-    this->network->setCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_GameStats::steam_gamestats_network_low_level, this);
+    // this->network->setCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_GameStats::steam_gamestats_network_low_level, this);
     this->run_every_runcb->add(&Steam_GameStats::steam_gamestats_run_every_runcb, this);
 
 }
 
 Steam_GameStats::~Steam_GameStats()
 {
-    this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_GameStats::steam_gamestats_network_low_level, this);
+    // this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_GameStats::steam_gamestats_network_low_level, this);
     this->run_every_runcb->remove(&Steam_GameStats::steam_gamestats_run_every_runcb, this);
 }
 
+
+uint64 Steam_GameStats::create_session_id() const
+{
+    static uint64 session_id = 0;
+    session_id++;
+    if (!session_id) session_id = 1; // not sure if 0 is a good idea
+    return session_id;
+}
 
 bool Steam_GameStats::valid_stats_account_type(int8 nAccountType)
 {
@@ -113,8 +136,8 @@ Steam_GameStats::Table_t *Steam_GameStats::get_or_create_session_table(Session_t
     {
         auto table_it = std::find_if(session.tables.rbegin(), session.tables.rend(), [=](const std::pair<std::string, Table_t> &item){ return item.first == table_name; });
         if (session.tables.rend() == table_it) {
-            session.tables.emplace_back(std::pair<std::string, Table_t>{});
-            table = &session.tables.back().second;
+            auto& [key, val] = session.tables.emplace_back(std::pair<std::string, Table_t>{});
+            table = &val;
         } else {
             table = &table_it->second;
         }
@@ -125,40 +148,29 @@ Steam_GameStats::Table_t *Steam_GameStats::get_or_create_session_table(Session_t
 
 Steam_GameStats::Attribute_t *Steam_GameStats::get_or_create_session_att(const char *att_name, Session_t &session, AttributeType_t type_if_create)
 {
-    Attribute_t *att{};
-    {
-        auto att_itr = session.attributes.find(att_name);
-        if (att_itr != session.attributes.end()) {
-            att = &att_itr->second;
-        } else {
-            att = &session.attributes[att_name];
-            att->type = type_if_create;
-        }
-    }
-
-    return att;
+    auto [ele_it, _] = session.attributes.emplace(att_name, type_if_create);
+    return &ele_it->second;
 }
 
 Steam_GameStats::Attribute_t *Steam_GameStats::get_or_create_row_att(uint64 ulRowID, const char *att_name, Table_t &table, AttributeType_t type_if_create)
 {
-    Attribute_t *att{};
-    {
-        auto &row = table.rows[static_cast<unsigned>(ulRowID)];
-        auto att_itr = row.attributes.find(att_name);
-        if (att_itr != row.attributes.end()) {
-            att = &att_itr->second;
-        } else {
-            att = &row.attributes[att_name];
-            att->type = type_if_create;
-        }
-    }
+    auto &row = table.rows[static_cast<unsigned>(ulRowID)];
+    auto [ele_it, _] = row.attributes.emplace(att_name, type_if_create);
+    return &ele_it->second;
+}
 
-    return att;
+Steam_GameStats::Session_t* Steam_GameStats::get_last_active_session()
+{
+    auto active_session_it = std::find_if(sessions.rbegin(), sessions.rend(), [](std::pair<const uint64, Steam_GameStats::Session_t> item){ return !item.second.ended; });
+    if (sessions.rend() == active_session_it) return nullptr; // TODO is this correct?
+
+    return &active_session_it->second;
 }
 
 
 SteamAPICall_t Steam_GameStats::GetNewSession( int8 nAccountType, uint64 ulAccountID, int32 nAppID, RTime32 rtTimeStarted )
 {
+    // appid 550 calls this function once with client account id, and another time with server account id
     PRINT_DEBUG("%i, %llu, %i, %u", (int)nAccountType, ulAccountID, nAppID, rtTimeStarted);
     std::lock_guard lock(global_mutex);
 
@@ -166,11 +178,13 @@ SteamAPICall_t Steam_GameStats::GetNewSession( int8 nAccountType, uint64 ulAccou
         (nAppID < 0) ||
         (settings->get_local_game_id().AppID() != (uint32)nAppID) ||
         !valid_stats_account_type(nAccountType)) {
+
         GameStatsSessionIssued_t data_invalid{};
         data_invalid.m_bCollectingAny = false;
         data_invalid.m_bCollectingDetails = false;
         data_invalid.m_eResult = EResult::k_EResultInvalidParam;
         data_invalid.m_ulSessionID = 0;
+        PRINT_DEBUG("[X] invalid param");
 
         auto ret = callback_results->addCallResult(data_invalid.k_iCallback, &data_invalid, sizeof(data_invalid));
         // the function returns SteamAPICall_t (call result), but in isteamstats.h you can see that a callback is also expected
@@ -178,16 +192,18 @@ SteamAPICall_t Steam_GameStats::GetNewSession( int8 nAccountType, uint64 ulAccou
         return ret;
     }
 
+    auto session_id = create_session_id();
     Session_t new_session{};
     new_session.nAccountType = (EGameStatsAccountType)nAccountType;
     new_session.rtTimeStarted = rtTimeStarted;
-    sessions.emplace_back(new_session);
+    sessions.insert_or_assign(session_id, new_session);
 
     GameStatsSessionIssued_t data{};
     data.m_bCollectingAny = true; // TODO is this correct?
     data.m_bCollectingDetails = true; // TODO is this correct?
     data.m_eResult = EResult::k_EResultOK;
-    data.m_ulSessionID = (uint64)sessions.size(); // I don't know if 0 is a bad value, so always send count (index + 1)
+    data.m_ulSessionID = session_id;
+    PRINT_DEBUG("new session id = %llu", session_id);
     
     auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
     // the function returns SteamAPICall_t (call result), but in isteamstats.h you can see that a callback is also expected
@@ -200,10 +216,12 @@ SteamAPICall_t Steam_GameStats::EndSession( uint64 ulSessionID, RTime32 rtTimeEn
     PRINT_DEBUG("%llu, %u, %i", ulSessionID, rtTimeEnded, nReasonCode);
     std::lock_guard lock(global_mutex);
 
-    if (ulSessionID == 0 || ulSessionID > sessions.size()) {
+    auto session_it = sessions.find(ulSessionID);
+    if (sessions.end() == session_it) {
         GameStatsSessionClosed_t data_invalid{};
         data_invalid.m_eResult = EResult::k_EResultInvalidParam;
         data_invalid.m_ulSessionID = ulSessionID;
+        PRINT_DEBUG("[X] session doesn't exist");
 
         auto ret = callback_results->addCallResult(data_invalid.k_iCallback, &data_invalid, sizeof(data_invalid));
         // the function returns SteamAPICall_t (call result), but in isteamstats.h you can see that a callback is also expected
@@ -211,7 +229,7 @@ SteamAPICall_t Steam_GameStats::EndSession( uint64 ulSessionID, RTime32 rtTimeEn
         return ret;
     }
 
-    auto& session = sessions[static_cast<unsigned>(ulSessionID - 1)];
+    auto& session = session_it->second;
     if (session.ended) {
         GameStatsSessionClosed_t data_invalid{};
         data_invalid.m_eResult = EResult::k_EResultExpired; // TODO is this correct?
@@ -230,6 +248,7 @@ SteamAPICall_t Steam_GameStats::EndSession( uint64 ulSessionID, RTime32 rtTimeEn
     GameStatsSessionClosed_t data{};
     data.m_eResult = EResult::k_EResultOK;
     data.m_ulSessionID = ulSessionID;
+    PRINT_DEBUG("ended session");
 
     auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
     // the function returns SteamAPICall_t (call result), but in isteamstats.h you can see that a callback is also expected
@@ -239,69 +258,77 @@ SteamAPICall_t Steam_GameStats::EndSession( uint64 ulSessionID, RTime32 rtTimeEn
 
 EResult Steam_GameStats::AddSessionAttributeInt( uint64 ulSessionID, const char* pstrName, int32 nData )
 {
-    PRINT_DEBUG("%llu, '%s', %i", ulSessionID, pstrName, nData);
+    PRINT_DEBUG("%llu, '%s'=%i", ulSessionID, pstrName, nData);
     std::lock_guard lock(global_mutex);
 
-    if (ulSessionID == 0 || ulSessionID > sessions.size() || !pstrName) return EResult::k_EResultInvalidParam; // TODO is this correct?
+    auto session_it = sessions.find(ulSessionID);
+    if (sessions.end() == session_it) return EResult::k_EResultInvalidParam; // TODO is this correct?
     
-    auto& session = sessions[static_cast<unsigned>(ulSessionID - 1)];
+    auto& session = session_it->second;
     if (session.ended) return EResult::k_EResultExpired; // TODO is this correct?
 
     auto att = get_or_create_session_att(pstrName, session, AttributeType_t::Int);
     if (att->type != AttributeType_t::Int) return EResult::k_EResultFail; // TODO is this correct?
 
     att->n_data = nData;
+    PRINT_DEBUG("added successfully");
     return EResult::k_EResultOK;
 }
 
 EResult Steam_GameStats::AddSessionAttributeString( uint64 ulSessionID, const char* pstrName, const char *pstrData )
 {
-    PRINT_DEBUG("%llu, '%s', '%s'", ulSessionID, pstrName, pstrData);
+    PRINT_DEBUG("%llu, '%s'='%s'", ulSessionID, pstrName, pstrData);
     std::lock_guard lock(global_mutex);
 
-    if (ulSessionID == 0 || ulSessionID > sessions.size() || !pstrName || !pstrData) return EResult::k_EResultInvalidParam; // TODO is this correct?
+    auto session_it = sessions.find(ulSessionID);
+    if (sessions.end() == session_it) return EResult::k_EResultInvalidParam; // TODO is this correct?
     
-    auto& session = sessions[static_cast<unsigned>(ulSessionID - 1)];
+    auto& session = session_it->second;
     if (session.ended) return EResult::k_EResultExpired; // TODO is this correct?
 
     auto att = get_or_create_session_att(pstrName, session, AttributeType_t::Str);
     if (att->type != AttributeType_t::Str) return EResult::k_EResultFail; // TODO is this correct?
     
     att->s_data = pstrData;
+    PRINT_DEBUG("added successfully");
     return EResult::k_EResultOK;
 }
 
 EResult Steam_GameStats::AddSessionAttributeFloat( uint64 ulSessionID, const char* pstrName, float fData )
 {
-    PRINT_DEBUG("%llu, '%s', %f", ulSessionID, pstrName, fData);
+    PRINT_DEBUG("%llu, '%s'=%f", ulSessionID, pstrName, fData);
     std::lock_guard lock(global_mutex);
 
-    if (ulSessionID == 0 || ulSessionID > sessions.size() || !pstrName) return EResult::k_EResultInvalidParam; // TODO is this correct?
+    auto session_it = sessions.find(ulSessionID);
+    if (sessions.end() == session_it) return EResult::k_EResultInvalidParam; // TODO is this correct?
     
-    auto& session = sessions[static_cast<unsigned>(ulSessionID - 1)];
+    auto& session = session_it->second;
     if (session.ended) return EResult::k_EResultExpired; // TODO is this correct?
 
     auto att = get_or_create_session_att(pstrName, session, AttributeType_t::Float);
     if (att->type != AttributeType_t::Float) return EResult::k_EResultFail; // TODO is this correct?
 
     att->f_data = fData;
+    PRINT_DEBUG("added successfully");
     return EResult::k_EResultOK;
 }
 
 
 EResult Steam_GameStats::AddNewRow( uint64 *pulRowID, uint64 ulSessionID, const char *pstrTableName )
 {
-    PRINT_DEBUG("%p, %llu, '%s'", pulRowID, ulSessionID, pstrTableName);
+    PRINT_DEBUG("%p, %llu, ['%s']", pulRowID, ulSessionID, pstrTableName);
     std::lock_guard lock(global_mutex);
 
-    if (ulSessionID == 0 || ulSessionID > sessions.size() || !pstrTableName) return EResult::k_EResultInvalidParam; // TODO is this correct?
+    auto session_it = sessions.find(ulSessionID);
+    if (sessions.end() == session_it) return EResult::k_EResultInvalidParam; // TODO is this correct?
     
-    auto& session = sessions[static_cast<unsigned>(ulSessionID - 1)];
+    auto& session = session_it->second;
     if (session.ended) return EResult::k_EResultExpired; // TODO is this correct?
 
     auto table = get_or_create_session_table(session, pstrTableName);
     table->rows.emplace_back(Row_t{});
     if (pulRowID) *pulRowID = (uint64)(table->rows.size() - 1);
+    PRINT_DEBUG("added successfully");
     return EResult::k_EResultOK;
 }
 
@@ -310,8 +337,8 @@ EResult Steam_GameStats::CommitRow( uint64 ulRowID )
     PRINT_DEBUG("%llu", ulRowID);
     std::lock_guard lock(global_mutex);
     
-    auto active_session = std::find_if(sessions.rbegin(), sessions.rend(), [](const Session_t &item){ return !item.ended; });
-    if (sessions.rend() == active_session) return EResult::k_EResultFail; // TODO is this correct?
+    auto active_session = get_last_active_session();
+    if (!active_session) return EResult::k_EResultFail; // TODO is this correct?
     if (active_session->tables.empty()) return EResult::k_EResultFail; // TODO is this correct?
 
     auto &table = active_session->tables.back().second;
@@ -321,6 +348,7 @@ EResult Steam_GameStats::CommitRow( uint64 ulRowID )
     auto& row = table.rows[static_cast<unsigned>(ulRowID)];
     row.committed = true;
     
+    PRINT_DEBUG("committed successfully");
     return EResult::k_EResultOK;
 }
 
@@ -329,9 +357,10 @@ EResult Steam_GameStats::CommitOutstandingRows( uint64 ulSessionID )
     PRINT_DEBUG("%llu", ulSessionID);
     std::lock_guard lock(global_mutex);
     
-    if (ulSessionID == 0 || ulSessionID > sessions.size()) return EResult::k_EResultInvalidParam; // TODO is this correct?
+    auto session_it = sessions.find(ulSessionID);
+    if (sessions.end() == session_it) return EResult::k_EResultInvalidParam; // TODO is this correct?
     
-    auto& session = sessions[static_cast<unsigned>(ulSessionID - 1)];
+    auto& session = session_it->second;
     if (session.ended) return EResult::k_EResultExpired; // TODO is this correct?
 
     if (session.tables.size()) {
@@ -339,18 +368,19 @@ EResult Steam_GameStats::CommitOutstandingRows( uint64 ulSessionID )
             row.committed = true;
         }
     }
+    PRINT_DEBUG("committed all successfully");
     return EResult::k_EResultOK;
 }
 
 EResult Steam_GameStats::AddRowAttributeInt( uint64 ulRowID, const char *pstrName, int32 nData )
 {
-    PRINT_DEBUG("%llu, '%s', %i", ulRowID, pstrName, nData);
+    PRINT_DEBUG("%llu, '%s'=%i", ulRowID, pstrName, nData);
     std::lock_guard lock(global_mutex);
     
     if (!pstrName) return EResult::k_EResultInvalidParam; // TODO is this correct?
     
-    auto active_session = std::find_if(sessions.rbegin(), sessions.rend(), [](const Session_t &item){ return !item.ended; });
-    if (sessions.rend() == active_session) return EResult::k_EResultFail; // TODO is this correct?
+    auto active_session = get_last_active_session();
+    if (!active_session) return EResult::k_EResultFail; // TODO is this correct?
     if (active_session->tables.empty()) return EResult::k_EResultFail; // TODO is this correct?
 
     auto &table = active_session->tables.back().second;
@@ -360,18 +390,20 @@ EResult Steam_GameStats::AddRowAttributeInt( uint64 ulRowID, const char *pstrNam
     if (att->type != AttributeType_t::Int) return EResult::k_EResultFail; // TODO is this correct?
 
     att->n_data = nData;
+    PRINT_DEBUG("added successfully");
     return EResult::k_EResultOK;
 }
 
 EResult Steam_GameStats::AddRowAtributeString( uint64 ulRowID, const char *pstrName, const char *pstrData )
 {
-    PRINT_DEBUG("%llu, '%s', '%s'", ulRowID, pstrName, pstrData);
+    PRINT_DEBUG("%llu, '%s'='%s'", ulRowID, pstrName, pstrData);
     std::lock_guard lock(global_mutex);
     
     if (!pstrName || !pstrData) return EResult::k_EResultInvalidParam; // TODO is this correct?
     
-    auto active_session = std::find_if(sessions.rbegin(), sessions.rend(), [](const Session_t &item){ return !item.ended; });
-    if (sessions.rend() == active_session) return EResult::k_EResultFail; // TODO is this correct?
+    auto active_session = get_last_active_session();
+    if (!active_session) return EResult::k_EResultFail; // TODO is this correct?
+    if (active_session->tables.empty()) return EResult::k_EResultFail; // TODO is this correct?
 
     auto &table = active_session->tables.back().second;
     if (ulRowID >= table.rows.size()) return EResult::k_EResultInvalidParam; // TODO is this correct?
@@ -380,18 +412,20 @@ EResult Steam_GameStats::AddRowAtributeString( uint64 ulRowID, const char *pstrN
     if (att->type != AttributeType_t::Str) return EResult::k_EResultFail; // TODO is this correct?
 
     att->s_data = pstrData;
+    PRINT_DEBUG("added successfully");
     return EResult::k_EResultOK;
 }
 
 EResult Steam_GameStats::AddRowAttributeFloat( uint64 ulRowID, const char *pstrName, float fData )
 {
-    PRINT_DEBUG("%llu, '%s', %f", ulRowID, pstrName, fData);
+    PRINT_DEBUG("%llu, '%s'=%f", ulRowID, pstrName, fData);
     std::lock_guard lock(global_mutex);
     
     if (!pstrName) return EResult::k_EResultInvalidParam; // TODO is this correct?
     
-    auto active_session = std::find_if(sessions.rbegin(), sessions.rend(), [](const Session_t &item){ return !item.ended; });
-    if (sessions.rend() == active_session) return EResult::k_EResultFail; // TODO is this correct?
+    auto active_session = get_last_active_session();
+    if (!active_session) return EResult::k_EResultFail; // TODO is this correct?
+    if (active_session->tables.empty()) return EResult::k_EResultFail; // TODO is this correct?
 
     auto &table = active_session->tables.back().second;
     if (ulRowID >= table.rows.size()) return EResult::k_EResultInvalidParam; // TODO is this correct?
@@ -400,36 +434,40 @@ EResult Steam_GameStats::AddRowAttributeFloat( uint64 ulRowID, const char *pstrN
     if (att->type != AttributeType_t::Float) return EResult::k_EResultFail; // TODO is this correct?
 
     att->f_data = fData;
+    PRINT_DEBUG("added successfully");
     return EResult::k_EResultOK;
 }
 
 
 EResult Steam_GameStats::AddSessionAttributeInt64( uint64 ulSessionID, const char *pstrName, int64 llData )
 {
-    PRINT_DEBUG("%llu, '%s', %lli", ulSessionID, pstrName, llData);
+    PRINT_DEBUG("%llu, '%s'=%lli", ulSessionID, pstrName, llData);
     std::lock_guard lock(global_mutex);
 
-    if (ulSessionID == 0 || ulSessionID > sessions.size() || !pstrName) return EResult::k_EResultInvalidParam; // TODO is this correct?
+    auto session_it = sessions.find(ulSessionID);
+    if (sessions.end() == session_it) return EResult::k_EResultInvalidParam; // TODO is this correct?
     
-    auto& session = sessions[static_cast<unsigned>(ulSessionID - 1)];
+    auto& session = session_it->second;
     if (session.ended) return EResult::k_EResultExpired; // TODO is this correct?
 
     auto att = get_or_create_session_att(pstrName, session, AttributeType_t::Int64);
     if (att->type != AttributeType_t::Int64) return EResult::k_EResultFail; // TODO is this correct?
 
     att->ll_data = llData;
+    PRINT_DEBUG("added successfully");
     return EResult::k_EResultOK;
 }
 
 EResult Steam_GameStats::AddRowAttributeInt64( uint64 ulRowID, const char *pstrName, int64 llData )
 {
-    PRINT_DEBUG("%llu, '%s', %lli", ulRowID, pstrName, llData);
+    PRINT_DEBUG("%llu, '%s'=%lli", ulRowID, pstrName, llData);
     std::lock_guard lock(global_mutex);
     
     if (!pstrName) return EResult::k_EResultInvalidParam; // TODO is this correct?
     
-    auto active_session = std::find_if(sessions.rbegin(), sessions.rend(), [](const Session_t &item){ return !item.ended; });
-    if (sessions.rend() == active_session) return EResult::k_EResultFail; // TODO is this correct?
+    auto active_session = get_last_active_session();
+    if (!active_session) return EResult::k_EResultFail; // TODO is this correct?
+    if (active_session->tables.empty()) return EResult::k_EResultFail; // TODO is this correct?
 
     auto &table = active_session->tables.back().second;
     if (ulRowID >= table.rows.size()) return EResult::k_EResultInvalidParam; // TODO is this correct?
@@ -438,6 +476,7 @@ EResult Steam_GameStats::AddRowAttributeInt64( uint64 ulRowID, const char *pstrN
     if (att->type != AttributeType_t::Int64) return EResult::k_EResultFail; // TODO is this correct?
 
     att->ll_data = llData;
+    PRINT_DEBUG("added successfully");
     return EResult::k_EResultOK;
 }
 
@@ -447,7 +486,28 @@ EResult Steam_GameStats::AddRowAttributeInt64( uint64 ulRowID, const char *pstrN
 
 void Steam_GameStats::steam_run_callback()
 {
-    // nothing
+    // remove ended sessions that are inactive
+    auto session_it = sessions.begin();
+    auto now_epoch_sec = std::chrono::duration_cast<std::chrono::seconds>(
+        std::chrono::system_clock::now().time_since_epoch()
+    );
+    while (sessions.end() != session_it) {
+        bool should_remove = false;
+
+        auto &session = session_it->second;
+        if (session.ended) {
+            if ( (now_epoch_sec.count() - (long long)session.rtTimeEnded) >= MAX_DEAD_SESSION_SECONDS ) {
+                should_remove = true;
+                PRINT_DEBUG("removing outdated session id=%llu", session_it->first);
+            }
+        }
+
+        if (should_remove) {
+            session_it = sessions.erase(session_it);
+        } else {
+            ++session_it;
+        }
+    }
 }
 
 

@@ -209,21 +209,16 @@ SteamAPICall_t Steam_Friends::SetPersonaName( const char *pchPersonaName )
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
+    // send PersonaStateChange_t callbacks
+    persona_change(settings->get_local_steam_id(), EPersonaChange::k_EPersonaChangeName);
+
     SetPersonaNameResponse_t data{};
     data.m_bSuccess = true;
     data.m_bLocalSuccess = false;
     data.m_result = k_EResultOK;
-    persona_change(settings->get_local_steam_id(), k_EPersonaChangeName);
 
     auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
-    
-    {
-        PersonaStateChange_t data2{};
-        data2.m_nChangeFlags = EPersonaChange::k_EPersonaChangeName;
-        data2.m_ulSteamID = settings->get_local_steam_id().ConvertToUint64();
-        callbacks->addCBResult(data2.k_iCallback, &data2, sizeof(data2));
-    }
-
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
     return ret;
 }
 
@@ -1032,7 +1027,10 @@ SteamAPICall_t Steam_Friends::JoinClanChatRoom( CSteamID steamIDClan )
     JoinClanChatRoomCompletionResult_t data;
     data.m_steamIDClanChat = steamIDClan;
     data.m_eChatRoomEnterResponse = k_EChatRoomEnterResponseSuccess;
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 bool Steam_Friends::LeaveClanChatRoom( CSteamID steamIDClan )

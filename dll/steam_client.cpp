@@ -100,7 +100,7 @@ Steam_Client::Steam_Client()
     steam_user_stats = new Steam_User_Stats(settings_client, network, local_storage, callback_results_client, callbacks_client, run_every_runcb, steam_overlay);
     steam_apps = new Steam_Apps(settings_client, callback_results_client, callbacks_client);
     steam_networking = new Steam_Networking(settings_client, network, callbacks_client, run_every_runcb);
-    steam_remote_storage = new Steam_Remote_Storage(settings_client, ugc_bridge, local_storage, callback_results_client);
+    steam_remote_storage = new Steam_Remote_Storage(settings_client, ugc_bridge, local_storage, callback_results_client, callbacks_client);
     steam_screenshots = new Steam_Screenshots(local_storage, callbacks_client);
     steam_http = new Steam_HTTP(settings_client, network, callback_results_client, callbacks_client);
     steam_controller = new Steam_Controller(settings_client, callback_results_client, callbacks_client, run_every_runcb);
@@ -143,6 +143,7 @@ Steam_Client::Steam_Client()
     steam_gameserver_networking_messages = new Steam_Networking_Messages(settings_server, network, callback_results_server, callbacks_server, run_every_runcb);
     steam_gameserver_game_coordinator = new Steam_Game_Coordinator(settings_server, network, callback_results_server, callbacks_server, run_every_runcb);
     steam_masterserver_updater = new Steam_Masterserver_Updater(settings_server, network, callback_results_server, callbacks_server, run_every_runcb);
+    steam_gameserver_gamestats = new Steam_GameStats(settings_server, network, callback_results_server, callbacks_server, run_every_runcb);
 
     PRINT_DEBUG("init AppTicket");
     steam_app_ticket = new Steam_AppTicket(settings_client);

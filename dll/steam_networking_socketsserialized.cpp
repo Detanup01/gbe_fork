@@ -72,7 +72,9 @@ SteamAPICall_t Steam_Networking_Sockets_Serialized::GetCertAsync()
     struct SteamNetworkingSocketsCert_t data = {};
     data.m_eResult = k_EResultOK;
 
-    return callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 int Steam_Networking_Sockets_Serialized::GetNetworkConfigJSON( void *buf, uint32 cbBuf, const char *pszLauncherPartner )

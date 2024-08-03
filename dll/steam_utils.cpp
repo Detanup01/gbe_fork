@@ -255,11 +255,10 @@ SteamAPICall_t Steam_Utils::CheckFileSignature( const char *szFileName )
 {
     PRINT_DEBUG("'%s'", szFileName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    CheckFileSignature_t data;
+    CheckFileSignature_t data{};
     data.m_eCheckFileSignature = k_ECheckFileSignatureValidSignature;
     auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
-    // TODO callback too?
-    // callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
     return ret;
 }
 

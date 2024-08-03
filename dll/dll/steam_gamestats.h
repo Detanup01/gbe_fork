@@ -26,91 +26,98 @@
 class Steam_GameStats :
 public ISteamGameStats
 {
-	enum class AttributeType_t
-	{
-		Int, Str, Float, Int64,
-	};
+private:
+  // how much time to wait before removing ended sessions
+  constexpr const static int MAX_DEAD_SESSION_SECONDS = 15; // TODO not sure what would be sensible in this case
 
-	struct Attribute_t
-	{
-		AttributeType_t type{};
-		union {
-			int32 n_data;
-			std::string s_data;
-			float f_data;
-			int64 ll_data{};
-		};
+  enum class AttributeType_t
+  {
+    Int, Str, Float, Int64,
+  };
 
-		Attribute_t();
-		Attribute_t(const Attribute_t &other);
-		Attribute_t(Attribute_t &&other);
-		~Attribute_t();
-	};
+  struct Attribute_t
+  {
+    const AttributeType_t type;
+    union {
+      int32 n_data;
+      std::string s_data;
+      float f_data;
+      int64 ll_data;
+    };
 
-	struct Row_t
-	{
-		bool committed = false;
-		std::map<std::string, Attribute_t> attributes{};
-	};
+    Attribute_t(AttributeType_t type);
+    Attribute_t(const Attribute_t &other);
+    Attribute_t(Attribute_t &&other);
+    ~Attribute_t();
+  };
 
-	struct Table_t
-	{
-		std::vector<Row_t> rows{};
-	};
+  struct Row_t
+  {
+    bool committed = false;
+    std::map<std::string, Attribute_t> attributes{};
+  };
 
-	struct Session_t
-	{
-		EGameStatsAccountType nAccountType{};
-		RTime32 rtTimeStarted{};
-		RTime32 rtTimeEnded{};
-		int nReasonCode{};
-		bool ended = false;
-		std::map<std::string, Attribute_t> attributes{};
+  struct Table_t
+  {
+    std::vector<Row_t> rows{};
+  };
 
-		std::vector<std::pair<std::string, Table_t>> tables{};
-	};
+  struct Session_t
+  {
+    EGameStatsAccountType nAccountType{};
+    RTime32 rtTimeStarted{};
+    RTime32 rtTimeEnded{};
+    int nReasonCode{};
+    bool ended = false;
+    std::map<std::string, Attribute_t> attributes{};
 
-    class Settings *settings{};
-    class Networking *network{};
-    class SteamCallResults *callback_results{};
-    class SteamCallBacks *callbacks{};
-    class RunEveryRunCB *run_every_runcb{};
-	
-	std::vector<Session_t> sessions{};
+    std::vector<std::pair<std::string, Table_t>> tables{};
+  };
+
+  class Settings *settings{};
+  class Networking *network{};
+  class SteamCallResults *callback_results{};
+  class SteamCallBacks *callbacks{};
+  class RunEveryRunCB *run_every_runcb{};
+  
+  std::map<uint64, Session_t> sessions{};
 
 
-	bool valid_stats_account_type(int8 nAccountType);
-	Table_t *get_or_create_session_table(Session_t &session, const char *table_name);
-	Attribute_t *get_or_create_session_att(const char *att_name, Session_t &session, AttributeType_t type_if_create);
-	Attribute_t *get_or_create_row_att(uint64 ulRowID, const char *att_name, Table_t &table, AttributeType_t type_if_create);
+  uint64 create_session_id() const;
+  bool valid_stats_account_type(int8 nAccountType);
+  Table_t *get_or_create_session_table(Session_t &session, const char *table_name);
+  Attribute_t *get_or_create_session_att(const char *att_name, Session_t &session, AttributeType_t type_if_create);
+  Attribute_t *get_or_create_row_att(uint64 ulRowID, const char *att_name, Table_t &table, AttributeType_t type_if_create);
+  Session_t* get_last_active_session();
 
-	void steam_run_callback();
+  void steam_run_callback();
 
-	// user connect/disconnect
-	void network_callback_low_level(Common_Message *msg);
+  // user connect/disconnect
+  void network_callback_low_level(Common_Message *msg);
 
-	static void steam_gamestats_network_low_level(void *object, Common_Message *msg);
-	static void steam_gamestats_run_every_runcb(void *object);
+  static void steam_gamestats_network_low_level(void *object, Common_Message *msg);
+  static void steam_gamestats_run_every_runcb(void *object);
+
 
 public:
-	Steam_GameStats(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, class RunEveryRunCB *run_every_runcb);
-	~Steam_GameStats();
-	
-	SteamAPICall_t GetNewSession( int8 nAccountType, uint64 ulAccountID, int32 nAppID, RTime32 rtTimeStarted );
-	SteamAPICall_t EndSession( uint64 ulSessionID, RTime32 rtTimeEnded, int nReasonCode );
-	EResult AddSessionAttributeInt( uint64 ulSessionID, const char* pstrName, int32 nData );
-	EResult AddSessionAttributeString( uint64 ulSessionID, const char* pstrName, const char *pstrData );
-	EResult AddSessionAttributeFloat( uint64 ulSessionID, const char* pstrName, float fData );
+  Steam_GameStats(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, class RunEveryRunCB *run_every_runcb);
+  ~Steam_GameStats();
+  
+  SteamAPICall_t GetNewSession( int8 nAccountType, uint64 ulAccountID, int32 nAppID, RTime32 rtTimeStarted );
+  SteamAPICall_t EndSession( uint64 ulSessionID, RTime32 rtTimeEnded, int nReasonCode );
+  EResult AddSessionAttributeInt( uint64 ulSessionID, const char* pstrName, int32 nData );
+  EResult AddSessionAttributeString( uint64 ulSessionID, const char* pstrName, const char *pstrData );
+  EResult AddSessionAttributeFloat( uint64 ulSessionID, const char* pstrName, float fData );
 
-	EResult AddNewRow( uint64 *pulRowID, uint64 ulSessionID, const char *pstrTableName );
-	EResult CommitRow( uint64 ulRowID );
-	EResult CommitOutstandingRows( uint64 ulSessionID );
-	EResult AddRowAttributeInt( uint64 ulRowID, const char *pstrName, int32 nData );
-	EResult AddRowAtributeString( uint64 ulRowID, const char *pstrName, const char *pstrData );
-	EResult AddRowAttributeFloat( uint64 ulRowID, const char *pstrName, float fData );
+  EResult AddNewRow( uint64 *pulRowID, uint64 ulSessionID, const char *pstrTableName );
+  EResult CommitRow( uint64 ulRowID );
+  EResult CommitOutstandingRows( uint64 ulSessionID );
+  EResult AddRowAttributeInt( uint64 ulRowID, const char *pstrName, int32 nData );
+  EResult AddRowAtributeString( uint64 ulRowID, const char *pstrName, const char *pstrData );
+  EResult AddRowAttributeFloat( uint64 ulRowID, const char *pstrName, float fData );
 
-	EResult AddSessionAttributeInt64( uint64 ulSessionID, const char *pstrName, int64 llData );
-	EResult AddRowAttributeInt64( uint64 ulRowID, const char *pstrName, int64 llData );
+  EResult AddSessionAttributeInt64( uint64 ulSessionID, const char *pstrName, int64 llData );
+  EResult AddRowAttributeInt64( uint64 ulRowID, const char *pstrName, int64 llData );
 
 };
 

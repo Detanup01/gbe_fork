@@ -290,7 +290,7 @@ std::wstring common_helpers::to_lower(std::wstring_view wstr)
 {
     if (wstr.empty()) return {};
     
-    std::wstring _wstr(wstr.size(), '\0');
+    std::wstring _wstr(wstr.size(), L'\0');
     std::transform(wstr.begin(), wstr.end(), _wstr.begin(), [](wchar_t c) { return std::tolower(c); });
     return _wstr;
 }
@@ -308,7 +308,7 @@ std::wstring common_helpers::to_upper(std::wstring_view wstr)
 {
     if (wstr.empty()) return {};
     
-    std::wstring _wstr(wstr.size(), '\0');
+    std::wstring _wstr(wstr.size(), L'\0');
     std::transform(wstr.begin(), wstr.end(), _wstr.begin(), [](wchar_t c) { return std::toupper(c); });
     return _wstr;
 }
