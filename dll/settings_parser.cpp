@@ -1379,8 +1379,8 @@ static void parse_simple_features(class Settings *settings_client, class Setting
     settings_client->matchmaking_server_details_via_source_query = ini.GetBoolValue("main::general", "matchmaking_server_details_via_source_query", settings_client->matchmaking_server_details_via_source_query);
     settings_server->matchmaking_server_details_via_source_query = ini.GetBoolValue("main::general", "matchmaking_server_details_via_source_query", settings_server->matchmaking_server_details_via_source_query);
 
-    settings_client->matchmaking_server_list_always_lan_type = ini.GetBoolValue("main::general", "matchmaking_server_list_actual_type", settings_client->matchmaking_server_list_always_lan_type);
-    settings_server->matchmaking_server_list_always_lan_type = ini.GetBoolValue("main::general", "matchmaking_server_list_actual_type", settings_server->matchmaking_server_list_always_lan_type);
+    settings_client->matchmaking_server_list_always_lan_type = !ini.GetBoolValue("main::general", "matchmaking_server_list_actual_type", !settings_client->matchmaking_server_list_always_lan_type);
+    settings_server->matchmaking_server_list_always_lan_type = !ini.GetBoolValue("main::general", "matchmaking_server_list_actual_type", !settings_server->matchmaking_server_list_always_lan_type);
 
 
     // [main::connectivity]
