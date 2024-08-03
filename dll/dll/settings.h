@@ -295,6 +295,9 @@ public:
     // synchronize user stats/achievements with game servers as soon as possible instead of caching them.
     bool immediate_gameserver_stats = false;
 
+    // steam_game_stats
+    std::string steam_game_stats_reports_dir{};
+
     //overlay
     bool disable_overlay = true;
     int overlay_hook_delay_sec = 0; // "Saints Row (2022)" needs a lot of time to initialize, otherwise detection will fail
