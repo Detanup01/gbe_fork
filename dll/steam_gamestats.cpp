@@ -22,6 +22,7 @@
 */
 
 #include "dll/steam_gamestats.h"
+#include <unordered_map>
 
 
 Steam_GameStats::Attribute_t::Attribute_t(AttributeType_t type)
@@ -194,6 +195,7 @@ SteamAPICall_t Steam_GameStats::GetNewSession( int8 nAccountType, uint64 ulAccou
 
     auto session_id = create_session_id();
     Session_t new_session{};
+    new_session.account_id = ulAccountID;
     new_session.nAccountType = (EGameStatsAccountType)nAccountType;
     new_session.rtTimeStarted = rtTimeStarted;
     sessions.insert_or_assign(session_id, new_session);
@@ -484,6 +486,113 @@ EResult Steam_GameStats::AddRowAttributeInt64( uint64 ulRowID, const char *pstrN
 
 // --- steam callbacks
 
+std::string Steam_GameStats::sanitize_csv_value(std::string_view value)
+{
+    // ref: https://en.wikipedia.org/wiki/Comma-separated_values
+    // double quotes must be represented by a pair of double quotes
+    auto val_str = common_helpers::str_replace_all(value, "\"", "\"\"");
+    // multiline values aren't supported by all parsers
+    val_str = common_helpers::str_replace_all(val_str, "\r\n", "\n");
+    val_str = common_helpers::str_replace_all(val_str, "\n", " ");
+    return val_str;
+}
+
+void Steam_GameStats::save_session_to_disk(Steam_GameStats::Session_t &session, uint64 session_id)
+{
+    auto folder = std::to_string(session.account_id) + "_" + std::to_string(session.rtTimeStarted) + "_" + std::to_string(session_id);
+    auto folder_p = std::filesystem::u8path(settings->steam_game_stats_reports_dir) / std::filesystem::u8path(folder);
+    auto folder_u8_str = folder_p.u8string();
+
+    // save session attributes
+    if (session.attributes.size()) {
+        std::stringstream ss{};
+        ss << "Session attribute,Value\n";
+        for (const auto& [name, val] : session.attributes) {
+            std::string val_str{};
+            switch (val.type) {
+                case AttributeType_t::Int: val_str = std::to_string(val.n_data); break;
+                case AttributeType_t::Str: val_str = val.s_data; break;
+                case AttributeType_t::Float: val_str = std::to_string(val.f_data); break;
+                case AttributeType_t::Int64: val_str = std::to_string(val.ll_data); break;
+            }
+
+            val_str = sanitize_csv_value(val_str);
+            auto name_str = sanitize_csv_value(name);
+            ss << "\"" << name_str << "\",\"" << val_str << "\"\n";
+        }
+        auto ss_str = ss.str();
+        Local_Storage::store_file_data(folder_u8_str, "session_attributes.csv", ss_str.c_str(), ss_str.size());
+    }
+
+    // save each table
+    for (const auto& [table_name, table_data] : session.tables) {
+        bool rows_has_attributes = std::any_of(table_data.rows.begin(), table_data.rows.end(), [](const Steam_GameStats::Row_t &item) {
+            return item.attributes.size() > 0;
+        });
+
+        if (!rows_has_attributes) continue;
+
+        // convert the data representation to be column oriented
+        // key=column header/title
+        // value = list of column values
+        std::unordered_map<std::string, std::vector<const Attribute_t*>> columns{};
+        for (size_t row_idx = 0; row_idx < table_data.rows.size(); ++row_idx) {
+            const auto &row = table_data.rows[row_idx];
+            for (const auto& [att_name, att_val] : row.attributes) {
+                auto [column_it, new_column] = columns.emplace(att_name, std::vector<const Attribute_t*>{});
+                auto &column_values = column_it->second;
+                // when adding new column make sure we have correct rows count
+                if (new_column) {
+                    column_values.assign(table_data.rows.size(), nullptr);
+                }
+                // add the row value in its correct place
+                column_values[row_idx] = &att_val;
+            }
+        }
+
+        std::stringstream ss_table{};
+        // write header
+        bool first_header_atom = true;
+        for (const auto& [col_name, _] : columns) {
+            auto csv_col_name = sanitize_csv_value(col_name);
+            if (first_header_atom) {
+                first_header_atom = false;
+                ss_table << "\"" << csv_col_name << "\"";
+            } else {
+                ss_table << ",\"" << csv_col_name << "\"";
+            }
+        }
+        ss_table << "\n";
+        // write values
+        for (size_t row_idx = 0; row_idx < table_data.rows.size(); ++row_idx) {
+            bool first_col_cell = true;
+            for (const auto& [_, col_values] : columns) {
+                auto &cell_val = col_values[row_idx];
+                
+                std::string val_str{};
+                switch (cell_val->type) {
+                    case AttributeType_t::Int: val_str = std::to_string(cell_val->n_data); break;
+                    case AttributeType_t::Str: val_str = cell_val->s_data; break;
+                    case AttributeType_t::Float: val_str = std::to_string(cell_val->f_data); break;
+                    case AttributeType_t::Int64: val_str = std::to_string(cell_val->ll_data); break;
+                }
+
+                val_str = sanitize_csv_value(val_str);
+                if (first_col_cell) {
+                    first_col_cell = false;
+                    ss_table << "\"" << val_str << "\"";
+                } else {
+                    ss_table << ",\"" << val_str << "\"";
+                }
+            }
+        }
+        ss_table << "\n";
+        auto ss_str = ss_table.str();
+        Local_Storage::store_file_data(folder_u8_str, table_name.c_str(), ss_str.c_str(), ss_str.size());
+
+    }
+}
+
 void Steam_GameStats::steam_run_callback()
 {
     // remove ended sessions that are inactive
@@ -496,6 +605,13 @@ void Steam_GameStats::steam_run_callback()
 
         auto &session = session_it->second;
         if (session.ended) {
+            if (!session.saved_to_disk) {
+                session.saved_to_disk = true;
+                if (settings->steam_game_stats_reports_dir.size()) {
+                    save_session_to_disk(session, session_it->first);
+                }
+            }
+
             if ( (now_epoch_sec.count() - (long long)session.rtTimeEnded) >= MAX_DEAD_SESSION_SECONDS ) {
                 should_remove = true;
                 PRINT_DEBUG("removing outdated session id=%llu", session_it->first);

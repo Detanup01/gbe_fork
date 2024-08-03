@@ -64,11 +64,14 @@ private:
 
   struct Session_t
   {
+    bool ended = false;
+    bool saved_to_disk = false;
+    uint64 account_id{};
+
     EGameStatsAccountType nAccountType{};
     RTime32 rtTimeStarted{};
     RTime32 rtTimeEnded{};
     int nReasonCode{};
-    bool ended = false;
     std::map<std::string, Attribute_t> attributes{};
 
     std::vector<std::pair<std::string, Table_t>> tables{};
@@ -90,6 +93,8 @@ private:
   Attribute_t *get_or_create_row_att(uint64 ulRowID, const char *att_name, Table_t &table, AttributeType_t type_if_create);
   Session_t* get_last_active_session();
 
+  std::string sanitize_csv_value(std::string_view value);
+  void save_session_to_disk(Steam_GameStats::Session_t &session, uint64 session_id);
   void steam_run_callback();
 
   // user connect/disconnect
