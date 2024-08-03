@@ -1114,7 +1114,7 @@ static void try_detect_mods_folder(class Settings *settings_client, Settings *se
             PRINT_DEBUG("    preview_filename: '%s'", newMod.previewFileName.c_str());
             PRINT_DEBUG("    preview_filesize: %i bytes", newMod.previewFileSize);
             PRINT_DEBUG("    preview file handle: %llu", settings_client->getMod(newMod.id).handlePreviewFile);
-            PRINT_DEBUG("    total_files_sizes: '%s'", newMod.total_files_sizes);
+            PRINT_DEBUG("    total_files_sizes: '%llu'", newMod.total_files_sizes);
             PRINT_DEBUG("    min_game_branch: '%s'", newMod.min_game_branch.c_str());
             PRINT_DEBUG("    max_game_branch: '%s'", newMod.max_game_branch.c_str());
             PRINT_DEBUG("    workshop_item_url: '%s'", newMod.workshopItemURL.c_str());
