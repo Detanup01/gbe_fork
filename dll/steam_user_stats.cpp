@@ -465,7 +465,7 @@ Steam_User_Stats::InternalSetResult<int32> Steam_User_Stats::set_stat_internal( 
             if (t.should_unlock_ach(nData)) {
                 set_achievement_internal(t.name.c_str());
             }
-            if (t.should_indicate_progress(nData)) {
+            if (settings->stat_achievement_progress_functionality && t.should_indicate_progress(nData)) {
                 bool indicate_progress = true;
                 // appid 1482380 needs that otherwise it will spam progress indications while driving
                 if (settings->save_only_higher_stat_achievement_progress) {
@@ -539,7 +539,7 @@ Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo
             if (t.should_unlock_ach(fData)) {
                 set_achievement_internal(t.name.c_str());
             }
-            if (t.should_indicate_progress(fData)) {
+            if (settings->stat_achievement_progress_functionality && t.should_indicate_progress(fData)) {
                 bool indicate_progress = true;
                 // appid 1482380 needs that otherwise it will spam progress indications while driving
                 if (settings->save_only_higher_stat_achievement_progress) {

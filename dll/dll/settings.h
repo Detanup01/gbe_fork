@@ -247,6 +247,9 @@ public:
     // allow stats not defined by the user?
     bool allow_unknown_stats = false;
 
+    // whether to enable the functionality which reports an achievement progress for stats that are tied to achievements
+    // only used internally for a stat that's tied to an achievement, the normal achievement progress requests made by the game are not impacted
+    bool stat_achievement_progress_functionality = true;
     // when a stat that's tied to an achievement gets a new value, should the emu save that progress only if it's higher?
     // the stat itself is always saved regardless of that flag, only affects the achievement progress
     bool save_only_higher_stat_achievement_progress = true;
