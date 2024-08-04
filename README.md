@@ -38,6 +38,9 @@ This project depends on many third-party libraries and tools, credits to them fo
 * **If things don't work, try the `ColdClientLoader` setup.**  
 
 You can find helper guides, scripts, and tools here:
+
+**(These guides, scripts, and tools are maintained by their authors.)**
+
 * **[GBE-Autoconfigurator](https://github.com/daci12345/GBE-Autoconfigurator)**
 * **[Semuexec](https://gitlab.com/detiam/Semuexec)**
 * **[Steam Emu Utility](https://github.com/turusudiro/SteamEmuUtility)**
