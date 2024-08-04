@@ -37,7 +37,16 @@ This project depends on many third-party libraries and tools, credits to them fo
 * **Generate the proper app configuration using the `generate_emu_config` tool.**  
 * **If things don't work, try the `ColdClientLoader` setup.**  
 
-You can find helper guides, scripts, and tools here in this wiki: https://github.com/otavepto/gbe_fork/wiki/Emu-helpers  
+You can find helper guides, scripts, and tools here:
+
+**(These guides, scripts, and tools are maintained by their authors.)**
+
+* **[GBE-Autoconfigurator](https://github.com/daci12345/GBE-Autoconfigurator)**
+* **[Semuexec](https://gitlab.com/detiam/Semuexec)**
+* **[Steam Emu Utility](https://github.com/turusudiro/SteamEmuUtility)**
+* **[How to use Goldberg Emulator](https://rentry.co/goldberg_emulator)**
+* **[GSE-Generator](https://github.com/brunolee-GIT/GSE-Generator)**
+
 You can also find instructions here in [README.release.md](./post_build/README.release.md)  
 
 ---
