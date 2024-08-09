@@ -1333,7 +1333,13 @@ STEAMCLIENT_API steam_bool Steam_GetAPICallResult( HSteamPipe hSteamPipe, SteamA
 STEAMCLIENT_API void *CreateInterface( const char *pName, int *pReturnCode )
 {
     PRINT_DEBUG("%s %p", pName, pReturnCode);
-    return create_client_interface(pName);
+    auto ptr = create_client_interface(pName);
+    if (ptr) {
+        if (pReturnCode) *pReturnCode = 1;
+    } else {
+        if (pReturnCode) *pReturnCode = 0;
+    }
+    return ptr;
 }
 
 STEAMCLIENT_API void Breakpad_SteamMiniDumpInit( uint32 a, const char *b, const char *c )
