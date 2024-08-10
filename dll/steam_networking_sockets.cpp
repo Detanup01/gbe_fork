@@ -923,7 +923,7 @@ bool Steam_Networking_Sockets::GetConnectionInfo( HSteamNetConnection hConn, Ste
 /// - k_EResultInvalidParam - nLanes is bad
 EResult Steam_Networking_Sockets::GetConnectionRealTimeStatus( HSteamNetConnection hConn, SteamNetConnectionRealTimeStatus_t *pStatus, int nLanes, SteamNetConnectionRealTimeLaneStatus_t *pLanes )
 {
-    PRINT_DEBUG("%s %u %p %i %p", __FUNCTION__, hConn, pStatus, nLanes, pLanes);
+    PRINT_DEBUG("%u %p %i %p", hConn, pStatus, nLanes, pLanes);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     auto connect_socket = sbcs->connect_sockets.find(hConn);
     if (connect_socket == sbcs->connect_sockets.end()) return k_EResultNoConnection;
@@ -948,6 +948,24 @@ EResult Steam_Networking_Sockets::GetConnectionRealTimeStatus( HSteamNetConnecti
 
     //TODO: lanes
     return k_EResultOK;
+}
+
+// based on reversing the vftable returned from original steamclient64.dll
+bool Steam_Networking_Sockets::GetConnectionRealTimeStatus_old( HSteamNetConnection hConn, SteamNetConnectionRealTimeStatus_t *pStatus )
+{
+    PRINT_DEBUG("undocumented API, interface v10-11");
+    /*
+    ...
+    xor     r9d, r9d                                 // int nLanes = 0
+    mov     qword ptr ss:[rsp+0x20], 0x0             // SteamNetConnectionRealTimeLaneStatus_t *pLanes = nullptr
+    ...
+    call    qword ptr ds:[rax+0x80]                  // call GetConnectionRealTimeStatus(hConn, pStatus, nLanes, pLanes)
+    test    eax, eax
+    setne   al                                       if (eax !=0) { al=1 } else { al=0 }
+    ...
+    ret     
+    */
+    return GetConnectionRealTimeStatus(hConn, pStatus, 0, nullptr) != EResult::k_EResultNone;
 }
 
 /// Fetch the next available message(s) from the socket, if any.

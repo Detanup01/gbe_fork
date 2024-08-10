@@ -81,6 +81,8 @@ public ISteamNetworkingSockets004,
 public ISteamNetworkingSockets006,
 public ISteamNetworkingSockets008,
 public ISteamNetworkingSockets009,
+public ISteamNetworkingSockets010,
+public ISteamNetworkingSockets011,
 public ISteamNetworkingSockets
 {
     class Settings *settings{};
@@ -487,6 +489,9 @@ public:
     /// - k_EResultNoConnection - connection handle is invalid or connection has been closed.
     /// - k_EResultInvalidParam - nLanes is bad
     EResult GetConnectionRealTimeStatus( HSteamNetConnection hConn, SteamNetConnectionRealTimeStatus_t *pStatus, int nLanes, SteamNetConnectionRealTimeLaneStatus_t *pLanes );
+
+    // based on reversing the vftable returned from original steamclient64.dll
+    bool GetConnectionRealTimeStatus_old( HSteamNetConnection hConn, SteamNetConnectionRealTimeStatus_t *pStatus );
 
     /// Fetch the next available message(s) from the socket, if any.
     /// Returns the number of messages returned into your array, up to nMaxMessages.
