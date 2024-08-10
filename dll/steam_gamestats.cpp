@@ -521,7 +521,7 @@ void Steam_GameStats::save_session_to_disk(Steam_GameStats::Session_t &session, 
             ss << "\"" << name_str << "\",\"" << val_str << "\"\n";
         }
         auto ss_str = ss.str();
-        Local_Storage::store_file_data(folder_u8_str, "session_attributes.csv", ss_str.c_str(), ss_str.size());
+        Local_Storage::store_file_data(folder_u8_str, "session_attributes.csv", ss_str.c_str(), (unsigned int)ss_str.size());
     }
 
     // save each table
@@ -588,7 +588,7 @@ void Steam_GameStats::save_session_to_disk(Steam_GameStats::Session_t &session, 
         }
         ss_table << "\n";
         auto ss_str = ss_table.str();
-        Local_Storage::store_file_data(folder_u8_str, table_name.c_str(), ss_str.c_str(), ss_str.size());
+        Local_Storage::store_file_data(folder_u8_str, table_name.c_str(), ss_str.c_str(), (unsigned int)ss_str.size());
 
     }
 }

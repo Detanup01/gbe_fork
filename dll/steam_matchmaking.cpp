@@ -362,7 +362,7 @@ int Steam_Matchmaking::AddFavoriteGame( AppId_t nAppID, uint32 nIP, uint16 nConn
                 directory_path = file_path.substr(0, file_directory);
                 file_name = file_path.substr(file_directory);
             }
-            Local_Storage::store_file_data(directory_path, file_name, (char *)list.data(), list.size());
+            Local_Storage::store_file_data(directory_path, file_name, (char *)list.data(), (unsigned int)list.size());
 
             ++list_lines;
             return static_cast<int>(list_lines);
@@ -379,7 +379,7 @@ int Steam_Matchmaking::AddFavoriteGame( AppId_t nAppID, uint32 nIP, uint16 nConn
             directory_path = file_path.substr(0, file_directory);
             file_name = file_path.substr(file_directory);
         }
-        Local_Storage::store_file_data(directory_path, file_name, (char *)newip_string.data(), newip_string.size());
+        Local_Storage::store_file_data(directory_path, file_name, (char *)newip_string.data(), (unsigned int)newip_string.size());
 
         return 1;
     }
@@ -429,7 +429,7 @@ bool Steam_Matchmaking::RemoveFavoriteGame( AppId_t nAppID, uint32 nIP, uint16 n
                 directory_path = file_path.substr(0, file_directory);
                 file_name = file_path.substr(file_directory);
             }
-            Local_Storage::store_file_data(directory_path, file_name, (char *)list.data(), list.size());
+            Local_Storage::store_file_data(directory_path, file_name, (char *)list.data(), (unsigned int)list.size());
 
             return true;
         }
