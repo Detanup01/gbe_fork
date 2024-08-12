@@ -573,9 +573,8 @@ ISteamRemoteStorage *Steam_Client::GetISteamRemoteStorage( HSteamUser hSteamuser
         return reinterpret_cast<ISteamRemoteStorage *>(static_cast<ISteamRemoteStorage013 *>(steam_remote_storage));
     } else if (strcmp(pchVersion, "STEAMREMOTESTORAGE_INTERFACE_VERSION014") == 0) {
         return reinterpret_cast<ISteamRemoteStorage *>(static_cast<ISteamRemoteStorage014 *>(steam_remote_storage));
-
-    // STEAMREMOTESTORAGE_INTERFACE_VERSION015 Not found in public Archive, must be between 1.51-1.52
-
+    } else if (strcmp(pchVersion, "STEAMREMOTESTORAGE_INTERFACE_VERSION015") == 0) { // Not found in public Archive, based on reversing
+        return reinterpret_cast<ISteamRemoteStorage *>(static_cast<ISteamRemoteStorage015 *>(steam_remote_storage));
     } else if (strcmp(pchVersion, STEAMREMOTESTORAGE_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamRemoteStorage *>(static_cast<ISteamRemoteStorage *>(steam_remote_storage));
     }
@@ -711,9 +710,8 @@ ISteamUGC *Steam_Client::GetISteamUGC( HSteamUser hSteamUser, HSteamPipe hSteamP
         return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC009 *>(steam_ugc_temp));
     } else if (strcmp(pchVersion, "STEAMUGC_INTERFACE_VERSION010") == 0) {
         return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC010 *>(steam_ugc_temp));
-
-        // STEAMUGC_INTERFACE_VERSION011 Not found in public Archive, must be between 1.42-1.43
-
+    } else if (strcmp(pchVersion, "STEAMUGC_INTERFACE_VERSION011") == 0) { // Not found in public Archive, based on reversing
+        return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC011 *>(steam_ugc_temp));
     } else if (strcmp(pchVersion, "STEAMUGC_INTERFACE_VERSION012") == 0) {
         return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC012 *>(steam_ugc_temp));
     } else if (strcmp(pchVersion, "STEAMUGC_INTERFACE_VERSION013") == 0) {
