@@ -273,6 +273,8 @@ local deps_link = {
     zlib_archive_name    .. static_postfix,
     lib_prefix .. "curl" .. static_postfix,
     "mbedcrypto"         .. static_postfix,
+    "mbedtls"            .. static_postfix,
+    "mbedx509"           .. static_postfix,
 }
 -- add protobuf libs
 table_append(deps_link, {
