@@ -249,7 +249,7 @@ static void run_at_startup()
         return;
     }
 #if defined(STEAM_WIN32)
-    WSADATA wsaData;
+    WSADATA wsaData{};
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != NO_ERROR) {
         PRINT_DEBUG("Networking WSAStartup error");
         return;
@@ -257,8 +257,13 @@ static void run_at_startup()
 
     for (int i = 0; i < 10; ++i) {
         //hack: the game Full Mojo Rampage calls WSACleanup on startup so we call WSAStartup a few times so it doesn't get deallocated.
-        WSAStartup(MAKEWORD(2, 2), &wsaData);
+        WSADATA wsaData{};
+        if (WSAStartup(MAKEWORD(2, 2), &wsaData) != NO_ERROR) {
+            PRINT_DEBUG("Networking WSAStartup error");
+            return;
+        }
     }
+    PRINT_DEBUG("Networking WSAStartup success!");
 #else
 
 #endif

@@ -160,6 +160,30 @@ bool Steam_HTTP::SetHTTPRequestGetOrPostParameter( HTTPRequestHandle hRequest, c
     return true;
 }
 
+static int curl_debug_trace(
+    CURL *handle, curl_infotype type,
+    char *data, size_t size,
+    void *clientp
+)
+{
+    // https://curl.se/libcurl/c/CURLOPT_DEBUGFUNCTION.html
+    std::string text{};
+    switch (type) {
+        case CURLINFO_TEXT: text = "Info: " + std::string(data, size); break;
+        case CURLINFO_HEADER_IN: text = "<= Recv header"; break;
+        case CURLINFO_HEADER_OUT: text = "=> Send header"; break;
+        case CURLINFO_DATA_IN: text = "<= Recv data"; break;
+        case CURLINFO_DATA_OUT: text = "=> Send data"; break;
+        case CURLINFO_SSL_DATA_OUT: text = "=> Send SSL data"; break;
+        case CURLINFO_SSL_DATA_IN: text = "<= Recv SSL data"; break;
+
+        default: text = "[X] ERROR: unknown callback type"; break;
+    }
+
+    PRINT_DEBUG("%s", text.c_str());
+    return 0;
+}
+
 
 void Steam_HTTP::online_http_request(Steam_Http_Request *request, SteamAPICall_t *pCallHandle)
 {
@@ -213,6 +237,11 @@ void Steam_HTTP::online_http_request(Steam_Http_Request *request, SteamAPICall_t
         send_callresult();
         return;
     }
+
+#ifndef EMU_RELEASE_BUILD
+    curl_easy_setopt(chttp, CURLOPT_DEBUGFUNCTION, curl_debug_trace);
+    curl_easy_setopt(chttp, CURLOPT_VERBOSE, 1L);
+#endif
     
     // headers
     std::vector<std::string> headers{};
@@ -314,7 +343,7 @@ void Steam_HTTP::online_http_request(Steam_Http_Request *request, SteamAPICall_t
     fclose(hfile);
     headers.clear();
 
-    PRINT_DEBUG("CURL error code for '%s' [%i] (OK == 0)", request->url.c_str(), (int)res_curl);
+    PRINT_DEBUG("CURL error code for '%s' [%i = '%s'] (OK == 0)", request->url.c_str(), (int)res_curl, curl_easy_strerror(res_curl));
     
     unsigned int file_size = file_size_(request->target_filepath);
     if (file_size) {

@@ -535,8 +535,9 @@ local wild_zlib_64 = {
 if _OPTIONS["build-curl"] or _OPTIONS["all-build"] then
     local curl_common_defs = {
         "BUILD_CURL_EXE=OFF",
-        "BUILD_SHARED_LIBS=OFF",
         "BUILD_STATIC_CURL=OFF", -- "Build curl executable with static libcurl"
+
+        "BUILD_SHARED_LIBS=OFF",
         "BUILD_STATIC_LIBS=ON",
         "BUILD_MISC_DOCS=OFF",
         "BUILD_TESTING=OFF",
@@ -544,6 +545,8 @@ if _OPTIONS["build-curl"] or _OPTIONS["all-build"] then
         "ENABLE_CURL_MANUAL=OFF",
         "CURL_USE_OPENSSL=OFF",
         "CURL_ZLIB=ON",
+
+        -- fix building on Arch Linux
         "CURL_USE_LIBSSH2=OFF",
         "CURL_USE_LIBPSL=OFF",
         "USE_LIBIDN2=OFF",
