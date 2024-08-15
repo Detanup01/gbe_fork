@@ -308,6 +308,7 @@ void Steam_HTTP::online_http_request(Steam_Http_Request *request, SteamAPICall_t
     curl_easy_setopt(chttp, CURLOPT_TIMEOUT, request->timeout_sec);
     curl_easy_setopt(chttp, CURLOPT_NOSIGNAL, 1L);
     curl_easy_setopt(chttp, CURLOPT_USE_SSL, request->requires_valid_ssl ? CURLUSESSL_TRY : CURLUSESSL_NONE);
+    curl_easy_setopt(chttp, CURLOPT_SSL_VERIFYPEER, 0L);
 
     // post data, or get params
     std::string post_data{};
