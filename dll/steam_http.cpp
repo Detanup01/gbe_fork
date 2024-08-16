@@ -38,7 +38,7 @@ Steam_Http_Request *Steam_HTTP::get_request(HTTPRequestHandle hRequest)
 // or such.
 HTTPRequestHandle Steam_HTTP::CreateHTTPRequest( EHTTPMethod eHTTPRequestMethod, const char *pchAbsoluteURL )
 {
-    PRINT_DEBUG("%i %s", eHTTPRequestMethod, pchAbsoluteURL);
+    PRINT_DEBUG("%i '%s'", eHTTPRequestMethod, pchAbsoluteURL);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchAbsoluteURL) return INVALID_HTTPREQUEST_HANDLE;
@@ -83,7 +83,7 @@ HTTPRequestHandle Steam_HTTP::CreateHTTPRequest( EHTTPMethod eHTTPRequestMethod,
 // sending the request.  This is just so the caller can easily keep track of which callbacks go with which request data.
 bool Steam_HTTP::SetHTTPRequestContextValue( HTTPRequestHandle hRequest, uint64 ulContextValue )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("%llu", ulContextValue);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     Steam_Http_Request *request = get_request(hRequest);
@@ -122,14 +122,18 @@ bool Steam_HTTP::SetHTTPRequestHeaderValue( HTTPRequestHandle hRequest, const ch
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchHeaderName || !pchHeaderValue) return false;
-    std::string headerName(pchHeaderName);
-    std::transform(headerName.begin(), headerName.end(), headerName.begin(), [](char c){ return (char)std::toupper(c); });
-    if (headerName == "USER-AGENT") return false;
+    if (common_helpers::str_cmp_insensitive(pchHeaderName, "User-Agent")) return false;
 
     Steam_Http_Request *request = get_request(hRequest);
     if (!request) {
         return false;
     }
+
+    // FIX: appid 1902490 adds the header "Cache-Control: only-if-cached, max-stale=2678400"
+    // which means a response is returned back only if it was already cached, otherwise the server has to send a 504 "Gateway Timeout"
+    // just bypass the known ones to be on the safe side
+    if (common_helpers::str_cmp_insensitive(pchHeaderName, "Cache-Control")) return true;
+    if (common_helpers::str_cmp_insensitive(pchHeaderName, "Accept")) return true;
 
     request->headers[pchHeaderName] = pchHeaderValue;
     return true;

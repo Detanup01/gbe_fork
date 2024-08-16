@@ -30,12 +30,15 @@ struct Steam_Http_Request {
 	bool requires_valid_ssl = false;
 
 	constexpr const static char STEAM_DEFAULT_USER_AGENT[] = "Valve/Steam HTTP Client 1.0";
-	// GET or POST parameter value on the request
+	// check Steam_HTTP::SetHTTPRequestHeaderValue() and make sure to bypass the ones that should be reserved
 	std::map<std::string, std::string> headers{
-		{"User-Agent", STEAM_DEFAULT_USER_AGENT},
+		{ "User-Agent", STEAM_DEFAULT_USER_AGENT },
+		{ "Cache-Control", "max-age=0" },
+		{ "Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7" },
+		{ "Upgrade-Insecure-Requests", "1" },
 	};
 
-	// GET or POST parameter value on the request
+	// GET or POST parameter value of the request
 	std::map<std::string, std::string> get_or_post_params{};
 	std::string post_raw{};
 
