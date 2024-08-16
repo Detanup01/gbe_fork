@@ -564,12 +564,15 @@ if _OPTIONS["build-mbedtls"] or _OPTIONS["all-build"] then
         table.insert(mbedtls_common_defs, "LINK_WITH_PTHREAD=ON")
     end
 
+    local mbedtls_32_bit_fixes = {}
+    if _OPTIONS["32-build"] and string.match(_ACTION, 'gmake.*') then
+        table.insert(mbedtls_32_bit_fixes, '-mpclmul')
+        table.insert(mbedtls_32_bit_fixes, '-msse2')
+        table.insert(mbedtls_32_bit_fixes, '-maes')
+    end
+
     if _OPTIONS["32-build"] then
-        cmake_build('mbedtls', true, mbedtls_common_defs, {
-            '-mpclmul',
-            '-msse2',
-            '-maes',
-        })
+        cmake_build('mbedtls', true, mbedtls_common_defs, mbedtls_32_bit_fixes)
     end
     if _OPTIONS["64-build"] then
         cmake_build('mbedtls', false, mbedtls_common_defs)
