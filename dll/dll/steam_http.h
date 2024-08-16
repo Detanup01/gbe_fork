@@ -67,7 +67,7 @@ public ISteamHTTP
 	std::vector<Steam_Http_Request> requests{};
 
 	Steam_Http_Request *get_request(HTTPRequestHandle hRequest);
-	void online_http_request(Steam_Http_Request *request, SteamAPICall_t *pCallHandle);
+	void online_http_request(Steam_Http_Request *request, SteamAPICall_t call_res_id);
 
 public:
 	Steam_HTTP(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks);

@@ -189,12 +189,12 @@ static int curl_debug_trace(
 }
 
 
-void Steam_HTTP::online_http_request(Steam_Http_Request *request, SteamAPICall_t *pCallHandle)
+void Steam_HTTP::online_http_request(Steam_Http_Request *request, SteamAPICall_t call_res_id)
 {
     PRINT_DEBUG("attempting to download from url: '%s', target filepath: '%s'",
         request->url.c_str(), request->target_filepath.c_str());
 
-    const auto send_callresult = [&]() -> void {
+    const auto send_callresult = [=]() -> void {
         struct HTTPRequestCompleted_t data{};
         data.m_hRequest = request->handle;
         data.m_ulContextValue = request->context_value;
@@ -202,16 +202,13 @@ void Steam_HTTP::online_http_request(Steam_Http_Request *request, SteamAPICall_t
         if (request->response.empty() && !settings->force_steamhttp_success) {
             data.m_bRequestSuccessful = false;
             data.m_eStatusCode = k_EHTTPStatusCode404NotFound;
-            
         } else {
             data.m_bRequestSuccessful = true;
             data.m_eStatusCode = k_EHTTPStatusCode200OK;
         }
 
-        auto callres = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1);
-        if (pCallHandle) *pCallHandle = callres;
-
-        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.1);
+        callback_results->addCallResult(call_res_id, data.k_iCallback, &data, sizeof(data));
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
     };
 
     std::size_t filename_part = request->target_filepath.find_last_of("\\/");
@@ -378,7 +375,10 @@ bool Steam_HTTP::SendHTTPRequest( HTTPRequestHandle hRequest, SteamAPICall_t *pC
 
     if (request->response.empty() && request->target_filepath.size() &&
         !settings->disable_networking && settings->download_steamhttp_requests) {
-        std::thread(&Steam_HTTP::online_http_request, this, request, pCallHandle).detach();
+        auto call_res_id = callback_results->reserveCallResult();
+        if (pCallHandle) *pCallHandle = call_res_id;
+
+        std::thread(&Steam_HTTP::online_http_request, this, request, call_res_id).detach();
     } else {
         struct HTTPRequestCompleted_t data{};
         data.m_hRequest = request->handle;
@@ -387,7 +387,6 @@ bool Steam_HTTP::SendHTTPRequest( HTTPRequestHandle hRequest, SteamAPICall_t *pC
         if (request->response.empty() && !settings->force_steamhttp_success) {
             data.m_bRequestSuccessful = false;
             data.m_eStatusCode = k_EHTTPStatusCode404NotFound;
-            
         } else {
             data.m_bRequestSuccessful = true;
             data.m_eStatusCode = k_EHTTPStatusCode200OK;
