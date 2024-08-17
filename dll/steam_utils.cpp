@@ -81,11 +81,11 @@ bool Steam_Utils::GetImageSize( int iImage, uint32 *pnWidth, uint32 *pnHeight )
 
     if (!iImage || !pnWidth || !pnHeight) return false;
 
-    auto image = settings->images.find(iImage);
-    if (settings->images.end() == image) return false;
+    auto image_info = settings->get_image(iImage);
+    if (!image_info) return false;
 
-    *pnWidth = image->second.width;
-    *pnHeight = image->second.height;
+    *pnWidth = image_info->width;
+    *pnHeight = image_info->height;
     return true;
 }
 
@@ -99,10 +99,10 @@ bool Steam_Utils::GetImageRGBA( int iImage, uint8 *pubDest, int nDestBufferSize 
 
     if (!iImage || !pubDest || nDestBufferSize <= 0) return false;
 
-    auto image = settings->images.find(iImage);
-    if (settings->images.end() == image) return false;
+    auto image_info = settings->get_image(iImage);
+    if (!image_info) return false;
 
-    image->second.data.copy((char *)pubDest, nDestBufferSize);
+    image_info->data.copy((char *)pubDest, nDestBufferSize);
     return true;
 }
 

@@ -859,9 +859,9 @@ std::vector<image_pixel_t> Local_Storage::load_image(std::string const& image_pa
     std::vector<image_pixel_t> res{};
     int width{}, height{};
     image_pixel_t* img = (image_pixel_t*)stbi_load(image_path.c_str(), &width, &height, nullptr, 4);
-    if (img != nullptr)
-    {
-        res.resize(width*height);
+    PRINT_DEBUG("stbi_load('%s') -> %s", image_path.c_str(), (img ? "loaded" : stbi_failure_reason()));
+    if (img) {
+        res.resize(width * height);
         std::copy(img, img + width * height, res.begin());
 
         stbi_image_free(img);
@@ -875,19 +875,18 @@ std::string Local_Storage::load_image_resized(std::string const& image_path, std
 {
     std::string resized_image{};
     const size_t resized_img_size = resolution * resolution * 4;
-
-    if (image_path.length() > 0) {
+    if (image_path.size()) {
         int width = 0;
         int height = 0;
         unsigned char *img = stbi_load(image_path.c_str(), &width, &height, nullptr, 4);
-        PRINT_DEBUG("stbi_load('%s') -> %s", image_path.c_str(), (img == nullptr ? stbi_failure_reason() : "loaded"));
-        if (img != nullptr) {
+        PRINT_DEBUG("stbi_load('%s') -> %s", image_path.c_str(), (img ? "loaded" : stbi_failure_reason()));
+        if (img) {
             std::vector<char> out_resized(resized_img_size);
             stbir_resize_uint8(img, width, height, 0, (unsigned char*)&out_resized[0], resolution, resolution, 0, 4);
             resized_image = std::string((char*)&out_resized[0], out_resized.size());
             stbi_image_free(img);
         }
-    } else if (image_data.length() > 0) {
+    } else if (image_data.size()) {
         std::vector<char> out_resized(resized_img_size);
         stbir_resize_uint8((unsigned char*)image_data.c_str(), 184, 184, 0, (unsigned char*)&out_resized[0], resolution, resolution, 0, 4);
         resized_image = std::string((char*)&out_resized[0], out_resized.size());

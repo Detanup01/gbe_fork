@@ -208,6 +208,8 @@ private:
     std::map<std::string, Leaderboard_config> leaderboards{};
     std::map<std::string, Stat_config> stats{};
 
+    std::map<size_t, struct Image_Data> images{};
+
     //supported languages
     std::set<std::string> supported_languages_set{};
     std::string supported_languages{};
@@ -264,8 +266,6 @@ public:
 
     // enable owning Steam Applications IDs (mostly builtin apps + dedicated servers)
     bool enable_builtin_preowned_ids = false;
-
-    std::map<int, struct Image_Data> images{};
 
     //subscribed lobby/group ids
     std::set<uint64> subscribed_groups{};
@@ -383,6 +383,7 @@ public:
 
     //images
     int add_image(const std::string &data, uint32 width, uint32 height);
+    Image_Data* get_image(int handle);
 
     // overlay auto accept stuff
     void acceptAnyOverlayInvites(bool value);
