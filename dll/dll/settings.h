@@ -215,6 +215,8 @@ private:
     std::string supported_languages{};
 
 public:
+    constexpr const static int INVALID_IMAGE_HANDLE = 0;
+
     //Depots
     std::vector<DepotId_t> depots{};
 

@@ -375,6 +375,10 @@ int Settings::add_image(const std::string &data, uint32 width, uint32 height)
 
 Image_Data* Settings::get_image(int handle)
 {
+    if (INVALID_IMAGE_HANDLE == handle) {
+        return nullptr;
+    }
+    
     auto image_it = images.find(handle);
     if (images.end() == image_it) {
         return nullptr;

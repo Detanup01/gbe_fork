@@ -135,19 +135,19 @@ int Steam_User_Stats::load_ach_icon(const nlohmann::json &defined_ach, bool achi
 
     std::string icon_filepath = defined_ach.value(icon_key, std::string{});
     if (icon_filepath.empty()) {
-        return 0; // bad handle
+        return Settings::INVALID_IMAGE_HANDLE;
     }
 
     std::string file_path(Local_Storage::get_game_settings_path() + icon_filepath);
     unsigned int file_size = file_size_(file_path);
     if (!file_size) {
-        return 0; // bad handle
+        return Settings::INVALID_IMAGE_HANDLE;
     }
 
     int icon_size = static_cast<int>(settings->overlay_appearance.icon_size);
     std::string img(Local_Storage::load_image_resized(file_path, "", icon_size));
     if (img.empty()) {
-        return 0; // bad handle
+        return Settings::INVALID_IMAGE_HANDLE;
     }
 
     return settings->add_image(img, icon_size, icon_size);
@@ -1173,7 +1173,7 @@ int Steam_User_Stats::GetAchievementIcon( const char *pchName )
 {
     PRINT_DEBUG("'%s'", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (!pchName) return 0;
+    if (!pchName) return Settings::INVALID_IMAGE_HANDLE;
 
     bool achieved = false;
     GetAchievement(pchName, &achieved);
@@ -1195,13 +1195,13 @@ int Steam_User_Stats::get_achievement_icon_handle( const std::string &ach_name, 
 {
     PRINT_DEBUG("'%s', %i", ach_name.c_str(), (int)achieved);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (ach_name.empty()) return 0;
+    if (ach_name.empty()) return Settings::INVALID_IMAGE_HANDLE;
 
     nlohmann::detail::iter_impl<nlohmann::json> it = defined_achievements.end();
     try {
         it = defined_achievements_find(ach_name);
     } catch(...) { }
-    if (defined_achievements.end() == it) return 0;
+    if (defined_achievements.end() == it) return Settings::INVALID_IMAGE_HANDLE;
 
     int handle = 0; // bad handle
     try {
