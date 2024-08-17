@@ -311,9 +311,8 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingSockets004 *>( steam_networking_sockets_temp));
         } else if (strcmp(pchVersion, "SteamNetworkingSockets006") == 0) {
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingSockets006 *>( steam_networking_sockets_temp));
-
-        // SteamNetworkingSockets007 Not found in public Archive, must be between 1.47-1.48
-
+        } else if (strcmp(pchVersion, "SteamNetworkingSockets007") == 0) { // Not found in public Archive, real steamclient64.dll returns null
+            return nullptr;
         } else if (strcmp(pchVersion, "SteamNetworkingSockets008") == 0) {
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingSockets008 *>( steam_networking_sockets_temp));
         } else if (strcmp(pchVersion, "SteamNetworkingSockets009") == 0) {
