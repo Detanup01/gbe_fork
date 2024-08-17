@@ -356,8 +356,8 @@ void Steam_Overlay::load_achievements_data()
             ach.unlock_time = 0;
         }
 
-        ach.icon_name = steamUserStats->get_achievement_icon_name(ach.name.c_str(), true);
-        ach.icon_gray_name = steamUserStats->get_achievement_icon_name(ach.name.c_str(), false);
+        ach.icon_handle = steamUserStats->get_achievement_icon_handle(ach.name, true);
+        ach.icon_gray_handle = steamUserStats->get_achievement_icon_handle(ach.name, false);
         
         float pnMinProgress = 0, pnMaxProgress = 0;
         if (steamUserStats->GetAchievementProgressLimits(ach.name.c_str(), &pnMinProgress, &pnMaxProgress)) {
@@ -1285,27 +1285,22 @@ bool Steam_Overlay::try_load_ach_icon(Overlay_Achievement &ach, bool achieved)
     if (!_renderer) return false;
 
     std::weak_ptr<uint64_t> &icon_rsrc = achieved ? ach.icon : ach.icon_gray;
-    const std::string &icon_name = achieved ? ach.icon_name : ach.icon_gray_name;
+    const int icon_handle = achieved ? ach.icon_handle : ach.icon_gray_handle;
     uint8_t &load_trials = achieved ? ach.icon_load_trials : ach.icon_gray_load_trials;
 
     if (!icon_rsrc.expired()) return true;
     
-    if (load_trials && icon_name.size()) {
+    if (load_trials) {
         --load_trials;
-        std::string file_path(Local_Storage::get_game_settings_path() + icon_name);
-        unsigned int file_size = file_size_(file_path);
-
-        int icon_size = static_cast<int>(settings->overlay_appearance.icon_size);
-        if (file_size) {
-            std::string img(Local_Storage::load_image_resized(file_path, "", icon_size));
-            if (img.size()) {
-                icon_rsrc = _renderer->CreateImageResource(
-                    (void*)img.c_str(),
-                    icon_size, icon_size);
-                
-                if (!icon_rsrc.expired()) load_trials = Overlay_Achievement::ICON_LOAD_MAX_TRIALS;
-                PRINT_DEBUG("'%s' (result=%i)", ach.name.c_str(), (int)!icon_rsrc.expired());
-            }
+        auto image_info = settings->get_image(icon_handle);
+        if (image_info) {
+            int icon_size = static_cast<int>(settings->overlay_appearance.icon_size);
+            icon_rsrc = _renderer->CreateImageResource(
+                (void*)image_info->data.c_str(),
+                icon_size, icon_size);
+            
+            if (!icon_rsrc.expired()) load_trials = Overlay_Achievement::ICON_LOAD_MAX_TRIALS;
+            PRINT_DEBUG("'%s' (result=%i)", ach.name.c_str(), (int)!icon_rsrc.expired());
         }
     }
 
