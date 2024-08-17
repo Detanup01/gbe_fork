@@ -107,7 +107,6 @@ struct NotificationsCoords
 class Steam_Overlay
 {
     constexpr static const char ACH_SOUNDS_FOLDER[] = "sounds";
-    constexpr static const char ACH_FALLBACK_DIR[] = "achievement_images";
 
     constexpr static const int renderer_detector_polling_ms = 100;
 

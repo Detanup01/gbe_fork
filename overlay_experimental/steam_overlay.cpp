@@ -1294,10 +1294,6 @@ bool Steam_Overlay::try_load_ach_icon(Overlay_Achievement &ach, bool achieved)
         --load_trials;
         std::string file_path(Local_Storage::get_game_settings_path() + icon_name);
         unsigned int file_size = file_size_(file_path);
-        if (!file_size) {
-            file_path = Local_Storage::get_game_settings_path() + Steam_Overlay::ACH_FALLBACK_DIR + PATH_SEPARATOR + icon_name;
-            file_size = file_size_(file_path);
-        }
 
         int icon_size = static_cast<int>(settings->overlay_appearance.icon_size);
         if (file_size) {
