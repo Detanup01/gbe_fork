@@ -109,6 +109,8 @@ private:
     void load_achievements();
     void save_achievements();
 
+    int load_ach_icon(const nlohmann::json &defined_ach, bool achieved);
+
     nlohmann::detail::iter_impl<nlohmann::json> defined_achievements_find(const std::string &key);
     std::string get_value_for_language(const nlohmann::json &json, std::string_view key, std::string_view language);
 
@@ -207,7 +209,9 @@ public:
     // specified achievement.
     int GetAchievementIcon( const char *pchName );
 
-    std::string get_achievement_icon_name( const char *pchName, bool pbAchieved );
+    int get_achievement_icon_handle( const std::string &ach_name, bool pbAchieved );
+
+    std::string get_achievement_icon_name( const char *pchName, bool achieved );
 
 
     // Get general attributes for an achievement. Accepts the following keys:

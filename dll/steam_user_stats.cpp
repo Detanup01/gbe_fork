@@ -126,6 +126,32 @@ void Steam_User_Stats::save_achievements()
     local_storage->write_json_file("", achievements_user_file, user_achievements);
 }
 
+int Steam_User_Stats::load_ach_icon(const nlohmann::json &defined_ach, bool achieved)
+{
+    const char *icon_key = achieved ? "icon" : "icon_gray";
+    if (!achieved && !defined_ach.contains(icon_key)) {
+        icon_key = "icongray"; // old format
+    }
+
+    std::string icon_filepath = defined_ach.value(icon_key, std::string{});
+    if (icon_filepath.empty()) {
+        return 0; // bad handle
+    }
+
+    std::string file_path(Local_Storage::get_game_settings_path() + icon_filepath);
+    unsigned int file_size = file_size_(file_path);
+    if (!file_size) {
+        return 0; // bad handle
+    }
+
+    int icon_size = static_cast<int>(settings->overlay_appearance.icon_size);
+    std::string img(Local_Storage::load_image_resized(file_path, "", icon_size));
+    if (img.empty()) {
+        return 0; // bad handle
+    }
+
+    return settings->add_image(img, icon_size, icon_size);
+}
 
 nlohmann::detail::iter_impl<nlohmann::json> Steam_User_Stats::defined_achievements_find(const std::string &key)
 {
@@ -784,9 +810,10 @@ Steam_User_Stats::Steam_User_Stats(Settings *settings, class Networking *network
     run_every_runcb(run_every_runcb),
     overlay(overlay)
 {
-    load_achievements_db(); // achievements db
-    load_achievements(); // achievements per user
+    load_achievements_db(); // steam_settings/achievements.json
+    load_achievements(); // %appdata%/<emu saves folder>/<app id>/achievements.json
 
+    // discard achievements without a "name"
     auto x = defined_achievements.begin();
     while (x != defined_achievements.end()) {
         if (!x->contains("name")) {
@@ -831,6 +858,9 @@ Steam_User_Stats::Steam_User_Stats(Settings *settings, class Networking *network
 
         it["displayName"] = get_value_for_language(it, "displayName", settings->get_language());
         it["description"] = get_value_for_language(it, "description", settings->get_language());
+
+        it["icon_handle"] = load_ach_icon(it, true);
+        it["icon_gray_handle"] = load_ach_icon(it, false);
     }
 
     //TODO: not sure if the sort is actually case insensitive, ach names seem to be treated by steam as case insensitive so I assume they are.
@@ -1141,12 +1171,49 @@ bool Steam_User_Stats::StoreStats()
 // specified achievement.
 int Steam_User_Stats::GetAchievementIcon( const char *pchName )
 {
-    PRINT_DEBUG_TODO();
+    PRINT_DEBUG("'%s'", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!pchName) return 0;
 
-    // callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
-    return 0;
+    bool achieved = false;
+    GetAchievement(pchName, &achieved);
+
+    std::string ach_name(pchName);
+    int handle = get_achievement_icon_handle(ach_name, achieved);
+
+    UserAchievementIconFetched_t data{};
+    data.m_bAchieved = achieved ;
+    data.m_nGameID = settings->get_local_game_id();
+    data.m_nIconHandle = handle;
+    ach_name.copy(data.m_rgchAchievementName, sizeof(data.m_rgchAchievementName));
+
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return handle;
+}
+
+int Steam_User_Stats::get_achievement_icon_handle( const std::string &ach_name, bool achieved )
+{
+    PRINT_DEBUG("'%s', %i", ach_name.c_str(), (int)achieved);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (ach_name.empty()) return 0;
+
+    nlohmann::detail::iter_impl<nlohmann::json> it = defined_achievements.end();
+    try {
+        it = defined_achievements_find(ach_name);
+    } catch(...) { }
+    if (defined_achievements.end() == it) return 0;
+
+    int handle = 0; // bad handle
+    try {
+        if (achieved) {
+            handle = it->value("icon_handle", static_cast<int>(0));
+        } else {
+            handle = it->value("icon_gray_handle", static_cast<int>(0));
+        }
+    } catch (...) {}
+
+    PRINT_DEBUG("returned handle = %i", handle);
+    return handle;
 }
 
 std::string Steam_User_Stats::get_achievement_icon_name( const char *pchName, bool pbAchieved )
