@@ -1364,18 +1364,6 @@ static void parse_simple_features(class Settings *settings_client, class Setting
     settings_client->steam_deck = ini.GetBoolValue("main::general", "steam_deck", settings_client->steam_deck);
     settings_server->steam_deck = ini.GetBoolValue("main::general", "steam_deck", settings_server->steam_deck);
 
-    settings_client->disable_leaderboards_create_unknown = ini.GetBoolValue("main::general", "disable_leaderboards_create_unknown", settings_client->disable_leaderboards_create_unknown);
-    settings_server->disable_leaderboards_create_unknown = ini.GetBoolValue("main::general", "disable_leaderboards_create_unknown", settings_server->disable_leaderboards_create_unknown);
-
-    settings_client->allow_unknown_stats = ini.GetBoolValue("main::general", "allow_unknown_stats", settings_client->allow_unknown_stats);
-    settings_server->allow_unknown_stats = ini.GetBoolValue("main::general", "allow_unknown_stats", settings_server->allow_unknown_stats);
-
-    settings_client->stat_achievement_progress_functionality = ini.GetBoolValue("main::general", "stat_achievement_progress_functionality", settings_client->stat_achievement_progress_functionality);
-    settings_server->stat_achievement_progress_functionality = ini.GetBoolValue("main::general", "stat_achievement_progress_functionality", settings_server->stat_achievement_progress_functionality);
-
-    settings_client->save_only_higher_stat_achievement_progress = ini.GetBoolValue("main::general", "save_only_higher_stat_achievement_progress", settings_client->save_only_higher_stat_achievement_progress);
-    settings_server->save_only_higher_stat_achievement_progress = ini.GetBoolValue("main::general", "save_only_higher_stat_achievement_progress", settings_server->save_only_higher_stat_achievement_progress);
-
     settings_client->immediate_gameserver_stats = ini.GetBoolValue("main::general", "immediate_gameserver_stats", settings_client->immediate_gameserver_stats);
     settings_server->immediate_gameserver_stats = ini.GetBoolValue("main::general", "immediate_gameserver_stats", settings_server->immediate_gameserver_stats);
 
@@ -1418,6 +1406,25 @@ static void parse_simple_features(class Settings *settings_client, class Setting
 
     settings_client->enable_builtin_preowned_ids = ini.GetBoolValue("main::misc", "enable_steam_preowned_ids", settings_client->enable_builtin_preowned_ids);
     settings_server->enable_builtin_preowned_ids = ini.GetBoolValue("main::misc", "enable_steam_preowned_ids", settings_server->enable_builtin_preowned_ids);
+}
+
+// [main::stats]
+static void parse_stats_features(class Settings *settings_client, class Settings *settings_server)
+{
+    settings_client->disable_leaderboards_create_unknown = ini.GetBoolValue("main::stats", "disable_leaderboards_create_unknown", settings_client->disable_leaderboards_create_unknown);
+    settings_server->disable_leaderboards_create_unknown = ini.GetBoolValue("main::stats", "disable_leaderboards_create_unknown", settings_server->disable_leaderboards_create_unknown);
+
+    settings_client->allow_unknown_stats = ini.GetBoolValue("main::stats", "allow_unknown_stats", settings_client->allow_unknown_stats);
+    settings_server->allow_unknown_stats = ini.GetBoolValue("main::stats", "allow_unknown_stats", settings_server->allow_unknown_stats);
+
+    settings_client->stat_achievement_progress_functionality = ini.GetBoolValue("main::stats", "stat_achievement_progress_functionality", settings_client->stat_achievement_progress_functionality);
+    settings_server->stat_achievement_progress_functionality = ini.GetBoolValue("main::stats", "stat_achievement_progress_functionality", settings_server->stat_achievement_progress_functionality);
+
+    settings_client->save_only_higher_stat_achievement_progress = ini.GetBoolValue("main::stats", "save_only_higher_stat_achievement_progress", settings_client->save_only_higher_stat_achievement_progress);
+    settings_server->save_only_higher_stat_achievement_progress = ini.GetBoolValue("main::stats", "save_only_higher_stat_achievement_progress", settings_server->save_only_higher_stat_achievement_progress);
+
+    settings_client->lazy_load_achievements_icons = ini.GetBoolValue("main::stats", "lazy_load_achievements_icons", settings_client->lazy_load_achievements_icons);
+    settings_server->lazy_load_achievements_icons = ini.GetBoolValue("main::stats", "lazy_load_achievements_icons", settings_server->lazy_load_achievements_icons);
 }
 
 
@@ -1673,6 +1680,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     settings_server->set_supported_languages(supported_languages);
 
     parse_simple_features(settings_client, settings_server);
+    parse_stats_features(settings_client, settings_server);
 
     parse_dlc(settings_client, settings_server);
     parse_installed_app_Ids(settings_client, settings_server);
