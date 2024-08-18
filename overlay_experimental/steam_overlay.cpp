@@ -85,7 +85,23 @@ void Steam_Overlay::overlay_run_callback(void* object)
 {
     // PRINT_DEBUG_ENTRY();
     Steam_Overlay* _this = reinterpret_cast<Steam_Overlay*>(object);
+
+    // bail immediately if we can't lock the overlay mutex, deadlock scenario:
+    // 1. ** the background thread locks the global mutex
+    // 2. -- the user opens the overlay
+    // 3. -- the overlay proc is triggered the next frame, locking the overlay mutex
+    // 4. ** the background thread locks the global mutex and runs this callback
+    // 5. ** this callback (already having the global mutex) attempts to lock the overlay mutex (already locked before)
+    // 6. ** this callback, and the background thread, are now blocked, note that the global mutex is still locked
+    // 7. -- in the same frame, some code in the overlay proc attempts to call a steam API which usually locks the global mutex
+    // sice the global mutex is still locked, the overlay proc is also blocked,
+    // and now both the background thread and the overlay proc and locked
+    // even worse, the global mutex is locked forever now
+    if (!_this->overlay_mutex.try_lock()) return;
+
     _this->steam_run_callback();
+
+    _this->overlay_mutex.unlock();
 }
 
 void Steam_Overlay::overlay_networking_callback(void* object, Common_Message* msg)
@@ -1655,8 +1671,6 @@ void Steam_Overlay::networking_msg_received(Common_Message *msg)
 
 void Steam_Overlay::steam_run_callback()
 {
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    
     if (!Ready()) return;
 
     if (overlay_state_changed) {
