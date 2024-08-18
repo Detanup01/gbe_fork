@@ -126,8 +126,14 @@ void Steam_User_Stats::save_achievements()
     local_storage->write_json_file("", achievements_user_file, user_achievements);
 }
 
-int Steam_User_Stats::load_ach_icon(const nlohmann::json &defined_ach, bool achieved)
+int Steam_User_Stats::load_ach_icon(nlohmann::json &defined_ach, bool achieved)
 {
+    const char *icon_handle_key = achieved ? "icon_handle" : "icon_gray_handle";
+    int current_handle = defined_ach.value(icon_handle_key, UNLOADED_ACH_ICON);
+    if (UNLOADED_ACH_ICON != current_handle) { // already loaded
+        return current_handle;
+    }
+
     const char *icon_key = achieved ? "icon" : "icon_gray";
     if (!achieved && !defined_ach.contains(icon_key)) {
         icon_key = "icongray"; // old format
@@ -135,22 +141,27 @@ int Steam_User_Stats::load_ach_icon(const nlohmann::json &defined_ach, bool achi
 
     std::string icon_filepath = defined_ach.value(icon_key, std::string{});
     if (icon_filepath.empty()) {
+        defined_ach[icon_handle_key] = Settings::INVALID_IMAGE_HANDLE;
         return Settings::INVALID_IMAGE_HANDLE;
     }
 
     std::string file_path(Local_Storage::get_game_settings_path() + icon_filepath);
     unsigned int file_size = file_size_(file_path);
     if (!file_size) {
+        defined_ach[icon_handle_key] = Settings::INVALID_IMAGE_HANDLE;
         return Settings::INVALID_IMAGE_HANDLE;
     }
 
     int icon_size = static_cast<int>(settings->overlay_appearance.icon_size);
     std::string img(Local_Storage::load_image_resized(file_path, "", icon_size));
     if (img.empty()) {
+        defined_ach[icon_handle_key] = Settings::INVALID_IMAGE_HANDLE;
         return Settings::INVALID_IMAGE_HANDLE;
     }
 
-    return settings->add_image(img, icon_size, icon_size);
+    int handle = settings->add_image(img, icon_size, icon_size);
+    defined_ach[icon_handle_key] = handle;
+    return handle;
 }
 
 nlohmann::detail::iter_impl<nlohmann::json> Steam_User_Stats::defined_achievements_find(const std::string &key)
@@ -859,8 +870,8 @@ Steam_User_Stats::Steam_User_Stats(Settings *settings, class Networking *network
         it["displayName"] = get_value_for_language(it, "displayName", settings->get_language());
         it["description"] = get_value_for_language(it, "description", settings->get_language());
 
-        it["icon_handle"] = load_ach_icon(it, true);
-        it["icon_gray_handle"] = load_ach_icon(it, false);
+        it["icon_handle"] = UNLOADED_ACH_ICON;
+        it["icon_gray_handle"] = UNLOADED_ACH_ICON;
     }
 
     //TODO: not sure if the sort is actually case insensitive, ach names seem to be treated by steam as case insensitive so I assume they are.
@@ -1203,15 +1214,7 @@ int Steam_User_Stats::get_achievement_icon_handle( const std::string &ach_name, 
     } catch(...) { }
     if (defined_achievements.end() == it) return Settings::INVALID_IMAGE_HANDLE;
 
-    int handle = 0; // bad handle
-    try {
-        if (achieved) {
-            handle = it->value("icon_handle", static_cast<int>(0));
-        } else {
-            handle = it->value("icon_gray_handle", static_cast<int>(0));
-        }
-    } catch (...) {}
-
+    int handle = load_ach_icon(*it, achieved);
     PRINT_DEBUG("returned handle = %i", handle);
     return handle;
 }
@@ -2148,9 +2151,26 @@ void Steam_User_Stats::send_updated_stats()
     );
 }
 
+void Steam_User_Stats::load_achievements_icons()
+{
+    if (achievements_icons_loaded) return;
+    if (settings->lazy_load_achievements_icons) {
+        achievements_icons_loaded = true;
+        return;
+    }
+
+    for (auto & defined_ach : defined_achievements) {
+        load_ach_icon(defined_ach, true);
+        load_ach_icon(defined_ach, false);
+    }
+
+    achievements_icons_loaded = true;
+}
+
 void Steam_User_Stats::steam_run_callback()
 {
     send_updated_stats();
+    load_achievements_icons();
 }
 
 

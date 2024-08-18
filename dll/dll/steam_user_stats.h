@@ -71,6 +71,7 @@ public ISteamUserStats
 {
 public:
     static constexpr auto achievements_user_file = "achievements.json";
+    static constexpr int UNLOADED_ACH_ICON = -1;
 
 private:
     template<typename T>
@@ -94,6 +95,8 @@ private:
     nlohmann::json defined_achievements{};
     nlohmann::json user_achievements{};
     std::vector<std::string> sorted_achievement_names{};
+    bool achievements_icons_loaded = false;
+
     std::map<std::string, int32> stats_cache_int{};
     std::map<std::string, float> stats_cache_float{};
 
@@ -109,7 +112,7 @@ private:
     void load_achievements();
     void save_achievements();
 
-    int load_ach_icon(const nlohmann::json &defined_ach, bool achieved);
+    int load_ach_icon(nlohmann::json &defined_ach, bool achieved);
 
     nlohmann::detail::iter_impl<nlohmann::json> defined_achievements_find(const std::string &key);
     std::string get_value_for_language(const nlohmann::json &json, std::string_view key, std::string_view language);
@@ -134,6 +137,7 @@ private:
     InternalSetResult<bool> clear_achievement_internal( const char *pchName );
 
     void send_updated_stats();
+    void load_achievements_icons();
     void steam_run_callback();
 
     // requests from server
