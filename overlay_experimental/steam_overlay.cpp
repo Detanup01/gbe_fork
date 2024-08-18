@@ -372,9 +372,6 @@ void Steam_Overlay::load_achievements_data()
             ach.unlock_time = 0;
         }
 
-        ach.icon_handle = steamUserStats->get_achievement_icon_handle(ach.name, true);
-        ach.icon_gray_handle = steamUserStats->get_achievement_icon_handle(ach.name, false);
-        
         float pnMinProgress = 0, pnMaxProgress = 0;
         if (steamUserStats->GetAchievementProgressLimits(ach.name.c_str(), &pnMinProgress, &pnMaxProgress)) {
             ach.progress = (uint32)pnMinProgress;
@@ -644,7 +641,10 @@ void Steam_Overlay::show_test_achievement()
 
     if (achievements.size()) {
         size_t rand_idx = common_helpers::rand_number(achievements.size() - 1);
-        ach.icon = achievements[rand_idx].icon;
+        auto &rand_ach = achievements[rand_idx];
+        bool achieved = rand_idx < (achievements.size() / 2);
+        try_load_ach_icon(rand_ach, achieved);
+        ach.icon = achieved ? rand_ach.icon : rand_ach.icon_gray;
     }
 
     bool for_progress = false;
@@ -1108,13 +1108,16 @@ void Steam_Overlay::build_notifications(float width, float height)
                 case notification_type::achievement_progress:
                 case notification_type::achievement: {
                     const auto &ach = it->ach.value();
-                    if (!ach.icon.expired() && ImGui::BeginTable("imgui_table", 2)) {
+                    auto& [icon_rsrc, _] = (notification_type)it->type == notification_type::achievement
+                        ? ach.icon
+                        : ach.icon_gray;
+                    if (!icon_rsrc.expired() && ImGui::BeginTable("imgui_table", 2)) {
                         ImGui::TableSetupColumn("imgui_table_image", ImGuiTableColumnFlags_WidthFixed, settings->overlay_appearance.icon_size);
                         ImGui::TableSetupColumn("imgui_table_text");
                         ImGui::TableNextRow(ImGuiTableRowFlags_None, settings->overlay_appearance.icon_size);
 
                         ImGui::TableSetColumnIndex(0);
-                        ImGui::Image((ImTextureID)*ach.icon.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
+                        ImGui::Image((ImTextureID)*icon_rsrc.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
 
                         ImGui::TableSetColumnIndex(1);
                         ImGui::TextWrapped("%s", it->message.c_str());
@@ -1241,7 +1244,7 @@ void Steam_Overlay::post_achievement_notification(Overlay_Achievement &ach, bool
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     if (!Ready()) return;
     
-    try_load_ach_icon(ach, !for_progress);
+    try_load_ach_icon(ach, !for_progress); // for progress notifications we want to load the gray icon
     submit_notification(
         for_progress ? notification_type::achievement_progress : notification_type::achievement,
         ach.title + "\n" + ach.description,
@@ -1266,26 +1269,21 @@ bool Steam_Overlay::try_load_ach_icon(Overlay_Achievement &ach, bool achieved)
 {
     if (!_renderer) return false;
 
-    std::weak_ptr<uint64_t> &icon_rsrc = achieved ? ach.icon : ach.icon_gray;
-    const int icon_handle = achieved ? ach.icon_handle : ach.icon_gray_handle;
-    uint8_t &load_trials = achieved ? ach.icon_load_trials : ach.icon_gray_load_trials;
+    auto& [icon_rsrc, attempted] = achieved ? ach.icon : ach.icon_gray;
+    if (attempted || !icon_rsrc.expired()) return true;
 
-    if (!icon_rsrc.expired()) return true;
-    
-    if (load_trials) {
-        --load_trials;
-        auto image_info = settings->get_image(icon_handle);
-        if (image_info) {
-            int icon_size = static_cast<int>(settings->overlay_appearance.icon_size);
-            icon_rsrc = _renderer->CreateImageResource(
-                (void*)image_info->data.c_str(),
-                icon_size, icon_size);
-            
-            if (!icon_rsrc.expired()) load_trials = Overlay_Achievement::ICON_LOAD_MAX_TRIALS;
-            PRINT_DEBUG("'%s' (result=%i)", ach.name.c_str(), (int)!icon_rsrc.expired());
-        }
+    const int icon_handle = get_steam_client()->steam_user_stats->get_achievement_icon_handle(ach.name, achieved);
+    auto image_info = settings->get_image(icon_handle);
+    if (image_info) {
+        int icon_size = static_cast<int>(settings->overlay_appearance.icon_size);
+        icon_rsrc = _renderer->CreateImageResource(
+            (void*)image_info->data.c_str(),
+            icon_size, icon_size);
+        
+        PRINT_DEBUG("'%s' (result=%i)", ach.name.c_str(), (int)!icon_rsrc.expired());
     }
 
+    attempted = true;
     return !icon_rsrc.expired();
 }
 
@@ -1488,7 +1486,7 @@ void Steam_Overlay::render_main_window()
                     ImGui::Separator();
 
                     bool could_create_ach_table_entry = false;
-                    if (!x.icon.expired() || !x.icon_gray.expired()) {
+                    if (!x.icon.first.expired() || !x.icon_gray.first.expired()) {
                         if (ImGui::BeginTable(x.title.c_str(), 2)) {
                             could_create_ach_table_entry = true;
 
@@ -1497,20 +1495,12 @@ void Steam_Overlay::render_main_window()
                             ImGui::TableNextRow(ImGuiTableRowFlags_None, settings->overlay_appearance.icon_size);
 
                             ImGui::TableSetColumnIndex(0);
-                            if (achieved) {
-                                if (!x.icon.expired()) {
-                                    ImGui::Image(
-                                        (ImTextureID)*x.icon.lock().get(),
-                                        ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size)
-                                    );
-                                }
-                            } else {
-                                if (!x.icon_gray.expired()) {
-                                    ImGui::Image(
-                                        (ImTextureID)*x.icon_gray.lock().get(),
-                                        ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size)
-                                    );
-                                }
+                            auto& [icon_rsrc, _] = achieved ? x.icon : x.icon_gray;
+                            if (!icon_rsrc.expired()) {
+                                ImGui::Image(
+                                    (ImTextureID)*icon_rsrc.lock().get(),
+                                    ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size)
+                                );
                             }
 
                             ImGui::TableSetColumnIndex(1);
@@ -1848,14 +1838,14 @@ void Steam_Overlay::UnSetupOverlay()
             
             PRINT_DEBUG("releasing any images resources");
             for (auto &ach : achievements) {
-                if (!ach.icon.expired()) {
-                    _renderer->ReleaseImageResource(ach.icon);
-                    ach.icon.reset();
+                if (!ach.icon.first.expired()) {
+                    _renderer->ReleaseImageResource(ach.icon.first);
+                    ach.icon.first.reset();
                 }
 
-                if (!ach.icon_gray.expired()) {
-                    _renderer->ReleaseImageResource(ach.icon_gray);
-                    ach.icon_gray.reset();
+                if (!ach.icon_gray.first.expired()) {
+                    _renderer->ReleaseImageResource(ach.icon_gray.first);
+                    ach.icon_gray.first.reset();
                 }
             }
 

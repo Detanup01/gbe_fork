@@ -63,24 +63,16 @@ enum class notification_type
 
 struct Overlay_Achievement
 {
-    // avoids spam loading on failure
-    constexpr const static int ICON_LOAD_MAX_TRIALS = 3;
-
-    std::string name{};
-    std::string title{};
-    std::string description{};
-    int icon_handle = 0;
-    int icon_gray_handle = 0;
+    std::string name{}; // internal schema name
+    std::string title{}; // displayName
+    std::string description{}; // description
     uint32 progress{};
     uint32 max_progress{};
     bool hidden{};
     bool achieved{};
     uint32 unlock_time{};
-    std::weak_ptr<uint64_t> icon{};
-    std::weak_ptr<uint64_t> icon_gray{};
-
-    uint8_t icon_load_trials = ICON_LOAD_MAX_TRIALS;
-    uint8_t icon_gray_load_trials = ICON_LOAD_MAX_TRIALS;
+    std::pair< std::weak_ptr<uint64_t>, bool > icon{};
+    std::pair< std::weak_ptr<uint64_t>, bool > icon_gray{};
 };
 
 struct Notification
