@@ -374,40 +374,6 @@ void Steam_Overlay::load_achievements_data()
 
 }
 
-void Steam_Overlay::initial_load_achievements_icons()
-{
-    {
-        std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-        if (late_init_ach_icons) return;
-    }
-
-    PRINT_DEBUG_ENTRY();
-    for (auto &ach : achievements) {
-        {
-            std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-            if (!is_ready || !setup_overlay_called) {
-                PRINT_DEBUG("early exit");
-                return;
-            }
-        }
-
-        try_load_ach_icon(ach, true);
-
-        {
-            std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-            if (!is_ready || !setup_overlay_called) {
-                PRINT_DEBUG("early exit");
-                return;
-            }
-        }
-
-        try_load_ach_icon(ach, false);
-    }
-
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    late_init_ach_icons = true;
-}
-
 // called initially and when window size is updated
 void Steam_Overlay::overlay_state_hook(bool ready)
 {
@@ -1310,8 +1276,6 @@ bool Steam_Overlay::try_load_ach_icon(Overlay_Achievement &ach, bool achieved)
 // Try to make this function as short as possible or it might affect game's fps.
 void Steam_Overlay::overlay_render_proc()
 {
-    initial_load_achievements_icons();
-    
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     if (!Ready()) return;
 
@@ -1897,7 +1861,7 @@ void Steam_Overlay::UnSetupOverlay()
 
 bool Steam_Overlay::Ready() const
 {
-    return !settings->disable_overlay && is_ready && late_init_imgui && late_init_ach_icons;
+    return !settings->disable_overlay && is_ready && late_init_imgui;
 }
 
 bool Steam_Overlay::NeedPresent() const

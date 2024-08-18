@@ -158,7 +158,6 @@ class Steam_Overlay
 
     // some stuff has to be initialized once the renderer hook is ready
     std::atomic<bool> late_init_imgui = false;
-    bool late_init_ach_icons = false;
 
     // changed each time a notification is posted or overlay is shown/hidden
     std::atomic_uint32_t renderer_frame_processing_requests = 0;
@@ -234,7 +233,6 @@ class Steam_Overlay
     void create_fonts();
     void load_audio();
     void load_achievements_data();
-    void initial_load_achievements_icons();
 
     void overlay_state_hook(bool ready);
     void allow_renderer_frame_processing(bool state, bool cleaning_up_overlay = false);
