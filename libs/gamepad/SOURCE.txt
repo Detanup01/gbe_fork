@@ -1,9 +1,11 @@
-============================================================================ INFO
+#### INFO
+
 https://github.com/mtwilliams/libgamepad
 
 VERSION: ????
 
-============================================================================ LICENSE
+#### LICENSE
+
 Copyright (c) 2014 Michael Williams
 Copyright (c) 2010-2011 Sean Middleditch
 

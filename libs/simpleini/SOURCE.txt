@@ -1,9 +1,11 @@
-============================================================================ INFO
+#### INFO
+
 https://github.com/brofield/simpleini
 
 VERSION: https://github.com/brofield/simpleini/releases/tag/v4.22
 
-============================================================================ LICENSE
+#### LICENSE
+
 The MIT License (MIT)
 
 Copyright (c) 2006-2022 Brodie Thiesfield
