@@ -477,3 +477,31 @@ std::string common_helpers::to_str(std::wstring_view wstr)
 
     return {};
 }
+
+std::string common_helpers::str_replace_all(std::string_view source, std::string_view substr, std::string_view replace)
+{
+    if (source.empty() || substr.empty()) return std::string(source);
+
+    std::string out{};
+    out.reserve(source.size() / 4); // out could be bigger or smaller than source, start small
+
+    size_t start_offset = 0;
+    auto f_idx = source.find(substr);
+    while (std::string::npos != f_idx) {
+        // copy the chars before the match
+        auto chars_count_until_match = f_idx - start_offset;
+        out.append(source, start_offset, chars_count_until_match);
+        // copy the replace str
+        out.append(replace);
+
+        // adjust the start offset to point at the char after this match
+        start_offset = f_idx + substr.size();
+        // search for next match
+        f_idx = source.find(substr, start_offset);
+    }
+
+    // copy last remaining part
+    out.append(source, start_offset, std::string::npos);
+
+    return out;
+}

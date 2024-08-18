@@ -1345,6 +1345,20 @@ static void parse_overlay_general_config(class Settings *settings_client, class 
 
 }
 
+// main::misc::steam_game_stats_reports_dir
+static void parse_steam_game_stats_reports_dir(class Settings *settings_client, class Settings *settings_server)
+{
+    std::string line(common_helpers::string_strip(ini.GetValue("main::misc", "steam_game_stats_reports_dir", "")));
+    if (line.size()) {
+        auto folder = common_helpers::to_absolute(line, get_full_program_path());
+        if (folder.size()) {
+            PRINT_DEBUG("ISteamGameStats reports will be saved to '%s'", folder.c_str());
+            settings_client->steam_game_stats_reports_dir = folder;
+            settings_server->steam_game_stats_reports_dir = folder;
+        }
+    }
+}
+
 // mainly enable/disable features
 static void parse_simple_features(class Settings *settings_client, class Settings *settings_server)
 {
@@ -1705,6 +1719,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
 
     parse_overlay_general_config(settings_client, settings_server);
     load_overlay_appearance(settings_client, settings_server, local_storage);
+    parse_steam_game_stats_reports_dir(settings_client, settings_server);
 
     *settings_client_out = settings_client;
     *settings_server_out = settings_server;
