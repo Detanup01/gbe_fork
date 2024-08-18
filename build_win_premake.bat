@@ -40,7 +40,7 @@ set /a "BUILD_DEPS=0"
   if %BUILD_DEPS% equ 1 (
     set "CMAKE_GENERATOR=Visual Studio 17 2022"
     call "%PREMAKE_EXE%" --file="premake5-deps.lua" --64-build --32-build --all-ext --all-build --j=2 --verbose --clean --os=windows vs2022
-    if %errorlevel% neq 0 (
+    if !errorlevel! neq 0 (
       goto :end_script_with_err
     )
     goto :end_script
@@ -89,7 +89,7 @@ set /a "BUILD_DEPS=0"
         set "BUILD_TARGET=%%C"
         echo. & echo: building !BUILD_TARGET! !BUILD_TYPE! !BUILD_PLATFORM!
         call "%MSBUILD_EXE%" /nologo -m:%MAX_THREADS% -v:n /p:Configuration=!BUILD_TYPE!,Platform=!BUILD_PLATFORM! /target:!BUILD_TARGET! "%SLN_FILE%"
-        if %errorlevel% neq 0 (
+        if !errorlevel! neq 0 (
           goto :end_script_with_err
         )
       )
