@@ -3,8 +3,7 @@ https://github.com/nlohmann/json
 
 VERSION: https://github.com/nlohmann/json/releases/tag/v3.11.3
 
-============================================================================ LICENSE MIT
-
+============================================================================ LICENSE
 MIT License
 
 Copyright (c) 2013-2022 Niels Lohmann

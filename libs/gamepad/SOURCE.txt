@@ -1,10 +1,9 @@
 ============================================================================ INFO
 https://github.com/mtwilliams/libgamepad
 
-VERSION: https://github.com/mtwilliams/libgamepad/tree/67526682a3d8390a970c140c316e9f1f826f1802
+VERSION: ????
 
-============================================================================ LICENSE MIT
-
+============================================================================ LICENSE
 Copyright (c) 2014 Michael Williams
 Copyright (c) 2010-2011 Sean Middleditch
 

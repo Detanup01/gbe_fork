@@ -3,8 +3,7 @@ https://github.com/nlohmann/fifo_map
 
 VERSION: https://github.com/nlohmann/fifo_map/tree/d732aaf9a315415ae8fd7eb11e3a4c1f80e42a48
 
-============================================================================ LICENSE MIT
-
+============================================================================ LICENSE
 MIT License
 
 Copyright (c) 2015-2017 Niels Lohmann
