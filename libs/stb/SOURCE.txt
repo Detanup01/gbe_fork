@@ -1,3 +1,9 @@
+============================================================================ INFO
+https://github.com/nothings/stb
+
+VERSION: https://github.com/nothings/stb/tree/f75e8d1cad7d90d72ef7a4661f1b994ef78b4e31
+
+============================================================================ LICENSE MIT / PUBLIC DOMAIN
 This software is available under 2 licenses -- choose whichever you prefer.
 ------------------------------------------------------------------------------
 ALTERNATIVE A - MIT License
