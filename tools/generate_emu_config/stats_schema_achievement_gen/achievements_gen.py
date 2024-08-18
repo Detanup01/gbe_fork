@@ -32,9 +32,9 @@ def generate_stats_achievements(
                     out['hidden'] = 0
                     for x in ach['display']:
                         value = ach['display'][x]
-                        if x == 'name':
+                        if f'{x}'.lower() == 'name':
                             x = 'displayName'
-                        elif x == 'desc':
+                        elif f'{x}'.lower() == 'desc':
                             x = 'description'
                         elif x == 'Hidden' or f'{x}'.lower() == 'hidden':
                             x = 'hidden'

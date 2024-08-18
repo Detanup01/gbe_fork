@@ -63,24 +63,16 @@ enum class notification_type
 
 struct Overlay_Achievement
 {
-    // avoids spam loading on failure
-    constexpr const static int ICON_LOAD_MAX_TRIALS = 3;
-
-    std::string name{};
-    std::string title{};
-    std::string description{};
-    std::string icon_name{};
-    std::string icon_gray_name{};
+    std::string name{}; // internal schema name
+    std::string title{}; // displayName
+    std::string description{}; // description
     uint32 progress{};
     uint32 max_progress{};
     bool hidden{};
     bool achieved{};
     uint32 unlock_time{};
-    std::weak_ptr<uint64_t> icon{};
-    std::weak_ptr<uint64_t> icon_gray{};
-
-    uint8_t icon_load_trials = ICON_LOAD_MAX_TRIALS;
-    uint8_t icon_gray_load_trials = ICON_LOAD_MAX_TRIALS;
+    std::pair< std::weak_ptr<uint64_t>, bool > icon{};
+    std::pair< std::weak_ptr<uint64_t>, bool > icon_gray{};
 };
 
 struct Notification
@@ -107,7 +99,6 @@ struct NotificationsCoords
 class Steam_Overlay
 {
     constexpr static const char ACH_SOUNDS_FOLDER[] = "sounds";
-    constexpr static const char ACH_FALLBACK_DIR[] = "achievement_images";
 
     constexpr static const int renderer_detector_polling_ms = 100;
 
@@ -159,7 +150,6 @@ class Steam_Overlay
 
     // some stuff has to be initialized once the renderer hook is ready
     std::atomic<bool> late_init_imgui = false;
-    bool late_init_ach_icons = false;
 
     // changed each time a notification is posted or overlay is shown/hidden
     std::atomic_uint32_t renderer_frame_processing_requests = 0;
@@ -235,7 +225,6 @@ class Steam_Overlay
     void create_fonts();
     void load_audio();
     void load_achievements_data();
-    void initial_load_achievements_icons();
 
     void overlay_state_hook(bool ready);
     void allow_renderer_frame_processing(bool state, bool cleaning_up_overlay = false);

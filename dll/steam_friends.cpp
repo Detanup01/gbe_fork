@@ -1280,9 +1280,15 @@ void Steam_Friends::Callback(Common_Message *msg)
             f->set_name(settings->get_local_name());
             f->set_appid(settings->get_local_game_id().AppID());
             f->set_lobby_id(settings->get_lobby().ConvertToUint64());
+            
             int avatar_number = GetLargeFriendAvatar(settings->get_local_steam_id());
-            if (settings->images[avatar_number].data.length() > 0) f->set_avatar(settings->images[avatar_number].data);
-            else f->set_avatar("");
+            auto avatar_info = settings->get_image(avatar_number);
+            if (avatar_info && avatar_info->data.size()) {
+                f->set_avatar(avatar_info->data);
+            } else {
+                f->set_avatar("");
+            }
+
             msg_.set_allocated_friend_(f);
             network->sendTo(&msg_, true);
         }

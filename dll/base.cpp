@@ -29,7 +29,7 @@ const std::chrono::time_point<std::chrono::high_resolution_clock> startup_counte
 const std::chrono::time_point<std::chrono::system_clock> startup_time = std::chrono::system_clock::now();
 
 #ifndef EMU_RELEASE_BUILD
-dbg_log dbg_logger(get_full_program_path() + "STEAM_LOG.txt");
+dbg_log dbg_logger(get_full_program_path() + "STEAM_LOG_" + std::to_string(common_helpers::rand_number(UINT32_MAX)) + ".log");
 #endif
 
 

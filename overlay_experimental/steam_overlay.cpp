@@ -85,7 +85,23 @@ void Steam_Overlay::overlay_run_callback(void* object)
 {
     // PRINT_DEBUG_ENTRY();
     Steam_Overlay* _this = reinterpret_cast<Steam_Overlay*>(object);
+
+    // bail immediately if we can't lock the overlay mutex, deadlock scenario:
+    // 1. ** the background thread locks the global mutex
+    // 2. -- the user opens the overlay
+    // 3. -- the overlay proc is triggered the next frame, locking the overlay mutex
+    // 4. ** the background thread locks the global mutex and runs this callback
+    // 5. ** this callback (already having the global mutex) attempts to lock the overlay mutex (already locked before)
+    // 6. ** this callback, and the background thread, are now blocked, note that the global mutex is still locked
+    // 7. -- in the same frame, some code in the overlay proc attempts to call a steam API which usually locks the global mutex
+    // sice the global mutex is still locked, the overlay proc is also blocked,
+    // and now both the background thread and the overlay proc and locked
+    // even worse, the global mutex is locked forever now
+    if (!_this->overlay_mutex.try_lock()) return;
+
     _this->steam_run_callback();
+
+    _this->overlay_mutex.unlock();
 }
 
 void Steam_Overlay::overlay_networking_callback(void* object, Common_Message* msg)
@@ -356,9 +372,6 @@ void Steam_Overlay::load_achievements_data()
             ach.unlock_time = 0;
         }
 
-        ach.icon_name = steamUserStats->get_achievement_icon_name(ach.name.c_str(), true);
-        ach.icon_gray_name = steamUserStats->get_achievement_icon_name(ach.name.c_str(), false);
-        
         float pnMinProgress = 0, pnMaxProgress = 0;
         if (steamUserStats->GetAchievementProgressLimits(ach.name.c_str(), &pnMinProgress, &pnMaxProgress)) {
             ach.progress = (uint32)pnMinProgress;
@@ -372,40 +385,6 @@ void Steam_Overlay::load_achievements_data()
 
     PRINT_DEBUG("count=%u, loaded=%zu", achievements_num, achievements.size());
 
-}
-
-void Steam_Overlay::initial_load_achievements_icons()
-{
-    {
-        std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-        if (late_init_ach_icons) return;
-    }
-
-    PRINT_DEBUG_ENTRY();
-    for (auto &ach : achievements) {
-        {
-            std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-            if (!is_ready || !setup_overlay_called) {
-                PRINT_DEBUG("early exit");
-                return;
-            }
-        }
-
-        try_load_ach_icon(ach, true);
-
-        {
-            std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-            if (!is_ready || !setup_overlay_called) {
-                PRINT_DEBUG("early exit");
-                return;
-            }
-        }
-
-        try_load_ach_icon(ach, false);
-    }
-
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    late_init_ach_icons = true;
 }
 
 // called initially and when window size is updated
@@ -662,7 +641,10 @@ void Steam_Overlay::show_test_achievement()
 
     if (achievements.size()) {
         size_t rand_idx = common_helpers::rand_number(achievements.size() - 1);
-        ach.icon = achievements[rand_idx].icon;
+        auto &rand_ach = achievements[rand_idx];
+        bool achieved = rand_idx < (achievements.size() / 2);
+        try_load_ach_icon(rand_ach, achieved);
+        ach.icon = achieved ? rand_ach.icon : rand_ach.icon_gray;
     }
 
     bool for_progress = false;
@@ -1126,13 +1108,16 @@ void Steam_Overlay::build_notifications(float width, float height)
                 case notification_type::achievement_progress:
                 case notification_type::achievement: {
                     const auto &ach = it->ach.value();
-                    if (!ach.icon.expired() && ImGui::BeginTable("imgui_table", 2)) {
+                    auto& [icon_rsrc, _] = (notification_type)it->type == notification_type::achievement
+                        ? ach.icon
+                        : ach.icon_gray;
+                    if (!icon_rsrc.expired() && ImGui::BeginTable("imgui_table", 2)) {
                         ImGui::TableSetupColumn("imgui_table_image", ImGuiTableColumnFlags_WidthFixed, settings->overlay_appearance.icon_size);
                         ImGui::TableSetupColumn("imgui_table_text");
                         ImGui::TableNextRow(ImGuiTableRowFlags_None, settings->overlay_appearance.icon_size);
 
                         ImGui::TableSetColumnIndex(0);
-                        ImGui::Image((ImTextureID)*ach.icon.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
+                        ImGui::Image((ImTextureID)*icon_rsrc.lock().get(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
 
                         ImGui::TableSetColumnIndex(1);
                         ImGui::TextWrapped("%s", it->message.c_str());
@@ -1259,7 +1244,7 @@ void Steam_Overlay::post_achievement_notification(Overlay_Achievement &ach, bool
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     if (!Ready()) return;
     
-    try_load_ach_icon(ach, !for_progress);
+    try_load_ach_icon(ach, !for_progress); // for progress notifications we want to load the gray icon
     submit_notification(
         for_progress ? notification_type::achievement_progress : notification_type::achievement,
         ach.title + "\n" + ach.description,
@@ -1284,43 +1269,27 @@ bool Steam_Overlay::try_load_ach_icon(Overlay_Achievement &ach, bool achieved)
 {
     if (!_renderer) return false;
 
-    std::weak_ptr<uint64_t> &icon_rsrc = achieved ? ach.icon : ach.icon_gray;
-    const std::string &icon_name = achieved ? ach.icon_name : ach.icon_gray_name;
-    uint8_t &load_trials = achieved ? ach.icon_load_trials : ach.icon_gray_load_trials;
+    auto& [icon_rsrc, attempted] = achieved ? ach.icon : ach.icon_gray;
+    if (attempted || !icon_rsrc.expired()) return true;
 
-    if (!icon_rsrc.expired()) return true;
-    
-    if (load_trials && icon_name.size()) {
-        --load_trials;
-        std::string file_path(Local_Storage::get_game_settings_path() + icon_name);
-        unsigned int file_size = file_size_(file_path);
-        if (!file_size) {
-            file_path = Local_Storage::get_game_settings_path() + Steam_Overlay::ACH_FALLBACK_DIR + PATH_SEPARATOR + icon_name;
-            file_size = file_size_(file_path);
-        }
-
+    const int icon_handle = get_steam_client()->steam_user_stats->get_achievement_icon_handle(ach.name, achieved);
+    auto image_info = settings->get_image(icon_handle);
+    if (image_info) {
         int icon_size = static_cast<int>(settings->overlay_appearance.icon_size);
-        if (file_size) {
-            std::string img(Local_Storage::load_image_resized(file_path, "", icon_size));
-            if (img.size()) {
-                icon_rsrc = _renderer->CreateImageResource(
-                    (void*)img.c_str(),
-                    icon_size, icon_size);
-                
-                if (!icon_rsrc.expired()) load_trials = Overlay_Achievement::ICON_LOAD_MAX_TRIALS;
-                PRINT_DEBUG("'%s' (result=%i)", ach.name.c_str(), (int)!icon_rsrc.expired());
-            }
-        }
+        icon_rsrc = _renderer->CreateImageResource(
+            (void*)image_info->data.c_str(),
+            icon_size, icon_size);
+        
+        PRINT_DEBUG("'%s' (result=%i)", ach.name.c_str(), (int)!icon_rsrc.expired());
     }
 
+    attempted = true;
     return !icon_rsrc.expired();
 }
 
 // Try to make this function as short as possible or it might affect game's fps.
 void Steam_Overlay::overlay_render_proc()
 {
-    initial_load_achievements_icons();
-    
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     if (!Ready()) return;
 
@@ -1517,7 +1486,7 @@ void Steam_Overlay::render_main_window()
                     ImGui::Separator();
 
                     bool could_create_ach_table_entry = false;
-                    if (!x.icon.expired() || !x.icon_gray.expired()) {
+                    if (!x.icon.first.expired() || !x.icon_gray.first.expired()) {
                         if (ImGui::BeginTable(x.title.c_str(), 2)) {
                             could_create_ach_table_entry = true;
 
@@ -1526,20 +1495,12 @@ void Steam_Overlay::render_main_window()
                             ImGui::TableNextRow(ImGuiTableRowFlags_None, settings->overlay_appearance.icon_size);
 
                             ImGui::TableSetColumnIndex(0);
-                            if (achieved) {
-                                if (!x.icon.expired()) {
-                                    ImGui::Image(
-                                        (ImTextureID)*x.icon.lock().get(),
-                                        ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size)
-                                    );
-                                }
-                            } else {
-                                if (!x.icon_gray.expired()) {
-                                    ImGui::Image(
-                                        (ImTextureID)*x.icon_gray.lock().get(),
-                                        ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size)
-                                    );
-                                }
+                            auto& [icon_rsrc, _] = achieved ? x.icon : x.icon_gray;
+                            if (!icon_rsrc.expired()) {
+                                ImGui::Image(
+                                    (ImTextureID)*icon_rsrc.lock().get(),
+                                    ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size)
+                                );
                             }
 
                             ImGui::TableSetColumnIndex(1);
@@ -1680,8 +1641,6 @@ void Steam_Overlay::networking_msg_received(Common_Message *msg)
 {
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     
-    if (!Ready()) return;
-
     if (msg->has_steam_messages()) {
         Friend frd;
         frd.set_id(msg->source_id());
@@ -1702,8 +1661,6 @@ void Steam_Overlay::networking_msg_received(Common_Message *msg)
 
 void Steam_Overlay::steam_run_callback()
 {
-    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    
     if (!Ready()) return;
 
     if (overlay_state_changed) {
@@ -1881,14 +1838,14 @@ void Steam_Overlay::UnSetupOverlay()
             
             PRINT_DEBUG("releasing any images resources");
             for (auto &ach : achievements) {
-                if (!ach.icon.expired()) {
-                    _renderer->ReleaseImageResource(ach.icon);
-                    ach.icon.reset();
+                if (!ach.icon.first.expired()) {
+                    _renderer->ReleaseImageResource(ach.icon.first);
+                    ach.icon.first.reset();
                 }
 
-                if (!ach.icon_gray.expired()) {
-                    _renderer->ReleaseImageResource(ach.icon_gray);
-                    ach.icon_gray.reset();
+                if (!ach.icon_gray.first.expired()) {
+                    _renderer->ReleaseImageResource(ach.icon_gray.first);
+                    ach.icon_gray.first.reset();
                 }
             }
 
@@ -1906,7 +1863,7 @@ void Steam_Overlay::UnSetupOverlay()
 
 bool Steam_Overlay::Ready() const
 {
-    return !settings->disable_overlay && is_ready && late_init_imgui && late_init_ach_icons;
+    return !settings->disable_overlay && is_ready && late_init_imgui;
 }
 
 bool Steam_Overlay::NeedPresent() const

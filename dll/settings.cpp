@@ -353,13 +353,37 @@ std::map<std::string, Stat_config>::const_iterator Settings::setStatDefiniton(co
 
 int Settings::add_image(const std::string &data, uint32 width, uint32 height)
 {
-    int last = static_cast<int>(images.size()) + 1;
-    struct Image_Data dt;
+    auto previous_it = std::find_if(images.begin(), images.end(), [&](const std::pair<const size_t, Image_Data> &item) {
+        return item.second.data == data
+            && item.second.height == height
+            && item.second.width == width;
+    });
+    if (images.end() != previous_it) {
+        return static_cast<int>(previous_it->first);
+    }
+
+    struct Image_Data dt{};
     dt.width = width;
     dt.height = height;
     dt.data = data;
-    images[last] = dt;
-    return last;
+    
+    auto new_handle = images.size() + 1; // never return 0, it is a bad handle for most ISteamUserStats APIs
+    images[new_handle] = dt;
+
+    return static_cast<int>(new_handle);
+}
+
+Image_Data* Settings::get_image(int handle)
+{
+    if (INVALID_IMAGE_HANDLE == handle) {
+        return nullptr;
+    }
+    
+    auto image_it = images.find(handle);
+    if (images.end() == image_it) {
+        return nullptr;
+    }
+    return &image_it->second;
 }
 
 
