@@ -1,8 +1,10 @@
+import json
 import platform
 import os
 import sys
 import glob
 import configparser
+import time
 import traceback
 
 
@@ -122,13 +124,15 @@ def convert_to_ini(global_settings: str, out_dict_ini: dict):
                     })
         elif file == 'build_id.txt':
             with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
-                merge_dict(out_dict_ini, {
-                    'configs.app.ini': {
-                        'app::general': {
-                            'build_id': (fr.readline().strip(), 'allow the app/game to show the correct build id'),
-                        },
-                    }
-                })
+                create_new_steam_settings_folder()
+                with open(os.path.join(NEW_STEAM_SETTINGS_FOLDER, 'branches.json'), 'wt', encoding='utf-8') as fout:
+                    json.dump([{
+                        "name": "public",
+                        "description": "",
+                        "protected": False,
+                        "build_id": int(fr.readline().strip()),
+                        "time_updated": int(time.time())
+                    }], fout, indent=2)
         elif file == 'disable_account_avatar.txt':
             merge_dict(out_dict_ini, {
                 'configs.main.ini': {
@@ -434,6 +438,24 @@ def write_txt_file_multi(filename: str, dict_ini: dict, section: str):
     return True
 
 
+def convert_public_branch_to_txt(global_settings: str):
+    src_file = os.path.join(global_settings, 'branches.json')
+    if not os.path.isfile(src_file):
+        return False
+    build_id = -1
+    with open(src_file, "r", encoding='utf-8') as fr:
+        branches: list[dict] = json.load(fr)
+        for branch in branches:
+            if f'{branch.get("name", "")}'.lower() == "public":
+                build_id = branch.get('build_id', -1)
+                break
+        if build_id == -1:
+            return False
+    create_new_steam_settings_folder()
+    with open(os.path.join(NEW_STEAM_SETTINGS_FOLDER, 'build_id.txt'), "wt", encoding='utf-8') as fw:
+        fw.write(f"{build_id}")
+    return True
+
 def convert_to_txt(global_settings: str):
     # oh no, they're too many!
     config = configparser.ConfigParser(strict=False, empty_lines_in_values=False)
@@ -447,7 +469,7 @@ def convert_to_txt(global_settings: str):
     done = 0
     done += write_txt_file_bool('achievements_bypass.txt', dict_ini, 'main::misc', 'achievements_bypass', True)
     done += write_txt_file_multi('app_paths.txt', dict_ini, 'app::paths')
-    done += write_txt_file('build_id.txt', dict_ini, 'app::general', 'build_id')
+    done += convert_public_branch_to_txt(global_settings)
     done += write_txt_file('crash_printer_location.txt', dict_ini, 'main::general', 'crash_printer_location')
     done += write_txt_file_bool('disable_account_avatar.txt', dict_ini, 'main::general', 'enable_account_avatar', False)
     done += write_txt_file_bool('disable_lan_only.txt', dict_ini, 'main::connectivity', 'disable_lan_only',True)
