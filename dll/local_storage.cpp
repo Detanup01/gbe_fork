@@ -23,6 +23,7 @@
 #define STBI_ONLY_JPEG
 #if defined(__WINDOWS__)
 #define STBI_WINDOWS_UTF8
+#define STBIW_WINDOWS_UTF8
 #endif
 #include "stb/stb_image.h"
 
@@ -31,7 +32,7 @@
 #include "stb/stb_image_write.h"
 
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
-#include "stb/stb_image_resize.h"
+#include "stb/stb_image_resize2.h"
 
 struct File_Data {
     std::string name{};
@@ -328,7 +329,7 @@ static int mkdir_p(const char *dir, const mode_t mode) {
     char *p = NULL;
     struct stat sb;
     size_t len;
-    
+
     /* copy path */
     len = strnlen (dir, PATH_MAX_STRING_SIZE);
     if (len == 0 || len == PATH_MAX_STRING_SIZE) {
@@ -348,7 +349,7 @@ static int mkdir_p(const char *dir, const mode_t mode) {
             return 0;
         }
     }
-    
+
     /* recursive mkdir */
     for(p = tmp + 1; *p; p++) {
         if(*p == '/') {
@@ -448,7 +449,7 @@ static std::vector<struct File_Data> get_filenames_recursive(std::string base_pa
 }
 
 
-#endif 
+#endif
 
 std::string Local_Storage::get_program_path()
 {
@@ -473,7 +474,7 @@ std::string Local_Storage::get_user_appdata_path()
     }
 
 #else
-    /* $XDG_DATA_HOME defines the base directory relative to which user specific data files should be stored. 
+    /* $XDG_DATA_HOME defines the base directory relative to which user specific data files should be stored.
     If $XDG_DATA_HOME is either not set or empty, a default equal to $HOME/.local/share should be used. */
     char *datadir = getenv("XDG_DATA_HOME");
     if (datadir) {
@@ -500,7 +501,7 @@ static std::string replace_with(std::string s, std::string const &old, const cha
 static std::string sanitize_file_name(std::string name)
 {
     if (name.empty()) return name;
-    
+
     //I'm not sure all of these are necessary but just to be sure
     if (name[0] == '.' && name.size() > 2 && (name[1] == '\\' || name[1] == '/')) name.erase(0, 2);
 
@@ -523,7 +524,7 @@ static std::string sanitize_file_name(std::string name)
 static std::string desanitize_file_name(std::string name)
 {
     if (name.empty()) return name;
-    
+
     //I'm not sure all of these are necessary but just to be sure
     name = replace_with(name, ".SLASH.", "/");
     name = replace_with(name, ".B_SLASH.", "\\");
@@ -627,7 +628,7 @@ std::vector<std::string> Local_Storage::get_folders_path(std::string path)
             }
         }
     } catch(...) { }
-    
+
     return output;
 }
 
@@ -847,7 +848,7 @@ bool Local_Storage::write_json_file(std::string folder, std::string const&file, 
         inventory_file << std::setw(2) << json;
         return true;
     }
-    
+
     PRINT_DEBUG("Couldn't open file '%s' to write json", full_path.c_str());
 
     reset_LastError();
@@ -882,23 +883,23 @@ std::string Local_Storage::load_image_resized(std::string const& image_path, std
         PRINT_DEBUG("stbi_load('%s') -> %s", image_path.c_str(), (img ? "loaded" : stbi_failure_reason()));
         if (img) {
             std::vector<char> out_resized(resized_img_size);
-            stbir_resize_uint8(img, width, height, 0, (unsigned char*)&out_resized[0], resolution, resolution, 0, 4);
+            stbir_resize_uint8_linear(img, width, height, 0, (unsigned char*)&out_resized[0], resolution, resolution, 0, STBIR_RGBA);
             resized_image = std::string((char*)&out_resized[0], out_resized.size());
             stbi_image_free(img);
         }
     } else if (image_data.size()) {
         std::vector<char> out_resized(resized_img_size);
-        stbir_resize_uint8((unsigned char*)image_data.c_str(), 184, 184, 0, (unsigned char*)&out_resized[0], resolution, resolution, 0, 4);
+        stbir_resize_uint8_linear((unsigned char*)image_data.c_str(), 184, 184, 0, (unsigned char*)&out_resized[0], resolution, resolution, 0, STBIR_RGBA);
         resized_image = std::string((char*)&out_resized[0], out_resized.size());
     }
-    
+
     reset_LastError();
     return resized_image;
 }
 
 bool Local_Storage::save_screenshot(std::string const& image_path, uint8_t* img_ptr, int32_t width, int32_t height, int32_t channels)
 {
-    std::string screenshot_path(save_directory + appid + screenshots_folder + PATH_SEPARATOR); 
+    std::string screenshot_path(save_directory + appid + screenshots_folder + PATH_SEPARATOR);
     create_directory(screenshot_path);
     screenshot_path += image_path;
     return stbi_write_png(screenshot_path.c_str(), width, height, channels, img_ptr, 0) == 1;

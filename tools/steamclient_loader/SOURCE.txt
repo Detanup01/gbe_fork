@@ -1,0 +1,4 @@
+============================================================================ INFO
+https://github.com/Rat431/ColdAPI_Steam
+
+Original version of ColdClientLoader by Rat431.

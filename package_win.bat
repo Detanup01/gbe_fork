@@ -1,87 +1,106 @@
 @echo off
+setlocal EnableDelayedExpansion
+cd /d "%~dp0"
 
-setlocal
-pushd "%~dp0"
-
-set /a last_code=0
-
-set "build_base_dir=build\win"
-set "out_dir=build\package\win"
-
-set /a MEM_PERCENT=90
-set /a DICT_SIZE_MB=384
-set "packager=third-party\deps\win\7za\7za.exe"
-
-:: use 70%
-set /a THREAD_COUNT=2
+set /a "MAX_THREADS=2"
 if defined NUMBER_OF_PROCESSORS (
-  set /a THREAD_COUNT=NUMBER_OF_PROCESSORS*70/100
-)
-if %THREAD_COUNT% lss 2 (
-  set /a THREAD_COUNT=2
-)
-
-if not exist "%packager%" (
-  1>&2 echo [X] packager app wasn't found
-  set /a last_code=1
-  goto :script_end
+  :: use 70%
+  set /a "MAX_THREADS=%NUMBER_OF_PROCESSORS% * 70 / 100"
+  if %MAX_THREADS% lss 1 (
+    set /a "MAX_THREADS=1"
+  )
 )
 
-if "%~1"=="" (
-  1>&2 echo [X] missing build folder
-  set /a last_code=1
-  goto :script_end
+set "BUILD_DIR=build\win"
+set "OUT_DIR=build\package\win"
+
+if "%~1" equ "" (
+  1>&2 echo: missing build target folder arg
+  goto :end_script_with_err
 )
 
-set "target_src_dir=%build_base_dir%\%~1"
-if not exist "%target_src_dir%" (
-  1>&2 echo [X] build folder wasn't found
-  set /a last_code=1
-  goto :script_end
+set "TARGET_DIR=%BUILD_DIR%\%~1"
+if not exist "%TARGET_DIR%\" (
+  1>&2 echo: build target folder wasn't found
+  goto :end_script_with_err
+)
+
+set /a "BUILD_DEBUG=0"
+if "%~2" equ "1" (
+  set /a "BUILD_DEBUG=1"
+)
+
+set /a "PKG_EXE_MEM_PERCENT=90"
+set /a "PKG_EXE_DICT_SIZE_MB=384"
+set "PKG_EXE=third-party\deps\win\7za\7za.exe"
+if not exist "%PKG_EXE%" (
+  1>&2 echo: packager wasn't found
+  goto :end_script_with_err
 )
 
 ::::::::::::::::::::::::::::::::::::::::::
-echo // copying readmes + example files
-xcopy /y /s /e /r "post_build\steam_settings.EXAMPLE\" "%target_src_dir%\steam_settings.EXAMPLE\"
-copy /y "post_build\README.release.md" "%target_src_dir%\"
-copy /y "CHANGELOG.md" "%target_src_dir%\"
-copy /y "CREDITS.md" "%target_src_dir%\"
-if "%~2"=="1" (
-  copy /y "post_build\README.debug.md" "%target_src_dir%\"
+echo: // copying readmes + example files
+
+xcopy /y /s /e /r "post_build\steam_settings.EXAMPLE\" "%TARGET_DIR%\steam_settings.EXAMPLE\"
+
+copy /y "post_build\README.release.md" "%TARGET_DIR%\"
+copy /y "CHANGELOG.md" "%TARGET_DIR%\"
+copy /y "CREDITS.md" "%TARGET_DIR%\"
+
+if %BUILD_DEBUG% equ 1 (
+  copy /y "post_build\README.debug.md" "%TARGET_DIR%\"
 )
-if exist "%target_src_dir%\experimental\" (
-  copy /y "post_build\README.experimental.md" "%target_src_dir%\experimental\"
+
+if exist "%TARGET_DIR%\experimental\" (
+  copy /y "post_build\README.experimental.md" "%TARGET_DIR%\experimental\"
 )
-if exist "%target_src_dir%\steamclient_experimental\" (
-  xcopy /y /s /e /r "post_build\win\ColdClientLoader.EXAMPLE\" "%target_src_dir%\steamclient_experimental\dll_injection.EXAMPLE\"
-  copy /y "post_build\README.experimental_steamclient.md" "%target_src_dir%\steamclient_experimental\"
-  copy /y "tools\steamclient_loader\win\ColdClientLoader.ini" "%target_src_dir%\steamclient_experimental\"
+
+if exist "%TARGET_DIR%\steamclient_experimental\" (
+  xcopy /y /s /e /r "post_build\win\ColdClientLoader.EXAMPLE\" "%TARGET_DIR%\steamclient_experimental\dll_injection.EXAMPLE\"
+  copy /y "post_build\README.experimental_steamclient.md" "%TARGET_DIR%\steamclient_experimental\"
+  copy /y "tools\steamclient_loader\win\ColdClientLoader.ini" "%TARGET_DIR%\steamclient_experimental\"
 )
-if exist "%target_src_dir%\tools\generate_interfaces\" (
-  copy /y "post_build\README.generate_interfaces.md" "%target_src_dir%\tools\generate_interfaces\"
+
+if exist "%TARGET_DIR%\tools\generate_interfaces\" (
+  copy /y "post_build\README.generate_interfaces.md" "%TARGET_DIR%\tools\generate_interfaces\"
 )
-if exist "%target_src_dir%\tools\lobby_connect\" (
-  copy /y "post_build\README.lobby_connect.md" "%target_src_dir%\tools\lobby_connect\"
+
+if exist "%TARGET_DIR%\tools\lobby_connect\" (
+  copy /y "post_build\README.lobby_connect.md" "%TARGET_DIR%\tools\lobby_connect\"
 )
 ::::::::::::::::::::::::::::::::::::::::::
 
-set "archive_dir=%out_dir%\%~1"
-if exist "%archive_dir%\" (
-  rmdir /s /q "%archive_dir%"
-)
-set "archive_file="
-for %%A in ("%archive_dir%") do (
-  set "archive_file=%%~dpAemu-win-%%~nxA.7z"
+set "ACHIVE_DIR=%OUT_DIR%\%~1"
+if exist "%ACHIVE_DIR%\" (
+  rmdir /s /q "%ACHIVE_DIR%"
 )
 
-for %%A in ("%archive_dir%") do (
-  mkdir "%%~dpA"
+for %%A in ("%ACHIVE_DIR%") do (
+  md "%%~dpA"
 )
-"%packager%" a "%archive_file%" ".\%target_src_dir%" -t7z -slp -ssw -mx -myx -mmemuse=p%MEM_PERCENT% -ms=on -mqs=off -mf=on -mhc+ -mhe- -m0=LZMA2:d=%DICT_SIZE_MB%m -mmt=%THREAD_COUNT% -mmtf+ -mtm- -mtc- -mta- -mtr+
 
-
-:script_end
-popd
-endlocal & (
-    exit /b %last_code%
+set "ACHIVE_FILE="
+for %%A in ("%ACHIVE_DIR%") do (
+  set "ACHIVE_FILE=%%~dpAemu-win-%%~nxA.7z"
 )
+
+if exist "%ACHIVE_FILE%" (
+  del /f /s /q "%ACHIVE_FILE%"
+)
+
+call "%PKG_EXE%" a "%ACHIVE_FILE%" ".\%TARGET_DIR%" -t7z -xr^^!*.lib -xr^^!*.exp -slp -ssw -mx -myx -mmemuse=p%PKG_EXE_MEM_PERCENT% -ms=on -mqs=off -mf=on -mhc+ -mhe- -m0=LZMA2:d=%PKG_EXE_DICT_SIZE_MB%m -mmt=%MAX_THREADS% -mmtf+ -mtm- -mtc- -mta- -mtr+
+if %errorlevel% neq 0 (
+  goto :end_script_with_err
+)
+
+goto :end_script
+
+:: exit without error
+:end_script
+  endlocal
+  exit /b 0
+
+:: exit with error
+:end_script_with_err
+  endlocal
+  exit /b 1

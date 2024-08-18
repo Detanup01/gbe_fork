@@ -2,7 +2,7 @@ name: Prepare release
 
 on:
   push:
-    tags:        
+    tags:
       - release-*
   workflow_dispatch:
     # allows manual trigger
@@ -58,12 +58,12 @@ jobs:
           dir /s /b /a:-d build\win
 
 ### remove linker files
-      - name: Remove linker files
-        shell: cmd
-        working-directory: ${{ github.workspace }}
-        run: |
-          del /f /s /q build\win\*.exp,build\win\*.lib
-          exit /b 0
+###      - name: Remove linker files
+###        shell: cmd
+###        working-directory: ${{ github.workspace }}
+###        run: |
+###          del /f /s /q build\win\*.exp,build\win\*.lib
+###          exit /b 0
 
 ### package (release mode)
       - name: Package build (release)
