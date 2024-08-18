@@ -1,120 +1,117 @@
 @echo off
-setlocal
+setlocal EnableDelayedExpansion
+cd /d "%~dp0"
 
-:: use 70%
-set /a build_threads=2
+set /a "MAX_THREADS=2"
 if defined NUMBER_OF_PROCESSORS (
-  set /a build_threads=NUMBER_OF_PROCESSORS*70/100
-)
-if %build_threads% lss 1 (
-  set /a build_threads=1
+  :: use 70%
+  set /a "MAX_THREADS=%NUMBER_OF_PROCESSORS% * 70 / 100"
+  if %MAX_THREADS% lss 1 (
+    set /a "MAX_THREADS=1"
+  )
 )
 
-set /a BUILD_DEPS=0
+set /a "BUILD_DEPS=0"
+
 :args_loop
-  if "%~1"=="" (
+  if "%~1" equ "" (
     goto :args_loop_end
-  ) else if "%~1"=="--deps" (
-    set /a BUILD_DEPS=1
-  ) else if "%~1"=="--help" (
-    call :help_page
-    goto :end_script
+  ) else if "%~1" equ "--deps" (
+    set /a "BUILD_DEPS=1"
+  ) else if "%~1" equ "--help" (
+    goto :help_page
   ) else (
-    1>&2 echo "invalid arg %~1"
+    1>&2 echo: invalid arg %~1
     goto :end_script_with_err
   )
-shift /1
-goto :args_loop
+
+  shift /1
+  goto :args_loop
+
 :args_loop_end
+  :: check premake
+  set "PREMAKE_EXE=third-party\common\win\premake\premake5.exe"
+  if not exist "%PREMAKE_EXE%" (
+    1>&2 echo: premake wasn't found
+    goto :end_script_with_err
+  )
 
-set "premake_exe=third-party\common\win\premake\premake5.exe"
-if not exist "%premake_exe%" (
-  1>&2 echo "preamke wasn't found"
-  goto :end_script_with_err
-)
+  :: build deps
+  if %BUILD_DEPS% equ 1 (
+    set "CMAKE_GENERATOR=Visual Studio 17 2022"
+    call "%PREMAKE_EXE%" --file="premake5-deps.lua" --64-build --32-build --all-ext --all-build --j=2 --verbose --clean --os=windows vs2022
+    if %errorlevel% neq 0 (
+      goto :end_script_with_err
+    )
+    goto :end_script
+  )
 
-:: build deps
-if %BUILD_DEPS%==0 (
-  goto :build_deps_end
-)
-set "CMAKE_GENERATOR=Visual Studio 17 2022"
-call "%premake_exe%" --file="premake5-deps.lua" --all-ext --all-build --64-build --32-build --verbose --clean --os=windows vs2022
-if %errorlevel% neq 0 (
-  goto :end_script_with_err
-)
-:build_deps_end
+  :: check vswhere
+  set "VSWHERE_EXE=third-party\common\win\vswhere\vswhere.exe"
+  if not exist "%VSWHERE_EXE%" (
+    1>&2 echo: vswhere wasn't found
+    goto :end_script_with_err
+  )
 
-:: VS WHERE to get MSBUILD
-set "vswhere_exe=third-party\common\win\vswhere\vswhere.exe"
-if not exist "%vswhere_exe%" (
-  1>&2 echo "vswhere wasn't found"
-  goto :end_script_with_err
-)
+  :: check msbuild
+  set "MSBUILD_EXE="
+  for /f "tokens=* delims=" %%A in ('"%VSWHERE_EXE%" -prerelease -latest -nocolor -nologo -property installationPath 2^>nul') do (
+    set "MSBUILD_EXE=%%~A\MSBuild\Current\Bin\MSBuild.exe"
+  )
+  if not exist "%MSBUILD_EXE%" (
+    1>&2 echo: MSBuild wasn't found
+    goto :end_script_with_err
+  )
 
-:: .sln file
-set "sln_file=build\project\vs2022\win\gbe.sln"
+  :: create .sln
+  call "%PREMAKE_EXE%" --file="premake5.lua" --genproto --dosstub --winrsrc --winsign --os=windows vs2022
+  if %errorlevel% neq 0 (
+    goto :end_script_with_err
+  )
 
-:: get msbuild path
-set "my_vs_path="
-for /f "tokens=* delims=" %%A in ('"%vswhere_exe%" -prerelease -latest -nocolor -nologo -property installationPath 2^>nul') do (
-  set "my_vs_path=%%~A\MSBuild\Current\Bin\MSBuild.exe"
-)
-if not exist "%my_vs_path%" (
-  1>&2 echo "MSBuild wasn't found"
-  goto :end_script_with_err
-)
+  :: check .sln
+  set "SLN_FILE=build\project\vs2022\win\gbe.sln"
+  if not exist "%SLN_FILE%" (
+    1>&2 echo: .sln file wasn't found
+    goto :end_script_with_err
+  )
 
-call "%premake_exe%" --file="premake5.lua" --dosstub --winrsrc --winsign --genproto --os=windows vs2022
-if %errorlevel% neq 0 (
-  goto :end_script_with_err
-)
-if not exist "%sln_file%" (
-  1>&2 echo "project solution file wasn't found"
-  goto :end_script_with_err
-)
+  :: build .sln
+  set "BUILD_TYPES=release debug"
+  set "BUILD_PLATFORMS=x64 Win32"
+  set "BUILD_TARGETS=api_regular api_experimental steamclient_experimental_stub steamclient_experimental steamclient_experimental_loader steamclient_experimental_extra lib_game_overlay_renderer tool_lobby_connect tool_generate_interfaces"
 
-:: -v:n make it so we can actually see what commands it runs
-echo: & echo building debug x64
-call "%my_vs_path%" /nologo "%sln_file%" /p:Configuration=debug /p:Platform=x64 -v:n -m:%build_threads%
-if %errorlevel% neq 0 (
-  goto :end_script_with_err
-)
+  for %%A in (%BUILD_TYPES%) do (
+    set "BUILD_TYPE=%%A"
+    for %%B in (%BUILD_PLATFORMS%) do (
+      set "BUILD_PLATFORM=%%B"
+      for %%C in (%BUILD_TARGETS%) do (
+        set "BUILD_TARGET=%%C"
+        echo. & echo: building !BUILD_TARGET! !BUILD_TYPE! !BUILD_PLATFORM!
+        call "%MSBUILD_EXE%" /nologo -m:%MAX_THREADS% -v:n /p:Configuration=!BUILD_TYPE!,Platform=!BUILD_PLATFORM! /target:!BUILD_TARGET! "%SLN_FILE%"
+        if %errorlevel% neq 0 (
+          goto :end_script_with_err
+        )
+      )
+    )
+  )
 
-echo: & echo building debug x32
-call "%my_vs_path%" /nologo "%sln_file%" /p:Configuration=debug /p:Platform=Win32 -v:n -m:%build_threads%
-if %errorlevel% neq 0 (
-  goto :end_script_with_err
-)
+  goto :end_script
 
-echo: & echo building release x64
-call "%my_vs_path%" /nologo "%sln_file%" /p:Configuration=release /p:Platform=x64 -v:n -m:%build_threads%
-if %errorlevel% neq 0 (
-  goto :end_script_with_err
-)
-
-echo: & echo building release x32
-call "%my_vs_path%" /nologo "%sln_file%" /p:Configuration=release /p:Platform=Win32 -v:n -m:%build_threads%
-if %errorlevel% neq 0 (
-  goto :end_script_with_err
-)
-
-
-:: if all ok
+:: exit without error
 :end_script
-endlocal
-exit /b 0
-
+  endlocal
+  exit /b 0
 
 :: exit with error
 :end_script_with_err
-endlocal
-exit /b 1
+  endlocal
+  exit /b 1
 
-
+:: show help page
 :help_page
-echo:
-echo "%~nx0" [switches]
-echo switches:
-echo   --deps: rebuild third-party dependencies
-echo   --help: show this page
-exit /b 0
+  echo: "%~nx0" [switches]
+  echo: switches:
+  echo:   --deps: rebuild third-party dependencies
+  echo:   --help: show this page
+  goto :end_script
