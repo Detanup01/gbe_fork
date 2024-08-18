@@ -38,7 +38,7 @@ Steam_Http_Request *Steam_HTTP::get_request(HTTPRequestHandle hRequest)
 // or such.
 HTTPRequestHandle Steam_HTTP::CreateHTTPRequest( EHTTPMethod eHTTPRequestMethod, const char *pchAbsoluteURL )
 {
-    PRINT_DEBUG("%i %s", eHTTPRequestMethod, pchAbsoluteURL);
+    PRINT_DEBUG("%i '%s'", eHTTPRequestMethod, pchAbsoluteURL);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchAbsoluteURL) return INVALID_HTTPREQUEST_HANDLE;
@@ -83,7 +83,7 @@ HTTPRequestHandle Steam_HTTP::CreateHTTPRequest( EHTTPMethod eHTTPRequestMethod,
 // sending the request.  This is just so the caller can easily keep track of which callbacks go with which request data.
 bool Steam_HTTP::SetHTTPRequestContextValue( HTTPRequestHandle hRequest, uint64 ulContextValue )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("%llu", ulContextValue);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     Steam_Http_Request *request = get_request(hRequest);
@@ -122,14 +122,18 @@ bool Steam_HTTP::SetHTTPRequestHeaderValue( HTTPRequestHandle hRequest, const ch
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchHeaderName || !pchHeaderValue) return false;
-    std::string headerName(pchHeaderName);
-    std::transform(headerName.begin(), headerName.end(), headerName.begin(), [](char c){ return (char)std::toupper(c); });
-    if (headerName == "USER-AGENT") return false;
+    if (common_helpers::str_cmp_insensitive(pchHeaderName, "User-Agent")) return false;
 
     Steam_Http_Request *request = get_request(hRequest);
     if (!request) {
         return false;
     }
+
+    // FIX: appid 1902490 adds the header "Cache-Control: only-if-cached, max-stale=2678400"
+    // which means a response is returned back only if it was already cached, otherwise the server has to send a 504 "Gateway Timeout"
+    // just bypass the known ones to be on the safe side
+    if (common_helpers::str_cmp_insensitive(pchHeaderName, "Cache-Control")) return true;
+    if (common_helpers::str_cmp_insensitive(pchHeaderName, "Accept")) return true;
 
     request->headers[pchHeaderName] = pchHeaderValue;
     return true;
@@ -160,13 +164,37 @@ bool Steam_HTTP::SetHTTPRequestGetOrPostParameter( HTTPRequestHandle hRequest, c
     return true;
 }
 
+static int curl_debug_trace(
+    CURL *handle, curl_infotype type,
+    char *data, size_t size,
+    void *clientp
+)
+{
+    // https://curl.se/libcurl/c/CURLOPT_DEBUGFUNCTION.html
+    std::string text{};
+    switch (type) {
+        case CURLINFO_TEXT: text = "Info: " + std::string(data, size); break;
+        case CURLINFO_HEADER_IN: text = "<= Recv header"; break;
+        case CURLINFO_HEADER_OUT: text = "=> Send header"; break;
+        case CURLINFO_DATA_IN: text = "<= Recv data"; break;
+        case CURLINFO_DATA_OUT: text = "=> Send data"; break;
+        case CURLINFO_SSL_DATA_OUT: text = "=> Send SSL data"; break;
+        case CURLINFO_SSL_DATA_IN: text = "<= Recv SSL data"; break;
 
-void Steam_HTTP::online_http_request(Steam_Http_Request *request, SteamAPICall_t *pCallHandle)
+        default: text = "[X] ERROR: unknown callback type"; break;
+    }
+
+    PRINT_DEBUG("%s", text.c_str());
+    return 0;
+}
+
+
+void Steam_HTTP::online_http_request(Steam_Http_Request *request, SteamAPICall_t call_res_id)
 {
     PRINT_DEBUG("attempting to download from url: '%s', target filepath: '%s'",
         request->url.c_str(), request->target_filepath.c_str());
 
-    const auto send_callresult = [&]() -> void {
+    const auto send_callresult = [=]() -> void {
         struct HTTPRequestCompleted_t data{};
         data.m_hRequest = request->handle;
         data.m_ulContextValue = request->context_value;
@@ -174,16 +202,13 @@ void Steam_HTTP::online_http_request(Steam_Http_Request *request, SteamAPICall_t
         if (request->response.empty() && !settings->force_steamhttp_success) {
             data.m_bRequestSuccessful = false;
             data.m_eStatusCode = k_EHTTPStatusCode404NotFound;
-            
         } else {
             data.m_bRequestSuccessful = true;
             data.m_eStatusCode = k_EHTTPStatusCode200OK;
         }
 
-        auto callres = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1);
-        if (pCallHandle) *pCallHandle = callres;
-
-        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.1);
+        callback_results->addCallResult(call_res_id, data.k_iCallback, &data, sizeof(data));
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
     };
 
     std::size_t filename_part = request->target_filepath.find_last_of("\\/");
@@ -213,6 +238,11 @@ void Steam_HTTP::online_http_request(Steam_Http_Request *request, SteamAPICall_t
         send_callresult();
         return;
     }
+
+#ifndef EMU_RELEASE_BUILD
+    curl_easy_setopt(chttp, CURLOPT_DEBUGFUNCTION, curl_debug_trace);
+    curl_easy_setopt(chttp, CURLOPT_VERBOSE, 1L);
+#endif
     
     // headers
     std::vector<std::string> headers{};
@@ -279,6 +309,7 @@ void Steam_HTTP::online_http_request(Steam_Http_Request *request, SteamAPICall_t
     curl_easy_setopt(chttp, CURLOPT_TIMEOUT, request->timeout_sec);
     curl_easy_setopt(chttp, CURLOPT_NOSIGNAL, 1L);
     curl_easy_setopt(chttp, CURLOPT_USE_SSL, request->requires_valid_ssl ? CURLUSESSL_TRY : CURLUSESSL_NONE);
+    curl_easy_setopt(chttp, CURLOPT_SSL_VERIFYPEER, 0L);
 
     // post data, or get params
     std::string post_data{};
@@ -314,11 +345,12 @@ void Steam_HTTP::online_http_request(Steam_Http_Request *request, SteamAPICall_t
     fclose(hfile);
     headers.clear();
 
-    PRINT_DEBUG("CURL error code for '%s' [%i] (OK == 0)", request->url.c_str(), (int)res_curl);
+    PRINT_DEBUG("CURL error code for '%s' [%i = '%s'] (OK == 0)", request->url.c_str(), (int)res_curl, curl_easy_strerror(res_curl));
     
     unsigned int file_size = file_size_(request->target_filepath);
     if (file_size) {
-        long long read = Local_Storage::get_file_data(request->target_filepath, (char *)&request->response[0], file_size, 0);
+        request->response.resize(static_cast<size_t>(file_size));
+        long long read = Local_Storage::get_file_data(request->target_filepath, (char *)&request->response[0], file_size);
         if (read < 0) read = 0;
         request->response.resize(static_cast<size_t>(read));
     }
@@ -343,7 +375,10 @@ bool Steam_HTTP::SendHTTPRequest( HTTPRequestHandle hRequest, SteamAPICall_t *pC
 
     if (request->response.empty() && request->target_filepath.size() &&
         !settings->disable_networking && settings->download_steamhttp_requests) {
-        std::thread(&Steam_HTTP::online_http_request, this, request, pCallHandle).detach();
+        auto call_res_id = callback_results->reserveCallResult();
+        if (pCallHandle) *pCallHandle = call_res_id;
+
+        std::thread(&Steam_HTTP::online_http_request, this, request, call_res_id).detach();
     } else {
         struct HTTPRequestCompleted_t data{};
         data.m_hRequest = request->handle;
@@ -352,7 +387,6 @@ bool Steam_HTTP::SendHTTPRequest( HTTPRequestHandle hRequest, SteamAPICall_t *pC
         if (request->response.empty() && !settings->force_steamhttp_success) {
             data.m_bRequestSuccessful = false;
             data.m_eStatusCode = k_EHTTPStatusCode404NotFound;
-            
         } else {
             data.m_bRequestSuccessful = true;
             data.m_eStatusCode = k_EHTTPStatusCode200OK;

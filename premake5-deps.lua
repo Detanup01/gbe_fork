@@ -498,23 +498,41 @@ end
 -- https://github.com/Kitware/CMake/blob/a6853135f569f0b040a34374a15a8361bb73901b/Modules/FindZLIB.cmake#L98C4-L98C13
 
 local zlib_name = ''
+local mbedtls_name = ''
+local mbedcrypto_name = ''
+local mbedx509_name = ''
 -- name
 if _ACTION and os.target() == 'windows' then
     if string.match(_ACTION, 'vs.+') then
         zlib_name = 'zlibstatic'
+        mbedtls_name = 'mbedtls'
+        mbedcrypto_name = 'mbedcrypto'
+        mbedx509_name = 'mbedx509'
     elseif string.match(_ACTION, 'gmake.*') then
         zlib_name = 'libzlibstatic'
+        mbedtls_name = 'libmbedtls'
+        mbedcrypto_name = 'libmbedcrypto'
+        mbedx509_name = 'libmbedx509'
     else
         error('unsupported os/action: ' .. os.target() .. ' / ' .. _ACTION)
     end
 else -- linux or macos
     zlib_name = 'libz'
+    mbedtls_name = 'libmbedtls'
+    mbedcrypto_name = 'libmbedcrypto'
+    mbedx509_name = 'mbedx509'
 end
 -- extension
 if _ACTION and string.match(_ACTION, 'vs.+') then
     zlib_name = zlib_name .. '.lib'
+    mbedtls_name = mbedtls_name .. '.lib'
+    mbedcrypto_name = mbedcrypto_name .. '.lib'
+    mbedx509_name = mbedx509_name .. '.lib'
 else
     zlib_name = zlib_name .. '.a'
+    mbedtls_name = mbedtls_name .. '.a'
+    mbedcrypto_name = mbedcrypto_name .. '.a'
+    mbedx509_name = mbedx509_name .. '.a'
 end
 
 local wild_zlib_path_32 = path.join(deps_dir, 'zlib', 'install32', 'lib', zlib_name)
@@ -532,18 +550,55 @@ local wild_zlib_64 = {
     'ZLIB_LIBRARY="' .. wild_zlib_path_64 .. '"',
 }
 
+if _OPTIONS["build-mbedtls"] or _OPTIONS["all-build"] then
+    local mbedtls_common_defs = {
+        "USE_STATIC_MBEDTLS_LIBRARY=ON",
+        "USE_SHARED_MBEDTLS_LIBRARY=OFF",
+        "ENABLE_TESTING=OFF",
+        "ENABLE_PROGRAMS=OFF",
+        "MBEDTLS_FATAL_WARNINGS=OFF",
+    }
+    if os.target() == 'windows' and string.match(_ACTION, 'vs.+') then
+        table.insert(mbedtls_common_defs, "MSVC_STATIC_RUNTIME=ON")
+    else -- linux or macos or MinGW on Windows
+        table.insert(mbedtls_common_defs, "LINK_WITH_PTHREAD=ON")
+    end
+
+    local mbedtls_32_bit_fixes = {}
+    if _OPTIONS["32-build"] and string.match(_ACTION, 'gmake.*') then
+        table.insert(mbedtls_32_bit_fixes, '-mpclmul')
+        table.insert(mbedtls_32_bit_fixes, '-msse2')
+        table.insert(mbedtls_32_bit_fixes, '-maes')
+    end
+
+    if _OPTIONS["32-build"] then
+        cmake_build('mbedtls', true, mbedtls_common_defs, mbedtls_32_bit_fixes)
+    end
+    if _OPTIONS["64-build"] then
+        cmake_build('mbedtls', false, mbedtls_common_defs)
+    end
+end
+
 if _OPTIONS["build-curl"] or _OPTIONS["all-build"] then
     local curl_common_defs = {
         "BUILD_CURL_EXE=OFF",
-        "BUILD_SHARED_LIBS=OFF",
         "BUILD_STATIC_CURL=OFF", -- "Build curl executable with static libcurl"
+
+        "BUILD_SHARED_LIBS=OFF",
         "BUILD_STATIC_LIBS=ON",
         "BUILD_MISC_DOCS=OFF",
         "BUILD_TESTING=OFF",
         "BUILD_LIBCURL_DOCS=OFF",
         "ENABLE_CURL_MANUAL=OFF",
+
         "CURL_USE_OPENSSL=OFF",
         "CURL_ZLIB=ON",
+        
+        "CURL_USE_MBEDTLS=ON",
+        -- "CURL_USE_SCHANNEL=ON",
+        "CURL_CA_FALLBACK=ON",
+
+        -- fix building on Arch Linux
         "CURL_USE_LIBSSH2=OFF",
         "CURL_USE_LIBPSL=OFF",
         "USE_LIBIDN2=OFF",
@@ -555,10 +610,20 @@ if _OPTIONS["build-curl"] or _OPTIONS["all-build"] then
     end
 
     if _OPTIONS["32-build"] then
-        cmake_build('curl', true, merge_list(curl_common_defs, wild_zlib_32))
+        cmake_build('curl', true, merge_list(curl_common_defs, merge_list(wild_zlib_32, {
+            'MBEDTLS_INCLUDE_DIRS="' .. path.join(deps_dir, 'mbedtls', 'install32', 'include') .. '"',
+            'MBEDTLS_LIBRARY="' .. path.join(deps_dir, 'mbedtls', 'install32', 'lib', mbedtls_name) .. '"',
+            'MBEDCRYPTO_LIBRARY="' .. path.join(deps_dir, 'mbedtls', 'install32', 'lib', mbedcrypto_name) .. '"',
+            'MBEDX509_LIBRARY="' .. path.join(deps_dir, 'mbedtls', 'install32', 'lib', mbedx509_name) .. '"',
+        })))
     end
     if _OPTIONS["64-build"] then
-        cmake_build('curl', false, merge_list(curl_common_defs, wild_zlib_64))
+        cmake_build('curl', false, merge_list(curl_common_defs, merge_list(wild_zlib_64, {
+            'MBEDTLS_INCLUDE_DIRS="' .. path.join(deps_dir, 'mbedtls', 'install64', 'include') .. '"',
+            'MBEDTLS_LIBRARY="' .. path.join(deps_dir, 'mbedtls', 'install64', 'lib', mbedtls_name) .. '"',
+            'MBEDCRYPTO_LIBRARY="' .. path.join(deps_dir, 'mbedtls', 'install64', 'lib', mbedcrypto_name) .. '"',
+            'MBEDX509_LIBRARY="' .. path.join(deps_dir, 'mbedtls', 'install64', 'lib', mbedx509_name) .. '"',
+        })))
     end
 end
 
@@ -585,32 +650,6 @@ if _OPTIONS["build-protobuf"] or _OPTIONS["all-build"] then
     end
     if _OPTIONS["64-build"] then
         cmake_build('protobuf', false, merge_list(proto_common_defs, wild_zlib_64))
-    end
-end
-
-if _OPTIONS["build-mbedtls"] or _OPTIONS["all-build"] then
-    local mbedtls_common_defs = {
-        "USE_STATIC_MBEDTLS_LIBRARY=ON",
-        "USE_SHARED_MBEDTLS_LIBRARY=OFF",
-        "ENABLE_TESTING=OFF",
-        "ENABLE_PROGRAMS=OFF",
-        "MBEDTLS_FATAL_WARNINGS=OFF",
-    }
-    if os.target() == 'windows' and string.match(_ACTION, 'vs.+') then
-        table.insert(mbedtls_common_defs, "MSVC_STATIC_RUNTIME=ON")
-    else -- linux or macos or MinGW on Windows
-        table.insert(mbedtls_common_defs, "LINK_WITH_PTHREAD=ON")
-    end
-
-    if _OPTIONS["32-build"] then
-        cmake_build('mbedtls', true, mbedtls_common_defs, {
-            '-mpclmul',
-            '-msse2',
-            '-maes',
-        })
-    end
-    if _OPTIONS["64-build"] then
-        cmake_build('mbedtls', false, mbedtls_common_defs)
     end
 end
 
