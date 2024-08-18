@@ -1635,8 +1635,6 @@ void Steam_Overlay::networking_msg_received(Common_Message *msg)
 {
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     
-    if (!Ready()) return;
-
     if (msg->has_steam_messages()) {
         Friend frd;
         frd.set_id(msg->source_id());
