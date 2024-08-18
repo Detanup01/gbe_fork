@@ -133,28 +133,6 @@ void common_helpers::write(std::ofstream &file, std::string_view data)
     file << data << std::endl;
 }
 
-std::wstring common_helpers::str_to_w(std::string_view str)
-{
-    if (str.empty()) return std::wstring();
-    auto cvt_state = std::mbstate_t();
-    const char* src = &str[0];
-    size_t conversion_bytes = std::mbsrtowcs(nullptr, &src, 0, &cvt_state);
-    std::wstring res(conversion_bytes + 1, L'\0');
-    std::mbsrtowcs(&res[0], &src, res.size(), &cvt_state);
-    return res.substr(0, conversion_bytes);
-}
-
-std::string common_helpers::wstr_to_a(std::wstring_view wstr)
-{
-    if (wstr.empty()) return std::string();
-    auto cvt_state = std::mbstate_t();
-    const wchar_t* src = &wstr[0];
-    size_t conversion_bytes = std::wcsrtombs(nullptr, &src, 0, &cvt_state);
-    std::string res(conversion_bytes + 1, '\0');
-    std::wcsrtombs(&res[0], &src, res.size(), &cvt_state);
-    return res.substr(0, conversion_bytes);
-}
-
 bool common_helpers::starts_with_i(std::string_view target, std::string_view query)
 {
     if (target.size() < query.size()) {

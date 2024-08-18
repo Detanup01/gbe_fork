@@ -311,16 +311,16 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingSockets004 *>( steam_networking_sockets_temp));
         } else if (strcmp(pchVersion, "SteamNetworkingSockets006") == 0) {
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingSockets006 *>( steam_networking_sockets_temp));
-
-        // SteamNetworkingSockets007 Not found in public Archive, must be between 1.47-1.48
-
+        } else if (strcmp(pchVersion, "SteamNetworkingSockets007") == 0) { // Not found in public Archive, real steamclient64.dll returns null
+            return nullptr;
         } else if (strcmp(pchVersion, "SteamNetworkingSockets008") == 0) {
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingSockets008 *>( steam_networking_sockets_temp));
         } else if (strcmp(pchVersion, "SteamNetworkingSockets009") == 0) {
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingSockets009 *>( steam_networking_sockets_temp));
-
-        // SteamNetworkingSockets010-011 Not found in public Archive, must be between 1.52-1.53
-
+        } else if (strcmp(pchVersion, "SteamNetworkingSockets010") == 0) { // Not found in public Archive, based on reversing
+            return reinterpret_cast<void *>(static_cast<ISteamNetworkingSockets010 *>( steam_networking_sockets_temp));
+        } else if (strcmp(pchVersion, "SteamNetworkingSockets011") == 0) { // Not found in public Archive, based on reversing, requested by appid 1492070
+            return reinterpret_cast<void *>(static_cast<ISteamNetworkingSockets011 *>( steam_networking_sockets_temp));
         } else if (strcmp(pchVersion, STEAMNETWORKINGSOCKETS_INTERFACE_VERSION) == 0) {
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingSockets *>( steam_networking_sockets_temp));
         }
@@ -572,9 +572,8 @@ ISteamRemoteStorage *Steam_Client::GetISteamRemoteStorage( HSteamUser hSteamuser
         return reinterpret_cast<ISteamRemoteStorage *>(static_cast<ISteamRemoteStorage013 *>(steam_remote_storage));
     } else if (strcmp(pchVersion, "STEAMREMOTESTORAGE_INTERFACE_VERSION014") == 0) {
         return reinterpret_cast<ISteamRemoteStorage *>(static_cast<ISteamRemoteStorage014 *>(steam_remote_storage));
-
-    // STEAMREMOTESTORAGE_INTERFACE_VERSION015 Not found in public Archive, must be between 1.51-1.52
-
+    } else if (strcmp(pchVersion, "STEAMREMOTESTORAGE_INTERFACE_VERSION015") == 0) { // Not found in public Archive, based on reversing
+        return reinterpret_cast<ISteamRemoteStorage *>(static_cast<ISteamRemoteStorage015 *>(steam_remote_storage));
     } else if (strcmp(pchVersion, STEAMREMOTESTORAGE_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamRemoteStorage *>(static_cast<ISteamRemoteStorage *>(steam_remote_storage));
     }
@@ -710,9 +709,8 @@ ISteamUGC *Steam_Client::GetISteamUGC( HSteamUser hSteamUser, HSteamPipe hSteamP
         return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC009 *>(steam_ugc_temp));
     } else if (strcmp(pchVersion, "STEAMUGC_INTERFACE_VERSION010") == 0) {
         return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC010 *>(steam_ugc_temp));
-
-        // STEAMUGC_INTERFACE_VERSION011 Not found in public Archive, must be between 1.42-1.43
-
+    } else if (strcmp(pchVersion, "STEAMUGC_INTERFACE_VERSION011") == 0) { // Not found in public Archive, based on reversing
+        return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC011 *>(steam_ugc_temp));
     } else if (strcmp(pchVersion, "STEAMUGC_INTERFACE_VERSION012") == 0) {
         return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC012 *>(steam_ugc_temp));
     } else if (strcmp(pchVersion, "STEAMUGC_INTERFACE_VERSION013") == 0) {

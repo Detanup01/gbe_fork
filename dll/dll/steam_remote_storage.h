@@ -77,6 +77,7 @@ public ISteamRemoteStorage011,
 public ISteamRemoteStorage012,
 public ISteamRemoteStorage013,
 public ISteamRemoteStorage014,
+public ISteamRemoteStorage015,
 public ISteamRemoteStorage
 {
 private:
