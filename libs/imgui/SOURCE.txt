@@ -1,9 +1,11 @@
-============================================================================ INFO
+#### INFO
+
 https://github.com/ocornut/imgui
 
 VERSION: ????
 
-============================================================================ LICENSE
+#### LICENSE
+
 The MIT License (MIT)
 
 Copyright (c) 2014-2024 Omar Cornut
