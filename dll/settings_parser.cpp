@@ -1343,6 +1343,9 @@ static void parse_overlay_general_config(class Settings *settings_client, class 
     settings_client->disable_overlay_warning_local_save = ini.GetBoolValue("overlay::general", "disable_warning_local_save", settings_client->disable_overlay_warning_local_save);
     settings_server->disable_overlay_warning_local_save = ini.GetBoolValue("overlay::general", "disable_warning_local_save", settings_server->disable_overlay_warning_local_save);
 
+    settings_client->overlay_upload_achs_icons_to_gpu = ini.GetBoolValue("overlay::general", "upload_achievements_icons_to_gpu", settings_client->overlay_upload_achs_icons_to_gpu);
+    settings_server->overlay_upload_achs_icons_to_gpu = ini.GetBoolValue("overlay::general", "upload_achievements_icons_to_gpu", settings_server->overlay_upload_achs_icons_to_gpu);
+
 }
 
 // main::misc::steam_game_stats_reports_dir
@@ -1437,8 +1440,13 @@ static void parse_stats_features(class Settings *settings_client, class Settings
     settings_client->save_only_higher_stat_achievement_progress = ini.GetBoolValue("main::stats", "save_only_higher_stat_achievement_progress", settings_client->save_only_higher_stat_achievement_progress);
     settings_server->save_only_higher_stat_achievement_progress = ini.GetBoolValue("main::stats", "save_only_higher_stat_achievement_progress", settings_server->save_only_higher_stat_achievement_progress);
 
-    settings_client->lazy_load_achievements_icons = ini.GetBoolValue("main::stats", "lazy_load_achievements_icons", settings_client->lazy_load_achievements_icons);
-    settings_server->lazy_load_achievements_icons = ini.GetBoolValue("main::stats", "lazy_load_achievements_icons", settings_server->lazy_load_achievements_icons);
+    {
+        long val_client = ini.GetLongValue("main::stats", "paginated_achievements_icons", settings_client->paginated_achievements_icons);
+        settings_client->paginated_achievements_icons = static_cast<int>(val_client);
+
+        long val_server = ini.GetLongValue("main::stats", "paginated_achievements_icons", settings_server->paginated_achievements_icons);
+        settings_server->paginated_achievements_icons = static_cast<int>(val_server);
+    }
 }
 
 

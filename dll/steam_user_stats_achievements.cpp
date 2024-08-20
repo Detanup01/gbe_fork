@@ -80,8 +80,8 @@ void Steam_User_Stats::save_achievements()
 int Steam_User_Stats::load_ach_icon(nlohmann::json &defined_ach, bool achieved)
 {
     const char *icon_handle_key = achieved ? "icon_handle" : "icon_gray_handle";
-    int current_handle = defined_ach.value(icon_handle_key, UNLOADED_ACH_ICON);
-    if (UNLOADED_ACH_ICON != current_handle) { // already loaded
+    int current_handle = defined_ach.value(icon_handle_key, Settings::UNLOADED_IMAGE_HANDLE);
+    if (Settings::UNLOADED_IMAGE_HANDLE != current_handle) { // already loaded
         return current_handle;
     }
 
@@ -394,7 +394,12 @@ int Steam_User_Stats::GetAchievementIcon( const char *pchName )
     GetAchievement(pchName, &achieved);
 
     std::string ach_name(pchName);
-    int handle = get_achievement_icon_handle(ach_name, achieved);
+    // here we force load in case the game has a lot of achievements, because otherwise some games might timeout
+    // this somewhat defeats the purpose of background loading but a timeout is worse
+    int handle = get_achievement_icon_handle(ach_name, achieved, true);
+    if (Settings::UNLOADED_IMAGE_HANDLE == handle) { // if the background callback didn't get a chance to load this one yet
+        handle = Settings::INVALID_IMAGE_HANDLE;
+    }
 
     UserAchievementIconFetched_t data{};
     data.m_bAchieved = achieved ;
@@ -406,11 +411,10 @@ int Steam_User_Stats::GetAchievementIcon( const char *pchName )
     return handle;
 }
 
-int Steam_User_Stats::get_achievement_icon_handle( const std::string &ach_name, bool achieved )
+int Steam_User_Stats::get_achievement_icon_handle( const std::string &ach_name, bool achieved, bool force_load )
 {
-    PRINT_DEBUG("'%s', %i", ach_name.c_str(), (int)achieved);
+    PRINT_DEBUG("'%s', achieved=%i, force=%i", ach_name.c_str(), (int)achieved, (int)force_load);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (ach_name.empty()) return Settings::INVALID_IMAGE_HANDLE;
 
     nlohmann::detail::iter_impl<nlohmann::json> it = defined_achievements.end();
     try {
@@ -418,7 +422,20 @@ int Steam_User_Stats::get_achievement_icon_handle( const std::string &ach_name, 
     } catch(...) { }
     if (defined_achievements.end() == it) return Settings::INVALID_IMAGE_HANDLE;
 
-    int handle = load_ach_icon(*it, achieved);
+    int handle = Settings::INVALID_IMAGE_HANDLE;
+    if (settings->paginated_achievements_icons < 0) { // disabled functionality
+        handle = Settings::INVALID_IMAGE_HANDLE;
+    } else if (settings->paginated_achievements_icons == 0) { // load the icon only when requested
+        handle = load_ach_icon(*it, achieved);
+    } else { // depend on the periodic callback to load the icon
+        if (force_load) {
+            handle = load_ach_icon(*it, achieved);
+        } else {
+            const char *icon_handle_key = achieved ? "icon_handle" : "icon_gray_handle";
+            handle = it->value(icon_handle_key, Settings::UNLOADED_IMAGE_HANDLE);
+        }
+    }
+    
     PRINT_DEBUG("returned handle = %i", handle);
     return handle;
 }
@@ -784,16 +801,25 @@ bool Steam_User_Stats::GetAchievementProgressLimits( const char *pchName, float 
 
 void Steam_User_Stats::load_achievements_icons()
 {
-    if (achievements_icons_loaded) return;
-    if (settings->lazy_load_achievements_icons) {
-        achievements_icons_loaded = true;
-        return;
+    if (last_loaded_ach_icon >= defined_achievements.size() || settings->paginated_achievements_icons <= 0) return;
+
+#ifndef EMU_RELEASE_BUILD
+    auto now1 = std::chrono::high_resolution_clock::now();
+#endif
+
+    size_t idx = 0;
+    for (;
+        idx < settings->paginated_achievements_icons && last_loaded_ach_icon < defined_achievements.size();
+        ++idx, ++last_loaded_ach_icon) {
+        auto &ach = defined_achievements.at(last_loaded_ach_icon);
+        load_ach_icon(ach, true);
+        load_ach_icon(ach, false);
     }
 
-    for (auto & defined_ach : defined_achievements) {
-        load_ach_icon(defined_ach, true);
-        load_ach_icon(defined_ach, false);
-    }
+#ifndef EMU_RELEASE_BUILD
+    auto now2 = std::chrono::high_resolution_clock::now();
+    auto dd = (unsigned)std::chrono::duration_cast<std::chrono::milliseconds>(now2 - now1).count();
+    PRINT_DEBUG("attempted to load %zu achievements icons in %u ms", idx * 2, dd);
+#endif
 
-    achievements_icons_loaded = true;
 }
