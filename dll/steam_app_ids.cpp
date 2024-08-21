@@ -3,7 +3,7 @@
 // https://developer.valvesoftware.com/wiki/Steam_Application_IDs
 // https://developer.valvesoftware.com/wiki/Dedicated_Servers_List
 // they're not really accurate
-const std::map<uint32, std::string> steam_preowned_app_ids = {
+extern const std::map<uint32, std::string> steam_preowned_app_ids = {
 
     // { 0, "Base Goldsource Shared Binaries" },
     // { 1, "Base Goldsource Shared Content" },

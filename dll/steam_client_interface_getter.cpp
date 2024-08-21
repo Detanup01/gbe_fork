@@ -938,7 +938,7 @@ ISteamAppTicket *Steam_Client::GetAppTicket( HSteamUser hSteamUser, HSteamPipe h
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
-void Steam_Client::report_missing_impl_and_exit(std::string_view itf, std::string_view caller)
+void Steam_Client::report_missing_impl(std::string_view itf, std::string_view caller)
 {
     PRINT_DEBUG("'%s' '%s'", itf.data(), caller.data());
     std::lock_guard lck(global_mutex);
@@ -947,18 +947,27 @@ void Steam_Client::report_missing_impl_and_exit(std::string_view itf, std::strin
     try {
         ss << "INTERFACE=" << itf << "\n";
         ss << "CALLER FN=" << caller << "\n";
+    }
+    catch(...) { }
 
+    try {
         if (settings_client) {
             ss << "APPID=" << settings_client->get_local_game_id().AppID() << "\n";
         }
+    }
+    catch(...) { }
 
+    try {
         std::string time(common_helpers::get_utc_time());
         if (time.size()) {
            ss << "TIME=" << time << "\n";
         }
 
         ss << "--------------------\n" << std::endl;
+    }
+    catch(...) { }
 
+    try {
         std::ofstream report(std::filesystem::u8path(get_full_program_path() + "EMU_MISSING_INTERFACE.txt"), std::ios::out | std::ios::app);
         if (report.is_open()) {
             report << ss.str();
@@ -969,6 +978,10 @@ void Steam_Client::report_missing_impl_and_exit(std::string_view itf, std::strin
 #if defined(__WINDOWS__)
     MessageBoxA(nullptr, ss.str().c_str(), "Missing interface", MB_OK);
 #endif
-    
+}
+
+void Steam_Client::report_missing_impl_and_exit(std::string_view itf, std::string_view caller)
+{
+    report_missing_impl(itf, caller);
     std::exit(0x4155149); // MISSING :)
 }
