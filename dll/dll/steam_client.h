@@ -338,6 +338,7 @@ public:
 
     void DestroyAllInterfaces();
 
+    void report_missing_impl(std::string_view itf, std::string_view caller);
     [[noreturn]] void report_missing_impl_and_exit(std::string_view itf, std::string_view caller);
 
 };
