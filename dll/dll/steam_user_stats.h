@@ -70,8 +70,7 @@ public ISteamUserStats011,
 public ISteamUserStats
 {
 public:
-    static constexpr auto achievements_user_file = "achievements.json";
-    static constexpr int UNLOADED_ACH_ICON = -1;
+    static constexpr const auto achievements_user_file = "achievements.json";
 
 private:
     template<typename T>
@@ -95,7 +94,7 @@ private:
     nlohmann::json defined_achievements{};
     nlohmann::json user_achievements{};
     std::vector<std::string> sorted_achievement_names{};
-    bool achievements_icons_loaded = false;
+    size_t last_loaded_ach_icon{};
 
     std::map<std::string, int32> stats_cache_int{};
     std::map<std::string, float> stats_cache_float{};
@@ -213,7 +212,7 @@ public:
     // specified achievement.
     int GetAchievementIcon( const char *pchName );
 
-    int get_achievement_icon_handle( const std::string &ach_name, bool pbAchieved );
+    int get_achievement_icon_handle( const std::string &ach_name, bool pbAchieved, bool force_load = false );
 
     std::string get_achievement_icon_name( const char *pchName, bool achieved );
 

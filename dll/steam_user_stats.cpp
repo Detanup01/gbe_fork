@@ -96,8 +96,8 @@ Steam_User_Stats::Steam_User_Stats(Settings *settings, class Networking *network
         it["displayName"] = get_value_for_language(it, "displayName", settings->get_language());
         it["description"] = get_value_for_language(it, "description", settings->get_language());
 
-        it["icon_handle"] = UNLOADED_ACH_ICON;
-        it["icon_gray_handle"] = UNLOADED_ACH_ICON;
+        it["icon_handle"] = Settings::UNLOADED_IMAGE_HANDLE;
+        it["icon_gray_handle"] = Settings::UNLOADED_IMAGE_HANDLE;
     }
 
     //TODO: not sure if the sort is actually case insensitive, ach names seem to be treated by steam as case insensitive so I assume they are.
