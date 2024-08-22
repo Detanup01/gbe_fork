@@ -40,6 +40,22 @@ newoption {
     default = nil
 }
 
+newoption {
+    category = "tools",
+    trigger = "cmake-toolchain",
+    description = "Use cmake toolchain",
+    value = 'path/to/toolchain.cmake',
+    default = nil
+}
+
+newoption {
+    category = "tools",
+    trigger = "custom-extractor",
+    description = "Use custom extractor",
+    value = 'path/to/7z.exe',
+    default = nil
+}
+
 -- deps extraction
 newoption {
     category = "extract",
@@ -177,11 +193,16 @@ if not third_party_dir or not os.isdir(third_party_dir) then
     error('third-party dir is missing')
 end
 
-if os.host() == 'windows' then
-    extractor = extractor .. '.exe'
-end
-if not extractor or not os.isfile(extractor) then
-    error('extractor is missing from third-party dir. extractor: ' .. extractor)
+if _OPTIONS["custom-extractor"] then
+    extractor = _OPTIONS["custom-extractor"]
+    print('using custom extractor: ' .. _OPTIONS["custom-extractor"])
+else
+    if os.host() == 'windows' then
+        extractor = extractor .. '.exe'
+    end
+    if not extractor or not os.isfile(extractor) then
+        error('extractor is missing from third-party dir. extractor: ' .. extractor)
+    end
 end
 
 
@@ -241,11 +262,14 @@ local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_
 
         table.insert(all_cxxflags_init, '/MT')
         table.insert(all_cxxflags_init, '/D_MT')
-        
-        if is_32 then
-            cmd_gen = cmd_gen .. ' -A Win32'
-        else
-            cmd_gen = cmd_gen .. ' -A x64'
+
+        local cmake_generator = os.getenv("CMAKE_GENERATOR") or ""
+        if cmake_generator == "" and os.host() == 'windows' or cmake_generator:find("Visual Studio") then
+            if is_32 then
+                cmd_gen = cmd_gen .. ' -A Win32'
+            else
+                cmd_gen = cmd_gen .. ' -A x64'
+            end
         end
     else
         error("unsupported action for cmake build: " .. _ACTION)
@@ -283,6 +307,9 @@ local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_
 
     -- write toolchain file
     local toolchain_file_content = ''
+    if _OPTIONS["cmake-toolchain"] then
+        toolchain_file_content='include(' .. _OPTIONS["cmake-toolchain"] .. ')\n\n'
+    end
     if #cflags_init_str > 0 then
         toolchain_file_content = toolchain_file_content .. 'set(CMAKE_C_FLAGS_INIT "' .. cflags_init_str .. '" )\n'
     end
@@ -361,10 +388,12 @@ end
 
 -- chmod tools
 if os.host() == "linux" then
-    local ok_chmod, err_chmod = os.chmod(extractor, "777")
-    if not ok_chmod then
-        error("cannot chmod: " .. err_chmod)
-        return
+    if not _OPTIONS["custom-extractor"] then
+        local ok_chmod, err_chmod = os.chmod(extractor, "777")
+        if not ok_chmod then
+            error("cannot chmod: " .. err_chmod)
+            return
+        end
     end
 
     if not _OPTIONS["custom-cmake"] then
