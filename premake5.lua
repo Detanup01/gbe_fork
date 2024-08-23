@@ -99,7 +99,7 @@ local function genproto()
 
     local out_dir = 'proto_gen/' .. os_iden
 
-    if os.host() == "windows" then
+    if os.target() == "windows" then
         protoc_exe = protoc_exe .. '.exe'
     end
 
@@ -114,13 +114,17 @@ local function genproto()
         error("Error: " .. err_mk)
         return
     end
-    
-    if os.host() == "linux" then
+
+    if os.target() == "linux" then
         local ok_chmod, err_chmod = os.chmod(protoc_exe, "777")
         if not ok_chmod then
             error("Error: " .. err_chmod)
             return
         end
+    end
+
+    if (os.host() == "linux" and os.target() == "windows") then
+        protoc_exe = 'wine ' .. protoc_exe
     end
 
     return os.execute(protoc_exe .. ' dll/net.proto -I./dll/ --cpp_out=' .. out_dir)
@@ -406,7 +410,9 @@ local overlay_link = {
 ---------
 local x32_ssq_libdir = path.join(deps_dir, "libssq/build32")
 local x64_ssq_libdir = path.join(deps_dir, "libssq/build64")
-if _ACTION and string.match(_ACTION, 'vs.+') then
+
+local cmake_generator = os.getenv("CMAKE_GENERATOR") or ""
+if cmake_generator == "" and os.host() == 'windows' or cmake_generator:find("Visual Studio") then
     x32_ssq_libdir = x32_ssq_libdir .. "/Release"
     x64_ssq_libdir = x64_ssq_libdir .. "/Release"
 end
