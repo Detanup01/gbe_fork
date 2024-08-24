@@ -807,7 +807,7 @@ void Steam_User_Stats::load_achievements_icons()
     auto now1 = std::chrono::high_resolution_clock::now();
 #endif
 
-    size_t idx = 0;
+    int idx = 0;
     for (;
         idx < settings->paginated_achievements_icons && last_loaded_ach_icon < defined_achievements.size();
         ++idx, ++last_loaded_ach_icon) {
@@ -819,7 +819,7 @@ void Steam_User_Stats::load_achievements_icons()
 #ifndef EMU_RELEASE_BUILD
     auto now2 = std::chrono::high_resolution_clock::now();
     auto dd = (unsigned)std::chrono::duration_cast<std::chrono::milliseconds>(now2 - now1).count();
-    PRINT_DEBUG("attempted to load %zu achievements icons in %u ms", idx * 2, dd);
+    PRINT_DEBUG("attempted to load %d achievements icons in %u ms", idx * 2, dd);
 #endif
 
 }

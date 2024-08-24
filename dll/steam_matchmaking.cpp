@@ -1384,7 +1384,7 @@ void Steam_Matchmaking::RunCallbacks()
 
             PRINT_DEBUG("Lobby " "%" PRIu64 " use %u", l.room_id(), use);
             if (use) PUSH_BACK_IF_NOT_IN(filtered_lobbies, (uint64)l.room_id());
-            if (filtered_lobbies.size() >= filter_max_results_copy) {
+            if (filtered_lobbies.size() >= static_cast<size_t>(filter_max_results_copy)) {
                 PRINT_DEBUG("returning lobby search results, count=%zu", filtered_lobbies.size());
                 searching = false;
                 LobbyMatchList_t data{};

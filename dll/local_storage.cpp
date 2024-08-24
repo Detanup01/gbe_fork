@@ -578,7 +578,7 @@ int Local_Storage::store_file_data(std::string folder, std::string file, const c
     myfile.open(std::filesystem::u8path(folder + file), std::ios::binary | std::ios::out);
     if (!myfile.is_open()) return -1;
     myfile.write(data, length);
-    int position = myfile.tellp();
+    int position = static_cast<int>(myfile.tellp());
     myfile.close();
     return position;
 }
@@ -666,7 +666,8 @@ int Local_Storage::get_file_data(const std::string &full_path, char *data, unsig
     myfile.read (data, max_length);
     myfile.close();
     reset_LastError();
-    return myfile.gcount();
+
+    return static_cast<int>(myfile.gcount());
 }
 
 int Local_Storage::get_data(std::string folder, std::string file, char *data, unsigned int max_length, unsigned int offset)
@@ -700,7 +701,7 @@ int Local_Storage::count_files(std::string folder)
         folder.append(PATH_SEPARATOR);
     }
 
-    return get_filenames_recursive(save_directory + appid + folder).size();
+    return static_cast<int>(get_filenames_recursive(save_directory + appid + folder).size());
 }
 
 bool Local_Storage::file_exists(std::string folder, std::string file)
