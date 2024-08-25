@@ -2,7 +2,8 @@
 setlocal EnableDelayedExpansion
 cd /d "%~dp0"
 
-set "CREDITS_FILE=CREDITS.md"
+set "ROOT=%cd%"
+set "CREDITS_FILE=%ROOT%\CREDITS.md"
 
 if exist "%CREDITS_FILE%" (
   del /f /s /q "%CREDITS_FILE%"
