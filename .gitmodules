@@ -1,4 +1,3 @@
-
 [submodule "third-party/build/win"]
   path = third-party/build/win
   url = ./
