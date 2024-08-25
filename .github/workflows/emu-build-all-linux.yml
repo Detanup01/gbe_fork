@@ -57,8 +57,8 @@ jobs:
         id: "emu-deps-cache-step"
         uses: actions/cache@v4
         with:
-          key: ${{ env.DEPS_CACHE_KEY }}-${{ env.PREMAKE_ACTION }}
-          path: ${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}
+          key: "${{ env.DEPS_CACHE_KEY }}-${{ env.PREMAKE_ACTION }}"
+          path: "${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}"
 
       # extra helpers/tools, these are not built inside the deps build dir
       - name: "Clone third-party build helpers (common/linux)"

@@ -54,7 +54,7 @@ jobs:
       # on Windows Git will auto change line ending to CRLF, not preferable
       - name: "Ensure LF line ending"
         shell: "cmd"
-        working-directory: ${{ github.workspace }}
+        working-directory: "${{ github.workspace }}"
         run: |
           git config --local core.autocrlf false
           git config --system core.autocrlf false

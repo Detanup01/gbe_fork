@@ -14,9 +14,9 @@ jobs:
   script-win:
     name: "Migrate GSE win"
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/migrate_gse-build-win.yml
+    uses: "./.github/workflows/migrate_gse-build-win.yml"
 
   script-linux:
     name: "Migrate GSE linux"
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/migrate_gse-build-linux.yml
+    uses: "./.github/workflows/migrate_gse-build-linux.yml"
