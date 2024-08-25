@@ -34,7 +34,7 @@ if not exist "%OUT_DIR%" (
 
 set "ACHIVE_FILE=%OUT_DIR%\generate_emu_config-win.7z"
 if exist "%ACHIVE_FILE%" (
-  del /f /s /q "%ACHIVE_FILE%"
+  del /f /q "%ACHIVE_FILE%"
 )
 
 call "%PKG_EXE%" a "%ACHIVE_FILE%" "%BUILD_DIR%\*" -t7z -slp -ssw -mx -myx -mmemuse=p%PKG_EXE_MEM_PERCENT% -ms=on -mqs=off -mf=on -mhc+ -mhe- -m0=LZMA2:d=%PKG_EXE_DICT_SIZE_MB%m -mmt=%MAX_THREADS% -mmtf+ -mtm- -mtc- -mta- -mtr+ || (

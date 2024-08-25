@@ -6,7 +6,7 @@ set "ROOT=%cd%"
 set "CREDITS_FILE=%ROOT%\CREDITS.md"
 
 if exist "%CREDITS_FILE%" (
-  del /f /s /q "%CREDITS_FILE%"
+  del /f /q "%CREDITS_FILE%"
 )
 
 set "GLOB=third-party libs tools\steamclient_loader sdk"
