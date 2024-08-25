@@ -1,4 +1,4 @@
-name: Build emu (Linux)
+name: "Build emu (Linux)"
 
 on:
   workflow_call:
@@ -7,88 +7,90 @@ on:
     # allows manual trigger
 
 permissions:
-  contents: write
+  contents: "write"
 
 env:
-  PREMAKE_ACTION: gmake2
-  DEPS_CACHE_KEY: emu-deps-linux
-  DEPS_CACHE_DIR: build/deps/linux
+  PREMAKE_ACTION: "gmake2"
+  DEPS_CACHE_KEY: "emu-deps-linux"
+  DEPS_CACHE_DIR: "build/deps/linux"
 
   PACKAGE_BASE_DIR: "build/package/linux"
-  THIRD_PARTY_BASE_DIR: 'third-party'
-  
+  THIRD_PARTY_BASE_DIR: "third-party"
+
 jobs:
   deps:
-    name: Restore or build deps
+    name: "Restore or build deps"
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-deps-linux.yml
+    uses: "./.github/workflows/emu-deps-linux.yml"
 
   builds-matrix-linux:
-    name: build
-    needs: [ deps ]
-    runs-on: ubuntu-24.04
+    name: "build"
+    needs: ["deps"]
+    runs-on: "ubuntu-24.04"
     if: ${{ !cancelled() }}
     continue-on-error: true
-    
+
     strategy:
       fail-fast: false
       matrix:
         prj: [
-          # regular api
-          'api_regular', 'steamclient_regular',
-          # api + client (experimental)
-          'api_experimental', 'steamclient_experimental',
-          # tools
-          'tool_lobby_connect', 'tool_generate_interfaces',
-        ]
-        arch: [ 'x64', 'x32', ]
-        cfg: [ 'debug', 'release', ]
-    
-    
+            # regular api
+            "api_regular",
+            "steamclient_regular",
+            # api + client (experimental)
+            "api_experimental",
+            "steamclient_experimental",
+            # tools
+            "tool_lobby_connect",
+            "tool_generate_interfaces",
+          ]
+        arch: ["x64", "x32"]
+        cfg: ["debug", "release"]
+
     steps:
-### clone branch
-      - name: Checkout branch
+      # clone branch
+      - name: "Checkout branch"
         uses: actions/checkout@v4
 
-### deps
-      - name: Restore deps
-        id: emu-deps-cache-step
+      # deps
+      - name: "Restore deps"
+        id: "emu-deps-cache-step"
         uses: actions/cache@v4
         with:
           key: ${{ env.DEPS_CACHE_KEY }}-${{ env.PREMAKE_ACTION }}
           path: ${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}
 
-## extra helpers/tools, these are not built inside the deps build dir
-      - name: Clone third-party build helpers (common/linux)
+      # extra helpers/tools, these are not built inside the deps build dir
+      - name: "Clone third-party build helpers (common/linux)"
         uses: actions/checkout@v4
         with:
-          ref: 'third-party/common/linux'
+          ref: "third-party/common/linux"
           path: "${{env.THIRD_PARTY_BASE_DIR}}/common/linux"
 
-      - name: Clone third-party build helpers (build/linux)
+      - name: "Clone third-party build helpers (build/linux)"
         uses: actions/checkout@v4
         with:
-          ref: 'third-party/build/linux'
+          ref: "third-party/build/linux"
           path: "${{env.THIRD_PARTY_BASE_DIR}}/build/linux"
 
-### fix folder permissions! not sure why this fails
-    # nested subdirs "build/linux/release" cause permission problems
-      - name: Give all permissions to repo folder
-        shell: bash
-        working-directory: ${{ github.workspace }}
+      # fix folder permissions! not sure why this fails
+      # nested subdirs "build/linux/release" cause permission problems
+      - name: "Give all permissions to repo folder"
+        shell: "bash"
+        working-directory: "${{ github.workspace }}"
         run: sudo chmod -R 777 "${{ github.workspace }}"
 
-### generate project files
-      - name: Generate project files
-        shell: bash
-        working-directory: ${{ github.workspace }}
+      # generate project files
+      - name: "Generate project files"
+        shell: "bash"
+        working-directory: "${{ github.workspace }}"
         run: |
           sudo chmod 777 ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5
           ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5.lua --genproto --emubuild=${{ github.sha }} --os=linux gmake2
 
-## mandatory Linux packages
-      - name: Install required packages
-        shell: bash
+      # mandatory Linux packages
+      - name: "Install required packages"
+        shell: "bash"
         run: |
           sudo apt update -y
           sudo apt install -y coreutils # echo, printf, etc...
@@ -100,22 +102,22 @@ jobs:
           sudo apt install -y libgl-dev # needed for overlay build (header files such as GL/gl.h)
           # sudo apt install -y binutils # (optional) contains the tool 'readelf' mainly, and other usefull binary stuff
 
-### build target
-      - name: Build target
-        shell: bash
-        working-directory: ${{ github.workspace }}/build/project/gmake2/linux
+      # build target
+      - name: "Build target"
+        shell: "bash"
+        working-directory: "${{ github.workspace }}/build/project/gmake2/linux"
         run: |
           echo "dry run..."
           make -n -j 2 config=${{ matrix.cfg }}_${{ matrix.arch }} ${{ matrix.prj }}
           echo "actual run..."
           make -j 2 config=${{ matrix.cfg }}_${{ matrix.arch }} ${{ matrix.prj }}
 
-### upload artifact/package to github Actions
-      - name: Upload target package
+      # upload artifact/package to github Actions
+      - name: "Upload target package"
         uses: actions/upload-artifact@v4
         with:
           name: "emu-linux-${{ matrix.prj }}-${{ matrix.cfg }}-${{ matrix.arch }}-${{ github.sha }}"
           path: "build/linux"
-          if-no-files-found: 'error'
+          if-no-files-found: "error"
           compression-level: 9
           retention-days: 1

@@ -1,4 +1,4 @@
-name: Emu third-party dependencies (Windows)
+name: "Emu third-party dependencies (Windows)"
 
 on:
   workflow_call:
@@ -7,76 +7,76 @@ on:
     # allows manual trigger
 
 permissions:
-  contents: write
+  contents: "write"
 
 env:
-  PREMAKE_ACTION: vs2022
-  DEPS_CACHE_KEY: emu-deps-win
-  DEPS_CACHE_DIR: build/deps/win
-  
+  PREMAKE_ACTION: "vs2022"
+  DEPS_CACHE_KEY: "emu-deps-win"
+  DEPS_CACHE_DIR: "build/deps/win"
+
   PACKAGE_BASE_DIR: "build/package/win"
-  THIRD_PARTY_BASE_DIR: 'third-party'
+  THIRD_PARTY_BASE_DIR: "third-party"
 
 jobs:
   deps-build:
-    runs-on: windows-2022
+    runs-on: "windows-2022"
     if: ${{ !cancelled() }}
-    
+
     steps:
-    # on Windows Git will auto change line ending to CRLF, not preferable
-    - name: Ensure LF line ending
-      shell: cmd
-      working-directory: ${{ github.workspace }}
-      run: |
-        git config --local core.autocrlf false
-        git config --system core.autocrlf false
-        git config --global core.autocrlf false
+      # on Windows Git will auto change line ending to CRLF, not preferable
+      - name: "Ensure LF line ending"
+        shell: "cmd"
+        working-directory: ${{ github.workspace }}
+        run: |
+          git config --local core.autocrlf false
+          git config --system core.autocrlf false
+          git config --global core.autocrlf false
 
-    - name: Lookup cache for deps
-      id: emu-deps-cache-step
-      uses: actions/cache@v4
-      with:
-        key: ${{ env.DEPS_CACHE_KEY }}-${{ env.PREMAKE_ACTION }}
-        path: ${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}
-        lookup-only: true # don't restore cache if found
+      - name: "Lookup cache for deps"
+        id: "emu-deps-cache-step"
+        uses: actions/cache@v4
+        with:
+          key: "${{ env.DEPS_CACHE_KEY }}-${{ env.PREMAKE_ACTION }}"
+          path: "${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}"
+          lookup-only: true # don't restore cache if found
 
-    # we need branch because it has build scripts
-    - name: Checkout branch
-      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
-      uses: actions/checkout@v4
+      # we need branch because it has build scripts
+      - name: "Checkout branch"
+        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
 
-    - name: Clone third-party deps (common/win)
-      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
-      uses: actions/checkout@v4
-      with:
-        ref: 'third-party/common/win'
-        path: "${{env.THIRD_PARTY_BASE_DIR}}/common/win"
+      - name: "Clone third-party deps (common/win)"
+        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: "third-party/common/win"
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/common/win"
 
-    - name: Clone third-party deps (deps/win)
-      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
-      uses: actions/checkout@v4
-      with:
-        ref: 'third-party/deps/win'
-        path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/win"
+      - name: "Clone third-party deps (deps/win)"
+        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: "third-party/deps/win"
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/win"
 
-    - name: Clone third-party deps (deps/common)
-      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
-      uses: actions/checkout@v4
-      with:
-        ref: 'third-party/deps/common'
-        path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/common"
+      - name: "Clone third-party deps (deps/common)"
+        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: "third-party/deps/common"
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/common"
 
-    - name: Clone third-party deps (common/win)
-      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
-      uses: actions/checkout@v4
-      with:
-        ref: 'third-party/common/win'
-        path: "${{env.THIRD_PARTY_BASE_DIR}}/common/win"
+      - name: "Clone third-party deps (common/win)"
+        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: "third-party/common/win"
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/common/win"
 
-    - name: Build deps
-      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
-      shell: cmd
-      working-directory: ${{ github.workspace }}
-      run: |
-        set "CMAKE_GENERATOR=Visual Studio 17 2022"
-        "${{env.THIRD_PARTY_BASE_DIR}}\common\win\premake\premake5.exe" --file=premake5-deps.lua --64-build --32-build --all-ext --all-build --j=2 --verbose --clean --os=windows vs2022
+      - name: "Build deps"
+        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+        shell: "cmd"
+        working-directory: "${{ github.workspace }}"
+        run: |
+          set "CMAKE_GENERATOR=Visual Studio 17 2022"
+          "${{env.THIRD_PARTY_BASE_DIR}}\common\win\premake\premake5.exe" --file=premake5-deps.lua --64-build --32-build --all-ext --all-build --j=2 --verbose --clean --os=windows vs2022

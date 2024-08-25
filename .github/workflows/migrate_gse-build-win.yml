@@ -1,4 +1,4 @@
-name: Build migrate_gse script (Windows)
+name: "Build migrate_gse script (Windows)"
 
 on:
   workflow_call:
@@ -7,62 +7,62 @@ on:
     # allows manual trigger
 
 permissions:
-  contents: write
+  contents: "write"
 
 env:
   ARTIFACT_NAME: "migrate_gse-win-${{ github.sha }}"
   SCRIPT_BASE_DIR: "tools/migrate_gse"
   PACKAGE_BASE_DIR: "tools/migrate_gse/bin/win"
-  
-  THIRD_PARTY_BASE_DIR: 'third-party'
-  
+
+  THIRD_PARTY_BASE_DIR: "third-party"
+
 jobs:
   build:
-    runs-on: windows-2022
+    runs-on: "windows-2022"
 
     steps:
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.10"
+      - name: "Set up Python 3.12"
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-### on Windows Git will auto change line ending to CRLF, not preferable
-    - name: Ensure LF line ending
-      shell: cmd
-      working-directory: ${{ github.workspace }}
-      run: |
-        git config --local core.autocrlf false
-        git config --system core.autocrlf false
-        git config --global core.autocrlf false
-      
-    - name: Checkout branch
-      uses: actions/checkout@v4
-    
-## extra helpers/tools, these are not built inside the deps build dir
-    - name: Clone third-party deps (build/win)
-      uses: actions/checkout@v4
-      with:
-        ref: 'third-party/build/win'
-        path: "${{env.THIRD_PARTY_BASE_DIR}}/build/win"
+      # on Windows Git will auto change line ending to CRLF, not preferable
+      - name: "Ensure LF line ending"
+        shell: "cmd"
+        working-directory: "${{ github.workspace }}"
+        run: |
+          git config --local core.autocrlf false
+          git config --system core.autocrlf false
+          git config --global core.autocrlf false
 
-# env
-    - name: Install env
-      shell: cmd
-      working-directory: "${{ env.SCRIPT_BASE_DIR }}"
-      run: recreate_venv_win.bat
+      - name: "Checkout branch"
+        uses: actions/checkout@v4
 
-# build
-    - name: Rebuild
-      shell: cmd
-      working-directory: "${{ env.SCRIPT_BASE_DIR }}"
-      run: rebuild_win.bat
+      # extra helpers/tools, these are not built inside the deps build dir
+      - name: "Clone third-party deps (build/win)"
+        uses: actions/checkout@v4
+        with:
+          ref: "third-party/build/win"
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/build/win"
 
-# upload artifact
-    - name: Upload build package
-      uses: actions/upload-artifact@v4
-      with:
-        name: "${{ env.ARTIFACT_NAME }}"
-        path: "${{ env.PACKAGE_BASE_DIR }}/"
-        if-no-files-found: 'error'
-        compression-level: 9
-        retention-days: 1
+      # env
+      - name: "Install env"
+        shell: cmd
+        working-directory: "${{ env.SCRIPT_BASE_DIR }}"
+        run: recreate_venv_win.bat
+
+      # build
+      - name: "Rebuild"
+        shell: cmd
+        working-directory: "${{ env.SCRIPT_BASE_DIR }}"
+        run: rebuild_win.bat
+
+      # upload artifact
+      - name: "Upload build package"
+        uses: actions/upload-artifact@v4
+        with:
+          name: "${{ env.ARTIFACT_NAME }}"
+          path: "${{ env.PACKAGE_BASE_DIR }}/"
+          if-no-files-found: "error"
+          compression-level: 9
+          retention-days: 1
