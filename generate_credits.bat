@@ -8,7 +8,7 @@ if exist "%CREDITS_FILE%" (
   del /f /s /q "%CREDITS_FILE%"
 )
 
-set "GLOB=third-party libs tools\steamclient_loader"
+set "GLOB=third-party libs tools\steamclient_loader sdk"
 set "FILTER=SOURCE.txt"
 
 echo:# Many thanks for these sources>> "%CREDITS_FILE%"
