@@ -183,7 +183,7 @@ end
 -- common defines
 ---------
 local common_emu_defines = { -- added to all filters, later defines will be appended
-    "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "CONTROLLER_SUPPORT", "EMU_BUILD_STRING=" .. _OPTIONS["emubuild"],
+    "CURL_STATICLIB", "CONTROLLER_SUPPORT", "EMU_BUILD_STRING=" .. _OPTIONS["emubuild"],
 }
 
 -- include dirs
@@ -479,7 +479,7 @@ filter {} -- reset the filter and remove all active keywords
 configurations { "debug", "release", }
 platforms { "x64", "x32", }
 language "C++"
-cppdialect "C++17"
+cppdialect "C++20"
 cdialect "C17"
 filter { "system:not windows", "action:gmake*" , }
     cdialect("gnu17") -- gamepad.c relies on some linux-specific functions like strdup() and MAX_PATH
@@ -546,7 +546,11 @@ filter { "configurations:*release", }
 filter { "action:vs*", }
     buildoptions  {
         "/permissive-", "/DYNAMICBASE", "/bigobj",
-        "/utf-8", "/Zc:char8_t-", "/EHsc", "/GL-"
+        "/utf-8", "/EHsc", "/GL-",
+        -- fix __cplusplus version on Visual Studio
+        -- https://devblogs.microsoft.com/cppblog/msvc-now-correctly-reports-__cplusplus/
+        -- https://learn.microsoft.com/en-us/cpp/build/reference/zc-cplusplus
+        "/Zc:__cplusplus",
     }
     linkoptions  {
         -- source of emittoolversioninfo: https://developercommunity.visualstudio.com/t/add-linker-option-to-strip-rich-stamp-from-exe-hea/740443
@@ -560,11 +564,6 @@ filter { "action:gmake*", }
     }
     linkoptions {
         "-Wl,--exclude-libs,ALL",
-    }
--- this is made separate because GCC complains but not CLANG
-filter { "action:gmake*" , "files:*.cpp or *.cxx or *.cc or *.hpp or *.hxx", }
-    buildoptions  {
-        "-fno-char8_t", -- GCC gives a warning when a .c file is compiled with this
     }
 filter {} -- reset the filter and remove all active keywords
 
@@ -1146,7 +1145,9 @@ project "tool_generate_interfaces"
     -- common source & header files
     ---------
     files {
-        "tools/generate_interfaces/generate_interfaces.cpp"
+        "tools/generate_interfaces/generate_interfaces.cpp",
+        'helpers/common_helpers.cpp', 'helpers/common_helpers/**',
+        'libs/utfcpp/**',
     }
 -- End tool_generate_interfaces
 
@@ -1165,6 +1166,7 @@ project "lib_steamnetworkingsockets"
         "networking_sockets_lib/**",
         "helpers/dbg_log.cpp", "helpers/dbg_log/**",
         'helpers/common_helpers.cpp', 'helpers/common_helpers/**',
+        'libs/utfcpp/**',
     }
 
 
@@ -1299,6 +1301,7 @@ project "steamclient_experimental_extra"
         "tools/steamclient_loader/win/extra_protection/**",
         "helpers/pe_helpers.cpp", "helpers/pe_helpers/**",
         "helpers/common_helpers.cpp", "helpers/common_helpers/**",
+        'libs/utfcpp/**',
         -- detours
         detours_files,
     }
@@ -1342,9 +1345,10 @@ project "steamclient_experimental_loader"
     filter {} -- reset the filter and remove all active keywords
     files {
         "tools/steamclient_loader/win/*", -- we want the .ini too
+        "helpers/dbg_log.cpp", "helpers/dbg_log/**",
         "helpers/pe_helpers.cpp", "helpers/pe_helpers/**",
         "helpers/common_helpers.cpp", "helpers/common_helpers/**",
-        "helpers/dbg_log.cpp", "helpers/dbg_log/**",
+        'libs/utfcpp/**',
         "libs/simpleini/**",
     }
     -- x32 common source files
@@ -1384,6 +1388,7 @@ project "tool_file_dos_stub_changer"
         "resources/win/file_dos_stub/file_dos_stub.cpp",
         "helpers/pe_helpers.cpp", "helpers/pe_helpers/**",
         "helpers/common_helpers.cpp", "helpers/common_helpers/**",
+        'libs/utfcpp/**',
     }
 -- End tool_file_dos_stub_changer
 
@@ -1404,6 +1409,7 @@ project "test_crash_printer"
         'crash_printer/' .. os_iden .. '.cpp', 'crash_printer/crash_printer/' .. os_iden .. '.hpp',
         -- helpers
         'helpers/common_helpers.cpp', 'helpers/common_helpers/**',
+        'libs/utfcpp/**',
         -- test files
         'crash_printer/tests/test_win.cpp',
     }
@@ -1518,6 +1524,7 @@ project "test_crash_printer_sa_handler"
         'crash_printer/' .. os_iden .. '.cpp', 'crash_printer/crash_printer/' .. os_iden .. '.hpp',
         -- helpers
         'helpers/common_helpers.cpp', 'helpers/common_helpers/**',
+        'libs/utfcpp/**',
         -- test files
         'crash_printer/tests/test_linux_sa_handler.cpp',
     }
@@ -1553,6 +1560,7 @@ project "test_crash_printer_sa_sigaction"
         'crash_printer/' .. os_iden .. '.cpp', 'crash_printer/crash_printer/' .. os_iden .. '.hpp',
         -- helpers
         'helpers/common_helpers.cpp', 'helpers/common_helpers/**',
+        'libs/utfcpp/**',
         -- test files
         'crash_printer/tests/test_linux_sa_sigaction.cpp',
     }
