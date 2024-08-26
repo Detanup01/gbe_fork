@@ -24,6 +24,7 @@
 - [libs\stb](#libsstb)
 - [libs\utfcpp](#libsutfcpp)
 - [tools\steamclient_loader](#toolssteamclient_loader)
+- [sdk](#sdk)
 
 ### third-party\build\win\cert\openssl
 
@@ -2547,4 +2548,10 @@ DEALINGS IN THE SOFTWARE.
 https://github.com/Rat431/ColdAPI_Steam
 
 Original version of ColdClientLoader by Rat431.
+
+### sdk
+
+#### INFO
+
+https://partner.steamgames.com/doc/sdk
 

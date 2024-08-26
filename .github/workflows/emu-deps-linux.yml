@@ -1,4 +1,4 @@
-name: Emu third-party dependencies (Linux)
+name: "Emu third-party dependencies (Linux)"
 
 on:
   workflow_call:
@@ -7,82 +7,82 @@ on:
     # allows manual trigger
 
 permissions:
-  contents: write
+  contents: "write"
 
 env:
-  PREMAKE_ACTION: gmake2
-  DEPS_CACHE_KEY: emu-deps-linux
-  DEPS_CACHE_DIR: build/deps/linux
+  PREMAKE_ACTION: "gmake2"
+  DEPS_CACHE_KEY: "emu-deps-linux"
+  DEPS_CACHE_DIR: "build/deps/linux"
 
   PACKAGE_BASE_DIR: "build/package/linux"
-  THIRD_PARTY_BASE_DIR: 'third-party'
-  
+  THIRD_PARTY_BASE_DIR: "third-party"
+
 jobs:
   deps-build:
-    runs-on: ubuntu-24.04
+    runs-on: "ubuntu-24.04"
     if: ${{ !cancelled() }}
 
     steps:
-    - name: Lookup cache for deps
-      id: emu-deps-cache-step
-      uses: actions/cache@v4
-      with:
-        key: ${{ env.DEPS_CACHE_KEY }}-${{ env.PREMAKE_ACTION }}
-        path: ${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}
+      - name: "Lookup cache for deps"
+        id: "emu-deps-cache-step"
+        uses: actions/cache@v4
+        with:
+          key: "${{ env.DEPS_CACHE_KEY }}-${{ env.PREMAKE_ACTION }}"
+          path: "${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}"
 
-    # we need branch because it has build scripts
-    - name: Checkout branch
-      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
-      uses: actions/checkout@v4
+      # we need branch because it has build scripts
+      - name: "Checkout branch"
+        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
 
-    - name: Clone third-party deps (common/linux)
-      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
-      uses: actions/checkout@v4
-      with:
-        ref: 'third-party/common/linux'
-        path: "${{env.THIRD_PARTY_BASE_DIR}}/common/linux"
+      - name: "Clone third-party deps (common/linux)"
+        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: "third-party/common/linux"
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/common/linux"
 
-    - name: Clone third-party deps (deps/linux)
-      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
-      uses: actions/checkout@v4
-      with:
-        ref: 'third-party/deps/linux'
-        path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/linux"
+      - name: "Clone third-party deps (deps/linux)"
+        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: "third-party/deps/linux"
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/linux"
 
-    - name: Clone third-party deps (deps/common)
-      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
-      uses: actions/checkout@v4
-      with:
-        ref: 'third-party/deps/common'
-        path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/common"
+      - name: "Clone third-party deps (deps/common)"
+        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: "third-party/deps/common"
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/common"
 
-### fix folder permissions! not sure why this fails
-    # nested subdirs "build/linux/release" cause permission problems
-    - name: Give all permissions to repo folder
-      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
-      shell: bash
-      working-directory: ${{ github.workspace }}
-      run:  sudo chmod -R 777 "${{ github.workspace }}"
+      # fix folder permissions! not sure why this fails
+      # nested subdirs "build/linux/release" cause permission problems
+      - name: "Give all permissions to repo folder"
+        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+        shell: "bash"
+        working-directory: "${{ github.workspace }}"
+        run: sudo chmod -R 777 "${{ github.workspace }}"
 
-## mandatory Linux packages
-    - name: Install required packages
-      shell: bash
-      run: |
-        sudo apt update -y
-        sudo apt install -y coreutils # echo, printf, etc...
-        sudo apt install -y build-essential
-        sudo apt install -y gcc-multilib # needed for 32-bit builds
-        sudo apt install -y g++-multilib
-        # sudo apt install -y clang
-        sudo apt install -y libglx-dev # needed for overlay build (header files such as GL/glx.h)
-        sudo apt install -y libgl-dev # needed for overlay build (header files such as GL/gl.h)
-        # sudo apt install -y binutils # (optional) contains the tool 'readelf' mainly, and other usefull binary stuff
+      # mandatory Linux packages
+      - name: "Install required packages"
+        shell: "bash"
+        run: |
+          sudo apt update -y
+          sudo apt install -y coreutils # echo, printf, etc...
+          sudo apt install -y build-essential
+          sudo apt install -y gcc-multilib # needed for 32-bit builds
+          sudo apt install -y g++-multilib
+          # sudo apt install -y clang
+          sudo apt install -y libglx-dev # needed for overlay build (header files such as GL/glx.h)
+          sudo apt install -y libgl-dev # needed for overlay build (header files such as GL/gl.h)
+          # sudo apt install -y binutils # (optional) contains the tool 'readelf' mainly, and other usefull binary stuff
 
-    - name: Build deps
-      if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
-      shell: bash
-      working-directory: ${{ github.workspace }}
-      run: |
-        export CMAKE_GENERATOR="Unix Makefiles"
-        sudo chmod 777 ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5
-        ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5-deps.lua --64-build --32-build --all-ext --all-build --j=2 --verbose --clean --os=linux gmake2
+      - name: "Build deps"
+        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+        shell: "bash"
+        working-directory: "${{ github.workspace }}"
+        run: |
+          export CMAKE_GENERATOR="Unix Makefiles"
+          sudo chmod 777 ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5
+          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5-deps.lua --64-build --32-build --all-ext --all-build --j=2 --verbose --clean --os=linux gmake2

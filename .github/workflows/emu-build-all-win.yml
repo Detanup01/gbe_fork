@@ -1,4 +1,4 @@
-name: Build emu (Windows)
+name: "Build emu (Windows)"
 
 on:
   workflow_call:
@@ -7,104 +7,108 @@ on:
     # allows manual trigger
 
 permissions:
-  contents: write
+  contents: "write"
 
 env:
-  PREMAKE_ACTION: vs2022
-  DEPS_CACHE_KEY: emu-deps-win
-  DEPS_CACHE_DIR: build/deps/win
-  
-  THIRD_PARTY_BASE_DIR: 'third-party'
+  PREMAKE_ACTION: "vs2022"
+  DEPS_CACHE_KEY: "emu-deps-win"
+  DEPS_CACHE_DIR: "build/deps/win"
+
+  THIRD_PARTY_BASE_DIR: "third-party"
 
 jobs:
   deps:
-    name: Restore or build deps
+    name: "Restore or build deps"
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/emu-deps-win.yml
+    uses: "./.github/workflows/emu-deps-win.yml"
 
   builds-matrix-win:
-    name: build
-    needs: [ deps ]
-    runs-on: windows-2022
+    name: "build"
+    needs: ["deps"]
+    runs-on: "windows-2022"
     if: ${{ !cancelled() }}
     continue-on-error: true
-    
+
     strategy:
       fail-fast: false
       matrix:
         prj: [
-          # regular api
-          'api_regular',
-          # (experimental) api + client
-          'api_experimental', 'steamclient_experimental_stub',
-          # client (experimental) + loader + extra dll + gameoverlaylib
-          'steamclient_experimental', 'steamclient_experimental_loader',
-          'steamclient_experimental_extra', 'lib_game_overlay_renderer',
-          # tools
-          'tool_lobby_connect', 'tool_generate_interfaces',
-        ]
-        arch: [ 'x64', 'Win32', ]
-        cfg: [ 'debug', 'release', ]
-    
+            # regular api
+            "api_regular",
+            # (experimental) api + client
+            "api_experimental",
+            "steamclient_experimental_stub",
+            # client (experimental) + loader + extra dll + gameoverlaylib
+            "steamclient_experimental",
+            "steamclient_experimental_loader",
+            "steamclient_experimental_extra",
+            "lib_game_overlay_renderer",
+            # tools
+            "tool_lobby_connect",
+            "tool_generate_interfaces",
+          ]
+        arch: ["x64", "Win32"]
+        cfg: ["debug", "release"]
+
     steps:
-### on Windows Git will auto change line ending to CRLF, not preferable
-      - name: Ensure LF line ending
-        shell: cmd
-        working-directory: ${{ github.workspace }}
+      # on Windows Git will auto change line ending to CRLF, not preferable
+      - name: "Ensure LF line ending"
+        shell: "cmd"
+        working-directory: "${{ github.workspace }}"
         run: |
           git config --local core.autocrlf false
           git config --system core.autocrlf false
           git config --global core.autocrlf false
 
-### ensure we have msbuild
-      - name: Add MSBuild to PATH
+      # ensure we have msbuild
+      - name: "Add MSBuild to PATH"
         uses: microsoft/setup-msbuild@v2
 
-### clone branch
-      - name: Checkout branch
+      # clone branch
+      - name: "Checkout branch"
         uses: actions/checkout@v4
 
-### deps
-      - name: Restore deps
-        id: emu-deps-cache-step
+      # deps
+      - name: "Restore deps"
+        id: "emu-deps-cache-step"
         uses: actions/cache@v4
         with:
-          key: ${{ env.DEPS_CACHE_KEY }}-${{ env.PREMAKE_ACTION }}
-          path: ${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}
+          key: "${{ env.DEPS_CACHE_KEY }}-${{ env.PREMAKE_ACTION }}"
+          path: "${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}"
 
-## extra helpers/tools, these are not built inside the deps build dir
-      - name: Clone third-party build helpers (common/win)
+      # extra helpers/tools, these are not built inside the deps build dir
+      - name: "Clone third-party build helpers (common/win)"
         uses: actions/checkout@v4
         with:
-          ref: 'third-party/common/win'
+          ref: "third-party/common/win"
           path: "${{env.THIRD_PARTY_BASE_DIR}}/common/win"
 
-      - name: Clone third-party deps (build/win)
+      - name: "Clone third-party deps (build/win)"
         uses: actions/checkout@v4
         with:
-          ref: 'third-party/build/win'
+          ref: "third-party/build/win"
           path: "${{env.THIRD_PARTY_BASE_DIR}}/build/win"
 
-### generate project files
-      - name: Generate project files
-        shell: cmd
-        working-directory: ${{ github.workspace }}
+      # generate project files
+      - name: "Generate project files"
+        shell: "cmd"
+        working-directory: "${{ github.workspace }}"
         run: |
           "${{env.THIRD_PARTY_BASE_DIR}}\common\win\premake\premake5.exe" --file=premake5.lua --genproto --emubuild=${{ github.sha }} --dosstub --winrsrc --winsign --os=windows vs2022
 
-### build target
-      - name: Build target
-        shell: cmd
-        working-directory: ${{ github.workspace }}/build/project/vs2022/win
+      # build target
+      - name: "Build target"
+        shell: "cmd"
+        working-directory: "${{ github.workspace }}/build/project/vs2022/win"
         run: |
           msbuild /nologo /target:${{ matrix.prj }} /m:2 /v:n /p:Configuration=${{ matrix.cfg }},Platform=${{ matrix.arch }} gbe.sln
 
-### upload artifact/package to github Actions
-      - name: Upload target package
+      # upload artifact/package to github Actions
+      - name: "Upload target package"
         uses: actions/upload-artifact@v4
         with:
           name: "emu-win-${{ matrix.prj }}-${{ matrix.cfg }}-${{ matrix.arch }}-${{ github.sha }}"
           path: "build/win"
-          if-no-files-found: 'error'
+          if-no-files-found: "error"
           compression-level: 9
           retention-days: 1

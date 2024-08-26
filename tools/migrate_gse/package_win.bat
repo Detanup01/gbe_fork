@@ -1,48 +1,52 @@
 @echo off
+setlocal EnableDelayedExpansion
+cd /d "%~dp0"
 
-setlocal
-pushd "%~dp0"
-
-set /a last_code=0
-
-set "build_dir=bin\win"
-set "out_dir=bin\package\win"
-
-set /a MEM_PERCENT=90
-set /a DICT_SIZE_MB=384
-set "packager=..\..\third-party\deps\win\7za\7za.exe"
-
-:: use 70%
+set /a "MAX_THREADS=2"
 if defined NUMBER_OF_PROCESSORS (
-  set /a THREAD_COUNT=NUMBER_OF_PROCESSORS*70/100
-) else (
-  set /a THREAD_COUNT=2
+  :: use 70%
+  set /a "MAX_THREADS=%NUMBER_OF_PROCESSORS% * 70 / 100"
+  if %MAX_THREADS% lss 1 (
+    set /a "MAX_THREADS=1"
+  )
 )
 
-if not exist "%packager%" (
-  1>&2 echo "[X] packager app wasn't found"
-  set /a last_code=1
-  goto :script_end
+set "ROOT=%cd%"
+set "BUILD_DIR=%ROOT%\bin\win"
+set "OUT_DIR=%ROOT%\bin\package\win"
+
+set /a "PKG_EXE_MEM_PERCENT=90"
+set /a "PKG_EXE_DICT_SIZE_MB=384"
+set "PKG_EXE=..\..\third-party\deps\win\7za\7za.exe"
+if not exist "%PKG_EXE%" (
+  1>&2 echo:packager wasn't found
+  goto :end_script_with_err
 )
 
-if not exist "%build_dir%" (
-  1>&2 echo "[X] build folder wasn't found"
-  set /a last_code=1
-  goto :script_end
+if not exist "%BUILD_DIR%" (
+  1>&2 echo:build folder wasn't found
+  goto :end_script_with_err
 )
 
-mkdir "%out_dir%"
-
-set "archive_file=%out_dir%\migrate_gse-win.7z"
-if exist "%archive_file%" (
-  del /f /q "%archive_file%"
+if not exist "%OUT_DIR%" (
+  mkdir "%OUT_DIR%"
 )
 
-"%packager%" a "%archive_file%" ".\%build_dir%\*" -t7z -slp -ssw -mx -myx -mmemuse=p%MEM_PERCENT% -ms=on -mqs=off -mf=on -mhc+ -mhe- -m0=LZMA2:d=%DICT_SIZE_MB%m -mmt=%THREAD_COUNT% -mmtf+ -mtm- -mtc- -mta- -mtr+
-
-
-:script_end
-popd
-endlocal & (
-  exit /b %last_code%
+set "ACHIVE_FILE=%OUT_DIR%\migrate_gse-win.7z"
+if exist "%ACHIVE_FILE%" (
+  del /f /q "%ACHIVE_FILE%"
 )
+
+call "%PKG_EXE%" a "%ACHIVE_FILE%" "%BUILD_DIR%\*" -t7z -slp -ssw -mx -myx -mmemuse=p%PKG_EXE_MEM_PERCENT% -ms=on -mqs=off -mf=on -mhc+ -mhe- -m0=LZMA2:d=%PKG_EXE_DICT_SIZE_MB%m -mmt=%MAX_THREADS% -mmtf+ -mtm- -mtc- -mta- -mtr+ || (
+  goto :end_script_with_err
+)
+
+goto :end_script
+
+:end_script
+  endlocal
+  exit /b 0
+
+:end_script_with_err
+  endlocal
+  exit /b 1

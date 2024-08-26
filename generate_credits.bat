@@ -2,13 +2,14 @@
 setlocal EnableDelayedExpansion
 cd /d "%~dp0"
 
-set "CREDITS_FILE=CREDITS.md"
+set "ROOT=%cd%"
+set "CREDITS_FILE=%ROOT%\CREDITS.md"
 
 if exist "%CREDITS_FILE%" (
-  del /f /s /q "%CREDITS_FILE%"
+  del /f /q "%CREDITS_FILE%"
 )
 
-set "GLOB=third-party libs tools\steamclient_loader"
+set "GLOB=third-party libs tools\steamclient_loader sdk"
 set "FILTER=SOURCE.txt"
 
 echo:# Many thanks for these sources>> "%CREDITS_FILE%"

@@ -1,19 +1,29 @@
 @echo off
-
 cd /d "%~dp0"
 
-set "venv=.env-win"
-set "reqs_file=requirements.txt"
+set "ROOT=%cd%"
+set "VENV=%ROOT%\.env-win"
+set "REQS_FILE=%ROOT%\requirements.txt"
 
-if exist "%venv%" (
-    rmdir /s /q "%venv%"
+set /a "LAST_ERR_CODE=0"
+
+if exist "%VENV%" (
+  rmdir /s /q "%VENV%"
 )
 
-python -m venv "%venv%" || exit /b 1
-timeout /t 1 /nobreak
-call "%venv%\Scripts\activate.bat"
-pip install -r "%reqs_file%"
-set /a exit_code=errorlevel
+python -m venv "%VENV%" || (
+  set /a "LAST_ERR_CODE=1"
+  goto :end_script
+)
 
-call "%venv%\Scripts\deactivate.bat"
-exit /b %exit_code%
+timeout /t 1 /nobreak
+
+call "%VENV%\Scripts\activate.bat"
+pip install -r "%REQS_FILE%"
+set /a "LAST_ERR_CODE=%ERRORLEVEL%"
+call "%VENV%\Scripts\deactivate.bat"
+
+goto :end_script
+
+:end_script
+  exit /b %LAST_ERR_CODE%

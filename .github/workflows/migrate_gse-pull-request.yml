@@ -1,22 +1,22 @@
-name: Migrate GSE PR
+name: "Migrate GSE PR"
 
 on:
   pull_request:
-    branches: [ "dev" ]
+    branches: ["dev"]
     paths:
-      - '!**/*.md'
-      - 'tools/migrate_gse/**'
+      - "!**/*.md"
+      - "tools/migrate_gse/**"
 
 permissions:
-  contents: write
+  contents: "write"
 
 jobs:
   script-win:
-    name: Migrate GSE win
+    name: "Migrate GSE win"
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/migrate_gse-build-win.yml
+    uses: "./.github/workflows/migrate_gse-build-win.yml"
 
   script-linux:
-    name: Migrate GSE linux
+    name: "Migrate GSE linux"
     if: ${{ !cancelled() }}
-    uses: ./.github/workflows/migrate_gse-build-linux.yml
+    uses: "./.github/workflows/migrate_gse-build-linux.yml"
