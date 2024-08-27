@@ -134,7 +134,8 @@ constexpr std::basic_string<TChar> filesystem_str(const std::basic_string<TChar>
     return std::basic_string<TChar>(str);
 }
 
-std::string_view u8str_to_str(std::u8string_view u8str) noexcept;
+const char* u8str_to_str(const char8_t *u8str);
+std::string_view u8str_to_str(std::u8string_view u8str);
 std::string u8str_to_str(const std::u8string &u8str);
 
 template<StringViewable TString, typename TChar = str_info_t<TString>>

@@ -109,7 +109,12 @@ std::u8string common_helpers::filesystem_str(const std::string &str)
     return std::u8string(reinterpret_cast<const char8_t* const>(str.data()), str.size());
 }
 
-std::string_view common_helpers::u8str_to_str(std::u8string_view u8str) noexcept
+const char* common_helpers::u8str_to_str(const char8_t *u8str)
+{
+    return reinterpret_cast<const char*>(u8str);
+}
+
+std::string_view common_helpers::u8str_to_str(std::u8string_view u8str)
 {
     return std::string_view(reinterpret_cast<const char* const>(u8str.data()), u8str.size());
 }
