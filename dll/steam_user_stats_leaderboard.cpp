@@ -81,7 +81,7 @@ std::vector<Steam_Leaderboard_Entry> Steam_User_Stats::load_leaderboard_entries(
 
     std::vector<Steam_Leaderboard_Entry> out{};
 
-    std::string leaderboard_name(common_helpers::ascii_to_lowercase(name));
+    std::string leaderboard_name(common_helpers::to_lower(name));
     unsigned read_bytes = local_storage->file_size(Local_Storage::leaderboard_storage_folder, leaderboard_name);
     if ((read_bytes == 0) ||
         (read_bytes < (ELEMENT_SIZE * MAIN_HEADER_ELEMENTS_COUNT)) ||
@@ -138,7 +138,7 @@ void Steam_User_Stats::save_my_leaderboard_entry(const Steam_Leaderboard &leader
         output.push_back(detail);
     }
 
-    std::string leaderboard_name(common_helpers::ascii_to_lowercase(leaderboard.name));
+    std::string leaderboard_name(common_helpers::to_lower(leaderboard.name));
     unsigned int buffer_size = static_cast<unsigned int>(output.size() * sizeof(output[0])); // in bytes
     local_storage->store_data(Local_Storage::leaderboard_storage_folder, leaderboard_name, (char* )&output[0], buffer_size);
 }
@@ -186,7 +186,7 @@ unsigned int Steam_User_Stats::cache_leaderboard_ifneeded(const std::string &nam
 
     // create a new entry in-memory and try reading the entries from disk
     struct Steam_Leaderboard new_board{};
-    new_board.name = common_helpers::ascii_to_lowercase(name);
+    new_board.name = common_helpers::to_lower(name);
     new_board.sort_method = eLeaderboardSortMethod;
     new_board.display_type = eLeaderboardDisplayType;
     new_board.entries = load_leaderboard_entries(name);
@@ -318,7 +318,7 @@ SteamAPICall_t Steam_User_Stats::FindLeaderboard( const char *pchLeaderboardName
         return ret;
     }
 
-    std::string name_lower(common_helpers::ascii_to_lowercase(pchLeaderboardName));
+    std::string name_lower(common_helpers::to_lower(pchLeaderboardName));
     const auto &settings_Leaderboards = settings->getLeaderboards();
     auto it = settings_Leaderboards.begin();
     for (;  settings_Leaderboards.end() != it; ++it) {
