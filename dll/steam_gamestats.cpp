@@ -500,8 +500,8 @@ std::string Steam_GameStats::sanitize_csv_value(std::string_view value)
 void Steam_GameStats::save_session_to_disk(Steam_GameStats::Session_t &session, uint64 session_id)
 {
     auto folder = std::to_string(session.account_id) + "_" + std::to_string(session.rtTimeStarted) + "_" + std::to_string(session_id);
-    auto folder_p = std::filesystem::u8path(settings->steam_game_stats_reports_dir) / std::filesystem::u8path(folder);
-    auto folder_u8_str = folder_p.u8string();
+    auto folder_p = common_helpers::std_fs_path(settings->steam_game_stats_reports_dir) / common_helpers::std_fs_path(folder);
+    auto folder_u8_str = common_helpers::u8str_to_str( folder_p.u8string() );
 
     // save session attributes
     if (session.attributes.size()) {

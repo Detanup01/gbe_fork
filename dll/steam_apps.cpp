@@ -418,8 +418,8 @@ SteamAPICall_t Steam_Apps::GetFileDetails( const char* pszFileName )
     //TODO? this function should only return found if file is actually part of the steam depots
     if (file_exists_(pszFileName)) {
         data.m_eResult = k_EResultOK; //
-        std::ifstream stream(std::filesystem::u8path(pszFileName), std::ios::binary);
-        SHA1 checksum;
+        std::ifstream stream( common_helpers::open_fread(pszFileName, std::ios::in | std::ios::binary) );
+        SHA1 checksum{};
         checksum.update(stream);
         checksum.final().copy((char *)data.m_FileSHA, sizeof(data.m_FileSHA));
         data.m_ulFileSize = file_size_(pszFileName);

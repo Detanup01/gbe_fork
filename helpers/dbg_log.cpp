@@ -1,16 +1,14 @@
 #include "dbg_log/dbg_log.hpp"
 #include "common_helpers/common_helpers.hpp"
 #include "utfcpp/utf8.h"
+#include "common_helpers/os_detector.h"
 
 #include <iterator>
 #include <cwchar>
 #include <cstdarg>
-#include <filesystem>
 #include <sstream>
 #include <string>
 #include <stdio.h>
-
-#include "common_helpers/os_detector.h"
 
 
 void dbg_log::open()
@@ -19,7 +17,7 @@ void dbg_log::open()
 	if (!out_file && filepath.size()) {
 
 		// https://en.cppreference.com/w/cpp/filesystem/path/u8path
-		const auto fsp = std::filesystem::u8path(filepath);
+		const auto fsp = common_helpers::std_fs_path(filepath);
 #if defined(__WINDOWS__)
 		out_file = _wfopen(fsp.c_str(), L"at");
 #else

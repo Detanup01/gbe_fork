@@ -968,7 +968,7 @@ void Steam_Client::report_missing_impl(std::string_view itf, std::string_view ca
     catch(...) { }
 
     try {
-        std::ofstream report(std::filesystem::u8path(get_full_program_path() + "EMU_MISSING_INTERFACE.txt"), std::ios::out | std::ios::app);
+        std::ofstream report( common_helpers::open_fwrite(get_full_program_path() + "EMU_MISSING_INTERFACE.txt", std::ios::out | std::ios::app) );
         if (report.is_open()) {
             report << ss.str();
         }

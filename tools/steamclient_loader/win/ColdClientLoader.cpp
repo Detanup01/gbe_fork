@@ -69,7 +69,7 @@ static std::vector<std::string> dlls_to_inject{};
 static std::vector<uint8_t> get_pe_header(const std::string &filepath)
 {
     try {
-        std::ifstream file(std::filesystem::u8path(filepath), std::ios::in | std::ios::binary);
+        std::ifstream file(common_helpers::open_fread(filepath, std::ios::in | std::ios::binary));
         if (!file.is_open()) throw;
 
         file.seekg(0, std::ios::beg);
@@ -88,16 +88,19 @@ static std::vector<uint8_t> get_pe_header(const std::string &filepath)
 
 static std::vector<std::string> collect_dlls_to_inject(const bool is_exe_32, std::string &failed_dlls)
 {
-    const auto load_order_file = std::filesystem::u8path(DllsToInjectFolder) / "load_order.txt";
+    const auto dlls_to_inject_p = common_helpers::std_fs_path(DllsToInjectFolder);
+    const auto load_order_file_p = dlls_to_inject_p / u8"load_order.txt";
+    const auto load_order_file_str = common_helpers::u8str_to_str(load_order_file_p.u8string());
     std::vector<std::string> dlls_to_inject{};
     for (const auto &dir_entry :
-        std::filesystem::recursive_directory_iterator(std::filesystem::u8path(DllsToInjectFolder), std::filesystem::directory_options::follow_directory_symlink)
+        std::filesystem::recursive_directory_iterator(dlls_to_inject_p, std::filesystem::directory_options::follow_directory_symlink)
     ) {
-        if (std::filesystem::is_directory(dir_entry.path())) continue;
+        // skip folders, we want files only
+        if (common_helpers::dir_exist(dir_entry.path())) continue;
 
-        auto dll_path = dir_entry.path().u8string();
-        // ignore this file if it is the load order file
-        if (common_helpers::str_cmp_insensitive(dll_path, load_order_file.u8string())) continue;
+        auto dll_path = common_helpers::u8str_to_str(dir_entry.path().u8string());
+        // ignore the load order file
+        if (common_helpers::str_cmp_insensitive(dll_path, load_order_file_str)) continue;
         
         auto dll_header = get_pe_header(dll_path);
         if (dll_header.empty()) {
@@ -126,8 +129,8 @@ static std::vector<std::string> collect_dlls_to_inject(const bool is_exe_32, std
     bool load_only_specified_dlls = false;
     std::vector<std::string> ordered_dlls_to_inject{};
     {
-        logger.write("Searching for load order file: '" + load_order_file.u8string() + "'");
-        auto f_order = std::ifstream(load_order_file, std::ios::in);
+        logger.write("Searching for load order file: '" + load_order_file_str + "'");
+        auto f_order = common_helpers::open_fread(load_order_file_p);
         if (f_order.is_open()) {
             load_only_specified_dlls = true;
             logger.write(L"Reading load order file...");
@@ -422,7 +425,10 @@ static void set_steam_env_vars(const std::string &AppId)
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR lpCmdLine, _In_ int nCmdShow)
 {
-    IniFile = pe_helpers::get_current_exe_path() + std::filesystem::u8path(pe_helpers::get_current_exe_name()).stem().u8string() + ".ini";
+    auto exe_name_no_ext = common_helpers::u8str_to_str(
+        common_helpers::std_fs_path(pe_helpers::get_current_exe_name()).stem().u8string()
+    );
+    IniFile = pe_helpers::get_current_exe_path() + exe_name_no_ext + ".ini";
     logger.write("Searching for configuration file: " + IniFile);
     if (!common_helpers::file_exist(IniFile)) {
         IniFile = pe_helpers::get_current_exe_path() + "ColdClientLoader.ini";
@@ -436,7 +442,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     }
 
     {
-        std::ifstream ini_stream( std::filesystem::u8path(IniFile), std::ios::binary | std::ios::in);
+        std::ifstream ini_stream( common_helpers::open_fread(IniFile, std::ios::in | std::ios::binary ) );
         if (!ini_stream.is_open()) {
             logger.write("Failed to open the configuration file");
             MessageBoxA(NULL, "Failed to open the configuration file.", "ColdClientLoader", MB_ICONERROR);
@@ -523,7 +529,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     }
 
     if (ExeRunDir.empty()) {
-        ExeRunDir = std::filesystem::u8path(ExeFile).parent_path().u8string();
+        ExeRunDir = common_helpers::u8str_to_str( common_helpers::std_fs_path(ExeFile).parent_path().u8string() );
         logger.write("Setting ExeRunDir to: " + ExeRunDir);
     }
     if (!common_helpers::dir_exist(ExeRunDir)) {
@@ -594,7 +600,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         if (is_exe_32) {
             auto GameOverlayPath = common_helpers::to_absolute(
                 "GameOverlayRenderer.dll",
-                std::filesystem::u8path(ClientPath).parent_path().u8string()
+                common_helpers::u8str_to_str( common_helpers::std_fs_path(ClientPath).parent_path().u8string() )
             );
             if (!common_helpers::file_exist(GameOverlayPath)) {
                 logger.write("Couldn't find GameOverlayRenderer.dll");
@@ -605,7 +611,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         } else { // 64
             auto GameOverlay64Path = common_helpers::to_absolute(
                 "GameOverlayRenderer64.dll",
-                std::filesystem::u8path(Client64Path).parent_path().u8string()
+                common_helpers::u8str_to_str( common_helpers::std_fs_path(Client64Path).parent_path().u8string() )
             );
             if (!common_helpers::file_exist(GameOverlay64Path)) {
                 logger.write("Couldn't find GameOverlayRenderer64.dll");

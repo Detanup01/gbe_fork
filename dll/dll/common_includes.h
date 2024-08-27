@@ -55,7 +55,6 @@
 
 #include <string.h>
 #include <stdio.h>
-#include <filesystem>
 #include <optional>
 #include <numeric>
 

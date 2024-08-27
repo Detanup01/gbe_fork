@@ -16,6 +16,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "dll/steam_remote_storage.h"
+#include <filesystem>
 
 
 Downloaded_File::Downloaded_File(DownloadSource src)
@@ -32,13 +33,13 @@ static void copy_file(const std::string &src_filepath, const std::string &dst_fi
     try
     {
         PRINT_DEBUG("copying file '%s' to '%s'", src_filepath.c_str(), dst_filepath.c_str());
-        const auto src_p(std::filesystem::u8path(src_filepath));
+        const auto src_p = common_helpers::std_fs_path(src_filepath);
         
         if (!common_helpers::file_exist(src_p)) return;
         
-        const auto dst_p(std::filesystem::u8path(dst_filepath));
-        std::filesystem::create_directories(dst_p.parent_path()); // make the folder tree if needed
-        std::filesystem::copy_file(src_p, dst_p, std::filesystem::copy_options::overwrite_existing);
+        const auto dst_p = common_helpers::std_fs_path(dst_filepath);
+        common_helpers::create_dir(dst_p.parent_path()); // make the folder tree if needed
+        std::filesystem::copy_file(src_p, dst_p, std::filesystem::copy_options::overwrite_existing | std::filesystem::copy_options::copy_symlinks);
     } catch(...) {}
 }
 
