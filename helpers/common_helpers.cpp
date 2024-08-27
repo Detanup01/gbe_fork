@@ -1,17 +1,17 @@
 #include "common_helpers/common_helpers.hpp"
 #include "utfcpp/utf8.h"
-#include <fstream>
 #include <cwchar>
-#include <algorithm>
-#include <cctype>
 #include <random>
 #include <iterator>
+#include <system_error>
 
 // for gmtime_s()
 #define __STDC_WANT_LIB_EXT1__ 1
 #include <time.h>
+#include <utility>
 
 
+// class KillableWorker
 namespace common_helpers {
 
 KillableWorker::KillableWorker(
@@ -98,30 +98,41 @@ void KillableWorker::kill()
 
 }
 
-static bool create_dir_impl(const std::filesystem::path &dirpath)
+
+std::u8string_view common_helpers::filesystem_str(std::string_view str) noexcept
 {
-    if (std::filesystem::is_directory(dirpath))
-    {
+    return std::u8string_view(reinterpret_cast<const char8_t* const>(str.data()), str.size());
+}
+
+std::u8string common_helpers::filesystem_str(const std::string &str)
+{
+    return std::u8string(reinterpret_cast<const char8_t* const>(str.data()), str.size());
+}
+
+std::string_view common_helpers::u8str_to_str(std::u8string_view u8str) noexcept
+{
+    return std::string_view(reinterpret_cast<const char* const>(u8str.data()), u8str.size());
+}
+
+std::string common_helpers::u8str_to_str(const std::u8string &u8str)
+{
+    return std::string(reinterpret_cast<const char* const>(u8str.data()), u8str.size());
+}
+
+bool common_helpers::create_dir(const std::filesystem::path &dirpath)
+{
+    std::error_code err{};
+    if (std::filesystem::is_directory(dirpath, err)) {
         return true;
-    }
-    else if (std::filesystem::exists(dirpath)) // a file, we can't do anything
-    {
+    } else if (std::filesystem::exists(dirpath, err)) {// a file, we can't do anything
         return false;
     }
     
-    return std::filesystem::create_directories(dirpath);
-}
+    try {
+        return std::filesystem::create_directories(dirpath, err);
+    } catch (...) {}
 
-bool common_helpers::create_dir(std::string_view filepath)
-{
-    const auto parent(std::filesystem::u8path(filepath).parent_path());
-    return create_dir_impl(parent);
-}
-
-bool common_helpers::create_dir(std::wstring_view filepath)
-{
-    const auto parent(std::filesystem::path(filepath).parent_path());
-    return create_dir_impl(parent);
+    return false;
 }
 
 void common_helpers::write(std::ofstream &file, std::string_view data)
@@ -131,65 +142,6 @@ void common_helpers::write(std::ofstream &file, std::string_view data)
     }
 
     file << data << std::endl;
-}
-
-bool common_helpers::starts_with_i(std::string_view target, std::string_view query)
-{
-    if (target.size() < query.size()) {
-        return false;
-    }
-
-    return str_cmp_insensitive(target.substr(0, query.size()), query);
-}
-
-bool common_helpers::starts_with_i(std::wstring_view target, std::wstring_view query)
-{
-    if (target.size() < query.size()) {
-        return false;
-    }
-
-    return str_cmp_insensitive(target.substr(0, query.size()), query);
-}
-
-bool common_helpers::ends_with_i(std::string_view target, std::string_view query)
-{
-    if (target.size() < query.size()) {
-        return false;
-    }
-
-    const auto target_offset = target.length() - query.length();
-    return str_cmp_insensitive(target.substr(target_offset), query);
-}
-
-bool common_helpers::ends_with_i(std::wstring_view target, std::wstring_view query)
-{
-    if (target.size() < query.size()) {
-        return false;
-    }
-
-    const auto target_offset = target.length() - query.length();
-    return str_cmp_insensitive(target.substr(target_offset), query);
-}
-
-std::string common_helpers::string_strip(std::string_view str)
-{
-    static constexpr const char whitespaces[] = " \t\r\n";
-    
-    if (str.empty()) return {};
-
-    size_t start = str.find_first_not_of(whitespaces);
-    size_t end = str.find_last_not_of(whitespaces);
-    
-    if (start == std::string::npos) return {};
-
-    if (start == end) { // happens when string is 1 char
-        auto c = str[start];
-        for (auto c_white = whitespaces; *c_white; ++c_white) {
-            if (c == *c_white) return {};
-        }
-    }
-
-    return std::string(str.substr(start, end - start + 1));
 }
 
 std::string common_helpers::uint8_vector_to_hex_string(const std::vector<uint8_t> &v)
@@ -205,30 +157,6 @@ std::string common_helpers::uint8_vector_to_hex_string(const std::vector<uint8_t
     }
 
     return result;
-}
-
-bool common_helpers::str_cmp_insensitive(std::string_view str1, std::string_view str2)
-{
-    if (str1.size() != str2.size()) return false;
-
-    return std::equal(str1.begin(), str1.end(), str2.begin(), [](const char c1, const char c2){
-        return std::toupper(c1) == std::toupper(c2);
-    });
-}
-
-bool common_helpers::str_cmp_insensitive(std::wstring_view str1, std::wstring_view str2)
-{
-    if (str1.size() != str2.size()) return false;
-
-    return std::equal(str1.begin(), str1.end(), str2.begin(), [](const wchar_t c1, const wchar_t c2){
-        return std::toupper(c1) == std::toupper(c2);
-    });
-}
-
-std::string common_helpers::ascii_to_lowercase(std::string data) {
-    std::transform(data.begin(), data.end(), data.begin(),
-        [](char c){ return std::tolower(c); });
-    return data;
 }
 
 void common_helpers::thisThreadYieldFor(std::chrono::microseconds u)
@@ -255,157 +183,87 @@ void common_helpers::consume_bom(std::ifstream &input)
     }
 }
 
-std::string common_helpers::to_lower(std::string_view str)
-{
-    if (str.empty()) return {};
-    
-    std::string _str(str.size(), '\0');
-    std::transform(str.begin(), str.end(), _str.begin(), [](char c) { return std::tolower(c); });
-    return _str;
-}
-
-std::wstring common_helpers::to_lower(std::wstring_view wstr)
-{
-    if (wstr.empty()) return {};
-    
-    std::wstring _wstr(wstr.size(), L'\0');
-    std::transform(wstr.begin(), wstr.end(), _wstr.begin(), [](wchar_t c) { return std::tolower(c); });
-    return _wstr;
-}
-
-std::string common_helpers::to_upper(std::string_view str)
-{
-    if (str.empty()) return {};
-
-    std::string _str(str.size(), '\0');
-    std::transform(str.begin(), str.end(), _str.begin(), [](char c) { return std::toupper(c); });
-    return _str;
-}
-
-std::wstring common_helpers::to_upper(std::wstring_view wstr)
-{
-    if (wstr.empty()) return {};
-    
-    std::wstring _wstr(wstr.size(), L'\0');
-    std::transform(wstr.begin(), wstr.end(), _wstr.begin(), [](wchar_t c) { return std::toupper(c); });
-    return _wstr;
-}
-
-static std::filesystem::path to_absolute_impl(const std::filesystem::path &path, const std::filesystem::path &base)
+std::filesystem::path common_helpers::to_absolute(const std::filesystem::path &path, const std::filesystem::path &base)
 {
     if (path.is_absolute()) {
         return path;
     }
 
-    return std::filesystem::absolute(base / path);
+    try {
+        std::error_code err{};
+        return std::filesystem::absolute(base / path, err);
+    } catch (...) {}
+    
+    return {};
 }
 
-std::string common_helpers::to_absolute(std::string_view path, std::string_view base)
+std::filesystem::path common_helpers::to_canonical(const std::filesystem::path &path)
 {
-    if (path.empty()) return {};
-    auto path_abs = to_absolute_impl(
-        std::filesystem::u8path(path),
-        base.empty() ? std::filesystem::current_path() : std::filesystem::u8path(base)
-    );
-    return path_abs.u8string();
-}
+    try {
+        std::error_code err{};
+        return std::filesystem::canonical(path, err);
+    } catch (...) {}
 
-std::wstring common_helpers::to_absolute(std::wstring_view path, std::wstring_view base)
-{
-    if (path.empty()) return {};
-    auto path_abs = to_absolute_impl(
-        std::filesystem::path(path),
-        base.empty() ? std::filesystem::current_path() : std::filesystem::path(base)
-    );
-    return path_abs.wstring();
+    return {};
 }
 
 bool common_helpers::file_exist(const std::filesystem::path &filepath)
 {
-    if (std::filesystem::is_directory(filepath)) {
+    std::error_code err{};
+    if (std::filesystem::is_directory(filepath, err)) {
         return false;
-    } else if (std::filesystem::exists(filepath)) {
+    } else if (std::filesystem::exists(filepath, err)) {
         return true;
     }
     
     return false;
-}
-
-bool common_helpers::file_exist(const std::string &filepath)
-{
-    if (filepath.empty()) return false;
-    return file_exist(std::filesystem::u8path(filepath));
-}
-
-bool common_helpers::file_exist(const std::wstring &filepath)
-{
-    if (filepath.empty()) return false;
-    return file_exist(std::filesystem::path(filepath));
 }
 
 bool common_helpers::file_size(const std::filesystem::path &filepath, size_t &size)
 {
     if (common_helpers::file_exist(filepath)) {
-        size = static_cast<size_t>(std::filesystem::file_size(filepath));
+        std::error_code err{};
+        size = static_cast<size_t>(std::filesystem::file_size(filepath, err));
         return true;
     }
+    
+    size = 0;
     return false;
-}
-
-bool common_helpers::file_size(const std::string &filepath, size_t &size)
-{
-    return file_size(std::filesystem::u8path(filepath), size);
-}
-
-bool common_helpers::file_size(const std::wstring &filepath, size_t &size)
-{
-    return file_size(std::filesystem::path(filepath), size);
 }
 
 bool common_helpers::dir_exist(const std::filesystem::path &dirpath)
 {
-    if (std::filesystem::is_directory(dirpath)) {
+    std::error_code err{};
+    if (std::filesystem::is_directory(dirpath, err)) {
         return true;
     }
     
     return false;
 }
 
-bool common_helpers::dir_exist(const std::string &dirpath)
-{
-    if (dirpath.empty()) return false;
-    return dir_exist(std::filesystem::u8path(dirpath));
-}
-
-bool common_helpers::dir_exist(const std::wstring &dirpath)
-{
-    if (dirpath.empty()) return false;
-    return dir_exist(std::filesystem::path(dirpath));
-}
-
 bool common_helpers::remove_file(const std::filesystem::path &filepath)
 {
-    if (!std::filesystem::exists(filepath)) {
+    std::error_code err{};
+    if (!std::filesystem::exists(filepath, err)) {
         return true;
     }
 
-    if (std::filesystem::is_directory(filepath)) {
+    if (std::filesystem::is_directory(filepath, err)) {
         return false;
     }
 
-    return std::filesystem::remove(filepath);
+    return std::filesystem::remove(filepath, err);
 }
 
-bool common_helpers::remove_file(const std::string &filepath)
+std::string common_helpers::get_current_dir()
 {
-    return remove_file(std::filesystem::u8path(filepath));
-}
+    try {
+        std::error_code err{};
+        return u8str_to_str(std::filesystem::current_path(err).u8string());
+    } catch (...) {}
 
-bool common_helpers::remove_file(const std::wstring &filepath)
-{
-    return remove_file(std::filesystem::path(filepath));
+    return {};
 }
-
 
 size_t common_helpers::rand_number(size_t max)
 {
@@ -444,7 +302,6 @@ std::string common_helpers::get_utc_time()
     return time_str;
 }
 
-
 std::wstring common_helpers::to_wstr(std::string_view str)
 {
     // test a path like this: "C:\test\命定奇谭ğğğğğÜÜÜÜ"
@@ -478,30 +335,17 @@ std::string common_helpers::to_str(std::wstring_view wstr)
     return {};
 }
 
-std::string common_helpers::str_replace_all(std::string_view source, std::string_view substr, std::string_view replace)
+std::fstream common_helpers::open_fstream(const std::filesystem::path &filepath, std::ios_base::openmode mode)
 {
-    if (source.empty() || substr.empty()) return std::string(source);
+    return std::fstream( filepath, mode );
+}
 
-    std::string out{};
-    out.reserve(source.size() / 4); // out could be bigger or smaller than source, start small
+std::ifstream common_helpers::open_fread(const std::filesystem::path &filepath, std::ios_base::openmode mode)
+{
+    return std::ifstream( filepath, mode );
+}
 
-    size_t start_offset = 0;
-    auto f_idx = source.find(substr);
-    while (std::string::npos != f_idx) {
-        // copy the chars before the match
-        auto chars_count_until_match = f_idx - start_offset;
-        out.append(source, start_offset, chars_count_until_match);
-        // copy the replace str
-        out.append(replace);
-
-        // adjust the start offset to point at the char after this match
-        start_offset = f_idx + substr.size();
-        // search for next match
-        f_idx = source.find(substr, start_offset);
-    }
-
-    // copy last remaining part
-    out.append(source, start_offset, std::string::npos);
-
-    return out;
+std::ofstream common_helpers::open_fwrite(const std::filesystem::path &filepath, std::ios_base::openmode mode)
+{
+    return std::ofstream( filepath, mode );
 }
