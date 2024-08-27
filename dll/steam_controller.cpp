@@ -573,7 +573,7 @@ int Steam_Controller::GetDigitalActionOrigins( ControllerHandle_t controllerHand
     EInputActionOrigin origins[STEAM_CONTROLLER_MAX_ORIGINS];
     int ret = GetDigitalActionOrigins(controllerHandle, actionSetHandle, digitalActionHandle, origins );
     for (int i = 0; i < ret; ++i) {
-        originsOut[i] = (EControllerActionOrigin)(origins[i] - (k_EInputActionOrigin_XBox360_A - k_EControllerActionOrigin_XBox360_A));
+        originsOut[i] = (EControllerActionOrigin)(origins[i] - ((long)k_EInputActionOrigin_XBox360_A - (long)k_EControllerActionOrigin_XBox360_A));
     }
 
     return ret;
@@ -767,7 +767,7 @@ int Steam_Controller::GetAnalogActionOrigins( ControllerHandle_t controllerHandl
     EInputActionOrigin origins[STEAM_CONTROLLER_MAX_ORIGINS];
     int ret = GetAnalogActionOrigins(controllerHandle, actionSetHandle, analogActionHandle, origins );
     for (int i = 0; i < ret; ++i) {
-        originsOut[i] = (EControllerActionOrigin)(origins[i] - (k_EInputActionOrigin_XBox360_A - k_EControllerActionOrigin_XBox360_A));
+        originsOut[i] = (EControllerActionOrigin)(origins[i] - ((long)k_EInputActionOrigin_XBox360_A - (long)k_EControllerActionOrigin_XBox360_A));
     }
 
     return ret;
