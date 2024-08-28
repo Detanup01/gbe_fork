@@ -60,6 +60,28 @@ premake.override(premake.tools.gcc, "getlinks", function(originalFn, cfg, system
     return new_result
 end)
 
+-- force c++ dialect "C++latest" on GCC/Clang to use newer/unsupported versions by premake, to be used with cppdialect()
+-- inside this function change the local variable "desired_cpp_lang"
+-- https://github.com/premake/premake-core/blob/9c9b6fc4ca1937ce2ec2e40621a9bb273306906d/src/tools/gcc.lua#L248-L254
+premake.override(premake.tools.gcc, "getcxxflags", function(originalFn, cfg)
+    -- change this flag to anything mentioned here: https://gcc.gnu.org/projects/cxx-status.html
+    local desired_cpp_lang = '-std=c++2b'
+
+    local flag_to_change = '-std='
+    -- we have to call the original func first, let it do the job, and later chage its output
+    -- because the original func compares the cppdialect value with some hardcoded ones and ["C++latest"] = "-std=c++20"
+    local ret = originalFn(cfg)
+    if cfg['cppdialect'] == 'C++latest' then
+        for idx, val in ipairs(ret) do -- change the output of the original func
+            if val and string.sub(val, 1, #flag_to_change) == flag_to_change then
+                ret[idx] = desired_cpp_lang
+            end
+        end
+    end
+
+    return ret
+end)
+
 local function table_append(table_dest, table_src)
     local dest_start = #table_dest
     for idx = 1, #table_src do
@@ -479,7 +501,7 @@ filter {} -- reset the filter and remove all active keywords
 configurations { "debug", "release", }
 platforms { "x64", "x32", }
 language "C++"
-cppdialect "C++20"
+cppdialect "C++latest"
 cdialect "C17"
 filter { "system:not windows", "action:gmake*" , }
     cdialect("gnu17") -- gamepad.c relies on some linux-specific functions like strdup() and MAX_PATH
