@@ -1053,7 +1053,8 @@ static void try_parse_mods_file(class Settings *settings_client, Settings *setti
             PRINT_DEBUG("    workshop_item_url: '%s'", newMod.workshopItemURL.c_str());
             PRINT_DEBUG("    preview_url: '%s'", newMod.previewURL.c_str());
         } catch (std::exception& e) {
-            PRINT_DEBUG("MODLOADER ERROR: %s", e.what());
+            const char *errorMessage = e.what();
+            PRINT_DEBUG("MODLOADER ERROR: %s", errorMessage);
         }
     }
 }

@@ -813,7 +813,8 @@ bool Local_Storage::load_json(const std::string &full_path, nlohmann::json& json
             PRINT_DEBUG("Loaded json '%s' (%zu items)", full_path.c_str(), json.size());
             return true;
         } catch (const std::exception& e) {
-            PRINT_DEBUG("Error while parsing '%s' json error: %s", full_path.c_str(), e.what());
+            const char *errorMessage = e.what();
+            PRINT_DEBUG("Error while parsing '%s' json error: %s", full_path.c_str(), errorMessage);
         }
     } else {
         PRINT_DEBUG("Couldn't open file '%s' to read json", full_path.c_str());
