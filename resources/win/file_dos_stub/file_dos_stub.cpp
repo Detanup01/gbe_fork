@@ -1,9 +1,9 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
-#include <filesystem>
 
 #include "pe_helpers/pe_helpers.hpp"
+#include "common_helpers/common_helpers.hpp"
 
 static size_t get_file_size(std::fstream &file)
 {
@@ -58,7 +58,7 @@ int main(int argc, char* *argv)
 
     for (size_t i = 1; i < (size_t)argc; ++i) {
         auto arg = argv[i];
-        std::fstream file(std::filesystem::u8path(arg), std::ios::in | std::ios::out | std::ios::binary);
+        std::fstream file( common_helpers::open_fstream(arg, std::ios::in | std::ios::out | std::ios::binary ) );
         if (!file.is_open()) {
             std::cerr << "Failed to open file: '" << arg << "'" << std::endl;
             return 1;

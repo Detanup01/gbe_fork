@@ -2,7 +2,9 @@
 #include <string>
 #include <fstream>
 #include <iostream>
-#include <filesystem>
+
+#include "common_helpers/common_helpers.hpp"
+
 
 // these are defined in dll.cpp at the top like this:
 // static char old_xxx[128] = ...
@@ -68,7 +70,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    std::ifstream steam_api_file(std::filesystem::u8path(argv[1]), std::ios::binary);
+    std::ifstream steam_api_file( common_helpers::open_fread(argv[1], std::ios::in | std::ios::binary) );
     if (!steam_api_file)
     {
         std::cerr << "Error opening file: " << argv[1] << std::endl;
@@ -85,7 +87,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    std::ofstream out_file("steam_interfaces.txt");
+    std::ofstream out_file(common_helpers::open_fwrite("steam_interfaces.txt"));
     if (!out_file)
     {
         std::cerr << "Error opening output file" << std::endl;

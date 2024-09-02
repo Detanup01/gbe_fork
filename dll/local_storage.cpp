@@ -38,6 +38,9 @@
 #define STB_IMAGE_RESIZE_STATIC
 #include "stb/stb_image_resize2.h"
 
+#include <filesystem>
+
+
 struct File_Data {
     std::string name{};
 };
@@ -578,8 +581,7 @@ int Local_Storage::store_file_data(std::string folder, std::string file, const c
     }
 
     create_directory(folder + file_folder);
-    std::ofstream myfile;
-    myfile.open(std::filesystem::u8path(folder + file), std::ios::binary | std::ios::out);
+    std::ofstream myfile(common_helpers::open_fwrite(folder + file, std::ios::out | std::ios::binary));
     if (!myfile.is_open()) return -1;
     myfile.write(data, length);
     int position = static_cast<int>(myfile.tellp());
@@ -622,13 +624,14 @@ std::vector<std::string> Local_Storage::get_folders_path(std::string path)
     std::vector<std::string> output{};
     try
     {
-        const auto path_p(std::filesystem::u8path(path));
+        const auto path_p(common_helpers::std_fs_path(path));
         if (!common_helpers::dir_exist(path_p)) return output;
 
         for (const auto &dir_entry :
             std::filesystem::directory_iterator(path_p, std::filesystem::directory_options::follow_directory_symlink)) {
-            if (std::filesystem::is_directory(dir_entry)) {
-                output.push_back(dir_entry.path().filename().u8string());
+            if (common_helpers::dir_exist(dir_entry.path())) {
+                auto filename = common_helpers::u8str_to_str( dir_entry.path().filename().u8string() );
+                output.emplace_back(filename);
             }
         }
     } catch(...) { }
@@ -662,8 +665,7 @@ int Local_Storage::store_data_settings(std::string file, const char *data, unsig
 
 int Local_Storage::get_file_data(const std::string &full_path, char *data, unsigned int max_length, unsigned int offset)
 {
-    std::ifstream myfile{};
-    myfile.open(std::filesystem::u8path(full_path), std::ios::binary | std::ios::in);
+    std::ifstream myfile( common_helpers::open_fread(full_path, std::ios::in | std::ios::binary) );
     if (!myfile.is_open()) return -1;
 
     myfile.seekg (offset, std::ios::beg);
@@ -809,12 +811,14 @@ bool Local_Storage::update_save_filenames(std::string folder)
 
 bool Local_Storage::load_json(const std::string &full_path, nlohmann::json& json)
 {
-    std::ifstream inventory_file(std::filesystem::u8path(full_path), std::ios::in | std::ios::binary);
+    std::ifstream inventory_file(common_helpers::open_fread(full_path, std::ios::in | std::ios::binary));
     // If there is a file and we opened it
     if (inventory_file) {
         try {
             json = nlohmann::json::parse(inventory_file);
             PRINT_DEBUG("Loaded json '%s' (%zu items)", full_path.c_str(), json.size());
+            
+            reset_LastError();
             return true;
         } catch (const std::exception& e) {
             const char *errorMessage = e.what();
@@ -849,9 +853,11 @@ bool Local_Storage::write_json_file(std::string folder, std::string const&file, 
 
     create_directory(inv_path);
 
-    std::ofstream inventory_file(std::filesystem::u8path(full_path), std::ios::trunc | std::ios::out | std::ios::binary);
+    std::ofstream inventory_file(common_helpers::open_fwrite(full_path, std::ios::out | std::ios::binary | std::ios::trunc));
     if (inventory_file) {
         inventory_file << std::setw(2) << json;
+        
+        reset_LastError();
         return true;
     }
 

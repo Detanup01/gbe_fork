@@ -194,7 +194,7 @@ void Steam_HTTP::online_http_request(Steam_Http_Request *request, SteamAPICall_t
     PRINT_DEBUG("attempting to download from url: '%s', target filepath: '%s'",
         request->url.c_str(), request->target_filepath.c_str());
 
-    const auto send_callresult = [=]() -> void {
+    const auto send_callresult = [=, this]() -> void {
         struct HTTPRequestCompleted_t data{};
         data.m_hRequest = request->handle;
         data.m_ulContextValue = request->context_value;

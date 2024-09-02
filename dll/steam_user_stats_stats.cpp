@@ -28,7 +28,7 @@ bool Steam_User_Stats::clear_stats_internal()
     bool notify_server = false;
     
     for (const auto &stat : settings->getStats()) {
-        std::string stat_name(common_helpers::ascii_to_lowercase(stat.first));
+        std::string stat_name(common_helpers::to_lower(stat.first));
 
         switch (stat.second.type)
         {
@@ -79,7 +79,7 @@ Steam_User_Stats::InternalSetResult<int32> Steam_User_Stats::set_stat_internal( 
     Steam_User_Stats::InternalSetResult<int32> result{};
 
     if (!pchName) return result;
-    std::string stat_name(common_helpers::ascii_to_lowercase(pchName));
+    std::string stat_name(common_helpers::to_lower(pchName));
 
     const auto &stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
@@ -152,7 +152,7 @@ Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo
     Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo::Stat_Type, float>> result{};
 
     if (!pchName) return result;
-    std::string stat_name(common_helpers::ascii_to_lowercase(pchName));
+    std::string stat_name(common_helpers::to_lower(pchName));
 
     const auto &stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
@@ -226,7 +226,7 @@ Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo
     Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo::Stat_Type, float>> result{};
 
     if (!pchName) return result;
-    std::string stat_name(common_helpers::ascii_to_lowercase(pchName));
+    std::string stat_name(common_helpers::to_lower(pchName));
 
     const auto &stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
@@ -305,7 +305,7 @@ bool Steam_User_Stats::GetStat( const char *pchName, int32 *pData )
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName) return false;
-    std::string stat_name = common_helpers::ascii_to_lowercase(pchName);
+    std::string stat_name = common_helpers::to_lower(pchName);
 
     const auto &stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
@@ -344,7 +344,7 @@ bool Steam_User_Stats::GetStat( const char *pchName, float *pData )
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchName) return false;
-    std::string stat_name = common_helpers::ascii_to_lowercase(pchName);
+    std::string stat_name = common_helpers::to_lower(pchName);
 
     const auto &stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
@@ -531,7 +531,7 @@ bool Steam_User_Stats::ResetAllStats( bool bAchievementsToo )
     clear_stats_internal(); // this will save stats to disk if necessary
     if (!settings->disable_sharing_stats_with_gameserver) {
         for (const auto &stat : settings->getStats()) {
-            std::string stat_name(common_helpers::ascii_to_lowercase(stat.first));
+            std::string stat_name(common_helpers::to_lower(stat.first));
 
             auto &new_stat = (*pending_server_updates.mutable_user_stats())[stat_name];
             new_stat.set_stat_type(stat.second.type);
