@@ -582,7 +582,8 @@ bool Steam_User_Stats::ResetAllStats( bool bAchievementsToo )
                 // this won't actually trigger a notification, just updates the data
                 overlay->AddAchievementNotification(name, item, false);
             } catch(const std::exception& e) {
-                PRINT_DEBUG("ERROR: %s", e.what());
+                const char *errorMessage = e.what();
+                PRINT_DEBUG("ERROR: %s", errorMessage);
             }
         }
         if (needs_disk_write) save_achievements();
