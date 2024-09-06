@@ -104,7 +104,7 @@ jobs:
 
   emu-linux-prep:
     needs: ["emu-linux-all"]
-    runs-on: "ubuntu-24.04"
+    runs-on: "ubuntu-20.04"
     steps:
       # we need branch because it has package scripts
       - name: "Checkout branch"
@@ -253,7 +253,7 @@ jobs:
 
   gen_emu_script-linux-prep:
     needs: ["gen_emu_script-linux"]
-    runs-on: "ubuntu-24.04"
+    runs-on: "ubuntu-20.04"
     steps:
       # we need branch because it has package scripts
       - name: "Checkout branch"
@@ -365,7 +365,7 @@ jobs:
 
   migrate_gse_script-linux-prep:
     needs: ["migrate_gse_script-linux"]
-    runs-on: "ubuntu-24.04"
+    runs-on: "ubuntu-20.04"
     steps:
       # we need branch because it has package scripts
       - name: "Checkout branch"
