@@ -66,6 +66,18 @@ int main() {
 	
     int friend_count = SteamFriends()->GetFriendCount(k_EFriendFlagAll);
     
+    /*
+    std::cout << "People on the network: " << friend_count << "\n";
+    for (int i = 0; i < friend_count; ++i) {
+        CSteamID id = SteamFriends()->GetFriendByIndex(i, k_EFriendFlagAll);
+        const char *name = SteamFriends()->GetFriendPersonaName(id);
+        
+        FriendGameInfo_t friend_info = {};
+        SteamFriends()->GetFriendGamePlayed(id, &friend_info);
+        std::cout << name << " is playing: " << friend_info.m_gameID.AppID() << std::endl;
+    }
+    */
+    
 	title();
 	
     std::vector<std::pair<std::string, uint32>> arguments;
