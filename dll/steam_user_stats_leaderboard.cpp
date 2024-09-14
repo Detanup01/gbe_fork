@@ -186,7 +186,7 @@ unsigned int Steam_User_Stats::cache_leaderboard_ifneeded(const std::string &nam
 
     // create a new entry in-memory and try reading the entries from disk
     struct Steam_Leaderboard new_board{};
-    new_board.name = common_helpers::ascii_to_lowercase(name);
+    new_board.name = name;
     new_board.sort_method = eLeaderboardSortMethod;
     new_board.display_type = eLeaderboardDisplayType;
     new_board.entries = load_leaderboard_entries(name);
