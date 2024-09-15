@@ -29,6 +29,8 @@ keymap_digital = {
 }
 
 def add_input_bindings(group, bindings, force_binding=None, keymap=keymap_digital):
+    if "inputs" not in group:
+        return bindings
     for i in group["inputs"]:
         for act in group["inputs"][i]:
             for fp in group["inputs"][i][act]:
