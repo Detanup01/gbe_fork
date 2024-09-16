@@ -301,8 +301,9 @@ public:
 	/// Returns basic information about the high-level state of the connection.
 	virtual bool GetConnectionInfo( HSteamNetConnection hConn, SteamNetConnectionInfo_t *pInfo ) = 0;
 
-	// based on reversing the vftable returned from original steamclient64.dll
-	virtual bool GetConnectionRealTimeStatus_old( HSteamNetConnection hConn, SteamNetConnectionRealTimeStatus_t *pStatus ) = 0;
+	/// Returns a small set of information about the real-time state of the connection
+	/// Returns false if the connection handle is invalid, or the connection has ended.
+	virtual bool GetQuickConnectionStatus( HSteamNetConnection hConn, SteamNetworkingQuickConnectionStatus *pStats ) = 0;
 
 	/// Returns detailed connection stats in text format.  Useful
 	/// for dumping to a log, etc.

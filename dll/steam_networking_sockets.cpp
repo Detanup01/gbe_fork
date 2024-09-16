@@ -950,24 +950,6 @@ EResult Steam_Networking_Sockets::GetConnectionRealTimeStatus( HSteamNetConnecti
     return k_EResultOK;
 }
 
-// based on reversing the vftable returned from original steamclient64.dll
-bool Steam_Networking_Sockets::GetConnectionRealTimeStatus_old( HSteamNetConnection hConn, SteamNetConnectionRealTimeStatus_t *pStatus )
-{
-    PRINT_DEBUG("undocumented API, interface v10-11");
-    /*
-    ...
-    xor     r9d, r9d                                 // int nLanes = 0
-    mov     qword ptr ss:[rsp+0x20], 0x0             // SteamNetConnectionRealTimeLaneStatus_t *pLanes = nullptr
-    ...
-    call    qword ptr ds:[rax+0x80]                  // call GetConnectionRealTimeStatus(hConn, pStatus, nLanes, pLanes)
-    test    eax, eax
-    setne   al                                       if (eax !=0) { al=1 } else { al=0 }
-    ...
-    ret     
-    */
-    return GetConnectionRealTimeStatus(hConn, pStatus, 0, nullptr) != EResult::k_EResultNone;
-}
-
 /// Fetch the next available message(s) from the socket, if any.
 /// Returns the number of messages returned into your array, up to nMaxMessages.
 /// If the connection handle is invalid, -1 is returned.
@@ -1022,10 +1004,19 @@ bool Steam_Networking_Sockets::GetConnectionInfo( HSteamNetConnection hConn, Ste
 bool Steam_Networking_Sockets::GetQuickConnectionStatus( HSteamNetConnection hConn, SteamNetworkingQuickConnectionStatus *pStats )
 {
     PRINT_DEBUG_ENTRY();
-    if (!pStats)
-        return false;
-
-    return GetConnectionRealTimeStatus(hConn, pStats, 0, NULL) == k_EResultOK;
+    // based on reversing the vftable returned from original steamclient64.dll
+    /*
+    ...
+    xor     r9d, r9d                                 // int nLanes = 0
+    mov     qword ptr ss:[rsp+0x20], 0x0             // SteamNetConnectionRealTimeLaneStatus_t *pLanes = nullptr
+    ...
+    call    qword ptr ds:[rax+0x80]                  // call GetConnectionRealTimeStatus(hConn, pStatus, nLanes, pLanes)
+    test    eax, eax
+    setne   al                                       if (eax !=0) { al=1 } else { al=0 }
+    ...
+    ret     
+    */
+    return GetConnectionRealTimeStatus(hConn, pStats, 0, NULL) != k_EResultNone;
 }
 
 
