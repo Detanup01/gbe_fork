@@ -490,9 +490,6 @@ public:
     /// - k_EResultInvalidParam - nLanes is bad
     EResult GetConnectionRealTimeStatus( HSteamNetConnection hConn, SteamNetConnectionRealTimeStatus_t *pStatus, int nLanes, SteamNetConnectionRealTimeLaneStatus_t *pLanes );
 
-    // based on reversing the vftable returned from original steamclient64.dll
-    bool GetConnectionRealTimeStatus_old( HSteamNetConnection hConn, SteamNetConnectionRealTimeStatus_t *pStatus );
-
     /// Fetch the next available message(s) from the socket, if any.
     /// Returns the number of messages returned into your array, up to nMaxMessages.
     /// If the connection handle is invalid, -1 is returned.
