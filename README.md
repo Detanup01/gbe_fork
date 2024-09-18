@@ -114,7 +114,7 @@ You can also find instructions here in [README.release.md](./post_build/README.r
 
 ### For Linux:
 
-* Ubuntu 22.04 LTS: https://ubuntu.com/download/desktop
+* Ubuntu 20.04 LTS: https://ubuntu.com/download/desktop
 * Ubuntu required packages:
   ```shell
   sudo apt update -y

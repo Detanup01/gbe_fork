@@ -295,23 +295,73 @@ static bool restore_win32_apis()
     return DetourTransactionCommit() == NO_ERROR;
 }
 
-bool stubdrm::patch()
+static std::vector<uint8_t> get_pe_header_disk()
+{
+    const std::string filepath = pe_helpers::get_current_exe_path() + pe_helpers::get_current_exe_name();
+    try {
+        std::ifstream file(std::filesystem::u8path(filepath), std::ios::in | std::ios::binary);
+        if (!file) return {};
+
+        // 2MB is enough
+        std::vector<uint8_t> data(2 * 1024 * 1024, 0);
+        file.read((char *)&data[0], data.size());
+        file.close();
+
+        return data;
+    } catch(...) { }
+
+    return {};
+}
+
+static bool calc_bind_section_boundaries()
 {
     auto bind_section = pe_helpers::get_section_header_with_name(((HMODULE)exe_addr_base), ".bind");
-    if (!bind_section) return false; // we don't have .bind section
+    if (bind_section) {
+        bind_addr_base = exe_addr_base + bind_section->VirtualAddress;
+        MEMORY_BASIC_INFORMATION mbi{};
+        if (VirtualQuery((LPVOID)bind_addr_base, &mbi, sizeof(mbi)) && mbi.RegionSize > 0) {
+            bind_addr_end = bind_addr_base + mbi.RegionSize;
+        } else if (bind_section->Misc.VirtualSize > 0) {
+            bind_addr_end = bind_addr_base + bind_section->Misc.VirtualSize;
+        } else {
+            return false;
+        }
+        return true;
+    }
+    
+    // we don't *seem* to have .bind section *in memory*
+    // appid 1732190 changes the PIMAGE_OPTIONAL_HEADER->SizeOfHeaders to a size less than the actual,
+    // subtracting the size of the last section, i.e ".bind" section (original size = 0x600 >>> decreased to 0x400)
+    // that way whenever the .exe is loaded in memory, the Windows loader will ignore populating the PE header with the info
+    // of that section *in memory* since it is not taken into consideration, but the PE header *on disk* still contains the info
+    // 
+    // also the PIMAGE_FILE_HEADER->NumberOfSections is kept intact, otherwise the PIMAGE_OPTIONAL_HEADER->AddressOfEntryPoint
+    // would be pointing at a non-existent section and the .exe won't work
+    auto disk_header = get_pe_header_disk();
+    if (disk_header.empty()) return false;
+
+    bind_section = pe_helpers::get_section_header_with_name(((HMODULE)&disk_header[0]), ".bind");
+    if (!bind_section) return false;
 
     bind_addr_base = exe_addr_base + bind_section->VirtualAddress;
-    MEMORY_BASIC_INFORMATION mbi{};
-    if (!VirtualQuery((LPVOID)bind_addr_base, &mbi, sizeof(mbi))) return false;
+    if (!bind_section->Misc.VirtualSize) return false;
 
-    bind_addr_end = bind_addr_base + mbi.RegionSize;
+    bind_addr_end = bind_addr_base + bind_section->Misc.VirtualSize;
+
+    return true;
+}
+
+bool stubdrm::patch()
+{
+    if (!calc_bind_section_boundaries()) return false;
+    
     auto addrOfEntry = exe_addr_base + pe_helpers::get_optional_header((HMODULE)exe_addr_base)->AddressOfEntryPoint;
     if (addrOfEntry < bind_addr_base || addrOfEntry >= bind_addr_end) return false; // entry addr is not inside .bind
 
     for (const auto &patt : snr_patts) {
         auto mem = pe_helpers::search_memory(
             bind_addr_base,
-            bind_section->Misc.VirtualSize,
+            static_cast<size_t>(bind_addr_end - bind_addr_base),
             patt.detection_patt);
         
         if (mem) {
