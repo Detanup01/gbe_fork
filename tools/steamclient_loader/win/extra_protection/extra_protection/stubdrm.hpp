@@ -1,11 +1,9 @@
 #pragma once
 
-#include <string>
-#include <vector>
-
 namespace stubdrm
 {
     bool patch();
-    
     bool restore();
+
+    void set_cleanup_cb(void (*fn)());
 }
