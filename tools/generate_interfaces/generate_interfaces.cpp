@@ -7,36 +7,58 @@
 // these are defined in dll.cpp at the top like this:
 // static char old_xxx[128] = ...
 const static std::vector<std::string> interface_patterns = {
-    R"(SteamClient\d+)",
-
-    R"(SteamGameServerStats\d+)",
-    R"(SteamGameServer\d+)",
-
-    R"(SteamMatchMakingServers\d+)",
-    R"(SteamMatchMaking\d+)",
-
-    R"(SteamUser\d+)",
-    R"(SteamFriends\d+)",
-    R"(SteamUtils\d+)",
-    R"(STEAMUSERSTATS_INTERFACE_VERSION\d+)",
     R"(STEAMAPPS_INTERFACE_VERSION\d+)",
-    R"(SteamNetworking\d+)",
-    R"(STEAMREMOTESTORAGE_INTERFACE_VERSION\d+)",
-    R"(STEAMSCREENSHOTS_INTERFACE_VERSION\d+)",
-    R"(STEAMHTTP_INTERFACE_VERSION\d+)",
-    R"(STEAMUNIFIEDMESSAGES_INTERFACE_VERSION\d+)",
+    R"(STEAMAPPLIST_INTERFACE_VERSION\d+)",
+    R"(STEAMAPPTICKET_INTERFACE_VERSION\d+)",
+    R"(SteamClient\d+)",
 
     R"(STEAMCONTROLLER_INTERFACE_VERSION)",
     R"(SteamController\d+)",
 
-    R"(STEAMUGC_INTERFACE_VERSION\d+)",
-    R"(STEAMAPPLIST_INTERFACE_VERSION\d+)",
+    R"(SteamFriends\d+)",
+
+    R"(SteamGameServerStats\d+)",
+    R"(SteamGameCoordinator\d+)",
+    R"(SteamGameServer\d+)",
+
+    R"(STEAMHTMLSURFACE_INTERFACE_VERSION_\d+)",
+    R"(STEAMHTTP_INTERFACE_VERSION\d+)",
+
+    R"(SteamInput\d+)",
+    R"(STEAMINVENTORY_INTERFACE_V\d+)",
+
+    R"(SteamMatchMakingServers\d+)",
+    R"(SteamMatchMaking\d+)",
+    R"(SteamMatchGameSearch\d+)",
+
+    R"(SteamParties\d+)",
+
     R"(STEAMMUSIC_INTERFACE_VERSION\d+)",
     R"(STEAMMUSICREMOTE_INTERFACE_VERSION\d+)",
-    R"(STEAMHTMLSURFACE_INTERFACE_VERSION_\d+)",
-    R"(STEAMINVENTORY_INTERFACE_V\d+)",
+
+    R"(SteamNetworkingMessages\d+)",
+    R"(SteamNetworkingSockets\d+)",
+    R"(SteamNetworkingUtils\d+)",
+    R"(SteamNetworking\d+)",
+
+    R"(STEAMPARENTALSETTINGS_INTERFACE_VERSION\d+)",
+    R"(STEAMREMOTEPLAY_INTERFACE_VERSION\d+)",
+    R"(STEAMREMOTESTORAGE_INTERFACE_VERSION\d+)",
+    R"(STEAMSCREENSHOTS_INTERFACE_VERSION\d+)",
+
+    R"(STEAMTIMELINE_INTERFACE_V\d+)",
+    R"(STEAMUGC_INTERFACE_VERSION\d+)",
+
+    R"(SteamUser\d+)",
+    R"(STEAMUSERSTATS_INTERFACE_VERSION\d+)",
+
+    R"(SteamUtils\d+)",
+
     R"(STEAMVIDEO_INTERFACE_V\d+)",
-    R"(SteamMasterServerUpdater\d+)",
+   
+    R"(STEAMUNIFIEDMESSAGES_INTERFACE_VERSION\d+)",
+
+    R"(SteamMasterServerUpdater\d+)", 
 };
 
 unsigned int findinterface(
@@ -97,6 +119,7 @@ int main(int argc, char *argv[])
     for (const auto &patt : interface_patterns)
     {
         total_matches += findinterface(out_file, steam_api_contents, patt);
+        std::cout << "Searching for '" + patt + "'..." << std::endl;
     }
 
     out_file.close();
