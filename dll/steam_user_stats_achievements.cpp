@@ -100,7 +100,7 @@ int Steam_User_Stats::load_ach_icon(nlohmann::json &defined_ach, bool achieved)
     unsigned int file_size = file_size_(file_path);
     if (!file_size)
     {
-        file_path(Local_Storage::get_game_settings_path() + "achievement_images" + PATH_SEPARATOR + icon_filepath);
+        file_path = (Local_Storage::get_game_settings_path() + "achievement_images" + PATH_SEPARATOR + icon_filepath);
         file_size = file_size_(file_path);
         if (!file_size)
         {
