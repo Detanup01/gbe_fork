@@ -21,6 +21,7 @@
 #include "steam_api_common.h"
 
 // All of the interfaces
+#include "isteamappdisableupdate.h"
 #include "isteamclient.h"
 #include "isteamclient007.h"
 #include "isteamclient008.h"
