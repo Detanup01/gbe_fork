@@ -18,6 +18,19 @@
 #include "dll/steam_client.h"
 
 
+// retrieves the ISteamAppDisableUpdate interface associated with the handle
+ISteamAppDisableUpdate *Steam_Client::GetISteamAppDisableUpdate( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
+{
+    PRINT_DEBUG("%s", pchVersion);
+    if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return nullptr;
+
+    if (strcmp(pchVersion, STEAMAPPDISABLEUPDATE_INTERFACE_VERSION) == 0) {
+        return reinterpret_cast<ISteamAppDisableUpdate *>(static_cast<ISteamAppDisableUpdate *>(steam_app_disable_update));
+    }
+
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+}
+
 // retrieves the ISteamTimeline interface associated with the handle
 ISteamTimeline *Steam_Client::GetISteamTimeline( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
@@ -422,6 +435,8 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
         return GetAppTicket(hSteamUser, hSteamPipe, pchVersion);
     } else if (strstr(pchVersion, "STEAMTIMELINE_INTERFACE") == pchVersion) {
         return GetISteamTimeline(hSteamUser, hSteamPipe, pchVersion);
+    } else if (strstr(pchVersion, "SteamAppDisableUpdate") == pchVersion) {
+        return GetISteamAppDisableUpdate(hSteamUser, hSteamPipe, pchVersion);
     }
     
     PRINT_DEBUG("No interface: %s", pchVersion);
