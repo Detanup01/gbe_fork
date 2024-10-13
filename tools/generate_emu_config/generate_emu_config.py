@@ -691,10 +691,10 @@ def main():
         sys.exit(1)
 
     client = SteamClient()
-    login_tmp_folder = os.path.join(get_exe_dir(RELATIVE_DIR), "login_temp")
-    if not os.path.exists(login_tmp_folder):
-        os.makedirs(login_tmp_folder)
-    client.set_credential_location(login_tmp_folder)
+    # login_tmp_folder = os.path.join(get_exe_dir(RELATIVE_DIR), "login_temp")
+    # if not os.path.exists(login_tmp_folder):
+    #     os.makedirs(login_tmp_folder)
+    # client.set_credential_location(login_tmp_folder)
 
     # first read the 'my_login.txt' file
     my_login_file = os.path.join(get_exe_dir(RELATIVE_DIR), "my_login.txt")
