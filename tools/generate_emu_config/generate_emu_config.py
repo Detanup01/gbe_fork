@@ -6,6 +6,7 @@ from external_components import (
 )
 from controller_config_generator import parse_controller_vdf
 from steam.client import SteamClient
+from steam.webauth import WebAuth
 from steam.client.cdn import CDNClient
 from steam.enums import common
 from steam.enums.common import EResult
@@ -724,44 +725,14 @@ def main():
             time.sleep(1000)
             result = client.anonymous_login()
             trials -= 1
-    elif (len(USERNAME) == 0 or len(PASSWORD) == 0):
-        client.cli_login()
     else:
-        result = client.login(USERNAME, password=PASSWORD)
-        auth_code, two_factor_code = None, None
-        while result in (
-            EResult.AccountLogonDenied, EResult.InvalidLoginAuthCode,
-            EResult.AccountLoginDeniedNeedTwoFactor, EResult.TwoFactorCodeMismatch,
-            EResult.TryAnotherCM, EResult.ServiceUnavailable,
-            EResult.InvalidPassword,
-            ):
-
-            if result == EResult.InvalidPassword:
-                print("invalid password, the password you set is wrong.")
-                exit(1)
-
-            elif result in (EResult.AccountLogonDenied, EResult.InvalidLoginAuthCode):
-                prompt = ("Enter email code: " if result == EResult.AccountLogonDenied else
-                            "Incorrect code. Enter email code: ")
-                auth_code, two_factor_code = input(prompt), None
-
-            elif result in (EResult.AccountLoginDeniedNeedTwoFactor, EResult.TwoFactorCodeMismatch):
-                prompt = ("Enter 2FA code: " if result == EResult.AccountLoginDeniedNeedTwoFactor else
-                            "Incorrect code. Enter 2FA code: ")
-                auth_code, two_factor_code = None, input(prompt)
-
-            elif result in (EResult.TryAnotherCM, EResult.ServiceUnavailable):
-                if prompt_for_unavailable and result == EResult.ServiceUnavailable:
-                    while True:
-                        answer = input("Steam is down. Keep retrying? [y/n]: ").lower()
-                        if answer in 'yn': break
-
-                    prompt_for_unavailable = False
-                    if answer == 'n': break
-
-                client.reconnect(maxdelay=15)
-
-            result = client.login(USERNAME, PASSWORD, None, auth_code, two_factor_code)
+        webauth = WebAuth()
+        if (len(USERNAME) == 0 or len(PASSWORD) == 0):
+            webauth_prompt_username = input("Steam Username: ")
+            webauth.cli_login(webauth_prompt_username)
+        else:
+            webauth.cli_login(USERNAME, PASSWORD)
+        client.login(webauth.username, access_token=webauth.refresh_token)
 
     # read and prepend top_owners_ids.txt
     top_owners_file = os.path.join(get_exe_dir(RELATIVE_DIR), "top_owners_ids.txt")
