@@ -727,11 +727,11 @@ def main():
             trials -= 1
     else:
         webauth = WebAuth()
-        if (len(USERNAME) == 0 or len(PASSWORD) == 0):
+        if (len(USERNAME) > 0 and len(PASSWORD) > 0):
+            webauth.cli_login(USERNAME, PASSWORD)
+        else:
             webauth_prompt_username = input("Steam Username: ")
             webauth.cli_login(webauth_prompt_username)
-        else:
-            webauth.cli_login(USERNAME, PASSWORD)
         client.login(webauth.username, access_token=webauth.refresh_token)
 
     # read and prepend top_owners_ids.txt
