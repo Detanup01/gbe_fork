@@ -110,7 +110,7 @@ static void get_broadcast_info(uint16 port)
                     number_broadcasts++;
 
                     if (number_broadcasts >= MAX_BROADCASTS) {
-                        return;
+                        break;
                     }
                 }
 
