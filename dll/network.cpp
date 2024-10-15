@@ -542,6 +542,8 @@ std::set<IP_PORT> Networking::resolve_ip(std::string dns)
         }
     }
 
+    if (result)
+        freeaddrinfo(result);
     return ips;
 }
 
