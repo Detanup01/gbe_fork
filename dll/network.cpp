@@ -110,7 +110,7 @@ static void get_broadcast_info(uint16 port)
                     number_broadcasts++;
 
                     if (number_broadcasts >= MAX_BROADCASTS) {
-                        return;
+                        break;
                     }
                 }
 
@@ -542,6 +542,8 @@ std::set<IP_PORT> Networking::resolve_ip(std::string dns)
         }
     }
 
+    if (result)
+        freeaddrinfo(result);
     return ips;
 }
 
