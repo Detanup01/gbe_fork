@@ -72,6 +72,7 @@ Steam_User_Stats::Steam_User_Stats(Settings *settings, class Networking *network
                 std::string stat_name = common_helpers::ascii_to_lowercase(static_cast<std::string const&>(it["progress"]["value"]["operand1"]));
                 trig.min_value = static_cast<std::string const&>(it["progress"]["min_val"]);
                 trig.max_value = static_cast<std::string const&>(it["progress"]["max_val"]);
+                trig.last_notified_progress = static_cast<std::string const&>(it["progress"]["min_val"]);
                 achievement_stat_trigger[stat_name].push_back(trig);
             } catch(...) {}
             
