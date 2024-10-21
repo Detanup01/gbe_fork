@@ -1,0 +1,4 @@
+release
+
+you are currently using the 'release' version of the emulator
+use 'gse_debug_switch.exe' if you want to use the 'debug' version

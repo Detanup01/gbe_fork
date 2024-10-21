@@ -3,7 +3,6 @@ import threading
 import time
 import requests
 
-
 def download_app_images(
     base_out_dir : str,
     appid : int,
@@ -12,8 +11,7 @@ def download_app_images(
     logo : str,
     logo_small : str):
 
-    icons_out_dir = os.path.join(base_out_dir, "images")
-    print(f"downloading common app images in: {icons_out_dir}")
+    icons_out_dir = os.path.join(base_out_dir, "steam_misc", "app_images")
 
     def downloader_thread(image_name : str, image_url : str):
         # try 3 times
@@ -23,7 +21,6 @@ def download_app_images(
                 if r.status_code == requests.codes.ok: # if download was successfull
                     with open(os.path.join(icons_out_dir, image_name), "wb") as f:
                         f.write(r.content)
-
                     break
             except Exception as ex:
                 pass
@@ -31,25 +28,130 @@ def download_app_images(
             time.sleep(0.1)
 
     app_images_names = [
-        r'capsule_184x69.jpg',
-        r'capsule_231x87.jpg',
-        r'capsule_231x87_alt_assets_0.jpg',
-        r'capsule_467x181.jpg',
-        r'capsule_616x353.jpg',
-        r'capsule_616x353_alt_assets_0.jpg',
-        r'library_600x900.jpg',
-        r'library_600x900_2x.jpg',
-        r'library_hero.jpg',
         r'broadcast_left_panel.jpg',
         r'broadcast_right_panel.jpg',
-        r'page.bg.jpg',
-        r'page_bg_raw.jpg',
-        r'page_bg_generated.jpg',
-        r'page_bg_generated_v6b.jpg',
+        r'capsule_231x87.jpg',
+        r'capsule_231x87_alt_assets_0.jpg',
+        r'capsule_231x87_alt_assets_1.jpg',
+        r'capsule_231x87_alt_assets_2.jpg',
+        r'capsule_231x87_alt_assets_3.jpg',
+        r'capsule_231x87_alt_assets_4.jpg',
+        r'capsule_231x87_alt_assets_5.jpg',
+        r'capsule_231x87_alt_assets_6.jpg',
+        r'capsule_231x87_alt_assets_7.jpg',
+        r'capsule_231x87_alt_assets_8.jpg',
+        r'capsule_231x87_alt_assets_9.jpg',
+        r'capsule_467x181.jpg',
+        r'capsule_467x181_alt_assets_0.jpg',
+        r'capsule_467x181_alt_assets_1.jpg',
+        r'capsule_467x181_alt_assets_2.jpg',
+        r'capsule_467x181_alt_assets_3.jpg',
+        r'capsule_467x181_alt_assets_4.jpg',
+        r'capsule_467x181_alt_assets_5.jpg',
+        r'capsule_467x181_alt_assets_6.jpg',
+        r'capsule_467x181_alt_assets_7.jpg',
+        r'capsule_467x181_alt_assets_8.jpg',
+        r'capsule_467x181_alt_assets_9.jpg',
+        r'capsule_616x353.jpg',
+        r'capsule_616x353_alt_assets_0.jpg',
+        r'capsule_616x353_alt_assets_1.jpg',
+        r'capsule_616x353_alt_assets_2.jpg',
+        r'capsule_616x353_alt_assets_3.jpg',
+        r'capsule_616x353_alt_assets_4.jpg',
+        r'capsule_616x353_alt_assets_5.jpg',
+        r'capsule_616x353_alt_assets_6.jpg',
+        r'capsule_616x353_alt_assets_7.jpg',
+        r'capsule_616x353_alt_assets_8.jpg',
+        r'capsule_616x353_alt_assets_9.jpg',
         r'header.jpg',
         r'header_alt_assets_0.jpg',
+        r'header_alt_assets_1.jpg',
+        r'header_alt_assets_2.jpg',
+        r'header_alt_assets_3.jpg',
+        r'header_alt_assets_4.jpg',
+        r'header_alt_assets_5.jpg',
+        r'header_alt_assets_6.jpg',
+        r'header_alt_assets_7.jpg',
+        r'header_alt_assets_8.jpg',
+        r'header_alt_assets_9.jpg',
         r'hero_capsule.jpg',
-        r'logo.png',
+        r'hero_capsule_alt_assets_0.jpg',
+        r'hero_capsule_alt_assets_1.jpg',
+        r'hero_capsule_alt_assets_2.jpg',
+        r'hero_capsule_alt_assets_3.jpg',
+        r'hero_capsule_alt_assets_4.jpg',
+        r'hero_capsule_alt_assets_5.jpg',
+        r'hero_capsule_alt_assets_6.jpg',
+        r'hero_capsule_alt_assets_7.jpg',
+        r'hero_capsule_alt_assets_8.jpg',
+        r'hero_capsule_alt_assets_9.jpg',
+        r'library_600x900.jpg',
+        r'library_600x900_alt_assets_0.jpg',
+        r'library_600x900_alt_assets_1.jpg',
+        r'library_600x900_alt_assets_2.jpg',
+        r'library_600x900_alt_assets_3.jpg',
+        r'library_600x900_alt_assets_4.jpg',
+        r'library_600x900_alt_assets_5.jpg',
+        r'library_600x900_alt_assets_6.jpg',
+        r'library_600x900_alt_assets_7.jpg',
+        r'library_600x900_alt_assets_8.jpg',
+        r'library_600x900_alt_assets_9.jpg',
+        r'library_600x900_2x.jpg',
+        r'library_600x900_2x_alt_assets_0.jpg',
+        r'library_600x900_2x_alt_assets_1.jpg',
+        r'library_600x900_2x_alt_assets_2.jpg',
+        r'library_600x900_2x_alt_assets_3.jpg',
+        r'library_600x900_2x_alt_assets_4.jpg',
+        r'library_600x900_2x_alt_assets_5.jpg',
+        r'library_600x900_2x_alt_assets_6.jpg',
+        r'library_600x900_2x_alt_assets_7.jpg',
+        r'library_600x900_2x_alt_assets_8.jpg',
+        r'library_600x900_2x_alt_assets_9.jpg',
+        r'library_hero.jpg',
+        r'library_hero_alt_assets_0.jpg',
+        r'library_hero_alt_assets_1.jpg',
+        r'library_hero_alt_assets_2.jpg',
+        r'library_hero_alt_assets_3.jpg',
+        r'library_hero_alt_assets_4.jpg',
+        r'library_hero_alt_assets_5.jpg',
+        r'library_hero_alt_assets_6.jpg',
+        r'library_hero_alt_assets_7.jpg',
+        r'library_hero_alt_assets_8.jpg',
+        r'library_hero_alt_assets_9.jpg',
+        r'page_bg_raw.jpg',
+        r'page_bg_raw_alt_assets_0.jpg',
+        r'page_bg_raw_alt_assets_1.jpg',
+        r'page_bg_raw_alt_assets_2.jpg',
+        r'page_bg_raw_alt_assets_3.jpg',
+        r'page_bg_raw_alt_assets_4.jpg',
+        r'page_bg_raw_alt_assets_5.jpg',
+        r'page_bg_raw_alt_assets_6.jpg',
+        r'page_bg_raw_alt_assets_7.jpg',
+        r'page_bg_raw_alt_assets_8.jpg',
+        r'page_bg_raw_alt_assets_9.jpg',
+        r'page_bg_generated.jpg',
+        r'page_bg_generated_alt_assets_0.jpg',
+        r'page_bg_generated_alt_assets_1.jpg',
+        r'page_bg_generated_alt_assets_2.jpg',
+        r'page_bg_generated_alt_assets_3.jpg',
+        r'page_bg_generated_alt_assets_4.jpg',
+        r'page_bg_generated_alt_assets_5.jpg',
+        r'page_bg_generated_alt_assets_6.jpg',
+        r'page_bg_generated_alt_assets_7.jpg',
+        r'page_bg_generated_alt_assets_8.jpg',
+        r'page_bg_generated_alt_assets_9.jpg',
+        r'page_bg_generated_v6b.jpg',
+        r'page_bg_generated_v6b_alt_assets_0.jpg',
+        r'page_bg_generated_v6b_alt_assets_1.jpg',
+        r'page_bg_generated_v6b_alt_assets_2.jpg',
+        r'page_bg_generated_v6b_alt_assets_3.jpg',
+        r'page_bg_generated_v6b_alt_assets_4.jpg',
+        r'page_bg_generated_v6b_alt_assets_5.jpg',
+        r'page_bg_generated_v6b_alt_assets_6.jpg',
+        r'page_bg_generated_v6b_alt_assets_7.jpg',
+        r'page_bg_generated_v6b_alt_assets_8.jpg',
+        r'page_bg_generated_v6b_alt_assets_9.jpg',
+        r'logo.png'
     ]
 
     if not os.path.exists(icons_out_dir):
@@ -88,7 +190,7 @@ def download_app_images(
         threads_list.append(t)
         t.start()
 
+    print(f"[ ] Downloading app art images...")
+
     for t in threads_list:
         t.join()
-
-    print(f"finished downloading common app images")

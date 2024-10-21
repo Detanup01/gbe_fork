@@ -7,58 +7,46 @@
 // these are defined in dll.cpp at the top like this:
 // static char old_xxx[128] = ...
 const static std::vector<std::string> interface_patterns = {
-    R"(STEAMAPPS_INTERFACE_VERSION\d+)",
+    R"(SteamAppDisableUpdate\d+)",
     R"(STEAMAPPLIST_INTERFACE_VERSION\d+)",
+    R"(STEAMAPPS_INTERFACE_VERSION\d+)",
     R"(STEAMAPPTICKET_INTERFACE_VERSION\d+)",
     R"(SteamClient\d+)",
-
     R"(STEAMCONTROLLER_INTERFACE_VERSION)",
     R"(SteamController\d+)",
-
     R"(SteamFriends\d+)",
-
-    R"(SteamGameServerStats\d+)",
     R"(SteamGameCoordinator\d+)",
+    R"(SteamGameServerStats\d+)",
     R"(SteamGameServer\d+)",
-
+    R"(SteamGameStats\d+)",
     R"(STEAMHTMLSURFACE_INTERFACE_VERSION_\d+)",
     R"(STEAMHTTP_INTERFACE_VERSION\d+)",
-
     R"(SteamInput\d+)",
     R"(STEAMINVENTORY_INTERFACE_V\d+)",
-
+    R"(SteamMasterServerUpdater\d+)",
+    R"(SteamMatchGameSearch\d+)",
     R"(SteamMatchMakingServers\d+)",
     R"(SteamMatchMaking\d+)",
-    R"(SteamMatchGameSearch\d+)",
-
-    R"(SteamParties\d+)",
-
     R"(STEAMMUSIC_INTERFACE_VERSION\d+)",
     R"(STEAMMUSICREMOTE_INTERFACE_VERSION\d+)",
-
     R"(SteamNetworkingMessages\d+)",
+    R"(SteamNetworkingSocketsSerialized\d+)",
     R"(SteamNetworkingSockets\d+)",
     R"(SteamNetworkingUtils\d+)",
     R"(SteamNetworking\d+)",
-
     R"(STEAMPARENTALSETTINGS_INTERFACE_VERSION\d+)",
+    R"(SteamParties\d+)",
     R"(STEAMREMOTEPLAY_INTERFACE_VERSION\d+)",
     R"(STEAMREMOTESTORAGE_INTERFACE_VERSION\d+)",
     R"(STEAMSCREENSHOTS_INTERFACE_VERSION\d+)",
-
     R"(STEAMTIMELINE_INTERFACE_V\d+)",
+    R"(STEAMTV_INTERFACE_V\d+)",
     R"(STEAMUGC_INTERFACE_VERSION\d+)",
-
-    R"(SteamUser\d+)",
-    R"(STEAMUSERSTATS_INTERFACE_VERSION\d+)",
-
-    R"(SteamUtils\d+)",
-
-    R"(STEAMVIDEO_INTERFACE_V\d+)",
-   
     R"(STEAMUNIFIEDMESSAGES_INTERFACE_VERSION\d+)",
-
-    R"(SteamMasterServerUpdater\d+)", 
+    R"(STEAMUSERSTATS_INTERFACE_VERSION\d+)",
+    R"(SteamUser\d+)",
+    R"(SteamUtils\d+)",
+    R"(STEAMVIDEO_INTERFACE_V\d+)"
 };
 
 unsigned int findinterface(
@@ -84,9 +72,12 @@ unsigned int findinterface(
 
 int main(int argc, char *argv[])
 {
-    if (argc < 2)
+    std::cout << "----Generate Interfaces----" << std::endl << std::endl;
+
+    if (argc < 2) 
     {
-        std::cerr << "usage: " << argv[0] << " <path to steam_api .dll or .so>" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <path to steam_api .dll or .so>" << std::endl;
+
         return 1;
     }
 
@@ -103,14 +94,15 @@ int main(int argc, char *argv[])
 
     if (steam_api_contents.empty())
     {
-        std::cerr << "Error loading data" << std::endl;
+        std::cerr << "Error loading data from file: " << argv[1] << std::endl;
         return 1;
     }
 
     std::ofstream out_file("steam_interfaces.txt");
     if (!out_file)
     {
-        std::cerr << "Error opening output file" << std::endl;
+
+        std::cerr << "Error opening output file: steam_interfaces.txt" << std::endl;
         return 1;
     }
 

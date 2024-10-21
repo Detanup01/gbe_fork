@@ -1,19 +1,19 @@
 {
-	"9422": {
+	"12345": {
 		"title": "Some Workshop Item",
-		"description": "This is the prefered way of specifying mod details, primary file must exist in steam_settings/mods/9422 (along with any other mod files), and preview file must exist in steam_settings/mod_images/9422",
+		"description": "This is the prefered way of specifying mod details, primary file must exist in steam_settings/mods/12345 (along with any other mod files), and preview file must exist in steam_settings/mods_img/12345",
 		"primary_filename": "metadata.json",
-		"preview_filename": "thumbnail.png"
+		"preview_filename": "my_preview_image.jpg"
 	},
 
 	"111111111": {
 		"title": "Example Workshop Item",
-		"description": "Example Workshop Item with all Details",
+		"description": "Example Workshop Item with all details",
 		"steam_id_owner": 11111111111111111,
 		"time_created": 1554997000,
 		"time_updated": 1554997000,
 		"time_added": 1554997000,
-		"tags": "Maps, exampleTag, exampleTag2",
+		"tags": "Maps, exampleTag1, exampleTag2",
 		"primary_filename": "test.sav",
 		"primary_filesize": 1000000,
 		"preview_filename": "test.png",
@@ -25,14 +25,14 @@
 		"upvotes": 10,
 		"downvotes": 1,
 		"num_children": 0,
-		"path": "C:\\games\\my_game\\steam_settings\\mods_data\\mod_111111111_data_folder",
-		"preview_url": "file://C:/games/my_game/steam_settings/mod_images/my_preview.jpg",
+		"path": "C:\\games\\my_game\\steam_settings\\mods\\111111111",
+		"preview_url": "file://C:/games/my_game/steam_settings/mods_img/111111111/preview.jpg",
 		"score": 0.7
 	},
 	
 	"222222222": {
 		"title": "Example Workshop Item",
-		"description": "Example Workshop Item with some Details",
+		"description": "Example Workshop Item with some details",
 		"preview_url": "https://commons.wikimedia.org/wiki/File:Tree_in_Mississippi.jpg",
 		"score": 1.0
 	},

@@ -44,6 +44,21 @@ jobs:
         with:
           ref: "third-party/build/win"
           path: "${{env.THIRD_PARTY_BASE_DIR}}/build/win"
+          
+      ## clone this for 7za.exe
+      - name: "Clone third-party deps (deps/win)"
+        uses: actions/checkout@v4
+        with:
+          ref: "third-party/deps/win"
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/win"
+          
+      # download artifacts
+      - name: "Download emu build artifacts (Win)"
+        uses: actions/download-artifact@v4
+        with:
+          path: "build/win"
+          pattern: "emu-win-*"
+          merge-multiple: true
 
       # env
       - name: "Install env"

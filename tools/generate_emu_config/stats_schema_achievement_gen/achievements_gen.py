@@ -5,7 +5,6 @@ import json
 import copy
 import traceback
 
-
 STAT_TYPE_INT = '1'
 STAT_TYPE_FLOAT = '2'
 STAT_TYPE_AVGRATE = '3'
@@ -65,7 +64,8 @@ def generate_stats_achievements(
                     out['default'] = stat['default']
 
                 stats_out += [out]
-            #print(stat_info[s])
+
+            # print(stat_info[s])
 
     copy_default_unlocked_img = False
     copy_default_locked_img = False
@@ -122,6 +122,9 @@ def generate_stats_achievements(
     if output_stats:
         with open(os.path.join(config_directory, "stats.txt"), 'wt', encoding='utf-8') as f:
             f.writelines(output_stats)
+            print(f"[ ] Found {len(output_stats)} stats --- writing to <OUT_DIR>\\steam_settings\\stats.txt'")
+    else:
+        print(f"[?] No stats found - skip creating <OUT_DIR>\\steam_settings\\stats.txt")
 
     return (achievements_out, stats_out,
             copy_default_unlocked_img, copy_default_locked_img)
@@ -140,17 +143,17 @@ if __name__ == '__main__':
 
     for bin_file in sys.argv[1:]:
         try:
-            print(f"parsing schema file '{bin_file}'")
+            print(f"[ ] Parsing schema file '{bin_file}'")
             schema: bytes = b''
             with open(bin_file, 'rb') as f:
                 schema = f.read()
             if schema:
                 filename = os.path.basename(bin_file)
                 outdir = os.path.join(f"{filename}_output", "steam_settings")
-                print(f"output dir: '{outdir}'")
+                print(f"[ ] __ output dir: '{outdir}'")
                 generate_stats_achievements(schema, outdir)
             else:
-                print("[X] couldn't load file", file=sys.stderr)
+                print("[X] Couldn't load file", file=sys.stderr)
             
             print('**********************************\n')
         except Exception as e:
@@ -159,6 +162,6 @@ if __name__ == '__main__':
             print("-----------------------")
             for line in traceback.format_exception(e):
                 print(line)
-            print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n')
+            print("-----------------------")
         
     sys.exit(0)
