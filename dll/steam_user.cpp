@@ -238,7 +238,7 @@ bool Steam_User::GetRegistryInt( EConfigSubTree eRegistrySubTree, const char *pc
     }
     catch(...)
     {
-        PRINT_DEBUG("not a number") // TODO: real steam returns a value other than 0 under this condition
+        PRINT_DEBUG("not a number"); // TODO: real steam returns a value other than 0 under this condition
     }
 
     return true;
