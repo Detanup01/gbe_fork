@@ -161,6 +161,11 @@ bool Settings::is_offline()
     return offline;
 }
 
+void Settings::set_offline(bool offline)
+{
+    this->offline = offline;
+}
+
 uint16 Settings::get_port()
 {
     return port;
