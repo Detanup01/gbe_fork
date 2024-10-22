@@ -284,13 +284,13 @@ int Steam_User::InitiateGameConnection( void *pAuthBlob, int cbMaxAuthBlob, CSte
 
 int Steam_User::InitiateGameConnection( void *pBlob, int cbMaxBlob, CSteamID steamID, CGameID gameID, uint32 unIPServer, uint16 usPortServer, bool bSecure, void *pvSteam2GetEncryptionKey, int cbSteam2GetEncryptionKey )
 {
-    PRINT_DEBUG("sdk 0.99y");
+    PRINT_DEBUG("sdk 0.99x, 0.99y");
     return InitiateGameConnection(pBlob, cbMaxBlob, steamID, unIPServer, usPortServer, bSecure);
 }
 
 int Steam_User::InitiateGameConnection( void *pBlob, int cbMaxBlob, CSteamID steamID, int nGameAppID, uint32 unIPServer, uint16 usPortServer, bool bSecure )
 {
-	PRINT_DEBUG("sdk 0.99u, 0.99v");
+	PRINT_DEBUG("sdk 0.99u");
 	return InitiateGameConnection(pBlob, cbMaxBlob, steamID, unIPServer, usPortServer, bSecure);
 }
 
