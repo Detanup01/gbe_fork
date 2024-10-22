@@ -361,6 +361,7 @@ public:
     CSteamID get_lobby();
 
     bool is_offline();
+    bool set_offline(bool offline)
 
     uint16 get_port();
     void set_port(uint16 port);

@@ -44,10 +44,37 @@ HSteamUser Steam_User::GetHSteamUser()
     return CLIENT_HSTEAMUSER;
 }
 
+void Steam_User::LogOn( CSteamID steamID )
+{
+    PRINT_DEBUG_ENTRY();
+    settings->set_offline(false);
+}
+
+void Steam_User::LogOff()
+{
+    PRINT_DEBUG_ENTRY();
+    settings->set_offline(true);
+}
+
 // returns true if the Steam client current has a live connection to the Steam servers. 
 // If false, it means there is no active connection due to either a networking issue on the local machine, or the Steam server is down/busy.
 // The Steam client will automatically be trying to recreate the connection as often as possible.
 bool Steam_User::BLoggedOn()
+{
+    PRINT_DEBUG_ENTRY();
+    return !settings->is_offline();
+}
+
+ELogonState Steam_User::GetLogonState()
+{
+    PRINT_DEBUG_ENTRY();
+    if(settings->is_offline())
+        return (ELogonState)0;
+    else
+        return (ELogonState)4; // tested on real steam, undocumented return value
+}
+
+bool Steam_User::BConnected()
 {
     PRINT_DEBUG_ENTRY();
     return !settings->is_offline();
@@ -61,6 +88,160 @@ CSteamID Steam_User::GetSteamID()
     CSteamID id = settings->get_local_steam_id();
     
     return id;
+}
+
+bool Steam_User::IsVACBanned( int nGameID )
+{
+    PRINT_DEBUG_ENTRY();
+    return false;
+}
+
+bool Steam_User::RequireShowVACBannedMessage( int nGameID )
+{
+    PRINT_DEBUG_ENTRY();
+    return false;
+}
+
+void Steam_User::AcknowledgeVACBanning( int nGameID )
+{
+    PRINT_DEBUG_ENTRY();
+}
+
+// according to comments in sdk, "these are dead."
+int Steam_User::NClientGameIDAdd( int nGameID )
+{
+    PRINT_DEBUG_ENTRY();
+    return 0;
+}
+// according to comments in sdk, "these are dead."
+void Steam_User::RemoveClientGame( int nClientGameID )
+{
+    PRINT_DEBUG_ENTRY();
+}
+// according to comments in sdk, "these are dead."
+void Steam_User::SetClientGameServer( int nClientGameID, uint32 unIPServer, uint16 usPortServer )
+{
+    PRINT_DEBUG_ENTRY();
+}
+
+void Steam_User::SetSteam2Ticket( uint8 *pubTicket, int cubTicket )
+{
+    PRINT_DEBUG_ENTRY();
+}
+
+void Steam_User::AddServerNetAddress( uint32 unIP, uint16 unPort )
+{
+    PRINT_DEBUG_ENTRY();
+}
+
+bool Steam_User::SetEmail( const char *pchEmail )
+{
+    PRINT_DEBUG_ENTRY();
+    return false;
+}
+
+// according to comments in sdk, "logon cookie - this is obsolete and never used"
+int Steam_User::GetSteamGameConnectToken( void *pBlob, int cbMaxBlob )
+{
+    PRINT_DEBUG_ENTRY();
+    return 0;
+}
+
+bool Steam_User::SetRegistryString( EConfigSubTree eRegistrySubTree, const char *pchKey, const char *pchValue )
+{
+    PRINT_DEBUG_TODO();
+    if (!pchValue)
+        return false; // real steam crashes, so return value is assumed
+
+    if (!pchKey) // tested on real steam
+    {
+        registry.clear();
+        registry_nullptr = std::string(pchValue);
+    }
+    else
+    {
+        registry[std::string(pchKey)] = std::string(pchValue);
+        // TODO: save it to disk, because real steam can get the string when app restarts
+    }
+
+    return true;
+}
+
+bool Steam_User::GetRegistryString( EConfigSubTree eRegistrySubTree, const char *pchKey, char *pchValue, int cbValue )
+{
+    PRINT_DEBUG_TODO();
+    // TODO: read data on disk, because real steam can get the string when app restarts
+    if (pchValue && cbValue > 0)
+        memset(pchValue, 0, cbValue);
+
+    std::string value{};
+    if(!pchKey)
+    {
+        value = registry_nullptr;
+    }
+    else
+    {
+        auto it = registry.find(std::string(pchKey));
+        if (it == registry.end())
+            return false;
+        
+        value = it->second;
+    }
+
+    if (pchValue && cbValue > 0)
+        value.copy(pchValue, cbValue - 1);
+    return true;
+}
+
+bool Steam_User::SetRegistryInt( EConfigSubTree eRegistrySubTree, const char *pchKey, int iValue )
+{
+    PRINT_DEBUG_TODO();
+    if (!pchKey) // tested on real steam
+    {
+        registry.clear();
+        registry_nullptr = std::to_string(iValue);
+    }
+    else
+    {
+        registry[std::string(pchKey)] = std::to_string(iValue);
+        // TODO: save it to disk, because real steam can get the string when app restarts
+    }
+
+    return true;
+}
+
+bool Steam_User::GetRegistryInt( EConfigSubTree eRegistrySubTree, const char *pchKey, int *piValue )
+{
+    PRINT_DEBUG_TODO();
+    // TODO: read data on disk, because real steam can get the string when app restarts
+    if (piValue)
+        *piValue = 0;
+
+    std::string value{};
+    if(!pchKey)
+    {
+        value = registry_nullptr;
+    }
+    else
+    {
+        auto it = registry.find(std::string(pchKey));
+        if (it == registry.end())
+            return false;
+        
+        value = it->second;
+    }
+
+    try
+    {    
+        if (piValue)
+            *piValue = std::stoi(value);
+    }
+    catch(...)
+    {
+        PRINT_DEBUG("not a number") // TODO: real steam returns a value other than 0 under this condition
+    }
+
+    return true;
 }
 
 // Multiplayer Authentication functions
@@ -101,6 +282,18 @@ int Steam_User::InitiateGameConnection( void *pAuthBlob, int cbMaxAuthBlob, CSte
 	return InitiateGameConnection(pAuthBlob, cbMaxAuthBlob, steamIDGameServer, unIPServer, usPortServer, bSecure);
 }
 
+int Steam_User::InitiateGameConnection( void *pBlob, int cbMaxBlob, CSteamID steamID, CGameID gameID, uint32 unIPServer, uint16 usPortServer, bool bSecure, void *pvSteam2GetEncryptionKey, int cbSteam2GetEncryptionKey )
+{
+    PRINT_DEBUG("sdk 0.99y");
+    return InitiateGameConnection(pBlob, cbMaxBlob, steamID, unIPServer, usPortServer, bSecure);
+}
+
+int Steam_User::InitiateGameConnection( void *pBlob, int cbMaxBlob, CSteamID steamID, int nGameAppID, uint32 unIPServer, uint16 usPortServer, bool bSecure )
+{
+	PRINT_DEBUG("sdk 0.99u, 0.99v");
+	return InitiateGameConnection(pBlob, cbMaxBlob, steamID, unIPServer, usPortServer, bSecure);
+}
+
 // notify of disconnect
 // needs to occur when the game client leaves the specified game server, needs to match with the InitiateGameConnection() call
 void Steam_User::TerminateGameConnection( uint32 unIPServer, uint16 usPortServer )
@@ -110,8 +303,143 @@ void Steam_User::TerminateGameConnection( uint32 unIPServer, uint16 usPortServer
 
 // Legacy functions
 
+void Steam_User::SetSelfAsPrimaryChatDestination()
+{
+    PRINT_DEBUG_TODO();
+}
+
+bool Steam_User::IsPrimaryChatDestination()
+{
+    PRINT_DEBUG_ENTRY();
+    return false;
+}
+
+void Steam_User::RequestLegacyCDKey( uint32 iAppID )
+{
+    PRINT_DEBUG_TODO();
+}
+
+bool Steam_User::SendGuestPassByEmail( const char *pchEmailAccount, GID_t gidGuestPassID, bool bResending )
+{
+    PRINT_DEBUG_TODO();
+    return false;
+}
+
+bool Steam_User::SendGuestPassByAccountID( uint32 uAccountID, GID_t gidGuestPassID, bool bResending )
+{
+    PRINT_DEBUG_TODO();
+    return false;
+}
+
+bool Steam_User::AckGuestPass(const char *pchGuestPassCode)
+{
+    PRINT_DEBUG_TODO();
+    return false;
+}
+
+bool Steam_User::RedeemGuestPass(const char *pchGuestPassCode)
+{
+    PRINT_DEBUG_TODO();
+    return false;
+}
+
+uint32 Steam_User::GetGuestPassToGiveCount()
+{
+    PRINT_DEBUG_TODO();
+    return 0;
+}
+
+uint32 Steam_User::GetGuestPassToRedeemCount()
+{
+    PRINT_DEBUG_TODO();
+    return 0;
+}
+
+RTime32 Steam_User::GetGuestPassLastUpdateTime()
+{
+    PRINT_DEBUG_TODO();
+    return 0;
+}
+
+bool Steam_User::GetGuestPassToGiveInfo( uint32 nPassIndex, GID_t *pgidGuestPassID, PackageId_t *pnPackageID, RTime32 *pRTime32Created, RTime32 *pRTime32Expiration, RTime32 *pRTime32Sent, RTime32 *pRTime32Redeemed, char *pchRecipientAddress, int cRecipientAddressSize )
+{
+    PRINT_DEBUG_TODO();
+    // TODO: pgidGuestPassID
+    if (pnPackageID)
+        *pnPackageID = 0;
+    if (pRTime32Created)
+        *pRTime32Created = 0;
+    if (pRTime32Expiration)
+        *pRTime32Expiration = 0;
+    if (pRTime32Sent)
+        *pRTime32Sent = 0;
+    if (pRTime32Redeemed)
+        *pRTime32Redeemed = 0;
+    if (pchRecipientAddress && cRecipientAddressSize > 0)
+        memset(pchRecipientAddress, 0, cRecipientAddressSize);
+    return false;
+}
+
+bool Steam_User::GetGuestPassToRedeemInfo( uint32 nPassIndex, GID_t *pgidGuestPassID, PackageId_t *pnPackageID, RTime32 *pRTime32Created, RTime32 *pRTime32Expiration, RTime32 *pRTime32Sent, RTime32 *pRTime32Redeemed)
+{
+    PRINT_DEBUG_TODO();
+    // TODO: pgidGuestPassID
+    if (pnPackageID)
+        *pnPackageID = 0;
+    if (pRTime32Created)
+        *pRTime32Created = 0;
+    if (pRTime32Expiration)
+        *pRTime32Expiration = 0;
+    if (pRTime32Sent)
+        *pRTime32Sent = 0;
+    if (pRTime32Redeemed)
+        *pRTime32Redeemed = 0;
+    return false;
+}
+
+bool Steam_User::GetGuestPassToRedeemSenderAddress( uint32 nPassIndex, char* pchSenderAddress, int cSenderAddressSize )
+{
+    PRINT_DEBUG_TODO();
+    return false;
+}
+
+bool Steam_User::GetGuestPassToRedeemSenderName( uint32 nPassIndex, char* pchSenderName, int cSenderNameSize )
+{
+    PRINT_DEBUG_TODO();
+    if (pchSenderName && cSenderNameSize > 0)
+        memset(pchSenderName, 0, cSenderNameSize);
+    return false;
+}
+
+void Steam_User::AcknowledgeMessageByGID( const char *pchMessageGID )
+{
+    PRINT_DEBUG_TODO();
+}
+
+bool Steam_User::SetLanguage( const char *pchLanguage )
+{
+    PRINT_DEBUG_TODO();
+    // TODO: don't know what this api actually does other than returning true
+    return true;
+}
+
 // used by only a few games to track usage events
 void Steam_User::TrackAppUsageEvent( CGameID gameID, int eAppUsageEvent, const char *pchExtraInfo)
+{
+    PRINT_DEBUG_TODO();
+}
+
+void Steam_User::SetAccountName( const char *pchAccountName )
+{
+    PRINT_DEBUG_TODO();
+}
+
+void Steam_User::SetPassword( const char *pchPassword )
+{
+    PRINT_DEBUG_TODO();
+}
+
+void Steam_User::SetAccountCreationTime( RTime32 rt )
 {
     PRINT_DEBUG_TODO();
 }

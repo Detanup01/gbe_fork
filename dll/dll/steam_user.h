@@ -22,6 +22,11 @@
 #include "auth.h"
 
 class Steam_User :
+public ISteamUser004,
+public ISteamUser005,
+public ISteamUser006,
+public ISteamUser007,
+public ISteamUser008,
 public ISteamUser009,
 public ISteamUser010,
 public ISteamUser011,
@@ -48,6 +53,8 @@ public ISteamUser
 	std::chrono::high_resolution_clock::time_point last_get_voice{};
 	std::string encrypted_app_ticket{};
 	Auth_Manager *auth_manager{};
+    std::map<std::string, std::string> registry{};
+    std::string registry_nullptr{};
 
 public:
     Steam_User(Settings *settings, Local_Storage *local_storage, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks);
@@ -57,14 +64,40 @@ public:
     // this is only used internally by the API, and by a few select interfaces that support multi-user
     HSteamUser GetHSteamUser();
 
+    void LogOn( CSteamID steamID );
+    void LogOff();
+
     // returns true if the Steam client current has a live connection to the Steam servers. 
     // If false, it means there is no active connection due to either a networking issue on the local machine, or the Steam server is down/busy.
     // The Steam client will automatically be trying to recreate the connection as often as possible.
     bool BLoggedOn();
 
+    ELogonState GetLogonState();
+	bool BConnected();
+
     // returns the CSteamID of the account currently logged into the Steam client
     // a CSteamID is a unique identifier for an account, and used to differentiate users in all parts of the Steamworks API
     CSteamID GetSteamID();
+
+	bool IsVACBanned( int nGameID );
+	bool RequireShowVACBannedMessage( int nGameID );
+	void AcknowledgeVACBanning( int nGameID );
+
+	// These are dead.
+	int NClientGameIDAdd( int nGameID );
+	void RemoveClientGame( int nClientGameID );
+	void SetClientGameServer( int nClientGameID, uint32 unIPServer, uint16 usPortServer );
+
+	void SetSteam2Ticket( uint8 *pubTicket, int cubTicket );
+	void AddServerNetAddress( uint32 unIP, uint16 unPort );
+	bool SetEmail( const char *pchEmail );
+
+	// logon cookie - this is obsolete and never used
+	int GetSteamGameConnectToken( void *pBlob, int cbMaxBlob );
+	bool SetRegistryString( EConfigSubTree eRegistrySubTree, const char *pchKey, const char *pchValue );
+	bool GetRegistryString( EConfigSubTree eRegistrySubTree, const char *pchKey, char *pchValue, int cbValue );
+	bool SetRegistryInt( EConfigSubTree eRegistrySubTree, const char *pchKey, int iValue );
+	bool GetRegistryInt( EConfigSubTree eRegistrySubTree, const char *pchKey, int *piValue );
 
     // Multiplayer Authentication functions
 
@@ -86,14 +119,39 @@ public:
 
     int InitiateGameConnection( void *pAuthBlob, int cbMaxAuthBlob, CSteamID steamIDGameServer, CGameID gameID, uint32 unIPServer, uint16 usPortServer, bool bSecure );
 
+    int InitiateGameConnection( void *pBlob, int cbMaxBlob, CSteamID steamID, CGameID gameID, uint32 unIPServer, uint16 usPortServer, bool bSecure, void *pvSteam2GetEncryptionKey, int cbSteam2GetEncryptionKey );
+
+    int InitiateGameConnection( void *pBlob, int cbMaxBlob, CSteamID steamID, int nGameAppID, uint32 unIPServer, uint16 usPortServer, bool bSecure );
+
     // notify of disconnect
     // needs to occur when the game client leaves the specified game server, needs to match with the InitiateGameConnection() call
     void TerminateGameConnection( uint32 unIPServer, uint16 usPortServer );
 
     // Legacy functions
 
+	void SetSelfAsPrimaryChatDestination();
+	bool IsPrimaryChatDestination();
+	void RequestLegacyCDKey( uint32 nAppID );
+	bool SendGuestPassByEmail( const char *pchEmailAccount, GID_t gidGuestPassID, bool bResending );
+	bool SendGuestPassByAccountID( uint32 uAccountID, GID_t gidGuestPassID, bool bResending );
+	bool AckGuestPass(const char *pchGuestPassCode);
+	bool RedeemGuestPass(const char *pchGuestPassCode);
+	uint32 GetGuestPassToGiveCount();
+	uint32 GetGuestPassToRedeemCount();
+	RTime32 GetGuestPassLastUpdateTime();
+	bool GetGuestPassToGiveInfo( uint32 nPassIndex, GID_t *pgidGuestPassID, PackageId_t *pnPackageID, RTime32 *pRTime32Created, RTime32 *pRTime32Expiration, RTime32 *pRTime32Sent, RTime32 *pRTime32Redeemed, char *pchRecipientAddress, int cRecipientAddressSize );
+	bool GetGuestPassToRedeemInfo( uint32 nPassIndex, GID_t *pgidGuestPassID, PackageId_t *pnPackageID, RTime32 *pRTime32Created, RTime32 *pRTime32Expiration, RTime32 *pRTime32Sent, RTime32 *pRTime32Redeemed);
+	bool GetGuestPassToRedeemSenderAddress( uint32 nPassIndex, char* pchSenderAddress, int cSenderAddressSize );
+	bool GetGuestPassToRedeemSenderName( uint32 nPassIndex, char* pchSenderName, int cSenderNameSize );
+	void AcknowledgeMessageByGID( const char *pchMessageGID );
+	bool SetLanguage( const char *pchLanguage );
+
     // used by only a few games to track usage events
     void TrackAppUsageEvent( CGameID gameID, int eAppUsageEvent, const char *pchExtraInfo);
+
+	void SetAccountName( const char *pchAccountName );
+	void SetPassword( const char *pchPassword );
+	void SetAccountCreationTime( RTime32 rt );
 
     void RefreshSteam2Login();
 

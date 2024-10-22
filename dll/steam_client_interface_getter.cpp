@@ -71,7 +71,17 @@ ISteamUser *Steam_Client::GetISteamUser( HSteamUser hSteamUser, HSteamPipe hStea
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
-    if (strcmp(pchVersion, "SteamUser009") == 0) {
+    if (strcmp(pchVersion, "SteamUser004") == 0) {
+        return reinterpret_cast<ISteamUser *>(static_cast<ISteamUser004 *>(steam_user)); // sdk 0.99u
+    } else if (strcmp(pchVersion, "SteamUser005") == 0) {
+        return reinterpret_cast<ISteamUser *>(static_cast<ISteamUser005 *>(steam_user)); // sdk 0.99v
+    } else if (strcmp(pchVersion, "SteamUser006") == 0) {
+        return reinterpret_cast<ISteamUser *>(static_cast<ISteamUser006 *>(steam_user)); // sdk 0.99w
+    } else if (strcmp(pchVersion, "SteamUser007") == 0) {
+        return reinterpret_cast<ISteamUser *>(static_cast<ISteamUser007 *>(steam_user)); // sdk 0.99x
+    } else if (strcmp(pchVersion, "SteamUser008") == 0) {
+        return reinterpret_cast<ISteamUser *>(static_cast<ISteamUser008 *>(steam_user)); // sdk 0.99y
+    } else if (strcmp(pchVersion, "SteamUser009") == 0) {
         return reinterpret_cast<ISteamUser *>(static_cast<ISteamUser009 *>(steam_user));
     } else if (strcmp(pchVersion, "SteamUser010") == 0) {
         return reinterpret_cast<ISteamUser *>(static_cast<ISteamUser010 *>(steam_user));
