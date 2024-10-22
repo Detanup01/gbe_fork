@@ -2,8 +2,8 @@
 This tool discovers people playing on the network using this emu and lets you launch your game with parameters that will connect you to their games.
 
 ## Why ?
-Mr.Goldberg's note:
-> This is necessary for some games (like stonehearth). It will also let you join games with lobbies that are not public.
+Mr_Goldberg's note:
+> This is necessary for some games (like Stonehearth). It will also let you join games with lobbies that are not public.
 
 > Steam has something called rich presence (the connect key) that lets games tell your friends what command line parameters to run your game with to join their game.
 

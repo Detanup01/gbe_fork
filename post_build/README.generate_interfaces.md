@@ -3,19 +3,19 @@ This tool will generate the file `steam_interfaces.txt` which is **always** reco
 
 ## How to use it ?
 1. * On Windows
-     * Drag `steam_api.dll` or `steam_api64.dll` on this exe
+     * Drag `steam_api.dll` or `steam_api64.dll` on this exe.
      * Or run the command line (example):
        ```batch
-       generate_interfaces_file.exe steam_api64.dll
+       generate_interfaces_x64.exe steam_api64.dll
        ```
     * On Linux:
       * Run the command line (example):
         ```bash
-        chmod 777 generate_interfaces_file_x64 # make sure we can execute the binary
-        generate_interfaces_file_x64 libsteam_api.so
+        chmod 777 generate_interfaces_x64 # make sure we can execute the binary
+        generate_interfaces_x64 libsteam_api.so
         ```
-2. Copy the generated `steam_interfaces.txt` file inside the folder `steam_settings`
+2. Copy the generated `steam_interfaces.txt` file inside the folder `steam_settings`.
 ---
 
-In both cases, make sure the .dll/.so is **the original** one
+In both cases, make sure the .dll / .so is **the original** one !
 ---

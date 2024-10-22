@@ -6,7 +6,8 @@ import glob
 import configparser
 import time
 import traceback
-
+import shutil
+from configobj import ConfigObj
 
 def help():
     exe_name = os.path.basename(sys.argv[0])
@@ -24,104 +25,58 @@ def help():
     print(" Running the tool without any switches will make it attempt to read the global settings folder")
     print("")
 
-
-NEW_STEAM_SETTINGS_FOLDER = 'steam_settings'
+NEW_STEAM_SETTINGS_FOLDER = os.path.join('_OUTPUT', 'steam_settings')
 
 def create_new_steam_settings_folder():
     if not os.path.exists(NEW_STEAM_SETTINGS_FOLDER):
         os.makedirs(NEW_STEAM_SETTINGS_FOLDER)
 
+# use CongigObj to correctly update existing 'configs.app.ini' copied from ./_DEFAULT configuration --- START, read ini
+configs_app = ConfigObj(os.path.join(NEW_STEAM_SETTINGS_FOLDER, "configs.app.ini"), encoding='utf-8')
+configs_app_initial = configs_app
 
-def merge_dict(dest: dict, src: dict):
-    # merge similar keys, but don't overwrite values
-    for kv in src.items():
-        v_dest = dest.get(kv[0], None)
-        if isinstance(kv[1], dict) and isinstance(v_dest, dict):
-            merge_dict(v_dest, kv[1])
-        elif kv[0] not in dest:
-            dest[kv[0]] = kv[1]
+# use CongigObj to correctly update existing 'configs.main.ini' copied from ./_DEFAULT configuration --- START, read ini
+configs_main = ConfigObj(os.path.join(NEW_STEAM_SETTINGS_FOLDER, "configs.main.ini"), encoding='utf-8')
+configs_main_initial = configs_main
 
-def write_ini_file(base_path: str, out_ini: dict):
-    for file in out_ini.items():
-        with open(os.path.join(base_path, file[0]), 'wt', encoding='utf-8') as f:
-            for item in file[1].items():
-                f.write('[' + str(item[0]) + ']\n') # section
-                for kv in item[1].items():
-                    if kv[1][1]: # comment
-                        f.write('# ' + str(kv[1][1]) + '\n')
-                    f.write(str(kv[0]) + '=' + str(kv[1][0]) + '\n') # key/value pair
-                f.write('\n')
+# use CongigObj to correctly update existing 'configs.overlay.ini' copied from ./_DEFAULT configuration --- START, read ini
+configs_overlay = ConfigObj(os.path.join(NEW_STEAM_SETTINGS_FOLDER, "configs.overlay.ini"), encoding='utf-8')
+configs_overlay_initial = configs_overlay
 
-def convert_to_ini(global_settings: str, out_dict_ini: dict):
-    # oh no, they're too many!
+# use CongigObj to correctly update existing 'configs.user.ini' copied from ./_DEFAULT configuration --- START, read ini
+configs_user = ConfigObj(os.path.join(NEW_STEAM_SETTINGS_FOLDER, "configs.user.ini"), encoding='utf-8')
+configs_user_initial = configs_user
+
+def convert_to_ini(global_settings: str):
+    # oh no, they're too many! --- they are indeed... it is way simpler to use ConfigObj to properly update the default ini files
     for file in glob.glob('*.*', root_dir=global_settings):
         file = file.lower()
-        if file == 'force_account_name.txt' or file == 'account_name.txt':
+        if file == 'steam_appid.txt':
+            steam_appid = fr.readline().strip('\n').strip('\r')
+        elif file == 'force_account_name.txt' or file == 'account_name.txt':
             with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
-                merge_dict(out_dict_ini, {
-                    'configs.user.ini': {
-                        'user::general': {
-                            'account_name': (fr.readline().strip('\n').strip('\r'), 'user account name'),
-                        },
-                    }
-                })
+                configs_user["user::general"]["account_name"] = fr.readline().strip('\n').strip('\r') #updated ini through ConfigObj
         elif file == 'force_branch_name.txt':
             with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
-                merge_dict(out_dict_ini, {
-                    'configs.app.ini': {
-                        'app::general': {
-                            'branch_name': (fr.readline().strip(), 'the name of the beta branch'),
-                        },
-                    }
-                })
+                configs_app["app::general"]["branch_name"] = fr.readline().strip('\n').strip('\r') #updated ini through ConfigObj
         elif file == 'force_language.txt' or file == 'language.txt':
             with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
-                merge_dict(out_dict_ini, {
-                    'configs.user.ini': {
-                        'user::general': {
-                            'language': (fr.readline().strip(), 'the language reported to the app/game, https://partner.steamgames.com/doc/store/localization/languages'),
-                        },
-                    }
-                })
+                configs_user["user::general"]["language"] = fr.readline().strip('\n').strip('\r') #updated ini through ConfigObj
         elif file == 'force_listen_port.txt' or file == 'listen_port.txt':
             with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
-                merge_dict(out_dict_ini, {
-                    'configs.main.ini': {
-                        'main::connectivity': {
-                            'listen_port': (fr.readline().strip(), 'change the UDP/TCP port the emulator listens on'),
-                        },
-                    }
-                })
+                configs_main["main::connectivity"]["listen_port"] = fr.readline().strip('\n').strip('\r') #updated ini through ConfigObj
         elif file == 'force_steamid.txt' or file == 'user_steam_id.txt':
             with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
-                merge_dict(out_dict_ini, {
-                    'configs.user.ini': {
-                        'user::general': {
-                            'account_steamid': (fr.readline().strip(), 'Steam64 format'),
-                        },
-                    }
-                })
+                configs_user["user::general"]["account_steamid"] = fr.readline().strip('\n').strip('\r') #updated ini through ConfigObj
         elif file == 'ip_country.txt':
             with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
-                merge_dict(out_dict_ini, {
-                    'configs.user.ini': {
-                        'user::general': {
-                            'ip_country': (fr.readline().strip(), 'report a country IP if the game queries it, https://www.iban.com/country-codes'),
-                        },
-                    }
-                })
+                configs_user["user::general"]["ip_country"] = fr.readline().strip('\n').strip('\r') #updated ini through ConfigObj
         elif file == 'overlay_appearance.txt':
             with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
                 ov_lines = [lll.strip() for lll in fr.readlines() if lll.strip() and lll.strip()[0] != ';' and lll.strip()[0] != '#']
                 for ovl in ov_lines:
                     [ov_name, ov_val] = ovl.split(' ', 1)
-                    merge_dict(out_dict_ini, {
-                        'configs.overlay.ini': {
-                            'overlay::appearance': {
-                                ov_name.strip(): (ov_val.strip(), ''),
-                            },
-                        }
-                    })
+                    configs_overlay["overlay::appearance"][ov_name.strip()] = ov_val.strip() #updated ini through ConfigObj
         elif file == 'build_id.txt':
             with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
                 create_new_steam_settings_folder()
@@ -134,268 +89,81 @@ def convert_to_ini(global_settings: str, out_dict_ini: dict):
                         "time_updated": int(time.time())
                     }], fout, indent=2)
         elif file == 'disable_account_avatar.txt':
-            merge_dict(out_dict_ini, {
-                'configs.main.ini': {
-                    'main::general': {
-                        'enable_account_avatar': (0, 'enable avatar functionality'),
-                    },
-                }
-            })
+            configs_main["main::general"]["enable_account_avatar"] = 0 #updated ini through ConfigObj
         elif file == 'disable_networking.txt':
-            merge_dict(out_dict_ini, {
-                'configs.main.ini': {
-                    'main::connectivity': {
-                        'disable_networking': (1, 'disable all steam networking interface functionality'),
-                    },
-                }
-            })
+            configs_main["main::connectivity"]["disable_networking"] = 1 #updated ini through ConfigObj
         elif file == 'disable_sharing_stats_with_gameserver.txt':
-            merge_dict(out_dict_ini, {
-                'configs.main.ini': {
-                    'main::connectivity': {
-                        'disable_sharing_stats_with_gameserver': (1, 'prevent sharing stats and achievements with any game server, this also disables the interface ISteamGameServerStats'),
-                    },
-                }
-            })
+            configs_main["main::connectivity"]["disable_sharing_stats_with_gameserver"] = 1 #updated ini through ConfigObj
         elif file == 'disable_source_query.txt':
-            merge_dict(out_dict_ini, {
-                'configs.main.ini': {
-                    'main::connectivity': {
-                        'disable_source_query': (1, 'do not send server details to the server browser, only works for game servers'),
-                    },
-                }
-            })
+            configs_main["main::connectivity"]["disable_source_query"] = 1 #updated ini through ConfigObj
         elif file == 'overlay_hook_delay_sec.txt':
             with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
-                merge_dict(out_dict_ini, {
-                    'configs.overlay.ini': {
-                        'overlay::general': {
-                            'hook_delay_sec': (fr.readline().strip(), 'amount of time to wait before attempting to detect and hook the renderer'),
-                        },
-                    }
-                })
+                configs_overlay["overlay::general"]["hook_delay_sec"] = fr.readline().strip('\n').strip('\r') #updated ini through ConfigObj
         elif file == 'overlay_renderer_detector_timeout_sec.txt':
             with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
-                merge_dict(out_dict_ini, {
-                    'configs.overlay.ini': {
-                        'overlay::general': {
-                            'renderer_detector_timeout_sec': (fr.readline().strip(), 'timeout for the renderer detector'),
-                        },
-                    }
-                })
+                configs_overlay["overlay::general"]["renderer_detector_timeout_sec"] = fr.readline().strip('\n').strip('\r') #updated ini through ConfigObj
         elif file == 'enable_experimental_overlay.txt' or file == 'disable_overlay.txt':
             enable_ovl = 0
             if file == 'enable_experimental_overlay.txt':
                 enable_ovl = 1
-            merge_dict(out_dict_ini, {
-                'configs.overlay.ini': {
-                    'overlay::general': {
-                        'enable_experimental_overlay': (enable_ovl, 'XXX USE AT YOUR OWN RISK XXX, enable the experimental overlay, might cause crashes'),
-                    },
-                }
-            })
+            configs_overlay["overlay::general"]["enable_experimental_overlay"] = enable_ovl #updated ini through ConfigObj
         elif file == 'app_paths.txt':
             with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
                 app_lines = [lll.strip('\n').strip('\r') for lll in fr.readlines() if lll.strip() and lll.strip()[0] != '#']
                 for app_lll in app_lines:
-                    [apppid, appppath] = app_lll.split('=', 1)
-                    merge_dict(out_dict_ini, {
-                        'configs.app.ini': {
-                            'app::paths': {
-                                apppid.strip(): (appppath, ''),
-                            },
-                        }
-                    })
+                    [appid, apppath] = app_lll.split('=', 1)
+                    configs_app["app::paths"][appid.strip()] = apppath #updated ini through ConfigObj
         elif file == 'dlc.txt':
             with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
                 dlc_lines = [lll.strip('\n').strip('\r') for lll in fr.readlines() if lll.strip() and lll.strip()[0] != '#']
-                merge_dict(out_dict_ini, {
-                    'configs.app.ini': {
-                        'app::dlcs': {
-                            'unlock_all': (0, 'should the emu report all DLCs as unlocked, default=1'),
-                        },
-                    }
-                })
+                configs_app["app::dlcs"]["unlock_all"] = 0 #updated ini through ConfigObj
                 for dlc_lll in dlc_lines:
                     [dlcid, dlcname] = dlc_lll.split('=', 1)
-                    merge_dict(out_dict_ini, {
-                        'configs.app.ini': {
-                            'app::dlcs': {
-                                dlcid.strip(): (dlcname, ''),
-                            },
-                        }
-                    })
+                    configs_app["app::dlcs"][dlcid.strip()] = dlcname #updated ini through ConfigObj
         elif file == 'achievements_bypass.txt':
-            merge_dict(out_dict_ini, {
-                'configs.main.ini': {
-                    'main::misc': {
-                        'achievements_bypass': (1, 'force SetAchievement() to always return true'),
-                    },
-                }
-            })
+            configs_main["main::misc"]["achievements_bypass"] = 1 #updated ini through ConfigObj
         elif file == 'crash_printer_location.txt':
             with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
-                merge_dict(out_dict_ini, {
-                    'configs.main.ini': {
-                        'main::general': {
-                            'crash_printer_location': (fr.readline().strip('\n').strip('\r'), 'this is intended to debug some annoying scenarios, and best used with the debug build'),
-                        },
-                    }
-                })
+                configs_main["main::general"]["crash_printer_location"] = fr.readline().strip('\n').strip('\r') #updated ini through ConfigObj
         elif file == 'disable_lan_only.txt':
-            merge_dict(out_dict_ini, {
-                'configs.main.ini': {
-                    'main::connectivity': {
-                        'disable_lan_only': (1, 'prevent hooking OS networking APIs and allow any external requests'),
-                    },
-                }
-            })
+            configs_main["main::connectivity"]["disable_lan_only"] = 1 #updated ini through ConfigObj
         elif file == 'disable_leaderboards_create_unknown.txt':
-            merge_dict(out_dict_ini, {
-                'configs.main.ini': {
-                    'main::general': {
-                        'disable_leaderboards_create_unknown': (1, 'prevent Steam_User_Stats::FindLeaderboard() from always succeeding and creating the unknown leaderboard'),
-                    },
-                }
-            })
+            configs_main["main::general"]["disable_leaderboards_create_unknown"] = 1 #updated ini through ConfigObj
         elif file == 'disable_lobby_creation.txt':
-            merge_dict(out_dict_ini, {
-                'configs.main.ini': {
-                    'main::connectivity': {
-                        'disable_lobby_creation': (1, 'prevent lobby creation in steam matchmaking interface'),
-                    },
-                }
-            })
+            configs_main["main::connectivity"]["disable_lobby_creation"] = 1 #updated ini through ConfigObj
         elif file == 'disable_overlay_achievement_notification.txt':
-            merge_dict(out_dict_ini, {
-                'configs.overlay.ini': {
-                    'overlay::general': {
-                        'disable_achievement_notification': (1, 'disable the achievements notifications'),
-                    },
-                }
-            })
+            configs_overlay["overlay::general"]["disable_achievement_notification"] = 1 #updated ini through ConfigObj
         elif file == 'disable_overlay_friend_notification.txt':
-            merge_dict(out_dict_ini, {
-                'configs.overlay.ini': {
-                    'overlay::general': {
-                        'disable_friend_notification': (1, 'disable friends invitations and messages notifications'),
-                    },
-                }
-            })
+            configs_overlay["overlay::general"]["disable_friend_notification"] = 1 #updated ini through ConfigObj
         elif file == 'disable_overlay_warning_any.txt':
-            merge_dict(out_dict_ini, {
-                'configs.overlay.ini': {
-                    'overlay::general': {
-                        'disable_warning_any': (1, 'disable any warning in the overlay'),
-                    },
-                }
-            })
+            configs_overlay["overlay::general"]["disable_warning_any"] = 1 #updated ini through ConfigObj
         elif file == 'disable_overlay_warning_bad_appid.txt':
-            merge_dict(out_dict_ini, {
-                'configs.overlay.ini': {
-                    'overlay::general': {
-                        'disable_warning_bad_appid': (1, 'disable the bad app ID warning in the overlay'),
-                    },
-                }
-            })
+            configs_overlay["overlay::general"]["disable_warning_bad_appid"] = 1 #updated ini through ConfigObj
         elif file == 'disable_overlay_warning_local_save.txt':
-            merge_dict(out_dict_ini, {
-                'configs.overlay.ini': {
-                    'overlay::general': {
-                        'disable_warning_local_save': (1, 'disable the local_save warning in the overlay'),
-                    },
-                }
-            })
+            configs_overlay["overlay::general"]["disable_warning_local_save"] = 1 #updated ini through ConfigObj
         elif file == 'download_steamhttp_requests.txt':
-            merge_dict(out_dict_ini, {
-                'configs.main.ini': {
-                    'main::connectivity': {
-                        'download_steamhttp_requests': (1, 'attempt to download external HTTP(S) requests made via Steam_HTTP::SendHTTPRequest()'),
-                    },
-                }
-            })
+            configs_main["main::connectivity"]["download_steamhttp_requests"] = 1 #updated ini through ConfigObj
         elif file == 'force_steamhttp_success.txt':
-            merge_dict(out_dict_ini, {
-                'configs.main.ini': {
-                    'main::misc': {
-                        'force_steamhttp_success': (1, 'force the function Steam_HTTP::SendHTTPRequest() to always succeed'),
-                    },
-                }
-            })
+            configs_main["main::misc"]["force_steamhttp_success"] = 1 #updated ini through ConfigObj
         elif file == 'new_app_ticket.txt':
-            merge_dict(out_dict_ini, {
-                'configs.main.ini': {
-                    'main::general': {
-                        'new_app_ticket': (1, 'generate new app auth ticket'),
-                    },
-                }
-            })
+            configs_main["main::general"]["new_app_ticket"] = 1 #updated ini through ConfigObj
         elif file == 'gc_token.txt':
-            merge_dict(out_dict_ini, {
-                'configs.main.ini': {
-                    'main::general': {
-                        'gc_token': (1, 'generate/embed GC token inside new App Ticket'),
-                    },
-                }
-            })
+            configs_main["main::general"]["gc_token"] = 1 #updated ini through ConfigObj
         elif file == 'immediate_gameserver_stats.txt':
-            merge_dict(out_dict_ini, {
-                'configs.main.ini': {
-                    'main::general': {
-                        'immediate_gameserver_stats': (1, 'synchronize user stats/achievements with game servers as soon as possible instead of caching them'),
-                    },
-                }
-            })
+            configs_main["main::general"]["immediate_gameserver_stats"] = 1 #updated ini through ConfigObj
         elif file == 'is_beta_branch.txt':
-            merge_dict(out_dict_ini, {
-                'configs.app.ini': {
-                    'app::general': {
-                        'is_beta_branch': (1, 'make the game/app think we are playing on a beta branch'),
-                    },
-                }
-            })
+            configs_app["app::general"]["is_beta_branch"] = 1 #updated ini through ConfigObj
         elif file == 'matchmaking_server_details_via_source_query.txt':
-            merge_dict(out_dict_ini, {
-                'configs.main.ini': {
-                    'main::general': {
-                        'matchmaking_server_details_via_source_query': (1, 'grab the server details for match making using an actual server query'),
-                    },
-                }
-            })
+            configs_main["main::general"]["matchmaking_server_details_via_source_query"] = 1 #updated ini through ConfigObj
         elif file == 'matchmaking_server_list_actual_type.txt':
-            merge_dict(out_dict_ini, {
-                'configs.main.ini': {
-                    'main::general': {
-                        'matchmaking_server_list_actual_type': (1, 'use the proper type of the server list (internet, friends, etc...) when requested by the game'),
-                    },
-                }
-            })
+            configs_main["main::general"]["matchmaking_server_list_actual_type"] = 1 #updated ini through ConfigObj
         elif file == 'offline.txt':
-            merge_dict(out_dict_ini, {
-                'configs.main.ini': {
-                    'main::connectivity': {
-                        'offline': (1, 'pretend steam is running in offline mode'),
-                    },
-                }
-            })
+            configs_main["main::connectivity"]["offline"] = 1 #updated ini through ConfigObj
         elif file == 'share_leaderboards_over_network.txt':
-            merge_dict(out_dict_ini, {
-                'configs.main.ini': {
-                    'main::connectivity': {
-                        'share_leaderboards_over_network': (1, 'enable sharing leaderboards scores with people playing the same game on the same network'),
-                    },
-                }
-            })
+            configs_main["main::connectivity"]["share_leaderboards_over_network"] = 1 #updated ini through ConfigObj
         elif file == 'steam_deck.txt':
-            merge_dict(out_dict_ini, {
-                'configs.main.ini': {
-                    'main::general': {
-                        'steam_deck': (1, 'pretend the app is running on a steam deck'),
-                    },
-                }
-            })
-
-
+            configs_main["main::general"]["steam_deck"] = 1 #updated ini through ConfigObj
+         
 def write_txt_file(filename: str, dict_ini: dict, section: str, key: str):
     val = dict_ini.get(section, {}).get(key, None)
     if val is None:
@@ -437,7 +205,6 @@ def write_txt_file_multi(filename: str, dict_ini: dict, section: str):
     
     return True
 
-
 def convert_public_branch_to_txt(global_settings: str):
     src_file = os.path.join(global_settings, 'branches.json')
     if not os.path.isfile(src_file):
@@ -457,7 +224,7 @@ def convert_public_branch_to_txt(global_settings: str):
     return True
 
 def convert_to_txt(global_settings: str):
-    # oh no, they're too many!
+    # oh no, they're too many! --- they are indeed... it seems ConfigParser does the job here
     config = configparser.ConfigParser(strict=False, empty_lines_in_values=False)
     for file in glob.glob('*.ini*', root_dir=global_settings):
         config.read(os.path.join(global_settings, file), encoding='utf-8')
@@ -539,16 +306,16 @@ def main():
         if is_windows:
             appdata = os.getenv('APPDATA')
             if appdata:
-                global_settings = os.path.join(appdata, 'Goldberg SteamEmu Saves', 'settings')
+                global_settings = os.path.join(appdata, 'GSE Saves', 'settings')
         else:
             xdg = os.getenv('XDG_DATA_HOME')
             if xdg:
-                global_settings = os.path.join(xdg, 'Goldberg SteamEmu Saves', 'settings')
+                global_settings = os.path.join(xdg, 'GSE Saves', 'settings')
             
             if not global_settings:
                 home_env = os.getenv('HOME')
                 if home_env:
-                    global_settings = os.path.join(home_env, 'Goldberg SteamEmu Saves', 'settings')
+                    global_settings = os.path.join(home_env, 'GSE Saves', 'settings')
 
     if not global_settings or not os.path.isdir(global_settings):
         print('failed to detect folder', file=sys.stderr)
@@ -558,12 +325,44 @@ def main():
     print(f'searching inside the folder: "{global_settings}"')
 
     if CONVERT_TO_INI:
-        out_dict_ini = {}
-        convert_to_ini(global_settings, out_dict_ini)
+        shutil.copytree(os.path.join("_DEFAULT", str(0)), "_OUTPUT", dirs_exist_ok=True) # copy from ./_DEFAULT/0 dir
+        shutil.copytree(os.path.join("_DEFAULT", str(1)), "_OUTPUT", dirs_exist_ok=True) # copy from ./_DEFAULT/1 dir
+        convert_to_ini(global_settings)
 
-        if out_dict_ini:
+        if convert_to_ini(global_settings):
             create_new_steam_settings_folder()
-            write_ini_file(NEW_STEAM_SETTINGS_FOLDER, out_dict_ini)
+            configs_app.write() # use CongigObj to correctly update existing 'configs.app.ini' copied from ./_DEFAULT configuration --- END, write ini
+            # ConfigObj overrides the default ini format, adding spaces before and after '=' and '""' for empty keys, so we'll use this to undo the changes
+            with open(os.path.join(NEW_STEAM_SETTINGS_FOLDER, "configs.app.ini"), 'r') as file:
+                filedata = file.read()
+                filedata = filedata.replace(' = ""', '=')
+                filedata = filedata.replace(' = ', '=')
+            with open(os.path.join(NEW_STEAM_SETTINGS_FOLDER, "configs.app.ini"), 'w') as file:
+                file.write(filedata)
+            configs_main.write() # use CongigObj to correctly update existing 'configs.main.ini' copied from ./_DEFAULT configuration --- END, write ini
+            # ConfigObj overrides the default ini format, adding spaces before and after '=' and '""' for empty keys, so we'll use this to undo the changes
+            with open(os.path.join(NEW_STEAM_SETTINGS_FOLDER, "configs.main.ini"), 'r') as file:
+                filedata = file.read()
+                filedata = filedata.replace(' = ""', '=')
+                filedata = filedata.replace(' = ', '=')
+            with open(os.path.join(NEW_STEAM_SETTINGS_FOLDER, "configs.main.ini"), 'w') as file:
+                file.write(filedata)
+            configs_overlay.write() # use CongigObj to correctly update existing 'configs.overlay.ini' copied from ./_DEFAULT configuration --- END, write ini
+            # ConfigObj overrides the default ini format, adding spaces before and after '=' and '""' for empty keys, so we'll use this to undo the changes
+            with open(os.path.join(NEW_STEAM_SETTINGS_FOLDER, "configs.overlay.ini"), 'r') as file:
+                filedata = file.read()
+                filedata = filedata.replace(' = ""', '=')
+                filedata = filedata.replace(' = ', '=')
+            with open(os.path.join(NEW_STEAM_SETTINGS_FOLDER, "configs.overlay.ini"), 'w') as file:
+                file.write(filedata)
+            configs_user.write() # use CongigObj to correctly update existing 'configs.user.ini' copied from ./_DEFAULT configuration --- END, write ini
+            # ConfigObj overrides the default ini format, adding spaces before and after '=' and '""' for empty keys, so we'll use this to undo the changes
+            with open(os.path.join(NEW_STEAM_SETTINGS_FOLDER, "configs.user.ini"), 'r') as file:
+                filedata = file.read()
+                filedata = filedata.replace(' = ""', '=')
+                filedata = filedata.replace(' = ', '=')
+            with open(os.path.join(NEW_STEAM_SETTINGS_FOLDER, "configs.user.ini"), 'w') as file:
+                file.write(filedata)
             print(f'new settings written inside: "{os.path.join(os.path.curdir, NEW_STEAM_SETTINGS_FOLDER)}"')
         else:
             print('nothing found!', file=sys.stderr)

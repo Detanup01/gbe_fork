@@ -187,6 +187,7 @@ jobs:
           retention-days: 7
 
   gen_emu_script-win:
+    needs: ["emu-win-all"] # add emu-win-all to wait for emu build to complete, so that we include the latest dlls and tools in generate_emu_config
     name: "Gen emu config win"
     if: ${{ !cancelled() }}
     uses: "./.github/workflows/gen_emu_config-build-win.yml"
@@ -247,6 +248,7 @@ jobs:
           retention-days: 7
 
   gen_emu_script-linux:
+    needs: ["emu-linux-all"] # add emu-linux-all to wait for emu build to complete (not really needed but included for better build matrix visualization)
     name: "Gen emu config linux"
     if: ${{ !cancelled() }}
     uses: "./.github/workflows/gen_emu_config-build-linux.yml"
@@ -299,6 +301,7 @@ jobs:
           retention-days: 7
 
   migrate_gse_script-win:
+    needs: ["emu-win-all"] # add emu-win-all to wait for emu build to complete, so that we include the latest dlls and tools in migrate_gse
     name: "Migrate GSE win"
     if: ${{ !cancelled() }}
     uses: "./.github/workflows/migrate_gse-build-win.yml"
@@ -359,6 +362,7 @@ jobs:
           retention-days: 7
 
   migrate_gse_script-linux:
+    needs: ["emu-linux-all"] # add emu-linux-all to wait for emu build to complete (not really needed but included for better build matrix visualization)
     name: Migrate GSE linux
     if: ${{ !cancelled() }}
     uses: "./.github/workflows/migrate_gse-build-linux.yml"

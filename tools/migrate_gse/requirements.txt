@@ -1,1 +1,3 @@
 pyinstaller
+configparser
+configobj

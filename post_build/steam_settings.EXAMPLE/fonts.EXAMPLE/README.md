@@ -1,1 +1,2 @@
-Place your overlay fonts here, then modify `overlay_appearance` and point at the desired one.
+Place your overlay fonts here, then modify `Font_Override` in `configs.overlay.ini` and point at the desired one
+

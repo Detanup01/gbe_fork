@@ -1,5 +1,6 @@
 #controller vdf script by mr_goldberg
 #generates controller config from a vdf
+
 import vdf
 import sys
 import os
@@ -67,7 +68,7 @@ def add_input_bindings(group, bindings, force_binding=None, keymap=keymap_digita
                                         else:
                                             bindings[action_name] = [binding]
                                     else:
-                                        print(f"[X] missing keymap for {i}")
+                                        print(f"[X] ____ missing keymap for {i}")
     return bindings
 
 
@@ -130,7 +131,7 @@ def generate_controller_config(controller_vdf, config_dir):
                             bindings = add_input_bindings(group, bindings, binding)
 
                 else:
-                    print("unhandled trigger mode", group["mode"])
+                    print("[X] ____ unhandled trigger mode", group["mode"])
                 
             if s[0].lower() in ["joystick", "right_joystick", "dpad"]:
                 group = groups_byid[number]
@@ -146,7 +147,7 @@ def generate_controller_config(controller_vdf, config_dir):
                             elif s[0].lower() == "dpad":
                                 binding = "DPAD"
                             else:
-                                print("could not handle", s[0])
+                                print("[X] ____ could not handle", s[0])
                             if action_name in bindings:
                                 if binding not in bindings[action_name] and (binding + "=joystick_move") not in bindings[action_name]:
                                     bindings[action_name].insert(0, binding)
@@ -170,7 +171,7 @@ def generate_controller_config(controller_vdf, config_dir):
                         if s[0].lower() != "dpad":
                             print("no pad", s[0])
                 else:
-                    print("unhandled joy mode", group["mode"])
+                    print("[X] ____ unhandled joy mode", group["mode"])
 
         all_bindings[name] = bindings
 
@@ -202,14 +203,14 @@ if __name__ == '__main__':
 
     for vdf_file in sys.argv[1:]:
         try:
-            print(f"parsing controller file '{vdf_file}'")
+            print(f"[ ] parsing controller file '{vdf_file}'")
             t = ''
             with open(vdf_file, 'rb') as f:
                 t = f.read().decode('utf-8')
             if t:
                 filename = os.path.basename(vdf_file)
                 outdir = os.path.join(f"{filename}_config", "steam_settings", "controller")
-                print(f"output dir: '{outdir}'")
+                print(f"[ ] __ output dir: '{outdir}'")
                 generate_controller_config(t, outdir)
             else:
                 print("[X] couldn't load file", file=sys.stderr)

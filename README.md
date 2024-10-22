@@ -1,9 +1,7 @@
-## :large_orange_diamond: **This is a fork**
-Fork of https://gitlab.com/Mr_Goldberg/goldberg_emulator  
+## :large_orange_diamond: **Goldberg Steam Emu**
+Fork of https://gitlab.com/Mr_Goldberg/goldberg_emulator with a lot of fixes, improvements, additional features and a completely reworked file structure.
 
-Fork originally make by wizark952.
-
-This is a latest version of his work.
+Fork originally made by wizark952. This is latest version of it.
 
 ### Feel free to make a PR.
 
@@ -12,7 +10,6 @@ This is a latest version of his work.
 :red_circle:  
 
 **This fork is not a takeover, not a resurrection of the original project, and not a replacement.**  
-**This is just a fork, don't take it seriously.**  
 **You are highly encouraged to fork/clone it and do whatever you want with it.**  
 
 :red_circle:
@@ -37,23 +34,18 @@ This project depends on many third-party libraries and tools, credits to them fo
 * **Generate the proper app configuration using the `generate_emu_config` tool.**  
 * **If things don't work, try the `ColdClientLoader` setup.**  
 
-You can find helper guides, scripts, and tools here:
+You can find some guides, helper tools and scripts here:
 
-**(These guides, scripts, and tools are maintained by their authors.)**
+**These guides, tools and scripts are maintained by their authors. 
+Before using them, it's always a good idea to first make sure they are updated and designed to support all features of this fork of the emulator.**
 
-* **[GBE-Autoconfigurator](https://github.com/daci12345/GBE-Autoconfigurator)**
-* **[Semuexec](https://gitlab.com/detiam/Semuexec)**
-* **[Steam Emu Utility](https://github.com/turusudiro/SteamEmuUtility)**
 * **[How to use Goldberg Emulator](https://rentry.co/goldberg_emulator)**
+* **[Steam Emu Utility](https://github.com/turusudiro/SteamEmuUtility)**
 * **[GSE-Generator](https://github.com/brunolee-GIT/GSE-Generator)**
 
 You can also find instructions here in [README.release.md](./post_build/README.release.md)  
 
 ---
----
-
-<br/>
-
 # **Compiling**
 ## One time setup
 ### **Cloning the repo**
@@ -89,7 +81,7 @@ You can also find instructions here in [README.release.md](./post_build/README.r
 * Using `MSYS2` **this is currently experimental and will not work due to ABI differences**: https://www.msys2.org/  
   <details>
     <summary>steps</summary>
-    
+  
     * To build 64-bit binaries use either the [environment](https://www.msys2.org/docs/environments/) `UCRT64` or `MINGW64` then install the GCC toolchain  
       `UCRT64`  
       ```shell
@@ -102,8 +94,8 @@ You can also find instructions here in [README.release.md](./post_build/README.r
     * To build 32-bit binaries use the environment `MINGW32` then install the GCC toolchain  
       ```shell
       pacman -S mingw-w64-i686-gcc
-      ``` 
-    
+      ```
+  
   </details> 
 * Python 3.10 or above: https://www.python.org/downloads/windows/  
    After installation, make sure it works
@@ -163,7 +155,7 @@ Open CMD in the repo folder, then run the following
 * To build using `MSYS2` **this is currently experimental and will not work due to ABI differences**  
   <details>
     <summary>steps</summary>
-    
+  
     *(Optional)* In both cases below, you can use `Clang` compiler instead of `GCC` by running these 2 commands in the same terminal instance
     ```shell
     export CC="clang"
@@ -179,7 +171,7 @@ Open CMD in the repo folder, then run the following
     export CMAKE_GENERATOR="MSYS Makefiles"
     ./third-party/common/win/premake/premake5.exe --file=premake5-deps.lua --32-build --all-ext --all-build --verbose   --os=windows gmake2
     ```
-    
+  
   </details> 
 
 This will:
@@ -210,29 +202,29 @@ Open CMD in the repo folder, then run the following
 * For `Visual Studio 2022`
   ```batch
   third-party\common\win\premake\premake5.exe --file=premake5.lua --genproto --os=windows vs2022
-  ```  
+  ```
   You can then go to the folder `build\project\vs2022\win` and open the produced `.sln` file in Visual Studio.  
   Or, if you prefer to do it from command line, open the `Developer Command Prompt for VS 2022` inside the above folder, then:  
   ```batch
   msbuild /nologo /v:n /p:Configuration=release,Platform=Win32 gbe.sln
-
+  
   msbuild /nologo /v:n /p:Configuration=release,Platform=x64 gbe.sln
   ```
   
 * For `MSYS2` **this is currently experimental and will not work due to ABI differences**  
   <details>
     <summary>steps</summary>
-    
+  
     ```shell
     ./third-party/common/win/premake/premake5.exe --file=premake5.lua --genproto --os=windows gmake2
-
+  
     cd ./build/project/gmake2/win
     ```
     *(Optional)* You can use `Clang` compiler instead of `GCC` by running these 2 commands in the current terminal instance
     ```shell
     export CC="clang"
     export CXX="clang++"
-    ```  
+    ```
     * 64-bit build (`UCRT64` or `MINGW64`)
       ```shell
       make config=release_x64 -j 8 all
@@ -241,11 +233,11 @@ Open CMD in the repo folder, then run the following
       ```shell
       make config=release_x32 -j 8 all
       ```
-    To see all possible build targets
+      To see all possible build targets
     ```shell
     make help
     ```
-    
+  
   </details> 
 
 This will build a release version of the emu in the folder `build\win\<toolchain>\release`  
@@ -258,22 +250,22 @@ Open a terminal in the repo folder, then run the following
 ```shell
 ./third-party/common/linux/premake/premake5 --file=premake5.lua --genproto --os=linux gmake2
 cd ./build/project/gmake2/linux
-```  
+```
 *(Optional)* You can use `Clang` compiler instead of `GCC` by running these 2 commands in the current terminal instance
 ```shell
 export CC="clang"
 export CXX="clang++"
-```  
+```
 Then run the following
 ```shell
 make config=release_x32 -j 8 all
 make config=release_x64 -j 8 all
-```  
+```
 
 To see all possible build targets
 ```shell
 make help
-```  
+```
 
 This will build a release version of the emu in the folder `build/linux/<toolchain>/release`  
 An example script `build_linux_premake.sh` is available, check it out  
@@ -301,12 +293,12 @@ Open bash terminal then:
 1. Create python virtual environemnt and install the required packages/dependencies
    ```shell
    sudo ./recreate_venv_linux.sh
-   ```  
+   ```
    You might need to edit this script to use a different python version.  
    Find this line and change it:
    ```shell
    python_package="python3.12"
-   ``` 
+   ```
 2. Build the tool using `pyinstaller`  
    ```shell
    ./rebuild_linux.sh

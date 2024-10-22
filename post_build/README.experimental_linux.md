@@ -1,2 +1,2 @@
 ## What is this ?
-This build of the emu has the overlay enabled, it works on very few games  
+This experimental build of the emu for Linux. The overlay is enabled, though it works on very few games.

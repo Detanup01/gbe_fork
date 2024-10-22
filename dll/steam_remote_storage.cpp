@@ -544,7 +544,7 @@ int32 Steam_Remote_Storage::UGCRead( UGCHandle_t hContent, void *pvData, int32 c
         if (dwf.get_source() == Downloaded_File::DownloadSource::AfterSendQueryUGCRequest) {
             std::string mod_base_path = dwf.mod_query_info.is_primary_file
                 ? mod.path
-                : Local_Storage::get_game_settings_path() + "mod_images" + PATH_SEPARATOR + std::to_string(mod.id);
+                : Local_Storage::get_game_settings_path() + "mods_img" + PATH_SEPARATOR + std::to_string(mod.id);
 
             mod_fullpath = common_helpers::to_absolute(mod_name, mod_base_path);
         } else { // Downloaded_File::DownloadSource::FromUGCDownloadToLocation
@@ -1148,7 +1148,7 @@ SteamAPICall_t Steam_Remote_Storage::UGCDownloadToLocation( UGCHandle_t hContent
             : mod.previewFileName;
         std::string mod_base_path = query_res.value().is_primary_file
             ? mod.path
-            : Local_Storage::get_game_settings_path() + "mod_images" + PATH_SEPARATOR + std::to_string(mod.id);
+            : Local_Storage::get_game_settings_path() + "mods_img" + PATH_SEPARATOR + std::to_string(mod.id);
         int32 mod_size = query_res.value().is_primary_file
             ? mod.primaryFileSize
             : mod.previewFileSize;

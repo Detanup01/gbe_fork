@@ -2,6 +2,7 @@ import copy
 import os
 import time
 import json
+import shutil
 
 def __ClosestDictKey(targetKey : str, srcDict : dict[str, object] | set[str]) -> str | None:
     for k in srcDict:
@@ -11,6 +12,7 @@ def __ClosestDictKey(targetKey : str, srcDict : dict[str, object] | set[str]) ->
     return None
 
 def __generate_ach_watcher_schema(lang: str, app_id: int, achs: list[dict]) -> list[dict]:
+    print(f"[ ] __ writing {lang} {app_id}.db to <SCH_DIR>\\{lang} folder")
     out_achs_list = []
     for idx in range(len(achs)):
         ach = copy.deepcopy(achs[idx])
@@ -23,20 +25,20 @@ def __generate_ach_watcher_schema(lang: str, app_id: int, achs: list[dict]) -> l
             if type(ach_displayName) == dict: # this is a dictionary
                 displayName : str = ach_displayName.get(lang, "")
                 if not displayName and ach_displayName: # has some keys but language not found
-                    #print(f'[?] Missing language "{lang}" in "displayName" of achievement {ach["name"]}')
+                    print(f"[X] ____ Missing {lang} language in 'displayName' of achievement {ach['name']}")
                     nearestLang = __ClosestDictKey(lang, ach_displayName)
                     if nearestLang:
-                        #print(f'[?] Best matching language "{nearestLang}"')
+                        print(f"[ ] ____ Using 'displayName' from {nearestLang} language")
                         displayName = ach_displayName[nearestLang]
                     else:
-                        print(f'[?] Missing language "{lang}", using displayName from the first language for achievement {ach["name"]}')
+                        print(f"[ ] ____ Using 'displayName' from the first language")
                         displayName : str = list(ach_displayName.values())[0]
             else: # single string (or anything else)
                 displayName = ach_displayName
             
             del ach["displayName"]
         else:
-            print(f'[?] Missing "displayName" in achievement {ach["name"]}')
+            print(f"[X] ____ Missing 'displayName' in achievement {ach['name']}")
         
         out_ach_data["displayName"] = displayName
         
@@ -46,20 +48,20 @@ def __generate_ach_watcher_schema(lang: str, app_id: int, achs: list[dict]) -> l
             if type(ach_desc) == dict: # this is a dictionary
                 desc : str = ach_desc.get(lang, "")
                 if not desc and ach_desc: # has some keys but language not found
-                    #print(f'[?] Missing language "{lang}" in "description" of achievement {ach["name"]}')
+                    print(f"[X] ____ Missing {lang} language in 'description' of achievement {ach['name']}")
                     nearestLang = __ClosestDictKey(lang, ach_desc)
                     if nearestLang:
-                        #print(f'[?] Best matching language "{nearestLang}"')
+                        print(f"[ ] ____ Using 'description' from {nearestLang} language")
                         desc = ach_desc[nearestLang]
                     else:
-                        print(f'[?] Missing language "{lang}", using description from the first language for achievement {ach["name"]}')
+                        print(f"[ ] ____ Using 'description' from the first language")
                         desc : str = list(ach_desc.values())[0]
             else: # single string (or anything else)
                 desc = ach_desc
             
             del ach["description"]
         else:
-            print(f'[?] Missing "description" in achievement {ach["name"]}')
+            print(f"[X] ____ Missing 'description' in achievement {ach['name']}")
         
         # adjust the description
         out_ach_data["description"] = desc
@@ -106,17 +108,17 @@ def generate_all_ach_watcher_schemas(
     achs: list[dict],
     small_icon_hash : str) -> None:
     
-    ach_watcher_out_dir = os.path.join(base_out_dir, "Achievement Watcher", "steam_cache", "schema")
-    print(f"generating schemas for Achievement Watcher in: {ach_watcher_out_dir}")
-
-    if app_exe:
-        print(f"detected app exe: '{app_exe}'")
-    else:
-        print(f"[X] couldn't detect app exe")
+    ach_watcher_out_dir = os.path.join(base_out_dir, "steam_misc", "extra_acw", "steam_cache", "schema")
     
-    # if not achs:
-    #     print("[X] No achievements were found for Achievement Watcher")
-    #     return
+    if not achs:
+        #print("[X] Couldn't generate Achievement Watcher schemas, no achievements found") # move notification to main script
+        return
+    else:
+        print(f"[ ] Generating & packing Achievement Watcher schemas...")
+        #if app_exe:
+        #    print(f"[ ] __ Detected app exe: '{app_exe}'") # move notification to main script
+        #else:
+        #    print(f"[X] __ Cannot detect app exe") # move notification to main script
     
     small_icon_url = ''
     if small_icon_hash:
@@ -157,8 +159,11 @@ def generate_all_ach_watcher_schemas(
         langs.remove(tokenKey)
     
     if not langs:
-        print("[X] Couldn't detect supported languages, assuming English is the only supported language for Achievement Watcher")
+        print(f"[X] __ Cannot detect supported languages")
+        print(f"[ ] __ Assuming english is the only supported language")
         langs = ["english"]
+
+    print(f"[ ] __ <SCH_DIR> = <OUT_DIR>\\steam_misc\\extra_acw\\steam_cache\\schema")
     
     for lang in langs:
         out_schema_folder = os.path.join(ach_watcher_out_dir, lang)
@@ -171,3 +176,8 @@ def generate_all_ach_watcher_schemas(
         out_schema_file = os.path.join(out_schema_folder, f'{appid}.db')
         with open(out_schema_file, "wt", encoding='utf-8') as f:
             json.dump(out_schema, f, ensure_ascii=False, indent=2)
+
+    shutil.make_archive(os.path.join(base_out_dir, "steam_misc\\extra_acw"), 'zip', os.path.join(base_out_dir, "steam_misc\\extra_acw")) # first argument is the name of the zip file
+    shutil.rmtree(os.path.join(base_out_dir, "steam_misc\\extra_acw"))
+    os.makedirs(os.path.join(base_out_dir, "steam_misc\\extra_acw"))
+    shutil.move(os.path.join(base_out_dir, 'steam_misc\\extra_acw.zip'), os.path.join(base_out_dir, "steam_misc\\extra_acw\\extra_acw.zip"))

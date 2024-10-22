@@ -54,8 +54,8 @@ int main() {
     
     //Set appid to: LOBBY_CONNECT_APPID
     SteamAPI_RestartAppIfNecessary(LOBBY_CONNECT_APPID);
-	
-	refresh:
+  
+  refresh:
 	title();
 	std::cout << "Please wait...\n";
 	

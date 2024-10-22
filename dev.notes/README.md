@@ -1,1 +1,2 @@
-Explanations for random thoughts and ideas.  
+Explanations for random thoughts and ideas.
+
