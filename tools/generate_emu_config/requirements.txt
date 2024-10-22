@@ -1,4 +1,4 @@
-steam[client]
+steam[client] @ git+https://github.com/Sak32009/steam_py_fork.git@fix-cm-servers
 pyinstaller
 requests
 certifi
