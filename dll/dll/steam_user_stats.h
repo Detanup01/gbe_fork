@@ -49,6 +49,7 @@ struct achievement_trigger {
     std::string value_operation{};
     std::string min_value{}; // min progress
     std::string max_value{}; // max progress
+    std::string last_notified_progress{};
 
     bool should_unlock_ach(float stat) const;
     bool should_unlock_ach(int32 stat) const;
