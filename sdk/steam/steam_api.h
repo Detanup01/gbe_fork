@@ -73,6 +73,7 @@
 #include "isteamfriends015.h"
 #include "isteamfriends016.h"
 #include "isteamutils.h"
+#include "isteamutils001.h"
 #include "isteamutils002.h"
 #include "isteamutils003.h"
 #include "isteamutils004.h"
