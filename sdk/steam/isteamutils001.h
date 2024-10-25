@@ -5,9 +5,6 @@
 #pragma once
 #endif
 
-// Might be not complete/real. Some only has 4, 5, or 7 function, we want them all here.
-// -Detanup01
-
 class ISteamUtils001
 {
 public:
