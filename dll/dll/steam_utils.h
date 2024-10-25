@@ -25,6 +25,7 @@
 
 
 class Steam_Utils : 
+public ISteamUtils001,
 public ISteamUtils002,
 public ISteamUtils003,
 public ISteamUtils004,

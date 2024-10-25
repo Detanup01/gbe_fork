@@ -209,7 +209,10 @@ ISteamUtils *Steam_Client::GetISteamUtils( HSteamPipe hSteamPipe, const char *pc
         steam_utils_temp = steam_utils;
     }
 
-    if (strcmp(pchVersion, "SteamUtils002") == 0) {
+
+    if (strcmp(pchVersion, "SteamUtils001") == 0) {
+        return reinterpret_cast<ISteamUtils *>(static_cast<ISteamUtils001 *>(steam_utils_temp));
+    } else if (strcmp(pchVersion, "SteamUtils002") == 0) {
         return reinterpret_cast<ISteamUtils *>(static_cast<ISteamUtils002 *>(steam_utils_temp));
     } else if (strcmp(pchVersion, "SteamUtils003") == 0) {
         return reinterpret_cast<ISteamUtils *>(static_cast<ISteamUtils003 *>(steam_utils_temp)); // ISteamUtils003 Not found in public Archive, must be between 1.02-1.03
