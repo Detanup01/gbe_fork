@@ -58,6 +58,8 @@
 #include "isteamuser021.h"
 #include "isteamuser022.h"
 #include "isteamfriends.h"
+#include "isteamfriends001.h"
+#include "isteamfriends002.h"
 #include "isteamfriends003.h"
 #include "isteamfriends004.h"
 #include "isteamfriends005.h"

@@ -237,6 +237,35 @@ EPersonaState Steam_Friends::GetPersonaState()
     return k_EPersonaStateOnline;
 }
 
+void Steam_Friends::SetPersonaState(EPersonaState ePersonaState)
+{
+    PRINT_DEBUG_TODO();
+}
+
+bool Steam_Friends::AddFriend(CSteamID steamIDFriend)
+{
+    PRINT_DEBUG_TODO();
+    if (steamIDFriend == k_steamIDNil)
+        return false;
+    // TODO
+    return true;
+}
+
+bool Steam_Friends::RemoveFriend(CSteamID steamIDFriend)
+{
+    PRINT_DEBUG_TODO();
+    if (steamIDFriend == k_steamIDNil)
+        return false;
+    // TODO
+    return true;
+}
+
+bool Steam_Friends::HasFriend(CSteamID steamIDFriend)
+{
+    PRINT_DEBUG("sdk 0.99u");
+    return HasFriend(steamIDFriend, (int)k_EFriendFlagImmediate);
+}
+
 
 // friend iteration
 // takes a set of k_EFriendFlags, and returns the number of users the client knows about who meet that criteria
@@ -326,6 +355,13 @@ EPersonaState Steam_Friends::GetFriendPersonaState( CSteamID steamIDFriend )
     return state;
 }
 
+bool Steam_Friends::Deprecated_GetFriendGamePlayed(CSteamID steamIDFriend, int32 *pnGameID, uint32 *punGameIP, uint16 *pusGamePort)
+{
+    PRINT_DEBUG_ENTRY();
+    // TODO: real steam seems not to fill memory pointed by pnGameID
+    return GetFriendGamePlayed(steamIDFriend, NULL, punGameIP, pusGamePort, NULL);
+}
+
 
 // returns the name another user - guaranteed to not be NULL.
 // same rules as GetFriendPersonaState() apply as to whether or not the user knowns the name of the other user
@@ -345,6 +381,122 @@ const char* Steam_Friends::GetFriendPersonaName( CSteamID steamIDFriend )
 
     PRINT_DEBUG("returned '%s'", name);
     return name;
+}
+
+int32 Steam_Friends::AddFriendByName(const char *pchEmailOrAccountName)
+{
+    PRINT_DEBUG_TODO();
+    return 0;
+}
+
+int Steam_Friends::GetFriendCount()
+{
+    PRINT_DEBUG("sdk 0.99u");
+    return GetFriendCount((int)k_EFriendFlagImmediate);
+}
+
+CSteamID Steam_Friends::GetFriendByIndex(int iFriend)
+{
+    PRINT_DEBUG("sdk 0.99u");
+    return GetFriendByIndex(iFriend, (int)k_EFriendFlagImmediate);
+}
+
+void Steam_Friends::SendMsgToFriend(CSteamID steamIDFriend, EChatEntryType eChatEntryType, const char *pchMsgBody)
+{
+    PRINT_DEBUG_TODO();
+}
+
+void Steam_Friends::SetFriendRegValue(CSteamID steamIDFriend, const char *pchKey, const char *pchValue)
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (!pchValue)
+        return; // real steam crashes though
+
+    if (!pchKey || !pchKey[0]) // tested on real steam
+    {
+        reg.clear();
+        reg_nullptr = std::string(pchValue);
+    }
+    else
+    {
+        reg[std::string(pchKey)] = std::string(pchValue);
+        // TODO: save it to disk, because real steam can get the string when app restarts
+    }
+}
+
+const char *Steam_Friends::GetFriendRegValue(CSteamID steamIDFriend, const char *pchKey)
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    // TODO: load data from disk, because real steam can get the string when app restarts
+
+    if (!pchKey || !pchKey[0])
+    {
+        return reg_nullptr.c_str();
+    }
+    else
+    {
+        auto it = reg.find(std::string(pchKey));
+        if (it == reg.end())
+            return "";
+
+        return it->second.c_str();
+    }
+}
+
+int Steam_Friends::GetChatMessage(CSteamID steamIDFriend, int iChatID, void *pvData, int cubData, EChatEntryType *peChatEntryType)
+{
+    PRINT_DEBUG_TODO();
+    if (peChatEntryType)
+        *peChatEntryType = k_EChatEntryTypeInvalid;
+    return 0;
+}
+
+bool Steam_Friends::SendMsgToFriend(CSteamID steamIDFriend, EChatEntryType eChatEntryType, const void *pvMsgBody, int cubMsgBody)
+{
+    PRINT_DEBUG_TODO();
+    return true;
+}
+
+int Steam_Friends::GetChatIDOfChatHistoryStart(CSteamID steamIDFriend)
+{
+    PRINT_DEBUG_TODO();
+    return 0;
+}
+
+void Steam_Friends::SetChatHistoryStart(CSteamID steamIDFriend, int iChatID)
+{
+    PRINT_DEBUG_TODO();
+}
+
+void Steam_Friends::ClearChatHistory(CSteamID steamIDFriend)
+{
+    PRINT_DEBUG_TODO();
+}
+
+bool Steam_Friends::InviteFriendByEmail(const char *pchEmailAccount)
+{
+    PRINT_DEBUG_TODO();
+    return false;
+}
+
+int Steam_Friends::GetBlockedFriendCount()
+{
+    PRINT_DEBUG_ENTRY();
+    return GetFriendCount((int)k_EFriendFlagBlocked);
+}
+
+bool Steam_Friends::GetFriendGamePlayed(CSteamID steamIDFriend, uint64 *pulGameID, uint32 *punGameIP, uint16 *pusGamePort)
+{
+    PRINT_DEBUG("sdk 0.99u");
+    return GetFriendGamePlayed(steamIDFriend, pulGameID, punGameIP, pusGamePort, NULL);
+}
+
+bool Steam_Friends::GetFriendGamePlayed2(CSteamID steamIDFriend, uint64 *pulGameID, uint32 *punGameIP, uint16 *pusGamePort, uint16 *pusQueryPort)
+{
+    PRINT_DEBUG_ENTRY();
+    return GetFriendGamePlayed(steamIDFriend, pulGameID, punGameIP, pusGamePort, pusQueryPort);
 }
 
 
@@ -528,6 +680,18 @@ const char* Steam_Friends::GetClanName( CSteamID steamIDClan )
         if (c.id.ConvertToUint64() == steamIDClan.ConvertToUint64()) return c.name.c_str();
     }
     return "";
+}
+
+bool Steam_Friends::InviteFriendToClan(CSteamID steamIDFriend, CSteamID steamIDClan)
+{
+    PRINT_DEBUG_TODO();
+    return false;
+}
+
+bool Steam_Friends::AcknowledgeInviteToClan(CSteamID steamIDClan, bool bAcceptOrDenyClanInvite)
+{
+    PRINT_DEBUG_TODO();
+    return false;
 }
 
 const char* Steam_Friends::GetClanTag( CSteamID steamIDClan )

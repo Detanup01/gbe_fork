@@ -28,6 +28,8 @@ struct Avatar_Numbers {
 };
 
 class Steam_Friends : 
+public ISteamFriends001,
+public ISteamFriends002,
 public ISteamFriends003,
 public ISteamFriends004,
 public ISteamFriends005,
@@ -60,6 +62,8 @@ public ISteamFriends
     CSteamID lobby_id{};
 
     std::chrono::high_resolution_clock::time_point last_sent_friends{};
+    std::map<std::string, std::string> reg{};
+    std::string reg_nullptr{};
 
     Friend *find_friend(CSteamID id);
 
@@ -107,6 +111,11 @@ public:
     // gets the status of the current user
     EPersonaState GetPersonaState();
 
+	void SetPersonaState( EPersonaState ePersonaState );
+	bool AddFriend( CSteamID steamIDFriend );
+	bool RemoveFriend( CSteamID steamIDFriend );
+	bool HasFriend( CSteamID steamIDFriend );
+
 
     // friend iteration
     // takes a set of k_EFriendFlags, and returns the number of users the client knows about who meet that criteria
@@ -135,12 +144,31 @@ public:
     // this will only be known by the local user if steamIDFriend is in their friends list; on the same game server; in a chat room or lobby; or in a small group with the local user
     EPersonaState GetFriendPersonaState( CSteamID steamIDFriend );
 
+    bool Deprecated_GetFriendGamePlayed( CSteamID steamIDFriend, int32 *pnGameID, uint32 *punGameIP, uint16 *pusGamePort );
+
 
     // returns the name another user - guaranteed to not be NULL.
     // same rules as GetFriendPersonaState() apply as to whether or not the user knowns the name of the other user
     // note that on first joining a lobby, chat room or game server the local user will not known the name of the other users automatically; that information will arrive asyncronously
     // 
     const char *GetFriendPersonaName( CSteamID steamIDFriend );
+
+	int32 AddFriendByName( const char *pchEmailOrAccountName );
+	int GetFriendCount();
+	CSteamID GetFriendByIndex( int iFriend );
+	void SendMsgToFriend( CSteamID steamIDFriend, EChatEntryType eChatEntryType, const char *pchMsgBody );
+	void SetFriendRegValue( CSteamID steamIDFriend, const char *pchKey, const char *pchValue );
+	const char *GetFriendRegValue( CSteamID steamIDFriend, const char *pchKey );
+	int GetChatMessage( CSteamID steamIDFriend, int iChatID, void *pvData, int cubData, EChatEntryType *peChatEntryType );
+
+	bool SendMsgToFriend( CSteamID steamIDFriend, EChatEntryType eChatEntryType, const void *pvMsgBody, int cubMsgBody );
+	int GetChatIDOfChatHistoryStart( CSteamID steamIDFriend );
+	void SetChatHistoryStart( CSteamID steamIDFriend, int iChatID );
+	void ClearChatHistory( CSteamID steamIDFriend );
+	bool InviteFriendByEmail( const char *pchEmailAccount );
+	int GetBlockedFriendCount();
+	bool GetFriendGamePlayed( CSteamID steamIDFriend, uint64 *pulGameID, uint32 *punGameIP, uint16 *pusGamePort );
+	bool GetFriendGamePlayed2( CSteamID steamIDFriend, uint64 *pulGameID, uint32 *punGameIP, uint16 *pusGamePort, uint16 *pusQueryPort );
 
 
     // returns true if the friend is actually in a game, and fills in pFriendGameInfo with an extra details 
@@ -190,6 +218,9 @@ public:
     void GetClanByIndex(CSteamID& result, int iClan );
 
     const char *GetClanName( CSteamID steamIDClan );
+
+	bool InviteFriendToClan( CSteamID steamIDFriend, CSteamID steamIDClan );
+	bool AcknowledgeInviteToClan( CSteamID steamIDClan, bool bAcceptOrDenyClanInvite );
 
     const char *GetClanTag( CSteamID steamIDClan );
 
