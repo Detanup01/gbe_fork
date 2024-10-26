@@ -144,7 +144,7 @@ public:
     // this will only be known by the local user if steamIDFriend is in their friends list; on the same game server; in a chat room or lobby; or in a small group with the local user
     EPersonaState GetFriendPersonaState( CSteamID steamIDFriend );
 
-    bool Deprecated_GetFriendGamePlayed( CSteamID steamIDFriend, int32 *pnGameID, uint32 *punGameIP, uint16 *pusGamePort )
+    bool Deprecated_GetFriendGamePlayed( CSteamID steamIDFriend, int32 *pnGameID, uint32 *punGameIP, uint16 *pusGamePort );
 
 
     // returns the name another user - guaranteed to not be NULL.
@@ -159,7 +159,6 @@ public:
 	void SendMsgToFriend( CSteamID steamIDFriend, EChatEntryType eChatEntryType, const char *pchMsgBody );
 	void SetFriendRegValue( CSteamID steamIDFriend, const char *pchKey, const char *pchValue );
 	const char *GetFriendRegValue( CSteamID steamIDFriend, const char *pchKey );
-	const char *GetFriendPersonaNameHistory( CSteamID steamIDFriend, int iPersonaName );
 	int GetChatMessage( CSteamID steamIDFriend, int iChatID, void *pvData, int cubData, EChatEntryType *peChatEntryType );
 
 	bool SendMsgToFriend( CSteamID steamIDFriend, EChatEntryType eChatEntryType, const void *pvMsgBody, int cubMsgBody );
