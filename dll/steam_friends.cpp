@@ -358,11 +358,8 @@ EPersonaState Steam_Friends::GetFriendPersonaState( CSteamID steamIDFriend )
 bool Steam_Friends::Deprecated_GetFriendGamePlayed(CSteamID steamIDFriend, int32 *pnGameID, uint32 *punGameIP, uint16 *pusGamePort)
 {
     PRINT_DEBUG_ENTRY();
-    if (punGameIP)
-        *punGameIP = 0;
-    if (pusGamePort)
-        *pusGamePort = 0;
-    return true;
+    // TODO: real steam seems not to fill memory pointed by pnGameID
+    return GetFriendGamePlayed(steamIDFriend, NULL, punGameIP, pusGamePort, NULL);
 }
 
 
