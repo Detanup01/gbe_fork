@@ -160,7 +160,11 @@ ISteamFriends *Steam_Client::GetISteamFriends( HSteamUser hSteamUser, HSteamPipe
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
-    if (strcmp(pchVersion, "SteamFriends003") == 0) {
+    if (strcmp(pchVersion, "SteamFriends001") == 0) {
+        return reinterpret_cast<ISteamFriends *>(static_cast<ISteamFriends001 *>(steam_friends)); // sdk 0.99u
+    } else if (strcmp(pchVersion, "SteamFriends002") == 0) {
+        return reinterpret_cast<ISteamFriends *>(static_cast<ISteamFriends002 *>(steam_friends)); // sdk 0.99y
+    } else if (strcmp(pchVersion, "SteamFriends003") == 0) {
         return reinterpret_cast<ISteamFriends *>(static_cast<ISteamFriends003 *>(steam_friends));
     } else if (strcmp(pchVersion, "SteamFriends004") == 0) {
         return reinterpret_cast<ISteamFriends *>(static_cast<ISteamFriends004 *>(steam_friends));
