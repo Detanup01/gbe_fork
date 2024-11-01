@@ -294,11 +294,24 @@ SteamAPICall_t Steam_UGC::SendQueryUGCRequest( UGCQueryHandle_t handle )
 {
     PRINT_DEBUG("%llu", handle);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (handle == k_UGCQueryHandleInvalid) return k_uAPICallInvalid;
+    
+    const auto trigger_failure = [handle, this](){
+        SteamUGCQueryCompleted_t data{};
+        data.m_handle = handle;
+        data.m_eResult = k_EResultFail;
+        data.m_unNumResultsReturned = 0;
+        data.m_unTotalMatchingResults = 0;
+        data.m_bCachedData = false;
+        
+        auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+        return ret;
+    };
+    
+    if (handle == k_UGCQueryHandleInvalid) return trigger_failure();
 
     auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
-    if (ugc_queries.end() == request)
-        return k_uAPICallInvalid;
+    if (ugc_queries.end() == request) return trigger_failure();
 
     if (request->return_all_subscribed) {
         request->results = std::set<PublishedFileId_t>(ugc_bridge->subbed_mods_itr_begin(), ugc_bridge->subbed_mods_itr_end());
