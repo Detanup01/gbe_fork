@@ -219,6 +219,7 @@ void Settings::addModDetails(PublishedFileId_t id, const Mod_entry &details)
         f->score = details.score;
         f->numChildren = details.numChildren;
         f->previewURL = details.previewURL;
+        f->total_files_sizes = details.total_files_sizes;
     }
 }
 

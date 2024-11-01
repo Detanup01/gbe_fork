@@ -54,6 +54,13 @@ public ISteamUGC017,
 public ISteamUGC018,
 public ISteamUGC
 {
+public:
+    enum class IUgcItfVersion : unsigned {
+        v018, // sdk 1.59
+        v020, // sdk 1.60
+    };
+
+private:
     constexpr static const char ugc_favorits_file[] = "favorites.txt";
 
     class Settings *settings{};
@@ -76,11 +83,14 @@ public ISteamUGC
 
     std::optional<std::vector<std::string>> get_query_ugc_tags(UGCQueryHandle_t handle, uint32 index);
 
-    void set_details(PublishedFileId_t id, SteamUGCDetails_t *pDetails);
+    void set_details(PublishedFileId_t id, SteamUGCDetails_t *pDetails, IUgcItfVersion ver);
 
     void read_ugc_favorites();
 
     bool write_ugc_favorites();
+
+    bool internal_GetQueryUGCResult( UGCQueryHandle_t handle, uint32 index, SteamUGCDetails_t *pDetails, IUgcItfVersion ver );
+    SteamAPICall_t internal_RequestUGCDetails( PublishedFileId_t nPublishedFileID, uint32 unMaxAgeSeconds, IUgcItfVersion ver );
 
 public:
     Steam_UGC(class Settings *settings, class Ugc_Remote_Storage_Bridge *ugc_bridge, class Local_Storage *local_storage, class SteamCallResults *callback_results, class SteamCallBacks *callbacks);
@@ -107,6 +117,8 @@ public:
 
     // Retrieve an individual result after receiving the callback for querying UGC
     bool GetQueryUGCResult( UGCQueryHandle_t handle, uint32 index, SteamUGCDetails_t *pDetails );
+    // before SDK v1.60
+    bool GetQueryUGCResult_old( UGCQueryHandle_t handle, uint32 index, SteamUGCDetails_t *pDetails );
 
     uint32 GetQueryUGCNumTags( UGCQueryHandle_t handle, uint32 index );
 
@@ -200,6 +212,8 @@ public:
 
     // DEPRECATED - Use CreateQueryUGCDetailsRequest call above instead!
     SteamAPICall_t RequestUGCDetails( PublishedFileId_t nPublishedFileID, uint32 unMaxAgeSeconds );
+    // before SDK v1.60
+    SteamAPICall_t RequestUGCDetails_old( PublishedFileId_t nPublishedFileID, uint32 unMaxAgeSeconds );
 
     SteamAPICall_t RequestUGCDetails( PublishedFileId_t nPublishedFileID );
 
