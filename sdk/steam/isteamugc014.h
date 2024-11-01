@@ -28,7 +28,7 @@ public:
 	virtual SteamAPICall_t SendQueryUGCRequest( UGCQueryHandle_t handle ) = 0;
 
 	// Retrieve an individual result after receiving the callback for querying UGC
-	virtual bool GetQueryUGCResult( UGCQueryHandle_t handle, uint32 index, SteamUGCDetails_t *pDetails ) = 0;
+	virtual bool GetQueryUGCResult_old( UGCQueryHandle_t handle, uint32 index, SteamUGCDetails_t *pDetails ) = 0;
 	virtual bool GetQueryUGCPreviewURL( UGCQueryHandle_t handle, uint32 index, STEAM_OUT_STRING_COUNT(cchURLSize) char *pchURL, uint32 cchURLSize ) = 0;
 	virtual bool GetQueryUGCMetadata( UGCQueryHandle_t handle, uint32 index, STEAM_OUT_STRING_COUNT(cchMetadatasize) char *pchMetadata, uint32 cchMetadatasize ) = 0;
 	virtual bool GetQueryUGCChildren( UGCQueryHandle_t handle, uint32 index, PublishedFileId_t* pvecPublishedFileID, uint32 cMaxEntries ) = 0;
@@ -72,7 +72,7 @@ public:
 
 	// DEPRECATED - Use CreateQueryUGCDetailsRequest call above instead!
 	STEAM_CALL_RESULT( SteamUGCRequestUGCDetailsResult_t )
-	virtual SteamAPICall_t RequestUGCDetails( PublishedFileId_t nPublishedFileID, uint32 unMaxAgeSeconds ) = 0;
+	virtual SteamAPICall_t RequestUGCDetails_old( PublishedFileId_t nPublishedFileID, uint32 unMaxAgeSeconds ) = 0;
 
 	// Steam Workshop Creator API
 	STEAM_CALL_RESULT( CreateItemResult_t )

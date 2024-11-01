@@ -3675,14 +3675,7 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_SendQueryUGCRequest( ISteamUGC* s
 
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetQueryUGCResult( ISteamUGC* self, UGCQueryHandle_t handle, uint32 index, SteamUGCDetails_t * pDetails )
 {
-    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
-    auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
-        ptr = get_steam_client()->steam_ugc;
-    }
-
-    return (ptr)->GetQueryUGCResult(handle, index, pDetails);
+    return self->GetQueryUGCResult(handle, index, pDetails);
 }
 
 STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetQueryUGCNumTags( ISteamUGC* self, UGCQueryHandle_t handle, uint32 index )
@@ -4143,14 +4136,7 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUGC_AddRequiredKeyValueTag( ISteamUGC* se
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_RequestUGCDetails( ISteamUGC* self, PublishedFileId_t nPublishedFileID, uint32 unMaxAgeSeconds )
 {
-    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_ugc);
-    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_ugc);
-    auto ptr = get_steam_client()->steam_gameserver_ugc;
-    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
-        ptr = get_steam_client()->steam_ugc;
-    }
-
-    return (ptr)->RequestUGCDetails(nPublishedFileID, unMaxAgeSeconds);
+    return self->RequestUGCDetails(nPublishedFileID, unMaxAgeSeconds);
 }
 
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_CreateItem( ISteamUGC* self, AppId_t nConsumerAppId, EWorkshopFileType eFileType )

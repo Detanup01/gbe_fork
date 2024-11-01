@@ -16,7 +16,7 @@ public:
 
 	virtual SteamAPICall_t SendQueryUGCRequest( UGCQueryHandle_t handle ) = 0;
 
-	virtual bool GetQueryUGCResult( UGCQueryHandle_t handle, uint32 index, SteamUGCDetails_t *pDetails ) = 0;
+	virtual bool GetQueryUGCResult_old( UGCQueryHandle_t handle, uint32 index, SteamUGCDetails_t *pDetails ) = 0;
 
 	// Release the request to free up memory, after retrieving results
 	virtual bool ReleaseQueryUGCRequest( UGCQueryHandle_t handle ) = 0;
@@ -34,7 +34,7 @@ public:
 	virtual bool SetSearchText( UGCQueryHandle_t handle, const char *pSearchText ) = 0;
 	virtual bool SetRankedByTrendDays( UGCQueryHandle_t handle, uint32 unDays ) = 0;
 
-	virtual SteamAPICall_t RequestUGCDetails(PublishedFileId_t nPublishedFileID, uint32 uUnk) = 0;
+	virtual SteamAPICall_t RequestUGCDetails_old(PublishedFileId_t nPublishedFileID, uint32 uUnk) = 0;
 	
 	
 	// Steam Workshop Creator API

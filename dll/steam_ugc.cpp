@@ -65,7 +65,7 @@ std::optional<std::vector<std::string>> Steam_UGC::get_query_ugc_tags(UGCQueryHa
 
 }
 
-void Steam_UGC::set_details(PublishedFileId_t id, SteamUGCDetails_t *pDetails)
+void Steam_UGC::set_details(PublishedFileId_t id, SteamUGCDetails_t *pDetails, IUgcItfVersion ver)
 {
     if (pDetails) {
         memset(pDetails, 0, sizeof(SteamUGCDetails_t));
@@ -106,8 +106,10 @@ void Steam_UGC::set_details(PublishedFileId_t id, SteamUGCDetails_t *pDetails)
             // TODO should we enable this?
             // pDetails->m_unNumChildren = mod.numChildren;
 
-            // TODO make sure the filesize is good
-            pDetails->m_ulTotalFilesSize = mod.total_files_sizes;
+            if (ver >= IUgcItfVersion::v020) {
+                // TODO make sure the filesize is good
+                pDetails->m_ulTotalFilesSize = mod.total_files_sizes;
+            }
         } else {
             PRINT_DEBUG("  mod isn't installed, returning failure");
             pDetails->m_eResult = k_EResultFail;
@@ -149,6 +151,63 @@ bool Steam_UGC::write_ugc_favorites()
     auto file_data = ss.str();
     int stored = local_storage->store_data("", ugc_favorits_file, &file_data[0], static_cast<unsigned int>(file_data.size()));
     return (size_t)stored == file_data.size();
+}
+
+bool Steam_UGC::internal_GetQueryUGCResult( UGCQueryHandle_t handle, uint32 index, SteamUGCDetails_t *pDetails, IUgcItfVersion ver )
+{
+    PRINT_DEBUG("%llu [%u] %p <%u>", handle, index, pDetails, (unsigned)ver);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    // some apps (like appid 588650) ignore the return of this function, especially for builtin mods
+    if (pDetails) {
+        pDetails->m_nPublishedFileId = k_PublishedFileIdInvalid;
+        pDetails->m_eResult = k_EResultFail;
+        pDetails->m_bAcceptedForUse = false;
+        pDetails->m_hFile = k_UGCHandleInvalid;
+        pDetails->m_hPreviewFile = k_UGCHandleInvalid;
+        pDetails->m_unNumChildren = 0;
+    }
+
+    if (handle == k_UGCQueryHandleInvalid) return false;
+
+    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
+    if (ugc_queries.end() == request) {
+        return false;
+    }
+
+    if (index >= request->results.size()) {
+        return false;
+    }
+
+    auto it = request->results.begin();
+    std::advance(it, index);
+    PublishedFileId_t file_id = *it;
+    set_details(file_id, pDetails, ver);
+    return true;
+}
+
+SteamAPICall_t Steam_UGC::internal_RequestUGCDetails( PublishedFileId_t nPublishedFileID, uint32 unMaxAgeSeconds, IUgcItfVersion ver )
+{
+    PRINT_DEBUG("%llu %u <%u>", nPublishedFileID, unMaxAgeSeconds, (unsigned)ver);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    if (ver <= IUgcItfVersion::v018) { // <= SDK 1.59
+        SteamUGCRequestUGCDetailsResult018_t data{};
+        data.m_bCachedData = false;
+        set_details(nPublishedFileID, reinterpret_cast<SteamUGCDetails_t *>(&data.m_details), ver);
+        
+        auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+        return ret;
+    } else { // >= SDK 1.60
+        SteamUGCRequestUGCDetailsResult_t data{};
+        data.m_bCachedData = false;
+        set_details(nPublishedFileID, &data.m_details, ver);
+        
+        auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+        return ret;
+    }
 }
 
 
@@ -278,23 +337,13 @@ SteamAPICall_t Steam_UGC::SendQueryUGCRequest( UGCQueryHandle_t handle )
 bool Steam_UGC::GetQueryUGCResult( UGCQueryHandle_t handle, uint32 index, SteamUGCDetails_t *pDetails )
 {
     PRINT_DEBUG("%llu %u %p", handle, index, pDetails);
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (handle == k_UGCQueryHandleInvalid) return false;
+    return internal_GetQueryUGCResult(handle, index, pDetails, IUgcItfVersion::v020);
+}
 
-    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
-    if (ugc_queries.end() == request) {
-        return false;
-    }
-
-    if (index >= request->results.size()) {
-        return false;
-    }
-
-    auto it = request->results.begin();
-    std::advance(it, index);
-    PublishedFileId_t file_id = *it;
-    set_details(file_id, pDetails);
-    return true;
+bool Steam_UGC::GetQueryUGCResult_old( UGCQueryHandle_t handle, uint32 index, SteamUGCDetails_t *pDetails )
+{
+    PRINT_DEBUG("%llu %u %p", handle, index, pDetails);
+    return internal_GetQueryUGCResult(handle, index, pDetails, IUgcItfVersion::v018);
 }
 
 std::optional<std::string> Steam_UGC::get_query_ugc_tag(UGCQueryHandle_t handle, uint32 index, uint32 indexTag)
@@ -841,20 +890,19 @@ bool Steam_UGC::SetTimeUpdatedDateRange( UGCQueryHandle_t handle, RTime32 rtStar
 SteamAPICall_t Steam_UGC::RequestUGCDetails( PublishedFileId_t nPublishedFileID, uint32 unMaxAgeSeconds )
 {
     PRINT_DEBUG("%llu", nPublishedFileID);
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    
-    SteamUGCRequestUGCDetailsResult_t data{};
-    data.m_bCachedData = false;
-    set_details(nPublishedFileID, &(data.m_details));
-    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
-    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
-    return ret;
+    return internal_RequestUGCDetails(nPublishedFileID, unMaxAgeSeconds, IUgcItfVersion::v020);
+}
+ 
+SteamAPICall_t Steam_UGC::RequestUGCDetails_old( PublishedFileId_t nPublishedFileID, uint32 unMaxAgeSeconds )
+{
+    PRINT_DEBUG("%llu", nPublishedFileID);
+    return internal_RequestUGCDetails(nPublishedFileID, unMaxAgeSeconds, IUgcItfVersion::v018);
 }
 
 SteamAPICall_t Steam_UGC::RequestUGCDetails( PublishedFileId_t nPublishedFileID )
 {
     PRINT_DEBUG("old");
-    return RequestUGCDetails(nPublishedFileID, 0);
+    return RequestUGCDetails_old(nPublishedFileID, 0);
 }
 
 
