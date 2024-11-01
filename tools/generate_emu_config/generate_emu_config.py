@@ -583,6 +583,7 @@ def help():
     print(" -aw:       generate schemas of all possible languages for Achievement Watcher")
     print(" -clean:    delete any folder/file with the same name as the output before generating any data")
     print(" -anon:     login as an anonymous account, these have very limited access and cannot get all app details")
+    print(" -dt:       disable refresh_tokens saving, the logged-on account will not be saved")
     print(" -de:       disable some extra features by generating the corresponding config files in steam_settings folder")
     print(" -cve:      enable some convenient extra features by generating the corresponding config files in steam_settings folder")
     print(" -reldir:   generate temp files/folders, and expect input files, relative to the current working directory")
@@ -634,6 +635,7 @@ def main():
     GENERATE_ACHIEVEMENT_WATCHER_SCHEMAS = False
     CLEANUP_BEFORE_GENERATING = False
     ANON_LOGIN = False
+    DISABLE_REFRESH_TOKENS = False
     RELATIVE_DIR = False
     SKIP_ACH = False
     SKIP_CONTROLLER = False
@@ -667,6 +669,8 @@ def main():
             CLEANUP_BEFORE_GENERATING = True
         elif f'{appid}'.lower() == '-anon':
             ANON_LOGIN = True
+        elif f'{appid}'.lower() == '-dt':
+            DISABLE_REFRESH_TOKENS = True
         elif f'{appid}'.lower() == '-de':
             DISABLE_EXTRA = True
         elif f'{appid}'.lower() == '-cve':
@@ -717,10 +721,6 @@ def main():
             USERNAME = env_username
         if env_password:
             PASSWORD = env_password
-        
-        # still no username? ask user
-        if not USERNAME:
-            USERNAME = input("Steam user: ")
 
         # the file to save/load credentials
         REFRESH_TOKENS = os.path.join(get_exe_dir(RELATIVE_DIR), "refresh_tokens.json")
@@ -732,6 +732,25 @@ def main():
                     refresh_tokens = lf if isinstance(lf, dict) else {}
                 except:
                     pass
+
+        # select username from credentials if not already persent
+        if not USERNAME:
+            users = {i: user for i, user in enumerate(refresh_tokens, 1)}
+            if len(users) != 0:
+                for i, user in users.items():
+                    print(f"{i}: {user}")
+                while True:
+                    try:
+                        num=int(input("Choose an account to login (0 for add account): "))
+                    except ValueError:
+                        print('Please type a number'); continue
+                    break
+                USERNAME = users.get(num)
+
+        # still no username? ask user
+        if not USERNAME:
+            USERNAME = input("Steam user: ")
+
         REFRESH_TOKEN = refresh_tokens.get(USERNAME)
 
         webauth, result = WebAuth(), None
@@ -765,9 +784,10 @@ def main():
 
             result = client.login(USERNAME, PASSWORD, REFRESH_TOKEN)
 
-        with open(REFRESH_TOKENS, 'w') as f:
-            refresh_tokens.update({USERNAME: REFRESH_TOKEN})
-            json.dump(refresh_tokens,f,indent=4)
+        if not DISABLE_REFRESH_TOKENS:
+            with open(REFRESH_TOKENS, 'w') as f:
+                refresh_tokens.update({USERNAME: REFRESH_TOKEN})
+                json.dump(refresh_tokens,f,indent=4)
 
     # read and prepend top_owners_ids.txt
     top_owners_file = os.path.join(get_exe_dir(RELATIVE_DIR), "top_owners_ids.txt")
