@@ -33,7 +33,7 @@ This project depends on many third-party libraries and tools, credits to them fo
 ---
 
 # How to use the emu
-* **Always generate the interfaces file using the `find_interfaces` tool.**  
+* **Always generate the interfaces file using the `generate_interfaces` tool.**  
 * **Generate the proper app configuration using the `generate_emu_config` tool.**  
 * **If things don't work, try the `ColdClientLoader` setup.**  
 
