@@ -583,7 +583,7 @@ def help():
     print(" -aw:       generate schemas of all possible languages for Achievement Watcher")
     print(" -clean:    delete any folder/file with the same name as the output before generating any data")
     print(" -anon:     login as an anonymous account, these have very limited access and cannot get all app details")
-    print(" -dt:       disable refresh_tokens saving, the logged-on account will not be saved")
+    print(" -token:    save refresh_token to disk, the logged-on account will be saved")
     print(" -de:       disable some extra features by generating the corresponding config files in steam_settings folder")
     print(" -cve:      enable some convenient extra features by generating the corresponding config files in steam_settings folder")
     print(" -reldir:   generate temp files/folders, and expect input files, relative to the current working directory")
@@ -635,7 +635,7 @@ def main():
     GENERATE_ACHIEVEMENT_WATCHER_SCHEMAS = False
     CLEANUP_BEFORE_GENERATING = False
     ANON_LOGIN = False
-    DISABLE_REFRESH_TOKENS = False
+    SAVE_REFRESH_TOKEN = False
     RELATIVE_DIR = False
     SKIP_ACH = False
     SKIP_CONTROLLER = False
@@ -669,8 +669,8 @@ def main():
             CLEANUP_BEFORE_GENERATING = True
         elif f'{appid}'.lower() == '-anon':
             ANON_LOGIN = True
-        elif f'{appid}'.lower() == '-dt':
-            DISABLE_REFRESH_TOKENS = True
+        elif f'{appid}'.lower() == '-token':
+            SAVE_REFRESH_TOKEN = True
         elif f'{appid}'.lower() == '-de':
             DISABLE_EXTRA = True
         elif f'{appid}'.lower() == '-cve':
@@ -784,10 +784,10 @@ def main():
 
             result = client.login(USERNAME, PASSWORD, REFRESH_TOKEN)
 
-        if not DISABLE_REFRESH_TOKENS:
+        if SAVE_REFRESH_TOKEN:
             with open(REFRESH_TOKENS, 'w') as f:
                 refresh_tokens.update({USERNAME: REFRESH_TOKEN})
-                json.dump(refresh_tokens,f,indent=4)
+                json.dump(refresh_tokens, f, indent=4)
 
     # read and prepend top_owners_ids.txt
     top_owners_file = os.path.join(get_exe_dir(RELATIVE_DIR), "top_owners_ids.txt")
