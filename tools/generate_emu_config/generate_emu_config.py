@@ -710,9 +710,10 @@ def main():
                 filedata = f.readlines()
             filedata = list(map(lambda s: s.replace("\r", "").replace("\n", ""), filedata))
             filedata = [l for l in filedata if l]
-            if len(filedata) == 2:
+            if len(filedata) == 1:
                 USERNAME = filedata[0]
-                PASSWORD = filedata[1]
+            elif len(filedata) == 2:
+                USERNAME, PASSWORD = filedata[0], filedata[1]
         
         # then allow the env vars to override the login details
         env_username = os.environ.get('GSE_CFG_USERNAME', None)
