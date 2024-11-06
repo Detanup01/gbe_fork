@@ -52,6 +52,7 @@ public ISteamUGC015,
 public ISteamUGC016,
 public ISteamUGC017,
 public ISteamUGC018,
+public ISteamUGC019,
 public ISteamUGC
 {
 public:
