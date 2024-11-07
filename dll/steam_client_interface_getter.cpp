@@ -758,7 +758,7 @@ ISteamUGC *Steam_Client::GetISteamUGC( HSteamUser hSteamUser, HSteamPipe hSteamP
     } else if (strcmp(pchVersion, "STEAMUGC_INTERFACE_VERSION018") == 0) {
         return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC018 *>(steam_ugc_temp));
     } else if (strcmp(pchVersion, "STEAMUGC_INTERFACE_VERSION019") == 0) {
-        return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC *>(steam_ugc_temp));
+        return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC019 *>(steam_ugc_temp)); // not found in public sdk, based on reversing
     } else if (strcmp(pchVersion, STEAMUGC_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC *>(steam_ugc_temp));
     }

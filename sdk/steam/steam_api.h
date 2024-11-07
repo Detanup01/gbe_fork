@@ -181,6 +181,7 @@
 #include "isteamugc016.h"
 #include "isteamugc017.h"
 #include "isteamugc018.h"
+#include "isteamugc019.h"
 #include "isteamapplist.h"
 #include "isteamhtmlsurface.h"
 #include "isteamhtmlsurface001.h"
