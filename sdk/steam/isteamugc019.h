@@ -79,7 +79,7 @@ public:
 
 	// DEPRECATED - Use CreateQueryUGCDetailsRequest call above instead!
 	STEAM_CALL_RESULT( SteamUGCRequestUGCDetailsResult_t )
-	virtual SteamAPICall_t RequestUGCDetails( PublishedFileId_t nPublishedFileID, uint32 unMaxAgeSeconds ) = 0;
+	virtual SteamAPICall_t RequestUGCDetails_old( PublishedFileId_t nPublishedFileID, uint32 unMaxAgeSeconds ) = 0;
 
 	// Steam Workshop Creator API
 	STEAM_CALL_RESULT( CreateItemResult_t )
