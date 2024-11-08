@@ -789,6 +789,7 @@ void Steam_GameServer::ForceHeartbeat()
 void Steam_GameServer::ForceMasterServerHeartbeat_DEPRECATED()
 {
     PRINT_DEBUG_TODO();
+    ForceHeartbeat();
 }
 
 
@@ -845,12 +846,14 @@ void Steam_GameServer::RunCallbacks()
     }
 
     if (temp_call_servers_disconnected) {
-        SteamServersDisconnected_t data;
+        PRINT_DEBUG("Gameserver is disconnected");
+        SteamServersDisconnected_t data{};
         data.m_eResult = k_EResultOK;
         callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
 
         if (!logged_in) {
-            Common_Message msg;
+            PRINT_DEBUG("notifying all that Gameserver is not logged in");
+            Common_Message msg{};
             msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
             msg.set_allocated_gameserver(new Gameserver(server_data));
             msg.mutable_gameserver()->set_offline(true);

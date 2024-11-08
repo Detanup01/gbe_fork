@@ -18,6 +18,11 @@
 #include "dll/steam_masterserver_updater.h"
 
 
+// old games like appid 50300 use this interface instead of ISteamGameServer
+// we use it as a proxy for ISteamGameServer since it has an equivalent API
+// and handles the actual game server logic
+
+
 void Steam_Masterserver_Updater::steam_callback(void *object, Common_Message *msg)
 {
     // PRINT_DEBUG_ENTRY();
@@ -35,13 +40,14 @@ void Steam_Masterserver_Updater::steam_run_every_runcb(void *object)
 }
 
 
-Steam_Masterserver_Updater::Steam_Masterserver_Updater(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, class RunEveryRunCB *run_every_runcb)
+Steam_Masterserver_Updater::Steam_Masterserver_Updater(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, class RunEveryRunCB *run_every_runcb, class Steam_GameServer *gameserver)
 {
     this->settings = settings;
     this->network = network;
     this->callback_results = callback_results;
     this->callbacks = callbacks;
     this->run_every_runcb = run_every_runcb;
+    this->gameserver = gameserver;
     
     this->network->setCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_Masterserver_Updater::steam_callback, this);
     this->run_every_runcb->add(&Steam_Masterserver_Updater::steam_run_every_runcb, this);
@@ -60,6 +66,8 @@ void Steam_Masterserver_Updater::SetActive( bool bActive )
 {
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    gameserver->EnableHeartbeats(bActive);
 }
 
 
@@ -70,6 +78,8 @@ void Steam_Masterserver_Updater::SetHeartbeatInterval( int iHeartbeatInterval )
 {
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    gameserver->SetHeartbeatInterval(iHeartbeatInterval);
 }
 
 
@@ -93,7 +103,8 @@ bool Steam_Masterserver_Updater::HandleIncomingPacket( const void *pData, int cb
 {
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return true;
+    
+    return gameserver->HandleIncomingPacket(pData, cbData, srcIP, srcPort);
 }
 
 
@@ -105,7 +116,8 @@ int Steam_Masterserver_Updater::GetNextOutgoingPacket( void *pOut, int cbMaxOut,
 {
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return 0;
+    
+    return gameserver->GetNextOutgoingPacket(pOut, cbMaxOut, pNetAdr, pPort);
 }
 
 
@@ -124,6 +136,13 @@ void Steam_Masterserver_Updater::SetBasicServerData(
 {
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    gameserver->SetDedicatedServer(bDedicatedServer);
+    gameserver->SetRegion(pRegionName);
+    gameserver->SetProduct(pProductName);
+    gameserver->SetMaxPlayerCount(nMaxReportedClients);
+    gameserver->SetPasswordProtected(bPasswordProtected);
+    gameserver->SetGameDescription(pGameDescription);
 }
 
 
@@ -132,6 +151,8 @@ void Steam_Masterserver_Updater::ClearAllKeyValues()
 {
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    gameserver->ClearAllKeyValues();
 }
 
 
@@ -140,6 +161,8 @@ void Steam_Masterserver_Updater::SetKeyValue( const char *pKey, const char *pVal
 {
     PRINT_DEBUG("TODO '%s'='%s'", pKey, pValue);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    gameserver->SetKeyValue(pKey, pValue);
 }
 
 
@@ -150,6 +173,8 @@ void Steam_Masterserver_Updater::NotifyShutdown()
 {
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    gameserver->LogOff();
 }
 
 
@@ -159,7 +184,8 @@ bool Steam_Masterserver_Updater::WasRestartRequested()
 {
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return false;
+    
+    return gameserver->WasRestartRequested();
 }
 
 
@@ -168,6 +194,8 @@ void Steam_Masterserver_Updater::ForceHeartbeat()
 {
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    gameserver->ForceHeartbeat();
 }
 
 

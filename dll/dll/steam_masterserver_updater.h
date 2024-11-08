@@ -18,7 +18,10 @@
 #ifndef __INCLUDED_STEAM_MASTERSERVER_UPDATER_H__
 #define __INCLUDED_STEAM_MASTERSERVER_UPDATER_H__
 
+
 #include "base.h"
+#include "dll/steam_gameserver.h"
+
 
 class Steam_Masterserver_Updater :
 public ISteamMasterServerUpdater
@@ -28,6 +31,7 @@ public ISteamMasterServerUpdater
     class SteamCallResults *callback_results{};
     class SteamCallBacks *callbacks{};
     class RunEveryRunCB *run_every_runcb{};
+    class Steam_GameServer *gameserver{};
 
     static void steam_callback(void *object, Common_Message *msg);
     static void steam_run_every_runcb(void *object);
@@ -36,7 +40,7 @@ public ISteamMasterServerUpdater
     void Callback(Common_Message *msg);
 
 public:
-    Steam_Masterserver_Updater(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, class RunEveryRunCB *run_every_runcb);
+    Steam_Masterserver_Updater(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, class RunEveryRunCB *run_every_runcb, class Steam_GameServer *gameserver);
     ~Steam_Masterserver_Updater();
 
     // Call this as often as you like to tell the master server updater whether or not
