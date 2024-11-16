@@ -32,9 +32,8 @@ static constexpr int base_notif_window_id  = 0 * max_window_id;
 static constexpr int base_friend_window_id = 1 * max_window_id;
 static constexpr int base_friend_item_id   = 2 * max_window_id;
 
-static InGameOverlay::ToggleKey overlay_toggle_keys[] = {
-    InGameOverlay::ToggleKey::SHIFT, InGameOverlay::ToggleKey::TAB
-};
++static InGameOverlay::ToggleKey overlay_toggle_keys[] = {InGameOverlay::ToggleKey::SHIFT, InGameOverlay::ToggleKey::TAB};
++static const int toggle_keys_count = 2;
 
 // look for the column 'API language code' here: https://partner.steamgames.com/doc/store/localization/languages
 static constexpr const char* valid_languages[] = {
@@ -218,7 +217,7 @@ bool Steam_Overlay::renderer_hook_proc()
         overlay_state_hook(state == InGameOverlay::OverlayHookState::Ready || state == InGameOverlay::OverlayHookState::Reset);
     };
 
-    bool started = _renderer->StartHook(overlay_toggle_callback, overlay_toggle_keys, 2, &fonts_atlas);
+    bool started = _renderer->StartHook(overlay_toggle_callback, overlay_toggle_keys, toggle_keys_count, &fonts_atlas);
     PRINT_DEBUG("started renderer hook (result=%i)", (int)started);
     
     return true;
@@ -1062,13 +1061,13 @@ void Steam_Overlay::build_notifications(float width, float height)
                     auto &icon_rsrc = (notification_type)it->type == notification_type::achievement
                         ? ach.icon
                         : ach.icon_gray;
-                    if (icon_rsrc->GetResourceId() != 0 && ImGui::BeginTable("imgui_table", 2)) {
+                    if (icon_rsrc->IsLoaded() && ImGui::BeginTable("imgui_table", 2)) {
                         ImGui::TableSetupColumn("imgui_table_image", ImGuiTableColumnFlags_WidthFixed, settings->overlay_appearance.icon_size);
                         ImGui::TableSetupColumn("imgui_table_text");
                         ImGui::TableNextRow(ImGuiTableRowFlags_None, settings->overlay_appearance.icon_size);
 
                         ImGui::TableSetColumnIndex(0);
-                        ImGui::Image(icon_rsrc->GetResourceId(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
+                        ImGui::Image((ImTextureID)icon_rsrc->GetResourceId(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
 
                         ImGui::TableSetColumnIndex(1);
                         ImGui::TextWrapped("%s", it->message.c_str());
@@ -1213,7 +1212,7 @@ bool Steam_Overlay::try_load_ach_icon(Overlay_Achievement &ach, bool achieved, b
     if (!settings->overlay_upload_achs_icons_to_gpu) return false; // don't upload anything to the GPU
 
     auto &icon_rsrc = achieved ? ach.icon : ach.icon_gray;
-    if (icon_rsrc->GetResourceId() != 0) return true;
+    if (icon_rsrc->IsLoaded()) return true;
 
     // icons needs to be loaded, but we're not allowed
     if (!upload_new_icon_to_gpu) return false;
@@ -1225,13 +1224,12 @@ bool Steam_Overlay::try_load_ach_icon(Overlay_Achievement &ach, bool achieved, b
     auto image_info = settings->get_image(icon_handle);
     if (image_info) {
         int icon_size = static_cast<int>(settings->overlay_appearance.icon_size);
-        icon_rsrc->SetAutoLoad(InGameOverlay::ResourceAutoLoad_t::OnUse);
-        icon_rsrc->AttachResource((void*)image_info->data.c_str(), icon_size, icon_size);
+        icon_rsrc = _renderer->CreateAndLoadResource((void*)image_info->data.c_str(), icon_size, icon_size, true);
         
-        PRINT_DEBUG("'%s' (result=%i)", ach.name.c_str(), (int)icon_rsrc->GetResourceId() != 0);
+        PRINT_DEBUG("'%s' (result=%i)", ach.name.c_str(), (int)icon_rsrc->IsLoaded());
     }
 
-    return !icon_rsrc.expired();
+    return icon_rsrc->IsLoaded();
 }
 
 // Try to make this function as short as possible or it might affect game's fps.
@@ -1436,7 +1434,7 @@ void Steam_Overlay::render_main_window()
                     ImGui::Separator();
 
                     bool could_create_ach_table_entry = false;
-                    if (x.icon->GetResourceId() != 0 || x.icon_gray->GetResourceId() != 0) {
+                    if (x.icon->IsLoaded() || x.icon_gray->IsLoaded()) {
                         if (ImGui::BeginTable(x.title.c_str(), 2)) {
                             could_create_ach_table_entry = true;
 
@@ -1446,9 +1444,9 @@ void Steam_Overlay::render_main_window()
 
                             ImGui::TableSetColumnIndex(0);
                             auto &icon_rsrc = achieved ? x.icon : x.icon_gray;
-                            if (icon_rsrc->GetResourceId() != 0) {
+                            if (icon_rsrc->IsLoaded()) {
                                 ImGui::Image(
-                                    icon_rsrc->GetResourceId(),
+                                    (ImTextureID)icon_rsrc->GetResourceId(),
                                     ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size)
                                 );
                             }
@@ -1671,12 +1669,12 @@ void Steam_Overlay::UnSetupOverlay()
             
             PRINT_DEBUG("releasing any images resources");
             for (auto &ach : achievements) {
-                if (ach.icon->GetResourceId() != 0) {
-                    ach.icon->Unload();
+                if (ach.icon->IsLoaded()) {
++                    ach.icon->Unload();
                 }
 
-                if (ach.icon_gray->GetResourceId() != 0) {
-                    ach.icon_gray->Unload();
+                if (ach.icon_gray->IsLoaded()) {
++                    ach.icon_gray->Unload();
                 }
             }
 
