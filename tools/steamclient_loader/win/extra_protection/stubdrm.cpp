@@ -29,7 +29,7 @@ typedef struct _StubSnrDetails_t {
 } StubSnrDetails_t;
 
 typedef struct _BindSnrDetails_t {
-    std::string bind_detection_patt{}; // inside .bind
+    std::vector<std::string> bind_detection_patts{}; // any pattern inside .bind
     std::vector<StubSnrDetails_t> stub_details{};
 } BindSnrDetails_t;
 
@@ -38,16 +38,18 @@ static const std::vector<BindSnrDetails_t> all_bind_details {
 // x64
 #if defined(_WIN64)
     {
-        // bind_detection_patt
-        "FF 94 24 ?? ?? ?? ?? 88 44 24 ?? 0F BE 44 24 ?? 83 ?? 30 74 ?? E9", // appid 1684350
-        // stub_details
+        // bind_detection_patts[]
+        {
+            "FF 94 24 ?? ?? ?? ?? 88 44 24 ?? 0F BE 44 24 ?? 83 ?? 30 74 ?? E9", // appid 1684350
+        },
+        // stub_details[]
         {
             {
                 // stub_detection_patt
                 "??",
                 // change memory pages access to r/w/e
                 false,
-                // stub_snr_units
+                // stub_snr_units[]
                 {
                     // patt 1 is a bunch of checks for registry + files validity (including custom DOS stub)
                     // patt 2 is again a bunch of checks + creates some interfaces via steamclient + calls getappownershipticket()
@@ -65,16 +67,18 @@ static const std::vector<BindSnrDetails_t> all_bind_details {
     },
 
     {
-        // bind_detection_patt
-        "FF D? 44 0F B6 ?? 3C 30 0F 85", // appid: 537450 (rare, only found in this appid!)
-        // stub_details
+        // bind_detection_patts[]
+        {
+            "FF D? 44 0F B6 ?? 3C 30 0F 85", // appid: 537450 (rare, only found in this appid!)
+        },
+        // stub_details[]
         {
             {
                 // stub_detection_patt
                 "??",
                 // change memory pages access to r/w/e
                 false,
-                // stub_snr_units
+                // stub_snr_units[]
                 {
                     // patt 1 is a bunch of checks for registry + files validity (including custom DOS stub)
                     // patt 2 is again a bunch of checks + creates some interfaces via steamclient + calls getappownershipticket()
@@ -96,16 +100,18 @@ static const std::vector<BindSnrDetails_t> all_bind_details {
 // x32
 #if !defined(_WIN64)
     {
-        // bind_detection_patt
-        "FF 95 ?? ?? ?? ?? 88 45 ?? 0F BE 4D ?? 83 ?? 30 74 ?? E9", // appid 588650
-        // stub_details
+        // bind_detection_patts[]
+        {
+            "FF 95 ?? ?? ?? ?? 88 45 ?? 0F BE 4D ?? 83 ?? 30 74 ?? E9", // appid 588650
+        },
+        // stub_details[]
         {
             {
                 // stub_detection_patt
                 "??",
                 // change memory pages access to r/w/e
                 false,
-                // stub_snr_units
+                // stub_snr_units[]
                 {
                     // patt 1 is a bunch of checks for registry + files validity (including custom DOS stub)
                     // patt 2 is again a bunch of checks + creates some interfaces via steamclient + calls getappownershipticket()
@@ -123,16 +129,18 @@ static const std::vector<BindSnrDetails_t> all_bind_details {
     },
 
     {
-        // bind_detection_patt
-        "FF 95 ?? ?? ?? ?? 89 85 ?? ?? ?? ?? 8B ?? ?? ?? ?? ?? 89 ?? ?? ?? ?? ?? 8B ?? ?? 89 ?? ?? ?? ?? ?? 83 A5 ?? ?? ?? ?? ?? EB", // appid 201790
-        // stub_details
+        // bind_detection_patts[]
+        {
+            "FF 95 ?? ?? ?? ?? 89 85 ?? ?? ?? ?? 8B ?? ?? ?? ?? ?? 89 ?? ?? ?? ?? ?? 8B ?? ?? 89 ?? ?? ?? ?? ?? 83 A5 ?? ?? ?? ?? ?? EB", // appid 201790
+        },
+        // stub_details[]
         {
             {
                 // stub_detection_patt
                 "??",
                 // change memory pages access to r/w/e
                 true, // appid 48000
-                // stub_snr_units
+                // stub_snr_units[]
                 {
                     {
                         "F6 C? 02 0F 85 ?? ?? ?? ?? 5? FF ?? 6?",
@@ -152,16 +160,19 @@ static const std::vector<BindSnrDetails_t> all_bind_details {
     },
     
     {
-        // bind_detection_patt
-        "FF D? 88 45 ?? 3C 30 0F 85 ?? ?? ?? ?? B8 4D 5A",
-        // stub_details
+        // bind_detection_patts[]
+        {
+            "FF D? 88 45 ?? 3C 30 0F 85 ?? ?? ?? ?? B8 4D 5A",
+            "FF D? 88 45 ?? 3C 30 0F 84 ?? ?? ?? ?? FF 9?", // appid 251390
+        },
+        // stub_details[]
         {
             {
                 // stub_detection_patt
                 "??",
                 // change memory pages access to r/w/e
                 false,
-                // stub_snr_units
+                // stub_snr_units[]
                 {
                     {
                         "5? E8 ?? ?? ?? ?? 83 C4 ?? 88 45 ?? 3C 30 0F 84",
@@ -177,16 +188,18 @@ static const std::vector<BindSnrDetails_t> all_bind_details {
     },
         
     {
-        // bind_detection_patt
-        "FF 95 ?? ?? ?? ?? 89 85 ?? ?? ?? ?? 8B ?? ?? ?? ?? ?? 89 ?? ?? ?? ?? ?? 8B ?? ?? ?? ?? ?? 89 ?? ?? ?? ?? ?? 83 A5 ?? ?? ?? ?? ?? EB", // appids: 31290, 94530, 37010
-        // stub_details
+        // bind_detection_patts[]
+        {
+            "FF 95 ?? ?? ?? ?? 89 85 ?? ?? ?? ?? 8B ?? ?? ?? ?? ?? 89 ?? ?? ?? ?? ?? 8B ?? ?? ?? ?? ?? 89 ?? ?? ?? ?? ?? 83 A5 ?? ?? ?? ?? ?? EB", // appids: 31290, 94530, 37010
+        },
+        // stub_details[]
         {
             { // appid 31290, 37010
                 // stub_detection_patt
                 "F6 05 ?? ?? ?? ?? 04 0F 85 ?? ?? ?? ?? A1 ?? ?? ?? ?? 89",
                 // change memory pages access to r/w/e
                 false,
-                // stub_snr_units
+                // stub_snr_units[]
                 {
                     {
                         "F6 C? 02 89 ?? ?? ?? ?? ?? A3 ?? ?? ?? ?? 0F 85",
@@ -200,7 +213,7 @@ static const std::vector<BindSnrDetails_t> all_bind_details {
                 "84 ?? ?? ?? ?? ?? 0F 85 ?? ?? ?? ?? A1 ?? ?? ?? ?? 89",
                 // change memory pages access to r/w/e
                 false,
-                // stub_snr_units
+                // stub_snr_units[]
                 {
                     {
                         "F6 C? 02 89 ?? ?? ?? ?? ?? A3 ?? ?? ?? ?? 0F 85",
@@ -312,9 +325,9 @@ static void patch_if_possible(void *ret_addr)
         if (mem) {
             anything_found = true;
             
-            auto size_until_match = (uint8_t *)mem - (uint8_t *)page_details.BaseAddress;
+            auto size_until_match = mem - (uint8_t *)page_details.BaseAddress;
             bool ok = pe_helpers::replace_memory(
-                (uint8_t *)mem,
+                mem,
                 page_details.RegionSize - size_until_match,
                 snr_unit.replace_patt,
                 GetCurrentProcess());
@@ -487,16 +500,20 @@ bool stubdrm::patch()
     auto addrOfEntry = exe_addr_base + pe_helpers::get_optional_header((HMODULE)exe_addr_base)->AddressOfEntryPoint;
     if (addrOfEntry < bind_addr_base || addrOfEntry >= bind_addr_end) return false; // entry addr is not inside .bind
 
-    // find .bind variant
-    for (const auto &patt : all_bind_details) {
-        auto mem = pe_helpers::search_memory(
-            bind_addr_base,
-            static_cast<size_t>(bind_addr_end - bind_addr_base),
-            patt.bind_detection_patt);
-        
-        if (mem) {
-            current_bind_idx = static_cast<size_t>(&patt - &all_bind_details[0]);
-            return redirect_win32_apis();
+    // detect .bind variant, search for a known pattern inside the .bind section itself
+    for (const auto &bind_details : all_bind_details) {
+        // multiple variants of .bind sections can share the same details,
+        // hence similar ones are grouped together, their detection patterns are added to the same array
+        for (const auto &bind_detection_patt : bind_details.bind_detection_patts) {
+            auto mem = pe_helpers::search_memory(
+                bind_addr_base,
+                static_cast<size_t>(bind_addr_end - bind_addr_base),
+                bind_detection_patt);
+            
+            if (mem) {
+                current_bind_idx = static_cast<size_t>(&bind_details - &all_bind_details[0]);
+                return redirect_win32_apis();
+            }
         }
     }
     
