@@ -32,8 +32,8 @@ static constexpr int base_notif_window_id  = 0 * max_window_id;
 static constexpr int base_friend_window_id = 1 * max_window_id;
 static constexpr int base_friend_item_id   = 2 * max_window_id;
 
-+static InGameOverlay::ToggleKey overlay_toggle_keys[] = {InGameOverlay::ToggleKey::SHIFT, InGameOverlay::ToggleKey::TAB};
-+static const int toggle_keys_count = 2;
+static InGameOverlay::ToggleKey overlay_toggle_keys[] = {InGameOverlay::ToggleKey::SHIFT, InGameOverlay::ToggleKey::TAB};
+static const int toggle_keys_count = 2;
 
 // look for the column 'API language code' here: https://partner.steamgames.com/doc/store/localization/languages
 static constexpr const char* valid_languages[] = {
@@ -1670,11 +1670,11 @@ void Steam_Overlay::UnSetupOverlay()
             PRINT_DEBUG("releasing any images resources");
             for (auto &ach : achievements) {
                 if (ach.icon->IsLoaded()) {
-+                    ach.icon->Unload();
+                    ach.icon->Unload();
                 }
 
                 if (ach.icon_gray->IsLoaded()) {
-+                    ach.icon_gray->Unload();
+                    ach.icon_gray->Unload();
                 }
             }
 
