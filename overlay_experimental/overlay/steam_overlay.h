@@ -71,8 +71,8 @@ struct Overlay_Achievement
     bool hidden{};
     bool achieved{};
     uint32 unlock_time{};
-    std::weak_ptr<uint64_t> icon{};
-    std::weak_ptr<uint64_t> icon_gray{};
+    InGameOverlay::RendererResource_t* icon{};
+    InGameOverlay::RendererResource_t* icon_gray{};
     int icon_handle = Settings::UNLOADED_IMAGE_HANDLE;
     int icon_gray_handle = Settings::UNLOADED_IMAGE_HANDLE;
 };

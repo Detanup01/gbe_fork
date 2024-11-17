@@ -504,6 +504,11 @@ enum EInputActionOrigin
 	k_EInputActionOrigin_SteamDeck_Reserved19,
 	k_EInputActionOrigin_SteamDeck_Reserved20,
 
+	k_EInputActionOrigin_Horipad_M1,
+	k_EInputActionOrigin_Horipad_M2,
+	k_EInputActionOrigin_Horipad_L4,
+	k_EInputActionOrigin_Horipad_R4,
+
 	k_EInputActionOrigin_Count, // If Steam has added support for new controllers origins will go here.
 	k_EInputActionOrigin_MaximumPossibleValue = 32767, // Origins are currently a maximum of 16 bits.
 };

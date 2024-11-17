@@ -697,6 +697,8 @@ if _OPTIONS["build-ingame_overlay"] or _OPTIONS["all-build"] then
         'INGAMEOVERLAY_USE_SYSTEM_LIBRARIES=OFF',
         'INGAMEOVERLAY_USE_SPDLOG=OFF',
         'INGAMEOVERLAY_BUILD_TESTS=OFF',
+        'INGAMEOVERLAY_DYNAMIC_RUNTIME=OFF',
+        --'USE_MSVC_RUNTIME_LIBRARY_DLL=OFF', -- Should we?
     }
     -- fix missing standard include/header file for gcc/clang
     local ingame_overlay_fixes = {}
@@ -713,19 +715,23 @@ if _OPTIONS["build-ingame_overlay"] or _OPTIONS["all-build"] then
 
     if _OPTIONS["32-build"] then
         cmake_build('ingame_overlay/deps/System', true, {
-            'BUILD_SYSTEMLIB_TESTS=OFF',
+            'SYSTEM_BUILD_TESTS=OFF',
+            'SYSTEM_DYNAMIC_RUNTIME=OFF',
         }, nil, ingame_overlay_fixes)
         cmake_build('ingame_overlay/deps/mini_detour', true, {
-            'BUILD_MINIDETOUR_TESTS=OFF',
+            'MINIDETOUR_BUILD_TESTS=OFF',
+            'MINIDETOUR_DYNAMIC_RUNTIME=OFF',
         })
         cmake_build('ingame_overlay', true, ingame_overlay_common_defs, nil, ingame_overlay_fixes)
     end
     if _OPTIONS["64-build"] then
         cmake_build('ingame_overlay/deps/System', false, {
-            'BUILD_SYSTEMLIB_TESTS=OFF',
+            'SYSTEM_BUILD_TESTS=OFF',
+            'SYSTEM_DYNAMIC_RUNTIME=OFF',
         }, nil, ingame_overlay_fixes)
         cmake_build('ingame_overlay/deps/mini_detour', false, {
-            'BUILD_MINIDETOUR_TESTS=OFF',
+            'MINIDETOUR_BUILD_TESTS=OFF',
+            'MINIDETOUR_DYNAMIC_RUNTIME=OFF',
         })
         cmake_build('ingame_overlay', false, ingame_overlay_common_defs, nil, ingame_overlay_fixes)
     end

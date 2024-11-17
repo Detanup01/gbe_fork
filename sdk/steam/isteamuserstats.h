@@ -89,6 +89,10 @@ class ISteamUserStats
 {
 public:
 	// Ask the server to send down this user's data and achievements for this game
+	// On V013:
+	// Note: this call is no longer required as it is managed by the Steam client
+	// The game stats and achievements will be synchronized with Steam before
+	// the game process begins.
 	STEAM_CALL_BACK( UserStatsReceived_t )
 	virtual bool RequestCurrentStats() = 0;
 
@@ -304,7 +308,7 @@ public:
 
 };
 
-#define STEAMUSERSTATS_INTERFACE_VERSION "STEAMUSERSTATS_INTERFACE_VERSION012"
+#define STEAMUSERSTATS_INTERFACE_VERSION "STEAMUSERSTATS_INTERFACE_VERSION013"
 
 #ifndef STEAM_API_EXPORTS
 // Global interface accessor

@@ -48,8 +48,9 @@ inline ISteamVideo *SteamVideo();
 STEAM_DEFINE_USER_INTERFACE_ACCESSOR( ISteamVideo *, SteamVideo, STEAMVIDEO_INTERFACE_VERSION );
 #endif
 
-STEAM_CALLBACK_BEGIN( BroadcastUploadStart_t, k_iClientVideoCallbacks + 4 )
-STEAM_CALLBACK_END(0)
+STEAM_CALLBACK_BEGIN( BroadcastUploadStart_t, k_iSteamVideoCallbacks + 4 )
+	STEAM_CALLBACK_MEMBER( 0, bool, m_bIsRTMP )
+STEAM_CALLBACK_END( 1 )
 
 STEAM_CALLBACK_BEGIN( BroadcastUploadStop_t, k_iClientVideoCallbacks + 5 )
 	STEAM_CALLBACK_MEMBER( 0, EBroadcastUploadResult, m_eResult )

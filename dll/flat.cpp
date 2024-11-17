@@ -2084,6 +2084,11 @@ STEAMAPI_API steam_bool SteamAPI_ISteamRemoteStorage_EndFileWriteBatch( ISteamRe
     return (get_steam_client()->steam_remote_storage)->EndFileWriteBatch();
 }
 
+STEAMAPI_API ISteamUserStats *SteamAPI_SteamUserStats_v013()
+{
+    return get_steam_client()->GetISteamUserStats(flat_hsteamuser(), flat_hsteampipe(), "STEAMUSERSTATS_INTERFACE_VERSION013");
+}
+
 STEAMAPI_API ISteamUserStats *SteamAPI_SteamUserStats_v012()
 {
     return get_steam_client()->GetISteamUserStats(flat_hsteamuser(), flat_hsteampipe(), "STEAMUSERSTATS_INTERFACE_VERSION012");
@@ -2529,6 +2534,26 @@ STEAMAPI_API steam_bool SteamAPI_ISteamApps_SetDlcContext( ISteamApps* self, App
     return self->SetDlcContext(nAppID);
 }
 
+// SDK 1.61 removed unAppID param
+STEAMAPI_API int SteamAPI_ISteamApps_GetNumBetas(ISteamApps* self, int* pnAvailable, int* pnPrivate)
+{
+    return self->GetNumBetas(pnAvailable, pnPrivate);
+}
+
+// SDK 1.61 removed unAppID param
+STEAMAPI_API steam_bool SteamAPI_ISteamApps_GetBetaInfo(ISteamApps* self, int iBetaIndex, uint32* punFlags, uint32* punBuildID, char* pchBetaName, int cchBetaName, char* pchDescription, int cchDescription)
+{
+    return self->GetBetaInfo(iBetaIndex, punFlags, punBuildID, pchBetaName, cchBetaName, pchDescription, cchDescription);
+}
+
+// SDK 1.61 removed unAppID param
+STEAMAPI_API steam_bool SteamAPI_ISteamApps_SetActiveBeta(ISteamApps* self, const char* pchBetaName)
+{
+    return self->SetActiveBeta(pchBetaName);
+}
+
+/*
+//SDK 1.60
 STEAMAPI_API int SteamAPI_ISteamApps_GetNumBetas( ISteamApps* self, AppId_t unAppID, int * pnAvailable, int * pnPrivate )
 {
     // in SDK 1.60 param unAppID is unused
@@ -2552,6 +2577,7 @@ STEAMAPI_API steam_bool SteamAPI_ISteamApps_SetActiveBeta( ISteamApps* self, App
 
     return self->SetActiveBeta(pchBetaName);
 }
+*/
 
 STEAMAPI_API ISteamNetworking *SteamAPI_SteamNetworking_v006()
 {
@@ -5481,6 +5507,11 @@ STEAMAPI_API steam_bool SteamAPI_ISteamInventory_InspectItem( ISteamInventory* s
     return (ptr)->InspectItem(pResultHandle, pchItemToken);
 }
 
+STEAMAPI_API ISteamTimeline *SteamAPI_SteamTimeline_v004()
+{
+    return get_steam_client()->GetISteamTimeline(flat_hsteamuser(), flat_hsteampipe(), "STEAMTIMELINE_INTERFACE_V004");
+}
+
 STEAMAPI_API ISteamTimeline *SteamAPI_SteamTimeline_v001()
 {
     return get_steam_client()->GetISteamTimeline(flat_hsteamuser(), flat_hsteampipe(), "STEAMTIMELINE_INTERFACE_V001");
@@ -5488,22 +5519,107 @@ STEAMAPI_API ISteamTimeline *SteamAPI_SteamTimeline_v001()
 
 STEAMAPI_API void SteamAPI_ISteamTimeline_SetTimelineStateDescription( ISteamTimeline* self, const char * pchDescription, float flTimeDelta )
 {
-    return self->SetTimelineStateDescription(pchDescription, flTimeDelta);
+    return (get_steam_client()->steam_timeline)->SetTimelineStateDescription(pchDescription, flTimeDelta);
 }
 
 STEAMAPI_API void SteamAPI_ISteamTimeline_ClearTimelineStateDescription( ISteamTimeline* self, float flTimeDelta )
 {
-    return self->ClearTimelineStateDescription(flTimeDelta);
+    return (get_steam_client()->steam_timeline)->ClearTimelineStateDescription(flTimeDelta);
 }
 
 STEAMAPI_API void SteamAPI_ISteamTimeline_AddTimelineEvent( ISteamTimeline* self, const char * pchIcon, const char * pchTitle, const char * pchDescription, uint32 unPriority, float flStartOffsetSeconds, float flDurationSeconds, ETimelineEventClipPriority ePossibleClip )
 {
-    self->AddTimelineEvent(pchIcon, pchTitle, pchDescription, unPriority, flStartOffsetSeconds, flDurationSeconds, ePossibleClip);
+    (get_steam_client()->steam_timeline)->AddTimelineEvent(pchIcon, pchTitle, pchDescription, unPriority, flStartOffsetSeconds, flDurationSeconds, ePossibleClip);
 }
 
 STEAMAPI_API void SteamAPI_ISteamTimeline_SetTimelineGameMode( ISteamTimeline* self, ETimelineGameMode eMode )
 {
-    self->SetTimelineGameMode(eMode);
+    (get_steam_client()->steam_timeline)->SetTimelineGameMode(eMode);
+}
+
+STEAMAPI_API void SteamAPI_ISteamTimeline_SetTimelineTooltip(ISteamTimeline* self, const char* pchDescription, float flTimeDelta)
+{
+    (get_steam_client()->steam_timeline)->SetTimelineTooltip(pchDescription, flTimeDelta);
+}
+
+STEAMAPI_API void SteamAPI_ISteamTimeline_ClearTimelineTooltip(ISteamTimeline* self, float flTimeDelta)
+{
+    return (get_steam_client()->steam_timeline)->ClearTimelineTooltip(flTimeDelta);
+}
+
+STEAMAPI_API TimelineEventHandle_t SteamAPI_ISteamTimeline_AddInstantaneousTimelineEvent(ISteamTimeline* self, const char* pchTitle, const char* pchDescription, const char* pchIcon, uint32 unIconPriority, float flStartOffsetSeconds, ETimelineEventClipPriority ePossibleClip)
+{
+    return (get_steam_client()->steam_timeline)->AddInstantaneousTimelineEvent(pchTitle, pchDescription, pchIcon, unIconPriority, flStartOffsetSeconds, ePossibleClip);
+}
+
+STEAMAPI_API TimelineEventHandle_t SteamAPI_ISteamTimeline_AddRangeTimelineEvent(ISteamTimeline* self, const char* pchTitle, const char* pchDescription, const char* pchIcon, uint32 unIconPriority, float flStartOffsetSeconds, float flDuration, ETimelineEventClipPriority ePossibleClip)
+{
+    return (get_steam_client()->steam_timeline)->AddRangeTimelineEvent(pchTitle, pchDescription, pchIcon, unIconPriority, flStartOffsetSeconds, flDuration, ePossibleClip);
+}
+
+STEAMAPI_API TimelineEventHandle_t SteamAPI_ISteamTimeline_StartRangeTimelineEvent(ISteamTimeline* self, const char* pchTitle, const char* pchDescription, const char* pchIcon, uint32 unPriority, float flStartOffsetSeconds, ETimelineEventClipPriority ePossibleClip)
+{
+    return (get_steam_client()->steam_timeline)->StartRangeTimelineEvent(pchTitle, pchDescription, pchIcon, unPriority, flStartOffsetSeconds, ePossibleClip);
+}
+
+STEAMAPI_API void SteamAPI_ISteamTimeline_UpdateRangeTimelineEvent(ISteamTimeline* self, TimelineEventHandle_t ulEvent, const char* pchTitle, const char* pchDescription, const char* pchIcon, uint32 unPriority, ETimelineEventClipPriority ePossibleClip)
+{
+    return (get_steam_client()->steam_timeline)->UpdateRangeTimelineEvent(ulEvent, pchTitle, pchDescription, pchIcon, unPriority, ePossibleClip);
+}
+
+STEAMAPI_API void SteamAPI_ISteamTimeline_EndRangeTimelineEvent(ISteamTimeline* self, TimelineEventHandle_t ulEvent, float flEndOffsetSeconds)
+{
+    return (get_steam_client()->steam_timeline)->EndRangeTimelineEvent(ulEvent, flEndOffsetSeconds);
+}
+
+STEAMAPI_API void SteamAPI_ISteamTimeline_RemoveTimelineEvent(ISteamTimeline* self, TimelineEventHandle_t ulEvent)
+{
+    return (get_steam_client()->steam_timeline)->RemoveTimelineEvent(ulEvent);
+}
+
+STEAMAPI_API SteamAPICall_t SteamAPI_ISteamTimeline_DoesEventRecordingExist(ISteamTimeline* self, TimelineEventHandle_t ulEvent)
+{
+    return (get_steam_client()->steam_timeline)->DoesEventRecordingExist(ulEvent);
+}
+
+STEAMAPI_API void SteamAPI_ISteamTimeline_StartGamePhase(ISteamTimeline* self)
+{
+    return (get_steam_client()->steam_timeline)->StartGamePhase();
+}
+
+STEAMAPI_API void SteamAPI_ISteamTimeline_EndGamePhase(ISteamTimeline* self)
+{
+    return (get_steam_client()->steam_timeline)->EndGamePhase();
+}
+
+STEAMAPI_API void SteamAPI_ISteamTimeline_SetGamePhaseID(ISteamTimeline* self, const char* pchPhaseID)
+{
+    return (get_steam_client()->steam_timeline)->SetGamePhaseID(pchPhaseID);
+}
+
+STEAMAPI_API SteamAPICall_t SteamAPI_ISteamTimeline_DoesGamePhaseRecordingExist(ISteamTimeline* self, const char* pchPhaseID)
+{
+    return (get_steam_client()->steam_timeline)->DoesGamePhaseRecordingExist(pchPhaseID);
+}
+
+STEAMAPI_API void SteamAPI_ISteamTimeline_AddGamePhaseTag(ISteamTimeline* self, const char* pchTagName, const char* pchTagIcon, const char* pchTagGroup, uint32 unPriority)
+{
+    return (get_steam_client()->steam_timeline)->AddGamePhaseTag(pchTagName, pchTagIcon, pchTagGroup, unPriority);
+}
+
+STEAMAPI_API void SteamAPI_ISteamTimeline_SetGamePhaseAttribute(ISteamTimeline* self, const char* pchAttributeGroup, const char* pchAttributeValue, uint32 unPriority)
+{
+    return (get_steam_client()->steam_timeline)->SetGamePhaseAttribute(pchAttributeGroup, pchAttributeValue, unPriority);
+}
+
+STEAMAPI_API void SteamAPI_ISteamTimeline_OpenOverlayToGamePhase(ISteamTimeline* self, const char* pchPhaseID)
+{
+    return (get_steam_client()->steam_timeline)->OpenOverlayToGamePhase(pchPhaseID);
+}
+
+STEAMAPI_API void SteamAPI_ISteamTimeline_OpenOverlayToTimelineEvent(ISteamTimeline* self, const TimelineEventHandle_t ulEvent)
+{
+    return (get_steam_client()->steam_timeline)->OpenOverlayToTimelineEvent(ulEvent);
 }
 
 STEAMAPI_API ISteamVideo *SteamAPI_SteamVideo_v001()

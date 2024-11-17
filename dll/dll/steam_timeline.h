@@ -21,7 +21,8 @@
 #include "base.h"
 
 class Steam_Timeline :
-public ISteamTimeline
+public ISteamTimeline,
+public ISteamTimeline001
 {
 private:
     constexpr const static float PRIORITY_CLIP_MIN_SEC = 8.0f;
@@ -91,6 +92,38 @@ public:
     void AddTimelineEvent( const char *pchIcon, const char *pchTitle, const char *pchDescription, uint32 unPriority, float flStartOffsetSeconds, float flDurationSeconds, ETimelineEventClipPriority ePossibleClip );
 
     void SetTimelineGameMode( ETimelineGameMode eMode );
+
+    void SetTimelineTooltip(const char* pchDescription, float flTimeDelta);
+    void ClearTimelineTooltip(float flTimeDelta);
+    
+    TimelineEventHandle_t AddInstantaneousTimelineEvent( const char *pchTitle, const char *pchDescription, const char *pchIcon, uint32 unIconPriority, float flStartOffsetSeconds = 0.f, ETimelineEventClipPriority ePossibleClip = k_ETimelineEventClipPriority_None );
+	TimelineEventHandle_t AddRangeTimelineEvent( const char *pchTitle, const char *pchDescription, const char *pchIcon, uint32 unIconPriority, float flStartOffsetSeconds = 0.f, float flDuration = 0.f, ETimelineEventClipPriority ePossibleClip = k_ETimelineEventClipPriority_None );
+
+	TimelineEventHandle_t StartRangeTimelineEvent( const char *pchTitle, const char *pchDescription, const char *pchIcon, uint32 unPriority, float flStartOffsetSeconds, ETimelineEventClipPriority ePossibleClip );
+
+    void UpdateRangeTimelineEvent( TimelineEventHandle_t ulEvent, const char *pchTitle, const char *pchDescription, const char *pchIcon, uint32 unPriority, ETimelineEventClipPriority ePossibleClip );
+
+    void EndRangeTimelineEvent( TimelineEventHandle_t ulEvent, float flEndOffsetSeconds );
+
+    void RemoveTimelineEvent( TimelineEventHandle_t ulEvent );
+
+    SteamAPICall_t DoesEventRecordingExist( TimelineEventHandle_t ulEvent );
+
+    void StartGamePhase();
+
+    void EndGamePhase();
+
+    void SetGamePhaseID( const char *pchPhaseID );
+
+    SteamAPICall_t DoesGamePhaseRecordingExist( const char *pchPhaseID );
+
+    void AddGamePhaseTag( const char *pchTagName, const char *pchTagIcon, const char *pchTagGroup, uint32 unPriority );
+
+    void SetGamePhaseAttribute( const char *pchAttributeGroup, const char *pchAttributeValue, uint32 unPriority );
+
+    void OpenOverlayToGamePhase( const char *pchPhaseID );
+
+    void OpenOverlayToTimelineEvent( const TimelineEventHandle_t ulEvent );
 
 };
 

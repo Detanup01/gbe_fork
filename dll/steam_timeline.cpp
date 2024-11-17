@@ -177,6 +177,90 @@ void Steam_Timeline::SetTimelineGameMode( ETimelineGameMode eMode )
     new_timeline_state.bar_color = eMode;
 }
 
+void Steam_Timeline::SetTimelineTooltip(const char* pchDescription, float flTimeDelta)
+{
+    SetTimelineStateDescription(pchDescription, flTimeDelta);
+}
+
+void Steam_Timeline::ClearTimelineTooltip(float flTimeDelta)
+{
+    ClearTimelineStateDescription(flTimeDelta);
+}
+
+TimelineEventHandle_t Steam_Timeline::AddInstantaneousTimelineEvent(const char* pchTitle, const char* pchDescription, const char* pchIcon, uint32 unIconPriority, float flStartOffsetSeconds, ETimelineEventClipPriority ePossibleClip)
+{
+    return 0;
+}
+
+TimelineEventHandle_t Steam_Timeline::AddRangeTimelineEvent(const char* pchTitle, const char* pchDescription, const char* pchIcon, uint32 unIconPriority, float flStartOffsetSeconds, float flDuration, ETimelineEventClipPriority ePossibleClip)
+{
+    return 0;
+}
+
+TimelineEventHandle_t Steam_Timeline::StartRangeTimelineEvent(const char* pchTitle, const char* pchDescription, const char* pchIcon, uint32 unPriority, float flStartOffsetSeconds, ETimelineEventClipPriority ePossibleClip)
+{
+    return 0;
+}
+
+void Steam_Timeline::UpdateRangeTimelineEvent(TimelineEventHandle_t ulEvent, const char* pchTitle, const char* pchDescription, const char* pchIcon, uint32 unPriority, ETimelineEventClipPriority ePossibleClip)
+{
+
+}
+
+void Steam_Timeline::EndRangeTimelineEvent(TimelineEventHandle_t ulEvent, float flEndOffsetSeconds)
+{
+
+}
+
+void Steam_Timeline::RemoveTimelineEvent(TimelineEventHandle_t ulEvent)
+{
+
+}
+
+SteamAPICall_t Steam_Timeline::DoesEventRecordingExist(TimelineEventHandle_t ulEvent)
+{
+    return 0;
+}
+
+void Steam_Timeline::StartGamePhase()
+{
+
+}
+
+void Steam_Timeline::EndGamePhase()
+{
+
+}
+
+void Steam_Timeline::SetGamePhaseID(const char* pchPhaseID)
+{
+
+}
+
+SteamAPICall_t Steam_Timeline::DoesGamePhaseRecordingExist(const char* pchPhaseID)
+{
+    return 0;
+}
+
+void Steam_Timeline::AddGamePhaseTag(const char* pchTagName, const char* pchTagIcon, const char* pchTagGroup, uint32 unPriority)
+{
+
+}
+
+void Steam_Timeline::SetGamePhaseAttribute(const char* pchAttributeGroup, const char* pchAttributeValue, uint32 unPriority)
+{
+
+}
+
+void Steam_Timeline::OpenOverlayToGamePhase(const char* pchPhaseID)
+{
+
+}
+
+void Steam_Timeline::OpenOverlayToTimelineEvent(const TimelineEventHandle_t ulEvent)
+{
+
+}
 
 
 void Steam_Timeline::RunCallbacks()
