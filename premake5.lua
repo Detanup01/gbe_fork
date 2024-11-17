@@ -550,7 +550,7 @@ filter { "action:vs*", }
     }
     linkoptions  {
         -- source of emittoolversioninfo: https://developercommunity.visualstudio.com/t/add-linker-option-to-strip-rich-stamp-from-exe-hea/740443
-        "/NOLOGO", "/emittoolversioninfo:no"
+        "/NOLOGO", "/FORCE:MULTIPLE", "/emittoolversioninfo:no"
     }
 -- GNU make common compiler/linker options
 filter { "action:gmake*", }
