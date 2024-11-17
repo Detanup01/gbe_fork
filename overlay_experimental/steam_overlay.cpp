@@ -32,7 +32,7 @@ static constexpr int base_notif_window_id  = 0 * max_window_id;
 static constexpr int base_friend_window_id = 1 * max_window_id;
 static constexpr int base_friend_item_id   = 2 * max_window_id;
 
-static InGameOverlay::ToggleKey overlay_toggle_keys[] overlay_toggle_keys = {
+static InGameOverlay::ToggleKey overlay_toggle_keys[] = {
     InGameOverlay::ToggleKey::SHIFT, InGameOverlay::ToggleKey::TAB
 };
 static const int toggle_keys_count = 2;
