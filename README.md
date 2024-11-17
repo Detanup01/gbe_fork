@@ -71,7 +71,7 @@ You can also find instructions here in [README.release.md](./post_build/README.r
 
  Clone the repo and its submodules **recursively**
  ```shell
- git clone --recurse-submodules -j8 https://github.com/otavepto/gbe_fork.git
+ git clone --recurse-submodules -j8 https://github.com/Detanup01/gbe_fork.git
  ```
  The switch `-j8` is optional, it allows Git to fetch up to 8 submodules
 
