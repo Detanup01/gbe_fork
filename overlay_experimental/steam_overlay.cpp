@@ -32,9 +32,10 @@ static constexpr int base_notif_window_id  = 0 * max_window_id;
 static constexpr int base_friend_window_id = 1 * max_window_id;
 static constexpr int base_friend_item_id   = 2 * max_window_id;
 
-static const InGameOverlay::ToggleKey overlay_toggle_keys[] overlay_toggle_keys = {
+static InGameOverlay::ToggleKey overlay_toggle_keys[] overlay_toggle_keys = {
     InGameOverlay::ToggleKey::SHIFT, InGameOverlay::ToggleKey::TAB
 };
+static const int toggle_keys_count = 2;
 
 // look for the column 'API language code' here: https://partner.steamgames.com/doc/store/localization/languages
 static constexpr const char* valid_languages[] = {
@@ -218,7 +219,7 @@ bool Steam_Overlay::renderer_hook_proc()
         overlay_state_hook(state == InGameOverlay::OverlayHookState::Ready || state == InGameOverlay::OverlayHookState::Reset);
     };
 
-    bool started = _renderer->StartHook(overlay_toggle_callback, overlay_toggle_keys, 2, &fonts_atlas);
+    bool started = _renderer->StartHook(overlay_toggle_callback, overlay_toggle_keys, toggle_keys_count, &fonts_atlas);
     PRINT_DEBUG("started renderer hook (result=%i)", (int)started);
     
     return true;
