@@ -1449,7 +1449,7 @@ void Steam_Overlay::render_main_window()
 
                             ImGui::TableSetColumnIndex(0);
                             auto &icon_rsrc = achieved ? x.icon : x.icon_gray;
-                            if (icon_rsrc->GetResourceId() != 0)) {
+                            if (icon_rsrc->GetResourceId() != 0) {
                                 ImGui::Image(
                                     icon_rsrc->GetResourceId(),
                                     ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size)
