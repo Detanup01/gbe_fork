@@ -469,7 +469,7 @@ std::string Local_Storage::get_user_appdata_path()
 {
     std::string user_appdata_path("SAVE");
 #if defined(STEAM_WIN32)
-    WCHAR szPath[MAX_PATH * 10] = {};
+    WCHAR szPath[MAX_PATH] = {};
 
     HRESULT hr = SHGetFolderPathW(NULL, CSIDL_APPDATA, NULL, 0, szPath);
 
@@ -521,6 +521,7 @@ static std::string sanitize_file_name(std::string name)
     name = replace_with(name, "*", ".ASTERISK.");
     name = replace_with(name, "\"", ".QUOTE.");
     name = replace_with(name, "?", ".Q_MARK.");
+    name = replace_with(name, "%", ".PERCENT.");
 
     return name;
 }
@@ -538,6 +539,7 @@ static std::string desanitize_file_name(std::string name)
     name = replace_with(name, ".ASTERISK.", "*");
     name = replace_with(name, ".QUOTE.", "\"");
     name = replace_with(name, ".Q_MARK.", "?");
+    name = replace_with(name, ".PERCENT.", "%");
 
     return name;
 }

@@ -222,8 +222,9 @@ void Steam_HTTP::online_http_request(Steam_Http_Request *request, SteamAPICall_t
         directory_path = ".";
         file_name = request->target_filepath;
     }
-    PRINT_DEBUG("directory: '%s', filename '%s'", directory_path.c_str(), file_name.c_str());
+    PRINT_DEBUG("directory: '%s', filename '%s', target_filepath '%s'", directory_path.c_str(), file_name.c_str(), request->target_filepath.c_str());
     Local_Storage::store_file_data(directory_path, file_name, (char *)"", sizeof(""));
+    PRINT_DEBUG("Temp file created with empty data"); //TODO remove this
 
     FILE *hfile = std::fopen(request->target_filepath.c_str(), "wb");
     if (!hfile) {
