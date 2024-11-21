@@ -37,9 +37,10 @@ ISteamTimeline *Steam_Client::GetISteamTimeline( HSteamUser hSteamUser, HSteamPi
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return nullptr;
 
-    if (strcmp(pchVersion, "STEAMTIMELINE_INTERFACE_VERSION001") == 0) {
+    if (strcmp(pchVersion, "STEAMTIMELINE_INTERFACE_V001") == 0) {
         return reinterpret_cast<ISteamTimeline *>(static_cast<ISteamTimeline001 *>(steam_timeline));
     }
+    // Todo: Add non existing but reversed v2-v3
     else if (strcmp(pchVersion, STEAMTIMELINE_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamTimeline *>(static_cast<ISteamTimeline *>(steam_timeline));
     }
