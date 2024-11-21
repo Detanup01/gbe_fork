@@ -469,7 +469,7 @@ std::string Local_Storage::get_user_appdata_path()
 {
     std::string user_appdata_path("SAVE");
 #if defined(STEAM_WIN32)
-    WCHAR szPath[MAX_PATH] = {};
+    WCHAR szPath[MAX_PATH * 10] = {};
 
     HRESULT hr = SHGetFolderPathW(NULL, CSIDL_APPDATA, NULL, 0, szPath);
 
