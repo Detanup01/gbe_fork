@@ -890,6 +890,7 @@ project "api_experimental"
     filter { "system:not windows", }
         links {
             common_link_linux,
+            "X11"
         }
 
 
