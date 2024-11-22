@@ -632,6 +632,7 @@ if _OPTIONS["build-curl"] or _OPTIONS["all-build"] then
         "CURL_USE_LIBPSL=OFF",
         "USE_LIBIDN2=OFF",
         "CURL_DISABLE_LDAP=ON",
+        "USE_NGHTTP2=OFF",
     }
     if os.target() == 'windows' and string.match(_ACTION, 'vs.+') then
         table.insert(curl_common_defs, "CURL_STATIC_CRT=ON")
