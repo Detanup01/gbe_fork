@@ -31,43 +31,41 @@ keymap_digital = {
 def add_input_bindings(group, bindings, force_binding=None, keymap=keymap_digital):
     if "inputs" not in group:
         return bindings
-    for i in group["inputs"]:
-        for act in group["inputs"][i]:
-            for fp in group["inputs"][i][act]:
-                for bd in group["inputs"][i][act][fp]:
-                    for bbd in group["inputs"][i][act][fp][bd]:
+    for i, i_val in group["inputs"].iteritems():
+        for act in i_val.itervalues():
+            for fp in act.itervalues():
+                for bd in fp.itervalues():
+                    for bbd, ss in bd.iteritems():
                         if bbd.lower() == 'binding':
-                            x = group["inputs"][i][act][fp][bd].get_all_for(bbd)
-                            for ss in x:
-                                st = ss.split()
-                                supported_binding = False
-                                if st[0].lower() == 'game_action':
-                                    supported_binding = True
-                                    if st[2][-1] == ",":
-                                        action_name = st[2][:-1]
-                                    else:
-                                        action_name = st[2][:]
-                                elif st[0].lower() == 'xinput_button':
-                                    supported_binding = True
-                                    if st[1][-1] == ",":
-                                        action_name = st[1][:-1]
-                                    else:
-                                        action_name = st[1][:]
+                            st = ss.split()
+                            supported_binding = False
+                            if st[0].lower() == 'game_action':
+                                supported_binding = True
+                                if st[2][-1] == ",":
+                                    action_name = st[2][:-1]
+                                else:
+                                    action_name = st[2][:]
+                            elif st[0].lower() == 'xinput_button':
+                                supported_binding = True
+                                if st[1][-1] == ",":
+                                    action_name = st[1][:-1]
+                                else:
+                                    action_name = st[1][:]
+                            
+                            if supported_binding:    
+                                if force_binding is None:
+                                    binding = keymap.get(i.lower(), None)
+                                else:
+                                    binding = force_binding
                                 
-                                if supported_binding:    
-                                    if force_binding is None:
-                                        binding = keymap.get(i.lower(), None)
+                                if binding:
+                                    if action_name in bindings:
+                                        if binding not in bindings[action_name]:
+                                            bindings[action_name].append(binding)
                                     else:
-                                        binding = force_binding
-                                    
-                                    if binding:
-                                        if action_name in bindings:
-                                            if binding not in bindings[action_name]:
-                                                bindings[action_name].append(binding)
-                                        else:
-                                            bindings[action_name] = [binding]
-                                    else:
-                                        print(f"[X] missing keymap for {i}")
+                                        bindings[action_name] = [binding]
+                                else:
+                                    print(f"[X] missing keymap for {i}")
     return bindings
 
 
