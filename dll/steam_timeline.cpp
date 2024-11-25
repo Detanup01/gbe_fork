@@ -17,7 +17,26 @@
 
 #include "dll/steam_timeline.h"
 
-// https://partner.steamgames.com/doc/api/ISteamTimeline
+
+const std::chrono::system_clock::time_point& Steam_Timeline::TimelineEvent_t::get_time_added() const
+{
+    return time_added;
+}
+
+
+
+const std::chrono::system_clock::time_point& Steam_Timeline::TimelineState_t::get_time_added() const
+{
+    return time_added;
+}
+
+
+
+const std::chrono::system_clock::time_point& Steam_Timeline::TimelineGamePhase_t::get_time_added() const
+{
+    return time_added;
+}
+
 
 
 void Steam_Timeline::steam_callback(void *object, Common_Message *msg)
@@ -72,16 +91,16 @@ Steam_Timeline::~Steam_Timeline()
 // - pchDescription: provide a localized string in the language returned by SteamUtils()->GetSteamUILanguage()
 // - flTimeDelta: The time offset in seconds to apply to this event. Negative times indicate an 
 //			event that happened in the past.
-void Steam_Timeline::SetTimelineStateDescription( const char *pchDescription, float flTimeDelta )
+void Steam_Timeline::SetTimelineTooltip( const char *pchDescription, float flTimeDelta )
 {
     PRINT_DEBUG("'%s' %f", pchDescription, flTimeDelta);
-    std::lock_guard lock(global_mutex);
+    std::lock_guard lock(timeline_mutex);
 
-    const auto target_timepoint = std::chrono::system_clock::now() + std::chrono::milliseconds(static_cast<long>(flTimeDelta * 1000));
+    const auto target_timepoint = std::chrono::system_clock::now() + std::chrono::milliseconds(static_cast<long long>(flTimeDelta * 1000));
 
-    // reverse iterators to search from end
+    // reverse iterators to find last/nearest match in recent time
     auto event_it = std::find_if(timeline_states.rbegin(), timeline_states.rend(), [this, &target_timepoint](const TimelineState_t &item) {
-        return target_timepoint >= item.time_added;
+        return target_timepoint >= item.get_time_added();
     });
 
     if (timeline_states.rend() != event_it) {
@@ -95,16 +114,16 @@ void Steam_Timeline::SetTimelineStateDescription( const char *pchDescription, fl
 
 }
 
-void Steam_Timeline::ClearTimelineStateDescription( float flTimeDelta )
+void Steam_Timeline::ClearTimelineTooltip( float flTimeDelta )
 {
     PRINT_DEBUG("%f", flTimeDelta);
-    std::lock_guard lock(global_mutex);
+    std::lock_guard lock(timeline_mutex);
 
-    const auto target_timepoint = std::chrono::system_clock::now() + std::chrono::milliseconds(static_cast<long>(flTimeDelta * 1000));
+    const auto target_timepoint = std::chrono::system_clock::now() + std::chrono::milliseconds(static_cast<long long>(flTimeDelta * 1000));
 
-    // reverse iterators to search from end
+    // reverse iterators to find last/nearest match in recent time
     auto event_it = std::find_if(timeline_states.rbegin(), timeline_states.rend(), [this, &target_timepoint](const TimelineState_t &item) {
-        return target_timepoint >= item.time_added;
+        return target_timepoint >= item.get_time_added();
     });
 
     if (timeline_states.rend() != event_it) {
@@ -112,6 +131,73 @@ void Steam_Timeline::ClearTimelineStateDescription( float flTimeDelta )
         event_it->description.clear();
     }
 
+}
+
+void Steam_Timeline::SetTimelineStateDescription( const char *pchDescription, float flTimeDelta )
+{
+    PRINT_DEBUG("old v1");
+    SetTimelineTooltip(pchDescription, flTimeDelta);
+}
+
+void Steam_Timeline::ClearTimelineStateDescription( float flTimeDelta )
+{
+    PRINT_DEBUG("old v1");
+    ClearTimelineTooltip(flTimeDelta);
+}
+
+void Steam_Timeline::SetTimelineGameMode( ETimelineGameMode eMode )
+{
+    PRINT_DEBUG("%i", (int)eMode);
+    std::lock_guard lock(timeline_mutex);
+
+    auto &new_timeline_state = timeline_states.emplace_back(TimelineState_t{});
+    new_timeline_state.bar_color = eMode;
+}
+
+TimelineEventHandle_t Steam_Timeline::AddInstantaneousTimelineEvent( const char *pchTitle, const char *pchDescription, const char *pchIcon, uint32 unIconPriority, float flStartOffsetSeconds, ETimelineEventClipPriority ePossibleClip )
+{
+    PRINT_DEBUG_TODO();
+    return AddRangeTimelineEvent(pchTitle, pchDescription, pchIcon, unIconPriority, flStartOffsetSeconds, 0, ePossibleClip);
+}
+
+TimelineEventHandle_t Steam_Timeline::AddRangeTimelineEvent( const char *pchTitle, const char *pchDescription, const char *pchIcon, uint32 unIconPriority, float flStartOffsetSeconds, float flDuration, ETimelineEventClipPriority ePossibleClip)
+{
+    PRINT_DEBUG("'%s' ('%s') icon='%s', %u, [%f, %f) %i", pchTitle, pchDescription, pchIcon, unIconPriority, flStartOffsetSeconds, flDuration, (int)ePossibleClip);
+    std::lock_guard lock(timeline_mutex);
+
+    auto event_id = StartRangeTimelineEvent(pchTitle, pchDescription, pchIcon, unIconPriority, flStartOffsetSeconds, ePossibleClip);
+    if (!event_id || event_id > timeline_events.size()) return event_id;
+
+    auto& my_event = timeline_events[static_cast<size_t>(event_id - 1)];
+    my_event.ended = true; // ranged and instantaneous events are ended/closed events, they can't be modified later according to docs
+
+    // make events last at least 1 sec
+    if (static_cast<long long>(flDuration * 1000) < 1000LL) { // < 1000ms
+        flDuration = 1;
+    }
+    // for events with priority=ETimelineEventClipPriority::k_ETimelineEventClipPriority_Featured steam creates ~30 sec clip
+    if (flDuration < PRIORITY_CLIP_MIN_SEC && ePossibleClip == ETimelineEventClipPriority::k_ETimelineEventClipPriority_Featured) {
+        flDuration = PRIORITY_CLIP_MIN_SEC;
+    }
+    if (flDuration > k_flMaxTimelineEventDuration) {
+        flDuration = k_flMaxTimelineEventDuration;
+    }
+
+    my_event.flDurationSeconds = flDuration;
+
+    return event_id;
+}
+
+TimelineEventHandle_t Steam_Timeline::AddTimelineEvent( const char *pchTitle, const char *pchDescription, const char *pchIcon, uint32 unIconPriority, float flStartOffsetSeconds, float flDurationSeconds, ETimelineEventClipPriority ePossibleClip )
+{
+    PRINT_DEBUG("undocumented v2/v3");
+
+    // this is how actual steamclient64.dll implements it
+    if (flDurationSeconds > 0) {
+        return AddRangeTimelineEvent(pchTitle, pchDescription, pchIcon, unIconPriority, flStartOffsetSeconds, flDurationSeconds, ePossibleClip);
+    } else {
+        return AddInstantaneousTimelineEvent(pchTitle, pchDescription, pchIcon, unIconPriority, flStartOffsetSeconds, ePossibleClip);
+    }
 }
 
 // Use this to mark an event on the Timeline. The event can be instantaneous or take some amount of time
@@ -140,126 +226,290 @@ void Steam_Timeline::ClearTimelineStateDescription( float flTimeDelta )
 // - ePossibleClip: By setting this parameter to Featured or Standard, the game indicates to Steam that it
 //   would be appropriate to offer this range as a clip to the user. For instantaneous events, the
 //   suggested clip will be for a short time before and after the event itself.
-void Steam_Timeline::AddTimelineEvent( const char *pchIcon, const char *pchTitle, const char *pchDescription, uint32 unPriority, float flStartOffsetSeconds, float flDurationSeconds, ETimelineEventClipPriority ePossibleClip )
+void Steam_Timeline::AddTimelineEvent_old( const char *pchIcon, const char *pchTitle, const char *pchDescription, uint32 unPriority, float flStartOffsetSeconds, float flDurationSeconds, ETimelineEventClipPriority ePossibleClip )
 {
-    PRINT_DEBUG("icon='%s' | '%s' - '%s', %u, [%f, %f) %i", pchIcon, pchTitle, pchDescription, unPriority, flStartOffsetSeconds, flDurationSeconds, (int)ePossibleClip);
-    std::lock_guard lock(global_mutex);
+    PRINT_DEBUG("old v1");
+
+    // this is how actual steamclient64.dll implements it
+    if (flDurationSeconds > 0) {
+        AddRangeTimelineEvent(pchTitle, pchDescription, pchIcon, unPriority, flStartOffsetSeconds, flDurationSeconds, ePossibleClip);
+    } else {
+        AddInstantaneousTimelineEvent(pchTitle, pchDescription, pchIcon, unPriority, flStartOffsetSeconds, ePossibleClip);
+    }
+}
+
+TimelineEventHandle_t Steam_Timeline::StartRangeTimelineEvent( const char *pchTitle, const char *pchDescription, const char *pchIcon, uint32 unPriority, float flStartOffsetSeconds, ETimelineEventClipPriority ePossibleClip )
+{
+    PRINT_DEBUG("'%s' ('%s') icon='%s', %u, @[%f]sec %i", pchTitle, pchDescription, pchIcon, unPriority, flStartOffsetSeconds, (int)ePossibleClip);
+    std::lock_guard lock(timeline_mutex);
+    // this adds a new event, but the duration is set once EndRangeTimelineEvent is called
+    // also its "ended" flag is not set
 
     auto &new_event = timeline_events.emplace_back(TimelineEvent_t{});
-    new_event.pchIcon = pchIcon;
-    new_event.pchTitle = pchTitle;
-    new_event.pchDescription = pchDescription;
+    new_event.pchTitle = pchTitle ? pchTitle : "";
+    new_event.pchDescription = pchDescription ? pchDescription : "";
+    new_event.pchIcon = pchIcon ? pchIcon : "";
     new_event.unPriority = unPriority;
-
     new_event.flStartOffsetSeconds = flStartOffsetSeconds;
-    
-    // make events last at least 1 sec
-    if (static_cast<long>(flDurationSeconds * 1000) < 1000) { // < 1000ms
-        flDurationSeconds = 1;
-    }
-    // for events with priority=ETimelineEventClipPriority::k_ETimelineEventClipPriority_Featured steam creates ~8 sec clip
-    // seen here: https://www.youtube.com/watch?v=YwBD0E4-EsI
-    if (flDurationSeconds < PRIORITY_CLIP_MIN_SEC && ePossibleClip == ETimelineEventClipPriority::k_ETimelineEventClipPriority_Featured) {
-        flDurationSeconds = PRIORITY_CLIP_MIN_SEC;
-    }
-    new_event.flDurationSeconds = flDurationSeconds;
-
     new_event.ePossibleClip = ePossibleClip;
+    
+    auto new_event_id = timeline_events.size(); // never return 0, most APIs in other interfaces use it for invalid IDs
+    PRINT_DEBUG("  new event ID = [%zu]", new_event_id);
+    return static_cast<TimelineEventHandle_t>(new_event_id);
 }
 
-// Changes the color of the timeline bar. See ETimelineGameMode comments for how to use each value
-void Steam_Timeline::SetTimelineGameMode( ETimelineGameMode eMode )
+void Steam_Timeline::UpdateRangeTimelineEvent( TimelineEventHandle_t ulEvent, const char *pchTitle, const char *pchDescription, const char *pchIcon, uint32 unPriority, ETimelineEventClipPriority ePossibleClip )
 {
-    PRINT_DEBUG("%i", (int)eMode);
-    std::lock_guard lock(global_mutex);
+    PRINT_DEBUG("[%llu] '%s' ('%s') | icon='%s', %u, %i", ulEvent, pchTitle, pchDescription, pchIcon, unPriority, (int)ePossibleClip);
+    std::lock_guard lock(timeline_mutex);
 
-    auto &new_timeline_state = timeline_states.emplace_back(TimelineState_t{});
-    new_timeline_state.bar_color = eMode;
+    if (!ulEvent || ulEvent > timeline_events.size()) return;
+
+    auto& my_event = timeline_events[static_cast<size_t>(ulEvent - 1)];
+    if (my_event.ended) return;
+    
+    if (pchTitle) {
+        my_event.pchTitle = pchTitle;
+    } else {
+        my_event.pchTitle.clear();
+    }
+
+    if (pchDescription) {
+        my_event.pchDescription = pchDescription;
+    } else {
+        my_event.pchDescription.clear();
+    }
+
+    if (pchIcon) {
+        my_event.pchIcon = pchIcon;
+    } else {
+        my_event.pchIcon.clear();
+    }
+
+    my_event.unPriority = unPriority;
+    my_event.ePossibleClip = ePossibleClip;
+
+    PRINT_DEBUG("  updated event");
 }
 
-void Steam_Timeline::SetTimelineTooltip(const char* pchDescription, float flTimeDelta)
+void Steam_Timeline::EndRangeTimelineEvent( TimelineEventHandle_t ulEvent, float flEndOffsetSeconds )
 {
-    SetTimelineStateDescription(pchDescription, flTimeDelta);
+    PRINT_DEBUG("[%llu] %f", ulEvent, flEndOffsetSeconds);
+    std::lock_guard lock(timeline_mutex);
+
+    if (!ulEvent || ulEvent > timeline_events.size()) return;
+
+    auto& my_event = timeline_events[static_cast<size_t>(ulEvent - 1)];
+    if (my_event.ended) return;
+
+    my_event.ended = true;
+
+    auto end_timepoint = std::chrono::system_clock::now();
+    auto start_timepoint = my_event.get_time_added() + std::chrono::milliseconds(static_cast<long long>(my_event.flStartOffsetSeconds * 1000));
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_timepoint - start_timepoint);
+
+    my_event.flDurationSeconds = duration_ms.count() / 1000.0f;
+
+    PRINT_DEBUG("  ended event // TODO show in the UI");
 }
 
-void Steam_Timeline::ClearTimelineTooltip(float flTimeDelta)
+void Steam_Timeline::RemoveTimelineEvent( TimelineEventHandle_t ulEvent )
 {
-    ClearTimelineStateDescription(flTimeDelta);
+    PRINT_DEBUG("[%llu]", ulEvent);
+    std::lock_guard lock(timeline_mutex);
+
+    if (!ulEvent || ulEvent > timeline_events.size()) return;
+
+    timeline_events.erase(timeline_events.begin() + static_cast<size_t>(ulEvent - 1));
+
+    PRINT_DEBUG("  removed event // TODO remove from the UI");
 }
 
-TimelineEventHandle_t Steam_Timeline::AddInstantaneousTimelineEvent(const char* pchTitle, const char* pchDescription, const char* pchIcon, uint32 unIconPriority, float flStartOffsetSeconds, ETimelineEventClipPriority ePossibleClip)
-{
-    return 0;
-}
-
-TimelineEventHandle_t Steam_Timeline::AddRangeTimelineEvent(const char* pchTitle, const char* pchDescription, const char* pchIcon, uint32 unIconPriority, float flStartOffsetSeconds, float flDuration, ETimelineEventClipPriority ePossibleClip)
-{
-    return 0;
-}
-
-TimelineEventHandle_t Steam_Timeline::StartRangeTimelineEvent(const char* pchTitle, const char* pchDescription, const char* pchIcon, uint32 unPriority, float flStartOffsetSeconds, ETimelineEventClipPriority ePossibleClip)
-{
-    return 0;
-}
-
-void Steam_Timeline::UpdateRangeTimelineEvent(TimelineEventHandle_t ulEvent, const char* pchTitle, const char* pchDescription, const char* pchIcon, uint32 unPriority, ETimelineEventClipPriority ePossibleClip)
-{
-
-}
-
-void Steam_Timeline::EndRangeTimelineEvent(TimelineEventHandle_t ulEvent, float flEndOffsetSeconds)
-{
-
-}
-
-void Steam_Timeline::RemoveTimelineEvent(TimelineEventHandle_t ulEvent)
-{
-
-}
-
+STEAM_CALL_RESULT( SteamTimelineEventRecordingExists_t )
 SteamAPICall_t Steam_Timeline::DoesEventRecordingExist(TimelineEventHandle_t ulEvent)
 {
-    return 0;
+    PRINT_DEBUG("[%llu] // TODO", ulEvent);
+    std::lock_guard lock(timeline_mutex);
+
+    if (!ulEvent || ulEvent > timeline_events.size()) {
+        SteamTimelineEventRecordingExists_t data_invalid{};
+        data_invalid.m_bRecordingExists = false;
+        data_invalid.m_ulEventID = ulEvent;
+        auto ret = callback_results->addCallResult(data_invalid.k_iCallback, &data_invalid, sizeof(data_invalid));
+        callbacks->addCBResult(data_invalid.k_iCallback, &data_invalid, sizeof(data_invalid));
+        return ret;
+    }
+
+    auto& my_event = timeline_events[static_cast<size_t>(ulEvent - 1)];
+    auto recordings_count = my_event.recordings.size();
+
+    SteamTimelineEventRecordingExists_t data{};
+    data.m_bRecordingExists = !my_event.recordings.empty();
+    data.m_ulEventID = ulEvent;
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 void Steam_Timeline::StartGamePhase()
 {
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard lock(timeline_mutex);
 
+    timeline_game_phases.emplace_back(TimelineGamePhase_t{});
 }
 
 void Steam_Timeline::EndGamePhase()
 {
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard lock(timeline_mutex);
+
+    if (timeline_game_phases.empty()) return;
+
+    auto &last_game_phase = timeline_game_phases.back();
+    last_game_phase.ended = true;
+}
+
+void Steam_Timeline::SetGamePhaseID( const char *pchPhaseID )
+{
+    PRINT_DEBUG("['%s']", pchPhaseID);
+    std::lock_guard lock(timeline_mutex);
+
+    if (timeline_game_phases.empty()) return;
+
+    auto &last_game_phase = timeline_game_phases.back();
+    if (last_game_phase.ended) return;
+
+    last_game_phase.pchPhaseID = pchPhaseID ? pchPhaseID : "";
+    PRINT_DEBUG("  changed phase ID");
+}
+
+STEAM_CALL_RESULT( SteamTimelineGamePhaseRecordingExists_t )
+SteamAPICall_t Steam_Timeline::DoesGamePhaseRecordingExist( const char *pchPhaseID )
+{
+    PRINT_DEBUG("'%s' // TODO", pchPhaseID);
+    std::lock_guard lock(timeline_mutex);
+
+    if (!pchPhaseID) pchPhaseID = "";
+    std::string_view game_phase_id_view(pchPhaseID);
+
+    const auto trigger_failure = [game_phase_id_view, this]() {
+        SteamTimelineGamePhaseRecordingExists_t data_invalid{};
+        auto chars_copied = game_phase_id_view.copy(data_invalid.m_rgchPhaseID, sizeof(data_invalid.m_rgchPhaseID) - 1);
+        data_invalid.m_rgchPhaseID[chars_copied] = 0;
+        data_invalid.m_ulLongestClipMS = 0;
+        data_invalid.m_ulRecordingMS = 0;
+        data_invalid.m_unClipCount = 0;
+        data_invalid.m_unScreenshotCount = 0;
+        
+        auto ret = callback_results->addCallResult(data_invalid.k_iCallback, &data_invalid, sizeof(data_invalid));
+        callbacks->addCBResult(data_invalid.k_iCallback, &data_invalid, sizeof(data_invalid));
+        return ret;
+    };
+
+    if (timeline_game_phases.empty()) {
+        return trigger_failure();
+    }
+    
+    auto phase_it = std::find_if(timeline_game_phases.begin(), timeline_game_phases.end(), [game_phase_id_view](const TimelineGamePhase_t &item){
+        return game_phase_id_view == item.pchPhaseID;
+    });
+    if (timeline_game_phases.end() == phase_it) {
+        return trigger_failure();
+    }
+
+    // TODO return actual count ?
+    auto recordings_count = phase_it->recordings.size();
+    return trigger_failure();
+}
+
+void Steam_Timeline::AddGamePhaseTag( const char *pchTagName, const char *pchTagIcon, const char *pchTagGroup, uint32 unPriority )
+{
+    PRINT_DEBUG("['%s']: '%s' '%s' <%u>", pchTagGroup, pchTagName, pchTagIcon, unPriority);
+    std::lock_guard lock(timeline_mutex);
+
+    if (timeline_game_phases.empty()) return;
+
+    auto &last_game_phase = timeline_game_phases.back();
+    if (last_game_phase.ended) return;
+
+    if (!pchTagGroup) pchTagGroup = "";
+
+    auto &phase_tag = last_game_phase.tags[pchTagGroup].emplace_back(Steam_Timeline::TimelineGamePhase_t::Tag_t{});
+    phase_tag.pchTagName = pchTagName ? pchTagName : "";
+    phase_tag.pchTagIcon = pchTagIcon ? pchTagIcon : "";
+    phase_tag.unPriority = unPriority;
+    PRINT_DEBUG("  added phase tag");
+}
+
+void Steam_Timeline::SetGamePhaseAttribute( const char *pchAttributeGroup, const char *pchAttributeValue, uint32 unPriority )
+{
+    PRINT_DEBUG("['%s']: '%s' <%u>", pchAttributeGroup, pchAttributeValue, unPriority);
+    std::lock_guard lock(timeline_mutex);
+
+    if (timeline_game_phases.empty()) return;
+
+    auto &last_game_phase = timeline_game_phases.back();
+    if (last_game_phase.ended) return;
+
+    if (!pchAttributeGroup) pchAttributeGroup = "";
+
+    auto &phase_att = last_game_phase.attributes[pchAttributeGroup];
+    phase_att.pchAttributeValue = pchAttributeValue ? pchAttributeValue : "";
+    phase_att.unPriority = unPriority;
+    PRINT_DEBUG("  changed phase attribute");
+}
+
+void Steam_Timeline::OpenOverlayToGamePhase( const char *pchPhaseID )
+{
+    PRINT_DEBUG("['%s'] // TODO", pchPhaseID);
+    std::lock_guard lock(timeline_mutex);
 
 }
 
-void Steam_Timeline::SetGamePhaseID(const char* pchPhaseID)
+void Steam_Timeline::OpenOverlayToTimelineEvent( const TimelineEventHandle_t ulEvent )
 {
+    PRINT_DEBUG("[%llu] // TODO", ulEvent);
+    std::lock_guard lock(timeline_mutex);
 
 }
 
-SteamAPICall_t Steam_Timeline::DoesGamePhaseRecordingExist(const char* pchPhaseID)
+
+uint32 Steam_Timeline::unknown_ret0_1()
 {
+    PRINT_DEBUG_TODO();
     return 0;
 }
 
-void Steam_Timeline::AddGamePhaseTag(const char* pchTagName, const char* pchTagIcon, const char* pchTagGroup, uint32 unPriority)
+uint32 Steam_Timeline::unknown_ret0_2()
 {
-
+    PRINT_DEBUG_TODO();
+    return 0;
 }
 
-void Steam_Timeline::SetGamePhaseAttribute(const char* pchAttributeGroup, const char* pchAttributeValue, uint32 unPriority)
+void Steam_Timeline::unknown_nop_3()
 {
-
+    PRINT_DEBUG_TODO();
 }
 
-void Steam_Timeline::OpenOverlayToGamePhase(const char* pchPhaseID)
+void Steam_Timeline::unknown_nop_4()
 {
-
+    PRINT_DEBUG_TODO();
 }
 
-void Steam_Timeline::OpenOverlayToTimelineEvent(const TimelineEventHandle_t ulEvent)
+void Steam_Timeline::unknown_nop_5()
 {
+    PRINT_DEBUG_TODO();
+}
 
+void Steam_Timeline::unknown_nop_6()
+{
+    PRINT_DEBUG_TODO();
+}
+
+void Steam_Timeline::unknown_nop_7()
+{
+    PRINT_DEBUG_TODO();
 }
 
 

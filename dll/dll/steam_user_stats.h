@@ -67,6 +67,7 @@ public ISteamUserStats008,
 public ISteamUserStats009,
 public ISteamUserStats010,
 public ISteamUserStats011,
+public ISteamUserStats012,
 public ISteamUserStats
 {
 public:

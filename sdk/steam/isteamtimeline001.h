@@ -59,7 +59,7 @@ public:
 	// - ePossibleClip: By setting this parameter to Featured or Standard, the game indicates to Steam that it
 	//   would be appropriate to offer this range as a clip to the user. For instantaneous events, the
 	//   suggested clip will be for a short time before and after the event itself.
-	virtual void AddTimelineEvent( const char *pchIcon, const char *pchTitle, const char *pchDescription, uint32 unPriority, float flStartOffsetSeconds, float flDurationSeconds, ETimelineEventClipPriority ePossibleClip ) = 0;
+	virtual void AddTimelineEvent_old( const char *pchIcon, const char *pchTitle, const char *pchDescription, uint32 unPriority, float flStartOffsetSeconds, float flDurationSeconds, ETimelineEventClipPriority ePossibleClip ) = 0;
 
 	// Changes the color of the timeline bar. See ETimelineGameMode comments for how to use each value
 	virtual void SetTimelineGameMode( ETimelineGameMode eMode ) = 0;
