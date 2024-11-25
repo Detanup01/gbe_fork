@@ -39,9 +39,11 @@ ISteamTimeline *Steam_Client::GetISteamTimeline( HSteamUser hSteamUser, HSteamPi
 
     if (strcmp(pchVersion, "STEAMTIMELINE_INTERFACE_V001") == 0) {
         return reinterpret_cast<ISteamTimeline *>(static_cast<ISteamTimeline001 *>(steam_timeline));
-    }
-    // Todo: Add non existing but reversed v2-v3
-    else if (strcmp(pchVersion, STEAMTIMELINE_INTERFACE_VERSION) == 0) {
+    } else if (strcmp(pchVersion, "STEAMTIMELINE_INTERFACE_V002") == 0) {
+        return reinterpret_cast<ISteamTimeline *>(static_cast<ISteamTimeline002 *>(steam_timeline));
+    } else if (strcmp(pchVersion, "STEAMTIMELINE_INTERFACE_V003") == 0) {
+        return reinterpret_cast<ISteamTimeline *>(static_cast<ISteamTimeline003 *>(steam_timeline));
+    } else if (strcmp(pchVersion, STEAMTIMELINE_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamTimeline *>(static_cast<ISteamTimeline *>(steam_timeline));
     }
 
@@ -145,7 +147,7 @@ ISteamGameServer *Steam_Client::GetISteamGameServer( HSteamUser hSteamUser, HSte
     } else if (strcmp(pchVersion, "SteamGameServer012") == 0) {
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer012 *>(steam_gameserver));
     } else if (strcmp(pchVersion, "SteamGameServer013") == 0) {
-        gameserver_has_ipv6_functions = true;
+    gameserver_has_ipv6_functions = true;
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer013 *>(steam_gameserver));
     } else if (strcmp(pchVersion, "SteamGameServer014") == 0) {
         gameserver_has_ipv6_functions = true;
@@ -490,7 +492,7 @@ ISteamUserStats *Steam_Client::GetISteamUserStats( HSteamUser hSteamUser, HSteam
     } else if (strcmp(pchVersion, "STEAMUSERSTATS_INTERFACE_VERSION011") == 0) {
         return reinterpret_cast<ISteamUserStats *>(static_cast<ISteamUserStats011 *>(steam_user_stats));
     } else if (strcmp(pchVersion, "STEAMUSERSTATS_INTERFACE_VERSION012") == 0) {
-        return reinterpret_cast<ISteamUserStats *>(static_cast<ISteamUserStats *>(steam_user_stats));
+        return reinterpret_cast<ISteamUserStats *>(static_cast<ISteamUserStats012 *>(steam_user_stats));
     } else if (strcmp(pchVersion, STEAMUSERSTATS_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamUserStats *>(static_cast<ISteamUserStats *>(steam_user_stats));
     }

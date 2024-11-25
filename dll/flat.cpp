@@ -5529,7 +5529,7 @@ STEAMAPI_API void SteamAPI_ISteamTimeline_ClearTimelineStateDescription( ISteamT
 
 STEAMAPI_API void SteamAPI_ISteamTimeline_AddTimelineEvent( ISteamTimeline* self, const char * pchIcon, const char * pchTitle, const char * pchDescription, uint32 unPriority, float flStartOffsetSeconds, float flDurationSeconds, ETimelineEventClipPriority ePossibleClip )
 {
-    (get_steam_client()->steam_timeline)->AddTimelineEvent(pchIcon, pchTitle, pchDescription, unPriority, flStartOffsetSeconds, flDurationSeconds, ePossibleClip);
+    get_steam_client()->steam_timeline->AddTimelineEvent_old(pchIcon, pchTitle, pchDescription, unPriority, flStartOffsetSeconds, flDurationSeconds, ePossibleClip);
 }
 
 STEAMAPI_API void SteamAPI_ISteamTimeline_SetTimelineGameMode( ISteamTimeline* self, ETimelineGameMode eMode )

@@ -1,10 +1,6 @@
 ## :large_orange_diamond: **This is a fork**
 Fork of https://gitlab.com/Mr_Goldberg/goldberg_emulator  
 
-Fork originally make by wizark952.
-
-This is a latest version of his work.
-
 ### Feel free to make a PR.
 
 ---

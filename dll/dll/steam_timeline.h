@@ -22,15 +22,43 @@
 
 class Steam_Timeline :
 public ISteamTimeline,
+public ISteamTimeline003,
+public ISteamTimeline002,
 public ISteamTimeline001
 {
 private:
-    constexpr const static float PRIORITY_CLIP_MIN_SEC = 8.0f;
+    // "Steam Client Update - November 12th": * Increased Instant Clip default duration from 10s to 30s.
+    constexpr const static float PRIORITY_CLIP_MIN_SEC = 30.0f;
 
+    // TimelineState_t controls the bar of the timeline, independant of anything else even the events
+    struct TimelineState_t
+    {
+    private:
+        // emu specific: time when this state was changed via 'Steam_Timeline::SetTimelineGameMode()'
+        std::chrono::system_clock::time_point time_added = std::chrono::system_clock::now();
+        
+    public:
+        const std::chrono::system_clock::time_point& get_time_added() const;
+
+        std::string description{}; // A localized string in the language returned by SteamUtils()->GetSteamUILanguage()
+        ETimelineGameMode bar_color{}; // the color of the timeline bar
+    };
+    
+    // TimelineEvent_t are little clips/markers added over the bar of the timeline
     struct TimelineEvent_t
     {
+    private:
         // emu specific: time when this event was added to the list via 'Steam_Timeline::AddTimelineEvent()'
-        const std::chrono::system_clock::time_point time_added = std::chrono::system_clock::now();
+        std::chrono::system_clock::time_point time_added = std::chrono::system_clock::now();
+
+    public:
+        // TODO not documented in public SDK yet
+        struct Recording_t
+        {
+
+        };
+
+        const std::chrono::system_clock::time_point& get_time_added() const;
 
         // The name of the icon to show at the timeline at this point. This can be one of the icons uploaded through the Steamworks partner Site for your title, or one of the provided icons that start with steam_. The Steam Timelines overview includes a list of available icons.
         // https://partner.steamgames.com/doc/features/timeline#icons
@@ -53,25 +81,66 @@ private:
 
         // Allows the game to describe events that should be suggested to the user as possible video clips.
         ETimelineEventClipPriority ePossibleClip{};
+
+        bool ended = false;
+
+        // TODO not documented in public SDK yet
+        // emu specific: available recordings for this event
+        std::vector<Recording_t> recordings{};
     };
 
-    struct TimelineState_t
+    struct TimelineGamePhase_t
     {
+    private:
         // emu specific: time when this state was changed via 'Steam_Timeline::SetTimelineGameMode()'
-        const std::chrono::system_clock::time_point time_added = std::chrono::system_clock::now();
+        std::chrono::system_clock::time_point time_added = std::chrono::system_clock::now();
         
-        std::string description{}; // A localized string in the language returned by SteamUtils()->GetSteamUILanguage()
-        ETimelineGameMode bar_color{}; // the color of the timeline bar
+    public:
+        struct Attribute_t
+        {
+            std::string pchAttributeValue{};
+            uint32 unPriority{};
+        };
+
+        struct Tag_t
+        {
+            std::string pchTagName{};
+            std::string pchTagIcon{};
+            uint32 unPriority{};
+        };
+
+        // TODO not documented in public SDK yet
+        struct Recording_t
+        {
+
+        };
+
+        const std::chrono::system_clock::time_point& get_time_added() const;
+
+        std::string pchTagIcon{}; // The name of a game provided timeline icon or builtin "steam_" icon
+        std::string pchPhaseID{}; // A game-provided persistent ID for a game phase. This could be a the match ID in a multiplayer game, etc...
+        std::string pchTagName{}; // The localized name of the tag in the language returned by SteamUtils()->GetSteamUILanguage()
+        std::string pchTagGroup{}; // The localized name of the tag group
+
+        std::map<std::string, Attribute_t> attributes{};
+        std::map<std::string, std::vector<Tag_t>> tags{};
+
+        bool ended = false;
+        // emu specific: available recordings for this phase
+        std::vector<Recording_t> recordings{};
     };
 
+    std::recursive_mutex timeline_mutex{};
     class Settings *settings{};
     class Networking *network{};
     class SteamCallResults *callback_results{};
     class SteamCallBacks *callbacks{};
     class RunEveryRunCB *run_every_runcb{};
 
-    std::vector<TimelineEvent_t> timeline_events{};
     std::vector<TimelineState_t> timeline_states{};
+    std::vector<TimelineEvent_t> timeline_events{};
+    std::vector<TimelineGamePhase_t> timeline_game_phases{};
+    
 
     // unconditional periodic callback
     void RunCallbacks();
@@ -85,21 +154,22 @@ public:
     Steam_Timeline(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, class RunEveryRunCB *run_every_runcb);
     ~Steam_Timeline();
 
-    void SetTimelineStateDescription( const char *pchDescription, float flTimeDelta );
+    void SetTimelineTooltip( const char *pchDescription, float flTimeDelta );
+    void ClearTimelineTooltip( float flTimeDelta );
 
-    void ClearTimelineStateDescription( float flTimeDelta );
+    void SetTimelineStateDescription( const char *pchDescription, float flTimeDelta ); // renamed to SetTimelineTooltip() in sdk v1.61
+    void ClearTimelineStateDescription( float flTimeDelta ); // renamed to ClearTimelineTooltip() in sdk v1.61
 
-    void AddTimelineEvent( const char *pchIcon, const char *pchTitle, const char *pchDescription, uint32 unPriority, float flStartOffsetSeconds, float flDurationSeconds, ETimelineEventClipPriority ePossibleClip );
-
+    // Changes the color of the timeline bar. See ETimelineGameMode comments for how to use each value
     void SetTimelineGameMode( ETimelineGameMode eMode );
 
-    void SetTimelineTooltip(const char* pchDescription, float flTimeDelta);
-    void ClearTimelineTooltip(float flTimeDelta);
-    
     TimelineEventHandle_t AddInstantaneousTimelineEvent( const char *pchTitle, const char *pchDescription, const char *pchIcon, uint32 unIconPriority, float flStartOffsetSeconds = 0.f, ETimelineEventClipPriority ePossibleClip = k_ETimelineEventClipPriority_None );
-	TimelineEventHandle_t AddRangeTimelineEvent( const char *pchTitle, const char *pchDescription, const char *pchIcon, uint32 unIconPriority, float flStartOffsetSeconds = 0.f, float flDuration = 0.f, ETimelineEventClipPriority ePossibleClip = k_ETimelineEventClipPriority_None );
+    TimelineEventHandle_t AddRangeTimelineEvent( const char *pchTitle, const char *pchDescription, const char *pchIcon, uint32 unIconPriority, float flStartOffsetSeconds = 0.f, float flDuration = 0.f, ETimelineEventClipPriority ePossibleClip = k_ETimelineEventClipPriority_None );
+    
+    TimelineEventHandle_t AddTimelineEvent( const char *pchTitle, const char *pchDescription, const char *pchIcon, uint32 unIconPriority, float flStartOffsetSeconds, float flDurationSeconds, ETimelineEventClipPriority ePossibleClip );
+    void AddTimelineEvent_old( const char *pchIcon, const char *pchTitle, const char *pchDescription, uint32 unPriority, float flStartOffsetSeconds, float flDurationSeconds, ETimelineEventClipPriority ePossibleClip );
 
-	TimelineEventHandle_t StartRangeTimelineEvent( const char *pchTitle, const char *pchDescription, const char *pchIcon, uint32 unPriority, float flStartOffsetSeconds, ETimelineEventClipPriority ePossibleClip );
+    TimelineEventHandle_t StartRangeTimelineEvent( const char *pchTitle, const char *pchDescription, const char *pchIcon, uint32 unPriority, float flStartOffsetSeconds, ETimelineEventClipPriority ePossibleClip );
 
     void UpdateRangeTimelineEvent( TimelineEventHandle_t ulEvent, const char *pchTitle, const char *pchDescription, const char *pchIcon, uint32 unPriority, ETimelineEventClipPriority ePossibleClip );
 
@@ -107,14 +177,15 @@ public:
 
     void RemoveTimelineEvent( TimelineEventHandle_t ulEvent );
 
+    STEAM_CALL_RESULT( SteamTimelineEventRecordingExists_t )
     SteamAPICall_t DoesEventRecordingExist( TimelineEventHandle_t ulEvent );
 
     void StartGamePhase();
-
+    
     void EndGamePhase();
 
     void SetGamePhaseID( const char *pchPhaseID );
-
+    STEAM_CALL_RESULT( SteamTimelineGamePhaseRecordingExists_t )
     SteamAPICall_t DoesGamePhaseRecordingExist( const char *pchPhaseID );
 
     void AddGamePhaseTag( const char *pchTagName, const char *pchTagIcon, const char *pchTagGroup, uint32 unPriority );
@@ -124,6 +195,15 @@ public:
     void OpenOverlayToGamePhase( const char *pchPhaseID );
 
     void OpenOverlayToTimelineEvent( const TimelineEventHandle_t ulEvent );
+
+
+    uint32 unknown_ret0_1();
+    uint32 unknown_ret0_2();
+    void unknown_nop_3();
+    void unknown_nop_4();
+    void unknown_nop_5();
+    void unknown_nop_6();
+    void unknown_nop_7();
 
 };
 
