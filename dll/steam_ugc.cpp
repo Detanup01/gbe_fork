@@ -381,7 +381,7 @@ std::optional<std::string> Steam_UGC::get_query_ugc_tag(UGCQueryHandle_t handle,
     if (indexTag >= res.size()) return std::nullopt;
 
     std::string tmp = res[indexTag];
-    if (tmp.back() == ',') {
+    if (!tmp.empty() && tmp.back() == ',') {
         tmp = tmp.substr(0, tmp.size() - 1);
     }
     return tmp;
