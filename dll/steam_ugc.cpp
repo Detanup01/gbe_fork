@@ -51,7 +51,7 @@ std::optional<Mod_entry> Steam_UGC::get_query_ugc(UGCQueryHandle_t handle, uint3
 std::vector<std::string> Steam_UGC::get_query_ugc_tags(UGCQueryHandle_t handle, uint32 index)
 {
     auto res = get_query_ugc(handle, index);
-    if (!res.has_value()) return std::nullopt;
+    if (!res.has_value()) return {};
 
     std::string tmp = res.value().tags;
 
