@@ -940,6 +940,12 @@ static void parse_installed_app_Ids(class Settings *settings_client, class Setti
 static const auto one_week_ago_epoch = std::chrono::duration_cast<std::chrono::seconds>(
     ( startup_time - std::chrono::hours(24 * 7) ).time_since_epoch()
 ).count();
+static const auto two_week_ago_epoch = std::chrono::duration_cast<std::chrono::seconds>(
+    ( startup_time - std::chrono::hours(24 * 7 * 2) ).time_since_epoch()
+).count();
+static const auto three_week_ago_epoch = std::chrono::duration_cast<std::chrono::seconds>(
+    ( startup_time - std::chrono::hours(24 * 7 * 3) ).time_since_epoch()
+).count();
 
 static size_t get_file_size_safe(const std::string &filepath, const std::string &basepath, int32 default_val = 0)
 {
@@ -963,7 +969,7 @@ static std::string get_mod_preview_url(const std::string &previewFileName, const
     } else {
         auto settings_folder = std::string(Local_Storage::get_game_settings_path());
         std::replace(settings_folder.begin(), settings_folder.end(), '\\', '/');
-        return "file://" + settings_folder + "mod_images/" + mod_id + "/" + previewFileName;
+        return "file:///" + settings_folder + "mod_images/" + mod_id + "/" + previewFileName;
     }
     
 }
@@ -993,8 +999,8 @@ static void try_parse_mods_file(class Settings *settings_client, Settings *setti
             newMod.description = mod.value().value("description", std::string(""));
             newMod.steamIDOwner = mod.value().value("steam_id_owner", settings_client->get_local_steam_id().ConvertToUint64());
             newMod.timeCreated = mod.value().value("time_created", (uint32)one_week_ago_epoch);
-            newMod.timeUpdated = mod.value().value("time_updated", (uint32)one_week_ago_epoch);
-            newMod.timeAddedToUserList = mod.value().value("time_added", (uint32)one_week_ago_epoch);
+            newMod.timeUpdated = mod.value().value("time_updated", (uint32)two_week_ago_epoch);
+            newMod.timeAddedToUserList = mod.value().value("time_added", (uint32)three_week_ago_epoch);
             newMod.visibility = k_ERemoteStoragePublishedFileVisibilityPublic;
             newMod.banned = false;
             newMod.acceptedForUse = true;
@@ -1077,8 +1083,8 @@ static void try_detect_mods_folder(class Settings *settings_client, Settings *se
             newMod.description = "mod #" + mod_folder;
             newMod.steamIDOwner = settings_client->get_local_steam_id().ConvertToUint64();
             newMod.timeCreated = (uint32)one_week_ago_epoch;
-            newMod.timeUpdated = (uint32)one_week_ago_epoch;
-            newMod.timeAddedToUserList = (uint32)one_week_ago_epoch;
+            newMod.timeUpdated = (uint32)two_week_ago_epoch;
+            newMod.timeAddedToUserList = (uint32)three_week_ago_epoch;
             newMod.visibility = k_ERemoteStoragePublishedFileVisibilityPublic;
             newMod.banned = false;
             newMod.acceptedForUse = true;
