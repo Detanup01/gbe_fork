@@ -1,5 +1,5 @@
 1. Rename this to: installed_app_ids.txt
-2. Add all apps IDs (each on a separate line) that should be reported as insatlled, they could be NOT owned, that is allowed
+2. Add all apps IDs (each on a separate line) that should be reported as installed, they could be NOT owned, that is allowed
 3. Or, remove the file installed_app_ids.txt if it exists to:
     * Allow app ID 0, this seems to be a special denotation to "non-steam apps"
     * Allow app ID of the current game (you must create the file steam_appid.txt)
