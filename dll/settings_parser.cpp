@@ -998,9 +998,9 @@ static void try_parse_mods_file(class Settings *settings_client, Settings *setti
             newMod.fileType = k_EWorkshopFileTypeCommunity;
             newMod.description = mod.value().value("description", std::string(""));
             newMod.steamIDOwner = mod.value().value("steam_id_owner", settings_client->get_local_steam_id().ConvertToUint64());
-            newMod.timeCreated = mod.value().value("time_created", (uint32)one_week_ago_epoch);
+            newMod.timeCreated = mod.value().value("time_created", (uint32)three_week_ago_epoch);
             newMod.timeUpdated = mod.value().value("time_updated", (uint32)two_week_ago_epoch);
-            newMod.timeAddedToUserList = mod.value().value("time_added", (uint32)three_week_ago_epoch);
+            newMod.timeAddedToUserList = mod.value().value("time_added", (uint32)one_week_ago_epoch);
             newMod.visibility = k_ERemoteStoragePublishedFileVisibilityPublic;
             newMod.banned = false;
             newMod.acceptedForUse = true;
@@ -1082,9 +1082,9 @@ static void try_detect_mods_folder(class Settings *settings_client, Settings *se
             newMod.fileType = k_EWorkshopFileTypeCommunity;
             newMod.description = "mod #" + mod_folder;
             newMod.steamIDOwner = settings_client->get_local_steam_id().ConvertToUint64();
-            newMod.timeCreated = (uint32)one_week_ago_epoch;
+            newMod.timeCreated = (uint32)three_week_ago_epoch;
             newMod.timeUpdated = (uint32)two_week_ago_epoch;
-            newMod.timeAddedToUserList = (uint32)three_week_ago_epoch;
+            newMod.timeAddedToUserList = (uint32)one_week_ago_epoch;
             newMod.visibility = k_ERemoteStoragePublishedFileVisibilityPublic;
             newMod.banned = false;
             newMod.acceptedForUse = true;
