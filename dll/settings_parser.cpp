@@ -969,7 +969,16 @@ static std::string get_mod_preview_url(const std::string &previewFileName, const
     } else {
         auto settings_folder = std::string(Local_Storage::get_game_settings_path());
         std::replace(settings_folder.begin(), settings_folder.end(), '\\', '/');
-        return "file:///" + settings_folder + "mod_images/" + mod_id + "/" + previewFileName;
+        
+        return
+
+#if defined(__WINDOWS__)
+            "file:///"
+#else // on Linux absolute paths start like this: /my/path, so the 3rd slash is already appended
+            "file://"
+#endif
+
+            + settings_folder + "mod_images/" + mod_id + "/" + previewFileName;
     }
     
 }
