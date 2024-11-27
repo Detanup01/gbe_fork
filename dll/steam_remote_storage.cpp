@@ -496,7 +496,7 @@ bool Steam_Remote_Storage::GetUGCDetails( UGCHandle_t hContent, AppId_t *pnAppID
 {
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-
+    
     return false;
 }
 
