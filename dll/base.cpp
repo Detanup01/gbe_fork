@@ -167,42 +167,14 @@ bool check_timedout(std::chrono::high_resolution_clock::time_point old, double t
 }
 
 #ifdef __LINUX__
-std::string get_lib_path() {
-  std::string dir = "/proc/self/map_files";
-  DIR *dp;
-  int i = 0;
-  struct dirent *ep;
-  dp = opendir (dir.c_str());
-  uintptr_t p = (uintptr_t)&get_lib_path;
-
-  if (dp != NULL)
-  {
-    while ((ep = readdir (dp))) {
-      if (memcmp(ep->d_name, ".", 2) != 0 && memcmp(ep->d_name, "..", 3) != 0) {
-            char *upper = NULL;
-            uintptr_t lower_bound = strtoull(ep->d_name, &upper, 16);
-            if (lower_bound) {
-                ++upper;
-                uintptr_t upper_bound = strtoull(upper, &upper, 16);
-                if (upper_bound && (lower_bound < p && p < upper_bound)) {
-                    std::string path = dir + PATH_SEPARATOR + ep->d_name;
-                    char link[PATH_MAX] = {};
-                    if (readlink(path.c_str(), link, sizeof(link)) > 0) {
-                        std::string lib_path = link;
-                        (void) closedir (dp);
-                        return link;
-                    }
-                }
-            }
-
-        i++;
-      }
+std::string get_lib_path()
+{
+    Dl_info info;
+    if (dladdr((void*)get_lib_path, &info))
+    {
+        return std::string(info.dli_fname);
     }
-
-    (void) closedir (dp);
-  }
-
-  return ".";
+    return ".";
 }
 #endif
 
