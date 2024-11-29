@@ -1015,7 +1015,7 @@ static void try_parse_mods_file(class Settings *settings_client, Settings *setti
             }
             newMod.previewFileSize = mod.value().value("preview_filesize", preview_filesize);
 
-            newMod.total_files_sizes = mod.value().value("total_files_sizes", primary_filesize);
+            newMod.total_files_sizes = mod.value().value("total_files_sizes", newMod.primaryFileSize);
             newMod.min_game_branch = mod.value().value("min_game_branch", "");
             newMod.max_game_branch = mod.value().value("max_game_branch", "");
             
