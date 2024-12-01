@@ -494,8 +494,33 @@ bool Steam_Remote_Storage::GetUGCDownloadProgress( UGCHandle_t hContent, uint32 
 // Gets metadata for a file after it has been downloaded. This is the same metadata given in the RemoteStorageDownloadUGCResult_t call result
 bool Steam_Remote_Storage::GetUGCDetails( UGCHandle_t hContent, AppId_t *pnAppID, STEAM_OUT_STRING() char **ppchName, int32 *pnFileSizeInBytes, STEAM_OUT_STRUCT() CSteamID *pSteamIDOwner )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("%llu", hContent);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (hContent == k_UGCHandleInvalid) return false;
+
+    if (pnAppID) *pnAppID = settings->get_local_game_id().AppID();
+    if (pSteamIDOwner) *pSteamIDOwner = k_steamIDNil;
+    if (pnFileSizeInBytes) *pnFileSizeInBytes = 0;
+    if (ppchName) *ppchName = nullptr;
+
+    if (auto query_res = ugc_bridge->get_ugc_query_result(hContent)) {
+        auto mod = settings->getMod(query_res.value().mod_id);
+        auto &mod_name = query_res.value().is_primary_file
+            ? mod.primaryFileName
+            : mod.previewFileName;
+        int32 mod_size = query_res.value().is_primary_file
+            ? mod.primaryFileSize
+            : mod.previewFileSize;
+
+        if (ppchName) {
+            *ppchName = new char[mod_name.size() + 1];
+            std::strcpy(*ppchName, mod_name.c_str());
+        }
+        if (pnFileSizeInBytes) *pnFileSizeInBytes = mod_size;
+        if (pSteamIDOwner) *pSteamIDOwner = mod.steamIDOwner;
+
+        return true;
+    }
     
     return false;
 }
