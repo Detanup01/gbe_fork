@@ -446,7 +446,6 @@ SteamAPICall_t Steam_Remote_Storage::UGCDownload( UGCHandle_t hContent, uint32 u
         data.m_eResult = k_EResultOK;
         data.m_ulSteamIDOwner = mod.steamIDOwner;
         data.m_nSizeInBytes = mod_size;
-        data.m_ulSteamIDOwner = mod.steamIDOwner;
 
         mod_name.copy(data.m_pchFileName, sizeof(data.m_pchFileName) - 1);
         PRINT_DEBUG("  QueryUGCRequest data.m_pchFileName = '%s'", data.m_pchFileName);
@@ -1157,7 +1156,6 @@ SteamAPICall_t Steam_Remote_Storage::UGCDownloadToLocation( UGCHandle_t hContent
         data.m_nAppID = settings->get_local_game_id().AppID();
         data.m_ulSteamIDOwner = mod.steamIDOwner;
         data.m_nSizeInBytes = mod_size;
-        data.m_ulSteamIDOwner = mod.steamIDOwner;
 
         mod_name.copy(data.m_pchFileName, sizeof(data.m_pchFileName) - 1);
         

@@ -82,7 +82,7 @@ private:
 
     std::optional<std::string> get_query_ugc_tag(UGCQueryHandle_t handle, uint32 index, uint32 indexTag);
 
-    std::optional<std::vector<std::string>> get_query_ugc_tags(UGCQueryHandle_t handle, uint32 index);
+    std::vector<std::string> get_query_ugc_tags(UGCQueryHandle_t handle, uint32 index);
 
     void set_details(PublishedFileId_t id, SteamUGCDetails_t *pDetails, IUgcItfVersion ver);
 

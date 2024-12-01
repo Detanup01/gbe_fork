@@ -220,6 +220,8 @@ void Settings::addModDetails(PublishedFileId_t id, const Mod_entry &details)
         f->numChildren = details.numChildren;
         f->previewURL = details.previewURL;
         f->total_files_sizes = details.total_files_sizes;
+        f->min_game_branch = details.min_game_branch;
+        f->max_game_branch = details.max_game_branch;
     }
 }
 

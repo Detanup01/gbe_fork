@@ -48,18 +48,24 @@ std::optional<Mod_entry> Steam_UGC::get_query_ugc(UGCQueryHandle_t handle, uint3
     return settings->getMod(file_id);
 }
 
-std::optional<std::vector<std::string>> Steam_UGC::get_query_ugc_tags(UGCQueryHandle_t handle, uint32 index)
+std::vector<std::string> Steam_UGC::get_query_ugc_tags(UGCQueryHandle_t handle, uint32 index)
 {
     auto res = get_query_ugc(handle, index);
-    if (!res.has_value()) return std::nullopt;
+    if (!res.has_value()) return {};
+
+    std::string tmp = res.value().tags;
 
     auto tags_tokens = std::vector<std::string>{};
-    std::stringstream ss(res.value().tags);
-    std::string tmp{};
-    while(ss >> tmp) {
-        if (tmp.back() == ',') tmp = tmp.substr(0, tmp.size() - 1);
-        tags_tokens.push_back(tmp);
+    size_t start = 0;
+    while (true) {
+        auto end = tmp.find(',', start);
+        if (end == std::string::npos) break;
+
+        tags_tokens.push_back(tmp.substr(start, end - start));
+        start = end + 1;
     }
+
+    tags_tokens.push_back(tmp.substr(start));
 
     return tags_tokens;
 
@@ -68,8 +74,6 @@ std::optional<std::vector<std::string>> Steam_UGC::get_query_ugc_tags(UGCQueryHa
 void Steam_UGC::set_details(PublishedFileId_t id, SteamUGCDetails_t *pDetails, IUgcItfVersion ver)
 {
     if (pDetails) {
-        memset(pDetails, 0, sizeof(SteamUGCDetails_t));
-
         pDetails->m_nPublishedFileId = id;
 
         if (settings->isModInstalled(id)) {
@@ -90,18 +94,29 @@ void Steam_UGC::set_details(PublishedFileId_t id, SteamUGCDetails_t *pDetails, I
             pDetails->m_nPreviewFileSize = mod.previewFileSize;
             pDetails->m_rtimeCreated = mod.timeCreated;
             pDetails->m_rtimeUpdated = mod.timeUpdated;
-            pDetails->m_ulSteamIDOwner = settings->get_local_steam_id().ConvertToUint64();
+            pDetails->m_ulSteamIDOwner = mod.steamIDOwner;
 
             pDetails->m_rtimeAddedToUserList = mod.timeAddedToUserList;
             pDetails->m_unVotesUp = mod.votesUp;
             pDetails->m_unVotesDown = mod.votesDown;
             pDetails->m_flScore = mod.score;
 
-            mod.primaryFileName.copy(pDetails->m_pchFileName, sizeof(pDetails->m_pchFileName) - 1);
-            mod.description.copy(pDetails->m_rgchDescription, sizeof(pDetails->m_rgchDescription) - 1);
-            mod.tags.copy(pDetails->m_rgchTags, sizeof(pDetails->m_rgchTags) - 1);
-            mod.title.copy(pDetails->m_rgchTitle, sizeof(pDetails->m_rgchTitle) - 1);
-            mod.workshopItemURL.copy(pDetails->m_rgchURL, sizeof(pDetails->m_rgchURL) - 1);
+            // real steamclient64.dll may set this to null! (ex: item id 3366485326)
+            auto copied_chars = mod.primaryFileName.copy(pDetails->m_pchFileName, sizeof(pDetails->m_pchFileName) - 1);
+            pDetails->m_pchFileName[copied_chars] = 0;
+
+            copied_chars = mod.description.copy(pDetails->m_rgchDescription, sizeof(pDetails->m_rgchDescription) - 1);
+            pDetails->m_rgchDescription[copied_chars] = 0;
+
+            copied_chars = mod.tags.copy(pDetails->m_rgchTags, sizeof(pDetails->m_rgchTags) - 1);
+            pDetails->m_rgchTags[copied_chars] = 0;
+
+            copied_chars = mod.title.copy(pDetails->m_rgchTitle, sizeof(pDetails->m_rgchTitle) - 1);
+            pDetails->m_rgchTitle[copied_chars] = 0;
+
+            // real steamclient64.dll may set this to null! (ex: item id 3366485326)
+            copied_chars = mod.workshopItemURL.copy(pDetails->m_rgchURL, sizeof(pDetails->m_rgchURL) - 1);
+            pDetails->m_rgchURL[copied_chars] = 0;
 
             // TODO should we enable this?
             // pDetails->m_unNumChildren = mod.numChildren;
@@ -362,11 +377,11 @@ bool Steam_UGC::GetQueryUGCResult_old( UGCQueryHandle_t handle, uint32 index, St
 std::optional<std::string> Steam_UGC::get_query_ugc_tag(UGCQueryHandle_t handle, uint32 index, uint32 indexTag)
 {
     auto res = get_query_ugc_tags(handle, index);
-    if (!res.has_value()) return std::nullopt;
-    if (indexTag >= res.value().size()) return std::nullopt;
+    if (res.empty()) return std::nullopt;
+    if (indexTag >= res.size()) return std::nullopt;
 
-    std::string tmp = res.value()[indexTag];
-    if (tmp.back() == ',') {
+    std::string tmp = res[indexTag];
+    if (!tmp.empty() && tmp.back() == ',') {
         tmp = tmp.substr(0, tmp.size() - 1);
     }
     return tmp;
@@ -380,7 +395,7 @@ uint32 Steam_UGC::GetQueryUGCNumTags( UGCQueryHandle_t handle, uint32 index )
     if (handle == k_UGCQueryHandleInvalid) return 0;
     
     auto res = get_query_ugc_tags(handle, index);
-    return res.has_value() ? static_cast<uint32>(res.value().size()) : 0;
+    return static_cast<uint32>(res.size());
 }
 
 bool Steam_UGC::GetQueryUGCTag( UGCQueryHandle_t handle, uint32 index, uint32 indexTag, STEAM_OUT_STRING_COUNT( cchValueSize ) char* pchValue, uint32 cchValueSize )
@@ -994,9 +1009,7 @@ bool Steam_UGC::SetItemVisibility( UGCUpdateHandle_t handle, ERemoteStoragePubli
 bool Steam_UGC::SetItemTags( UGCUpdateHandle_t updateHandle, const SteamParamStringArray_t *pTags )
 {
     PRINT_DEBUG("old");
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    
-    return false;
+    return SetItemTags(updateHandle, pTags, false);
 }
 
 bool Steam_UGC::SetItemTags( UGCUpdateHandle_t updateHandle, const SteamParamStringArray_t *pTags, bool bAllowAdminTags )
@@ -1368,7 +1381,7 @@ bool Steam_UGC::GetItemInstallInfo( PublishedFileId_t nPublishedFileID, uint64 *
     }
 
     if (punSizeOnDisk) *punSizeOnDisk = mod.primaryFileSize;
-    if (punTimeStamp) *punTimeStamp = mod.timeUpdated;
+    if (punTimeStamp) *punTimeStamp = mod.timeAddedToUserList;
     if (pchFolder && cchFolderSize) {
         // human fall flat doesn't send a nulled buffer, and won't recognize the proper mod path because of that
         memset(pchFolder, 0, cchFolderSize);

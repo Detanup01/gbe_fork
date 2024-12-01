@@ -82,3 +82,14 @@ This dll is meant to be injected during **startup** only, it must **not** be pla
 ## `GameOverlayRenderer`
 Some apps verify the existence of this dll, either on disk, or inside their memory space, that's why this dll exists.  
 It is **NOT** recommended to ignore this dll.  
+
+## Mods paths (source-engine games on Windows)
+On Windows, the registry key `SourceModInstallPath` is changed to the folder containing the loader.  
+```
+Registry path:  HKEY_CURRENT_USER\SOFTWARE\Valve\Steam
+Registry key:   SourceModInstallPath
+Original value: C:\Program Files (x86)\Steam\steamapps\sourcemods
+New value:      <FOLDER CONTAINING THE LOADER>
+```
+
+This affects source-engine mods  
