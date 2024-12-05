@@ -1,3 +1,6 @@
+#ifndef _STEAM_OVERLAY_TRANSLATIONS_H
+#define _STEAM_OVERLAY_TRANSLATIONS_H
+
 
 const int TRANSLATION_NUMBER_OF_LANGUAGES = 31;
 const int TRANSLATION_BUFFER_SIZE = 256;
@@ -3477,3 +3480,678 @@ const char translationAutoAcceptFriendInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TR
   u8"Invitations are controlled by auto_accept_invite.txt!",
   
 };
+
+const char translationFpsCheckbox[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"FPS",
+
+	// 1 - Arabic
+  u8"FPS",
+
+	// 2 - Bulgarian
+  u8"FPS",
+
+	// 3 - Simplified Chinese
+  u8"FPS",
+
+	// 4 - Traditional Chinese
+  u8"FPS",
+
+	// 5 - Czech
+  u8"FPS",
+
+	// 6 - Danish
+  u8"FPS",
+
+	// 7 - Dutch
+  u8"FPS",
+
+	// 8 - Finnish
+  u8"FPS",
+
+	// 9 - French
+  u8"FPS",
+
+	// 10 - German
+  u8"FPS",
+
+	// 11 - Greek
+  u8"FPS",
+
+	// 12 - Hungarian
+  u8"FPS",
+
+	// 13 - Italian
+  u8"FPS",
+
+	// 14 - Japanese
+  u8"FPS",
+
+	// 15 - Korean
+  u8"FPS",
+
+	// 16 - Norwegian
+  u8"FPS",
+
+	// 17 - Polish
+  u8"FPS",
+
+	// 18 - Portuguese
+  u8"FPS",
+
+	// 19 - Brazilian Portuguese
+  u8"FPS",
+
+	// 20 - Romanian
+  u8"FPS",
+
+	// 21 - Russian
+  u8"FPS",
+
+	// 22 - Spanish
+  u8"FPS",
+
+	// 23 - Latin American
+  u8"FPS",
+
+	// 24 - Swedish
+  u8"FPS",
+
+	// 25 - Thai
+  u8"FPS",
+
+	// 26 - Turkish
+  u8"FPS",
+
+	// 27 - Ukrainian
+  u8"FPS",
+
+	// 28 - Vietnamese
+  u8"FPS",
+
+	// 29 - Croatian
+  u8"FPS",
+  
+  // 30 - Indonesian
+  u8"FPS",
+  
+};
+
+const char translationFpsDisplay[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"FPS: ",
+
+	// 1 - Arabic
+  u8"FPS: ",
+
+	// 2 - Bulgarian
+  u8"FPS: ",
+
+	// 3 - Simplified Chinese
+  u8"FPS: ",
+
+	// 4 - Traditional Chinese
+  u8"FPS: ",
+
+	// 5 - Czech
+  u8"FPS: ",
+
+	// 6 - Danish
+  u8"FPS: ",
+
+	// 7 - Dutch
+  u8"FPS: ",
+
+	// 8 - Finnish
+  u8"FPS: ",
+
+	// 9 - French
+  u8"FPS: ",
+
+	// 10 - German
+  u8"FPS: ",
+
+	// 11 - Greek
+  u8"FPS: ",
+
+	// 12 - Hungarian
+  u8"FPS: ",
+
+	// 13 - Italian
+  u8"FPS: ",
+
+	// 14 - Japanese
+  u8"FPS: ",
+
+	// 15 - Korean
+  u8"FPS: ",
+
+	// 16 - Norwegian
+  u8"FPS: ",
+
+	// 17 - Polish
+  u8"FPS: ",
+
+	// 18 - Portuguese
+  u8"FPS: ",
+
+	// 19 - Brazilian Portuguese
+  u8"FPS: ",
+
+	// 20 - Romanian
+  u8"FPS: ",
+
+	// 21 - Russian
+  u8"FPS: ",
+
+	// 22 - Spanish
+  u8"FPS: ",
+
+	// 23 - Latin American
+  u8"FPS: ",
+
+	// 24 - Swedish
+  u8"FPS: ",
+
+	// 25 - Thai
+  u8"FPS: ",
+
+	// 26 - Turkish
+  u8"FPS: ",
+
+	// 27 - Ukrainian
+  u8"FPS: ",
+
+	// 28 - Vietnamese
+  u8"FPS: ",
+
+	// 29 - Croatian
+  u8"FPS: ",
+  
+  // 30 - Indonesian
+  u8"FPS: ",
+  
+};
+
+const char translationFrametimeCheckbox[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"Frametime",
+
+	// 1 - Arabic
+  u8"Frametime",
+
+	// 2 - Bulgarian
+  u8"Frametime",
+
+	// 3 - Simplified Chinese
+  u8"Frametime",
+
+	// 4 - Traditional Chinese
+  u8"Frametime",
+
+	// 5 - Czech
+  u8"Frametime",
+
+	// 6 - Danish
+  u8"Frametime",
+
+	// 7 - Dutch
+  u8"Frametime",
+
+	// 8 - Finnish
+  u8"Frametime",
+
+	// 9 - French
+  u8"Frametime",
+
+	// 10 - German
+  u8"Frametime",
+
+	// 11 - Greek
+  u8"Frametime",
+
+	// 12 - Hungarian
+  u8"Frametime",
+
+	// 13 - Italian
+  u8"Frametime",
+
+	// 14 - Japanese
+  u8"Frametime",
+
+	// 15 - Korean
+  u8"Frametime",
+
+	// 16 - Norwegian
+  u8"Frametime",
+
+	// 17 - Polish
+  u8"Frametime",
+
+	// 18 - Portuguese
+  u8"Frametime",
+
+	// 19 - Brazilian Portuguese
+  u8"Frametime",
+
+	// 20 - Romanian
+  u8"Frametime",
+
+	// 21 - Russian
+  u8"Frametime",
+
+	// 22 - Spanish
+  u8"Frametime",
+
+	// 23 - Latin American
+  u8"Frametime",
+
+	// 24 - Swedish
+  u8"Frametime",
+
+	// 25 - Thai
+  u8"Frametime",
+
+	// 26 - Turkish
+  u8"Frametime",
+
+	// 27 - Ukrainian
+  u8"Frametime",
+
+	// 28 - Vietnamese
+  u8"Frametime",
+
+	// 29 - Croatian
+  u8"Frametime",
+  
+  // 30 - Indonesian
+  u8"Frametime",
+  
+};
+
+const char translationFrametimeDisplay[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"FRT: ",
+
+	// 1 - Arabic
+  u8"FRT: ",
+
+	// 2 - Bulgarian
+  u8"FRT: ",
+
+	// 3 - Simplified Chinese
+  u8"FRT: ",
+
+	// 4 - Traditional Chinese
+  u8"FRT: ",
+
+	// 5 - Czech
+  u8"FRT: ",
+
+	// 6 - Danish
+  u8"FRT: ",
+
+	// 7 - Dutch
+  u8"FRT: ",
+
+	// 8 - Finnish
+  u8"FRT: ",
+
+	// 9 - French
+  u8"FRT: ",
+
+	// 10 - German
+  u8"FRT: ",
+
+	// 11 - Greek
+  u8"FRT: ",
+
+	// 12 - Hungarian
+  u8"FRT: ",
+
+	// 13 - Italian
+  u8"FRT: ",
+
+	// 14 - Japanese
+  u8"FRT: ",
+
+	// 15 - Korean
+  u8"FRT: ",
+
+	// 16 - Norwegian
+  u8"FRT: ",
+
+	// 17 - Polish
+  u8"FRT: ",
+
+	// 18 - Portuguese
+  u8"FRT: ",
+
+	// 19 - Brazilian Portuguese
+  u8"FRT: ",
+
+	// 20 - Romanian
+  u8"FRT: ",
+
+	// 21 - Russian
+  u8"FRT: ",
+
+	// 22 - Spanish
+  u8"FRT: ",
+
+	// 23 - Latin American
+  u8"FRT: ",
+
+	// 24 - Swedish
+  u8"FRT: ",
+
+	// 25 - Thai
+  u8"FRT: ",
+
+	// 26 - Turkish
+  u8"FRT: ",
+
+	// 27 - Ukrainian
+  u8"FRT: ",
+
+	// 28 - Vietnamese
+  u8"FRT: ",
+
+	// 29 - Croatian
+  u8"FRT: ",
+  
+  // 30 - Indonesian
+  u8"FRT: ",
+  
+};
+
+const char translationFrametimeUnitDisplay[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8" ms",
+
+	// 1 - Arabic
+  u8" ms",
+
+	// 2 - Bulgarian
+  u8" ms",
+
+	// 3 - Simplified Chinese
+  u8" ms",
+
+	// 4 - Traditional Chinese
+  u8" ms",
+
+	// 5 - Czech
+  u8" ms",
+
+	// 6 - Danish
+  u8" ms",
+
+	// 7 - Dutch
+  u8" ms",
+
+	// 8 - Finnish
+  u8" ms",
+
+	// 9 - French
+  u8" ms",
+
+	// 10 - German
+  u8" ms",
+
+	// 11 - Greek
+  u8" ms",
+
+	// 12 - Hungarian
+  u8" ms",
+
+	// 13 - Italian
+  u8" ms",
+
+	// 14 - Japanese
+  u8" ms",
+
+	// 15 - Korean
+  u8" ms",
+
+	// 16 - Norwegian
+  u8" ms",
+
+	// 17 - Polish
+  u8" ms",
+
+	// 18 - Portuguese
+  u8" ms",
+
+	// 19 - Brazilian Portuguese
+  u8" ms",
+
+	// 20 - Romanian
+  u8" ms",
+
+	// 21 - Russian
+  u8" ms",
+
+	// 22 - Spanish
+  u8" ms",
+
+	// 23 - Latin American
+  u8" ms",
+
+	// 24 - Swedish
+  u8" ms",
+
+	// 25 - Thai
+  u8" ms",
+
+	// 26 - Turkish
+  u8" ms",
+
+	// 27 - Ukrainian
+  u8" ms",
+
+	// 28 - Vietnamese
+  u8" ms",
+
+	// 29 - Croatian
+  u8" ms",
+  
+  // 30 - Indonesian
+  u8" ms",
+  
+};
+
+const char translationPlaytimeCheckbox[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"Playtime",
+
+	// 1 - Arabic
+  u8"Playtime",
+
+	// 2 - Bulgarian
+  u8"Playtime",
+
+	// 3 - Simplified Chinese
+  u8"Playtime",
+
+	// 4 - Traditional Chinese
+  u8"Playtime",
+
+	// 5 - Czech
+  u8"Playtime",
+
+	// 6 - Danish
+  u8"Playtime",
+
+	// 7 - Dutch
+  u8"Playtime",
+
+	// 8 - Finnish
+  u8"Playtime",
+
+	// 9 - French
+  u8"Playtime",
+
+	// 10 - German
+  u8"Playtime",
+
+	// 11 - Greek
+  u8"Playtime",
+
+	// 12 - Hungarian
+  u8"Playtime",
+
+	// 13 - Italian
+  u8"Playtime",
+
+	// 14 - Japanese
+  u8"Playtime",
+
+	// 15 - Korean
+  u8"Playtime",
+
+	// 16 - Norwegian
+  u8"Playtime",
+
+	// 17 - Polish
+  u8"Playtime",
+
+	// 18 - Portuguese
+  u8"Playtime",
+
+	// 19 - Brazilian Portuguese
+  u8"Playtime",
+
+	// 20 - Romanian
+  u8"Playtime",
+
+	// 21 - Russian
+  u8"Playtime",
+
+	// 22 - Spanish
+  u8"Playtime",
+
+	// 23 - Latin American
+  u8"Playtime",
+
+	// 24 - Swedish
+  u8"Playtime",
+
+	// 25 - Thai
+  u8"Playtime",
+
+	// 26 - Turkish
+  u8"Playtime",
+
+	// 27 - Ukrainian
+  u8"Playtime",
+
+	// 28 - Vietnamese
+  u8"Playtime",
+
+	// 29 - Croatian
+  u8"Playtime",
+  
+  // 30 - Indonesian
+  u8"Playtime",
+  
+};
+
+const char translationPlaytimeDisplay[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"PLT: ",
+
+	// 1 - Arabic
+  u8"PLT: ",
+
+	// 2 - Bulgarian
+  u8"PLT: ",
+
+	// 3 - Simplified Chinese
+  u8"PLT: ",
+
+	// 4 - Traditional Chinese
+  u8"PLT: ",
+
+	// 5 - Czech
+  u8"PLT: ",
+
+	// 6 - Danish
+  u8"PLT: ",
+
+	// 7 - Dutch
+  u8"PLT: ",
+
+	// 8 - Finnish
+  u8"PLT: ",
+
+	// 9 - French
+  u8"PLT: ",
+
+	// 10 - German
+  u8"PLT: ",
+
+	// 11 - Greek
+  u8"PLT: ",
+
+	// 12 - Hungarian
+  u8"PLT: ",
+
+	// 13 - Italian
+  u8"PLT: ",
+
+	// 14 - Japanese
+  u8"PLT: ",
+
+	// 15 - Korean
+  u8"PLT: ",
+
+	// 16 - Norwegian
+  u8"PLT: ",
+
+	// 17 - Polish
+  u8"PLT: ",
+
+	// 18 - Portuguese
+  u8"PLT: ",
+
+	// 19 - Brazilian Portuguese
+  u8"PLT: ",
+
+	// 20 - Romanian
+  u8"PLT: ",
+
+	// 21 - Russian
+  u8"PLT: ",
+
+	// 22 - Spanish
+  u8"PLT: ",
+
+	// 23 - Latin American
+  u8"PLT: ",
+
+	// 24 - Swedish
+  u8"PLT: ",
+
+	// 25 - Thai
+  u8"PLT: ",
+
+	// 26 - Turkish
+  u8"PLT: ",
+
+	// 27 - Ukrainian
+  u8"PLT: ",
+
+	// 28 - Vietnamese
+  u8"PLT: ",
+
+	// 29 - Croatian
+  u8"PLT: ",
+  
+  // 30 - Indonesian
+  u8"PLT: ",
+  
+};
+
+
+#endif // _STEAM_OVERLAY_TRANSLATIONS_H

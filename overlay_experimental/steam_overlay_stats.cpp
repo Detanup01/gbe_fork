@@ -1,4 +1,6 @@
 #include "overlay/steam_overlay_stats.h"
+// translation
+#include "overlay/steam_overlay_translations.h"
 #include <utility>
 
 
@@ -54,7 +56,7 @@ void Steam_Overlay_Stats::update_playtime(const std::chrono::high_resolution_clo
     active_playtime_hr = static_cast<unsigned>(time_duration_hr % 24);
 }
 
-void Steam_Overlay_Stats::render_stats()
+void Steam_Overlay_Stats::render_stats(int current_language)
 {
     auto now = std::chrono::high_resolution_clock::now();
     if (show_fps || show_frametime) {
@@ -84,7 +86,7 @@ void Steam_Overlay_Stats::render_stats()
     
     std::stringstream stats_txt_buff{};
     if (show_fps) {
-        stats_txt_buff << "FPS: "
+        stats_txt_buff << translationFpsDisplay[current_language]
                        << std::left << std::setw(2)
                        << active_fps
                        << std::right << std::setw(0);
@@ -93,18 +95,18 @@ void Steam_Overlay_Stats::render_stats()
         if (stats_txt_buff.tellp() > 0) {
             stats_txt_buff << " | ";
         }
-        stats_txt_buff << "FRT: "
+        stats_txt_buff << translationFrametimeDisplay[current_language]
                        << std::left << std::setw(4) << std::fixed << std::setprecision(1)
                        << active_frametime_ms
                        << std::defaultfloat << std::right << std::setw(0)
-                       << " ms";
+                       << translationFrametimeUnitDisplay[current_language];
     }
     if (show_playtime) {
         if (stats_txt_buff.tellp() > 0) {
             stats_txt_buff << " | ";
         }
         const auto org_fill = stats_txt_buff.fill();
-        stats_txt_buff << "PLT: "
+        stats_txt_buff << translationPlaytimeDisplay[current_language]
                        << std::setw(2) << std::setfill('0')
                        << active_playtime_hr << ':'
                        << std::setw(2) << std::setfill('0')

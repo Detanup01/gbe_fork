@@ -1256,7 +1256,7 @@ void Steam_Overlay::overlay_render_proc()
     }
 
     if (stats.show_any_stats()) {
-        stats.render_stats();
+        stats.render_stats(current_language);
     }
 
     load_next_ach_icon();
@@ -1400,17 +1400,17 @@ void Steam_Overlay::render_main_window()
         ImGui::Spacing();
         // user clicked on "FPS"
         ImGui::SameLine();
-        if (ImGui::Checkbox("FPS", &stats.show_fps)) {
+        if (ImGui::Checkbox(translationFpsCheckbox[current_language], &stats.show_fps)) {
             allow_renderer_frame_processing(stats.show_fps);
         }
         // user clicked on "Frametime"
         ImGui::SameLine();
-        if (ImGui::Checkbox("Frametime", &stats.show_frametime)) {
+        if (ImGui::Checkbox(translationFrametimeCheckbox[current_language], &stats.show_frametime)) {
             allow_renderer_frame_processing(stats.show_frametime);
         }
         // user clicked on "Playtime"
         ImGui::SameLine();
-        if (ImGui::Checkbox("Playtime", &stats.show_playtime)) {
+        if (ImGui::Checkbox(translationPlaytimeCheckbox[current_language], &stats.show_playtime)) {
             allow_renderer_frame_processing(stats.show_playtime);
         }
 

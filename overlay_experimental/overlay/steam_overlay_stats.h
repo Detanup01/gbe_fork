@@ -41,7 +41,7 @@ public:
     Steam_Overlay_Stats(class Settings* settings);
 
     bool show_any_stats() const;
-    void render_stats();
+    void render_stats(int current_language);
 };
 
 
