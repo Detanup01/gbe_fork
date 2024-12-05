@@ -12,6 +12,7 @@
 #include <memory>
 #include "InGameOverlay/RendererHook.h"
 #include "InGameOverlay/ImGui/imgui.h"
+#include "overlay/steam_overlay_stats.h"
 
 static constexpr size_t max_chat_len = 768;
 
@@ -109,6 +110,7 @@ class Steam_Overlay
     class SteamCallBacks* callbacks;
     class RunEveryRunCB* run_every_runcb;
     class Networking* network;
+    class Steam_Overlay_Stats stats;
 
     // friend id, show client window (to chat and accept invite maybe)
     std::map<Friend, friend_window_state, Friend_Less> friends{};
