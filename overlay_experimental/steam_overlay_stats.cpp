@@ -22,7 +22,11 @@ void Steam_Overlay_Stats::update_frametime(const std::chrono::high_resolution_cl
     if (last_frametime_idx >= (settings->overlay_fps_avg_window - 1)) {
         last_frametime_idx = 0;
         active_frametime_ms = static_cast<float>(running_frametime_ms) / settings->overlay_fps_avg_window;
-        active_fps = static_cast<unsigned>((1000 * settings->overlay_fps_avg_window) / running_frametime_ms);
+        if (running_frametime_ms > 0) {
+            active_fps = static_cast<unsigned>((1000 * settings->overlay_fps_avg_window) / running_frametime_ms);
+        } else { // happens when avg window =1, no idea why!
+            active_fps = 999;
+        }
         running_frametime_ms = 0;
     } else {
         ++last_frametime_idx;
