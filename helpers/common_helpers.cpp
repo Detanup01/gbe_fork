@@ -225,12 +225,6 @@ bool common_helpers::str_cmp_insensitive(std::wstring_view str1, std::wstring_vi
     });
 }
 
-std::string common_helpers::ascii_to_lowercase(std::string data) {
-    std::transform(data.begin(), data.end(), data.begin(),
-        [](char c){ return std::tolower(c); });
-    return data;
-}
-
 void common_helpers::thisThreadYieldFor(std::chrono::microseconds u)
 {
     const auto start = std::chrono::high_resolution_clock::now();
