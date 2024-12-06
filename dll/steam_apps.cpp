@@ -30,8 +30,32 @@ Steam_Apps::Steam_Apps(Settings *settings, class SteamCallResults *callback_resu
 // If you expect it to exists wait for the AppDataChanged_t after the first failure and ask again
 int Steam_Apps::GetAppData( AppId_t nAppID, const char *pchKey, char *pchValue, int cchValueMax )
 {
-    //TODO
-    PRINT_DEBUG_TODO();
+    PRINT_DEBUG("%u, %p = ['%s'] (%i)", nAppID, pchValue, pchKey, cchValueMax);
+    std::lock_guard lock(global_mutex);
+
+    if (common_helpers::str_cmp_insensitive("subscribed", pchKey)) {
+        bool val = BIsSubscribedApp(nAppID);
+        if (pchValue && cchValueMax >= 2) {
+            strncpy(pchValue, val ? "1" : "0", 2);
+        }
+        return 2;
+    } else if (common_helpers::str_cmp_insensitive("installed", pchKey)) {
+        bool val = BIsAppInstalled(nAppID);
+        if (pchValue && cchValueMax >= 2) {
+            strncpy(pchValue, val ? "1" : "0", 2);
+        }
+        return 2;
+    } else if (common_helpers::str_cmp_insensitive("country", pchKey)) {
+        // TODO this is not exactly how real client does it, but close enough
+        auto lang = GetCurrentGameLanguage();
+        auto lang_lower = common_helpers::to_lower(lang && lang[0] ? lang : "--"); // "--" is an actual value the client returns
+        if (pchValue && cchValueMax >= 3) {
+            strncpy(pchValue, lang_lower.c_str(), 3);
+            pchValue[2] = 0;
+        }
+        return 3;
+    }
+
     return 0;
 }
 
