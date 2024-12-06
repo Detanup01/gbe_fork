@@ -1592,8 +1592,17 @@ SteamAPICall_t Steam_UGC::GetWorkshopEULAStatus()
 {
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    WorkshopEULAStatus_t data{};
+    data.m_eResult = k_EResultOK;
+    data.m_nAppID = settings->get_local_game_id().AppID();
+    data.m_unVersion = 0; // TODO
+    data.m_rtAction = (RTime32)std::chrono::duration_cast<std::chrono::seconds>(startup_time.time_since_epoch()).count();
+    data.m_bAccepted = true;
+    data.m_bNeedsAction = false;
     
-    return k_uAPICallInvalid;
+    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    return ret;
 }
 
 // Return the user's community content descriptor preferences
