@@ -104,6 +104,8 @@
 #include "isteamuserstats005.h"
 #include "isteamuserstats004.h"
 #include "isteamuserstats003.h"
+#include "isteamuserstats002.h"
+#include "isteamuserstats001.h"
 #include "isteamapps.h"
 #include "isteamapps007.h"
 #include "isteamapps006.h"

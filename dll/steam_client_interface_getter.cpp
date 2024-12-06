@@ -478,8 +478,11 @@ ISteamUserStats *Steam_Client::GetISteamUserStats( HSteamUser hSteamUser, HSteam
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
-     // v001, v002 Not found in public Archive, must be before 1.00
-    if (strcmp(pchVersion, "STEAMUSERSTATS_INTERFACE_VERSION003") == 0) {
+    if (strcmp(pchVersion, "STEAMUSERSTATS_INTERFACE_VERSION001") == 0) {
+        return reinterpret_cast<ISteamUserStats *>(static_cast<ISteamUserStats001 *>(steam_user_stats));
+    } else if (strcmp(pchVersion, "STEAMUSERSTATS_INTERFACE_VERSION002") == 0) {
+        return reinterpret_cast<ISteamUserStats *>(static_cast<ISteamUserStats002 *>(steam_user_stats));
+    } else if (strcmp(pchVersion, "STEAMUSERSTATS_INTERFACE_VERSION003") == 0) {
         return reinterpret_cast<ISteamUserStats *>(static_cast<ISteamUserStats003 *>(steam_user_stats));
     } else if (strcmp(pchVersion, "STEAMUSERSTATS_INTERFACE_VERSION004") == 0) {
         return reinterpret_cast<ISteamUserStats *>(static_cast<ISteamUserStats004 *>(steam_user_stats));

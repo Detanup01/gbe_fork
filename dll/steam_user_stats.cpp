@@ -152,6 +152,288 @@ SteamAPICall_t Steam_User_Stats::GetNumberOfCurrentPlayers()
 
 
 
+// --- old interface version
+
+uint32 Steam_User_Stats::GetNumStats( CGameID nGameID )
+{
+    PRINT_DEBUG("old %llu", nGameID.ToUint64());
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->get_local_game_id() != nGameID) {
+        return 0;
+    }
+    return (uint32)settings->getStats().size();
+}
+
+const char *Steam_User_Stats::GetStatName( CGameID nGameID, uint32 iStat )
+{
+    PRINT_DEBUG("old %llu [%u]", nGameID.ToUint64(), iStat);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    auto &stats = settings->getStats();
+    if (settings->get_local_game_id() != nGameID || iStat >= stats.size()) {
+        return "";
+    }
+    
+    return std::next(stats.begin(), iStat)->first.c_str();
+}
+
+ESteamUserStatType Steam_User_Stats::GetStatType( CGameID nGameID, const char *pchName )
+{
+    PRINT_DEBUG("old %llu '%s'", nGameID.ToUint64(), pchName);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    if (settings->get_local_game_id() != nGameID || !pchName) {
+        return ESteamUserStatType::k_ESteamUserStatTypeINVALID;
+    }
+    
+    std::string stat_name(common_helpers::to_lower(pchName));
+    const auto &stats = settings->getStats();
+    auto stat_info = stats.find(stat_name);
+    if (stats.end() == stat_info) {
+        return ESteamUserStatType::k_ESteamUserStatTypeINVALID;
+    }
+
+    switch (stat_info->second.type)
+    {
+    case GameServerStats_Messages::StatInfo::STAT_TYPE_INT: return ESteamUserStatType::k_ESteamUserStatTypeINT;
+    case GameServerStats_Messages::StatInfo::STAT_TYPE_FLOAT: return ESteamUserStatType::k_ESteamUserStatTypeFLOAT;
+    case GameServerStats_Messages::StatInfo::STAT_TYPE_AVGRATE: return ESteamUserStatType::k_ESteamUserStatTypeAVGRATE;
+    
+    default: PRINT_DEBUG("[X] unhandled type %i", (int)stat_info->second.type); break;
+    }
+    
+    return ESteamUserStatType::k_ESteamUserStatTypeINVALID;
+}
+
+uint32 Steam_User_Stats::GetNumAchievements( CGameID nGameID )
+{
+    PRINT_DEBUG("old %llu", nGameID.ToUint64());
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->get_local_game_id() != nGameID) {
+        return 0;
+    }
+    
+    return GetNumAchievements();
+}
+
+const char *Steam_User_Stats::GetAchievementName( CGameID nGameID, uint32 iAchievement )
+{
+    PRINT_DEBUG("old %llu [%u]", nGameID.ToUint64(), iAchievement);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->get_local_game_id() != nGameID) {
+        return "";
+    }
+    
+    return GetAchievementName(iAchievement);
+}
+
+uint32 Steam_User_Stats::GetNumGroupAchievements( CGameID nGameID )
+{
+    PRINT_DEBUG("old %llu // TODO", nGameID.ToUint64());
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->get_local_game_id() != nGameID) {
+        return 0;
+    }
+    
+    return 0;
+}
+
+const char *Steam_User_Stats::GetGroupAchievementName( CGameID nGameID, uint32 iAchievement )
+{
+    PRINT_DEBUG("old %llu [%u] // TODO", nGameID.ToUint64(), iAchievement);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->get_local_game_id() != nGameID) {
+        return "";
+    }
+    
+    return "";
+}
+
+bool Steam_User_Stats::RequestCurrentStats( CGameID nGameID )
+{
+    PRINT_DEBUG("old %llu", nGameID.ToUint64());
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->get_local_game_id() != nGameID) {
+        return false;
+    }
+    
+    return RequestCurrentStats();
+}
+
+bool Steam_User_Stats::GetStat( CGameID nGameID, const char *pchName, int32 *pData )
+{
+    PRINT_DEBUG("old %llu '%s' %p", nGameID.ToUint64(), pchName, pData);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    if (pData) *pData = 0;
+    if (settings->get_local_game_id() != nGameID) {
+        return false;
+    }
+    
+    return GetStat(pchName, pData);
+}
+
+bool Steam_User_Stats::GetStat( CGameID nGameID, const char *pchName, float *pData )
+{
+    PRINT_DEBUG("old %llu '%s' %p", nGameID.ToUint64(), pchName, pData);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    if (pData) *pData = 0;
+    if (settings->get_local_game_id() != nGameID) {
+        return false;
+    }
+    
+    return GetStat(pchName, pData);
+}
+
+bool Steam_User_Stats::SetStat( CGameID nGameID, const char *pchName, int32 nData )
+{
+    PRINT_DEBUG("old %llu '%s' %i", nGameID.ToUint64(), pchName, nData);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->get_local_game_id() != nGameID) {
+        return false;
+    }
+    
+    return SetStat(pchName, nData);
+}
+
+bool Steam_User_Stats::SetStat( CGameID nGameID, const char *pchName, float fData )
+{
+    PRINT_DEBUG("old %llu '%s' %f", nGameID.ToUint64(), pchName, fData);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->get_local_game_id() != nGameID) {
+        return false;
+    }
+    
+    return SetStat(pchName, fData);
+}
+
+bool Steam_User_Stats::UpdateAvgRateStat( CGameID nGameID, const char *pchName, float flCountThisSession, double dSessionLength )
+{
+    PRINT_DEBUG("old %llu '%s' %f %f", nGameID.ToUint64(), pchName, flCountThisSession, dSessionLength);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->get_local_game_id() != nGameID) {
+        return false;
+    }
+    
+    return UpdateAvgRateStat(pchName, flCountThisSession, dSessionLength);
+}
+
+bool Steam_User_Stats::GetAchievement( CGameID nGameID, const char *pchName, bool *pbAchieved )
+{
+    PRINT_DEBUG("old %llu '%s' %p", nGameID.ToUint64(), pchName, pbAchieved);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    if (pbAchieved) *pbAchieved = false;
+    if (settings->get_local_game_id() != nGameID) {
+        return false;
+    }
+    
+    return GetAchievement(pchName, pbAchieved);
+}
+
+bool Steam_User_Stats::GetGroupAchievement( CGameID nGameID, const char *pchName, bool *pbAchieved )
+{
+    PRINT_DEBUG("old %llu '%s' %p // TODO", nGameID.ToUint64(), pchName, pbAchieved);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    if (pbAchieved) *pbAchieved = false;
+    if (settings->get_local_game_id() != nGameID) {
+        return false;
+    }
+    
+    return false;
+}
+
+bool Steam_User_Stats::SetAchievement( CGameID nGameID, const char *pchName )
+{
+    PRINT_DEBUG("old %llu '%s'", nGameID.ToUint64(), pchName);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->get_local_game_id() != nGameID && settings->achievement_bypass) {
+        return false;
+    }
+    
+    return SetAchievement(pchName);
+}
+
+bool Steam_User_Stats::SetGroupAchievement( CGameID nGameID, const char *pchName )
+{
+    PRINT_DEBUG("old %llu '%s' // TODO", nGameID.ToUint64(), pchName);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->get_local_game_id() != nGameID) {
+        return false;
+    }
+    
+    return false;
+}
+
+bool Steam_User_Stats::StoreStats( CGameID nGameID )
+{
+    PRINT_DEBUG("old %llu", nGameID.ToUint64());
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->get_local_game_id() != nGameID) {
+        return false;
+    }
+    
+    return StoreStats();
+}
+
+bool Steam_User_Stats::ClearAchievement( CGameID nGameID, const char *pchName )
+{
+    PRINT_DEBUG("old %llu '%s'", nGameID.ToUint64(), pchName);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->get_local_game_id() != nGameID) {
+        return false;
+    }
+    
+    return ClearAchievement(pchName);
+}
+
+bool Steam_User_Stats::ClearGroupAchievement( CGameID nGameID, const char *pchName )
+{
+    PRINT_DEBUG("old %llu '%s' // TODO", nGameID.ToUint64(), pchName);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->get_local_game_id() != nGameID) {
+        return 0;
+    }
+    
+    return false;
+}
+
+int Steam_User_Stats::GetAchievementIcon( CGameID nGameID, const char *pchName )
+{
+    PRINT_DEBUG("old %llu '%s'", nGameID.ToUint64(), pchName);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->get_local_game_id() != nGameID) {
+        return Settings::INVALID_IMAGE_HANDLE;
+    }
+    
+    return GetAchievementIcon(pchName);
+}
+
+const char *Steam_User_Stats::GetAchievementDisplayAttribute( CGameID nGameID, const char *pchName, const char *pchKey )
+{
+    PRINT_DEBUG("old %llu '%s' ['%s']", nGameID.ToUint64(), pchName, pchKey);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->get_local_game_id() != nGameID) {
+        return "";
+    }
+    
+    return GetAchievementDisplayAttribute(pchName, pchKey);
+}
+
+bool Steam_User_Stats::IndicateAchievementProgress( CGameID nGameID, const char *pchName, uint32 nCurProgress, uint32 nMaxProgress )
+{
+    PRINT_DEBUG("old %llu '%s' %u %u", nGameID.ToUint64(), pchName, nCurProgress, nMaxProgress);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (settings->get_local_game_id() != nGameID) {
+        return false;
+    }
+    
+    return IndicateAchievementProgress(pchName, nCurProgress, nMaxProgress);
+}
+
+
 // --- steam callbacks
 
 void Steam_User_Stats::steam_run_callback()
