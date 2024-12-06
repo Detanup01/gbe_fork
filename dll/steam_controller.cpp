@@ -231,6 +231,7 @@ Steam_Controller::~Steam_Controller()
 {
     //TODO rm network callbacks
     //TODO rumble thread
+    Shutdown();
     this->run_every_runcb->remove(&Steam_Controller::steam_run_every_runcb, this);
 }
 
