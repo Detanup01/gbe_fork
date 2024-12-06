@@ -128,13 +128,20 @@ ISteamGameServer *Steam_Client::GetISteamGameServer( HSteamUser hSteamUser, HSte
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
-    if (strcmp(pchVersion, "SteamGameServer004") == 0) {
+
+    if (strcmp(pchVersion, "SteamGameServer001") == 0) {
+        return nullptr;
+    } else if (strcmp(pchVersion, "SteamGameServer002") == 0) {
+        return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer002 *>(steam_gameserver)); // not found in public archives, from proton repo src
+    } else if (strcmp(pchVersion, "SteamGameServer003") == 0) {
+        return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer003 *>(steam_gameserver)); // not found in public archives, from proton repo src
+    } else if (strcmp(pchVersion, "SteamGameServer004") == 0) {
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer004 *>(steam_gameserver));
     } else if (strcmp(pchVersion, "SteamGameServer005") == 0) {
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer005 *>(steam_gameserver));
-    } else if (strcmp(pchVersion, "SteamGameServer006") == 0) {
+    } else if (strcmp(pchVersion, "SteamGameServer006") == 0) { // Not found in public Archive, defined as an alias to v008 in proton src
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer008 *>(steam_gameserver)); // SteamGameServer006 Not exists
-    } else if (strcmp(pchVersion, "SteamGameServer007") == 0) {
+    } else if (strcmp(pchVersion, "SteamGameServer007") == 0) { // Not found in public Archive, defined as an alias to v008 in proton src
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer008 *>(steam_gameserver)); // SteamGameServer007 Not exists
     } else if (strcmp(pchVersion, "SteamGameServer008") == 0) {
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer008 *>(steam_gameserver));
@@ -146,14 +153,14 @@ ISteamGameServer *Steam_Client::GetISteamGameServer( HSteamUser hSteamUser, HSte
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer011 *>(steam_gameserver));
     } else if (strcmp(pchVersion, "SteamGameServer012") == 0) {
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer012 *>(steam_gameserver));
-    } else if (strcmp(pchVersion, "SteamGameServer013") == 0) {
+    }
+
     gameserver_has_ipv6_functions = true;
+    if (strcmp(pchVersion, "SteamGameServer013") == 0) {
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer013 *>(steam_gameserver));
     } else if (strcmp(pchVersion, "SteamGameServer014") == 0) {
-        gameserver_has_ipv6_functions = true;
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer014 *>(steam_gameserver));
     } else if (strcmp(pchVersion, STEAMGAMESERVER_INTERFACE_VERSION) == 0) {
-        gameserver_has_ipv6_functions = true;
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer *>(steam_gameserver));
     }
     

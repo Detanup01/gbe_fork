@@ -225,6 +225,8 @@
 #include "isteamgameserver008.h"
 #include "isteamgameserver005.h"
 #include "isteamgameserver004.h"
+#include "isteamgameserver003.h"
+#include "isteamgameserver002.h"
 #include "isteamgameserverstats.h"
 #include "isteamgamestats.h"
 

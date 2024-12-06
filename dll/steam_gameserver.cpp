@@ -21,6 +21,33 @@
 #define SEND_SERVER_RATE 5.0
 
 
+void Steam_GameServer::set_version(const char *pchVersionString)
+{
+    PRINT_DEBUG("'%s'", pchVersionString);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    if (!pchVersionString) pchVersionString = "";
+
+    std::string version(pchVersionString);
+    version.erase(std::remove(version.begin(), version.end(), '\r'), version.end());
+    version.erase(std::remove(version.begin(), version.end(), '\n'), version.end());
+    version.erase(std::remove(version.begin(), version.end(), '\t'), version.end());
+    version.erase(std::remove(version.begin(), version.end(), ' '), version.end());
+    version.erase(std::remove(version.begin(), version.end(), '.'), version.end());
+    PRINT_DEBUG("version trimmed '%s'", version.c_str());
+
+    try {
+        auto ver = std::stoul(version);
+        server_data.set_version(ver);
+        PRINT_DEBUG("set version to %lu", ver);
+    } catch (...) {
+        server_data.set_version(0);
+        PRINT_DEBUG("not a number '%s'", pchVersionString);
+    }
+
+}
+
+
 Steam_GameServer::Steam_GameServer(class Settings *settings, class Networking *network, class SteamCallBacks *callbacks)
 {
     this->network = network;
@@ -55,22 +82,8 @@ bool Steam_GameServer::InitGameServer( uint32 unIP, uint16 usGamePort, uint16 us
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (logged_in) return false; // may not be changed after logged in.
-    if (!pchVersionString) pchVersionString = "";
 
-    std::string version(pchVersionString);
-    version.erase(std::remove(version.begin(), version.end(), ' '), version.end());
-    version.erase(std::remove(version.begin(), version.end(), '.'), version.end());
-    PRINT_DEBUG("version trimmed '%s'", version.c_str());
-
-    try {
-        auto ver = std::stoul(version);
-        server_data.set_version(ver);
-        PRINT_DEBUG("set version to %lu", ver);
-    } catch (...) {
-        PRINT_DEBUG("not a number: %s", pchVersionString);
-        server_data.set_version(0);
-    }
-
+    set_version(pchVersionString);
     server_data.set_ip(unIP);
     server_data.set_port(usGamePort);
     server_data.set_query_port(usQueryPort);
@@ -153,12 +166,12 @@ void Steam_GameServer::LogOn( const char *pszToken )
 }
 
 void Steam_GameServer::LogOn(
-		const char *pszAccountName,
-		const char *pszPassword
-	)
+    const char *pszAccountName,
+    const char *pszPassword
+)
 {
-        PRINT_DEBUG("%s %s", pszAccountName, pszPassword);
-        LogOn(pszAccountName);
+    PRINT_DEBUG("'%s' '%s'", pszAccountName, pszPassword);
+    LogOn(pszAccountName);
 }
 
 /// Login to a generic, anonymous account.
@@ -485,17 +498,20 @@ bool Steam_GameServer::BUpdateUserData( CSteamID steamIDUser, const char *pchPla
 bool Steam_GameServer::BSetServerType( uint32 unServerFlags, uint32 unGameIP, uint16 unGamePort, 
                             uint16 unSpectatorPort, uint16 usQueryPort, const char *pchGameDir, const char *pchVersion, bool bLANMode )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("'%s' '%s'", pchVersion, pchGameDir);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    // Note: appid 55100 doesn't call InitGameServer(), it immediately calls this function
+    InitGameServer(unGameIP, unGamePort, usQueryPort, unServerFlags, settings->get_local_game_id().AppID(), pchVersion);
+
     server_data.set_ip(unGameIP);
     server_data.set_port(unGamePort);
     server_data.set_query_port(usQueryPort);
     server_data.set_spectator_port(unSpectatorPort);
+    set_version(pchVersion);
 
-    std::string version(pchVersion);
-    version.erase(std::remove(version.begin(), version.end(), ' '), version.end());
-    version.erase(std::remove(version.begin(), version.end(), '.'), version.end());
-    server_data.set_version(stoi(version));
+    server_data.set_game_dir(pchGameDir ? pchGameDir : "");
+
     flags = unServerFlags;
 
     //TODO?
@@ -822,13 +838,13 @@ void Steam_GameServer::RunCallbacks()
 
     if (temp_call_servers_connected) {
         PRINT_DEBUG("SteamServersConnected_t");
-        SteamServersConnected_t data;
+        SteamServersConnected_t data{};
         callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.1);
     }
 
     if (logged_in && !policy_response_called) {
         PRINT_DEBUG("GSPolicyResponse_t");
-        GSPolicyResponse_t data;
+        GSPolicyResponse_t data{};
         data.m_bSecure = !!(flags & k_unServerFlagSecure);
         callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.11);
         policy_response_called = true;
@@ -836,7 +852,7 @@ void Steam_GameServer::RunCallbacks()
 
     if (logged_in && check_timedout(last_sent_server_info, SEND_SERVER_RATE)) {
         PRINT_DEBUG("Sending Gameserver");
-        Common_Message msg;
+        Common_Message msg{};
         msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
         server_data.set_appid(settings->get_local_game_id().AppID());
         msg.set_allocated_gameserver(new Gameserver(server_data));
@@ -865,3 +881,171 @@ void Steam_GameServer::RunCallbacks()
         }
     }
 }
+
+
+// older sdk -----------------------------------------------
+void Steam_GameServer::GSSetSpawnCount( uint32 ucSpawn )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    SetBotPlayerCount((int)ucSpawn);
+}
+
+bool Steam_GameServer::GSGetSteam2GetEncryptionKeyToSendToNewClient( void *pvEncryptionKey, uint32 *pcbEncryptionKey, uint32 cbMaxEncryptionKey )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    return false;
+}
+
+bool Steam_GameServer::GSSendSteam2UserConnect(  uint32 unUserID, const void *pvRawKey, uint32 unKeyLen, uint32 unIPPublic, uint16 usPort, const void *pvCookie, uint32 cubCookie )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    return SendUserConnectAndAuthenticate(unIPPublic, pvRawKey, unKeyLen, nullptr);
+}
+
+bool Steam_GameServer::GSSendSteam3UserConnect( CSteamID steamID, uint32 unIPPublic, const void *pvCookie, uint32 cubCookie )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    return SendUserConnectAndAuthenticate(unIPPublic, pvCookie, cubCookie, nullptr);
+}
+
+bool Steam_GameServer::GSRemoveUserConnect( uint32 unUserID )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    return false;
+}
+
+bool Steam_GameServer::GSSendUserDisconnect( CSteamID steamID, uint32 unUserID )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    SendUserDisconnect(steamID);
+    return true;
+}
+
+bool Steam_GameServer::GSSendUserStatusResponse( CSteamID steamID, int nSecondsConnected, int nSecondsSinceLast )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    return false;
+}
+
+bool Steam_GameServer::Obsolete_GSSetStatus( int32 nAppIdServed, uint32 unServerFlags, int cPlayers, int cPlayersMax, int cBotPlayers, int unGamePort, const char *pchServerName, const char *pchGameDir, const char *pchMapName, const char *pchVersion )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    return false;
+}
+
+bool Steam_GameServer::GSUpdateStatus( int cPlayers, int cPlayersMax, int cBotPlayers, const char *pchServerName, const char *pchMapName )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    return false;
+}
+
+bool Steam_GameServer::GSSetServerType( int32 nGameAppId, uint32 unServerFlags, uint32 unGameIP, uint32 unGamePort, const char *pchGameDir, const char *pchVersion )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    return BSetServerType(unServerFlags, unGameIP, unGamePort, 0, 0, pchGameDir, pchVersion, true);
+}
+
+bool Steam_GameServer::GSSetServerType2( int32 nGameAppId, uint32 unServerFlags, uint32 unGameIP, uint16 unGamePort, uint16 unSpectatorPort, uint16 usQueryPort, const char *pchGameDir, const char *pchVersion, bool bLANMode )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    SetSpectatorPort(unSpectatorPort);
+    return BSetServerType(unServerFlags, unGameIP, unGamePort, unSpectatorPort, usQueryPort, pchGameDir, pchVersion, bLANMode);
+}
+
+bool Steam_GameServer::GSUpdateStatus2( int cPlayers, int cPlayersMax, int cBotPlayers, const char *pchServerName, const char *pSpectatorServerName, const char *pchMapName )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    return false;
+}
+
+bool Steam_GameServer::GSCreateUnauthenticatedUser( CSteamID *pSteamID )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    CSteamID steamId = CreateUnauthenticatedUserConnection();
+    if (pSteamID) *pSteamID = steamId;
+    return true;
+}
+
+bool Steam_GameServer::GSSetUserData( CSteamID steamID, const char *pPlayerName, uint32 nFrags )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    return BUpdateUserData(steamID, pPlayerName, nFrags);
+}
+
+void Steam_GameServer::GSUpdateSpectatorPort( uint16 unSpectatorPort )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    UpdateSpectatorPort(unSpectatorPort);
+}
+
+void Steam_GameServer::GSSetGameType( const char *pchType )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    SetGameType(pchType);
+}
+
+bool Steam_GameServer::GSSendUserConnect( uint32 unUserID, uint32 unIPPublic, uint16 usPort, const void *pvCookie, uint32 cubCookie )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    return SendUserConnectAndAuthenticate(unIPPublic, pvCookie, cubCookie, nullptr);
+}
+
+bool Steam_GameServer::GSSetServerType( int32 nGameAppId, uint32 unServerFlags, uint32 unGameIP, uint16 unGamePort, uint16 unSpectatorPort, uint16 usQueryPort, const char *pchGameDir, const char *pchVersion, bool bLANMode )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    SetSpectatorPort(unSpectatorPort);
+    return BSetServerType(unServerFlags, unGameIP, unGamePort, unSpectatorPort, usQueryPort, pchGameDir, pchVersion, bLANMode);
+}
+
+bool Steam_GameServer::GSUpdateStatus( int cPlayers, int cPlayersMax, int cBotPlayers, const char *pchServerName, const char *pSpectatorServerName, const char *pchMapName )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    return false;
+}
+
+bool Steam_GameServer::GSGetUserAchievementStatus( CSteamID steamID, const char *pchAchievementName )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    return BGetUserAchievementStatus(steamID, pchAchievementName);
+}
+// older sdk -----------------------------------------------
