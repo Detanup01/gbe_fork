@@ -1350,18 +1350,20 @@ uint32 Steam_UGC::GetItemState( PublishedFileId_t nPublishedFileID )
 {
     PRINT_DEBUG("%llu", nPublishedFileID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (ugc_bridge->has_subbed_mod(nPublishedFileID)) {
-        if (settings->isModInstalled(nPublishedFileID)) {
-            PRINT_DEBUG("  mod is subscribed and installed");
-            return k_EItemStateInstalled | k_EItemStateSubscribed;
-        }
-
-        PRINT_DEBUG("  mod is subscribed");
-        return k_EItemStateSubscribed;
+    
+    if (!settings->isModInstalled(nPublishedFileID)) {
+        PRINT_DEBUG("  mod isn't found");
+        return k_EItemStateNone;
     }
 
-    PRINT_DEBUG("  mod isn't found");
-    return k_EItemStateNone;
+    if (ugc_bridge->has_subbed_mod(nPublishedFileID)) {
+        PRINT_DEBUG("  mod is subscribed and installed");
+        return k_EItemStateInstalled | k_EItemStateSubscribed;
+    }
+
+
+    PRINT_DEBUG("  mod is not subscribed");
+    return k_EItemStateDisabledLocally;
 }
 
 
