@@ -318,12 +318,11 @@ SteamAPICall_t Steam_User_Stats::FindLeaderboard( const char *pchLeaderboardName
         return ret;
     }
 
-    std::string name_lower(common_helpers::ascii_to_lowercase(pchLeaderboardName));
+    std::string board_name(pchLeaderboardName);
     const auto &settings_Leaderboards = settings->getLeaderboards();
-    auto it = settings_Leaderboards.begin();
-    for (;  settings_Leaderboards.end() != it; ++it) {
-        if (common_helpers::str_cmp_insensitive(it->first, name_lower)) break;
-    }
+    auto it = std::find_if(settings_Leaderboards.begin(), settings_Leaderboards.end(), [&board_name](const std::pair<const std::string, Leaderboard_config> &item){
+        return common_helpers::str_cmp_insensitive(item.first, board_name);
+    });
     if (settings_Leaderboards.end() != it) {
         auto &config = it->second;
         return FindOrCreateLeaderboard(pchLeaderboardName, config.sort_method, config.display_type);
@@ -331,7 +330,7 @@ SteamAPICall_t Steam_User_Stats::FindLeaderboard( const char *pchLeaderboardName
         return FindOrCreateLeaderboard(pchLeaderboardName, k_ELeaderboardSortMethodDescending, k_ELeaderboardDisplayTypeNumeric);
     } else {
         LeaderboardFindResult_t data{};
-        data.m_hSteamLeaderboard = find_cached_leaderboard(name_lower);
+        data.m_hSteamLeaderboard = find_cached_leaderboard(board_name);
         data.m_bLeaderboardFound = !!data.m_hSteamLeaderboard;
         auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
         callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
