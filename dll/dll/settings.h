@@ -165,6 +165,16 @@ struct Overlay_Appearance {
     float element_active_b = -1.0f;
     float element_active_a = -1.0f;
 
+    float stats_background_r = 0.0f;
+    float stats_background_g = 0.0f;
+    float stats_background_b = 0.0f;
+    float stats_background_a = 0.6f;
+
+    float stats_text_r = 0.8f;
+    float stats_text_g = 0.7f;
+    float stats_text_b = 0.0f;
+    float stats_text_a = 1.0f;
+
     NotificationPosition ach_earned_pos = NotificationPosition::bot_right; // achievement earned
     NotificationPosition invite_pos = default_pos; // lobby/game invitation
     NotificationPosition chat_msg_pos = NotificationPosition::top_center; // chat message from a friend
@@ -315,6 +325,9 @@ public:
     bool disable_overlay_achievement_notification = false;
     bool disable_overlay_friend_notification = false;
     bool disable_overlay_achievement_progress = false;
+    unsigned overlay_fps_avg_window = 10;
+    float overlay_stats_pos_x = 0.0f;
+    float overlay_stats_pos_y = 0.0f;
     //warn people who use local save
     bool overlay_warn_local_save = false;
     //disable overlay warning for local save

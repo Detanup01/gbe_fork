@@ -376,6 +376,62 @@ static void load_overlay_appearance(class Settings *settings_client, class Setti
                 auto pos = Overlay_Appearance::translate_notification_position(value);
                 settings_client->overlay_appearance.chat_msg_pos = pos;
                 settings_server->overlay_appearance.chat_msg_pos = pos;
+            // >>> FPS background
+            } else if (name.compare("Stats_Background_R") == 0) {
+                float val = std::stof(value, NULL);
+                settings_client->overlay_appearance.stats_background_r = val;
+                settings_server->overlay_appearance.stats_background_r = val;
+            } else if (name.compare("Stats_Background_G") == 0) {
+                float val = std::stof(value, NULL);
+                settings_client->overlay_appearance.stats_background_g = val;
+                settings_server->overlay_appearance.stats_background_g = val;
+            } else if (name.compare("Stats_Background_B") == 0) {
+                float val = std::stof(value, NULL);
+                settings_client->overlay_appearance.stats_background_b = val;
+                settings_server->overlay_appearance.stats_background_b = val;
+            } else if (name.compare("Stats_Background_A") == 0) {
+                float val = std::stof(value, NULL);
+                settings_client->overlay_appearance.stats_background_a = val;
+                settings_server->overlay_appearance.stats_background_a = val;
+            // FPS background END <<<
+            // >>> FPS text color
+            } else if (name.compare("Stats_Text_R") == 0) {
+                float val = std::stof(value, NULL);
+                settings_client->overlay_appearance.stats_text_r = val;
+                settings_server->overlay_appearance.stats_text_r = val;
+            } else if (name.compare("Stats_Text_G") == 0) {
+                float val = std::stof(value, NULL);
+                settings_client->overlay_appearance.stats_text_g = val;
+                settings_server->overlay_appearance.stats_text_g = val;
+            } else if (name.compare("Stats_Text_B") == 0) {
+                float val = std::stof(value, NULL);
+                settings_client->overlay_appearance.stats_text_b = val;
+                settings_server->overlay_appearance.stats_text_b = val;
+            } else if (name.compare("Stats_Text_A") == 0) {
+                float val = std::stof(value, NULL);
+                settings_client->overlay_appearance.stats_text_a = val;
+                settings_server->overlay_appearance.stats_text_a = val;
+            // FPS text color END <<<
+            // >>> FPS position
+            } else if (name.compare("Stats_Pos_x") == 0) {
+                auto pos = std::stof(value);
+                if (pos < 0) {
+                    pos = 0;
+                } else if (pos > 1.0f) {
+                    pos = 1.0f;
+                }
+                settings_client->overlay_stats_pos_x = pos;
+                settings_server->overlay_stats_pos_x = pos;
+            } else if (name.compare("Stats_Pos_y") == 0) {
+                auto pos = std::stof(value);
+                if (pos < 0) {
+                    pos = 0;
+                } else if (pos > 1.0f) {
+                    pos = 1.0f;
+                }
+                settings_client->overlay_stats_pos_y = pos;
+                settings_server->overlay_stats_pos_y = pos;
+            // FPS position END <<<
             } else {
                 PRINT_DEBUG("unknown overlay appearance setting");
             }
@@ -1366,6 +1422,20 @@ static void parse_overlay_general_config(class Settings *settings_client, class 
     settings_client->overlay_upload_achs_icons_to_gpu = ini.GetBoolValue("overlay::general", "upload_achievements_icons_to_gpu", settings_client->overlay_upload_achs_icons_to_gpu);
     settings_server->overlay_upload_achs_icons_to_gpu = ini.GetBoolValue("overlay::general", "upload_achievements_icons_to_gpu", settings_server->overlay_upload_achs_icons_to_gpu);
 
+    {
+        auto val = ini.GetLongValue("overlay::general", "fps_averaging_window", settings_client->overlay_fps_avg_window);
+        if (val > 0) {
+            settings_client->overlay_fps_avg_window = val;        
+        }
+    }
+
+    {
+        auto val = ini.GetLongValue("overlay::general", "fps_averaging_window", settings_server->overlay_fps_avg_window);
+        if (val > 0) {
+            settings_server->overlay_fps_avg_window = val;        
+        }
+    }
+    
 }
 
 // main::misc::steam_game_stats_reports_dir

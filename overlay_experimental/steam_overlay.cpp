@@ -101,7 +101,8 @@ Steam_Overlay::Steam_Overlay(Settings* settings, Local_Storage *local_storage, S
     callback_results(callback_results),
     callbacks(callbacks),
     run_every_runcb(run_every_runcb),
-    network(network)
+    network(network),
+    stats(Steam_Overlay_Stats(settings))
 {
     // don't even bother initializing the overlay
     if (settings->disable_overlay) return;
@@ -299,6 +300,7 @@ void Steam_Overlay::create_fonts()
     // note: base85 compressed arrays caused a compiler heap allocation error, regular compression is more guaranteed
     ImFont *font = fonts_atlas.AddFontFromMemoryCompressedTTF(unifont_compressed_data, unifont_compressed_size, font_size, &font_cfg);
     font_notif = font_default = font;
+    stats.font = font;
     
     bool res = fonts_atlas.Build();
     PRINT_DEBUG("created fonts atlas (result=%i)", (int)res);
@@ -1253,6 +1255,10 @@ void Steam_Overlay::overlay_render_proc()
         build_notifications(io.DisplaySize.x, io.DisplaySize.y);
     }
 
+    if (stats.show_any_stats()) {
+        stats.render_stats(current_language);
+    }
+
     load_next_ach_icon();
 }
 
@@ -1390,6 +1396,24 @@ void Steam_Overlay::render_main_window()
             show_settings = !show_settings;
         }
         
+        ImGui::Spacing();
+        ImGui::Spacing();
+        // user clicked on "FPS"
+        ImGui::SameLine();
+        if (ImGui::Checkbox(translationFpsCheckbox[current_language], &stats.show_fps)) {
+            allow_renderer_frame_processing(stats.show_fps);
+        }
+        // user clicked on "Frametime"
+        ImGui::SameLine();
+        if (ImGui::Checkbox(translationFrametimeCheckbox[current_language], &stats.show_frametime)) {
+            allow_renderer_frame_processing(stats.show_frametime);
+        }
+        // user clicked on "Playtime"
+        ImGui::SameLine();
+        if (ImGui::Checkbox(translationPlaytimeCheckbox[current_language], &stats.show_playtime)) {
+            allow_renderer_frame_processing(stats.show_playtime);
+        }
+
         ImGui::Spacing();
         ImGui::Spacing();
         ImGui::LabelText("##label", "%s", translationFriends[current_language]);
