@@ -37,7 +37,10 @@ private:
 
   struct Attribute_t
   {
-    const AttributeType_t type;
+  private:
+    AttributeType_t type;
+  
+  public:
     union {
       int32 n_data;
       std::string s_data;
@@ -45,10 +48,16 @@ private:
       int64 ll_data;
     };
 
+    Attribute_t() = delete;
     Attribute_t(AttributeType_t type);
     Attribute_t(const Attribute_t &other);
     Attribute_t(Attribute_t &&other);
     ~Attribute_t();
+
+    Attribute_t& operator=(const Attribute_t &other);
+    Attribute_t& operator=(Attribute_t &&other);
+
+    AttributeType_t get_type() const noexcept;
   };
 
   struct Row_t
@@ -87,13 +96,12 @@ private:
 
 
   uint64 create_session_id() const;
-  bool valid_stats_account_type(int8 nAccountType);
+  bool valid_stats_account_type(int8 nAccountType) const noexcept;
   Table_t *get_or_create_session_table(Session_t &session, const char *table_name);
   Attribute_t *get_or_create_session_att(const char *att_name, Session_t &session, AttributeType_t type_if_create);
   Attribute_t *get_or_create_row_att(uint64 ulRowID, const char *att_name, Table_t &table, AttributeType_t type_if_create);
   Session_t* get_last_active_session();
 
-  std::string sanitize_csv_value(std::string_view value);
   void save_session_to_disk(Steam_GameStats::Session_t &session, uint64 session_id);
   void steam_run_callback();
 
