@@ -277,7 +277,7 @@ void SteamCallResults::runCallResults()
         }
     }
 
-    PRINT_DEBUG("erase to_delete");
+    // PRINT_DEBUG("erase to_delete");
     auto c = std::begin(callresults);
     while (c != std::end(callresults)) {
         if (c->to_delete) {

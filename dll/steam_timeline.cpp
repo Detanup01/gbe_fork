@@ -68,6 +68,7 @@ Steam_Timeline::Steam_Timeline(class Settings *settings, class Networking *netwo
     this->run_every_runcb->add(&Steam_Timeline::steam_run_every_runcb, this);
 
     // timeline starts with a default event as seen here: https://www.youtube.com/watch?v=YwBD0E4-EsI
+    PRINT_DEBUG("adding an initial game mode");
     SetTimelineGameMode(ETimelineGameMode::k_ETimelineGameMode_Invalid);
 }
 
@@ -166,7 +167,7 @@ TimelineEventHandle_t Steam_Timeline::AddRangeTimelineEvent( const char *pchTitl
     std::lock_guard lock(timeline_mutex);
 
     auto event_id = StartRangeTimelineEvent(pchTitle, pchDescription, pchIcon, unIconPriority, flStartOffsetSeconds, ePossibleClip);
-    if (!event_id || event_id > timeline_events.size()) return event_id;
+    if (!event_id || event_id > timeline_events.size()) return 0;
 
     auto& my_event = timeline_events[static_cast<size_t>(event_id - 1)];
     my_event.ended = true; // ranged and instantaneous events are ended/closed events, they can't be modified later according to docs

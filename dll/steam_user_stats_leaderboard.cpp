@@ -346,7 +346,9 @@ const char * Steam_User_Stats::GetLeaderboardName( SteamLeaderboard_t hSteamLead
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (hSteamLeaderboard > cached_leaderboards.size() || hSteamLeaderboard <= 0) return "";
 
-    return cached_leaderboards[static_cast<unsigned>(hSteamLeaderboard - 1)].name.c_str();
+    auto name_ptr = cached_leaderboards[static_cast<unsigned>(hSteamLeaderboard - 1)].name.c_str();
+    PRINT_DEBUG("  returned '%s'", name_ptr);
+    return name_ptr;
 }
 
 

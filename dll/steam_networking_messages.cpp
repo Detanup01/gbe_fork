@@ -247,7 +247,7 @@ int Steam_Networking_Messages::ReceiveMessagesOnChannel( int nLocalChannel, Stea
         }
     }
 
-    PRINT_DEBUG("got %u", message_counter);
+    PRINT_DEBUG("got %i", message_counter);
     return message_counter;
 }
 

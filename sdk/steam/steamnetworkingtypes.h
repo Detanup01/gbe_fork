@@ -341,7 +341,7 @@ struct SteamNetworkingIdentity
 	union {
 		uint64 m_steamID64;
 		uint64 m_PSNID;
-		uint64 m_stadiaID;
+		uint64 m_stadiaID; // removed in sdk v1.61
 		char m_szGenericString[ k_cchMaxGenericString ];
 		char m_szXboxPairwiseID[ k_cchMaxXboxPairwiseID ];
 		uint8 m_genericBytes[ k_cbMaxGenericBytes ];

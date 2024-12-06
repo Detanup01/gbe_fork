@@ -195,7 +195,7 @@ void Steam_Networking_Sockets::set_steamnetconnectioninfo(std::map<HSteamNetConn
     pInfo->m_eState = convert_status(connect_socket->second.status);
     pInfo->m_eEndReason = 0; //TODO
     pInfo->m_szEndDebug[0] = 0;
-    sprintf(pInfo->m_szConnectionDescription, "%u", connect_socket->first);
+    snprintf(pInfo->m_szConnectionDescription, sizeof(pInfo->m_szConnectionDescription), "%u", connect_socket->first);
 
     //Note some games might not allocate a struct the whole size of SteamNetConnectionInfo_t when calling GetConnectionInfo
     //keep this in mind in future interface updates

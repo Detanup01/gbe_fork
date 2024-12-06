@@ -491,7 +491,7 @@ STEAMAPI_API void S_CALLTYPE SteamAPI_SetMiniDumpComment( const char *pchMsg )
 // and call SteamAPI_ReleaseCurrentThreadMemory regularly on other threads.
 STEAMAPI_API void S_CALLTYPE SteamAPI_RunCallbacks()
 {
-    PRINT_DEBUG_ENTRY();
+    // PRINT_DEBUG_ENTRY();
     get_steam_client()->RunCallbacks(true, false);
     //std::this_thread::sleep_for(std::chrono::microseconds(1)); //fixes resident evil revelations lagging. (Seems to work fine without this right now, commenting out)
 }
@@ -575,7 +575,7 @@ STEAMAPI_API steam_bool S_CALLTYPE SteamAPI_IsSteamRunning()
 // NOT THREADSAFE - do not call from multiple threads simultaneously.
 STEAMAPI_API void Steam_RunCallbacks( HSteamPipe hSteamPipe, bool bGameServerCallbacks )
 {
-    PRINT_DEBUG_ENTRY();
+    // PRINT_DEBUG_ENTRY();
 
     SteamAPI_RunCallbacks();
 
@@ -1007,7 +1007,7 @@ STEAMAPI_API void SteamGameServer_Shutdown()
 
 STEAMAPI_API void SteamGameServer_RunCallbacks()
 {
-    PRINT_DEBUG_ENTRY();
+    // PRINT_DEBUG_ENTRY();
     get_steam_client()->RunCallbacks(false, true);
 }
 
@@ -1027,7 +1027,7 @@ STEAMAPI_API ISteamClient *SteamGameServerClient()
 {
     PRINT_DEBUG("old");
     if (!get_steam_clientserver_old()->IsServerInit()) return NULL;
-    return (ISteamClient *)SteamInternal_CreateInterface(old_client); 
+    return reinterpret_cast<ISteamClient *>(SteamInternal_CreateInterface(old_client)); 
 }
 
 STEAMAPI_API uint32 SteamGameServer_GetIPCCallCount()
@@ -1133,7 +1133,7 @@ STEAMAPI_API steam_bool S_CALLTYPE SteamAPI_ManualDispatch_GetNextCallback( HSte
     }
 
     if (q->empty()) {
-        PRINT_DEBUG("error queue is empty");
+        //PRINT_DEBUG("error queue is empty");
         return false;
     }
 
@@ -1321,13 +1321,13 @@ STEAMCLIENT_API steam_bool Steam_BGetCallback( HSteamPipe hSteamPipe, CallbackMs
 
 STEAMCLIENT_API void Steam_FreeLastCallback( HSteamPipe hSteamPipe )
 {
-    PRINT_DEBUG("%i", hSteamPipe);
+    //PRINT_DEBUG("%i", hSteamPipe);
     SteamAPI_ManualDispatch_FreeLastCallback( hSteamPipe );
 }
 
 STEAMCLIENT_API steam_bool Steam_GetAPICallResult( HSteamPipe hSteamPipe, SteamAPICall_t hSteamAPICall, void* pCallback, int cubCallback, int iCallbackExpected, bool* pbFailed )
 {
-    PRINT_DEBUG("%i %llu %i %i", hSteamPipe, hSteamAPICall, cubCallback, iCallbackExpected);
+    //PRINT_DEBUG("%i %llu %i %i", hSteamPipe, hSteamAPICall, cubCallback, iCallbackExpected);
     return SteamAPI_ManualDispatch_GetAPICallResult(hSteamPipe, hSteamAPICall, pCallback, cubCallback, iCallbackExpected, pbFailed);
 }
 
@@ -1351,6 +1351,7 @@ STEAMCLIENT_API void Breakpad_SteamMiniDumpInit( uint32 a, const char *b, const 
 STEAMCLIENT_API void Breakpad_SteamSendMiniDump( void *a, uint32 b )
 {
     PRINT_DEBUG_TODO();
+    PRINT_DEBUG("  app is sending a crash dump! [XXXXXXXXXXXXXXXXXXXXXXXXXXX]");
 }
 
 STEAMCLIENT_API void Breakpad_SteamSetAppID( uint32 unAppID )

@@ -765,7 +765,7 @@ struct EquippedProfileItems_t
 	bool m_bHasProfileModifier;
 	bool m_bHasProfileBackground;
 	bool m_bHasMiniProfileBackground;
-	bool m_bFromCache;
+	bool m_bFromCache; // added in sdk v1.61
 };
 
 #pragma pack( pop )
