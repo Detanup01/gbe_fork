@@ -1436,10 +1436,37 @@ bool Steam_UGC::GetItemInstallInfo( PublishedFileId_t nPublishedFileID, uint64 *
 // If bHighPriority is set, any other item download will be suspended and this item downloaded ASAP.
 bool Steam_UGC::DownloadItem( PublishedFileId_t nPublishedFileID, bool bHighPriority )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("%llu %i // TODO", nPublishedFileID, (int)bHighPriority);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    if (!settings->isModInstalled(nPublishedFileID)) {
+        DownloadItemResult_t data_fail{};
+        data_fail.m_eResult = EResult::k_EResultFail;
+        data_fail.m_nPublishedFileId = nPublishedFileID;
+        data_fail.m_unAppID = settings->get_local_game_id().AppID();
+        callbacks->addCBResult(data_fail.k_iCallback, &data_fail, sizeof(data_fail), 0.050);
+        return false;
+    }
 
-    return false;
+    {
+        DownloadItemResult_t data{};
+        data.m_eResult = EResult::k_EResultOK;
+        data.m_nPublishedFileId = nPublishedFileID;
+        data.m_unAppID = settings->get_local_game_id().AppID();
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.1);
+    }
+
+    {
+        ItemInstalled_t data{};
+        data.m_hLegacyContent = nPublishedFileID;
+        data.m_nPublishedFileId = nPublishedFileID;
+        data.m_unAppID = settings->get_local_game_id().AppID();
+        data.m_unManifestID = 123; // TODO
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.15);
+    }
+
+    PRINT_DEBUG("downloaded!");
+    return true;
 }
 
 
