@@ -163,7 +163,6 @@ Steam_Client::~Steam_Client()
 
     DEL_INST(background_thread);
 
-    DEL_INST(steam_gameserver);
     DEL_INST(steam_gameserver_utils);
     DEL_INST(steam_gameserverstats);
     DEL_INST(steam_gameserver_networking);
@@ -176,6 +175,8 @@ Steam_Client::~Steam_Client()
     DEL_INST(steam_gameserver_networking_messages);
     DEL_INST(steam_gameserver_game_coordinator);
     DEL_INST(steam_masterserver_updater);
+    DEL_INST(steam_gameserver);
+    DEL_INST(steam_gameserver_gamestats);
 
     DEL_INST(steam_matchmaking);
     DEL_INST(steam_matchmaking_servers);
@@ -212,6 +213,8 @@ Steam_Client::~Steam_Client()
     DEL_INST(steam_friends);
     DEL_INST(steam_user);
     DEL_INST(steam_overlay);
+    
+    DEL_INST(steam_app_ticket);
 
     DEL_INST(ugc_bridge);
 
