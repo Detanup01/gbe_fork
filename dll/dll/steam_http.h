@@ -23,11 +23,17 @@
 
 
 struct Steam_Http_Request {
+    enum class Protocol_t {
+        Web,
+        File,
+    };
+
 	HTTPRequestHandle handle{};
 	EHTTPMethod request_method{};
 	std::string url{};
 	uint64 timeout_sec = 60;
 	bool requires_valid_ssl = false;
+	Protocol_t protocol = Protocol_t::Web;
 
 	constexpr const static char STEAM_DEFAULT_USER_AGENT[] = "Valve/Steam HTTP Client 1.0";
 	// check Steam_HTTP::SetHTTPRequestHeaderValue() and make sure to bypass the ones that should be reserved
@@ -68,6 +74,10 @@ public ISteamHTTP
 
 	Steam_Http_Request *get_request(HTTPRequestHandle hRequest);
 	void online_http_request(Steam_Http_Request *request, SteamAPICall_t call_res_id);
+
+	void create_http_request_web( struct Steam_Http_Request &request, unsigned url_index );
+	void create_http_request_file( struct Steam_Http_Request &request, unsigned file_index  );
+
 
 public:
 	Steam_HTTP(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks);

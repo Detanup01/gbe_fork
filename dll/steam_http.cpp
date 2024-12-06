@@ -27,10 +27,106 @@ Steam_HTTP::Steam_HTTP(class Settings *settings, class Networking *network, clas
 
 Steam_Http_Request *Steam_HTTP::get_request(HTTPRequestHandle hRequest)
 {
-    auto conn = std::find_if(requests.begin(), requests.end(), [&hRequest](struct Steam_Http_Request const& conn) { return conn.handle == hRequest;});
-    if (conn == requests.end()) return NULL;
+    auto conn = std::find_if(requests.begin(), requests.end(), [&hRequest](struct Steam_Http_Request const& conn) {
+        return conn.handle == hRequest;
+    });
+    if (conn == requests.end()) return nullptr;
+
     return &(*conn);
 }
+
+void Steam_HTTP::create_http_request_web( struct Steam_Http_Request &request, unsigned url_index )
+{
+    request.protocol = Steam_Http_Request::Protocol_t::Web;
+
+    std::string_view url_path(request.url.c_str() + url_index, request.url.size() - url_index);
+    // strip last occurrences pf '/'
+    auto last_non_slash = url_path.find_last_not_of('/');
+    if (std::string_view::npos != last_non_slash) {
+        url_path = url_path.substr(0, last_non_slash + 1);
+    }
+
+    PRINT_DEBUG("parsed url path '%.*s'", url_path.size(), url_path.data());
+
+    if (!url_path.empty()) {
+        request.target_filepath =
+            Local_Storage::get_game_settings_path()
+            + "http" + PATH_SEPARATOR
+            + Local_Storage::sanitize_string(std::string(url_path));
+        PRINT_DEBUG("parsed filepath (absolute) '%s'", request.target_filepath.c_str());
+        
+        auto file_size = file_size_(request.target_filepath);
+        if (file_size > 0) {
+            request.response.resize(file_size);
+            auto read = Local_Storage::get_file_data(request.target_filepath, (char *)&request.response[0], file_size, 0);
+            if (read < 0) read = 0;
+            if (read != file_size) request.response.resize(static_cast<size_t>(read));
+            PRINT_DEBUG("read file data size=%i/%u", read, file_size);
+        }
+    }
+}
+
+void Steam_HTTP::create_http_request_file( struct Steam_Http_Request &request, unsigned file_index )
+{
+    request.protocol = Steam_Http_Request::Protocol_t::File;
+
+    std::string_view url_path(request.url.c_str() + file_index, request.url.size() - file_index);
+    // strip last occurrences pf '/'
+    auto last_non_slash = url_path.find_last_not_of('/');
+    if (std::string_view::npos != last_non_slash) {
+        url_path = url_path.substr(0, last_non_slash + 1);
+    }
+
+    // https://datatracker.ietf.org/doc/html/rfc8089
+    // 7.2.  Informative References
+    // Appendix B.
+    enum class FilepathType {
+        MinimalAbsolute,       // "file:/path/to/file"                   <<>> "file:/D:/path/to/file"
+        NonLocalWithAuthority, // "file://host.example.com/path/to/file" <<>> "file://host.example.com/D:/path/to/file"
+        NoAuthorityAbsolute,   // "file:///path/to/file"                 <<>> "file:///D:/path/to/file"
+    };
+
+    // detect type
+    FilepathType file_type = FilepathType::MinimalAbsolute;
+    if (!url_path.empty() && url_path.front() == '/') {
+        file_type = FilepathType::NonLocalWithAuthority;
+        url_path = url_path.substr(1);
+    }
+
+    if (FilepathType::NonLocalWithAuthority == file_type && !url_path.empty() && url_path.front() == '/') {
+        file_type = FilepathType::NoAuthorityAbsolute;
+        url_path = url_path.substr(1);
+    }
+
+    // fix non-local part with authority, by removing the authority part
+    if (FilepathType::NonLocalWithAuthority == file_type) {
+        auto authority_end = url_path.find('/');
+        if (std::string_view::npos != authority_end) {
+            url_path = url_path.substr(authority_end + 1);
+        }
+    }
+
+    PRINT_DEBUG("parsed url path '%.*s'", url_path.size(), url_path.data());
+
+    if (!url_path.empty()) {
+        request.target_filepath = common_helpers::to_absolute(
+            url_path,
+            get_full_program_path()
+        );
+        PRINT_DEBUG("parsed filepath (absolute) '%s'", request.target_filepath.c_str());
+
+        unsigned int file_size = file_size_(request.target_filepath);
+        if (file_size > 0) {
+            request.response.resize(file_size);
+            auto read = Local_Storage::get_file_data(request.target_filepath, (char *)&request.response[0], file_size, 0);
+            if (read < 0) read = 0;
+            if (read != file_size) request.response.resize(static_cast<size_t>(read));
+            PRINT_DEBUG("read file data size=%i/%u", read, file_size);
+        }
+    }
+}
+
+
 
 // Initializes a new HTTP request, returning a handle to use in further operations on it.  Requires
 // the method (GET or POST) and the absolute URL for the request.  Both http and https are supported,
@@ -43,39 +139,40 @@ HTTPRequestHandle Steam_HTTP::CreateHTTPRequest( EHTTPMethod eHTTPRequestMethod,
 
     if (!pchAbsoluteURL) return INVALID_HTTPREQUEST_HANDLE;
 
-    std::string url = pchAbsoluteURL;
+    std::string_view url = pchAbsoluteURL;
+    
     unsigned url_index = 0;
+    unsigned file_index = 0;
     if (url.rfind("https://", 0) == 0) {
         url_index = sizeof("https://") - 1;
     } else if (url.rfind("http://", 0) == 0) {
         url_index = sizeof("http://") - 1;
+    } else if (url.rfind("file:/", 0) == 0) {
+        file_index = sizeof("file:/") - 1;
     }
+
+    static HTTPRequestHandle http_handle = 0;
+    ++http_handle;
+    if (!http_handle) ++http_handle;
 
     struct Steam_Http_Request request{};
     request.request_method = eHTTPRequestMethod;
     request.url = url;
-    if (url_index) {
-        if (url.back() == '/') url += "index.html";
-        std::string file_path = Local_Storage::get_game_settings_path() + "http" + PATH_SEPARATOR + Local_Storage::sanitize_string(url.substr(url_index));
-        request.target_filepath = file_path;
-        unsigned int file_size = file_size_(file_path);
-        if (file_size) {
-            request.response.resize(file_size);
-            long long read = Local_Storage::get_file_data(file_path, (char *)&request.response[0], file_size, 0);
-            if (read < 0) read = 0;
-            if (read != file_size) request.response.resize(static_cast<size_t>(read));
-        }
+    request.context_value = 0;
+    request.protocol = Steam_Http_Request::Protocol_t::Web; // force web request anyway to keep compatibility
+    request.handle = http_handle;
+
+    if (url_index > 0) {
+        PRINT_DEBUG("URL is a web link");
+        create_http_request_web(request, url_index);
+    } else if (file_index > 0) {
+        PRINT_DEBUG("URL is a filepath");
+        create_http_request_file(request, file_index);
+
     }
 
-    static HTTPRequestHandle h = 0;
-    ++h;
-    if (!h) ++h;
-
-    request.handle = h;
-    request.context_value = 0;
-
-    requests.push_back(request);
-    return request.handle;
+    requests.emplace_back(std::move(request)); // request object reference is invalidated after this move, be careful!
+    return http_handle;
 }
 
 
@@ -222,11 +319,24 @@ void Steam_HTTP::online_http_request(Steam_Http_Request *request, SteamAPICall_t
         directory_path = ".";
         file_name = request->target_filepath;
     }
-    PRINT_DEBUG("directory: '%s', filename '%s', target_filepath '%s'", directory_path.c_str(), file_name.c_str(), request->target_filepath.c_str());
-    Local_Storage::store_file_data(directory_path, file_name, (char *)"", sizeof(""));
-    PRINT_DEBUG("Temp file created with empty data"); //TODO remove this
+    PRINT_DEBUG("directory: '%s', filename '%s'", directory_path.c_str(), file_name.c_str());
+    Local_Storage::store_file_data(directory_path, file_name, (char *)"", sizeof("")); // create empty file
 
-    FILE *hfile = std::fopen(request->target_filepath.c_str(), "wb");
+    FILE *hfile = nullptr;
+
+    {
+        const auto fsp = std::filesystem::u8path(request->target_filepath);
+#if defined(__WINDOWS__)
+        // TODO use "\\?\" to solve max path problem
+        // https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation
+        // note that this bypasses the NT object manager, note from above link:
+        // "File I/O functions in the Windows API convert "/" to "\" as part of converting the name to an NT-style name, except when using the "\\?\" prefix"
+        hfile = _wfopen(fsp.c_str(), L"wb");
+#else
+        hfile = std::fopen(fsp.c_str(), "wb");
+#endif
+    }
+
     if (!hfile) {
         PRINT_DEBUG("failed to open file for writing");
         send_callresult();
@@ -374,18 +484,46 @@ bool Steam_HTTP::SendHTTPRequest( HTTPRequestHandle hRequest, SteamAPICall_t *pC
         return false;
     }
 
-    if (request->response.empty() && request->target_filepath.size() &&
-        !settings->disable_networking && settings->download_steamhttp_requests) {
-        auto call_res_id = callback_results->reserveCallResult();
-        if (pCallHandle) *pCallHandle = call_res_id;
+    switch (request->protocol)
+    {
+    case Steam_Http_Request::Protocol_t::Web: {
+        bool bad_local_file = request->response.empty() && !request->target_filepath.empty(); // we need the filepath since we want to save the response to that file
+        bool internet_allowed = !settings->disable_networking && settings->download_steamhttp_requests;
+        if (bad_local_file && internet_allowed) {
+            auto call_res_id = callback_results->reserveCallResult();
+            if (pCallHandle) *pCallHandle = call_res_id;
 
-        std::thread(&Steam_HTTP::online_http_request, this, request, call_res_id).detach();
-    } else {
+            std::thread(&Steam_HTTP::online_http_request, this, request, call_res_id).detach();
+        } else {
+            struct HTTPRequestCompleted_t data{};
+            data.m_hRequest = request->handle;
+            data.m_ulContextValue = request->context_value;
+            data.m_unBodySize = static_cast<uint32>(request->response.size());
+            if (request->response.empty() && !settings->force_steamhttp_success) {
+                data.m_bRequestSuccessful = false;
+                data.m_eStatusCode = k_EHTTPStatusCode404NotFound;
+            } else {
+                data.m_bRequestSuccessful = true;
+                data.m_eStatusCode = k_EHTTPStatusCode200OK;
+            }
+
+            auto callres = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1);
+            if (pCallHandle) *pCallHandle = callres;
+            
+            callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.1);
+        }
+    }
+    break;
+    
+    case Steam_Http_Request::Protocol_t::File: {
         struct HTTPRequestCompleted_t data{};
         data.m_hRequest = request->handle;
         data.m_ulContextValue = request->context_value;
         data.m_unBodySize = static_cast<uint32>(request->response.size());
-        if (request->response.empty() && !settings->force_steamhttp_success) {
+        if (request->target_filepath.empty()) { // malformed filepath
+            data.m_bRequestSuccessful = false;
+            data.m_eStatusCode = k_EHTTPStatusCode403Forbidden;
+        } else if (request->response.empty() && !settings->force_steamhttp_success) {
             data.m_bRequestSuccessful = false;
             data.m_eStatusCode = k_EHTTPStatusCode404NotFound;
         } else {
@@ -393,10 +531,28 @@ bool Steam_HTTP::SendHTTPRequest( HTTPRequestHandle hRequest, SteamAPICall_t *pC
             data.m_eStatusCode = k_EHTTPStatusCode200OK;
         }
 
-        auto callres = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1);
+        auto callres = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.03);
         if (pCallHandle) *pCallHandle = callres;
         
-        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.1);
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.03);
+    }
+    break;
+    
+    default: {
+        PRINT_DEBUG("[X] unhandled protocol type <%i>", (int)request->protocol);
+        struct HTTPRequestCompleted_t data{};
+        data.m_hRequest = request->handle;
+        data.m_ulContextValue = request->context_value;
+        data.m_unBodySize = 0;
+        data.m_bRequestSuccessful = false;
+        data.m_eStatusCode = k_EHTTPStatusCode501NotImplemented;
+
+        auto callres = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.05);
+        if (pCallHandle) *pCallHandle = callres;
+        
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.05);
+    }
+    break;
     }
 
     return true;
@@ -460,6 +616,8 @@ bool Steam_HTTP::GetHTTPResponseHeaderSize( HTTPRequestHandle hRequest, const ch
     PRINT_DEBUG("'%s'", pchHeaderName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
+    if (unResponseHeaderSize) *unResponseHeaderSize = 0;
+
     if (!pchHeaderName) return false;
 
     Steam_Http_Request *request = get_request(hRequest);
@@ -479,7 +637,7 @@ bool Steam_HTTP::GetHTTPResponseHeaderSize( HTTPRequestHandle hRequest, const ch
 // BGetHTTPResponseHeaderSize to check for the presence of the header and to find out the size buffer needed.
 bool Steam_HTTP::GetHTTPResponseHeaderValue( HTTPRequestHandle hRequest, const char *pchHeaderName, uint8 *pHeaderValueBuffer, uint32 unBufferSize )
 {
-    PRINT_DEBUG("'%s'", pchHeaderName);
+    PRINT_DEBUG("'%s' [%u]", pchHeaderName, unBufferSize);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     if (!pchHeaderName) return false;
@@ -490,6 +648,8 @@ bool Steam_HTTP::GetHTTPResponseHeaderValue( HTTPRequestHandle hRequest, const c
     }
     const auto hdr = request->headers.find(pchHeaderName);
     if (request->headers.end() == hdr) return false;
+    PRINT_DEBUG("  required header buffer size = %zu", hdr->second.size());
+
     if (unBufferSize < hdr->second.size()) return false;
     if (pHeaderValueBuffer) {
         memset(pHeaderValueBuffer, 0, unBufferSize);
@@ -506,6 +666,8 @@ bool Steam_HTTP::GetHTTPResponseBodySize( HTTPRequestHandle hRequest, uint32 *un
     PRINT_DEBUG("%u", hRequest);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
+    if (unBodySize) *unBodySize = 0;
+
     Steam_Http_Request *request = get_request(hRequest);
     if (!request) {
         return false;
@@ -521,7 +683,7 @@ bool Steam_HTTP::GetHTTPResponseBodySize( HTTPRequestHandle hRequest, uint32 *un
 // the correct buffer size to use.
 bool Steam_HTTP::GetHTTPResponseBodyData( HTTPRequestHandle hRequest, uint8 *pBodyDataBuffer, uint32 unBufferSize )
 {
-    PRINT_DEBUG("%p %u", pBodyDataBuffer, unBufferSize);
+    PRINT_DEBUG("%p [%u]", pBodyDataBuffer, unBufferSize);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     Steam_Http_Request *request = get_request(hRequest);
@@ -589,6 +751,8 @@ bool Steam_HTTP::GetHTTPDownloadProgressPct( HTTPRequestHandle hRequest, float *
     PRINT_DEBUG("%u", hRequest);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
+    if (pflPercentOut) *pflPercentOut = 0;
+
     Steam_Http_Request *request = get_request(hRequest);
     if (!request) {
         return false;
