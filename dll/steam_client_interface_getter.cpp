@@ -18,6 +18,21 @@
 #include "dll/steam_client.h"
 
 
+// retrieves the ISteamBilling interface associated with the handle
+ISteamBilling *Steam_Client::GetISteamBilling( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
+{
+    PRINT_DEBUG("%s", pchVersion);
+    if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return nullptr;
+
+    if (strcmp(pchVersion, "SteamBilling001") == 0) {
+        return nullptr; // real steamclient64.dll returns null
+    } else if (strcmp(pchVersion, STEAMBILLING_INTERFACE_VERSION) == 0) {
+        return reinterpret_cast<ISteamBilling *>(static_cast<ISteamBilling *>(steam_billing));
+    }
+
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+}
+
 // retrieves the ISteamAppDisableUpdate interface associated with the handle
 ISteamAppDisableUpdate *Steam_Client::GetISteamAppDisableUpdate( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
@@ -466,6 +481,8 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
         return GetISteamTimeline(hSteamUser, hSteamPipe, pchVersion);
     } else if (strstr(pchVersion, "SteamAppDisableUpdate") == pchVersion) {
         return GetISteamAppDisableUpdate(hSteamUser, hSteamPipe, pchVersion);
+    } else if (strstr(pchVersion, "SteamBilling") == pchVersion) {
+        return GetISteamBilling(hSteamUser, hSteamPipe, pchVersion);
     }
     
     PRINT_DEBUG("No interface: %s", pchVersion);

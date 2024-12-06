@@ -125,6 +125,7 @@ Steam_Client::Steam_Client()
     steam_gamestats = new Steam_GameStats(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
     steam_timeline = new Steam_Timeline(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
     steam_app_disable_update = new Steam_App_Disable_Update(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
+    steam_billing = new Steam_Billing(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
 
     // server
     PRINT_DEBUG("init gameserver");
@@ -207,6 +208,7 @@ Steam_Client::~Steam_Client()
     DEL_INST(steam_gamestats);
     DEL_INST(steam_timeline);
     DEL_INST(steam_app_disable_update);
+    DEL_INST(steam_billing);
 
     DEL_INST(steam_utils);
     DEL_INST(steam_friends);

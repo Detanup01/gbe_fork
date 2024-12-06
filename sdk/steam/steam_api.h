@@ -22,6 +22,7 @@
 
 // All of the interfaces
 #include "isteamappdisableupdate.h"
+#include "isteambilling.h"
 #include "isteamclient.h"
 #include "isteamclient007.h"
 #include "isteamclient008.h"

@@ -51,6 +51,7 @@
 #include "steam_parties.h"
 #include "steam_remoteplay.h"
 #include "steam_tv.h"
+#include "steam_billing.h"
 
 #include "steam_gameserver.h"
 #include "steam_gameserverstats.h"
@@ -142,6 +143,7 @@ public:
     Steam_GameStats *steam_gamestats{};
     Steam_Timeline *steam_timeline{};
     Steam_App_Disable_Update *steam_app_disable_update{};
+    Steam_Billing *steam_billing{};
 
     Steam_GameServer *steam_gameserver{};
     Steam_Utils *steam_gameserver_utils{};
@@ -248,6 +250,8 @@ public:
 	// steam appp disable update
 	ISteamAppDisableUpdate *GetISteamAppDisableUpdate( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion );
 
+    // steam billing
+    ISteamBilling *GetISteamBilling( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion );
 
 	// Deprecated. Applications should use SteamAPI_RunCallbacks() or SteamGameServer_RunCallbacks() instead.
 	STEAM_PRIVATE_API( void RunFrame() );
