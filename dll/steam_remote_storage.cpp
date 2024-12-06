@@ -1060,15 +1060,11 @@ SteamAPICall_t Steam_Remote_Storage::GetUserPublishedItemVoteDetails( PublishedF
     data.m_unPublishedFileId = unPublishedFileId;
     if (settings->isModInstalled(unPublishedFileId)) {
         auto mod = settings->getMod(unPublishedFileId);
-        if (mod.steamIDOwner == settings->get_local_steam_id().ConvertToUint64()) {
-            data.m_eResult = EResult::k_EResultOK;
-            data.m_fScore = mod.score;
-            data.m_nReports = 0; // TODO is this ok?
-            data.m_nVotesAgainst = mod.votesDown;
-            data.m_nVotesFor = mod.votesUp;
-        } else { // not published by this user
-            data.m_eResult = EResult::k_EResultFail; // TODO is this correct?
-        }
+        data.m_eResult = EResult::k_EResultOK;
+        data.m_fScore = mod.score;
+        data.m_nReports = 0; // TODO is this ok?
+        data.m_nVotesAgainst = mod.votesDown;
+        data.m_nVotesFor = mod.votesUp;
     } else { // mod not installed
         data.m_eResult = EResult::k_EResultFail; // TODO is this correct?
     }
