@@ -251,9 +251,8 @@ ISteamMatchmaking *Steam_Client::GetISteamMatchmaking( HSteamUser hSteamUser, HS
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
-    if (strcmp(pchVersion, "SteamMatchMaking001") == 0) { // SteamMatchMaking001 Not found in public Archive, must be before 1.00
-        //TODO
-        return reinterpret_cast<ISteamMatchmaking *>(static_cast<ISteamMatchmaking002 *>(steam_matchmaking));
+    if (strcmp(pchVersion, "SteamMatchMaking001") == 0) { // SteamMatchMaking001 Not found in public Archive, from proton src
+        return reinterpret_cast<ISteamMatchmaking *>(static_cast<ISteamMatchmaking001 *>(steam_matchmaking));
     } else if (strcmp(pchVersion, "SteamMatchMaking002") == 0) {
         return reinterpret_cast<ISteamMatchmaking *>(static_cast<ISteamMatchmaking002 *>(steam_matchmaking));
     } else if (strcmp(pchVersion, "SteamMatchMaking003") == 0) {
