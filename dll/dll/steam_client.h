@@ -69,6 +69,7 @@ enum Steam_Pipe {
 };
 
 class Steam_Client :
+public ISteamClient006,
 public ISteamClient007,
 public ISteamClient008,
 public ISteamClient009,
@@ -346,6 +347,22 @@ public:
     bool IsUserLogIn();
 
     void DestroyAllInterfaces();
+
+    // older sdk ----------------------------------------------------------
+    // https://github.com/ValveSoftware/Proton/blob/proton_9.0/lsteamclient/steamworks_sdk_099v/isteamclient.h
+    // https://workshop.perforce.com/files/guest/knut_wikstrom/ValveSDKCode/public/steam/isteamclient.h
+
+    // creates a global instance of a steam user, so that other processes can share it
+    // used by the steam UI, to share it's account info/connection with any games it launches
+    // fails (returns NULL) if an existing instance already exists
+    HSteamUser CreateGlobalUser( HSteamPipe *phSteamPipe );
+    // retrieves the IVac interface associated with the handle
+    // there is normally only one instance of VAC running, but using this connects it to the right user/account
+    void *GetIVAC( HSteamUser hSteamUser );
+    // returns the name of a universe
+    const char *GetUniverseName( EUniverse eUniverse );
+    void *GetISteamBilling_old( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion );
+    // older sdk ----------------------------------------------------------
 
     void report_missing_impl(std::string_view itf, std::string_view caller);
     [[noreturn]] void report_missing_impl_and_exit(std::string_view itf, std::string_view caller);

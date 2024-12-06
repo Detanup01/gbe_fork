@@ -24,6 +24,7 @@
 #include "isteamappdisableupdate.h"
 #include "isteambilling.h"
 #include "isteamclient.h"
+#include "isteamclient006.h"
 #include "isteamclient007.h"
 #include "isteamclient008.h"
 #include "isteamclient009.h"

@@ -212,48 +212,48 @@ bool steamclient_has_ipv6_functions()
 static void *create_client_interface(const char *ver)
 {
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    void *steam_client = nullptr;
 
+    Steam_Client *client_ptr = get_steam_client();
     if (strstr(ver, "SteamClient") == ver) {
-        if (strcmp(ver, "SteamClient007") == 0) {
-            steam_client = static_cast<ISteamClient007 *>(get_steam_client());
+        if (strcmp(ver, "SteamClient006") == 0) {
+            return static_cast<ISteamClient006 *>(client_ptr);
+        } else if (strcmp(ver, "SteamClient007") == 0) {
+            return static_cast<ISteamClient007 *>(client_ptr);
         } else if (strcmp(ver, "SteamClient008") == 0) {
-            steam_client = static_cast<ISteamClient008 *>(get_steam_client());
+            return static_cast<ISteamClient008 *>(client_ptr);
         } else if (strcmp(ver, "SteamClient009") == 0) {
-            steam_client = static_cast<ISteamClient009 *>(get_steam_client());
+            return static_cast<ISteamClient009 *>(client_ptr);
         } else if (strcmp(ver, "SteamClient010") == 0) {
-            steam_client = static_cast<ISteamClient010 *>(get_steam_client());
+            return static_cast<ISteamClient010 *>(client_ptr);
         } else if (strcmp(ver, "SteamClient011") == 0) {
-            steam_client = static_cast<ISteamClient011 *>(get_steam_client());
+            return static_cast<ISteamClient011 *>(client_ptr);
         } else if (strcmp(ver, "SteamClient012") == 0) {
-            steam_client = static_cast<ISteamClient012 *>(get_steam_client());
+            return static_cast<ISteamClient012 *>(client_ptr);
         } else if (strcmp(ver, "SteamClient013") == 0) {
-            steam_client = static_cast<ISteamClient013 *>(get_steam_client());
+            return static_cast<ISteamClient013 *>(client_ptr);
         } else if (strcmp(ver, "SteamClient014") == 0) {
-            steam_client = static_cast<ISteamClient014 *>(get_steam_client());
+            return static_cast<ISteamClient014 *>(client_ptr);
         } else if (strcmp(ver, "SteamClient015") == 0) {
-            steam_client = static_cast<ISteamClient015 *>(get_steam_client());
+            return static_cast<ISteamClient015 *>(client_ptr);
         } else if (strcmp(ver, "SteamClient016") == 0) {
-            steam_client = static_cast<ISteamClient016 *>(get_steam_client());
+            return static_cast<ISteamClient016 *>(client_ptr);
         } else if (strcmp(ver, "SteamClient017") == 0) {
-            steam_client = static_cast<ISteamClient017 *>(get_steam_client());
+            return static_cast<ISteamClient017 *>(client_ptr);
         } else if (strcmp(ver, "SteamClient018") == 0) {
-            steam_client = static_cast<ISteamClient018 *>(get_steam_client());
+            return static_cast<ISteamClient018 *>(client_ptr);
         } else if (strcmp(ver, "SteamClient019") == 0) {
-            steam_client = static_cast<ISteamClient019 *>(get_steam_client());
-        } else if (strcmp(ver, "SteamClient020") == 0) {
-            steamclient_has_ipv6_functions_flag = true;
-            steam_client = static_cast<ISteamClient020 *>(get_steam_client());
+            return static_cast<ISteamClient019 *>(client_ptr);
+        }
+        
+        steamclient_has_ipv6_functions_flag = true;
+        if (strcmp(ver, "SteamClient020") == 0) {
+            return static_cast<ISteamClient020 *>(client_ptr);
         } else if (strcmp(ver, STEAMCLIENT_INTERFACE_VERSION) == 0) {
-            steamclient_has_ipv6_functions_flag = true;
-            steam_client = static_cast<ISteamClient *>(get_steam_client());
-        } else {
-            PRINT_DEBUG("requested unknown steamclient version '%s'", ver);
-            get_steam_client()->report_missing_impl_and_exit(ver, EMU_FUNC_NAME);
+            return static_cast<ISteamClient *>(client_ptr);
         }
     }
     
-    return steam_client;
+    client_ptr->report_missing_impl_and_exit(ver, EMU_FUNC_NAME);
 }
 
 STEAMAPI_API void * S_CALLTYPE SteamInternal_CreateInterface( const char *ver )

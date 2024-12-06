@@ -33,6 +33,12 @@ ISteamBilling *Steam_Client::GetISteamBilling( HSteamUser hSteamUser, HSteamPipe
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
 }
 
+void *Steam_Client::GetISteamBilling_old( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
+{
+    PRINT_DEBUG("old");
+    return GetISteamBilling(hSteamUser, hSteamPipe, pchVersion);
+}
+
 // retrieves the ISteamAppDisableUpdate interface associated with the handle
 ISteamAppDisableUpdate *Steam_Client::GetISteamAppDisableUpdate( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
