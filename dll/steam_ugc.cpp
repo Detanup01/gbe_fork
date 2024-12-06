@@ -1188,9 +1188,6 @@ SteamAPICall_t Steam_UGC::SetUserItemVote( PublishedFileId_t nPublishedFileID, b
     if (!settings->isModInstalled(nPublishedFileID)) return k_uAPICallInvalid; // TODO is this correct
     
     auto mod  = settings->getMod(nPublishedFileID);
-    SetUserItemVoteResult_t data{};
-    data.m_eResult = EResult::k_EResultOK;
-    data.m_nPublishedFileId = nPublishedFileID;
     if (bVoteUp) {
         ++mod.votesUp;
     } else {
@@ -1198,6 +1195,11 @@ SteamAPICall_t Steam_UGC::SetUserItemVote( PublishedFileId_t nPublishedFileID, b
     }
     settings->addModDetails(nPublishedFileID, mod);
     
+    SetUserItemVoteResult_t data{};
+    data.m_eResult = EResult::k_EResultOK;
+    data.m_nPublishedFileId = nPublishedFileID;
+    data.m_bVoteUp = bVoteUp;
+
     auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
     callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
     return ret;
