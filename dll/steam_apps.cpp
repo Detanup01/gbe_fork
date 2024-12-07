@@ -47,10 +47,10 @@ int Steam_Apps::GetAppData( AppId_t nAppID, const char *pchKey, char *pchValue, 
         return 2;
     } else if (common_helpers::str_cmp_insensitive("country", pchKey)) {
         // TODO this is not exactly how real client does it, but close enough
-        auto lang = GetCurrentGameLanguage();
-        auto lang_lower = common_helpers::to_lower(lang && lang[0] ? lang : "--"); // "--" is an actual value the client returns
+        auto country = settings->ip_country.c_str();
+        auto country_lower = common_helpers::to_lower(country && country[0] ? country : "--"); // "--" is an actual value the client returns
         if (pchValue && cchValueMax >= 3) {
-            strncpy(pchValue, lang_lower.c_str(), 3);
+            strncpy(pchValue, country_lower.c_str(), 3);
             pchValue[2] = 0;
         }
         return 3;
