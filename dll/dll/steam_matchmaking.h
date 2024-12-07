@@ -41,11 +41,11 @@ struct Data_Requested {
 };
 
 struct Filter_Values {
-	std::string key{};
-	std::string value_string{};
-	int value_int{};
-	bool is_int{};
-	ELobbyComparison eComparisonType{};
+    std::string key{};
+    std::string value_string{};
+    int value_int{};
+    bool is_int{};
+    ELobbyComparison eComparisonType{};
 };
 
 struct Chat_Entry {
@@ -56,6 +56,7 @@ struct Chat_Entry {
 
 
 class Steam_Matchmaking :
+public ISteamMatchmaking001,
 public ISteamMatchmaking002,
 public ISteamMatchmaking003,
 public ISteamMatchmaking004,
@@ -383,6 +384,30 @@ public:
     // you must be the lobby owner of both lobbies
     bool SetLinkedLobby( CSteamID steamIDLobby, CSteamID steamIDLobbyDependent );
 
+
+    // older sdk -------------------------------------------------------------------
+
+    // returns the details of the game server
+    // iGame is of range [0,GetFavoriteGameCount())
+    // *pnIP, *pnConnPort are filled in the with IP:port of the game server
+    // *punFlags specify whether the game server was stored as an explicit favorite or in the history of connections
+    // *pRTime32LastPlayedOnServer is filled in the with the Unix time the favorite was added
+    bool GetFavoriteGame( int iGame, uint32 *pnAppID, uint32 *pnIP, uint16 *pnConnPort, uint32 *punFlags, uint32 *pRTime32LastPlayedOnServer );
+
+    // adds the game server to the local list; updates the time played of the server if it already exists in the list
+    int AddFavoriteGame( uint32 nAppID, uint32 nIP, uint16 nConnPort, uint32 unFlags, uint32 rTime32LastPlayedOnServer );
+    
+    // removes the game server from the local storage; returns true if one was removed
+    bool RemoveFavoriteGame( uint32 nAppID, uint32 nIP, uint16 nConnPort, uint32 unFlags );
+    bool GetFavoriteGame2( int iGame, uint32 *pnAppID, uint32 *pnIP, uint16 *pnConnPort, uint16 *pnQueryPort, uint32 *punFlags, uint32 *pRTime32LastPlayedOnServer );
+    int AddFavoriteGame2( uint32 nAppID, uint32 nIP, uint16 nConnPort, uint16 nQueryPort, uint32 unFlags, uint32 rTime32LastPlayedOnServer );
+    bool RemoveFavoriteGame2( uint32 nAppID, uint32 nIP, uint16 nConnPort, uint16 nQueryPort, uint32 unFlags );
+    void RequestLobbyList( uint64 ulGameID, MatchMakingKeyValuePair_t *pFilters, uint32 nFilters );
+    void CreateLobby( uint64 ulGameID, bool bPrivate );
+    bool SetLobbyMemberData_OLD( CSteamID steamIDLobby, const char *pchKey, const char *pchValue );
+
+    // older sdk -------------------------------------------------------------------
+    
 };
 
 #endif // __INCLUDED_STEAM_MATCHMAKING_H__

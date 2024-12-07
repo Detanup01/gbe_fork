@@ -22,7 +22,9 @@
 
 // All of the interfaces
 #include "isteamappdisableupdate.h"
+#include "isteambilling.h"
 #include "isteamclient.h"
+#include "isteamclient006.h"
 #include "isteamclient007.h"
 #include "isteamclient008.h"
 #include "isteamclient009.h"
@@ -85,6 +87,7 @@
 #include "isteamutils008.h"
 #include "isteamutils009.h"
 #include "isteammatchmaking.h"
+#include "isteammatchmaking001.h"
 #include "isteammatchmaking002.h"
 #include "isteammatchmaking003.h"
 #include "isteammatchmaking004.h"
@@ -103,6 +106,8 @@
 #include "isteamuserstats005.h"
 #include "isteamuserstats004.h"
 #include "isteamuserstats003.h"
+#include "isteamuserstats002.h"
+#include "isteamuserstats001.h"
 #include "isteamapps.h"
 #include "isteamapps007.h"
 #include "isteamapps006.h"
@@ -224,6 +229,8 @@
 #include "isteamgameserver008.h"
 #include "isteamgameserver005.h"
 #include "isteamgameserver004.h"
+#include "isteamgameserver003.h"
+#include "isteamgameserver002.h"
 #include "isteamgameserverstats.h"
 #include "isteamgamestats.h"
 

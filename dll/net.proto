@@ -162,6 +162,7 @@ message Gameserver {
     bool secure = 17;
     uint32 num_players = 18;
     uint32 version = 19;
+    bytes game_dir = 20;
 
     uint32 ip = 32;
     uint32 port = 33;

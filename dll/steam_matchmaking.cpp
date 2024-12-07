@@ -1242,6 +1242,79 @@ bool Steam_Matchmaking::SetLinkedLobby( CSteamID steamIDLobby, CSteamID steamIDL
 
 
 
+// older sdk -------------------------------------------------------------------
+
+// returns the details of the game server
+// iGame is of range [0,GetFavoriteGameCount())
+// *pnIP, *pnConnPort are filled in the with IP:port of the game server
+// *punFlags specify whether the game server was stored as an explicit favorite or in the history of connections
+// *pRTime32LastPlayedOnServer is filled in the with the Unix time the favorite was added
+bool Steam_Matchmaking::GetFavoriteGame( int iGame, uint32 *pnAppID, uint32 *pnIP, uint16 *pnConnPort, uint32 *punFlags, uint32 *pRTime32LastPlayedOnServer )
+{
+    PRINT_DEBUG("old");
+    return GetFavoriteGame(iGame, reinterpret_cast<AppId_t *>(pnAppID), pnIP, pnConnPort, 0, punFlags, pRTime32LastPlayedOnServer );
+}
+
+// adds the game server to the local list; updates the time played of the server if it already exists in the list
+int Steam_Matchmaking::AddFavoriteGame( uint32 nAppID, uint32 nIP, uint16 nConnPort, uint32 unFlags, uint32 rTime32LastPlayedOnServer )
+{
+    PRINT_DEBUG("old");
+    return AddFavoriteGame( (AppId_t)nAppID, nIP, nConnPort, 0, unFlags, rTime32LastPlayedOnServer );
+}
+
+// removes the game server from the local storage; returns true if one was removed
+bool Steam_Matchmaking::RemoveFavoriteGame( uint32 nAppID, uint32 nIP, uint16 nConnPort, uint32 unFlags )
+{
+    PRINT_DEBUG("old");
+    return RemoveFavoriteGame( (AppId_t)nAppID, nIP, nConnPort, 0, unFlags );
+}
+
+bool Steam_Matchmaking::GetFavoriteGame2( int iGame, uint32 *pnAppID, uint32 *pnIP, uint16 *pnConnPort, uint16 *pnQueryPort, uint32 *punFlags, uint32 *pRTime32LastPlayedOnServer )
+{
+    PRINT_DEBUG("old");
+    return GetFavoriteGame(iGame, reinterpret_cast<AppId_t *>(pnAppID), pnIP, pnConnPort, pnQueryPort, punFlags, pRTime32LastPlayedOnServer );
+}
+
+int Steam_Matchmaking::AddFavoriteGame2( uint32 nAppID, uint32 nIP, uint16 nConnPort, uint16 nQueryPort, uint32 unFlags, uint32 rTime32LastPlayedOnServer )
+{
+    PRINT_DEBUG("old");
+    return AddFavoriteGame( (AppId_t)nAppID, nIP, nConnPort, nQueryPort, unFlags, rTime32LastPlayedOnServer );
+}
+
+bool Steam_Matchmaking::RemoveFavoriteGame2( uint32 nAppID, uint32 nIP, uint16 nConnPort, uint16 nQueryPort, uint32 unFlags )
+{
+    PRINT_DEBUG("old");
+    return RemoveFavoriteGame( (AppId_t)nAppID, nIP, nConnPort, nQueryPort, unFlags );
+}
+
+void Steam_Matchmaking::RequestLobbyList( uint64 ulGameID, MatchMakingKeyValuePair_t *pFilters, uint32 nFilters )
+{
+    PRINT_DEBUG("old");
+    if (pFilters && nFilters > 0) {
+        for (size_t fidx = 0; fidx < nFilters; ++fidx) {
+            auto &kv = pFilters[fidx];
+            AddRequestLobbyListFilter(kv.m_szKey, kv.m_szValue);
+        }
+    }
+    RequestLobbyList();
+}
+
+void Steam_Matchmaking::CreateLobby( uint64 ulGameID, bool bPrivate )
+{
+    PRINT_DEBUG("old");
+    CreateLobby(bPrivate);
+}
+
+bool Steam_Matchmaking::SetLobbyMemberData_OLD( CSteamID steamIDLobby, const char *pchKey, const char *pchValue )
+{
+    PRINT_DEBUG("old");
+    SetLobbyMemberData(steamIDLobby, pchKey, pchValue);
+    return true;
+}
+// older sdk -------------------------------------------------------------------
+
+
+
 void Steam_Matchmaking::remove_lobbies()
 {
     uint64 current_time = std::chrono::duration_cast<std::chrono::duration<uint64>>(std::chrono::system_clock::now().time_since_epoch()).count();

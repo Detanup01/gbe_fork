@@ -18,6 +18,27 @@
 #include "dll/steam_client.h"
 
 
+// retrieves the ISteamBilling interface associated with the handle
+ISteamBilling *Steam_Client::GetISteamBilling( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
+{
+    PRINT_DEBUG("%s", pchVersion);
+    if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return nullptr;
+
+    if (strcmp(pchVersion, "SteamBilling001") == 0) {
+        return nullptr; // real steamclient64.dll returns null
+    } else if (strcmp(pchVersion, STEAMBILLING_INTERFACE_VERSION) == 0) {
+        return reinterpret_cast<ISteamBilling *>(static_cast<ISteamBilling *>(steam_billing));
+    }
+
+    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+}
+
+void *Steam_Client::GetISteamBilling_old( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
+{
+    PRINT_DEBUG("old");
+    return GetISteamBilling(hSteamUser, hSteamPipe, pchVersion);
+}
+
 // retrieves the ISteamAppDisableUpdate interface associated with the handle
 ISteamAppDisableUpdate *Steam_Client::GetISteamAppDisableUpdate( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
@@ -128,13 +149,20 @@ ISteamGameServer *Steam_Client::GetISteamGameServer( HSteamUser hSteamUser, HSte
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
-    if (strcmp(pchVersion, "SteamGameServer004") == 0) {
+
+    if (strcmp(pchVersion, "SteamGameServer001") == 0) {
+        return nullptr;
+    } else if (strcmp(pchVersion, "SteamGameServer002") == 0) {
+        return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer002 *>(steam_gameserver)); // not found in public archives, from proton repo src
+    } else if (strcmp(pchVersion, "SteamGameServer003") == 0) {
+        return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer003 *>(steam_gameserver)); // not found in public archives, from proton repo src
+    } else if (strcmp(pchVersion, "SteamGameServer004") == 0) {
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer004 *>(steam_gameserver));
     } else if (strcmp(pchVersion, "SteamGameServer005") == 0) {
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer005 *>(steam_gameserver));
-    } else if (strcmp(pchVersion, "SteamGameServer006") == 0) {
+    } else if (strcmp(pchVersion, "SteamGameServer006") == 0) { // Not found in public Archive, defined as an alias to v008 in proton src
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer008 *>(steam_gameserver)); // SteamGameServer006 Not exists
-    } else if (strcmp(pchVersion, "SteamGameServer007") == 0) {
+    } else if (strcmp(pchVersion, "SteamGameServer007") == 0) { // Not found in public Archive, defined as an alias to v008 in proton src
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer008 *>(steam_gameserver)); // SteamGameServer007 Not exists
     } else if (strcmp(pchVersion, "SteamGameServer008") == 0) {
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer008 *>(steam_gameserver));
@@ -146,14 +174,14 @@ ISteamGameServer *Steam_Client::GetISteamGameServer( HSteamUser hSteamUser, HSte
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer011 *>(steam_gameserver));
     } else if (strcmp(pchVersion, "SteamGameServer012") == 0) {
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer012 *>(steam_gameserver));
-    } else if (strcmp(pchVersion, "SteamGameServer013") == 0) {
+    }
+
     gameserver_has_ipv6_functions = true;
+    if (strcmp(pchVersion, "SteamGameServer013") == 0) {
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer013 *>(steam_gameserver));
     } else if (strcmp(pchVersion, "SteamGameServer014") == 0) {
-        gameserver_has_ipv6_functions = true;
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer014 *>(steam_gameserver));
     } else if (strcmp(pchVersion, STEAMGAMESERVER_INTERFACE_VERSION) == 0) {
-        gameserver_has_ipv6_functions = true;
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer *>(steam_gameserver));
     }
     
@@ -251,9 +279,8 @@ ISteamMatchmaking *Steam_Client::GetISteamMatchmaking( HSteamUser hSteamUser, HS
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
-    if (strcmp(pchVersion, "SteamMatchMaking001") == 0) { // SteamMatchMaking001 Not found in public Archive, must be before 1.00
-        //TODO
-        return reinterpret_cast<ISteamMatchmaking *>(static_cast<ISteamMatchmaking002 *>(steam_matchmaking));
+    if (strcmp(pchVersion, "SteamMatchMaking001") == 0) { // SteamMatchMaking001 Not found in public Archive, from proton src
+        return reinterpret_cast<ISteamMatchmaking *>(static_cast<ISteamMatchmaking001 *>(steam_matchmaking));
     } else if (strcmp(pchVersion, "SteamMatchMaking002") == 0) {
         return reinterpret_cast<ISteamMatchmaking *>(static_cast<ISteamMatchmaking002 *>(steam_matchmaking));
     } else if (strcmp(pchVersion, "SteamMatchMaking003") == 0) {
@@ -320,7 +347,9 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
             steam_networking_sockets_serialized_temp = steam_networking_sockets_serialized;
         }
 
-        if (strcmp(pchVersion, "SteamNetworkingSocketsSerialized002") == 0) {
+        if (strcmp(pchVersion, "SteamNetworkingSocketsSerialized001") == 0) { // not found in public archives, defined as an alias to v002 in proton src
+            return reinterpret_cast<void *>(static_cast<ISteamNetworkingSocketsSerialized002 *>(steam_networking_sockets_serialized_temp));
+        } else if (strcmp(pchVersion, "SteamNetworkingSocketsSerialized002") == 0) {
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingSocketsSerialized002 *>(steam_networking_sockets_serialized_temp));
         } else if (strcmp(pchVersion, "SteamNetworkingSocketsSerialized003") == 0) {
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingSocketsSerialized003 *>(steam_networking_sockets_serialized_temp));
@@ -345,6 +374,7 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingSockets003 *>( steam_networking_sockets_temp));
         } else if (strcmp(pchVersion, "SteamNetworkingSockets004") == 0) {
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingSockets004 *>( steam_networking_sockets_temp));
+        // TODO SteamNetworkingSockets005 not found in public archives
         } else if (strcmp(pchVersion, "SteamNetworkingSockets006") == 0) {
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingSockets006 *>( steam_networking_sockets_temp));
         } else if (strcmp(pchVersion, "SteamNetworkingSockets007") == 0) { // Not found in public Archive, real steamclient64.dll returns null
@@ -424,7 +454,7 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
         return GetISteamUser(hSteamUser, hSteamPipe, pchVersion);
     } else if (strstr(pchVersion, "SteamUtils") == pchVersion) {
         return GetISteamUtils(hSteamPipe, pchVersion);
-    } else if (strstr(pchVersion, "STEAMAPPS_INTERFACE_VERSION") == pchVersion) {
+    } else if ((strstr(pchVersion, "STEAMAPPS_INTERFACE_VERSION") == pchVersion) || (strstr(pchVersion, "SteamApps") == pchVersion)) {
         return GetISteamApps(hSteamUser, hSteamPipe, pchVersion);
     } else if (strstr(pchVersion, "STEAMSCREENSHOTS_INTERFACE_VERSION") == pchVersion) {
         return GetISteamScreenshots(hSteamUser, hSteamPipe, pchVersion);
@@ -460,6 +490,8 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
         return GetISteamTimeline(hSteamUser, hSteamPipe, pchVersion);
     } else if (strstr(pchVersion, "SteamAppDisableUpdate") == pchVersion) {
         return GetISteamAppDisableUpdate(hSteamUser, hSteamPipe, pchVersion);
+    } else if (strstr(pchVersion, "SteamBilling") == pchVersion) {
+        return GetISteamBilling(hSteamUser, hSteamPipe, pchVersion);
     }
     
     PRINT_DEBUG("No interface: %s", pchVersion);
@@ -472,8 +504,11 @@ ISteamUserStats *Steam_Client::GetISteamUserStats( HSteamUser hSteamUser, HSteam
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
-     // v001, v002 Not found in public Archive, must be before 1.00
-    if (strcmp(pchVersion, "STEAMUSERSTATS_INTERFACE_VERSION003") == 0) {
+    if (strcmp(pchVersion, "STEAMUSERSTATS_INTERFACE_VERSION001") == 0) {
+        return reinterpret_cast<ISteamUserStats *>(static_cast<ISteamUserStats001 *>(steam_user_stats));
+    } else if (strcmp(pchVersion, "STEAMUSERSTATS_INTERFACE_VERSION002") == 0) {
+        return reinterpret_cast<ISteamUserStats *>(static_cast<ISteamUserStats002 *>(steam_user_stats));
+    } else if (strcmp(pchVersion, "STEAMUSERSTATS_INTERFACE_VERSION003") == 0) {
         return reinterpret_cast<ISteamUserStats *>(static_cast<ISteamUserStats003 *>(steam_user_stats));
     } else if (strcmp(pchVersion, "STEAMUSERSTATS_INTERFACE_VERSION004") == 0) {
         return reinterpret_cast<ISteamUserStats *>(static_cast<ISteamUserStats004 *>(steam_user_stats));
@@ -526,7 +561,7 @@ ISteamApps *Steam_Client::GetISteamApps( HSteamUser hSteamUser, HSteamPipe hStea
     } else {
         steam_apps_temp = steam_apps;
     }
-    if (strcmp(pchVersion, "STEAMAPPS_INTERFACE_VERSION001") == 0) {
+    if ((strcmp(pchVersion, "STEAMAPPS_INTERFACE_VERSION001") == 0) || (strcmp(pchVersion, "SteamApps001") == 0)) {
         return reinterpret_cast<ISteamApps *>(static_cast<ISteamApps001 *>(steam_apps_temp));
     } else if (strcmp(pchVersion, "STEAMAPPS_INTERFACE_VERSION002") == 0) {
         return reinterpret_cast<ISteamApps *>(static_cast<ISteamApps002 *>(steam_apps_temp));
@@ -694,8 +729,12 @@ ISteamController *Steam_Client::GetISteamController( HSteamUser hSteamUser, HSte
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
 
-    if (strcmp(pchVersion, "STEAMCONTROLLER_INTERFACE_VERSION") == 0) {
+    if (strcmp(pchVersion, "STEAMCONTROLLER_INTERFACE_VERSION") == 0) { // SDK <= 1.34
         return reinterpret_cast<ISteamController *>(static_cast<ISteamController001 *>(steam_controller));
+    } else if (strcmp(pchVersion, "SteamController001") == 0) {
+        return nullptr; // real steamclient64.dll returns null
+    } else if (strcmp(pchVersion, "SteamController002") == 0) {
+        return nullptr; // real steamclient64.dll returns null
     } else if (strcmp(pchVersion, "SteamController003") == 0) {
         return reinterpret_cast<ISteamController *>(static_cast<ISteamController003 *>(steam_controller));
     } else if (strcmp(pchVersion, "SteamController004") == 0) {

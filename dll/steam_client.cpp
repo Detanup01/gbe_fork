@@ -125,6 +125,7 @@ Steam_Client::Steam_Client()
     steam_gamestats = new Steam_GameStats(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
     steam_timeline = new Steam_Timeline(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
     steam_app_disable_update = new Steam_App_Disable_Update(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
+    steam_billing = new Steam_Billing(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
 
     // server
     PRINT_DEBUG("init gameserver");
@@ -207,6 +208,7 @@ Steam_Client::~Steam_Client()
     DEL_INST(steam_gamestats);
     DEL_INST(steam_timeline);
     DEL_INST(steam_app_disable_update);
+    DEL_INST(steam_billing);
 
     DEL_INST(steam_utils);
     DEL_INST(steam_friends);
@@ -960,3 +962,53 @@ void Steam_Client::DestroyAllInterfaces()
 {
     PRINT_DEBUG_TODO();
 }
+
+// older sdk ----------------------------------------------------------
+
+// creates a global instance of a steam user, so that other processes can share it
+// used by the steam UI, to share it's account info/connection with any games it launches
+// fails (returns NULL) if an existing instance already exists
+HSteamUser Steam_Client::CreateGlobalUser( HSteamPipe *phSteamPipe )
+{
+    // TODO not sure if this implementation is correct
+    PRINT_DEBUG_TODO();
+    for (const auto& [pipe_handle, pipe_type] : steam_pipes) {
+        if (pipe_type == Steam_Pipe::CLIENT) {
+            if (phSteamPipe) *phSteamPipe = pipe_handle;
+            return 0;
+        }
+    }
+
+    HSteamPipe pipe = CreateSteamPipe();
+    if (phSteamPipe) *phSteamPipe = pipe;
+
+    steam_pipes[pipe] = Steam_Pipe::CLIENT;
+    return CLIENT_HSTEAMUSER;
+}
+
+// retrieves the IVac interface associated with the handle
+// there is normally only one instance of VAC running, but using this connects it to the right user/account
+void *Steam_Client::GetIVAC( HSteamUser hSteamUser )
+{
+    PRINT_DEBUG_ENTRY();
+    // actual value from steamclient64.dll
+    return nullptr;
+}
+
+// returns the name of a universe
+const char *Steam_Client::GetUniverseName( EUniverse eUniverse )
+{
+    PRINT_DEBUG("%i", (int)eUniverse);
+    // actual values returned by steamclient64.dll
+    switch (eUniverse)
+    {
+    case EUniverse::k_EUniverseInvalid: return "Invalid";
+    case EUniverse::k_EUniversePublic: return "Public";
+    case EUniverse::k_EUniverseBeta: return "Beta";
+    case EUniverse::k_EUniverseInternal: return "Internal";
+    case EUniverse::k_EUniverseDev: return "Dev";
+    }
+
+    return "Unknown";
+}
+// older sdk ----------------------------------------------------------
