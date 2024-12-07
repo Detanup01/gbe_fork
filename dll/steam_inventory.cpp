@@ -164,7 +164,7 @@ bool Steam_Inventory::GetResultItems( SteamInventoryResult_t resultHandle,
                 pOutItemsArray->m_itemId = pOutItemsArray->m_iDefinition;
                 try
                 {
-                    pOutItemsArray->m_unQuantity = i.value().get<int>();
+                    pOutItemsArray->m_unQuantity = i->value("quantity", static_cast<uint16>(0));
                 }
                 catch (...)
                 {
@@ -183,7 +183,7 @@ bool Steam_Inventory::GetResultItems( SteamInventoryResult_t resultHandle,
 
                     try
                     {
-                        pOutItemsArray->m_unQuantity = it->get<int>();
+                        pOutItemsArray->m_unQuantity = it->value("quantity", static_cast<uint16>(0));
                     }
                     catch (...)
                     {

@@ -476,7 +476,7 @@ SteamAPICall_t Steam_Remote_Storage::UGCDownload( UGCHandle_t hContent )
 // or if the transfer hasn't started yet, so be careful to check for that before dividing to get a percentage
 bool Steam_Remote_Storage::GetUGCDownloadProgress( UGCHandle_t hContent, int32 *pnBytesDownloaded, int32 *pnBytesExpected )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     return false;
@@ -484,7 +484,7 @@ bool Steam_Remote_Storage::GetUGCDownloadProgress( UGCHandle_t hContent, int32 *
 
 bool Steam_Remote_Storage::GetUGCDownloadProgress( UGCHandle_t hContent, uint32 *pnBytesDownloaded, uint32 *pnBytesExpected )
 {
-    PRINT_DEBUG("old");
+    PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     return false;
@@ -1030,12 +1030,14 @@ SteamAPICall_t Steam_Remote_Storage::UpdateUserPublishedItemVote( PublishedFileI
     RemoteStorageUpdateUserPublishedItemVoteResult_t data{};
     data.m_nPublishedFileId = unPublishedFileId;
     if (settings->isModInstalled(unPublishedFileId)) {
+        data.m_eResult = EResult::k_EResultOK;
         auto mod = settings->getMod(unPublishedFileId);
-        if (mod.steamIDOwner == settings->get_local_steam_id().ConvertToUint64()) {
-            data.m_eResult = EResult::k_EResultOK;
-        } else { // not published by this user
-            data.m_eResult = EResult::k_EResultFail; // TODO is this correct?
+        if (bVoteUp) {
+            ++mod.votesUp;
+        } else {
+            ++mod.votesDown;
         }
+        settings->addModDetails(unPublishedFileId, mod);
     } else { // mod not installed
         data.m_eResult = EResult::k_EResultFail; // TODO is this correct?
     }
@@ -1058,15 +1060,11 @@ SteamAPICall_t Steam_Remote_Storage::GetUserPublishedItemVoteDetails( PublishedF
     data.m_unPublishedFileId = unPublishedFileId;
     if (settings->isModInstalled(unPublishedFileId)) {
         auto mod = settings->getMod(unPublishedFileId);
-        if (mod.steamIDOwner == settings->get_local_steam_id().ConvertToUint64()) {
-            data.m_eResult = EResult::k_EResultOK;
-            data.m_fScore = mod.score;
-            data.m_nReports = 0; // TODO is this ok?
-            data.m_nVotesAgainst = mod.votesDown;
-            data.m_nVotesFor = mod.votesUp;
-        } else { // not published by this user
-            data.m_eResult = EResult::k_EResultFail; // TODO is this correct?
-        }
+        data.m_eResult = EResult::k_EResultOK;
+        data.m_fScore = mod.score;
+        data.m_nReports = 0; // TODO is this ok?
+        data.m_nVotesAgainst = mod.votesDown;
+        data.m_nVotesFor = mod.votesUp;
     } else { // mod not installed
         data.m_eResult = EResult::k_EResultFail; // TODO is this correct?
     }
@@ -1208,7 +1206,7 @@ SteamAPICall_t Steam_Remote_Storage::UGCDownloadToLocation( UGCHandle_t hContent
 // Cloud dynamic state change notification
 int32 Steam_Remote_Storage::GetLocalFileChangeCount()
 {
-    PRINT_DEBUG("GetLocalFileChangeCount");
+    PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     return 0;
@@ -1216,7 +1214,7 @@ int32 Steam_Remote_Storage::GetLocalFileChangeCount()
 
 const char* Steam_Remote_Storage::GetLocalFileChange( int iFile, ERemoteStorageLocalFileChange *pEChangeType, ERemoteStorageFilePathType *pEFilePathType )
 {
-    PRINT_DEBUG("GetLocalFileChange");
+    PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     return "";
@@ -1226,7 +1224,7 @@ const char* Steam_Remote_Storage::GetLocalFileChange( int iFile, ERemoteStorageL
 // operations - for example, writing a game save that requires updating two files.
 bool Steam_Remote_Storage::BeginFileWriteBatch()
 {
-    PRINT_DEBUG("BeginFileWriteBatch");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     return true;
@@ -1234,7 +1232,7 @@ bool Steam_Remote_Storage::BeginFileWriteBatch()
 
 bool Steam_Remote_Storage::EndFileWriteBatch()
 {
-    PRINT_DEBUG("EndFileWriteBatch");
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     return true;

@@ -354,7 +354,7 @@ const std::map<std::string, Stat_config>& Settings::getStats() const
 
 std::map<std::string, Stat_config>::const_iterator Settings::setStatDefiniton(const std::string &name, const struct Stat_config &stat_config)
 {
-    auto ins_it = stats.insert_or_assign(common_helpers::ascii_to_lowercase(name), stat_config);
+    auto ins_it = stats.insert_or_assign(common_helpers::to_lower(name), stat_config);
     return ins_it.first;
 }
 

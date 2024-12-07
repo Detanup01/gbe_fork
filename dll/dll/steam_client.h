@@ -248,7 +248,7 @@ public:
 	// steam timeline
 	ISteamTimeline *GetISteamTimeline( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion );
 
-	// steam appp disable update
+	// steam app disable update
 	ISteamAppDisableUpdate *GetISteamAppDisableUpdate( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion );
 
     // steam billing

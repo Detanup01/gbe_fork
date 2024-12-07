@@ -184,7 +184,7 @@ bool Steam_Utils::GetAPICallResult( SteamAPICall_t hSteamAPICall, void *pCallbac
 STEAM_PRIVATE_API(
 void Steam_Utils::RunFrame()
 {
-    PRINT_DEBUG_TODO();
+    //PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     // Steam_Client *client = get_steam_client();
     // client ->RunCallbacks(true, false, false);

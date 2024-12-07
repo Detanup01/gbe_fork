@@ -76,7 +76,7 @@ private:
 
     UGCQueryHandle_t new_ugc_query(
         bool return_all_subscribed = false,
-        std::set<PublishedFileId_t> return_only = std::set<PublishedFileId_t>());
+        const std::set<PublishedFileId_t> &return_only = std::set<PublishedFileId_t>());
 
     std::optional<Mod_entry> get_query_ugc(UGCQueryHandle_t handle, uint32 index);
 

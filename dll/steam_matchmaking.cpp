@@ -129,7 +129,7 @@ bool Steam_Matchmaking::send_owner_packet(CSteamID lobby_id, Lobby_Messages *mes
         return false;
     }
 
-    Common_Message msg;
+    Common_Message msg{};
     msg.set_allocated_lobby_messages(message);
     msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
     msg.set_dest_id((uint64)lobby->owner());
@@ -1123,7 +1123,7 @@ int Steam_Matchmaking::GetLobbyMemberLimit( CSteamID steamIDLobby )
 
 void Steam_Matchmaking::SetLobbyVoiceEnabled( CSteamID steamIDLobby, bool bVoiceEnabled )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG_TODO();
 }
 
 // updates which type of lobby it is

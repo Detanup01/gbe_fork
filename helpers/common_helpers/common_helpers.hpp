@@ -71,8 +71,6 @@ std::string uint8_vector_to_hex_string(const std::vector<uint8_t> &v);
 bool str_cmp_insensitive(std::string_view str1, std::string_view str2);
 bool str_cmp_insensitive(std::wstring_view str1, std::wstring_view str2);
 
-std::string ascii_to_lowercase(std::string data);
-
 void thisThreadYieldFor(std::chrono::microseconds u);
 
 void consume_bom(std::ifstream &input);

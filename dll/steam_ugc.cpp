@@ -17,7 +17,7 @@
 
 #include "dll/steam_ugc.h"
 
-UGCQueryHandle_t Steam_UGC::new_ugc_query(bool return_all_subscribed, std::set<PublishedFileId_t> return_only)
+UGCQueryHandle_t Steam_UGC::new_ugc_query(bool return_all_subscribed, const std::set<PublishedFileId_t> &return_only)
 {
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
@@ -29,7 +29,7 @@ UGCQueryHandle_t Steam_UGC::new_ugc_query(bool return_all_subscribed, std::set<P
     query.return_all_subscribed = return_all_subscribed;
     query.return_only = return_only;
     ugc_queries.push_back(query);
-    PRINT_DEBUG("handle = %llu", query.handle);
+    PRINT_DEBUG("new request handle = %llu", query.handle);
     return query.handle;
 }
 
@@ -295,7 +295,7 @@ UGCQueryHandle_t Steam_UGC::CreateQueryUGCDetailsRequest( PublishedFileId_t *pve
     
 #ifndef EMU_RELEASE_BUILD
     for (const auto &id : only) {
-        PRINT_DEBUG("  file ID = %llu", id);
+        PRINT_DEBUG("  requesting details for file ID = %llu", id);
     }
 #endif
 
@@ -1188,9 +1188,6 @@ SteamAPICall_t Steam_UGC::SetUserItemVote( PublishedFileId_t nPublishedFileID, b
     if (!settings->isModInstalled(nPublishedFileID)) return k_uAPICallInvalid; // TODO is this correct
     
     auto mod  = settings->getMod(nPublishedFileID);
-    SetUserItemVoteResult_t data{};
-    data.m_eResult = EResult::k_EResultOK;
-    data.m_nPublishedFileId = nPublishedFileID;
     if (bVoteUp) {
         ++mod.votesUp;
     } else {
@@ -1198,6 +1195,11 @@ SteamAPICall_t Steam_UGC::SetUserItemVote( PublishedFileId_t nPublishedFileID, b
     }
     settings->addModDetails(nPublishedFileID, mod);
     
+    SetUserItemVoteResult_t data{};
+    data.m_eResult = EResult::k_EResultOK;
+    data.m_nPublishedFileId = nPublishedFileID;
+    data.m_bVoteUp = bVoteUp;
+
     auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
     callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
     return ret;
@@ -1285,7 +1287,7 @@ SteamAPICall_t Steam_UGC::SubscribeItem( PublishedFileId_t nPublishedFileID )
     PRINT_DEBUG("%llu", nPublishedFileID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    RemoteStorageSubscribePublishedFileResult_t data;
+    RemoteStorageSubscribePublishedFileResult_t data{};
     data.m_nPublishedFileId = nPublishedFileID;
     if (settings->isModInstalled(nPublishedFileID)) {
         data.m_eResult = k_EResultOK;
@@ -1305,7 +1307,7 @@ SteamAPICall_t Steam_UGC::UnsubscribeItem( PublishedFileId_t nPublishedFileID )
     PRINT_DEBUG("%llu", nPublishedFileID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    RemoteStorageUnsubscribePublishedFileResult_t data;
+    RemoteStorageUnsubscribePublishedFileResult_t data{};
     data.m_nPublishedFileId = nPublishedFileID;
     if (!ugc_bridge->has_subbed_mod(nPublishedFileID)) {
         data.m_eResult = k_EResultFail; //TODO: check if this is accurate
@@ -1348,18 +1350,20 @@ uint32 Steam_UGC::GetItemState( PublishedFileId_t nPublishedFileID )
 {
     PRINT_DEBUG("%llu", nPublishedFileID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (ugc_bridge->has_subbed_mod(nPublishedFileID)) {
-        if (settings->isModInstalled(nPublishedFileID)) {
-            PRINT_DEBUG("  mod is subscribed and installed");
-            return k_EItemStateInstalled | k_EItemStateSubscribed;
-        }
-
-        PRINT_DEBUG("  mod is subscribed");
-        return k_EItemStateSubscribed;
+    
+    if (!settings->isModInstalled(nPublishedFileID)) {
+        PRINT_DEBUG("  mod isn't found");
+        return k_EItemStateNone;
     }
 
-    PRINT_DEBUG("  mod isn't found");
-    return k_EItemStateNone;
+    if (ugc_bridge->has_subbed_mod(nPublishedFileID)) {
+        PRINT_DEBUG("  mod is subscribed and installed");
+        return k_EItemStateInstalled | k_EItemStateSubscribed;
+    }
+
+
+    PRINT_DEBUG("  mod is not subscribed");
+    return k_EItemStateDisabledLocally;
 }
 
 
@@ -1457,7 +1461,7 @@ bool Steam_UGC::BInitWorkshopForGameServer( DepotId_t unWorkshopDepotID, const c
 // SuspendDownloads( true ) will suspend all workshop downloads until SuspendDownloads( false ) is called or the game ends
 void Steam_UGC::SuspendDownloads( bool bSuspend )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
 }

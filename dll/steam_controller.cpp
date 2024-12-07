@@ -221,7 +221,7 @@ Steam_Controller::Steam_Controller(class Settings *settings, class SteamCallResu
     this->run_every_runcb = run_every_runcb;
 
     set_handles(settings->controller_settings.action_sets);
-    disabled = !action_handles.size();
+    disabled = action_handles.empty();
     initialized = false;
     
     this->run_every_runcb->add(&Steam_Controller::steam_run_every_runcb, this);
@@ -231,6 +231,7 @@ Steam_Controller::~Steam_Controller()
 {
     //TODO rm network callbacks
     //TODO rumble thread
+    Shutdown();
     this->run_every_runcb->remove(&Steam_Controller::steam_run_every_runcb, this);
 }
 
@@ -291,6 +292,7 @@ bool Steam_Controller::Shutdown()
     rumble_thread_data->rumble_thread_cv.notify_one();
     background_rumble_thread.join();
     delete rumble_thread_data;
+    rumble_thread_data = nullptr;
     GamepadShutdown();
     initialized = false;
     return true;
@@ -353,10 +355,10 @@ void Steam_Controller::EnableActionEventCallbacks( SteamInputActionEventCallback
 // possible latency, you call this directly before reading controller state.
 void Steam_Controller::RunFrame(bool bReservedValue)
 {
-    PRINT_DEBUG_ENTRY();
     if (disabled || !initialized) {
         return;
     }
+    PRINT_DEBUG_ENTRY();
 
     GamepadUpdate();
 }
@@ -573,7 +575,7 @@ int Steam_Controller::GetDigitalActionOrigins( ControllerHandle_t controllerHand
     EInputActionOrigin origins[STEAM_CONTROLLER_MAX_ORIGINS];
     int ret = GetDigitalActionOrigins(controllerHandle, actionSetHandle, digitalActionHandle, origins );
     for (int i = 0; i < ret; ++i) {
-        originsOut[i] = (EControllerActionOrigin)(origins[i] - (k_EInputActionOrigin_XBox360_A - k_EControllerActionOrigin_XBox360_A));
+        originsOut[i] = (EControllerActionOrigin)(origins[i] - ((long)k_EInputActionOrigin_XBox360_A - (long)k_EControllerActionOrigin_XBox360_A));
     }
 
     return ret;
@@ -767,7 +769,7 @@ int Steam_Controller::GetAnalogActionOrigins( ControllerHandle_t controllerHandl
     EInputActionOrigin origins[STEAM_CONTROLLER_MAX_ORIGINS];
     int ret = GetAnalogActionOrigins(controllerHandle, actionSetHandle, analogActionHandle, origins );
     for (int i = 0; i < ret; ++i) {
-        originsOut[i] = (EControllerActionOrigin)(origins[i] - (k_EInputActionOrigin_XBox360_A - k_EControllerActionOrigin_XBox360_A));
+        originsOut[i] = (EControllerActionOrigin)(origins[i] - ((long)k_EInputActionOrigin_XBox360_A - (long)k_EControllerActionOrigin_XBox360_A));
     }
 
     return ret;
