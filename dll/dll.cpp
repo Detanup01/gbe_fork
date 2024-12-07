@@ -1384,8 +1384,24 @@ STEAMCLIENT_API steam_bool Steam_BConnected( HSteamUser hUser, HSteamPipe hSteam
 
 STEAMCLIENT_API steam_bool Steam_BLoggedOn( HSteamUser hUser, HSteamPipe hSteamPipe )
 {
-    PRINT_DEBUG_ENTRY();
-    return true;
+    PRINT_DEBUG("%i %i", hUser, hSteamPipe);
+    Steam_Client *steam_client = get_steam_client();
+
+    auto pipe_it = steam_client->steam_pipes.find(hSteamPipe);
+    if (steam_client->steam_pipes.end() == pipe_it) {
+        return false;
+    }
+
+    class Settings *settings_tmp{};
+    if (pipe_it->second == Steam_Pipe::SERVER) {
+        settings_tmp = steam_client->settings_server;
+    } else if (pipe_it->second == Steam_Pipe::CLIENT) {
+        settings_tmp = steam_client->settings_client;
+    } else {
+        return false;
+    }
+
+    return !settings_tmp->is_offline();
 }
 
 STEAMCLIENT_API steam_bool Steam_BReleaseSteamPipe( HSteamPipe hSteamPipe )
