@@ -7,6 +7,7 @@
 #include <mutex>
 #include <chrono>
 #include <thread>
+#include <string>
 
 #if defined(DEBUG) || defined(_DEBUG)
     #define STUB_EXTRA_DEBUG
