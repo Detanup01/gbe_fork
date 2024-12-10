@@ -100,7 +100,7 @@ Steam_Client::Steam_Client()
     steam_user_stats = new Steam_User_Stats(settings_client, network, local_storage, callback_results_client, callbacks_client, run_every_runcb, steam_overlay);
     steam_apps = new Steam_Apps(settings_client, callback_results_client, callbacks_client);
     steam_networking = new Steam_Networking(settings_client, network, callbacks_client, run_every_runcb);
-    steam_remote_storage = new Steam_Remote_Storage(settings_client, ugc_bridge, local_storage, callback_results_client, callbacks_client);
+    steam_remote_storage = new Steam_Remote_Storage(settings_client, ugc_bridge, local_storage, callback_results_client, callbacks_client, run_every_runcb);
     steam_screenshots = new Steam_Screenshots(local_storage, callbacks_client);
     steam_http = new Steam_HTTP(settings_client, network, callback_results_client, callbacks_client);
     steam_controller = new Steam_Controller(settings_client, callback_results_client, callbacks_client, run_every_runcb);

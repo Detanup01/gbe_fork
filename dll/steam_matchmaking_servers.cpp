@@ -395,10 +395,10 @@ gameserveritem_t *Steam_Matchmaking_Servers::GetServerDetails( HServerListReques
     }
 
     Gameserver *gs = &gameservers_filtered[iServer].server;
-    gameserveritem_t *server = new gameserveritem_t(); //TODO: is the new here ok?
-    server_details(gs, server);
+    auto &server = requests_from_GetServerDetails.create(std::chrono::hours(1));
+    server_details(gs, &server);
     PRINT_DEBUG("  Returned server details");
-    return server;
+    return &server;
 }
 
 
@@ -910,6 +910,8 @@ void Steam_Matchmaking_Servers::RunCallbacks()
         if (r.players_response) r.players_response->PlayersRefreshComplete();
         if (r.ping_response) r.ping_response->ServerFailedToRespond();
     }
+
+    requests_from_GetServerDetails.cleanup();
 }
 
 void Steam_Matchmaking_Servers::Callback(Common_Message *msg)

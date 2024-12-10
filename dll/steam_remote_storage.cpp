@@ -38,19 +38,35 @@ static void copy_file(const std::string &src_filepath, const std::string &dst_fi
         
         const auto dst_p(std::filesystem::u8path(dst_filepath));
         std::filesystem::create_directories(dst_p.parent_path()); // make the folder tree if needed
-        std::filesystem::copy_file(src_p, dst_p, std::filesystem::copy_options::overwrite_existing);
+        std::filesystem::copy_file(src_p, dst_p, std::filesystem::copy_options::overwrite_existing | std::filesystem::copy_options::copy_symlinks);
     } catch(...) {}
 }
 
-Steam_Remote_Storage::Steam_Remote_Storage(class Settings *settings, class Ugc_Remote_Storage_Bridge *ugc_bridge, class Local_Storage *local_storage, class SteamCallResults *callback_results, class SteamCallBacks *callbacks)
+
+void Steam_Remote_Storage::steam_run_every_runcb(void *object)
+{
+    // PRINT_DEBUG_ENTRY();
+
+    auto inst = reinterpret_cast<Steam_Remote_Storage *>(object);
+    inst->RunCallbacks();
+}
+
+Steam_Remote_Storage::Steam_Remote_Storage(class Settings *settings, class Ugc_Remote_Storage_Bridge *ugc_bridge, class Local_Storage *local_storage, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, class RunEveryRunCB *run_every_runcb)
 {
     this->settings = settings;
     this->ugc_bridge = ugc_bridge;
     this->local_storage = local_storage;
     this->callback_results = callback_results;
     this->callbacks = callbacks;
+    this->run_every_runcb = run_every_runcb;
 
     steam_cloud_enabled = true;
+    this->run_every_runcb->add(&Steam_Remote_Storage::steam_run_every_runcb, this);
+}
+
+Steam_Remote_Storage::~Steam_Remote_Storage()
+{
+	this->run_every_runcb->remove(&Steam_Remote_Storage::steam_run_every_runcb, this);
 }
 
 // NOTE
@@ -329,16 +345,17 @@ int32 Steam_Remote_Storage::GetFileCount()
 
 const char* Steam_Remote_Storage::GetFileNameAndSize( int iFile, int32 *pnFileSizeInBytes )
 {
-    PRINT_DEBUG("%i", iFile);
+    PRINT_DEBUG("%i %p", iFile, pnFileSizeInBytes);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
-    static char output_filename[MAX_FILENAME_LENGTH];
+    std::string output_filename{};
     if (local_storage->iterate_file(Local_Storage::remote_storage_folder, iFile, output_filename, pnFileSizeInBytes)) {
-        PRINT_DEBUG("|%s|, size: %i", output_filename, pnFileSizeInBytes ? *pnFileSizeInBytes : 0);
-        return output_filename;
-    } else {
-        return "";
+        auto &request = requests_GetFileNameAndSize.create(std::chrono::minutes(15), std::move(output_filename));
+        PRINT_DEBUG("file '%s', size: %i", request.c_str(), pnFileSizeInBytes ? *pnFileSizeInBytes : 0);
+        return request.c_str();
     }
+    
+    return "";
 }
 
 
@@ -504,8 +521,8 @@ bool Steam_Remote_Storage::GetUGCDetails( UGCHandle_t hContent, AppId_t *pnAppID
     if (ppchName) *ppchName = nullptr;
 
     if (auto query_res = ugc_bridge->get_ugc_query_result(hContent)) {
-        auto mod = settings->getMod(query_res.value().mod_id);
-        auto &mod_name = query_res.value().is_primary_file
+        const auto mod = settings->getMod(query_res.value().mod_id);
+        const auto &mod_name = query_res.value().is_primary_file
             ? mod.primaryFileName
             : mod.previewFileName;
         int32 mod_size = query_res.value().is_primary_file
@@ -513,8 +530,8 @@ bool Steam_Remote_Storage::GetUGCDetails( UGCHandle_t hContent, AppId_t *pnAppID
             : mod.previewFileSize;
 
         if (ppchName) {
-            *ppchName = new char[mod_name.size() + 1];
-            std::strcpy(*ppchName, mod_name.c_str());
+            auto &new_str = requests_GetUGCDetails.create(std::chrono::minutes(30), mod_name); // this will make a copy of mod_name
+            *ppchName = const_cast<char *>(new_str.c_str());
         }
         if (pnFileSizeInBytes) *pnFileSizeInBytes = mod_size;
         if (pSteamIDOwner) *pSteamIDOwner = mod.steamIDOwner;
@@ -1238,3 +1255,10 @@ bool Steam_Remote_Storage::EndFileWriteBatch()
     return true;
 }
 
+
+
+void Steam_Remote_Storage::RunCallbacks()
+{
+    requests_GetFileNameAndSize.cleanup();
+    requests_GetUGCDetails.cleanup();
+}

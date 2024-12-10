@@ -170,7 +170,7 @@ uint64_t Local_Storage::file_timestamp(std::string folder, std::string file)
     return 0;
 }
 
-bool Local_Storage::iterate_file(std::string folder, int index, char *output_filename, int32 *output_size)
+bool Local_Storage::iterate_file(std::string folder, int index, std::string &output_filename, int32 *output_size)
 {
     return false;
 }
@@ -766,8 +766,11 @@ uint64_t Local_Storage::file_timestamp(std::string folder, std::string file)
     return buffer.st_mtime;
 }
 
-bool Local_Storage::iterate_file(std::string folder, int index, char *output_filename, int32 *output_size)
+bool Local_Storage::iterate_file(std::string folder, int index, std::string &output_filename, int32 *output_size)
 {
+    output_filename.clear();
+    if (output_size) *output_size = 0;
+    
     if (folder.size() && folder.back() != *PATH_SEPARATOR) {
         folder.append(PATH_SEPARATOR);
     }
@@ -777,10 +780,12 @@ bool Local_Storage::iterate_file(std::string folder, int index, char *output_fil
 
     std::string name(desanitize_file_name(files[index].name));
     if (output_size) *output_size = file_size(folder, name);
+
 #if defined(STEAM_WIN32)
     name = replace_with(name, PATH_SEPARATOR, "/");
 #endif
-    strcpy(output_filename, name.c_str());
+
+    output_filename = std::move(name);
     return true;
 }
 

@@ -81,7 +81,7 @@ public:
     unsigned int data_settings_size(std::string file);
     int get_data_settings(std::string file, char *data, unsigned int max_length);
     int count_files(std::string folder);
-    bool iterate_file(std::string folder, int index, char *output_filename, int32 *output_size);
+    bool iterate_file(std::string folder, int index, std::string &output_filename, int32 *output_size);
     bool file_exists(std::string folder, std::string file);
     unsigned int file_size(std::string folder, std::string file);
     bool file_delete(std::string folder, std::string file);

@@ -20,6 +20,7 @@
 
 #include "base.h"
 #include "ugc_remote_storage_bridge.h"
+#include "common_helpers/forgettable_memory.hpp"
 
 struct Async_Read {
  SteamAPICall_t api_call{};
@@ -86,6 +87,7 @@ private:
     class Local_Storage *local_storage{};
     class SteamCallResults *callback_results{};
     class SteamCallBacks *callbacks{};
+    class RunEveryRunCB *run_every_runcb{};
 
     std::vector<struct Async_Read> async_reads{};
     std::vector<struct Stream_Write> stream_writes{};
@@ -94,9 +96,16 @@ private:
     
     bool steam_cloud_enabled = true;
 
+    common_helpers::ForgettableMemory<std::string> requests_GetFileNameAndSize{};
+    common_helpers::ForgettableMemory<std::string> requests_GetUGCDetails{};
+
+    static void steam_run_every_runcb(void *object);
+    void RunCallbacks();
+
 public:
 
-    Steam_Remote_Storage(class Settings *settings, class Ugc_Remote_Storage_Bridge *ugc_bridge, class Local_Storage *local_storage, class SteamCallResults *callback_results, class SteamCallBacks *callbacks);
+    Steam_Remote_Storage(class Settings *settings, class Ugc_Remote_Storage_Bridge *ugc_bridge, class Local_Storage *local_storage, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, class RunEveryRunCB *run_every_runcb);
+    ~Steam_Remote_Storage();
 
     // NOTE
     //
