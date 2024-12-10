@@ -3684,7 +3684,7 @@ const char translationFrametimeCheckbox[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"Frametime",
 
 	// 3 - Simplified Chinese
-  u8"Frametime",
+  u8"帧时间",
 
 	// 4 - Traditional Chinese
   u8"Frametime",
@@ -3780,7 +3780,7 @@ const char translationFrametimeDisplay[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
   u8"FRT: ",
 
 	// 3 - Simplified Chinese
-  u8"FRT: ",
+  u8"帧时间：",
 
 	// 4 - Traditional Chinese
   u8"FRT: ",
@@ -3972,7 +3972,7 @@ const char translationPlaytimeCheckbox[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
   u8"Playtime",
 
 	// 3 - Simplified Chinese
-  u8"Playtime",
+  u8"游玩时间",
 
 	// 4 - Traditional Chinese
   u8"Playtime",
@@ -4068,7 +4068,7 @@ const char translationPlaytimeDisplay[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"PLT: ",
 
 	// 3 - Simplified Chinese
-  u8"PLT: ",
+  u8"游玩时间：",
 
 	// 4 - Traditional Chinese
   u8"PLT: ",
