@@ -436,60 +436,79 @@ static bool restore_win32_apis()
 }
 
 
-static std::vector<uint8_t> get_pe_header_disk()
-{
-    const std::string filepath = pe_helpers::get_current_exe_path() + pe_helpers::get_current_exe_name();
-    try {
-        std::ifstream file(std::filesystem::u8path(filepath), std::ios::in | std::ios::binary);
-        if (!file) return {};
-
-        // 2MB is enough
-        std::vector<uint8_t> data(2 * 1024 * 1024, 0);
-        file.read((char *)&data[0], data.size());
-        file.close();
-
-        return data;
-    } catch(...) { }
-
-    return {};
-}
-
 static bool calc_bind_section_boundaries()
 {
-    auto bind_section = pe_helpers::get_section_header_with_name(((HMODULE)exe_addr_base), ".bind");
-    if (bind_section) {
-        bind_addr_base = exe_addr_base + bind_section->VirtualAddress;
+    constexpr static auto calc_bind_section_boundaries_from_mem = [] {
+        auto bind_section = pe_helpers::get_section_header_with_name(reinterpret_cast<HMODULE>(exe_addr_base), ".bind");
+        if (!bind_section || !bind_section->VirtualAddress) return false;
+
+        uint8_t * const bind_start = exe_addr_base + bind_section->VirtualAddress;
+        uint8_t *bind_end = nullptr;
+
         MEMORY_BASIC_INFORMATION mbi{};
-        if (VirtualQuery((LPVOID)bind_addr_base, &mbi, sizeof(mbi)) && mbi.RegionSize > 0) {
-            bind_addr_end = bind_addr_base + mbi.RegionSize;
+        if (VirtualQuery((LPVOID)bind_start, &mbi, sizeof(mbi)) && mbi.RegionSize > 0) {
+            bind_end = bind_start + mbi.RegionSize;
         } else if (bind_section->Misc.VirtualSize > 0) {
-            bind_addr_end = bind_addr_base + bind_section->Misc.VirtualSize;
+            bind_end = bind_start + bind_section->Misc.VirtualSize;
         } else {
             return false;
         }
+
+        bind_addr_base = bind_start;
+        bind_addr_end = bind_end;
+        return true;
+    };
+
+    constexpr static auto calc_bind_section_boundaries_from_disk = [] {
+        constexpr static auto get_pe_header_from_disk = []() -> std::vector<uint8_t> {
+            try {
+                const std::string filepath = pe_helpers::get_current_exe_path() + pe_helpers::get_current_exe_name();
+                std::ifstream file(std::filesystem::u8path(filepath), std::ios::in | std::ios::binary);
+                if (!file) return {};
+
+                // 2MB is enough
+                std::vector<uint8_t> data(2 * 1024 * 1024, 0);
+                file.read((char *)&data[0], data.size());
+                file.close();
+
+                return data;
+            } catch(...) { }
+
+            return {};
+        };
+
+        auto disk_header = get_pe_header_from_disk();
+        if (disk_header.empty()) return false;
+
+        auto bind_section = pe_helpers::get_section_header_with_name(reinterpret_cast<HMODULE>(&disk_header[0]), ".bind");
+        if (!bind_section || !bind_section->VirtualAddress) return false;
+        if (!bind_section->Misc.VirtualSize) return false;
+
+        bind_addr_base = exe_addr_base + bind_section->VirtualAddress;
+        bind_addr_end = bind_addr_base + bind_section->Misc.VirtualSize;
+        return true;
+    };
+
+
+    // appid 2677660 (build 16659541) changes the PIMAGE_OPTIONAL_HEADER->SizeOfHeaders to a size less than the actual,
+    // so that the ".bind" section *looks* as if it exists in memory (IMAGE_SECTION_HEADER->Name is valid), but its data is 0/nulled
+    if (calc_bind_section_boundaries_from_mem()) {
         return true;
     }
     
-    // we don't *seem* to have .bind section *in memory*
-    // appid 1732190 changes the PIMAGE_OPTIONAL_HEADER->SizeOfHeaders to a size less than the actual,
-    // subtracting the size of the last section, i.e ".bind" section (original size = 0x600 >>> decreased to 0x400)
+    // otherwise we *seem* to be missing the .bind section *in memory*, but not necessarily
+    // appid 1732190 also changes the PIMAGE_OPTIONAL_HEADER->SizeOfHeaders to a size less than the actual
+    // by subtracting the size of the last section, i.e ".bind" section (original size = 0x600 >>> decreased to 0x400)
     // that way whenever the .exe is loaded in memory, the Windows loader will ignore populating the PE header with the info
     // of that section *in memory* since it is not taken into consideration, but the PE header *on disk* still contains the info
     // 
     // also the PIMAGE_FILE_HEADER->NumberOfSections is kept intact, otherwise the PIMAGE_OPTIONAL_HEADER->AddressOfEntryPoint
     // would be pointing at a non-existent section and the .exe won't work
-    auto disk_header = get_pe_header_disk();
-    if (disk_header.empty()) return false;
-
-    bind_section = pe_helpers::get_section_header_with_name(((HMODULE)&disk_header[0]), ".bind");
-    if (!bind_section) return false;
-
-    bind_addr_base = exe_addr_base + bind_section->VirtualAddress;
-    if (!bind_section->Misc.VirtualSize) return false;
-
-    bind_addr_end = bind_addr_base + bind_section->Misc.VirtualSize;
-
-    return true;
+    if (calc_bind_section_boundaries_from_disk()) {
+        return true;
+    }
+    
+    return false;
 }
 
 
