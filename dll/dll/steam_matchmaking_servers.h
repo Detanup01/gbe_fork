@@ -19,6 +19,7 @@
 #define __INCLUDED_STEAM_MATCHMAKING_SERVERS_H__
 
 #include "base.h"
+#include "common_helpers/forgettable_memory.hpp"
 #include <ssq/a2s.h>
 
 struct Steam_Matchmaking_Servers_Direct_IP_Request {
@@ -67,6 +68,8 @@ public ISteamMatchmakingServers
     std::vector <struct Steam_Matchmaking_Servers_Gameserver_Friends> gameservers_friends{};
     std::vector <struct Steam_Matchmaking_Request> requests{};
     std::vector <struct Steam_Matchmaking_Servers_Direct_IP_Request> direct_ip_requests{};
+
+	common_helpers::ForgettableMemory<gameserveritem_t> requests_from_GetServerDetails{};
 
 	HServerListRequest RequestServerList(AppId_t iApp, ISteamMatchmakingServerListResponse *pRequestServersResponse, EMatchMakingType type);
 	void RequestOldServerList(AppId_t iApp, ISteamMatchmakingServerListResponse001 *pRequestServersResponse, EMatchMakingType type);
