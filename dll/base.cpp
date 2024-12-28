@@ -279,6 +279,58 @@ unsigned int file_size_(const std::string &full_path)
 
 
 #ifdef EMU_EXPERIMENTAL_BUILD
+
+static std::vector<void*> loaded_libs{};
+
+static void load_dlls()
+{
+    constexpr static const char LIB_EXTENSION[] =
+#ifdef __WINDOWS__
+        ".dll"
+#else
+        ".so"
+#endif
+        ;
+
+    std::string path(Local_Storage::get_game_settings_path() + "load_dlls" + PATH_SEPARATOR);
+
+    std::vector<std::string> paths(Local_Storage::get_filenames_path(path));
+    for (auto & p: paths) {
+        std::string full_path(path + p);
+        if (!common_helpers::ends_with_i(full_path, LIB_EXTENSION)) continue;
+
+        PRINT_DEBUG("loading '%s'", full_path.c_str());
+        auto lib_handle =
+#ifdef __WINDOWS__
+            LoadLibraryW(utf8_decode(full_path).c_str());
+#else
+            dlopen(full_path.c_str(), RTLD_NOW | RTLD_LOCAL);
+#endif
+
+        if (lib_handle != nullptr) {
+            loaded_libs.push_back(reinterpret_cast<void *>(lib_handle));
+            PRINT_DEBUG(" LOADED");
+        } else {
+#ifdef __WINDOWS__
+            PRINT_DEBUG(" FAILED, error code 0x%X", GetLastError());
+#else
+            PRINT_DEBUG(" FAILED, error string '%s'", dlerror());
+#endif
+        }
+    }
+}
+
+static void unload_dlls()
+{
+    for (auto lib_handle : loaded_libs) {
+#ifdef __WINDOWS__
+        FreeLibrary(reinterpret_cast<HMODULE>(lib_handle));
+#else
+        dlclose(lib_handle);
+#endif
+    }
+}
+
 #ifdef __WINDOWS__
 
 struct ips_test {
@@ -463,23 +515,6 @@ static void load_crack_dll()
 }
 
 #include "dll/local_storage.h"
-static void load_dlls()
-{
-    std::string path(Local_Storage::get_game_settings_path() + "load_dlls" + PATH_SEPARATOR);
-
-    std::vector<std::string> paths(Local_Storage::get_filenames_path(path));
-    for (auto & p: paths) {
-        std::string full_path(path + p);
-        if (!common_helpers::ends_with_i(full_path, ".dll")) continue;
-
-        PRINT_DEBUG("loading '%s'", full_path.c_str());
-        if (LoadLibraryW(utf8_decode(full_path).c_str())) {
-            PRINT_DEBUG(" LOADED");
-        } else {
-            PRINT_DEBUG(" FAILED, error 0x%X", GetLastError());
-        }
-    }
-}
 
 //For some reason when this function is optimized it breaks the shogun 2 prophet (reloaded) crack.
 #pragma optimize( "", off )
@@ -613,6 +648,8 @@ BOOL WINAPI DllMain( HINSTANCE, DWORD dwReason, LPVOID )
                 }
                 DetourTransactionCommit();
             }
+
+            unload_dlls();
         break;
     }
 
@@ -621,12 +658,23 @@ BOOL WINAPI DllMain( HINSTANCE, DWORD dwReason, LPVOID )
 
 #else
 
+__attribute__((__constructor__)) static void lib_base_entry()
+{
+    load_dlls();
+}
+
+__attribute__((__destructor__)) static void lib_base_exit()
+{
+    unload_dlls();
+}
+
 void set_whitelist_ips(uint32_t *from, uint32_t *to, unsigned num_ips)
 {
 
 }
 
-#endif
+#endif // __WINDOWS__
+
 #else
 
 void set_whitelist_ips(uint32_t *from, uint32_t *to, unsigned num_ips)
@@ -634,5 +682,5 @@ void set_whitelist_ips(uint32_t *from, uint32_t *to, unsigned num_ips)
 
 }
 
-#endif
+#endif // EMU_EXPERIMENTAL_BUILD
 
