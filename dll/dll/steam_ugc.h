@@ -21,10 +21,20 @@
 #include "base.h"
 #include "ugc_remote_storage_bridge.h"
 
+enum EQueryType {
+	eUserUGCRequest = 0,
+	eAllUGCRequestPage,
+	eAllUGCRequestCursor,
+	eUGCDetailsRequest
+};
+
 struct UGC_query {
     UGCQueryHandle_t handle{};
     std::set<PublishedFileId_t> return_only{};
     bool return_all_subscribed{};
+    uint32 page{};
+    bool next_cursor = true;
+    EQueryType query_type{};
 
     std::set<PublishedFileId_t> results{};
     
@@ -75,7 +85,10 @@ private:
     std::set<PublishedFileId_t> favorites{};
 
     UGCQueryHandle_t new_ugc_query(
+        EQueryType query_type,
         bool return_all_subscribed = false,
+        uint32 page = 0,
+        bool next_cursor = true,
         const std::set<PublishedFileId_t> &return_only = std::set<PublishedFileId_t>());
 
     std::optional<Mod_entry> get_query_ugc(UGCQueryHandle_t handle, uint32 index);
