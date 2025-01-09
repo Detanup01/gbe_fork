@@ -17,7 +17,7 @@
 
 #include "dll/steam_ugc.h"
 
-UGCQueryHandle_t Steam_UGC::new_ugc_query(bool return_all_subscribed, const std::set<PublishedFileId_t> &return_only)
+UGCQueryHandle_t Steam_UGC::new_ugc_query(EQueryType query_type, bool return_all_subscribed, uint32 page, bool next_cursor, const std::set<PublishedFileId_t> &return_only)
 {
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
@@ -27,6 +27,9 @@ UGCQueryHandle_t Steam_UGC::new_ugc_query(bool return_all_subscribed, const std:
     struct UGC_query query{};
     query.handle = handle;
     query.return_all_subscribed = return_all_subscribed;
+    query.page = page;
+    query.next_cursor = next_cursor;
+    query.query_type = query_type;
     query.return_only = return_only;
     ugc_queries.push_back(query);
     PRINT_DEBUG("new request handle = %llu", query.handle);
@@ -250,14 +253,14 @@ UGCQueryHandle_t Steam_UGC::CreateQueryUserUGCRequest( AccountID_t unAccountID, 
     if (unAccountID != settings->get_local_steam_id().GetAccountID()) return k_UGCQueryHandleInvalid;
     
     // TODO
-    return new_ugc_query(eListType == k_EUserUGCList_Subscribed || eListType == k_EUserUGCList_Published);
+    return new_ugc_query(eUserUGCRequest, eListType == k_EUserUGCList_Subscribed || eListType == k_EUserUGCList_Published, unPage);
 }
 
 
 // Query for all matching UGC. Creator app id or consumer app id must be valid and be set to the current running app. unPage should start at 1.
 UGCQueryHandle_t Steam_UGC::CreateQueryAllUGCRequest( EUGCQuery eQueryType, EUGCMatchingUGCType eMatchingeMatchingUGCTypeFileType, AppId_t nCreatorAppID, AppId_t nConsumerAppID, uint32 unPage )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("page");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     if (nCreatorAppID != settings->get_local_game_id().AppID() || nConsumerAppID != settings->get_local_game_id().AppID()) return k_UGCQueryHandleInvalid;
@@ -265,20 +268,42 @@ UGCQueryHandle_t Steam_UGC::CreateQueryAllUGCRequest( EUGCQuery eQueryType, EUGC
     if (eQueryType < 0) return k_UGCQueryHandleInvalid;
     
     // TODO
-    return new_ugc_query();
+    return new_ugc_query(eAllUGCRequestPage, true, unPage);
 }
 
 // Query for all matching UGC using the new deep paging interface. Creator app id or consumer app id must be valid and be set to the current running app. pchCursor should be set to NULL or "*" to get the first result set.
 UGCQueryHandle_t Steam_UGC::CreateQueryAllUGCRequest( EUGCQuery eQueryType, EUGCMatchingUGCType eMatchingeMatchingUGCTypeFileType, AppId_t nCreatorAppID, AppId_t nConsumerAppID, const char *pchCursor )
 {
-    PRINT_DEBUG("other");
+    PRINT_DEBUG("cursor");
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     if (nCreatorAppID != settings->get_local_game_id().AppID() || nConsumerAppID != settings->get_local_game_id().AppID()) return k_UGCQueryHandleInvalid;
     if (eQueryType < 0) return k_UGCQueryHandleInvalid;
     
+    // TODO: totally don't know what does pchCursor mean, we currently emu it to be a string of page number instead
+    uint32 page = 0;
+    bool next_cursor = true;
+    std::string cursor = pchCursor != NULL ? std::string(pchCursor) : std::string("*");
+
+    try {
+        if (cursor == std::string("*")) {
+            page = 1;
+        }
+        else if (cursor == std::string("")) {
+            page = 1;            // Tested on real steam, "" is a valid cursor, which seems to be always page 1.
+            next_cursor = false; // However, under this condition, next cursor will still be "", so we flag it here
+        }
+        else {
+            page = std::stoul(cursor);
+        }
+    }
+    catch (const std::exception &e) {
+        PRINT_DEBUG("Conversion error, reason: %s. Is this a valid cursor?", e.what());
+        page = 0;
+    }
+
     // TODO
-    return new_ugc_query();
+    return new_ugc_query(eAllUGCRequestCursor, true, page, next_cursor);
 }
 
 // Query for the details of the given published file ids (the RequestUGCDetails call is deprecated and replaced with this)
@@ -299,7 +324,7 @@ UGCQueryHandle_t Steam_UGC::CreateQueryUGCDetailsRequest( PublishedFileId_t *pve
     }
 #endif
 
-    return new_ugc_query(false, only);
+    return new_ugc_query(eUGCDetailsRequest, false, 0, true, only);
 }
 
 
@@ -328,16 +353,78 @@ SteamAPICall_t Steam_UGC::SendQueryUGCRequest( UGCQueryHandle_t handle )
     auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
     if (ugc_queries.end() == request) return trigger_failure();
 
-    if (request->return_all_subscribed) {
-        request->results = std::set<PublishedFileId_t>(ugc_bridge->subbed_mods_itr_begin(), ugc_bridge->subbed_mods_itr_end());
-    }
+    SteamUGCQueryCompleted_t data{};
+    data.m_handle = handle;
+    data.m_eResult = k_EResultOK;
+    data.m_bCachedData = false;
 
-    if (request->return_only.size()) {
-        for (auto & s : request->return_only) {
-            if (ugc_bridge->has_subbed_mod(s)) {
-                request->results.insert(s);
+    std::set<PublishedFileId_t> all_subscribed = std::set<PublishedFileId_t>(ugc_bridge->subbed_mods_itr_begin(), ugc_bridge->subbed_mods_itr_end());
+
+    if (request->query_type == eUserUGCRequest) {
+        if (request->return_all_subscribed) {
+            if (request->page > 0) {
+                uint32 beg_item = (request->page - 1) * kNumUGCResultsPerPage;
+                if (beg_item < all_subscribed.size()) {
+                    auto sub = all_subscribed.begin();
+                    std::advance(sub, beg_item);
+                    for (uint32 i = 0; sub != all_subscribed.end() && i < kNumUGCResultsPerPage; ++sub, ++i) {
+                        request->results.insert(*sub);
+                    }
+                }
+            }
+
+            data.m_unNumResultsReturned = static_cast<uint32>(request->results.size());
+            data.m_unTotalMatchingResults = static_cast<uint32>(all_subscribed.size());
+        }
+        else {
+            data.m_unNumResultsReturned = 0;
+            data.m_unTotalMatchingResults = 0;
+        }
+    }
+    else if (request->query_type == eAllUGCRequestPage || request->query_type == eAllUGCRequestCursor) {
+        if (request->page > 0) {
+            uint32 beg_item = (request->page - 1) * kNumUGCResultsPerPage;
+            if (beg_item < all_subscribed.size()) {
+                auto sub = all_subscribed.begin();
+                std::advance(sub, beg_item);
+                for (uint32 i = 0; sub != all_subscribed.end() && i < kNumUGCResultsPerPage; ++sub, ++i) {
+                    request->results.insert(*sub);
+                }
+
+                data.m_unNumResultsReturned = static_cast<uint32>(request->results.size());
+                data.m_unTotalMatchingResults = static_cast<uint32>(all_subscribed.size());
+                if (request->query_type == eAllUGCRequestCursor) {
+                    std::string next_page_cursor = request->next_cursor ? std::to_string(request->page + 1) : std::string("");
+                    next_page_cursor.copy(data.m_rgchNextCursor, sizeof(data.m_rgchNextCursor) - 1);
+                }
+            }
+            else {
+                data.m_eResult = k_EResultInvalidParam;
+                data.m_unNumResultsReturned = 0;
+                data.m_unTotalMatchingResults = 0;
+                if (request->query_type == eAllUGCRequestCursor)
+                    data.m_rgchNextCursor[0] = '\0';
             }
         }
+        else { // impossible to meet this condition when query_type is eAllUGCRequestPage though
+            data.m_eResult = request->query_type == eAllUGCRequestCursor ? k_EResultFail : k_EResultInvalidParam;
+            data.m_unNumResultsReturned = 0;
+            data.m_unTotalMatchingResults = 0;
+            if (request->query_type == eAllUGCRequestCursor)
+                data.m_rgchNextCursor[0] = '\0';
+        }
+    }
+    else if (request->query_type == eUGCDetailsRequest) {
+        if (request->return_only.size()) {
+            for (auto & s : request->return_only) {
+                if (ugc_bridge->has_subbed_mod(s)) {
+                    request->results.insert(s);
+                }
+            }
+        }
+
+        data.m_unNumResultsReturned = static_cast<uint32>(request->results.size());
+        data.m_unTotalMatchingResults = static_cast<uint32>(request->results.size());
     }
 
     // send these handles to steam_remote_storage since the game will later
@@ -347,13 +434,6 @@ SteamAPICall_t Steam_UGC::SendQueryUGCRequest( UGCQueryHandle_t handle )
         ugc_bridge->add_ugc_query_result(mod.handleFile, fileid, true);
         ugc_bridge->add_ugc_query_result(mod.handlePreviewFile, fileid, false);
     }
-
-    SteamUGCQueryCompleted_t data = {};
-    data.m_handle = handle;
-    data.m_eResult = k_EResultOK;
-    data.m_unNumResultsReturned = static_cast<uint32>(request->results.size());
-    data.m_unTotalMatchingResults = static_cast<uint32>(request->results.size());
-    data.m_bCachedData = false;
     
     auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data));
     callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
