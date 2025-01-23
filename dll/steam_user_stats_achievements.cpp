@@ -183,9 +183,9 @@ Steam_User_Stats::InternalSetResult<bool> Steam_User_Stats::set_achievement_inte
     if (settings->achievement_bypass) {
         auto &trig = store_stats_trigger[common_helpers::to_lower(org_name)];
         trig.m_bGroupAchievement = false;
-        trig.m_nCurProgress = 100;
+        trig.m_nCurProgress = 0;
         trig.m_nGameID = settings->get_local_game_id().ToUint64();
-        trig.m_nMaxProgress = 100;
+        trig.m_nMaxProgress = 0;
         memset(trig.m_rgchAchievementName, 0, sizeof(trig.m_rgchAchievementName));
         org_name.copy(trig.m_rgchAchievementName, sizeof(trig.m_rgchAchievementName) - 1);
 
@@ -225,9 +225,9 @@ Steam_User_Stats::InternalSetResult<bool> Steam_User_Stats::set_achievement_inte
 
     auto &trig = store_stats_trigger[common_helpers::to_lower(org_name)];
     trig.m_bGroupAchievement = false;
-    trig.m_nCurProgress = 100;
+    trig.m_nCurProgress = 0;
     trig.m_nGameID = settings->get_local_game_id().ToUint64();
-    trig.m_nMaxProgress = 100;
+    trig.m_nMaxProgress = 0;
     memset(trig.m_rgchAchievementName, 0, sizeof(trig.m_rgchAchievementName));
     org_name.copy(trig.m_rgchAchievementName, sizeof(trig.m_rgchAchievementName) - 1);
 
