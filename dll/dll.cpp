@@ -1446,7 +1446,9 @@ STEAMCLIENT_API steam_bool Steam_GSBSecure( void *phSteamHandle)
     return false;
 }
 
-STEAMCLIENT_API steam_bool Steam_GSGetSteam2GetEncryptionKeyToSendToNewClient( void *phSteamHandle, void *pvEncryptionKey, uint32 *pcbEncryptionKey, uint32 cbMaxEncryptionKey )
+// latest steamclient
+STEAMCLIENT_API steam_bool Steam_GSGetSteam2GetEncryptionKeyToSendToNewClient(void* phSteamHandle)
+//STEAMCLIENT_API steam_bool Steam_GSGetSteam2GetEncryptionKeyToSendToNewClient( void *phSteamHandle, void *pvEncryptionKey, uint32 *pcbEncryptionKey, uint32 cbMaxEncryptionKey )
 {
     PRINT_DEBUG_TODO();
     return false;
@@ -1468,48 +1470,63 @@ STEAMCLIENT_API void Steam_GSLogOn( void *phSteamHandle )
     PRINT_DEBUG_TODO();
 }
 
-STEAMCLIENT_API steam_bool Steam_GSRemoveUserConnect( void *phSteamHandle, uint32 unUserID )
+STEAMCLIENT_API steam_bool Steam_GSRemoveUserConnect(void* phSteamHandle)
+//STEAMCLIENT_API steam_bool Steam_GSRemoveUserConnect( void *phSteamHandle, uint32 unUserID )
 {
     PRINT_DEBUG_TODO();
     return false;
 }
 
-STEAMCLIENT_API steam_bool Steam_GSSendSteam2UserConnect( void *phSteamHandle, uint32 unUserID, const void *pvRawKey, uint32 unKeyLen, uint32 unIPPublic, uint16 usPort, const void *pvCookie, uint32 cubCookie )
+STEAMCLIENT_API steam_bool Steam_GSSendSteam2UserConnect(void* phSteamHandle)
+//STEAMCLIENT_API steam_bool Steam_GSSendSteam2UserConnect( void *phSteamHandle, uint32 unUserID, const void *pvRawKey, uint32 unKeyLen, uint32 unIPPublic, uint16 usPort, const void *pvCookie, uint32 cubCookie )
 {
     PRINT_DEBUG_TODO();
     return false;
 }
 
-STEAMCLIENT_API steam_bool Steam_GSSendSteam3UserConnect( void *phSteamHandle, uint64 steamID, uint32 unIPPublic, const void *pvCookie, uint32 cubCookie )
+STEAMCLIENT_API steam_bool Steam_GSSendSteam3UserConnect(void* phSteamHandle)
+//STEAMCLIENT_API steam_bool Steam_GSSendSteam3UserConnect( void *phSteamHandle, uint64 steamID, uint32 unIPPublic, const void *pvCookie, uint32 cubCookie )
 {
     PRINT_DEBUG_TODO();
     return false;
 }
 
-STEAMCLIENT_API steam_bool Steam_GSSendUserDisconnect( void *phSteamHandle, uint64 ulSteamID, uint32 unUserID )
+STEAMCLIENT_API steam_bool Steam_GSSendUserDisconnect(void* phSteamHandle)
+//STEAMCLIENT_API steam_bool Steam_GSSendUserDisconnect( void *phSteamHandle, uint64 ulSteamID, uint32 unUserID )
 {
     PRINT_DEBUG_TODO();
     return false;
 }
 
-STEAMCLIENT_API steam_bool Steam_GSSendUserStatusResponse( void *phSteamHandle, uint64 ulSteamID, int nSecondsConnected, int nSecondsSinceLast )
+STEAMCLIENT_API steam_bool Steam_GSSendUserStatusResponse()
+//STEAMCLIENT_API steam_bool Steam_GSSendUserStatusResponse( void *phSteamHandle, uint64 ulSteamID, int nSecondsConnected, int nSecondsSinceLast )
 {
     PRINT_DEBUG_TODO();
     return false;
 }
 
-STEAMCLIENT_API steam_bool Steam_GSSetServerType( void *phSteamHandle, int32 nAppIdServed, uint32 unServerFlags, uint32 unGameIP, uint32 unGamePort, const char *pchGameDir, const char *pchVersion )
+// Changed later, idk when.
+STEAMCLIENT_API steam_bool Steam_GSSetServerType(void* phSteamHandle, int32 a2)
+//STEAMCLIENT_API steam_bool Steam_GSSetServerType( void *phSteamHandle, int32 nAppIdServed, uint32 unServerFlags, uint32 unGameIP, uint32 unGamePort, const char *pchGameDir, const char *pchVersion )
 {
     PRINT_DEBUG_TODO();
     return false;
 }
 
+STEAMCLIENT_API int64 Steam_GSSetSpawnCount(void* phSteamHandle)
+{
+    PRINT_DEBUG_TODO();
+    return 0;
+}
+
+/*
 STEAMCLIENT_API void Steam_GSSetSpawnCount( void *phSteamHandle, uint32 ucSpawn )
 {
     PRINT_DEBUG_TODO();
 }
-
-STEAMCLIENT_API steam_bool Steam_GSUpdateStatus( void *phSteamHandle, int cPlayers, int cPlayersMax, int cBotPlayers, const char *pchServerName, const char *pchMapName )
+*/
+STEAMCLIENT_API steam_bool Steam_GSUpdateStatus(void* phSteamHandle)
+//STEAMCLIENT_API steam_bool Steam_GSUpdateStatus( void *phSteamHandle, int cPlayers, int cPlayersMax, int cBotPlayers, const char *pchServerName, const char *pchMapName )
 {
     PRINT_DEBUG_TODO();
     return false;

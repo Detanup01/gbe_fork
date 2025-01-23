@@ -7090,6 +7090,9 @@ STEAMAPI_API uint16 SteamAPI_servernetadr_t_GetQueryPort( servernetadr_t* self )
 
 STEAMAPI_API void SteamAPI_servernetadr_t_SetQueryPort( servernetadr_t* self, uint16 usPort )
 {
+    // some games maybe sending nullptr to self?
+    if (!self)
+        return;
     return self->SetQueryPort(usPort);
 }
 
