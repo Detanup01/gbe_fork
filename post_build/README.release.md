@@ -112,8 +112,8 @@ Note that paths are treated as relative paths **from where the steam_api dll is 
 
 ## Mods:
 * Put your mod in the `steam_settings\mods\<MOD NUMBER>\` folder
-* Modify `mods.json` and specify `primary_filename` and `preview_filename`, other options in this json file are optional.  
-* Put the mod image/preview inside `steam_settings\mod_images\<MOD NUMBER>`
+* (Optional) Modify `mods.json` and specify `primary_filename` and `preview_filename`, other options in this json file are optional.  
+* (Optional) Put the mod image/preview inside `steam_settings\mod_images\<MOD NUMBER>`
 
 Mod data folder must be a number corresponding to the file id of the mod.
 
