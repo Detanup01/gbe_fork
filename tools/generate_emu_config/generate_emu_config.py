@@ -1066,7 +1066,7 @@ def main():
                     else:
                         x[t] = str(i[t])
                 out_inventory[index] = x
-                default_items[index] = 1
+                default_items[index] = {"quantity": 1}
 
             with open(os.path.join(emu_settings_dir, "items.json"), "wt", encoding='utf-8') as f:
                 json.dump(out_inventory, f, ensure_ascii=False, indent=2)
