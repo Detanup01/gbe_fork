@@ -30,13 +30,13 @@ This project depends on many third-party libraries and tools, credits to them fo
 
 # How to use the emu
 * **Always generate the interfaces file using the `generate_interfaces` tool.**  
-* **Generate the proper app configuration using the `generate_emu_config` tool.**  
 * **If things don't work, try the `ColdClientLoader` setup.**  
 
 You can find helper guides, scripts, and tools here:
 
 **(These guides, scripts, and tools are maintained by their authors.)**
 
+* **[GBE Fork Tools](https://github.com/Detanup01/gbe_fork_tools)**
 * **[GBE-Autoconfigurator](https://github.com/daci12345/GBE-Autoconfigurator)**
 * **[Semuexec](https://gitlab.com/detiam/Semuexec)**
 * **[Steam Emu Utility](https://github.com/turusudiro/SteamEmuUtility)**
@@ -273,42 +273,6 @@ make help
 
 This will build a release version of the emu in the folder `build/linux/<toolchain>/release`  
 An example script `build_linux_premake.sh` is available, check it out  
-
----
-
-## **Building the tool `generate_emu_config`**
-Navigate to the folder `tools/generate_emu_config/` then  
-
-### On Windows:
-Open CMD then:
-1. Create python virtual environemnt and install the required packages/dependencies
-   ```batch
-   recreate_venv_win.bat
-   ```
-2. Build the tool using `pyinstaller`  
-   ```batch
-   rebuild_win.bat
-   ```
-
-This will build the tool inside `bin\win`
-
-### On Linux:
-Open bash terminal then:
-1. Create python virtual environemnt and install the required packages/dependencies
-   ```shell
-   sudo ./recreate_venv_linux.sh
-   ```  
-   You might need to edit this script to use a different python version.  
-   Find this line and change it:
-   ```shell
-   python_package="python3.12"
-   ``` 
-2. Build the tool using `pyinstaller`  
-   ```shell
-   ./rebuild_linux.sh
-   ```
-
-This will build the tool inside `bin/linux`
 
 ---
 
