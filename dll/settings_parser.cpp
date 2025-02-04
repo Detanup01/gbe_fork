@@ -622,12 +622,6 @@ static uint16 parse_listen_port(class Local_Storage *local_storage)
     uint16 port = static_cast<uint16>(ini.GetLongValue("main::connectivity", "listen_port"));
     if (port == 0) {
         port = DEFAULT_PORT;
-        save_global_ini_value(
-            local_storage,
-            config_ini_main,
-            "main::connectivity", "listen_port", IniValue((long)port),
-            "change the UDP/TCP port the emulator listens on"
-        );
     }
     return port;
 }
