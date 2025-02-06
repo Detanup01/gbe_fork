@@ -98,9 +98,15 @@ int Steam_User_Stats::load_ach_icon(nlohmann::json &defined_ach, bool achieved)
 
     std::string file_path(Local_Storage::get_game_settings_path() + icon_filepath);
     unsigned int file_size = file_size_(file_path);
-    if (!file_size) {
-        defined_ach[icon_handle_key] = Settings::INVALID_IMAGE_HANDLE;
-        return Settings::INVALID_IMAGE_HANDLE;
+    if (!file_size)
+    {
+        file_path = (Local_Storage::get_game_settings_path() + "achievement_images" + PATH_SEPARATOR + icon_filepath);
+        file_size = file_size_(file_path);
+        if (!file_size)
+        {
+            defined_ach[icon_handle_key] = Settings::INVALID_IMAGE_HANDLE;
+            return Settings::INVALID_IMAGE_HANDLE;
+        }
     }
 
     int icon_size = static_cast<int>(settings->overlay_appearance.icon_size);
