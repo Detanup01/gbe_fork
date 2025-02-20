@@ -878,7 +878,17 @@ void Steam_Overlay::set_next_notification_pos(std::pair<float, float> scrn_size,
     }
     break;
 
-    case notification_type::invite: pos = settings->overlay_appearance.invite_pos; break;
+    // case notification_type::invite: pos = settings->overlay_appearance.invite_pos; break;
+    case notification_type::invite: {
+        pos = settings->overlay_appearance.invite_pos;
+        const float msg_height = ImGui::CalcTextSize(
+            noti.message.c_str(),
+            noti.message.c_str() + noti.message.size(),
+            false,
+            noti_width - padding_all_sides - global_style.ItemSpacing.x
+        ).y;
+        noti_height = msg_height + settings->overlay_appearance.font_size + global_style.WindowPadding.y;
+    }
     case notification_type::message: pos = settings->overlay_appearance.chat_msg_pos; break;
     default: PRINT_DEBUG("ERROR: unhandled notification type %i", (int)noti.type); break;
     }
@@ -1187,7 +1197,7 @@ void Steam_Overlay::add_invite_notification(std::pair<const Friend, friend_windo
     char tmp[TRANSLATION_BUFFER_SIZE]{};
     auto &first_friend = wnd_state.first;
     auto &name = first_friend.name();
-    snprintf(tmp, sizeof(tmp), translationInvitedYouToJoinTheGame[current_language], name.c_str(), (uint64)first_friend.id());
+    snprintf(tmp, sizeof(tmp), translationInvitedYouToJoinTheGame[current_language], name.c_str(), (uint64)first_friend.appid()); 
     
     submit_notification(notification_type::invite, tmp, &wnd_state);
 }
