@@ -1416,6 +1416,18 @@ static void parse_overlay_general_config(class Settings *settings_client, class 
     settings_client->overlay_upload_achs_icons_to_gpu = ini.GetBoolValue("overlay::general", "upload_achievements_icons_to_gpu", settings_client->overlay_upload_achs_icons_to_gpu);
     settings_server->overlay_upload_achs_icons_to_gpu = ini.GetBoolValue("overlay::general", "upload_achievements_icons_to_gpu", settings_server->overlay_upload_achs_icons_to_gpu);
 
+    settings_client->overlay_always_show_user_info = ini.GetBoolValue("overlay::general", "overlay_always_show_user_info", settings_client->overlay_always_show_user_info);
+    settings_server->overlay_always_show_user_info = ini.GetBoolValue("overlay::general", "overlay_always_show_user_info", settings_server->overlay_always_show_user_info);
+
+    settings_client->overlay_always_show_fps = ini.GetBoolValue("overlay::general", "overlay_always_show_fps", settings_client->overlay_always_show_fps);
+    settings_server->overlay_always_show_fps = ini.GetBoolValue("overlay::general", "overlay_always_show_fps", settings_server->overlay_always_show_fps);
+    
+    settings_client->overlay_always_show_frametime = ini.GetBoolValue("overlay::general", "overlay_always_show_frametime", settings_client->overlay_always_show_frametime);
+    settings_server->overlay_always_show_frametime = ini.GetBoolValue("overlay::general", "overlay_always_show_frametime", settings_server->overlay_always_show_frametime);
+
+    settings_client->overlay_always_show_playtime = ini.GetBoolValue("overlay::general", "overlay_always_show_playtime", settings_client->overlay_always_show_playtime);
+    settings_server->overlay_always_show_playtime = ini.GetBoolValue("overlay::general", "overlay_always_show_playtime", settings_server->overlay_always_show_playtime);
+
     {
         auto val = ini.GetLongValue("overlay::general", "fps_averaging_window", settings_client->overlay_fps_avg_window);
         if (val > 0) {

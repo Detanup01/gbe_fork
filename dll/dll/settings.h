@@ -343,6 +343,10 @@ public:
     bool auto_accept_any_overlay_invites = false;
     // list of user steam IDs to auto-accept invites from
     std::set<uint64_t> auto_accept_overlay_invites_friends{};
+    bool overlay_always_show_fps = false;
+    bool overlay_always_show_frametime = false;
+    bool overlay_always_show_playtime = false;
+    bool overlay_always_show_user_info = false;
 
 
 #ifdef LOBBY_CONNECT

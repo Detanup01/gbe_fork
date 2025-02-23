@@ -7,7 +7,9 @@
 Steam_Overlay_Stats::Steam_Overlay_Stats(class Settings* settings):
     settings(settings)
 {
-
+    show_fps = settings->overlay_always_show_fps;
+    show_frametime = settings->overlay_always_show_frametime;
+    show_playtime = settings->overlay_always_show_playtime;
 }
 
 bool Steam_Overlay_Stats::show_any_stats() const
