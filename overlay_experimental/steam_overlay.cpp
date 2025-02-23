@@ -286,6 +286,13 @@ void Steam_Overlay::create_fonts()
         font_builder.AddText(translationClose[i]);
         font_builder.AddText(translationPlaying[i]);
         font_builder.AddText(translationAutoAcceptFriendInvite[i]);
+        font_builder.AddText(translationFpsCheckbox[i]);
+        font_builder.AddText(translationFpsDisplay[i]);
+        font_builder.AddText(translationFrametimeCheckbox[i]);
+        font_builder.AddText(translationFrametimeDisplay[i]);
+        font_builder.AddText(translationFrametimeUnitDisplay[i]);
+        font_builder.AddText(translationPlaytimeCheckbox[i]);
+        font_builder.AddText(translationPlaytimeDisplay[i]);
     }
     font_builder.AddRanges(fonts_atlas.GetGlyphRangesDefault());
 
