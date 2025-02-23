@@ -896,6 +896,7 @@ void Steam_Overlay::set_next_notification_pos(std::pair<float, float> scrn_size,
         ).y;
         noti_height = msg_height + settings->overlay_appearance.font_size + global_style.WindowPadding.y;
     }
+    break;
     case notification_type::message: pos = settings->overlay_appearance.chat_msg_pos; break;
     default: PRINT_DEBUG("ERROR: unhandled notification type %i", (int)noti.type); break;
     }
