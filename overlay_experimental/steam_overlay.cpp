@@ -138,6 +138,8 @@ Steam_Overlay::Steam_Overlay(Settings* settings, Local_Storage *local_storage, S
     current_language = 0;
     const char *language = settings->get_language();
 
+    show_user_info = settings->overlay_always_show_user_info;
+
     int i = 0;
     for (auto &lang : valid_languages) {
         if (common_helpers::str_cmp_insensitive(lang, language)) {
