@@ -1440,7 +1440,7 @@ uint32 Steam_UGC::GetSubscribedItems( PublishedFileId_t* pvecPublishedFileID, ui
 
     size_t count = std::min<size_t>(subscribed_enabled.size(), cMaxEntries);
     std::copy_n(subscribed_enabled.begin(), count, pvecPublishedFileID);
-    return count;
+    return (uint32)count;
 }
 
 uint32 Steam_UGC::GetSubscribedItems( PublishedFileId_t* pvecPublishedFileID, uint32 cMaxEntries )

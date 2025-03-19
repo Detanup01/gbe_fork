@@ -5789,83 +5789,83 @@ STEAMAPI_API ISteamRemotePlay *SteamAPI_SteamRemotePlay_v003()
 
 STEAMAPI_API uint32 SteamAPI_ISteamRemotePlay_GetSessionCount( ISteamRemotePlay* self )
 {
-    return self->GetSessionCount();
+    return (get_steam_client()->steam_remoteplay)->GetSessionCount();
 }
 
 STEAMAPI_API RemotePlaySessionID_t SteamAPI_ISteamRemotePlay_GetSessionID( ISteamRemotePlay* self, int iSessionIndex )
 {
-    return self->GetSessionID(iSessionIndex);
+    return (get_steam_client()->steam_remoteplay)->GetSessionID(iSessionIndex);
 }
 
 STEAMAPI_API uint64_steamid SteamAPI_ISteamRemotePlay_GetSessionSteamID( ISteamRemotePlay* self, RemotePlaySessionID_t unSessionID )
 {
-    return self->GetSessionSteamID(unSessionID).ConvertToUint64();
+    return (get_steam_client()->steam_remoteplay)->GetSessionSteamID(unSessionID).ConvertToUint64();
 }
 
 STEAMAPI_API const char * SteamAPI_ISteamRemotePlay_GetSessionClientName( ISteamRemotePlay* self, RemotePlaySessionID_t unSessionID )
 {
-    return self->GetSessionClientName(unSessionID);
+    return (get_steam_client()->steam_remoteplay)->GetSessionClientName(unSessionID);
 }
 
 STEAMAPI_API ESteamDeviceFormFactor SteamAPI_ISteamRemotePlay_GetSessionClientFormFactor( ISteamRemotePlay* self, RemotePlaySessionID_t unSessionID )
 {
-    return self->GetSessionClientFormFactor(unSessionID);
+    return (get_steam_client()->steam_remoteplay)->GetSessionClientFormFactor(unSessionID);
 }
 
 STEAMAPI_API steam_bool SteamAPI_ISteamRemotePlay_BGetSessionClientResolution( ISteamRemotePlay* self, RemotePlaySessionID_t unSessionID, int * pnResolutionX, int * pnResolutionY )
 {
-    return self->BGetSessionClientResolution(unSessionID, pnResolutionX, pnResolutionY);
+    return (get_steam_client()->steam_remoteplay)->BGetSessionClientResolution(unSessionID, pnResolutionX, pnResolutionY);
 }
 
 // removed in sdk 1.62
 STEAMAPI_API steam_bool SteamAPI_ISteamRemotePlay_BStartRemotePlayTogether( ISteamRemotePlay* self, bool bShowOverlay )
 {
-    return self->BStartRemotePlayTogether(bShowOverlay);
+    return (get_steam_client()->steam_remoteplay)->BStartRemotePlayTogether(bShowOverlay);
 }
 
 STEAMAPI_API steam_bool SteamAPI_ISteamRemotePlay_ShowRemotePlayTogetherUI( ISteamRemotePlay *self )
 {
-    return self->ShowRemotePlayTogetherUI();
+    return (get_steam_client()->steam_remoteplay)->ShowRemotePlayTogetherUI();
 }
 
 STEAMAPI_API steam_bool SteamAPI_ISteamRemotePlay_BSendRemotePlayTogetherInvite( ISteamRemotePlay* self, uint64_steamid steamIDFriend )
 {
-    return self->BSendRemotePlayTogetherInvite(steamIDFriend);
+    return (get_steam_client()->steam_remoteplay)->BSendRemotePlayTogetherInvite(steamIDFriend);
 }
 
 STEAMAPI_API steam_bool SteamAPI_ISteamRemotePlay_BEnableRemotePlayTogetherDirectInput( ISteamRemotePlay *self )
 {
-    return self->BEnableRemotePlayTogetherDirectInput();
+    return (get_steam_client()->steam_remoteplay)->BEnableRemotePlayTogetherDirectInput();
 }
 
 STEAMAPI_API void SteamAPI_ISteamRemotePlay_DisableRemotePlayTogetherDirectInput( ISteamRemotePlay *self )
 {
-    return self->DisableRemotePlayTogetherDirectInput();
+    return (get_steam_client()->steam_remoteplay)->DisableRemotePlayTogetherDirectInput();
 }
 
 STEAMAPI_API uint32 SteamAPI_ISteamRemotePlay_GetInput( ISteamRemotePlay *self, RemotePlayInput_t *pInput, uint32 unMaxEvents )
 {
-    return self->GetInput(pInput, unMaxEvents);
+    return (get_steam_client()->steam_remoteplay)->GetInput(pInput, unMaxEvents);
 }
 
 STEAMAPI_API void SteamAPI_ISteamRemotePlay_SetMouseVisibility( ISteamRemotePlay *self, RemotePlaySessionID_t unSessionID, bool bVisible )
 {
-    return self->SetMouseVisibility(unSessionID, bVisible);
+    return (get_steam_client()->steam_remoteplay)->SetMouseVisibility(unSessionID, bVisible);
 }
 
 STEAMAPI_API void SteamAPI_ISteamRemotePlay_SetMousePosition( ISteamRemotePlay *self, RemotePlaySessionID_t unSessionID, float flNormalizedX, float flNormalizedY )
 {
-    return self->SetMousePosition(unSessionID, flNormalizedX, flNormalizedY);
+    return (get_steam_client()->steam_remoteplay)->SetMousePosition(unSessionID, flNormalizedX, flNormalizedY);
 }
 
 STEAMAPI_API RemotePlayCursorID_t SteamAPI_ISteamRemotePlay_CreateMouseCursor( ISteamRemotePlay *self, int nWidth, int nHeight, int nHotX, int nHotY, const void *pBGRA, int nPitch )
 {
-    return self->CreateMouseCursor(nWidth, nHeight, nHotX, nHotY, pBGRA, nPitch);
+    return (get_steam_client()->steam_remoteplay)->CreateMouseCursor(nWidth, nHeight, nHotX, nHotY, pBGRA, nPitch);
 }
 
 STEAMAPI_API void SteamAPI_ISteamRemotePlay_SetMouseCursor( ISteamRemotePlay *self, RemotePlaySessionID_t unSessionID, RemotePlayCursorID_t unCursorID )
 {
-    return self->SetMouseCursor(unSessionID, unCursorID);
+    return (get_steam_client()->steam_remoteplay)->SetMouseCursor(unSessionID, unCursorID);
 }
 
 STEAMAPI_API ISteamNetworkingMessages *SteamAPI_SteamNetworkingMessages_v002()
