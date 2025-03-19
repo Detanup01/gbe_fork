@@ -63,6 +63,7 @@ public ISteamUGC016,
 public ISteamUGC017,
 public ISteamUGC018,
 public ISteamUGC019,
+public ISteamUGC020,
 public ISteamUGC
 {
 public:
@@ -83,6 +84,7 @@ private:
     UGCQueryHandle_t handle = 50; // just makes debugging easier, any initial val is fine, even 1
     std::vector<struct UGC_query> ugc_queries{};
     std::set<PublishedFileId_t> favorites{};
+    std::set<PublishedFileId_t> subscribed_disabled{};
 
     UGCQueryHandle_t new_ugc_query(
         EQueryType query_type,
@@ -155,7 +157,7 @@ public:
     uint32 GetQueryUGCNumAdditionalPreviews( UGCQueryHandle_t handle, uint32 index );
 
 
-    bool GetQueryUGCAdditionalPreview( UGCQueryHandle_t handle, uint32 index, uint32 previewIndex, STEAM_OUT_STRING_COUNT(cchURLSize) char *pchURLOrVideoID, uint32 cchURLSize, STEAM_OUT_STRING_COUNT(cchURLSize) char *pchOriginalFileName, uint32 cchOriginalFileNameSize, EItemPreviewType *pPreviewType );
+    bool GetQueryUGCAdditionalPreview( UGCQueryHandle_t handle, uint32 index, uint32 previewIndex, STEAM_OUT_STRING_COUNT(cchURLSize) char *pchURLOrVideoID, uint32 cchURLSize, STEAM_OUT_STRING_COUNT(cchOriginalFileNameSize) char *pchOriginalFileName, uint32 cchOriginalFileNameSize, EItemPreviewType *pPreviewType );
 
     bool GetQueryUGCAdditionalPreview( UGCQueryHandle_t handle, uint32 index, uint32 previewIndex, char *pchURLOrVideoID, uint32 cchURLSize, bool *hz );
 
@@ -338,9 +340,11 @@ public:
     SteamAPICall_t UnsubscribeItem( PublishedFileId_t nPublishedFileID );
     // unsubscribe from this item, will be uninstalled after game quits
 
+    uint32 GetNumSubscribedItems( bool bIncludeLocallyDisabled );
     uint32 GetNumSubscribedItems();
     // number of subscribed items 
 
+    uint32 GetSubscribedItems( PublishedFileId_t* pvecPublishedFileID, uint32 cMaxEntries, bool bIncludeLocallyDisabled );
     uint32 GetSubscribedItems( PublishedFileId_t* pvecPublishedFileID, uint32 cMaxEntries );
     // all subscribed item PublishFileIDs
 
@@ -425,6 +429,12 @@ public:
     // Return the user's community content descriptor preferences
     uint32 GetUserContentDescriptorPreferences( EUGCContentDescriptorID *pvecDescriptors, uint32 cMaxEntries );
 
+    // Sets whether the item should be disabled locally or not. This means that it will not be returned in GetSubscribedItems() by default.
+    bool SetItemsDisabledLocally( PublishedFileId_t *pvecPublishedFileIDs, uint32 unNumPublishedFileIDs, bool bDisabledLocally );
+
+    // Set the local load order for these items. If there are any items not in the given list, they will sort by the time subscribed.
+    bool SetSubscriptionsLoadOrder( PublishedFileId_t *pvecPublishedFileIDs, uint32 unNumPublishedFileIDs );
+    
 };
 
 #endif // __INCLUDED_STEAM_UGC_H__

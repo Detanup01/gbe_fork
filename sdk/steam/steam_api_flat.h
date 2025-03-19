@@ -97,9 +97,10 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUser_GetDurationControl( ISteamUser* 
 STEAMAPI_API steam_bool SteamAPI_ISteamUser_BSetDurationControlOnlineState( ISteamUser* self, EDurationControlOnlineState eNewState );
 
 // ISteamFriends
+STEAMAPI_API ISteamFriends *SteamAPI_SteamFriends_v018();
 STEAMAPI_API ISteamFriends *SteamAPI_SteamFriends_v017();
 STEAMAPI_API const char * SteamAPI_ISteamFriends_GetPersonaName( ISteamFriends* self );
-STEAMAPI_API SteamAPICall_t SteamAPI_ISteamFriends_SetPersonaName( ISteamFriends* self, const char * pchPersonaName );
+STEAMAPI_API SteamAPICall_t SteamAPI_ISteamFriends_SetPersonaName( ISteamFriends* self, const char * pchPersonaName ); // removed in sdk 1.62
 STEAMAPI_API EPersonaState SteamAPI_ISteamFriends_GetPersonaState( ISteamFriends* self );
 STEAMAPI_API int SteamAPI_ISteamFriends_GetFriendCount( ISteamFriends* self, int iFriendFlags );
 STEAMAPI_API uint64_steamid SteamAPI_ISteamFriends_GetFriendByIndex( ISteamFriends* self, int iFriend, int iFriendFlags );
@@ -140,7 +141,7 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamFriends_RequestClanOfficerList( IStea
 STEAMAPI_API uint64_steamid SteamAPI_ISteamFriends_GetClanOwner( ISteamFriends* self, uint64_steamid steamIDClan );
 STEAMAPI_API int SteamAPI_ISteamFriends_GetClanOfficerCount( ISteamFriends* self, uint64_steamid steamIDClan );
 STEAMAPI_API uint64_steamid SteamAPI_ISteamFriends_GetClanOfficerByIndex( ISteamFriends* self, uint64_steamid steamIDClan, int iOfficer );
-STEAMAPI_API uint32 SteamAPI_ISteamFriends_GetUserRestrictions( ISteamFriends* self );
+STEAMAPI_API uint32 SteamAPI_ISteamFriends_GetUserRestrictions( ISteamFriends* self ); // removed in sdk 1.62
 STEAMAPI_API steam_bool SteamAPI_ISteamFriends_SetRichPresence( ISteamFriends* self, const char * pchKey, const char * pchValue );
 STEAMAPI_API void SteamAPI_ISteamFriends_ClearRichPresence( ISteamFriends* self );
 STEAMAPI_API const char * SteamAPI_ISteamFriends_GetFriendRichPresence( ISteamFriends* self, uint64_steamid steamIDFriend, const char * pchKey );
@@ -705,12 +706,14 @@ STEAMAPI_API ISteamUGC *SteamAPI_SteamUGC_v016();
 STEAMAPI_API ISteamUGC *SteamAPI_SteamUGC_v017();
 STEAMAPI_API ISteamUGC *SteamAPI_SteamUGC_v018();
 STEAMAPI_API ISteamUGC *SteamAPI_SteamUGC_v020();
+STEAMAPI_API ISteamUGC *SteamAPI_SteamUGC_v021();
 STEAMAPI_API ISteamUGC *SteamAPI_SteamGameServerUGC_v014();
 STEAMAPI_API ISteamUGC *SteamAPI_SteamGameServerUGC_v015();
 STEAMAPI_API ISteamUGC *SteamAPI_SteamGameServerUGC_v016();
 STEAMAPI_API ISteamUGC *SteamAPI_SteamGameServerUGC_v017();
 STEAMAPI_API ISteamUGC *SteamAPI_SteamGameServerUGC_v018();
 STEAMAPI_API ISteamUGC *SteamAPI_SteamGameServerUGC_v020();
+STEAMAPI_API ISteamUGC *SteamAPI_SteamGameServerUGC_v021();
 STEAMAPI_API UGCQueryHandle_t SteamAPI_ISteamUGC_CreateQueryUserUGCRequest( ISteamUGC* self, AccountID_t unAccountID, EUserUGCList eListType, EUGCMatchingUGCType eMatchingUGCType, EUserUGCListSortOrder eSortOrder, AppId_t nCreatorAppID, AppId_t nConsumerAppID, uint32 unPage );
 STEAMAPI_API UGCQueryHandle_t SteamAPI_ISteamUGC_CreateQueryAllUGCRequestPage( ISteamUGC* self, EUGCQuery eQueryType, EUGCMatchingUGCType eMatchingeMatchingUGCTypeFileType, AppId_t nCreatorAppID, AppId_t nConsumerAppID, uint32 unPage );
 STEAMAPI_API UGCQueryHandle_t SteamAPI_ISteamUGC_CreateQueryAllUGCRequestCursor( ISteamUGC* self, EUGCQuery eQueryType, EUGCMatchingUGCType eMatchingeMatchingUGCTypeFileType, AppId_t nCreatorAppID, AppId_t nConsumerAppID, const char * pchCursor );
@@ -785,8 +788,8 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_AddItemToFavorites( ISteamUGC* se
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_RemoveItemFromFavorites( ISteamUGC* self, AppId_t nAppId, PublishedFileId_t nPublishedFileID );
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_SubscribeItem( ISteamUGC* self, PublishedFileId_t nPublishedFileID );
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_UnsubscribeItem( ISteamUGC* self, PublishedFileId_t nPublishedFileID );
-STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetNumSubscribedItems( ISteamUGC* self );
-STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetSubscribedItems( ISteamUGC* self, PublishedFileId_t * pvecPublishedFileID, uint32 cMaxEntries );
+STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetNumSubscribedItems( ISteamUGC* self, bool bIncludeLocallyDisabled );
+STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetSubscribedItems( ISteamUGC* self, PublishedFileId_t * pvecPublishedFileID, uint32 cMaxEntries, bool bIncludeLocallyDisabled );
 STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetItemState( ISteamUGC* self, PublishedFileId_t nPublishedFileID );
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetItemInstallInfo( ISteamUGC* self, PublishedFileId_t nPublishedFileID, uint64 * punSizeOnDisk, char * pchFolder, uint32 cchFolderSize, uint32 * punTimeStamp );
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_GetItemDownloadInfo( ISteamUGC* self, PublishedFileId_t nPublishedFileID, uint64 * punBytesDownloaded, uint64 * punBytesTotal );
@@ -805,6 +808,8 @@ STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_DeleteItem( ISteamUGC* self, Publ
 STEAMAPI_API steam_bool SteamAPI_ISteamUGC_ShowWorkshopEULA( ISteamUGC* self );
 STEAMAPI_API SteamAPICall_t SteamAPI_ISteamUGC_GetWorkshopEULAStatus( ISteamUGC* self );
 STEAMAPI_API uint32 SteamAPI_ISteamUGC_GetUserContentDescriptorPreferences( ISteamUGC* self, EUGCContentDescriptorID * pvecDescriptors, uint32 cMaxEntries );
+STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetItemsDisabledLocally( ISteamUGC* self, PublishedFileId_t * pvecPublishedFileIDs, uint32 unNumPublishedFileIDs, bool bDisabledLocally );
+STEAMAPI_API steam_bool SteamAPI_ISteamUGC_SetSubscriptionsLoadOrder( ISteamUGC* self, PublishedFileId_t * pvecPublishedFileIDs, uint32 unNumPublishedFileIDs );
 
 // ISteamAppList
 STEAMAPI_API ISteamAppList *SteamAPI_SteamAppList_v001();
@@ -955,14 +960,23 @@ STEAMAPI_API steam_bool SteamAPI_ISteamParentalSettings_BIsFeatureInBlockList( I
 // ISteamRemotePlay
 STEAMAPI_API ISteamRemotePlay *SteamAPI_SteamRemotePlay_v001();
 STEAMAPI_API ISteamRemotePlay *SteamAPI_SteamRemotePlay_v002();
+STEAMAPI_API ISteamRemotePlay *SteamAPI_SteamRemotePlay_v003();
 STEAMAPI_API uint32 SteamAPI_ISteamRemotePlay_GetSessionCount( ISteamRemotePlay* self );
 STEAMAPI_API RemotePlaySessionID_t SteamAPI_ISteamRemotePlay_GetSessionID( ISteamRemotePlay* self, int iSessionIndex );
 STEAMAPI_API uint64_steamid SteamAPI_ISteamRemotePlay_GetSessionSteamID( ISteamRemotePlay* self, RemotePlaySessionID_t unSessionID );
 STEAMAPI_API const char * SteamAPI_ISteamRemotePlay_GetSessionClientName( ISteamRemotePlay* self, RemotePlaySessionID_t unSessionID );
 STEAMAPI_API ESteamDeviceFormFactor SteamAPI_ISteamRemotePlay_GetSessionClientFormFactor( ISteamRemotePlay* self, RemotePlaySessionID_t unSessionID );
 STEAMAPI_API steam_bool SteamAPI_ISteamRemotePlay_BGetSessionClientResolution( ISteamRemotePlay* self, RemotePlaySessionID_t unSessionID, int * pnResolutionX, int * pnResolutionY );
-STEAMAPI_API steam_bool SteamAPI_ISteamRemotePlay_BStartRemotePlayTogether( ISteamRemotePlay* self, bool bShowOverlay );
+STEAMAPI_API steam_bool SteamAPI_ISteamRemotePlay_BStartRemotePlayTogether( ISteamRemotePlay* self, bool bShowOverlay ); // removed in sdk 1.62
+STEAMAPI_API steam_bool SteamAPI_ISteamRemotePlay_ShowRemotePlayTogetherUI( ISteamRemotePlay* self );
 STEAMAPI_API steam_bool SteamAPI_ISteamRemotePlay_BSendRemotePlayTogetherInvite( ISteamRemotePlay* self, uint64_steamid steamIDFriend );
+STEAMAPI_API steam_bool SteamAPI_ISteamRemotePlay_BEnableRemotePlayTogetherDirectInput( ISteamRemotePlay* self );
+STEAMAPI_API void SteamAPI_ISteamRemotePlay_DisableRemotePlayTogetherDirectInput( ISteamRemotePlay* self );
+STEAMAPI_API uint32 SteamAPI_ISteamRemotePlay_GetInput( ISteamRemotePlay* self, RemotePlayInput_t * pInput, uint32 unMaxEvents );
+STEAMAPI_API void SteamAPI_ISteamRemotePlay_SetMouseVisibility( ISteamRemotePlay* self, RemotePlaySessionID_t unSessionID, bool bVisible );
+STEAMAPI_API void SteamAPI_ISteamRemotePlay_SetMousePosition( ISteamRemotePlay* self, RemotePlaySessionID_t unSessionID, float flNormalizedX, float flNormalizedY );
+STEAMAPI_API RemotePlayCursorID_t SteamAPI_ISteamRemotePlay_CreateMouseCursor( ISteamRemotePlay* self, int nWidth, int nHeight, int nHotX, int nHotY, const void * pBGRA, int nPitch );
+STEAMAPI_API void SteamAPI_ISteamRemotePlay_SetMouseCursor( ISteamRemotePlay* self, RemotePlaySessionID_t unSessionID, RemotePlayCursorID_t unCursorID );
 
 // ISteamNetworkingMessages
 STEAMAPI_API ISteamNetworkingMessages *SteamAPI_SteamNetworkingMessages_v002();
