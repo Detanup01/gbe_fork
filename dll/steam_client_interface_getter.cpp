@@ -226,6 +226,8 @@ ISteamFriends *Steam_Client::GetISteamFriends( HSteamUser hSteamUser, HSteamPipe
         return reinterpret_cast<ISteamFriends *>(static_cast<ISteamFriends015 *>(steam_friends));
     } else if (strcmp(pchVersion, "SteamFriends016") == 0) {
         return reinterpret_cast<ISteamFriends *>(static_cast<ISteamFriends016 *>(steam_friends)); // SteamFriends016 Not found in public Archive, must be between 1.42-1.43
+    } else if (strcmp(pchVersion, "SteamFriends017") == 0) {
+        return reinterpret_cast<ISteamFriends *>(static_cast<ISteamFriends017 *>(steam_friends));
     } else if (strcmp(pchVersion, STEAMFRIENDS_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamFriends *>(static_cast<ISteamFriends *>(steam_friends));
     }
@@ -806,6 +808,8 @@ ISteamUGC *Steam_Client::GetISteamUGC( HSteamUser hSteamUser, HSteamPipe hSteamP
         return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC018 *>(steam_ugc_temp));
     } else if (strcmp(pchVersion, "STEAMUGC_INTERFACE_VERSION019") == 0) {
         return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC019 *>(steam_ugc_temp)); // not found in public sdk, based on reversing
+    } else if (strcmp(pchVersion, "STEAMUGC_INTERFACE_VERSION020") == 0) {
+        return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC020 *>(steam_ugc_temp));
     } else if (strcmp(pchVersion, STEAMUGC_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC *>(steam_ugc_temp));
     }
@@ -1000,6 +1004,8 @@ ISteamRemotePlay *Steam_Client::GetISteamRemotePlay( HSteamUser hSteamUser, HSte
 
     if (strcmp(pchVersion, "STEAMREMOTEPLAY_INTERFACE_VERSION001") == 0) {
         return reinterpret_cast<ISteamRemotePlay *>(static_cast<ISteamRemotePlay001 *>(steam_remoteplay));
+    } else if (strcmp(pchVersion, "STEAMREMOTEPLAY_INTERFACE_VERSION002") == 0) {
+        return reinterpret_cast<ISteamRemotePlay *>(static_cast<ISteamRemotePlay002 *>(steam_remoteplay));
     } else if (strcmp(pchVersion, STEAMREMOTEPLAY_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamRemotePlay *>(static_cast<ISteamRemotePlay *>(steam_remoteplay));
     }

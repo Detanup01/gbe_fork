@@ -44,6 +44,7 @@ public ISteamFriends013,
 public ISteamFriends014,
 public ISteamFriends015,
 public ISteamFriends016,
+public ISteamFriends017,
 public ISteamFriends
 {
     class Settings *settings{};

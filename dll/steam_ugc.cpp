@@ -592,7 +592,7 @@ uint32 Steam_UGC::GetQueryUGCNumAdditionalPreviews( UGCQueryHandle_t handle, uin
 }
 
 
-bool Steam_UGC::GetQueryUGCAdditionalPreview( UGCQueryHandle_t handle, uint32 index, uint32 previewIndex, STEAM_OUT_STRING_COUNT(cchURLSize) char *pchURLOrVideoID, uint32 cchURLSize, STEAM_OUT_STRING_COUNT(cchURLSize) char *pchOriginalFileName, uint32 cchOriginalFileNameSize, EItemPreviewType *pPreviewType )
+bool Steam_UGC::GetQueryUGCAdditionalPreview( UGCQueryHandle_t handle, uint32 index, uint32 previewIndex, STEAM_OUT_STRING_COUNT(cchURLSize) char *pchURLOrVideoID, uint32 cchURLSize, STEAM_OUT_STRING_COUNT(cchOriginalFileNameSize) char *pchOriginalFileName, uint32 cchOriginalFileNameSize, EItemPreviewType *pPreviewType )
 {
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
@@ -1402,26 +1402,51 @@ SteamAPICall_t Steam_UGC::UnsubscribeItem( PublishedFileId_t nPublishedFileID )
 }
  // unsubscribe from this item, will be uninstalled after game quits
 
+uint32 Steam_UGC::GetNumSubscribedItems( bool bIncludeLocallyDisabled )
+{
+    PRINT_DEBUG(" %d", (int)bIncludeLocallyDisabled);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    
+    std::set<PublishedFileId_t> subscribed_enabled = std::set<PublishedFileId_t>(ugc_bridge->subbed_mods_itr_begin(), ugc_bridge->subbed_mods_itr_end());
+    if (!bIncludeLocallyDisabled) {
+        for (auto &sd : subscribed_disabled) {
+            subscribed_enabled.erase(sd);
+        }
+    }
+
+    size_t count = subscribed_enabled.size();
+    PRINT_DEBUG("  Steam_UGC::GetNumSubscribedItems = %zu", count);
+    return (uint32)count;
+}
+
 uint32 Steam_UGC::GetNumSubscribedItems()
 {
     PRINT_DEBUG_ENTRY();
-    std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    
-    PRINT_DEBUG("  Steam_UGC::GetNumSubscribedItems = %zu", ugc_bridge->subbed_mods_count());
-    return (uint32)ugc_bridge->subbed_mods_count();
+    return GetNumSubscribedItems(false);
 }
  // number of subscribed items 
 
-uint32 Steam_UGC::GetSubscribedItems( PublishedFileId_t* pvecPublishedFileID, uint32 cMaxEntries )
+uint32 Steam_UGC::GetSubscribedItems( PublishedFileId_t* pvecPublishedFileID, uint32 cMaxEntries, bool bIncludeLocallyDisabled )
 {
-    PRINT_DEBUG("%p %u", pvecPublishedFileID, cMaxEntries);
+    PRINT_DEBUG("%p %u %d", pvecPublishedFileID, cMaxEntries, (int)bIncludeLocallyDisabled);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if ((size_t)cMaxEntries > ugc_bridge->subbed_mods_count()) {
-        cMaxEntries = (uint32)ugc_bridge->subbed_mods_count();
+
+    std::set<PublishedFileId_t> subscribed_enabled = std::set<PublishedFileId_t>(ugc_bridge->subbed_mods_itr_begin(), ugc_bridge->subbed_mods_itr_end());
+    if (!bIncludeLocallyDisabled) {
+        for (auto &sd : subscribed_disabled) {
+            subscribed_enabled.erase(sd);
+        }
     }
 
-    std::copy_n(ugc_bridge->subbed_mods_itr_begin(), cMaxEntries, pvecPublishedFileID);
-    return cMaxEntries;
+    size_t count = std::min<size_t>(subscribed_enabled.size(), cMaxEntries);
+    std::copy_n(subscribed_enabled.begin(), count, pvecPublishedFileID);
+    return (uint32)count;
+}
+
+uint32 Steam_UGC::GetSubscribedItems( PublishedFileId_t* pvecPublishedFileID, uint32 cMaxEntries )
+{
+    PRINT_DEBUG("old %p %u", pvecPublishedFileID, cMaxEntries);
+    return GetSubscribedItems(pvecPublishedFileID, cMaxEntries, false);
 }
  // all subscribed item PublishFileIDs
 
@@ -1723,4 +1748,49 @@ uint32 Steam_UGC::GetUserContentDescriptorPreferences( EUGCContentDescriptorID *
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     
     return 0;
+}
+
+// Sets whether the item should be disabled locally or not. This means that it will not be returned in GetSubscribedItems() by default.
+bool Steam_UGC::SetItemsDisabledLocally( PublishedFileId_t *pvecPublishedFileIDs, uint32 unNumPublishedFileIDs, bool bDisabledLocally )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    // TODO: save results to disk because real steam can remember them even when restarting the app
+    if (!unNumPublishedFileIDs)
+        return false;
+    if (!pvecPublishedFileIDs)
+        return false; // real steam crashes the app
+
+    bool modified = false;
+    std::set<PublishedFileId_t> all_subscribed = std::set<PublishedFileId_t>(ugc_bridge->subbed_mods_itr_begin(), ugc_bridge->subbed_mods_itr_end());
+
+    for (uint32 i = 0; i < unNumPublishedFileIDs; ++i) {
+        PublishedFileId_t id = pvecPublishedFileIDs[i];
+
+        if (!all_subscribed.count(id))
+            continue;
+
+        if (bDisabledLocally) {
+            if (subscribed_disabled.insert(id).second)
+                modified = true;
+        }
+        else {
+            if (subscribed_disabled.erase(id))
+                modified = true;
+        }
+    }
+
+    return modified;
+}
+
+// Set the local load order for these items. If there are any items not in the given list, they will sort by the time subscribed.
+bool Steam_UGC::SetSubscriptionsLoadOrder( PublishedFileId_t *pvecPublishedFileIDs, uint32 unNumPublishedFileIDs )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    // TODO
+    if (!unNumPublishedFileIDs)
+        return false;
+
+    return true;
 }

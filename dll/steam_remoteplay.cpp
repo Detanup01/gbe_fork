@@ -110,6 +110,13 @@ bool Steam_RemotePlay::BStartRemotePlayTogether( bool bShowOverlay )
     return false;
 }
 
+bool Steam_RemotePlay::ShowRemotePlayTogetherUI()
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    return false;
+}
+
 // Invite a friend to Remote Play Together
 // This returns false if the invite can't be sent
 bool Steam_RemotePlay::BSendRemotePlayTogetherInvite( CSteamID steamIDFriend )
@@ -117,6 +124,60 @@ bool Steam_RemotePlay::BSendRemotePlayTogetherInvite( CSteamID steamIDFriend )
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
+}
+
+bool Steam_RemotePlay::BEnableRemotePlayTogetherDirectInput()
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    direct_input = true;
+    return true;
+}
+
+void Steam_RemotePlay::DisableRemotePlayTogetherDirectInput()
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    direct_input = false;
+}
+
+uint32 Steam_RemotePlay::GetInput( RemotePlayInput_t *pInput, uint32 unMaxEvents )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    return 0;
+}
+
+void Steam_RemotePlay::SetMouseVisibility( RemotePlaySessionID_t unSessionID, bool bVisible )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+}
+
+void Steam_RemotePlay::SetMousePosition( RemotePlaySessionID_t unSessionID, float flNormalizedX, float flNormalizedY )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+}
+
+RemotePlayCursorID_t Steam_RemotePlay::CreateMouseCursor( int nWidth, int nHeight, int nHotX, int nHotY, const void *pBGRA, int nPitch )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (!direct_input)
+        return 0;
+
+    ++cursor_handle;
+    if (cursor_handle == 0)
+        ++cursor_handle;
+
+    return cursor_handle;
+}
+
+void Steam_RemotePlay::SetMouseCursor( RemotePlaySessionID_t unSessionID, RemotePlayCursorID_t unCursorID )
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
 }
 
 void Steam_RemotePlay::RunCallbacks()

@@ -202,9 +202,9 @@ struct SteamUGCDetails_t
 	uint32 m_unVotesDown;											// number of votes down
 	float m_flScore;												// calculated score
 	// collection details
-	uint32 m_unNumChildren;							
+	uint32 m_unNumChildren;
 	uint64 m_ulTotalFilesSize;										// Total size of all files (non-legacy), excluding the preview file
-};	
+};
 
 //-----------------------------------------------------------------------------
 // Purpose: Steam UGC support API
@@ -241,7 +241,7 @@ public:
 	virtual bool GetQueryUGCChildren( UGCQueryHandle_t handle, uint32 index, PublishedFileId_t* pvecPublishedFileID, uint32 cMaxEntries ) = 0;
 	virtual bool GetQueryUGCStatistic( UGCQueryHandle_t handle, uint32 index, EItemStatistic eStatType, uint64 *pStatValue ) = 0;
 	virtual uint32 GetQueryUGCNumAdditionalPreviews( UGCQueryHandle_t handle, uint32 index ) = 0;
-	virtual bool GetQueryUGCAdditionalPreview( UGCQueryHandle_t handle, uint32 index, uint32 previewIndex, STEAM_OUT_STRING_COUNT(cchURLSize) char *pchURLOrVideoID, uint32 cchURLSize, STEAM_OUT_STRING_COUNT(cchURLSize) char *pchOriginalFileName, uint32 cchOriginalFileNameSize, EItemPreviewType *pPreviewType ) = 0;
+	virtual bool GetQueryUGCAdditionalPreview( UGCQueryHandle_t handle, uint32 index, uint32 previewIndex, STEAM_OUT_STRING_COUNT(cchURLSize) char *pchURLOrVideoID, uint32 cchURLSize, STEAM_OUT_STRING_COUNT(cchOriginalFileNameSize) char *pchOriginalFileName, uint32 cchOriginalFileNameSize, EItemPreviewType *pPreviewType ) = 0;
 	virtual uint32 GetQueryUGCNumKeyValueTags( UGCQueryHandle_t handle, uint32 index ) = 0;
 	virtual bool GetQueryUGCKeyValueTag( UGCQueryHandle_t handle, uint32 index, uint32 keyValueTagIndex, STEAM_OUT_STRING_COUNT(cchKeySize) char *pchKey, uint32 cchKeySize, STEAM_OUT_STRING_COUNT(cchValueSize) char *pchValue, uint32 cchValueSize ) = 0;
 
@@ -251,7 +251,6 @@ public:
 
 	// Some items can specify that they have a version that is valid for a range of game versions (Steam branch)
 	virtual uint32 GetNumSupportedGameVersions( UGCQueryHandle_t handle, uint32 index ) = 0;
-	
 	virtual bool GetSupportedGameVersionData( UGCQueryHandle_t handle, uint32 index, uint32 versionIndex, STEAM_OUT_STRING_COUNT( cchGameBranchSize ) char *pchGameBranchMin, STEAM_OUT_STRING_COUNT( cchGameBranchSize ) char *pchGameBranchMax, uint32 cchGameBranchSize ) = 0;
 
 	virtual uint32 GetQueryUGCContentDescriptors( UGCQueryHandle_t handle, uint32 index, EUGCContentDescriptorID *pvecDescriptors, uint32 cMaxEntries ) = 0;
@@ -273,7 +272,6 @@ public:
 	virtual bool SetReturnPlaytimeStats( UGCQueryHandle_t handle, uint32 unDays ) = 0;
 	virtual bool SetLanguage( UGCQueryHandle_t handle, const char *pchLanguage ) = 0;
 	virtual bool SetAllowCachedResponse( UGCQueryHandle_t handle, uint32 unMaxAgeSeconds ) = 0;
-	// allow ISteamUGC to be used in a tools like environment for users who have the appropriate privileges for the calling appid
 	virtual bool SetAdminQuery( UGCUpdateHandle_t handle, bool bAdminQuery ) = 0; // admin queries return hidden items
 
 	// Options only for querying user UGC
@@ -335,8 +333,8 @@ public:
 	virtual SteamAPICall_t SubscribeItem( PublishedFileId_t nPublishedFileID ) = 0; // subscribe to this item, will be installed ASAP
 	STEAM_CALL_RESULT( RemoteStorageUnsubscribePublishedFileResult_t )
 	virtual SteamAPICall_t UnsubscribeItem( PublishedFileId_t nPublishedFileID ) = 0; // unsubscribe from this item, will be uninstalled after game quits
-	virtual uint32 GetNumSubscribedItems() = 0; // number of subscribed items 
-	virtual uint32 GetSubscribedItems( PublishedFileId_t* pvecPublishedFileID, uint32 cMaxEntries ) = 0; // all subscribed item PublishFileIDs
+	virtual uint32 GetNumSubscribedItems( bool bIncludeLocallyDisabled = false ) = 0; // number of subscribed items 
+	virtual uint32 GetSubscribedItems( PublishedFileId_t* pvecPublishedFileID, uint32 cMaxEntries, bool bIncludeLocallyDisabled = false ) = 0; // all subscribed item PublishFileIDs
 
 	// get EItemState flags about item on this client
 	virtual uint32 GetItemState( PublishedFileId_t nPublishedFileID ) = 0;
@@ -396,9 +394,15 @@ public:
 
 	// Return the user's community content descriptor preferences
 	virtual uint32 GetUserContentDescriptorPreferences( EUGCContentDescriptorID *pvecDescriptors, uint32 cMaxEntries ) = 0;
+
+	// Sets whether the item should be disabled locally or not. This means that it will not be returned in GetSubscribedItems() by default.
+	virtual bool SetItemsDisabledLocally( PublishedFileId_t *pvecPublishedFileIDs, uint32 unNumPublishedFileIDs, bool bDisabledLocally ) = 0;
+
+	// Set the local load order for these items. If there are any items not in the given list, they will sort by the time subscribed.
+	virtual bool SetSubscriptionsLoadOrder( PublishedFileId_t *pvecPublishedFileIDs, uint32 unNumPublishedFileIDs ) = 0;
 };
 
-#define STEAMUGC_INTERFACE_VERSION "STEAMUGC_INTERFACE_VERSION020"
+#define STEAMUGC_INTERFACE_VERSION "STEAMUGC_INTERFACE_VERSION021"
 
 #ifndef STEAM_API_EXPORTS
 // Global interface accessor
