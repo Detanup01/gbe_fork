@@ -156,7 +156,7 @@ const char translationCopyId[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"Copy ID",
 
 	// 17 - Polish
-  u8"Copy ID",
+  u8"Skopiuj ID",
 
 	// 18 - Portuguese
   u8"Copy ID",
@@ -252,7 +252,7 @@ const char translationTestAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"Test achievement",
 
 	// 17 - Polish
-  u8"Test achievement",
+  u8"Test osiągnięcia",
 
 	// 18 - Portuguese
   u8"Test achievement",
@@ -446,7 +446,7 @@ const char translationInviteAll[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUF
   u8"Invite all",
 
 	// 17 - Polish
-  u8"Invite all",
+  u8"Zaproś wszystkich",
 
 	// 18 - Portuguese
   u8"Invite all",
@@ -1032,7 +1032,7 @@ const char translationUserPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
   u8"Username: %s (%llu) playing %u",
 
 	// 17 - Polish
-  u8"Username: %s (%llu) playing %u",
+  u8"Gracz: %s (%llu) gra teraz w %u",
 
 	// 18 - Portuguese
   u8"Username: %s (%llu) playing %u",
@@ -1128,7 +1128,7 @@ const char translationRenderer[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Renderer: %s",
 
 	// 17 - Polish
-  u8"Renderer: %s",
+  u8"Silnik renderujący: %s",
 
 	// 18 - Portuguese
   u8"Renderer: %s",
@@ -1224,7 +1224,7 @@ const char translationToggleUserInfo[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATIO
   u8"Toggle User Info",
 
 	// 17 - Polish
-  u8"Toggle User Info",
+  u8"Pokaż informacje o graczu",
 
 	// 18 - Portuguese
   u8"Toggle User Info",
@@ -1320,7 +1320,7 @@ const char translationShowAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
   u8"Show Achievements",
 
 	// 17 - Polish
-  u8"Show Achievements",
+  u8"Pokaż osiągnięcia",
 
 	// 18 - Portuguese
   u8"Show Achievements",
@@ -1612,7 +1612,7 @@ const char translationAchievementWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"Achievement Window",
 
 	// 17 - Polish
-  u8"Achievement Window",
+  u8"Osiągnięcia",
 
 	// 18 - Portuguese
   u8"Achievement Window",
@@ -1708,7 +1708,7 @@ const char translationListOfAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSL
   u8"List of achievements",
 
 	// 17 - Polish
-  u8"List of achievements",
+  u8"Lista osiągnięć",
 
 	// 18 - Portuguese
   u8"List of achievements",
@@ -1804,7 +1804,7 @@ const char translationAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_
   u8"Achievements",
 
 	// 17 - Polish
-  u8"Achievements",
+  u8"Osiągnięcia",
 
 	// 18 - Portuguese
   u8"Achievements",
@@ -1900,7 +1900,7 @@ const char translationHiddenAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"hidden achievement",
 
 	// 17 - Polish
-  u8"hidden achievement",
+  u8"ukryte osiągnięcie",
 
 	// 18 - Portuguese
   u8"hidden achievement",
@@ -1996,7 +1996,7 @@ const char translationAchievedOn[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BU
   u8"achieved on %s",
 
 	// 17 - Polish
-  u8"achieved on %s",
+  u8"osiągnięte dnia %s",
 
 	// 18 - Portuguese
   u8"achieved on %s",
@@ -2092,7 +2092,7 @@ const char translationNotAchieved[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
   u8"not achieved",
 
 	// 17 - Polish
-  u8"not achieved",
+  u8"nie osiągnięte",
 
 	// 18 - Portuguese
   u8"not achieved",
@@ -2188,7 +2188,7 @@ const char translationGlobalSettingsWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRAN
   u8"Global Settings Window",
 
 	// 17 - Polish
-  u8"Global Settings Window",
+  u8"Globalne ustawienia",
 
 	// 18 - Portuguese
   u8"Global Settings Window",
@@ -2284,7 +2284,7 @@ const char translationGlobalSettingsWindowDescription[TRANSLATION_NUMBER_OF_LANG
   u8"These are global emulator settings and will apply to all games.",
 
 	// 17 - Polish
-  u8"These are global emulator settings and will apply to all games.",
+  u8"To są globalne ustawienia które zostaną zastosowane dla wszystkich gier.",
 
 	// 18 - Portuguese
   u8"These are global emulator settings and will apply to all games.",
@@ -2380,7 +2380,7 @@ const char translationUsername[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Username:",
 
 	// 17 - Polish
-  u8"Username:",
+  u8"Nazwa gracza:",
 
 	// 18 - Portuguese
   u8"Username:",
@@ -2476,7 +2476,7 @@ const char translationLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Language:",
 
 	// 17 - Polish
-  u8"Language:",
+  u8"Język:",
 
 	// 18 - Portuguese
   u8"Language:",
@@ -2572,7 +2572,7 @@ const char translationSelectedLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
   u8"Selected Language: %s",
 
 	// 17 - Polish
-  u8"Selected Language: %s",
+  u8"Wybrany język: %s",
 
 	// 18 - Portuguese
   u8"Selected Language: %s",
@@ -2668,7 +2668,7 @@ const char translationRestartTheGameToApply[TRANSLATION_NUMBER_OF_LANGUAGES][TRA
   u8"You may have to restart the game for these to apply.",
 
 	// 17 - Polish
-  u8"You may have to restart the game for these to apply.",
+  u8"Musisz zrestartować grę aby ustawienia zostały zastosowane.",
 
 	// 18 - Portuguese
   u8"You may have to restart the game for these to apply.",
@@ -2764,7 +2764,7 @@ const char translationSave[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"Save",
 
 	// 17 - Polish
-  u8"Save",
+  u8"Zapisz",
 
 	// 18 - Portuguese
   u8"Save",
@@ -2860,7 +2860,7 @@ const char translationWarning[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8"WARNING",
 
 	// 17 - Polish
-  u8"WARNING",
+  u8"UWAGA",
 
 	// 18 - Portuguese
   u8"WARNING",
@@ -2956,7 +2956,7 @@ const char translationWarningDescription_badAppid[TRANSLATION_NUMBER_OF_LANGUAGE
   u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 17 - Polish
-  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID jest równe 0, stwórz plik steam_appid.txt z poprawnym ID aplikacji i zrestartuj grę.",
 
 	// 18 - Portuguese
   u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
@@ -3148,7 +3148,7 @@ const char translationSteamOverlayURL[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"The game tried to get the steam overlay to open this url:",
 
 	// 17 - Polish
-  u8"The game tried to get the steam overlay to open this url:",
+  u8"Gra próbowała otworzyć ten link w nakładce Steam:",
 
 	// 18 - Portuguese
   u8"The game tried to get the steam overlay to open this url:",
@@ -3342,7 +3342,7 @@ const char translationPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8"playing",
 
 	// 17 - Polish
-  u8"playing",
+  u8"gra w",
 
 	// 18 - Portuguese
   u8"playing",
@@ -3438,7 +3438,7 @@ const char translationAutoAcceptFriendInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TR
   u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 17 - Polish
-  u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Zaproszenia są kontrolowane przez plik auto_accept_invite.txt!",
 
 	// 18 - Portuguese
   u8"Invitations are controlled by auto_accept_invite.txt!",
@@ -4014,7 +4014,7 @@ const char translationPlaytimeCheckbox[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
   u8"Playtime",
 
 	// 17 - Polish
-  u8"Playtime",
+  u8"Czas grania",
 
 	// 18 - Portuguese
   u8"Playtime",
