@@ -3052,7 +3052,7 @@ const char translationWarningDescription_localSave[TRANSLATION_NUMBER_OF_LANGUAG
   u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 17 - Polish
-  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"Wykryto local_save_path, emulator zapisuje lokalnie do folderu gry. Usuń ten plik jeśli tego nie chcesz.",
 
 	// 18 - Portuguese
   u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
