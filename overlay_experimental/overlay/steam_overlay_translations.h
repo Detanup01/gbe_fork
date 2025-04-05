@@ -1251,7 +1251,7 @@ const char translationToggleUserInfo[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATIO
   u8"Toggle User Info",
 
 	// 26 - Turkish
-  u8"Toggle User Info",
+  u8"Kullanıcı Bilgilerini Aç/Kapat",
 
 	// 27 - Ukrainian
   u8"Toggle User Info",
@@ -4041,7 +4041,7 @@ const char translationPlaytimeCheckbox[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
   u8"Playtime",
 
 	// 26 - Turkish
-  u8"Playtime",
+  u8"Oynama Süresi",
 
 	// 27 - Ukrainian
   u8"Playtime",
@@ -4137,7 +4137,7 @@ const char translationPlaytimeDisplay[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"PLT: ",
 
 	// 26 - Turkish
-  u8"PLT: ",
+  u8"OS: ",
 
 	// 27 - Ukrainian
   u8"PLT: ",
