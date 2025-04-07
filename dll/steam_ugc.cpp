@@ -1462,8 +1462,14 @@ uint32 Steam_UGC::GetItemState( PublishedFileId_t nPublishedFileID )
     }
 
     if (ugc_bridge->has_subbed_mod(nPublishedFileID)) {
-        PRINT_DEBUG("  mod is subscribed and installed");
-        return k_EItemStateInstalled | k_EItemStateSubscribed;
+        if (subscribed_disabled.count(nPublishedFileID)) {
+            PRINT_DEBUG("  mod is subscribed but disabled");
+            return k_EItemStateDisabledLocally | k_EItemStateSubscribed;
+        }
+        else {
+            PRINT_DEBUG("  mod is subscribed and installed");
+            return k_EItemStateInstalled | k_EItemStateSubscribed;
+        }
     }
 
 
