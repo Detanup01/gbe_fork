@@ -828,39 +828,28 @@ static void parse_leaderboards(class Settings *settings_client, class Settings *
 
 }
 
-// stats.txt
-static void parse_stats(class Settings *settings_client, class Settings *settings_server)
+// stats.json
+static void parse_stats(class Settings *settings_client, class Settings *settings_server, class Local_Storage *local_storage)
 {
-    std::string stats_config_path = Local_Storage::get_game_settings_path() + "stats.txt";
-    std::ifstream input( std::filesystem::u8path(stats_config_path) );
-    if (input.is_open()) {
-        common_helpers::consume_bom(input);
-        for( std::string line; getline( input, line ); ) {
-            if (!line.empty() && line[line.length()-1] == '\n') {
-                line.pop_back();
-            }
+        nlohmann::json stats_items;
+        std::string stats_json_path = Local_Storage::get_game_settings_path() + "stats.json";
+        if (local_storage->load_json(stats_json_path, stats_items)) {
+            for (const auto &stats : stats_items) {
+                std::string stat_name;
+                std::string stat_type;
+                std::string stat_default_value = "0";
+                std::string stat_global_value = "0";
 
-            if (!line.empty() && line[line.length()-1] == '\r') {
-                line.pop_back();
-            }
-
-            std::string stat_name;
-            std::string stat_type;
-            std::string stat_default_value;
-
-            std::size_t deliminator = line.find("=");
-            if (deliminator != 0 && deliminator != std::string::npos && deliminator != line.size()) {
-                stat_name = line.substr(0, deliminator);
-                std::size_t deliminator2 = line.find("=", deliminator + 1);
-
-                if (deliminator2 != std::string::npos && deliminator2 != line.size()) {
-                    stat_type = line.substr(deliminator + 1, deliminator2 - (deliminator + 1));
-                    stat_default_value = line.substr(deliminator2 + 1);
-                } else {
-                    stat_type = line.substr(deliminator + 1);
-                    stat_default_value = "0";
+                try {
+                    stat_name = stats.value("name", std::string(""));
+                    stat_type = stats.value("type", std::string(""));
+                    stat_default_value = stats.value("default", std::string("0"));
+                    stat_global_value = stats.value("global", std::string("0"));
                 }
-            }
+                catch (const std::exception &e) {
+                    PRINT_DEBUG("Error reading current stat item in stats.json, reason: %s", e.what());
+                    continue;
+                }
 
             std::transform(stat_type.begin(), stat_type.end(), stat_type.begin(),[](unsigned char c){ return std::tolower(c); });
             struct Stat_config config = {};
@@ -869,18 +858,21 @@ static void parse_stats(class Settings *settings_client, class Settings *setting
                 if (stat_type == "float") {
                     config.type = GameServerStats_Messages::StatInfo::STAT_TYPE_FLOAT;
                     config.default_value_float = std::stof(stat_default_value);
+                    config.global_value_double = std::stod(stat_global_value);
                 } else if (stat_type == "int") {
                     config.type = GameServerStats_Messages::StatInfo::STAT_TYPE_INT;
                     config.default_value_int = std::stol(stat_default_value);
+                    config.global_value_int64 = std::stoll(stat_global_value);
                 } else if (stat_type == "avgrate") {
                     config.type = GameServerStats_Messages::StatInfo::STAT_TYPE_AVGRATE;
                     config.default_value_float = std::stof(stat_default_value);
+                    config.global_value_double = std::stod(stat_global_value);
                 } else {
                     PRINT_DEBUG("Error adding stat %s, type %s isn't valid", stat_name.c_str(), stat_type.c_str());
                     continue;
                 }
             } catch (...) {
-                PRINT_DEBUG("Error adding stat %s, default value %s isn't valid", stat_name.c_str(), stat_default_value.c_str());
+                PRINT_DEBUG("Error adding stat %s, default value %s or global value %s isn't valid", stat_name.c_str(), stat_default_value.c_str(), stat_global_value.c_str());
                 continue;
             }
 
@@ -1802,7 +1794,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     parse_app_paths(settings_client, settings_server, program_path);
 
     parse_leaderboards(settings_client, settings_server);
-    parse_stats(settings_client, settings_server);
+    parse_stats(settings_client, settings_server, local_storage);
     parse_depots(settings_client, settings_server);
     parse_subscribed_groups(settings_client, settings_server);
     load_subscribed_groups_clans(local_storage->get_global_settings_path(), settings_client, settings_server);
