@@ -831,25 +831,25 @@ static void parse_leaderboards(class Settings *settings_client, class Settings *
 // stats.json
 static void parse_stats(class Settings *settings_client, class Settings *settings_server, class Local_Storage *local_storage)
 {
-        nlohmann::json stats_items;
-        std::string stats_json_path = Local_Storage::get_game_settings_path() + "stats.json";
-        if (local_storage->load_json(stats_json_path, stats_items)) {
-            for (const auto &stats : stats_items) {
-                std::string stat_name;
-                std::string stat_type;
-                std::string stat_default_value = "0";
-                std::string stat_global_value = "0";
+    nlohmann::json stats_items;
+    std::string stats_json_path = Local_Storage::get_game_settings_path() + "stats.json";
+    if (local_storage->load_json(stats_json_path, stats_items)) {
+        for (const auto &stats : stats_items) {
+            std::string stat_name;
+            std::string stat_type;
+            std::string stat_default_value = "0";
+            std::string stat_global_value = "0";
 
-                try {
-                    stat_name = stats.value("name", std::string(""));
-                    stat_type = stats.value("type", std::string(""));
-                    stat_default_value = stats.value("default", std::string("0"));
-                    stat_global_value = stats.value("global", std::string("0"));
-                }
-                catch (const std::exception &e) {
-                    PRINT_DEBUG("Error reading current stat item in stats.json, reason: %s", e.what());
-                    continue;
-                }
+            try {
+                stat_name = stats.value("name", std::string(""));
+                stat_type = stats.value("type", std::string(""));
+                stat_default_value = stats.value("default", std::string("0"));
+                stat_global_value = stats.value("global", std::string("0"));
+            }
+            catch (const std::exception &e) {
+                PRINT_DEBUG("Error reading current stat item in stats.json, reason: %s", e.what());
+                continue;
+            }
 
             std::transform(stat_type.begin(), stat_type.end(), stat_type.begin(),[](unsigned char c){ return std::tolower(c); });
             struct Stat_config config = {};
