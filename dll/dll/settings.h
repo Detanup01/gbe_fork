@@ -92,6 +92,10 @@ struct Stat_config {
         float default_value_float;
         int32 default_value_int;
     };
+    union {
+        double global_value_double;
+        int64 global_value_int64;
+    };
 };
 
 struct Image_Data {

@@ -625,6 +625,18 @@ bool Steam_User_Stats::GetGlobalStat( const char *pchStatName, int64 *pData )
 {
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (!pchStatName) return false;
+    std::string stat_name = common_helpers::to_lower(pchStatName);
+    const auto &stats_config = settings->getStats();
+    auto stats_data = stats_config.find(stat_name);
+    if (stats_data != stats_config.end()) {
+        if (stats_data->second.type != GameServerStats_Messages::StatInfo::STAT_TYPE_INT)
+            return false;
+
+        if (pData)
+            *pData = stats_data->second.global_value_int64;
+        return true;
+    }
     return false;
 }
 
@@ -632,6 +644,18 @@ bool Steam_User_Stats::GetGlobalStat( const char *pchStatName, double *pData )
 {
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (!pchStatName) return false;
+    std::string stat_name = common_helpers::to_lower(pchStatName);
+    const auto &stats_config = settings->getStats();
+    auto stats_data = stats_config.find(stat_name);
+    if (stats_data != stats_config.end()) {
+        if (stats_data->second.type == GameServerStats_Messages::StatInfo::STAT_TYPE_INT)
+            return false;
+
+        if (pData)
+            *pData = stats_data->second.global_value_double;
+        return true;
+    }
     return false;
 }
 
