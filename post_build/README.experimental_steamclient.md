@@ -93,3 +93,6 @@ New value:      <FOLDER CONTAINING THE LOADER>
 ```
 
 This affects source-engine mods  
+
+## Linux
+On Linux, you may need to set the environment variable `PROTON_DISABLE_LSTEAMCLIENT=1` when running `steamclient_loader.exe`, depending on the Proton variant you are using (e.g. Proton GE run through Lutris or UMU needs it).
