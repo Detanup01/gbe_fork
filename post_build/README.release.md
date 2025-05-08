@@ -190,16 +190,23 @@ An example can be found in `steam_settings.EXAMPLE`
 ## Stats:
 By default this emulator assumes all stats do not exist unless the option `allow_unknown_stats` in `configs.main.ini` is set to 1.  
 
-To properly define the stats of a game, put a `stats.txt` file in the `steam_settings` folder.  
+To properly define the stats of a game, put a `stats.json` file in the `steam_settings` folder.  
 The format is:  
-`stat_name=type=default value`  
+`{
+  "name": "stat_name",
+  "type": "stat_type",
+  "default": "default_value",
+  "global": "global_value"
+}`  
 
 The type can be
 * int
 * float
 * avgrate
 
-The default value is simply a number that represents the default value for the stat.  
+The default value is simply a number that represents the default value for the stat.
+
+The "global" value sets the global (shared) value of a specific stat, used by some games for features like DLC unlocks.
 
 You can use the command line tool `generate_emu_config` to generate a stats config
 
