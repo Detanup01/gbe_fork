@@ -1,0 +1,44 @@
+[
+  {
+    "default": "0",
+    "global": "0",
+    "name": "lifetime_experience",
+    "type": "int"
+  },
+  {
+    "default": "0",
+    "global": "0",
+    "name": "experience",
+    "type": "int"
+  },
+  {
+    "default": "3.5",
+    "global": "0",
+    "name": "stat_example_name1",
+    "type": "float"
+  },
+  {
+    "default": "1337",
+    "global": "250000",
+    "name": "stat_example_name2",
+    "type": "int"
+  },
+  {
+    "default": "5",
+    "global": "5",
+    "name": "stat_example_name3",
+    "type": "int"
+  },
+  {
+    "default": "0",
+    "global": "0",
+    "name": "stat_example_name4",
+    "type": "float"
+  },
+  {
+    "default": "0",
+    "global": "0",
+    "name": "stat_example_name5",
+    "type": "avgrate"
+  }
+]
