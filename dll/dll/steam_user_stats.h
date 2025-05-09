@@ -50,11 +50,9 @@ struct achievement_trigger {
     std::string min_value{}; // min progress
     std::string max_value{}; // max progress
 
-    bool should_unlock_ach(float stat) const;
-    bool should_unlock_ach(int32 stat) const;
+bool check_triggered(float stat) const;
+bool check_triggered(int32 stat) const;
 
-    bool should_indicate_progress(float stat) const;
-    bool should_indicate_progress(int32 stat) const;
 };
 
 class Steam_User_Stats :
