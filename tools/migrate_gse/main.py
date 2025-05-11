@@ -133,6 +133,26 @@ def convert_to_ini(global_settings: str, out_dict_ini: dict):
                         "build_id": int(fr.readline().strip()),
                         "time_updated": int(time.time())
                     }], fout, indent=2)
+        elif file == 'stats.txt':
+            with open(os.path.join(global_settings, file), "r", encoding='utf-8') as fr:
+                stats_lines = [line.strip() for line in fr if line.strip() and '=' in line]
+                stats_json = []
+                for stat in stats_lines:
+                    try:
+                        name, rest = stat.split('=', 1)
+                        type_, value = rest.split('=', 1)
+                        stats_json.append({
+                            "name": name.strip(),
+                            "type": type_.strip(),
+                            "default": value.strip(),
+                            "global": "0"
+                        })
+                    except Exception:
+                        continue
+                if stats_json:
+                    create_new_steam_settings_folder()
+                    with open(os.path.join(NEW_STEAM_SETTINGS_FOLDER, 'stats.json'), 'wt', encoding='utf-8') as fout:
+                        json.dump(stats_json, fout, indent=2)
         elif file == 'disable_account_avatar.txt':
             merge_dict(out_dict_ini, {
                 'configs.main.ini': {
@@ -443,17 +463,57 @@ def convert_public_branch_to_txt(global_settings: str):
     if not os.path.isfile(src_file):
         return False
     build_id = -1
-    with open(src_file, "r", encoding='utf-8') as fr:
-        branches: list[dict] = json.load(fr)
-        for branch in branches:
-            if f'{branch.get("name", "")}'.lower() == "public":
-                build_id = branch.get('build_id', -1)
-                break
-        if build_id == -1:
-            return False
+    try:
+        with open(src_file, "r", encoding='utf-8') as fr:
+            branches: list[dict] = json.load(fr)
+            for branch in branches:
+                if f'{branch.get("name", "")}'.lower() == "public":
+                    build_id = branch.get('build_id', -1)
+                    break
+    except Exception:
+        return False
+
+    if build_id == -1:
+        return False
+        
     create_new_steam_settings_folder()
     with open(os.path.join(NEW_STEAM_SETTINGS_FOLDER, 'build_id.txt'), "wt", encoding='utf-8') as fw:
         fw.write(f"{build_id}")
+    return True
+
+def convert_stats_json_to_txt(global_settings: str):
+    src_file = os.path.join(global_settings, 'stats.json')
+    if not os.path.isfile(src_file):
+        return False
+
+    with open(src_file, "r", encoding='utf-8') as fr:
+        try:
+            stats: list[dict] = json.load(fr)
+        except Exception:
+            return False
+
+    if not stats:
+        return False
+
+    lines = []
+    for stat in stats:
+        try:
+            name = stat.get("name", "").strip()
+            type_ = stat.get("type", "").strip()
+            default = stat.get("default", "").strip()
+            if name and type_ and default:
+                lines.append(f"{name}={type_}={default}")
+        except Exception:
+            continue
+
+    if not lines:
+        return False
+
+    create_new_steam_settings_folder()
+    with open(os.path.join(NEW_STEAM_SETTINGS_FOLDER, 'stats.txt'), "wt", encoding='utf-8') as fw:
+        for line in lines:
+            fw.write(line + "\n")
+
     return True
 
 def convert_to_txt(global_settings: str):
@@ -470,6 +530,7 @@ def convert_to_txt(global_settings: str):
     done += write_txt_file_bool('achievements_bypass.txt', dict_ini, 'main::misc', 'achievements_bypass', True)
     done += write_txt_file_multi('app_paths.txt', dict_ini, 'app::paths')
     done += convert_public_branch_to_txt(global_settings)
+    done += convert_stats_json_to_txt(global_settings)
     done += write_txt_file('crash_printer_location.txt', dict_ini, 'main::general', 'crash_printer_location')
     done += write_txt_file_bool('disable_account_avatar.txt', dict_ini, 'main::general', 'enable_account_avatar', False)
     done += write_txt_file_bool('disable_lan_only.txt', dict_ini, 'main::connectivity', 'disable_lan_only',True)
