@@ -232,6 +232,9 @@ public:
     constexpr const static int INVALID_IMAGE_HANDLE = 0;
     constexpr const static int UNLOADED_IMAGE_HANDLE = -1;
 
+    // Base64 encoded token for EncryptedAppTicket
+    std::string encrypted_app_ticket_token{};
+
     //Depots
     std::vector<DepotId_t> depots{};
 
@@ -428,6 +431,8 @@ public:
     bool hasOverlayAutoAcceptInviteFromFriend(uint64_t friend_id) const;
     size_t overlayAutoAcceptInvitesCount() const;
 
+    // Method to load token from configs.user.ini
+    bool load_token_from_config();
 };
 
 #endif // SETTINGS_INCLUDE_H
