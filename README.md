@@ -331,3 +331,24 @@ package_linux.sh <build_folder>
 ```
 `build_folder` is any folder inside `build/linux`, for example: `gmake2/release`  
 The above example will create a compressed `.tar` archive inside `build/package/linux/`
+
+---
+
+## **EncryptedAppTicket Token Support**
+
+* Add pre-generated encrypted app tickets without modifying code
+* Create `configs.user.ini` in your game's settings folder
+* Add a line starting with `token=` followed by your Base64-encoded ticket
+* Example: `token=CAIxxxxxxxxxxxxxxx...`
+* Most valid tickets start with `CAI` after Base64 encoding
+* If no token is found, emulator falls back to standard ticket generation
+
+**Why use this?**
+* For apps that require specific ticket formats
+* When you need to use tickets from real Steam client
+
+To generate a Base64 token from an existing ticket file:
+```python
+import base64
+with open('ticket.bin', 'rb') as f:
+    print(base64.b64encode(f.read()).decode('utf-8'))
