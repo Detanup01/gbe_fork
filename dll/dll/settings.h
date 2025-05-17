@@ -401,7 +401,7 @@ public:
 
     //App Install paths
     void setAppInstallPath(AppId_t appID, const std::string &path);
-    std::string getAppInstallPath(AppId_t appID);
+    bool getAppInstallPath(AppId_t appID, std::string &path);
 
     //mod stuff
     void addMod(PublishedFileId_t id, const std::string &title, const std::string &path);

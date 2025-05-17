@@ -328,9 +328,16 @@ void Settings::setAppInstallPath(AppId_t appID, const std::string &path)
     app_paths[appID] = path;
 }
 
-std::string Settings::getAppInstallPath(AppId_t appID)
+bool Settings::getAppInstallPath(AppId_t appID, std::string &path)
 {
-    return app_paths[appID];
+    auto app_path = app_paths.find(appID);
+    if (app_paths.end() != app_path)
+    {
+        path = app_path->second;
+        return true;
+    }
+
+    return false;
 }
 
 void Settings::setLeaderboard(const std::string &leaderboard, enum ELeaderboardSortMethod sort_method, enum ELeaderboardDisplayType display_type)
