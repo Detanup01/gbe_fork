@@ -321,9 +321,9 @@ uint32 Steam_Apps::GetAppInstallDir( AppId_t appID, char *pchFolder, uint32 cchF
     PRINT_DEBUG("%u %p %u", appID, pchFolder, cchFolderBufferSize);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     //TODO return real path instead of dll path
-    std::string installed_path = settings->getAppInstallPath(appID);
+    std::string installed_path;
 
-    if (installed_path.empty()) {
+    if (!settings->getAppInstallPath(appID, installed_path)) {
         std::string dll_path = get_full_program_path();
         std::string current_path = get_current_path();
         PRINT_DEBUG("  dll: '%s', current: '%s'", dll_path.c_str(), current_path.c_str());
@@ -334,6 +334,9 @@ uint32 Steam_Apps::GetAppInstallDir( AppId_t appID, char *pchFolder, uint32 cchF
         } else {
             installed_path = dll_path;
         }
+    }
+    else if (installed_path.empty()) {
+        return 0; // NOTE: empty path means we actively disable the path to the appid specified
     }
 
     PRINT_DEBUG("  final path '%s'", installed_path.c_str());

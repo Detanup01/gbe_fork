@@ -767,15 +767,18 @@ static void parse_app_paths(class Settings *settings_client, Settings *settings_
 
     for (const auto &id : ids) {
         auto val_ptr = ini.GetValue("app::paths", id.pItem);
-        if (!val_ptr || !val_ptr[0]) continue;
+        // NOTE: empty path means we actively disable the path to the appid specified
+        if (!val_ptr) continue;
 
         AppId_t appid = (AppId_t)std::stoul(id.pItem);
         std::string rel_path(val_ptr);
-        std::string path = canonical_path(program_path + rel_path);
+        std::string path{};
+        if (rel_path.size())
+            path = canonical_path(program_path + rel_path);
 
         if (appid) {
-            if (path.size()) {
-                PRINT_DEBUG("Adding app path: %u|%s|", appid, path.c_str());
+            if (!rel_path.size() || path.size()) {
+                PRINT_DEBUG("Adding app path: %u|%s|%s", appid, rel_path.c_str(), path.c_str());
                 settings_client->setAppInstallPath(appid, path);
                 settings_server->setAppInstallPath(appid, path);
             } else {
