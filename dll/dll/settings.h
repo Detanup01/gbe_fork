@@ -321,7 +321,10 @@ public:
     //controller
     struct Controller_Settings controller_settings{};
     std::string glyphs_directory{};
-
+    bool flip_nintendo_layout = false;
+    bool combine_joycons = true;
+    uint16 inner_deadzone = 2000;
+    uint16 outer_deadzone = 3000;
 
     // allow Steam_User_Stats::FindLeaderboard() to always succeed and create the given unknown leaderboard
     bool disable_leaderboards_create_unknown = false;

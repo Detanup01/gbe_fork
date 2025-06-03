@@ -19,6 +19,7 @@
 #define SI_SUPPORT_IOSTREAMS
 #define SI_NO_MBCS
 #include "simpleini/SimpleIni.h"
+#include "gamepad_provider/gamepad_provider.hpp"
 
 #include "dll/settings_parser.h"
 #include "dll/settings_parser_ufs.h"
@@ -74,13 +75,13 @@ static void save_global_ini_value(class Local_Storage *local_storage, const char
         comment_str.append("# ").append(comment);
         comment = comment_str.c_str();
     }
-    
+
     switch (val.type)
     {
     case IniValue::Type::STR:
         new_ini.SetValue(section, key, val.val_str, comment);
     break;
-    
+
     case IniValue::Type::BOOL:
         new_ini.SetBoolValue(section, key, val.val_bool, comment);
     break;
@@ -100,7 +101,7 @@ static void save_global_ini_value(class Local_Storage *local_storage, const char
     if (new_ini.Save(ini_buff, false) == SI_OK) {
         local_storage->store_data_settings(filename, &ini_buff[0], static_cast<unsigned int>(ini_buff.size()));
     }
-    
+
 }
 
 static void merge_ini(const CSimpleIniA &new_ini, bool overwrite = false) {
@@ -556,7 +557,7 @@ static uint32 parse_steam_app_id(const std::string &program_path)
         std::string str_appid = get_env_variable("SteamAppId");
         std::string str_gameid = get_env_variable("SteamGameId");
         std::string str_overlay_gameid = get_env_variable("SteamOverlayGameId");
-        
+
         PRINT_DEBUG("str_appid %s str_gameid: %s str_overlay_gameid: %s", str_appid.c_str(), str_gameid.c_str(), str_overlay_gameid.c_str());
         uint32 appid_env = 0;
         uint32 gameid_env = 0;
@@ -620,7 +621,7 @@ static bool parse_local_save(std::string &save_path)
 
     auto ptr = ini.GetValue("user::saves", "local_save_path");
     if (!ptr || !ptr[0]) return false;
-    
+
     save_path = common_helpers::to_absolute(common_helpers::string_strip(ptr), Local_Storage::get_program_path());
     if (save_path.size() && save_path.back() != *PATH_SEPARATOR) {
         save_path.push_back(*PATH_SEPARATOR);
@@ -795,7 +796,7 @@ static void parse_dlc(class Settings *settings_client, class Settings *settings_
     for (const auto &dlc_key : dlcs_keys) {
         AppId_t appid = (AppId_t)std::stoul(dlc_key.pItem);
         if (!appid) continue;
-        
+
         auto name = ini.GetValue("app::dlcs", dlc_key.pItem, "unknown DLC");
         PRINT_DEBUG("adding DLC: [%u] = '%s'", appid, name);
         settings_client->addDLC(appid, name, true);
@@ -1058,7 +1059,7 @@ static std::string get_mod_preview_url(const std::string &previewFileName, const
     } else {
         auto settings_folder = std::string(Local_Storage::get_game_settings_path());
         std::replace(settings_folder.begin(), settings_folder.end(), '\\', '/');
-        
+
         return
 
 #if defined(__WINDOWS__)
@@ -1069,7 +1070,7 @@ static std::string get_mod_preview_url(const std::string &previewFileName, const
 
             + settings_folder + "mod_images/" + mod_id + "/" + previewFileName;
     }
-    
+
 }
 
 static void try_parse_mods_file(class Settings *settings_client, Settings *settings_server, nlohmann::json &mod_items, const std::string &mods_folder)
@@ -1111,7 +1112,7 @@ static void try_parse_mods_file(class Settings *settings_client, Settings *setti
                 primary_filesize = (int32)get_file_size_safe(newMod.primaryFileName, newMod.path, primary_filesize);
             }
             newMod.primaryFileSize = mod.value().value("primary_filesize", primary_filesize);
-            
+
             newMod.previewFileName = mod.value().value("preview_filename", std::string(""));
             int32 preview_filesize = 0;
             if (!newMod.previewFileName.empty()) {
@@ -1123,7 +1124,7 @@ static void try_parse_mods_file(class Settings *settings_client, Settings *setti
             newMod.min_game_branch = mod.value().value("min_game_branch", "");
             newMod.max_game_branch = mod.value().value("max_game_branch", "");
             newMod.metadata = mod.value().value("metadata", "");
-            
+
             newMod.workshopItemURL = mod.value().value("workshop_item_url", "https://steamcommunity.com/sharedfiles/filedetails/?id=" + std::string(mod.key()));
             newMod.votesUp = mod.value().value("upvotes", (uint32)500);
             newMod.votesDown = mod.value().value("downvotes", (uint32)12);
@@ -1134,15 +1135,15 @@ static void try_parse_mods_file(class Settings *settings_client, Settings *setti
                 score = newMod.votesUp / (float)(newMod.votesUp + newMod.votesDown);
             } catch(...) {}
             newMod.score = mod.value().value("score", score);
-            
+
             newMod.numChildren = mod.value().value("num_children", (uint32)0);
             newMod.previewURL = mod.value().value("preview_url", get_mod_preview_url(newMod.previewFileName, std::string(mod.key())));
-            
+
             settings_client->addMod(newMod.id, newMod.title, newMod.path);
             settings_server->addMod(newMod.id, newMod.title, newMod.path);
             settings_client->addModDetails(newMod.id, newMod);
             settings_server->addModDetails(newMod.id, newMod);
-            
+
             PRINT_DEBUG("  parsed mod '%s':", std::string(mod.key()).c_str());
             PRINT_DEBUG("    path (will be used for primary file): '%s'", newMod.path.c_str());
             PRINT_DEBUG("    images path (will be used for preview file): '%s'", mod_images_fullpath.c_str());
@@ -1207,7 +1208,7 @@ static void try_detect_mods_folder(class Settings *settings_client, Settings *se
             newMod.score = 0.97f;
             newMod.numChildren = (uint32)0;
             newMod.previewURL = get_mod_preview_url(newMod.previewFileName, mod_folder);
-            
+
             settings_client->addMod(newMod.id, newMod.title, newMod.path);
             settings_server->addMod(newMod.id, newMod.title, newMod.path);
             settings_client->addModDetails(newMod.id, newMod);
@@ -1362,13 +1363,13 @@ static bool parse_branches_file(
     auto current_epoch = (uint32)std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     for (const auto &branch_data : branches) {
         auto &new_banch = result.emplace_back(Branch_Info{});
-        
+
         new_banch.name = branch_data.value("name", new_banch.name);
         new_banch.description = branch_data.value("description", new_banch.description);
         new_banch.branch_protected = branch_data.value("protected", new_banch.branch_protected);
         new_banch.build_id = branch_data.value("build_id", new_banch.build_id);
         new_banch.time_updated_epoch = branch_data.value("time_updated", new_banch.time_updated_epoch);
-        
+
         new_banch.flags = EBetaBranchFlags::k_EBetaBranch_Available;
         if (new_banch.branch_protected) {
             new_banch.flags = static_cast<EBetaBranchFlags>(new_banch.flags | EBetaBranchFlags::k_EBetaBranch_Private);
@@ -1495,7 +1496,7 @@ static void parse_overlay_general_config(class Settings *settings_client, class 
 
     settings_client->overlay_always_show_fps = ini.GetBoolValue("overlay::general", "overlay_always_show_fps", settings_client->overlay_always_show_fps);
     settings_server->overlay_always_show_fps = ini.GetBoolValue("overlay::general", "overlay_always_show_fps", settings_server->overlay_always_show_fps);
-    
+
     settings_client->overlay_always_show_frametime = ini.GetBoolValue("overlay::general", "overlay_always_show_frametime", settings_client->overlay_always_show_frametime);
     settings_server->overlay_always_show_frametime = ini.GetBoolValue("overlay::general", "overlay_always_show_frametime", settings_server->overlay_always_show_frametime);
 
@@ -1505,17 +1506,17 @@ static void parse_overlay_general_config(class Settings *settings_client, class 
     {
         auto val = ini.GetLongValue("overlay::general", "fps_averaging_window", settings_client->overlay_fps_avg_window);
         if (val > 0) {
-            settings_client->overlay_fps_avg_window = val;        
+            settings_client->overlay_fps_avg_window = val;
         }
     }
 
     {
         auto val = ini.GetLongValue("overlay::general", "fps_averaging_window", settings_server->overlay_fps_avg_window);
         if (val > 0) {
-            settings_server->overlay_fps_avg_window = val;        
+            settings_server->overlay_fps_avg_window = val;
         }
     }
-    
+
 }
 
 // main::misc::steam_game_stats_reports_dir
@@ -1570,7 +1571,7 @@ static void parse_simple_features(class Settings *settings_client, class Setting
 
     settings_client->disable_sharing_stats_with_gameserver = ini.GetBoolValue("main::connectivity", "disable_sharing_stats_with_gameserver", settings_client->disable_sharing_stats_with_gameserver);
     settings_server->disable_sharing_stats_with_gameserver = ini.GetBoolValue("main::connectivity", "disable_sharing_stats_with_gameserver", settings_server->disable_sharing_stats_with_gameserver);
-    
+
     settings_client->disable_source_query = ini.GetBoolValue("main::connectivity", "disable_source_query", settings_client->disable_source_query);
     settings_server->disable_source_query = ini.GetBoolValue("main::connectivity", "disable_source_query", settings_server->disable_source_query);
 
@@ -1599,6 +1600,20 @@ static void parse_simple_features(class Settings *settings_client, class Setting
 
     settings_client->free_weekend = ini.GetBoolValue("main::misc", "free_weekend", settings_client->free_weekend);
     settings_server->free_weekend = ini.GetBoolValue("main::misc", "free_weekend", settings_server->free_weekend);
+}
+
+// [main::gamepad]
+static void parse_user_gamepad_settings(class Settings* settings_client, class Settings* settings_server) {
+    settings_client->flip_nintendo_layout = ini.GetBoolValue("main::gamepad", "flip_nintendo_layout", settings_client->flip_nintendo_layout);
+    settings_server->flip_nintendo_layout = ini.GetBoolValue("main::gamepad", "flip_nintendo_layout", settings_server->flip_nintendo_layout);
+
+    settings_client->combine_joycons = ini.GetBoolValue("main::gamepad", "combine_joycons", settings_client->combine_joycons);
+    settings_server->combine_joycons = ini.GetBoolValue("main::gamepad", "combine_joycons", settings_server->combine_joycons);
+
+    settings_client->inner_deadzone = std::min(static_cast<uint16>(ini.GetLongValue("main::gamepad", "inner_deadzone", settings_client->inner_deadzone)), static_cast<uint16>(JOYSTICK_MAX));
+    settings_server->inner_deadzone = std::min(static_cast<uint16>(ini.GetLongValue("main::gamepad", "inner_deadzone", settings_server->inner_deadzone)), static_cast<uint16>(JOYSTICK_MAX));
+    settings_client->outer_deadzone = std::min(static_cast<uint16>(ini.GetLongValue("main::gamepad", "outer_deadzone", settings_client->outer_deadzone)), static_cast<uint16>(JOYSTICK_MAX));
+    settings_server->outer_deadzone = std::min(static_cast<uint16>(ini.GetLongValue("main::gamepad", "outer_deadzone", settings_server->outer_deadzone)), static_cast<uint16>(JOYSTICK_MAX));
 }
 
 // [main::stats]
@@ -1705,7 +1720,7 @@ static void load_all_config_settings()
 {
     static std::recursive_mutex ini_mtx{};
     static bool loaded = false;
-    
+
     std::lock_guard lck(ini_mtx);
     if (loaded) return;
     loaded = true;
@@ -1736,7 +1751,7 @@ static void load_all_config_settings()
                 merge_ini(local_ini);
             }
         }
-        
+
         std::string saves_folder_name(common_helpers::string_strip(Settings::sanitize(local_ini.GetValue("user::saves", "saves_folder_name", ""))));
         if (saves_folder_name.size()) {
             Local_Storage::set_saves_folder_name(saves_folder_name);
@@ -1760,28 +1775,28 @@ static void load_all_config_settings()
                 merge_ini(local_ini, true);
             }
         }
-        
+
         std::string saves_folder_name(common_helpers::string_strip(Settings::sanitize(local_ini.GetValue("user::saves", "saves_folder_name", ""))));
         if (saves_folder_name.size()) {
             Local_Storage::set_saves_folder_name(saves_folder_name);
             PRINT_DEBUG("changed base folder for save data to '%s'", saves_folder_name.c_str());
         }
-        
+
         PRINT_DEBUG("global settings will be ignored since local save is being used");
 
     } else { // only read global folder if we're not using local save
         CSimpleIniA global_ini{};
         global_ini.SetUnicode();
-        
+
         // now we can access get_user_appdata_path() which might have been changed by the above code
         for (const auto &config_file : config_files) {
             std::ifstream ini_file( std::filesystem::u8path(Local_Storage::get_user_appdata_path() + Local_Storage::settings_storage_folder + PATH_SEPARATOR + config_file), std::ios::binary | std::ios::in);
             if (!ini_file.is_open()) continue;
-            
+
             auto err = global_ini.LoadData(ini_file);
             ini_file.close();
             PRINT_DEBUG("result of parsing global ini '%s' %i (success == 0)", config_file, (int)err);
-            
+
             if (err == SI_OK) {
                 merge_ini(global_ini);
             }
@@ -1834,7 +1849,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
 
     const std::string program_path(Local_Storage::get_program_path());
     const std::string steam_settings_path(Local_Storage::get_game_settings_path());
-    
+
     std::string save_path(Local_Storage::get_user_appdata_path());
     bool local_save = parse_local_save(save_path);
     PRINT_DEBUG("program path: '%s', base path for saves: '%s'", program_path.c_str(), save_path.c_str());
@@ -1855,7 +1870,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     std::string name(parse_account_name(local_storage));
     // Steam ID
     CSteamID user_id = parse_user_steam_id(local_storage);
-    
+
     // Alt Steam ID for savegame system
     CSteamID alt_steamid = parse_alt_steam_id(local_storage);
     uint32 alt_steamid_count = parse_alt_steamid_count(local_storage);
@@ -1892,6 +1907,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
 
     parse_simple_features(settings_client, settings_server);
     parse_stats_features(settings_client, settings_server);
+    parse_user_gamepad_settings(settings_client, settings_server);
 
     parse_dlc(settings_client, settings_server);
     parse_installed_app_Ids(settings_client, settings_server);
@@ -1911,7 +1927,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     parse_ip_country(local_storage, settings_client, settings_server);
 
     parse_encrypted_app_ticket(settings_client, settings_server);
-    
+
     // try local "steam_settings" then saves path, on second trial force load defaults
     if (!parse_branches_file(steam_settings_path, false, settings_client, settings_server, local_storage)) {
         parse_branches_file(local_storage->get_global_settings_path(), true, settings_client, settings_server, local_storage);
@@ -1939,7 +1955,7 @@ void save_global_settings(class Local_Storage *local_storage, const char *name, 
         "user::general", "account_name", IniValue(name),
         "user account name"
     );
-    
+
     save_global_ini_value(
         local_storage,
         config_ini_user,
