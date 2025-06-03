@@ -93,6 +93,11 @@ newoption {
     trigger = "ext-ingame_overlay",
     description = "Extract ingame_overlay",
 }
+newoption {
+    category = "extract",
+    trigger = "ext-sdl3",
+    description = "Extract sdl3",
+}
 
 -- build
 newoption {
@@ -146,6 +151,11 @@ newoption {
     trigger = "build-ingame_overlay",
     description = "Build ingame_overlay",
 }
+newoption {
+    category = "build",
+    trigger = "build-sdl3",
+    description = "Build sdl3",
+}
 
 
 local function merge_list(src, dest)
@@ -185,7 +195,9 @@ else
         mycmake = mycmake .. '.exe'
     end
     if not os.isfile(mycmake) then
-        error('cmake is missing from third-party dir, you can specify custom cmake location, run the script with --help. cmake: ' .. mycmake)
+        error(
+            'cmake is missing from third-party dir, you can specify custom cmake location, run the script with --help. cmake: ' ..
+            mycmake)
     end
 end
 
@@ -226,10 +238,10 @@ local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_
     end
 
     print('\n\nbuilding dep: "' .. dep_base .. '"')
-    
+
     local build_dir = path.getabsolute(path.join(dep_base, 'build' .. arch_iden))
     local install_dir = path.join(dep_base, 'install' .. arch_iden)
-    
+
     -- clean if required
     if _OPTIONS["clean"] then
         print('cleaning dir: ' .. build_dir)
@@ -243,7 +255,8 @@ local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_
         return
     end
 
-    local cmake_common_defs_str = '-D' .. table.concat(cmake_common_defs, ' -D') .. ' -DCMAKE_INSTALL_PREFIX="' .. install_dir .. '"'
+    local cmake_common_defs_str = '-D' ..
+        table.concat(cmake_common_defs, ' -D') .. ' -DCMAKE_INSTALL_PREFIX="' .. install_dir .. '"'
     local cmd_gen = mycmake .. ' -S "' .. dep_base .. '" -B "' .. build_dir .. '" ' .. cmake_common_defs_str
 
     local all_cflags_init = {}
@@ -275,7 +288,7 @@ local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_
         error("unsupported action for cmake build: " .. _ACTION)
         return
     end
-    
+
     -- add c/cxx extra init flags
     if c_flags_init then
         if type(c_flags_init) ~= 'table' then
@@ -308,7 +321,7 @@ local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_
     -- write toolchain file
     local toolchain_file_content = ''
     if _OPTIONS["cmake-toolchain"] then
-        toolchain_file_content='include(' .. _OPTIONS["cmake-toolchain"] .. ')\n\n'
+        toolchain_file_content = 'include(' .. _OPTIONS["cmake-toolchain"] .. ')\n\n'
     end
     if #cflags_init_str > 0 then
         toolchain_file_content = toolchain_file_content .. 'set(CMAKE_C_FLAGS_INIT "' .. cflags_init_str .. '" )\n'
@@ -317,12 +330,15 @@ local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_
         toolchain_file_content = toolchain_file_content .. 'set(CMAKE_CXX_FLAGS_INIT "' .. cxxflags_init_str .. '" )\n'
     end
     if string.match(_ACTION, 'vs.+') then -- because libssq doesn't care about CMAKE_C/XX_FLAGS_INIT
-        toolchain_file_content = toolchain_file_content .. 'set(CMAKE_C_FLAGS_RELEASE  "${CMAKE_C_FLAGS_RELEASE} /MT /D_MT" ) \n'
-        toolchain_file_content = toolchain_file_content .. 'set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /D_MT" ) \n'
+        toolchain_file_content = toolchain_file_content ..
+            'set(CMAKE_C_FLAGS_RELEASE  "${CMAKE_C_FLAGS_RELEASE} /MT /D_MT" ) \n'
+        toolchain_file_content = toolchain_file_content ..
+            'set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /D_MT" ) \n'
     end
-    
+
     if #toolchain_file_content > 0 then
-        local toolchain_file = path.join(dep_base, 'toolchain_' .. tostring(is_32) .. '_' .. _ACTION .. '_' .. os_iden .. '.precmt')
+        local toolchain_file = path.join(dep_base,
+            'toolchain_' .. tostring(is_32) .. '_' .. _ACTION .. '_' .. os_iden .. '.precmt')
         if not io.writefile(toolchain_file, toolchain_file_content) then
             error("failed to write cmake toolchain")
             return
@@ -365,7 +381,8 @@ local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_
     if _OPTIONS['j'] then
         parallel_str = parallel_str .. ' ' .. _OPTIONS['j']
     end
-    local ok = os.execute(mycmake .. ' --build "' .. build_dir .. '" --config Release' .. parallel_str .. verbose_build_str)
+    local ok = os.execute(mycmake ..
+        ' --build "' .. build_dir .. '" --config Release' .. parallel_str .. verbose_build_str)
     if not ok then
         error("failed to build")
         return
@@ -377,7 +394,7 @@ local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_
         return
     end
 
-    local cmd_install = mycmake.. ' --install "' .. build_dir .. '" --prefix "' .. install_dir .. '"'
+    local cmd_install = mycmake .. ' --install "' .. build_dir .. '" --prefix "' .. install_dir .. '"'
     print(cmd_install)
     local ok = os.execute(cmd_install)
     if not ok then
@@ -427,6 +444,9 @@ end
 if _OPTIONS["ext-ingame_overlay"] or _OPTIONS["all-ext"] then
     table.insert(deps_to_extract, { 'ingame_overlay/ingame_overlay.tar.gz', 'ingame_overlay' })
 end
+if _OPTIONS["ext-sdl3"] or _OPTIONS["all-ext"] then
+    table.insert(deps_to_extract, { 'sdl3/sdl3.tar.gz', 'sdl3' })
+end
 
 -- start extraction
 for _, dep in pairs(deps_to_extract) do
@@ -460,7 +480,9 @@ for _, dep in pairs(deps_to_extract) do
     local ext = string.lower(string.sub(archive_file, -7)) -- ".tar.gz"
     local ok_cmd = false
     if ext == ".tar.gz" then
-        ok_cmd = os.execute(extractor .. ' -bso0 -bse2 x "' .. archive_file .. '" -so | "' .. extractor .. '" -bso0 -bse2 x -si -ttar -y -aoa -o"' .. deps_dir .. '"')
+        ok_cmd = os.execute(extractor ..
+            ' -bso0 -bse2 x "' ..
+            archive_file .. '" -so | "' .. extractor .. '" -bso0 -bse2 x -si -ttar -y -aoa -o"' .. deps_dir .. '"')
     else
         ok_cmd = os.execute(extractor .. ' -bso0 -bse2 x "' .. archive_file .. '" -y -aoa -o"' .. out_folder .. '"')
     end
@@ -479,7 +501,6 @@ for _, dep in pairs(deps_to_extract) do
     --     end
     --     os.rmdir(inner_folder)
     -- end
-
 end
 
 
@@ -509,7 +530,7 @@ end
 --     if(ZLIB_FOUND)
 --       set(HAVE_LIBZ ON)
 --       set(USE_ZLIB ON)
---     
+--
 --       # Depend on ZLIB via imported targets if supported by the running
 --       # version of CMake.  This allows our dependents to get our dependencies
 --       # transitively.
@@ -622,7 +643,7 @@ if _OPTIONS["build-curl"] or _OPTIONS["all-build"] then
 
         "CURL_USE_OPENSSL=OFF",
         "CURL_ZLIB=ON",
-        
+
         "CURL_USE_MBEDTLS=ON",
         -- "CURL_USE_SCHANNEL=ON",
         "CURL_CA_FALLBACK=ON",
@@ -735,5 +756,17 @@ if _OPTIONS["build-ingame_overlay"] or _OPTIONS["all-build"] then
             'MINIDETOUR_DYNAMIC_RUNTIME=OFF',
         })
         cmake_build('ingame_overlay', false, ingame_overlay_common_defs, nil, ingame_overlay_fixes)
+    end
+end
+
+if _OPTIONS["build-sdl3"] or _OPTIONS["all-build"] then
+    local sdl3_common_defs = {
+    }
+
+    if _OPTIONS["32-build"] then
+        cmake_build('sdl3', true, sdl3_common_defs)
+    end
+    if _OPTIONS["64-build"] then
+        cmake_build('sdl3', false, sdl3_common_defs)
     end
 end

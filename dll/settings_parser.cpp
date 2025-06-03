@@ -21,6 +21,7 @@
 #define SI_SUPPORT_IOSTREAMS
 #define SI_NO_MBCS
 #include "simpleini/SimpleIni.h"
+#include "gamepad_provider/gamepad_provider.hpp"
 
 
 constexpr const static char config_ini_app[]     = "configs.app.ini";
@@ -1513,6 +1514,20 @@ static void parse_simple_features(class Settings *settings_client, class Setting
     settings_server->enable_builtin_preowned_ids = ini.GetBoolValue("main::misc", "enable_steam_preowned_ids", settings_server->enable_builtin_preowned_ids);
 }
 
+// [main::gamepad] 
+static void parse_user_gamepad_settings(class Settings* settings_client, class Settings* settings_server) {
+    settings_client->flip_nintendo_layout = ini.GetBoolValue("main::gamepad", "flip_nintendo_layout", settings_client->flip_nintendo_layout);
+    settings_server->flip_nintendo_layout = ini.GetBoolValue("main::gamepad", "flip_nintendo_layout", settings_server->flip_nintendo_layout);
+
+    settings_client->combine_joycons = ini.GetBoolValue("main::gamepad", "combine_joycons", settings_client->combine_joycons);
+    settings_server->combine_joycons = ini.GetBoolValue("main::gamepad", "combine_joycons", settings_server->combine_joycons);
+
+    settings_client->inner_deadzone = std::min(static_cast<uint16>(ini.GetLongValue("main::gamepad", "inner_deadzone", settings_client->inner_deadzone)), static_cast<uint16>(JOYSTICK_MAX));
+    settings_server->inner_deadzone = std::min(static_cast<uint16>(ini.GetLongValue("main::gamepad", "inner_deadzone", settings_server->inner_deadzone)), static_cast<uint16>(JOYSTICK_MAX));
+    settings_client->outer_deadzone = std::min(static_cast<uint16>(ini.GetLongValue("main::gamepad", "outer_deadzone", settings_client->outer_deadzone)), static_cast<uint16>(JOYSTICK_MAX));
+    settings_server->outer_deadzone = std::min(static_cast<uint16>(ini.GetLongValue("main::gamepad", "outer_deadzone", settings_server->outer_deadzone)), static_cast<uint16>(JOYSTICK_MAX));
+}
+
 // [main::stats]
 static void parse_stats_features(class Settings *settings_client, class Settings *settings_server)
 {
@@ -1791,6 +1806,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
 
     parse_simple_features(settings_client, settings_server);
     parse_stats_features(settings_client, settings_server);
+    parse_user_gamepad_settings(settings_client, settings_server);
 
     parse_dlc(settings_client, settings_server);
     parse_installed_app_Ids(settings_client, settings_server);
