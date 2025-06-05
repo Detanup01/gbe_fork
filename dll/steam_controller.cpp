@@ -506,7 +506,7 @@ ControllerActionSetHandle_t Steam_Controller::GetCurrentActionSet(ControllerHand
 
 void Steam_Controller::ActivateActionSetLayer(ControllerHandle_t controllerHandle, ControllerActionSetHandle_t actionSetLayerHandle)
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG_TODO();
     auto controller = controllers.find(controllerHandle);
     if (controller == controllers.end()) return;
     controller->second.activate_action_set_layer(actionSetLayerHandle, controller_maps);
@@ -514,7 +514,7 @@ void Steam_Controller::ActivateActionSetLayer(ControllerHandle_t controllerHandl
 
 void Steam_Controller::DeactivateActionSetLayer(ControllerHandle_t controllerHandle, ControllerActionSetHandle_t actionSetLayerHandle)
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG_TODO();
     auto controller = controllers.find(controllerHandle);
     if (controller == controllers.end()) return;
     controller->second.deactivate_action_set_layer(actionSetLayerHandle);
@@ -522,7 +522,7 @@ void Steam_Controller::DeactivateActionSetLayer(ControllerHandle_t controllerHan
 
 void Steam_Controller::DeactivateAllActionSetLayers(ControllerHandle_t controllerHandle)
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG_TODO();
     auto controller = controllers.find(controllerHandle);
     if (controller == controllers.end()) return;
     controller->second.active_layers.clear();
@@ -530,7 +530,7 @@ void Steam_Controller::DeactivateAllActionSetLayers(ControllerHandle_t controlle
 
 int Steam_Controller::GetActiveActionSetLayers(ControllerHandle_t controllerHandle, ControllerActionSetHandle_t* handlesOut)
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG_TODO();
     auto controller = controllers.find(controllerHandle);
     if (controller == controllers.end()) return 0;
     int count = 0;
@@ -1396,6 +1396,126 @@ const char* Steam_Controller::GetGlyphForActionOrigin(EControllerActionOrigin eO
         steamcontroller_glyphs[k_EControllerActionOrigin_XBox360_DPad_West] = dir + "xbox_button_dpad_w.png";
         steamcontroller_glyphs[k_EControllerActionOrigin_XBox360_DPad_East] = dir + "xbox_button_dpad_e.png";
         steamcontroller_glyphs[k_EControllerActionOrigin_XBox360_DPad_Move] = dir + "xbox_button_dpad_move.png";
+
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_A] = dir + "button_a.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_B] = dir + "button_b.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_X] = dir + "button_x.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_Y] = dir + "button_y.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_LeftBumper] = dir + "shoulder_l.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_RightBumper] = dir + "shoulder_r.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_Menu] = dir + "xbox_button_menu.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_View] = dir + "xbox_button_view.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_LeftTrigger_Pull] = dir + "trigger_l_pull.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_LeftTrigger_Click] = dir + "trigger_l_click.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_RightTrigger_Pull] = dir + "trigger_r_pull.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_RightTrigger_Click] = dir + "trigger_r_click.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_LeftStick_Move] = dir + "stick_l_move.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_LeftStick_Click] = dir + "stick_l_click.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_LeftStick_DPadNorth] = dir + "stick_dpad_n.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_LeftStick_DPadSouth] = dir + "stick_dpad_s.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_LeftStick_DPadWest] = dir + "stick_dpad_w.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_LeftStick_DPadEast] = dir + "stick_dpad_e.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_RightStick_Move] = dir + "stick_r_move.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_RightStick_Click] = dir + "stick_r_click.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_RightStick_DPadNorth] = dir + "stick_dpad_n.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_RightStick_DPadSouth] = dir + "stick_dpad_s.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_RightStick_DPadWest] = dir + "stick_dpad_w.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_RightStick_DPadEast] = dir + "stick_dpad_e.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_DPad_North] = dir + "xbox_button_dpad_n.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_DPad_South] = dir + "xbox_button_dpad_s.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_DPad_West] = dir + "xbox_button_dpad_w.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_DPad_East] = dir + "xbox_button_dpad_e.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_XBoxOne_DPad_Move] = dir + "xbox_button_dpad_move.png";
+
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_X] = dir + "ps4_button_x.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_Circle] = dir + "ps4_button_circle.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_Square] = dir + "ps4_button_square.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_Triangle] = dir + "ps4_button_triangle.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_LeftBumper] = dir + "ps4_l1.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_RightBumper] = dir + "ps4_r1.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_Options] = dir + "ps4_button_options.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_Share] = dir + "ps4_button_share.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_LeftTrigger_Pull] = dir + "ps4_l2_pull.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_LeftTrigger_Click] = dir + "ps4_l2_click.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_RightTrigger_Pull] = dir + "ps4_r2_pull.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_RightTrigger_Click] = dir + "ps4_r2_click.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_LeftStick_Move] = dir + "stick_l_move.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_LeftStick_Click] = dir + "stick_l_click.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_LeftStick_DPadNorth] = dir + "stick_dpad_n.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_LeftStick_DPadSouth] = dir + "stick_dpad_s.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_LeftStick_DPadWest] = dir + "stick_dpad_w.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_LeftStick_DPadEast] = dir + "stick_dpad_e.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_RightStick_Move] = dir + "stick_r_move.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_RightStick_Click] = dir + "stick_r_click.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_RightStick_DPadNorth] = dir + "stick_dpad_n.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_RightStick_DPadSouth] = dir + "stick_dpad_s.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_RightStick_DPadWest] = dir + "stick_dpad_w.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_RightStick_DPadEast] = dir + "stick_dpad_e.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_DPad_North] = dir + "ps4_button_dpad_n.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_DPad_South] = dir + "ps4_button_dpad_s.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_DPad_West] = dir + "ps4_button_dpad_w.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_DPad_East] = dir + "ps4_button_dpad_e.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS4_DPad_Move] = dir + "ps4_button_dpad_move.png";
+
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_X] = dir + "ps5_button_x.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_Circle] = dir + "ps5_button_circle.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_Square] = dir + "ps5_button_square.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_Triangle] = dir + "ps5_button_triangle.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_LeftBumper] = dir + "ps5_l1.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_RightBumper] = dir + "ps5_r1.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_Option] = dir + "ps5_button_option.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_Create] = dir + "ps5_button_create.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_LeftTrigger_Pull] = dir + "ps5_l2_pull.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_LeftTrigger_Click] = dir + "ps5_l2_click.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_RightTrigger_Pull] = dir + "ps5_r2_pull.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_RightTrigger_Click] = dir + "ps5_r2_click.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_LeftStick_Move] = dir + "stick_l_move.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_LeftStick_Click] = dir + "stick_l_click.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_LeftStick_DPadNorth] = dir + "stick_dpad_n.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_LeftStick_DPadSouth] = dir + "stick_dpad_s.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_LeftStick_DPadWest] = dir + "stick_dpad_w.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_LeftStick_DPadEast] = dir + "stick_dpad_e.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_RightStick_Move] = dir + "stick_r_move.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_RightStick_Click] = dir + "stick_r_click.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_RightStick_DPadNorth] = dir + "stick_dpad_n.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_RightStick_DPadSouth] = dir + "stick_dpad_s.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_RightStick_DPadWest] = dir + "stick_dpad_w.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_RightStick_DPadEast] = dir + "stick_dpad_e.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_DPad_North] = dir + "ps5_button_dpad_n.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_DPad_South] = dir + "ps5_button_dpad_s.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_DPad_West] = dir + "ps5_button_dpad_w.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_DPad_East] = dir + "ps5_button_dpad_e.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_PS5_DPad_Move] = dir + "ps5_button_dpad_move.png";
+
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_A] = dir + "switch_button_a.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_B] = dir + "switch_button_b.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_X] = dir + "switch_button_x.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_Y] = dir + "switch_button_y.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_LeftBumper] = dir + "switch_l.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_RightBumper] = dir + "switch_r.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_Plus] = dir + "switch_button_plus.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_Minus] = dir + "switch_button_minus.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_LeftTrigger_Pull] = dir + "switch_zl_pull.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_LeftTrigger_Click] = dir + "switch_zl_click.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_RightTrigger_Pull] = dir + "switch_zr_pull.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_RightTrigger_Click] = dir + "switch_zr_click.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_LeftStick_Move] = dir + "stick_l_move.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_LeftStick_Click] = dir + "stick_l_click.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_LeftStick_DPadNorth] = dir + "stick_dpad_n.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_LeftStick_DPadSouth] = dir + "stick_dpad_s.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_LeftStick_DPadWest] = dir + "stick_dpad_w.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_LeftStick_DPadEast] = dir + "stick_dpad_e.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_RightStick_Move] = dir + "stick_r_move.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_RightStick_Click] = dir + "stick_r_click.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_RightStick_DPadNorth] = dir + "stick_dpad_n.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_RightStick_DPadSouth] = dir + "stick_dpad_s.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_RightStick_DPadWest] = dir + "stick_dpad_w.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_RightStick_DPadEast] = dir + "stick_dpad_e.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_DPad_North] = dir + "switch_button_dpad_n.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_DPad_South] = dir + "switch_button_dpad_s.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_DPad_West] = dir + "switch_button_dpad_w.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_DPad_East] = dir + "switch_button_dpad_e.png";
+        steamcontroller_glyphs[k_EControllerActionOrigin_Switch_DPad_Move] = dir + "switch_button_dpad_move.png";
     }
 
     auto glyph = steamcontroller_glyphs.find(eOrigin);
@@ -1409,9 +1529,7 @@ const char* Steam_Controller::GetGlyphForActionOrigin(EInputActionOrigin eOrigin
 {
     PRINT_DEBUG("steaminput %i", eOrigin);
     if (steaminput_glyphs.empty()) {
-        //std::string base_dir = settings->glyphs_directory;
         std::string dir = settings->glyphs_directory;
-        //dir = base_dir + (PATH_SEPARATOR "XBox360" PATH_SEPARATOR);
         steaminput_glyphs[k_EInputActionOrigin_XBox360_A] = dir + "button_a.png";
         steaminput_glyphs[k_EInputActionOrigin_XBox360_B] = dir + "button_b.png";
         steaminput_glyphs[k_EInputActionOrigin_XBox360_X] = dir + "button_x.png";
@@ -1441,6 +1559,126 @@ const char* Steam_Controller::GetGlyphForActionOrigin(EInputActionOrigin eOrigin
         steaminput_glyphs[k_EInputActionOrigin_XBox360_DPad_West] = dir + "xbox_button_dpad_w.png";
         steaminput_glyphs[k_EInputActionOrigin_XBox360_DPad_East] = dir + "xbox_button_dpad_e.png";
         steaminput_glyphs[k_EInputActionOrigin_XBox360_DPad_Move] = dir + "xbox_button_dpad_move.png";
+
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_A] = dir + "button_a.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_B] = dir + "button_b.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_X] = dir + "button_x.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_Y] = dir + "button_y.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_LeftBumper] = dir + "shoulder_l.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_RightBumper] = dir + "shoulder_r.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_Menu] = dir + "xbox_button_menu.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_View] = dir + "xbox_button_view.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_LeftTrigger_Pull] = dir + "trigger_l_pull.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_LeftTrigger_Click] = dir + "trigger_l_click.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_RightTrigger_Pull] = dir + "trigger_r_pull.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_RightTrigger_Click] = dir + "trigger_r_click.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_LeftStick_Move] = dir + "stick_l_move.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_LeftStick_Click] = dir + "stick_l_click.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_LeftStick_DPadNorth] = dir + "stick_dpad_n.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_LeftStick_DPadSouth] = dir + "stick_dpad_s.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_LeftStick_DPadWest] = dir + "stick_dpad_w.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_LeftStick_DPadEast] = dir + "stick_dpad_e.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_RightStick_Move] = dir + "stick_r_move.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_RightStick_Click] = dir + "stick_r_click.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_RightStick_DPadNorth] = dir + "stick_dpad_n.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_RightStick_DPadSouth] = dir + "stick_dpad_s.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_RightStick_DPadWest] = dir + "stick_dpad_w.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_RightStick_DPadEast] = dir + "stick_dpad_e.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_DPad_North] = dir + "xbox_button_dpad_n.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_DPad_South] = dir + "xbox_button_dpad_s.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_DPad_West] = dir + "xbox_button_dpad_w.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_DPad_East] = dir + "xbox_button_dpad_e.png";
+        steaminput_glyphs[k_EInputActionOrigin_XBoxOne_DPad_Move] = dir + "xbox_button_dpad_move.png";
+
+        steaminput_glyphs[k_EInputActionOrigin_PS4_X] = dir + "ps4_button_x.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_Circle] = dir + "ps4_button_circle.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_Square] = dir + "ps4_button_square.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_Triangle] = dir + "ps4_button_triangle.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_LeftBumper] = dir + "ps4_l1.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_RightBumper] = dir + "ps4_r1.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_Options] = dir + "ps4_button_options.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_Share] = dir + "ps4_button_share.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_LeftTrigger_Pull] = dir + "ps4_l2_pull.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_LeftTrigger_Click] = dir + "ps4_l2_click.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_RightTrigger_Pull] = dir + "ps4_r2_pull.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_RightTrigger_Click] = dir + "ps4_r2_click.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_LeftStick_Move] = dir + "stick_l_move.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_LeftStick_Click] = dir + "stick_l_click.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_LeftStick_DPadNorth] = dir + "stick_dpad_n.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_LeftStick_DPadSouth] = dir + "stick_dpad_s.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_LeftStick_DPadWest] = dir + "stick_dpad_w.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_LeftStick_DPadEast] = dir + "stick_dpad_e.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_RightStick_Move] = dir + "stick_r_move.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_RightStick_Click] = dir + "stick_r_click.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_RightStick_DPadNorth] = dir + "stick_dpad_n.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_RightStick_DPadSouth] = dir + "stick_dpad_s.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_RightStick_DPadWest] = dir + "stick_dpad_w.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_RightStick_DPadEast] = dir + "stick_dpad_e.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_DPad_North] = dir + "ps4_button_dpad_n.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_DPad_South] = dir + "ps4_button_dpad_s.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_DPad_West] = dir + "ps4_button_dpad_w.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_DPad_East] = dir + "ps4_button_dpad_e.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS4_DPad_Move] = dir + "ps4_button_dpad_move.png";
+
+        steaminput_glyphs[k_EInputActionOrigin_PS5_X] = dir + "ps5_button_x.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_Circle] = dir + "ps5_button_circle.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_Square] = dir + "ps5_button_square.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_Triangle] = dir + "ps5_button_triangle.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_LeftBumper] = dir + "ps5_l1.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_RightBumper] = dir + "ps5_r1.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_Option] = dir + "ps5_button_option.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_Create] = dir + "ps5_button_create.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_LeftTrigger_Pull] = dir + "ps5_l2_pull.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_LeftTrigger_Click] = dir + "ps5_l2_click.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_RightTrigger_Pull] = dir + "ps5_r2_pull.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_RightTrigger_Click] = dir + "ps5_r2_click.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_LeftStick_Move] = dir + "stick_l_move.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_LeftStick_Click] = dir + "stick_l_click.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_LeftStick_DPadNorth] = dir + "stick_dpad_n.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_LeftStick_DPadSouth] = dir + "stick_dpad_s.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_LeftStick_DPadWest] = dir + "stick_dpad_w.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_LeftStick_DPadEast] = dir + "stick_dpad_e.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_RightStick_Move] = dir + "stick_r_move.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_RightStick_Click] = dir + "stick_r_click.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_RightStick_DPadNorth] = dir + "stick_dpad_n.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_RightStick_DPadSouth] = dir + "stick_dpad_s.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_RightStick_DPadWest] = dir + "stick_dpad_w.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_RightStick_DPadEast] = dir + "stick_dpad_e.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_DPad_North] = dir + "ps5_button_dpad_n.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_DPad_South] = dir + "ps5_button_dpad_s.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_DPad_West] = dir + "ps5_button_dpad_w.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_DPad_East] = dir + "ps5_button_dpad_e.png";
+        steaminput_glyphs[k_EInputActionOrigin_PS5_DPad_Move] = dir + "ps5_button_dpad_move.png";
+
+        steaminput_glyphs[k_EInputActionOrigin_Switch_A] = dir + "switch_button_a.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_B] = dir + "switch_button_b.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_X] = dir + "switch_button_x.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_Y] = dir + "switch_button_y.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_LeftBumper] = dir + "switch_l.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_RightBumper] = dir + "switch_r.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_Plus] = dir + "switch_button_plus.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_Minus] = dir + "switch_button_minus.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_LeftTrigger_Pull] = dir + "switch_zl_pull.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_LeftTrigger_Click] = dir + "switch_zl_click.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_RightTrigger_Pull] = dir + "switch_zr_pull.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_RightTrigger_Click] = dir + "switch_zr_click.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_LeftStick_Move] = dir + "stick_l_move.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_LeftStick_Click] = dir + "stick_l_click.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_LeftStick_DPadNorth] = dir + "stick_dpad_n.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_LeftStick_DPadSouth] = dir + "stick_dpad_s.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_LeftStick_DPadWest] = dir + "stick_dpad_w.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_LeftStick_DPadEast] = dir + "stick_dpad_e.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_RightStick_Move] = dir + "stick_r_move.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_RightStick_Click] = dir + "stick_r_click.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_RightStick_DPadNorth] = dir + "stick_dpad_n.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_RightStick_DPadSouth] = dir + "stick_dpad_s.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_RightStick_DPadWest] = dir + "stick_dpad_w.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_RightStick_DPadEast] = dir + "stick_dpad_e.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_DPad_North] = dir + "switch_button_dpad_n.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_DPad_South] = dir + "switch_button_dpad_s.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_DPad_West] = dir + "switch_button_dpad_w.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_DPad_East] = dir + "switch_button_dpad_e.png";
+        steaminput_glyphs[k_EInputActionOrigin_Switch_DPad_Move] = dir + "switch_button_dpad_move.png";
         //steaminput_glyphs[] = dir + "";
     }
 
