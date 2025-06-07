@@ -26,6 +26,7 @@
 #define SI_NO_MBCS
 #include "simpleini/SimpleIni.h"
 #include "gamepad_provider/gamepad_provider.hpp"
+<<<<<<< HEAD
 
 
 constexpr const static char config_ini_app[]     = "configs.app.ini";
@@ -458,6 +459,440 @@ static void split_string(const std::string &s, char delim, Out result) {
 static void load_gamecontroller_settings(Settings *settings)
 {
     auto process_paths = [&](std::string path, std::map<std::string, std::map<std::string, std::pair<std::set<std::string>, std::string>>> action_sets) {
+=======
+
+
+constexpr const static char config_ini_app[]     = "configs.app.ini";
+constexpr const static char config_ini_main[]    = "configs.main.ini";
+constexpr const static char config_ini_overlay[] = "configs.overlay.ini";
+constexpr const static char config_ini_user[]    = "configs.user.ini";
+
+static CSimpleIniA ini{};
+
+typedef struct IniValue {
+    enum class Type {
+        STR,
+        BOOL,
+        DOUBLE,
+        LONG,
+    };
+
+    explicit IniValue(const char *new_val): type(Type::STR),     val_str(new_val) {}
+    explicit IniValue(bool new_val):        type(Type::BOOL),    val_bool(new_val) {}
+    explicit IniValue(double new_val):      type(Type::DOUBLE),  val_double(new_val) {}
+    explicit IniValue(long new_val):        type(Type::LONG),    val_long(new_val) {}
+
+    Type type;
+    union {
+        const char *val_str;
+        bool val_bool;
+        double val_double;
+        long val_long;
+
+    };
+} IniValue;
+
+static void save_global_ini_value(class Local_Storage *local_storage, const char *filename, const char *section, const char *key, IniValue val, const char *comment = nullptr) {
+    CSimpleIniA new_ini{};
+    new_ini.SetUnicode();
+    new_ini.SetSpaces(false);
+
+    auto sz = local_storage->data_settings_size(filename);
+    if (sz > 0) {
+        std::vector<char> ini_file_data(sz);
+        auto read = local_storage->get_data_settings(filename, &ini_file_data[0], static_cast<unsigned int>(ini_file_data.size()));
+        if (read == sz) {
+            new_ini.LoadData(&ini_file_data[0], ini_file_data.size());
+        }
+    }
+
+    std::string comment_str{};
+    if (comment && comment[0]) {
+        comment_str.append("# ").append(comment);
+        comment = comment_str.c_str();
+    }
+    
+    switch (val.type)
+    {
+    case IniValue::Type::STR:
+        new_ini.SetValue(section, key, val.val_str, comment);
+    break;
+    
+    case IniValue::Type::BOOL:
+        new_ini.SetBoolValue(section, key, val.val_bool, comment);
+    break;
+
+    case IniValue::Type::DOUBLE:
+        new_ini.SetDoubleValue(section, key, val.val_double, comment);
+    break;
+
+    case IniValue::Type::LONG:
+        new_ini.SetLongValue(section, key, val.val_long, comment);
+    break;
+
+    default: break;
+    }
+
+    std::string ini_buff{};
+    if (new_ini.Save(ini_buff, false) == SI_OK) {
+        local_storage->store_data_settings(filename, &ini_buff[0], static_cast<unsigned int>(ini_buff.size()));
+    }
+    
+}
+
+static void merge_ini(const CSimpleIniA &new_ini, bool overwrite = false) {
+    std::list<CSimpleIniA::Entry> sections{};
+    new_ini.GetAllSections(sections);
+    for (auto const &sec : sections) {
+        std::list<CSimpleIniA::Entry> keys{};
+        new_ini.GetAllKeys(sec.pItem, keys);
+        for (auto const &key : keys) {
+            // only add the key if it didn't exist already
+            if (!ini.KeyExists(sec.pItem, key.pItem) || overwrite) {
+                std::list<CSimpleIniA::Entry> vals{};
+                new_ini.GetAllValues(sec.pItem, key.pItem, vals);
+                for (const auto &val : vals) {
+                    ini.SetValue(sec.pItem, key.pItem, val.pItem);
+                }
+            }
+        }
+    }
+}
+
+
+Overlay_Appearance::NotificationPosition Overlay_Appearance::translate_notification_position(const std::string &str)
+{
+    if (str == "top_left") return NotificationPosition::top_left;
+    else if (str == "top_center") return NotificationPosition::top_center;
+    else if (str == "top_right") return NotificationPosition::top_right;
+    else if (str == "bot_left") return NotificationPosition::bot_left;
+    else if (str == "bot_center") return NotificationPosition::bot_center;
+    else if (str == "bot_right") return NotificationPosition::bot_right;
+
+    PRINT_DEBUG("Invalid position '%s'", str.c_str());
+    return default_pos;
+}
+
+
+// custom_broadcasts.txt
+static void load_custom_broadcasts(const std::string &base_path, std::set<IP_PORT> &custom_broadcasts)
+{
+    const std::string broadcasts_filepath(base_path + "custom_broadcasts.txt");
+    std::ifstream broadcasts_file(std::filesystem::u8path(broadcasts_filepath));
+    if (broadcasts_file.is_open()) {
+        common_helpers::consume_bom(broadcasts_file);
+        PRINT_DEBUG("loading broadcasts file '%s'", broadcasts_filepath.c_str());
+        std::string line{};
+        while (std::getline(broadcasts_file, line)) {
+            if (line.length() <= 0) continue;
+
+            std::set<IP_PORT> ips = Networking::resolve_ip(line);
+            custom_broadcasts.insert(ips.begin(), ips.end());
+            PRINT_DEBUG("added ip/port to broadcast list '%s'", line.c_str());
+        }
+    }
+}
+
+// subscribed_groups_clans.txt
+static void load_subscribed_groups_clans(const std::string &base_path, Settings *settings_client, Settings *settings_server)
+{
+    const std::string clans_filepath(base_path + "subscribed_groups_clans.txt");
+    std::ifstream clans_file(std::filesystem::u8path(clans_filepath));
+    if (clans_file.is_open()) {
+        common_helpers::consume_bom(clans_file);
+        PRINT_DEBUG("loading group clans file '%s'", clans_filepath.c_str());
+        std::string line{};
+        while (std::getline(clans_file, line)) {
+            if (line.length() <= 0) continue;
+
+            std::size_t seperator1 = line.find("\t\t");
+            std::size_t seperator2 = line.rfind("\t\t");
+            std::string clan_id;
+            std::string clan_name;
+            std::string clan_tag;
+            if ((seperator1 != std::string::npos) && (seperator2 != std::string::npos)) {
+                clan_id = line.substr(0, seperator1);
+                clan_name = line.substr(seperator1+2, seperator2-2);
+                clan_tag = line.substr(seperator2+2);
+
+                // fix persistant tabbing problem for clan name
+                std::size_t seperator3 = clan_name.find("\t");
+                std::string clan_name_fix = clan_name.substr(0, seperator3);
+                clan_name = clan_name_fix;
+            }
+
+            Group_Clans nclan;
+            nclan.id = CSteamID( std::stoull(clan_id.c_str(), NULL, 0) );
+            nclan.name = clan_name;
+            nclan.tag = clan_tag;
+
+            try {
+                settings_client->subscribed_groups_clans.push_back(nclan);
+                settings_server->subscribed_groups_clans.push_back(nclan);
+                PRINT_DEBUG("Added clan %s", clan_name.c_str());
+            } catch (...) {}
+        }
+    }
+}
+
+// overlay::appearance
+static void load_overlay_appearance(class Settings *settings_client, class Settings *settings_server, class Local_Storage *local_storage)
+{
+    std::list<CSimpleIniA::Entry> names{};
+    if (!ini.GetAllKeys("overlay::appearance", names) || names.empty()) return;
+
+    for (const auto &name_ent : names) {
+        auto val_ptr = ini.GetValue("overlay::appearance", name_ent.pItem);
+        if (!val_ptr || !val_ptr[0]) continue;
+
+        std::string name(name_ent.pItem);
+        std::string value(val_ptr);
+        PRINT_DEBUG("  Overlay appearance line '%s'='%s'", name.c_str(), value.c_str());
+        try {
+            if (name.compare("Font_Override") == 0) {
+                value = common_helpers::string_strip(value);
+                // first try the local settings folder
+                std::string nfont_override(common_helpers::to_absolute(value, Local_Storage::get_game_settings_path() + "fonts"));
+                if (!common_helpers::file_exist(nfont_override)) {
+                    nfont_override.clear();
+                }
+
+                // then try the global settings folder
+                if (nfont_override.empty()) {
+                    nfont_override = common_helpers::to_absolute(value, local_storage->get_global_settings_path() + "fonts");
+                    if (!common_helpers::file_exist(nfont_override)) {
+                        nfont_override.clear();
+                    }
+                }
+
+                if (nfont_override.size()) {
+                    settings_client->overlay_appearance.font_override = nfont_override;
+                    settings_server->overlay_appearance.font_override = nfont_override;
+                    PRINT_DEBUG("  loaded font '%s'", nfont_override.c_str());
+                } else {
+                    PRINT_DEBUG("  ERROR font file '%s' doesn't exist and will be ignored", value.c_str());
+                }
+            } else if (name.compare("Font_Size") == 0) {
+                float nfont_size = std::stof(value, NULL);
+                settings_client->overlay_appearance.font_size = nfont_size;
+                settings_server->overlay_appearance.font_size = nfont_size;
+            } else if (name.compare("Icon_Size") == 0) {
+                float nicon_size = std::stof(value, NULL);
+                settings_client->overlay_appearance.icon_size = nicon_size;
+                settings_server->overlay_appearance.icon_size = nicon_size;
+            } else if (name.compare("Font_Glyph_Extra_Spacing_x") == 0) {
+                float size = std::stof(value, NULL);
+                settings_client->overlay_appearance.font_glyph_extra_spacing_x = size;
+                settings_server->overlay_appearance.font_glyph_extra_spacing_x = size;
+            } else if (name.compare("Font_Glyph_Extra_Spacing_y") == 0) {
+                float size = std::stof(value, NULL);
+                settings_client->overlay_appearance.font_glyph_extra_spacing_y = size;
+                settings_server->overlay_appearance.font_glyph_extra_spacing_y = size;
+            } else if (name.compare("Notification_R") == 0) {
+                float nnotification_r = std::stof(value, NULL);
+                settings_client->overlay_appearance.notification_r = nnotification_r;
+                settings_server->overlay_appearance.notification_r = nnotification_r;
+            } else if (name.compare("Notification_G") == 0) {
+                float nnotification_g = std::stof(value, NULL);
+                settings_client->overlay_appearance.notification_g = nnotification_g;
+                settings_server->overlay_appearance.notification_g = nnotification_g;
+            } else if (name.compare("Notification_B") == 0) {
+                float nnotification_b = std::stof(value, NULL);
+                settings_client->overlay_appearance.notification_b = nnotification_b;
+                settings_server->overlay_appearance.notification_b = nnotification_b;
+            } else if (name.compare("Notification_A") == 0) {
+                float nnotification_a = std::stof(value, NULL);
+                settings_client->overlay_appearance.notification_a = nnotification_a;
+                settings_server->overlay_appearance.notification_a = nnotification_a;
+            } else if (name.compare("Notification_Rounding") == 0) {
+                float nnotification_rounding = std::stof(value, NULL);
+                settings_client->overlay_appearance.notification_rounding = nnotification_rounding;
+                settings_server->overlay_appearance.notification_rounding = nnotification_rounding;
+            } else if (name.compare("Notification_Margin_x") == 0) {
+                float val = std::stof(value, NULL);
+                settings_client->overlay_appearance.notification_margin_x = val;
+                settings_server->overlay_appearance.notification_margin_x = val;
+            } else if (name.compare("Notification_Margin_y") == 0) {
+                float val = std::stof(value, NULL);
+                settings_client->overlay_appearance.notification_margin_y = val;
+                settings_server->overlay_appearance.notification_margin_y = val;
+            } else if (name.compare("Notification_Animation") == 0) {
+                uint32 nnotification_animation = (uint32)(std::stof(value, NULL) * 1000.0f); // convert sec to milli
+                settings_client->overlay_appearance.notification_animation = nnotification_animation;
+                settings_server->overlay_appearance.notification_animation = nnotification_animation;
+            } else if (name.compare("Notification_Duration_Progress") == 0) {
+                uint32 time = (uint32)(std::stof(value, NULL) * 1000.0f); // convert sec to milli
+                settings_client->overlay_appearance.notification_duration_progress = time;
+                settings_server->overlay_appearance.notification_duration_progress = time;
+            } else if (name.compare("Notification_Duration_Achievement") == 0) {
+                uint32 time = (uint32)(std::stof(value, NULL) * 1000.0f); // convert sec to milli
+                settings_client->overlay_appearance.notification_duration_achievement = time;
+                settings_server->overlay_appearance.notification_duration_achievement = time;
+            } else if (name.compare("Notification_Duration_Invitation") == 0) {
+                uint32 time = (uint32)(std::stof(value, NULL) * 1000.0f); // convert sec to milli
+                settings_client->overlay_appearance.notification_duration_invitation = time;
+                settings_server->overlay_appearance.notification_duration_invitation = time;
+            } else if (name.compare("Notification_Duration_Chat") == 0) {
+                uint32 time = (uint32)(std::stof(value, NULL) * 1000.0f); // convert sec to milli
+                settings_client->overlay_appearance.notification_duration_chat = time;
+                settings_server->overlay_appearance.notification_duration_chat = time;
+            } else if (name.compare("Achievement_Unlock_Datetime_Format") == 0) {
+                settings_client->overlay_appearance.ach_unlock_datetime_format = value;
+                settings_server->overlay_appearance.ach_unlock_datetime_format = value;
+            } else if (name.compare("Background_R") == 0) {
+                float nbackground_r = std::stof(value, NULL);
+                settings_client->overlay_appearance.background_r = nbackground_r;
+                settings_server->overlay_appearance.background_r = nbackground_r;
+            } else if (name.compare("Background_G") == 0) {
+                float nbackground_g = std::stof(value, NULL);
+                settings_client->overlay_appearance.background_g = nbackground_g;
+                settings_server->overlay_appearance.background_g = nbackground_g;
+            } else if (name.compare("Background_B") == 0) {
+                float nbackground_b = std::stof(value, NULL);
+                settings_client->overlay_appearance.background_b = nbackground_b;
+                settings_server->overlay_appearance.background_b = nbackground_b;
+            } else if (name.compare("Background_A") == 0) {
+                float nbackground_a = std::stof(value, NULL);
+                settings_client->overlay_appearance.background_a = nbackground_a;
+                settings_server->overlay_appearance.background_a = nbackground_a;
+            } else if (name.compare("Element_R") == 0) {
+                float nelement_r = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_r = nelement_r;
+                settings_server->overlay_appearance.element_r = nelement_r;
+            } else if (name.compare("Element_G") == 0) {
+                float nelement_g = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_g = nelement_g;
+                settings_server->overlay_appearance.element_g = nelement_g;
+            } else if (name.compare("Element_B") == 0) {
+                float nelement_b = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_b = nelement_b;
+                settings_server->overlay_appearance.element_b = nelement_b;
+            } else if (name.compare("Element_A") == 0) {
+                float nelement_a = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_a = nelement_a;
+                settings_server->overlay_appearance.element_a = nelement_a;
+            } else if (name.compare("ElementHovered_R") == 0) {
+                float nelement_hovered_r = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_hovered_r = nelement_hovered_r;
+                settings_server->overlay_appearance.element_hovered_r = nelement_hovered_r;
+            } else if (name.compare("ElementHovered_G") == 0) {
+                float nelement_hovered_g = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_hovered_g = nelement_hovered_g;
+                settings_server->overlay_appearance.element_hovered_g = nelement_hovered_g;
+            } else if (name.compare("ElementHovered_B") == 0) {
+                float nelement_hovered_b = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_hovered_b = nelement_hovered_b;
+                settings_server->overlay_appearance.element_hovered_b = nelement_hovered_b;
+            } else if (name.compare("ElementHovered_A") == 0) {
+                float nelement_hovered_a = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_hovered_a = nelement_hovered_a;
+                settings_server->overlay_appearance.element_hovered_a = nelement_hovered_a;
+            } else if (name.compare("ElementActive_R") == 0) {
+                float nelement_active_r = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_active_r = nelement_active_r;
+                settings_server->overlay_appearance.element_active_r = nelement_active_r;
+            } else if (name.compare("ElementActive_G") == 0) {
+                float nelement_active_g = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_active_g = nelement_active_g;
+                settings_server->overlay_appearance.element_active_g = nelement_active_g;
+            } else if (name.compare("ElementActive_B") == 0) {
+                float nelement_active_b = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_active_b = nelement_active_b;
+                settings_server->overlay_appearance.element_active_b = nelement_active_b;
+            } else if (name.compare("ElementActive_A") == 0) {
+                float nelement_active_a = std::stof(value, NULL);
+                settings_client->overlay_appearance.element_active_a = nelement_active_a;
+                settings_server->overlay_appearance.element_active_a = nelement_active_a;
+            } else if (name.compare("PosAchievement") == 0) {
+                auto pos = Overlay_Appearance::translate_notification_position(value);
+                settings_client->overlay_appearance.ach_earned_pos = pos;
+                settings_server->overlay_appearance.ach_earned_pos = pos;
+            } else if (name.compare("PosInvitation") == 0) {
+                auto pos = Overlay_Appearance::translate_notification_position(value);
+                settings_client->overlay_appearance.invite_pos = pos;
+                settings_server->overlay_appearance.invite_pos = pos;
+            } else if (name.compare("PosChatMsg") == 0) {
+                auto pos = Overlay_Appearance::translate_notification_position(value);
+                settings_client->overlay_appearance.chat_msg_pos = pos;
+                settings_server->overlay_appearance.chat_msg_pos = pos;
+            // >>> FPS background
+            } else if (name.compare("Stats_Background_R") == 0) {
+                float val = std::stof(value, NULL);
+                settings_client->overlay_appearance.stats_background_r = val;
+                settings_server->overlay_appearance.stats_background_r = val;
+            } else if (name.compare("Stats_Background_G") == 0) {
+                float val = std::stof(value, NULL);
+                settings_client->overlay_appearance.stats_background_g = val;
+                settings_server->overlay_appearance.stats_background_g = val;
+            } else if (name.compare("Stats_Background_B") == 0) {
+                float val = std::stof(value, NULL);
+                settings_client->overlay_appearance.stats_background_b = val;
+                settings_server->overlay_appearance.stats_background_b = val;
+            } else if (name.compare("Stats_Background_A") == 0) {
+                float val = std::stof(value, NULL);
+                settings_client->overlay_appearance.stats_background_a = val;
+                settings_server->overlay_appearance.stats_background_a = val;
+            // FPS background END <<<
+            // >>> FPS text color
+            } else if (name.compare("Stats_Text_R") == 0) {
+                float val = std::stof(value, NULL);
+                settings_client->overlay_appearance.stats_text_r = val;
+                settings_server->overlay_appearance.stats_text_r = val;
+            } else if (name.compare("Stats_Text_G") == 0) {
+                float val = std::stof(value, NULL);
+                settings_client->overlay_appearance.stats_text_g = val;
+                settings_server->overlay_appearance.stats_text_g = val;
+            } else if (name.compare("Stats_Text_B") == 0) {
+                float val = std::stof(value, NULL);
+                settings_client->overlay_appearance.stats_text_b = val;
+                settings_server->overlay_appearance.stats_text_b = val;
+            } else if (name.compare("Stats_Text_A") == 0) {
+                float val = std::stof(value, NULL);
+                settings_client->overlay_appearance.stats_text_a = val;
+                settings_server->overlay_appearance.stats_text_a = val;
+            // FPS text color END <<<
+            // >>> FPS position
+            } else if (name.compare("Stats_Pos_x") == 0) {
+                auto pos = std::stof(value);
+                if (pos < 0) {
+                    pos = 0;
+                } else if (pos > 1.0f) {
+                    pos = 1.0f;
+                }
+                settings_client->overlay_stats_pos_x = pos;
+                settings_server->overlay_stats_pos_x = pos;
+            } else if (name.compare("Stats_Pos_y") == 0) {
+                auto pos = std::stof(value);
+                if (pos < 0) {
+                    pos = 0;
+                } else if (pos > 1.0f) {
+                    pos = 1.0f;
+                }
+                settings_client->overlay_stats_pos_y = pos;
+                settings_server->overlay_stats_pos_y = pos;
+            // FPS position END <<<
+            } else {
+                PRINT_DEBUG("unknown overlay appearance setting");
+            }
+
+        } catch (...) { }
+    }
+}
+
+template<typename Out>
+static void split_string(const std::string &s, char delim, Out result) {
+    std::stringstream ss(s);
+    std::string item{};
+    while (std::getline(ss, item, delim)) {
+        *(result++) = item;
+    }
+}
+
+// folder "controller"
+static void load_gamecontroller_settings(Settings *settings)
+{
+    auto process_paths = [&](std::string &path, std::map<std::string, std::map<std::string, std::pair<std::set<std::string>, std::string>>> &action_sets) {
+>>>>>>> 8cdd6062 (fix: settings_parser missing reference)
         std::vector<std::string> paths = Local_Storage::get_filenames_path(path);
         for (auto& p : paths) {
             size_t length = p.length();
