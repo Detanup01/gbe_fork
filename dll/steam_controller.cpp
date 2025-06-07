@@ -129,74 +129,71 @@ void Steam_Controller::set_handles(std::map<std::string, std::map<std::string, s
     // TODO Load action_set_layers properly?
     uint64 handle_num = 1;
 
-    auto storeActionSetHandle = [&](std::pair<std::string, std::map<std::string, std::pair<std::set<std::string>, std::string>>> set) {
-        ControllerActionSetHandle_t action_handle_num = handle_num;
-        ++handle_num;
-
-        action_handles[set.first] = action_handle_num;
-        for (auto& config_key : set.second) {
-            uint64 current_handle_num = handle_num;
+    auto storeActionSetHandle = [&](std::map<std::string, std::map<std::string, std::pair<std::set<std::string>, std::string>>> &sets) {
+        for (auto& set : sets) {
+            ControllerActionSetHandle_t action_handle_num = handle_num;
             ++handle_num;
 
-            for (auto& button_string : config_key.second.first) {
-                auto digital = button_strings.find(button_string);
-                if (digital != button_strings.end()) {
-                    ControllerDigitalActionHandle_t digital_handle_num = current_handle_num;
+            action_handles[set.first] = action_handle_num;
+            for (auto& config_key : set.second) {
+                uint64 current_handle_num = handle_num;
+                ++handle_num;
 
-                    if (digital_action_handles.find(config_key.first) == digital_action_handles.end()) {
-                        digital_action_handles[config_key.first] = digital_handle_num;
-                    }
-                    else {
-                        digital_handle_num = digital_action_handles[config_key.first];
-                    }
+                for (auto& button_string : config_key.second.first) {
+                    auto digital = button_strings.find(button_string);
+                    if (digital != button_strings.end()) {
+                        ControllerDigitalActionHandle_t digital_handle_num = current_handle_num;
 
-                    controller_maps[action_handle_num].active_digital[digital_handle_num].insert(digital->second);
-                }
-                else {
-                    auto analog = analog_strings.find(button_string);
-                    if (analog != analog_strings.end()) {
-                        ControllerAnalogActionHandle_t analog_handle_num = current_handle_num;
-
-                        enum EInputSourceMode source_mode;
-                        if (analog->second == TRIGGER_LEFT || analog->second == TRIGGER_RIGHT) {
-                            source_mode = k_EInputSourceMode_Trigger;
+                        if (digital_action_handles.find(config_key.first) == digital_action_handles.end()) {
+                            digital_action_handles[config_key.first] = digital_handle_num;
                         }
                         else {
-                            source_mode = k_EInputSourceMode_JoystickMove;
+                            digital_handle_num = digital_action_handles[config_key.first];
                         }
 
-                        auto input_mode = analog_input_modes.find(config_key.second.second);
-                        if (input_mode != analog_input_modes.end()) {
-                            source_mode = input_mode->second;
-                        }
-
-                        if (analog_action_handles.find(config_key.first) == analog_action_handles.end()) {
-                            analog_action_handles[config_key.first] = analog_handle_num;
-                        }
-                        else {
-                            analog_handle_num = analog_action_handles[config_key.first];
-                        }
-
-                        controller_maps[action_handle_num].active_analog[analog_handle_num].first.insert(analog->second);
-                        controller_maps[action_handle_num].active_analog[analog_handle_num].second = source_mode;
-
+                        controller_maps[action_handle_num].active_digital[digital_handle_num].insert(digital->second);
                     }
                     else {
-                        PRINT_DEBUG("Did not recognize controller button %s", button_string.c_str());
-                        continue;
+                        auto analog = analog_strings.find(button_string);
+                        if (analog != analog_strings.end()) {
+                            ControllerAnalogActionHandle_t analog_handle_num = current_handle_num;
+
+                            enum EInputSourceMode source_mode;
+                            if (analog->second == TRIGGER_LEFT || analog->second == TRIGGER_RIGHT) {
+                                source_mode = k_EInputSourceMode_Trigger;
+                            }
+                            else {
+                                source_mode = k_EInputSourceMode_JoystickMove;
+                            }
+
+                            auto input_mode = analog_input_modes.find(config_key.second.second);
+                            if (input_mode != analog_input_modes.end()) {
+                                source_mode = input_mode->second;
+                            }
+
+                            if (analog_action_handles.find(config_key.first) == analog_action_handles.end()) {
+                                analog_action_handles[config_key.first] = analog_handle_num;
+                            }
+                            else {
+                                analog_handle_num = analog_action_handles[config_key.first];
+                            }
+
+                            controller_maps[action_handle_num].active_analog[analog_handle_num].first.insert(analog->second);
+                            controller_maps[action_handle_num].active_analog[analog_handle_num].second = source_mode;
+
+                        }
+                        else {
+                            PRINT_DEBUG("Did not recognize controller button %s", button_string.c_str());
+                            continue;
+                        }
                     }
                 }
             }
         }
     };
 
-    for (auto& set : action_sets) {
-        storeActionSetHandle(set);
-    }
-
-    for (auto& set : action_set_layers) {
-        storeActionSetHandle(set);
-    }
+    storeActionSetHandle(action_sets);
+    storeActionSetHandle(action_set_layers);
 }
 
 
@@ -2073,8 +2070,304 @@ EInputActionOrigin Steam_Controller::TranslateActionOrigin(ESteamInputType eDest
 {
     PRINT_DEBUG("steaminput destinationinputtype %d sourceorigin %d", eDestinationInputType, eSourceOrigin);
 
-    if (eDestinationInputType == k_ESteamInputType_XBox360Controller)
-        return eSourceOrigin;
+    //switch (eSourceOrigin) {
+    //case k_EInputActionOrigin_XBox360_A:
+    //case k_EInputActionOrigin_XBoxOne_A:
+    //case k_EInputActionOrigin_PS4_X:
+    //case k_EInputActionOrigin_PS5_X:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_X;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_X;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_A;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController) {
+    //        if (this->settings->flip_nintendo_layout)
+    //            return k_EInputActionOrigin_Switch_B;
+    //        else
+    //            return k_EInputActionOrigin_Switch_A;
+    //    }
+    //    return k_EInputActionOrigin_None;
+
+    //case k_EXboxOrigin_B:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_Circle;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_Circle;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_B;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController) {
+    //        if (this->settings->flip_nintendo_layout)
+    //            return k_EInputActionOrigin_Switch_A;
+    //        else
+    //            return k_EInputActionOrigin_Switch_B;
+    //    }
+    //    return k_EInputActionOrigin_None;
+
+    //case k_EXboxOrigin_X:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_Square;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_Square;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_X;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController) {
+    //        if (this->settings->flip_nintendo_layout)
+    //            return k_EInputActionOrigin_Switch_Y;
+    //        else
+    //            return k_EInputActionOrigin_Switch_X;
+    //    }
+    //    return k_EInputActionOrigin_None;
+
+    //case k_EXboxOrigin_Y:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_Triangle;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_Triangle;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_Y;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController) {
+    //        if (this->settings->flip_nintendo_layout)
+    //            return k_EInputActionOrigin_Switch_X;
+    //        else
+    //            return k_EInputActionOrigin_Switch_Y;
+    //    }
+    //    return k_EInputActionOrigin_None;
+
+    //    // Bumpers
+    //case k_EXboxOrigin_LeftBumper:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_LeftBumper;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_LeftBumper;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_LeftBumper;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController)
+    //        return k_EInputActionOrigin_Switch_LeftBumper;
+    //    return k_EInputActionOrigin_XBox360_LeftBumper;
+
+    //case k_EXboxOrigin_RightBumper:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_RightBumper;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_RightBumper;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_RightBumper;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController)
+    //        return k_EInputActionOrigin_Switch_RightBumper;
+    //    return k_EInputActionOrigin_XBox360_RightBumper;
+
+    //    // Menu buttons
+    //case k_EXboxOrigin_Menu:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_Options;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_Option;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_Menu;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController)
+    //        return k_EInputActionOrigin_Switch_Plus;
+    //    return k_EInputActionOrigin_XBox360_Start;
+
+    //case k_EXboxOrigin_View:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_Share;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_Create;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_View;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController)
+    //        return k_EInputActionOrigin_Switch_Minus;
+
+    //    return k_EInputActionOrigin_XBox360_Back;
+
+    //    // Triggers
+    //case k_EXboxOrigin_LeftTrigger_Click:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_LeftTrigger_Click;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_LeftTrigger_Click;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_LeftTrigger_Click;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController)
+    //        return k_EInputActionOrigin_Switch_LeftTrigger_Click;
+    //    return k_EInputActionOrigin_XBox360_LeftTrigger_Click;
+
+    //case k_EXboxOrigin_RightTrigger_Click:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_RightTrigger_Click;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_RightTrigger_Click;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_RightTrigger_Click;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController)
+    //        return k_EInputActionOrigin_Switch_RightTrigger_Click;
+    //    return k_EInputActionOrigin_XBox360_RightTrigger_Click;
+
+    //    // Stick clicks
+    //case k_EXboxOrigin_LeftStick_Click:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_LeftStick_Click;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_LeftStick_Click;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_LeftStick_Click;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController)
+    //        return k_EInputActionOrigin_Switch_LeftStick_Click;
+    //    return k_EInputActionOrigin_XBox360_LeftStick_Click;
+
+    //case k_EXboxOrigin_RightStick_Click:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_RightStick_Click;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_RightStick_Click;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_RightStick_Click;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController)
+    //        return k_EInputActionOrigin_Switch_RightStick_Click;
+    //    return k_EInputActionOrigin_XBox360_RightStick_Click;
+
+    //    // Left stick directions
+    //case k_EXboxOrigin_LeftStick_DPadNorth:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_LeftStick_DPadNorth;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_LeftStick_DPadNorth;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_LeftStick_DPadNorth;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController)
+    //        return k_EInputActionOrigin_Switch_LeftStick_DPadNorth;
+    //    return k_EInputActionOrigin_XBox360_LeftStick_DPadNorth;
+
+    //case k_EXboxOrigin_LeftStick_DPadSouth:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_LeftStick_DPadSouth;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_LeftStick_DPadSouth;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_LeftStick_DPadSouth;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController)
+    //        return k_EInputActionOrigin_Switch_LeftStick_DPadSouth;
+    //    return k_EInputActionOrigin_XBox360_LeftStick_DPadSouth;
+
+    //case k_EXboxOrigin_LeftStick_DPadWest:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_LeftStick_DPadWest;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_LeftStick_DPadWest;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_LeftStick_DPadWest;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController)
+    //        return k_EInputActionOrigin_Switch_LeftStick_DPadWest;
+    //    return k_EInputActionOrigin_XBox360_LeftStick_DPadWest;
+
+    //case k_EXboxOrigin_LeftStick_DPadEast:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_LeftStick_DPadEast;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_LeftStick_DPadEast;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_LeftStick_DPadEast;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController)
+    //        return k_EInputActionOrigin_Switch_LeftStick_DPadEast;
+    //    return k_EInputActionOrigin_XBox360_LeftStick_DPadEast;
+
+    //    // Right stick directions
+    //case k_EXboxOrigin_RightStick_DPadNorth:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_RightStick_DPadNorth;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_RightStick_DPadNorth;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_RightStick_DPadNorth;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController)
+    //        return k_EInputActionOrigin_Switch_RightStick_DPadNorth;
+    //    return k_EInputActionOrigin_XBox360_RightStick_DPadNorth;
+
+    //case k_EXboxOrigin_RightStick_DPadSouth:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_RightStick_DPadSouth;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_RightStick_DPadSouth;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_RightStick_DPadSouth;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController)
+    //        return k_EInputActionOrigin_Switch_RightStick_DPadSouth;
+
+    //    return k_EInputActionOrigin_XBox360_RightStick_DPadSouth;
+
+    //case k_EXboxOrigin_RightStick_DPadWest:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_RightStick_DPadWest;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_RightStick_DPadWest;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_RightStick_DPadWest;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController)
+    //        return k_EInputActionOrigin_Switch_RightStick_DPadWest;
+    //    return k_EInputActionOrigin_XBox360_RightStick_DPadWest;
+
+    //case k_EXboxOrigin_RightStick_DPadEast:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_RightStick_DPadEast;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_RightStick_DPadEast;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_RightStick_DPadEast;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController)
+    //        return k_EInputActionOrigin_Switch_RightStick_DPadEast;
+    //    return k_EInputActionOrigin_XBox360_RightStick_DPadEast;
+
+    //    // DPad buttons
+    //case k_EXboxOrigin_DPad_North:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_DPad_North;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_DPad_North;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_DPad_North;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController)
+    //        return k_EInputActionOrigin_Switch_DPad_North;
+    //    return k_EInputActionOrigin_XBox360_DPad_North;
+
+    //case k_EXboxOrigin_DPad_South:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_DPad_South;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_DPad_South;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_DPad_South;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController)
+    //        return k_EInputActionOrigin_Switch_DPad_South;
+    //    return k_EInputActionOrigin_XBox360_DPad_South;
+
+    //case k_EXboxOrigin_DPad_West:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_DPad_West;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_DPad_West;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_DPad_West;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController)
+    //        return k_EInputActionOrigin_Switch_DPad_West;
+    //    return k_EInputActionOrigin_XBox360_DPad_West;
+
+    //case k_EXboxOrigin_DPad_East:
+    //    if (eDestinationInputType == k_ESteamInputType_PS3Controller || eDestinationInputType == k_ESteamInputType_PS4Controller)
+    //        return k_EInputActionOrigin_PS4_DPad_East;
+    //    if (eDestinationInputType == k_ESteamInputType_PS5Controller)
+    //        return k_EInputActionOrigin_PS5_DPad_East;
+    //    if (eDestinationInputType == k_ESteamInputType_XBoxOneController)
+    //        return k_EInputActionOrigin_XBoxOne_DPad_East;
+    //    if (eDestinationInputType == k_ESteamInputType_SwitchJoyConSingle || eDestinationInputType == k_ESteamInputType_SwitchJoyConPair || eDestinationInputType == k_ESteamInputType_SwitchProController)
+    //        return k_EInputActionOrigin_Switch_DPad_East;
+    //    return k_EInputActionOrigin_XBox360_DPad_East;
+
+    //default:
+    //    return k_EInputActionOrigin_None;
+    //}
+
+
 
     return k_EInputActionOrigin_None;
 }

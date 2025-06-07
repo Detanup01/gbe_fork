@@ -453,7 +453,7 @@ static void split_string(const std::string &s, char delim, Out result) {
 // folder "controller"
 static void load_gamecontroller_settings(Settings *settings)
 {
-    auto process_paths = [&](std::string path, std::map<std::string, std::map<std::string, std::pair<std::set<std::string>, std::string>>> action_sets) {
+    auto process_paths = [&](std::string &path, std::map<std::string, std::map<std::string, std::pair<std::set<std::string>, std::string>>> &action_sets) {
         std::vector<std::string> paths = Local_Storage::get_filenames_path(path);
         for (auto& p : paths) {
             size_t length = p.length();
