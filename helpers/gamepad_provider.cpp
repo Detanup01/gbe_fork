@@ -14,6 +14,7 @@ float gamepad_provider::sdl::GamepadTriggerLength(ControllerHandle_t id, GAMEPAD
 void gamepad_provider::sdl::GamepadStickXY(ControllerHandle_t id, GAMEPAD_STICK stick, float* out_x, float* out_y) {};
 void gamepad_provider::sdl::GamepadStickNormXY(ControllerHandle_t id, GAMEPAD_STICK stick, float* out_x, float* out_y, int inner_deadzone, int outer_deadzone) {};
 void gamepad_provider::sdl::GamepadSetRumble(ControllerHandle_t id, unsigned short left, unsigned short right, unsigned int rumble_length_ms) {};
+void gamepad_provider::sdl::GamepadSetTriggersRumble(ControllerHandle_t id, unsigned short left, unsigned short right, unsigned int rumble_length_ms) {};
 ESteamInputType gamepad_provider::sdl::GamepadGetType(ControllerHandle_t id) { return k_ESteamInputType_Unknown; };
 
 #else
@@ -191,8 +192,11 @@ void gamepad_provider::sdl::GamepadStickNormXY(ControllerHandle_t id, GAMEPAD_ST
 
 void gamepad_provider::sdl::GamepadStickXY(ControllerHandle_t id, GAMEPAD_STICK stick, float* out_x, float* out_y) {
     SDL_Gamepad* gamepad = GamepadGetFromHandle(id);
-    if (!gamepad)
+    if (!gamepad) {
+        *out_x = 0.0f;
+        *out_y = 0.0f;
         return;
+    }
 
     if (stick == STICK_LEFT) {
         *out_x = static_cast<float>(SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFTX));
