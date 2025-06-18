@@ -27,7 +27,8 @@
         "num_children": 0,
         "path": "C:\\games\\my_game\\steam_settings\\mods_data\\mod_111111111_data_folder",
         "preview_url": "file:///C:/games/my_game/steam_settings/mod_images/my_preview.jpg",
-        "score": 0.7
+        "score": 0.7,
+        "metadata": "some needed metadata"
     },
     
     "222222222": {

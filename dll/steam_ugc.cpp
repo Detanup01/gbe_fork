@@ -535,11 +535,16 @@ bool Steam_UGC::GetQueryUGCMetadata( UGCQueryHandle_t handle, uint32 index, STEA
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (handle == k_UGCQueryHandleInvalid) return false;
+    if (!pchMetadata || !cchMetadatasize) return false;
 
-    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
-    if (ugc_queries.end() == request) return false;
+    auto res = get_query_ugc(handle, index);
+    if (!res.has_value()) return false;
 
-    return false;
+    auto &mod = res.value();
+    PRINT_DEBUG("Steam_UGC:GetQueryUGCMetadata: '%s'", mod.metadata.c_str());
+    memset(pchMetadata, 0, cchMetadatasize);
+    mod.metadata.copy(pchMetadata, cchMetadatasize - 1);
+    return true;
 }
 
 
