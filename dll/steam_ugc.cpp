@@ -247,7 +247,8 @@ UGCQueryHandle_t Steam_UGC::CreateQueryUserUGCRequest( AccountID_t unAccountID, 
     PRINT_DEBUG("%u %i %i %i %u %u %u", unAccountID, eListType, eMatchingUGCType, eSortOrder, nCreatorAppID, nConsumerAppID, unPage);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    if (nCreatorAppID != settings->get_local_game_id().AppID() || nConsumerAppID != settings->get_local_game_id().AppID()) return k_UGCQueryHandleInvalid;
+    // TODO: more info needed to decide which UGCs will be returned
+    // if (nCreatorAppID != settings->get_local_game_id().AppID() || nConsumerAppID != settings->get_local_game_id().AppID()) return k_UGCQueryHandleInvalid;
     if (unPage < 1) return k_UGCQueryHandleInvalid;
     if (eListType < 0) return k_UGCQueryHandleInvalid;
     if (unAccountID != settings->get_local_steam_id().GetAccountID()) return k_UGCQueryHandleInvalid;
@@ -534,11 +535,16 @@ bool Steam_UGC::GetQueryUGCMetadata( UGCQueryHandle_t handle, uint32 index, STEA
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (handle == k_UGCQueryHandleInvalid) return false;
+    if (!pchMetadata || !cchMetadatasize) return false;
 
-    auto request = std::find_if(ugc_queries.begin(), ugc_queries.end(), [&handle](struct UGC_query const& item) { return item.handle == handle; });
-    if (ugc_queries.end() == request) return false;
+    auto res = get_query_ugc(handle, index);
+    if (!res.has_value()) return false;
 
-    return false;
+    auto &mod = res.value();
+    PRINT_DEBUG("Steam_UGC:GetQueryUGCMetadata: '%s'", mod.metadata.c_str());
+    memset(pchMetadata, 0, cchMetadatasize);
+    mod.metadata.copy(pchMetadata, cchMetadatasize - 1);
+    return true;
 }
 
 
