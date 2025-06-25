@@ -223,7 +223,7 @@ An example that was made for payday 2 can be found in `steam_settings.EXAMPLE`
 ---
 
 ## Avatar:
-Copy a `png`, or a `jpg`, or a `jpeg` image file to your `GSE Settings/settings` folder and name it `account_avatar`.  
+Copy a `png`, or a `jpg`, or a `jpeg` image file to your `GSE Saves/settings` folder and name it `account_avatar`.  
 You can also place this file inside the local `steam_settings` folder of the game.  
 
 Players avatars are shared over the local network
@@ -263,9 +263,9 @@ Alternatively, you can use the dedicated tool `lobby_connect` to join a game lob
 **Note: at the moment this feature is only enabled in the experimental builds for Windows only**
 ---
 
-You can place a `.wav` file called `overlay_achievement_notification.wav` inside either the local `steam_settings/sounds` folder of the game, or inside `GSE Settings/settings/sounds` folder, which will be played whenever an achievement is unlocked.  
+You can place a `.wav` file called `overlay_achievement_notification.wav` inside either the local `steam_settings/sounds` folder of the game, or inside `GSE Saves/settings/sounds` folder, which will be played whenever an achievement is unlocked.  
 
-You can place a `.wav` file called `overlay_friend_notification.wav` inside either the local `steam_settings/sounds` folder of the game, or inside `GSE Settings/settings/sounds` folder, which will be played whenever a friend sends an invitation.  
+You can place a `.wav` file called `overlay_friend_notification.wav` inside either the local `steam_settings/sounds` folder of the game, or inside `GSE Saves/settings/sounds` folder, which will be played whenever a friend sends an invitation.  
 
 You can find an example in `steam_settings.EXAMPLE`
 
