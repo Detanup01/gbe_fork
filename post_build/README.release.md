@@ -9,12 +9,12 @@ https://gitlab.com/Mr_Goldberg/goldberg_emulator
 
 ## How to use:
 1. Replace the `steam_api(64).dll` (Windows) or `libsteam_api.so` (Linux) from the game with the emu.
-2. Use the command line tool `generate_emu_config` to generate the `steam_settings` folder
-3. Use the command line tool `generate_interfaces` to generate the file `steam_interfaces.txt`,  
+2. Use any Tools that generate a `steam_settings` folder. (You can just copy the `steam_settings.EXAMPLE` folder and edit the configs, easier for many people)
+4. Use the command line tool `generate_interfaces` to generate the file `steam_interfaces.txt`,  
    then move it inside the folder `steam_settings`
-4. Move the entire folder `steam_settings` beside the emu .dll/.so.
-5. Copy the the example files `steam_settings.EXAMPLE\configs.xxx.EXAMPLE.ini` and paste them inside your own `steam_settings` folder, then the postfix `.EXAMPLE`.  
-6. Make sure to keep the **only** options you need, do **NOT** sepecify everything inside these .ini files
+5. Move the entire folder `steam_settings` beside the emu .dll/.so.
+6. Copy the the example files `steam_settings.EXAMPLE\configs.xxx.EXAMPLE.ini` and paste them inside your own `steam_settings` folder, then remove the postfix `.EXAMPLE`.  
+7. Make sure to keep the **only** options you need, do **NOT** need to specify everything inside these .ini files
 
 
 Mr.Goldberg's note:
