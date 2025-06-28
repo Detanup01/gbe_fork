@@ -1243,6 +1243,10 @@ ESteamNetworkingAvailability Steam_Networking_Sockets::InitAuthentication()
 {
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    SteamNetAuthenticationStatus_t data{};
+    data.m_eAvail = k_ESteamNetworkingAvailability_Current;
+    memcpy(data.m_debugMsg, "OK", 3);
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
     return k_ESteamNetworkingAvailability_Current;
 }
 
@@ -1257,6 +1261,12 @@ ESteamNetworkingAvailability Steam_Networking_Sockets::GetAuthenticationStatus( 
 {
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (pDetails)
+    {
+        *pDetails = {};
+        pDetails->m_eAvail = k_ESteamNetworkingAvailability_Current;
+        memcpy(pDetails->m_debugMsg, "OK", 3);
+    }
     return k_ESteamNetworkingAvailability_Current;
 }
 
