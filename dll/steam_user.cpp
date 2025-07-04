@@ -18,6 +18,7 @@
 #include "dll/steam_user.h"
 #include "dll/auth.h"
 #include "dll/appticket.h"
+#include "dll/base64.h"
 
 Steam_User::Steam_User(Settings *settings, Local_Storage *local_storage, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks)
 {
@@ -761,6 +762,35 @@ SteamAPICall_t Steam_User::RequestEncryptedAppTicket( void *pDataToInclude, int 
 bool Steam_User::GetEncryptedAppTicket( void *pTicket, int cbMaxTicket, uint32 *pcbTicket )
 {
     PRINT_DEBUG("%i %p %p", cbMaxTicket, pTicket, pcbTicket);
+    
+    // Try to load a token from configs.user.ini first
+    if (settings->load_token_from_config() && !settings->encrypted_app_ticket_token.empty()) {
+        PRINT_DEBUG("Using token from configs.user.ini\n");
+        
+        // Decode token from Base64
+        std::vector<uint8_t> ticket_data = base64_decode(settings->encrypted_app_ticket_token);
+        
+        if (ticket_data.empty()) {
+            PRINT_DEBUG("Failed to decode token from base64\n");
+        } else {
+            uint32 ticket_size = static_cast<uint32>(ticket_data.size());
+            if (pcbTicket) *pcbTicket = ticket_size;
+            
+            if (cbMaxTicket <= 0) {
+                if (!pcbTicket) return false;
+                return true;
+            }
+            
+            if (!pTicket) return false;
+            if (ticket_size > static_cast<uint32>(cbMaxTicket)) return false;
+            
+            memcpy(pTicket, ticket_data.data(), ticket_size);
+            PRINT_DEBUG("Successfully used token from configs.user.ini (%u bytes)\n", ticket_size);
+            return true;
+        }
+    }
+    
+    // Fallback to the standard ticket generation if no token was found or decoded
     uint32 ticket_size = static_cast<uint32>(encrypted_app_ticket.size());
     if (pcbTicket) *pcbTicket = ticket_size;
 
