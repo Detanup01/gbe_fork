@@ -42,7 +42,7 @@ public ISteamGameServerStats
 
 	struct CachedStat {
 		bool dirty = false; // true means it was changed on the server and should be sent to the user
-		GameServerStats_Messages::StatInfo stat{};
+		StatInfo stat{};
 	};
 	struct CachedAchievement {
 		bool dirty = false; // true means it was changed on the server and should be sent to the user

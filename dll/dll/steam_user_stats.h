@@ -57,6 +57,12 @@ struct achievement_trigger {
     bool should_indicate_progress(int32 stat) const;
 };
 
+struct Pending_User_Stats_Request {
+    SteamAPICall_t api_id{};
+    std::chrono::high_resolution_clock::time_point created_time{};
+    bool is_sent{};
+};
+
 class Steam_User_Stats :
 public ISteamUserStats001,
 public ISteamUserStats002,
@@ -110,6 +116,9 @@ private:
 
     GameServerStats_Messages::AllStats pending_server_updates{};
 
+    std::map<uint64, Pending_User_Stats_Request> pending_user_stats_requests;
+    std::map<uint64, Steam_User_Stats_Data> received_user_stats_data;
+
     void load_achievements_db();
     void load_achievements();
     void save_achievements();
@@ -133,13 +142,16 @@ private:
     // change stats/achievements without sending back to server
     bool clear_stats_internal();
     InternalSetResult<int32> set_stat_internal( const char *pchName, int32 nData );
-    InternalSetResult<std::pair<GameServerStats_Messages::StatInfo::Stat_Type, float>> set_stat_internal( const char *pchName, float fData );
-    InternalSetResult<std::pair<GameServerStats_Messages::StatInfo::Stat_Type, float>> update_avg_rate_stat_internal( const char *pchName, float flCountThisSession, double dSessionLength );
+    InternalSetResult<std::pair<StatInfo::Stat_Type, float>> set_stat_internal( const char *pchName, float fData );
+    InternalSetResult<std::pair<StatInfo::Stat_Type, float>> update_avg_rate_stat_internal( const char *pchName, float flCountThisSession, double dSessionLength );
     InternalSetResult<bool> set_achievement_internal( const char *pchName );
     InternalSetResult<bool> clear_achievement_internal( const char *pchName );
+    SteamAPICall_t trigger_user_stats_received(CSteamID steam_id_user, SteamAPICall_t api_id = k_uAPICallInvalid, bool success = true);
 
     void send_updated_stats();
     void load_achievements_icons();
+    void send_pending_user_stats_requests();
+    void process_pending_user_stats_requests(Common_Message *msg);
     void steam_run_callback();
 
     // requests from server

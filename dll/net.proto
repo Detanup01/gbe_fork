@@ -216,26 +216,27 @@ message Steam_Messages {
 	}
 }
 
+message StatInfo {
+    enum Stat_Type {
+        STAT_TYPE_INT = 0;
+        STAT_TYPE_FLOAT = 1;
+        STAT_TYPE_AVGRATE = 2;
+    }
+    message AvgStatInfo {
+        float count_this_session = 1;
+        double session_length = 2;
+    }
+
+    Stat_Type stat_type = 1;
+    oneof stat_value {
+        float value_float = 2;
+        int32 value_int = 3;
+    }
+    optional AvgStatInfo value_avg = 4; // only set when type != INT
+}
+
 message GameServerStats_Messages {
     // --- basic definitions
-    message StatInfo {
-        enum Stat_Type {
-            STAT_TYPE_INT = 0;
-            STAT_TYPE_FLOAT = 1;
-            STAT_TYPE_AVGRATE = 2;
-        }
-        message AvgStatInfo {
-            float count_this_session = 1;
-            double session_length = 2;
-        }
-
-        Stat_Type stat_type = 1;
-        oneof stat_value {
-            float value_float = 2;
-            int32 value_int = 3;
-        }
-        optional AvgStatInfo value_avg = 4; // only set when type != INT
-    }
     message AchievementInfo {
         bool achieved = 1;
     }
@@ -295,6 +296,20 @@ message Leaderboards_Messages {
     }
 }
 
+message Steam_User_Stats_Data {
+    map<string, StatInfo> user_stats = 1;
+}
+
+message Steam_User_Stats_Messages {
+    enum Types {
+        REQUEST_USERSTATS = 0;
+        RESPONSE_USERSTATS = 1;
+    }
+
+    Types type = 1;
+    optional Steam_User_Stats_Data steam_user_stats_data = 2;
+}
+
 message Common_Message {
     uint64 source_id = 1; // SteamID64 of the sender
     uint64 dest_id = 2; // SteamID64 of the target receiver
@@ -314,6 +329,7 @@ message Common_Message {
         Networking_Messages networking_messages = 15;
         GameServerStats_Messages gameserver_stats_messages = 16;
         Leaderboards_Messages leaderboards_messages = 17;
+        Steam_User_Stats_Messages steam_user_stats_messages = 18;
     }
 
     uint32 source_ip = 128;

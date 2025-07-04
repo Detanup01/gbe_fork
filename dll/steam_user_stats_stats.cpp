@@ -32,7 +32,7 @@ bool Steam_User_Stats::clear_stats_internal()
 
         switch (stat.second.type)
         {
-        case GameServerStats_Messages::StatInfo::STAT_TYPE_INT: {
+        case StatInfo::STAT_TYPE_INT: {
             auto data = stat.second.default_value_int;
 
             bool needs_disk_write = false;
@@ -48,8 +48,8 @@ bool Steam_User_Stats::clear_stats_internal()
         }
         break;
 
-        case GameServerStats_Messages::StatInfo::STAT_TYPE_FLOAT:
-        case GameServerStats_Messages::StatInfo::STAT_TYPE_AVGRATE: {
+        case StatInfo::STAT_TYPE_FLOAT:
+        case StatInfo::STAT_TYPE_AVGRATE: {
             auto data = stat.second.default_value_float;
 
             bool needs_disk_write = false;
@@ -85,13 +85,13 @@ Steam_User_Stats::InternalSetResult<int32> Steam_User_Stats::set_stat_internal( 
     auto stats_data = stats_config.find(stat_name);
     if (stats_config.end() == stats_data && settings->allow_unknown_stats) {
         Stat_config cfg{};
-        cfg.type = GameServerStats_Messages::StatInfo::STAT_TYPE_INT;
+        cfg.type = StatInfo::STAT_TYPE_INT;
         cfg.default_value_int = 0;
         stats_data = settings->setStatDefiniton(stat_name, cfg);
     }
 
     if (stats_config.end() == stats_data) return result;
-    if (stats_data->second.type != GameServerStats_Messages::StatInfo::STAT_TYPE_INT) return result;
+    if (stats_data->second.type != StatInfo::STAT_TYPE_INT) return result;
 
     result.internal_name = stat_name;
     result.current_val = nData;
@@ -145,11 +145,11 @@ Steam_User_Stats::InternalSetResult<int32> Steam_User_Stats::set_stat_internal( 
     return result;
 }
 
-Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo::Stat_Type, float>> Steam_User_Stats::set_stat_internal( const char *pchName, float fData )
+Steam_User_Stats::InternalSetResult<std::pair<StatInfo::Stat_Type, float>> Steam_User_Stats::set_stat_internal( const char *pchName, float fData )
 {
     PRINT_DEBUG("<float> '%s' = %f", pchName, fData);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo::Stat_Type, float>> result{};
+    Steam_User_Stats::InternalSetResult<std::pair<StatInfo::Stat_Type, float>> result{};
 
     if (!pchName) return result;
     std::string stat_name(common_helpers::to_lower(pchName));
@@ -158,13 +158,13 @@ Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo
     auto stats_data = stats_config.find(stat_name);
     if (stats_config.end() == stats_data && settings->allow_unknown_stats) {
         Stat_config cfg{};
-        cfg.type = GameServerStats_Messages::StatInfo::STAT_TYPE_FLOAT;
+        cfg.type = StatInfo::STAT_TYPE_FLOAT;
         cfg.default_value_float = 0;
         stats_data = settings->setStatDefiniton(stat_name, cfg);
     }
 
     if (stats_config.end() == stats_data) return result;
-    if (stats_data->second.type == GameServerStats_Messages::StatInfo::STAT_TYPE_INT) return result;
+    if (stats_data->second.type == StatInfo::STAT_TYPE_INT) return result;
 
     result.internal_name = stat_name;
     result.current_val.first = stats_data->second.type;
@@ -219,11 +219,11 @@ Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo
     return result;
 }
 
-Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo::Stat_Type, float>> Steam_User_Stats::update_avg_rate_stat_internal( const char *pchName, float flCountThisSession, double dSessionLength )
+Steam_User_Stats::InternalSetResult<std::pair<StatInfo::Stat_Type, float>> Steam_User_Stats::update_avg_rate_stat_internal( const char *pchName, float flCountThisSession, double dSessionLength )
 {
     PRINT_DEBUG("%s", pchName);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo::Stat_Type, float>> result{};
+    Steam_User_Stats::InternalSetResult<std::pair<StatInfo::Stat_Type, float>> result{};
 
     if (!pchName) return result;
     std::string stat_name(common_helpers::to_lower(pchName));
@@ -232,13 +232,13 @@ Steam_User_Stats::InternalSetResult<std::pair<GameServerStats_Messages::StatInfo
     auto stats_data = stats_config.find(stat_name);
     if (stats_config.end() == stats_data && settings->allow_unknown_stats) {
         Stat_config cfg{};
-        cfg.type = GameServerStats_Messages::StatInfo::STAT_TYPE_AVGRATE;
+        cfg.type = StatInfo::STAT_TYPE_AVGRATE;
         cfg.default_value_float = 0;
         stats_data = settings->setStatDefiniton(stat_name, cfg);
     }
 
     if (stats_config.end() == stats_data) return result;
-    if (stats_data->second.type == GameServerStats_Messages::StatInfo::STAT_TYPE_INT) return result;
+    if (stats_data->second.type == StatInfo::STAT_TYPE_INT) return result;
 
     result.internal_name = stat_name;
 
@@ -281,6 +281,26 @@ void Steam_User_Stats::steam_user_stats_network_stats(void *object, Common_Messa
     inst->network_callback_stats(msg);
 }
 
+SteamAPICall_t Steam_User_Stats::trigger_user_stats_received(CSteamID steam_id_user, SteamAPICall_t api_id, bool success)
+{
+    UserStatsReceived_t data{};
+    data.m_nGameID = settings->get_local_game_id().ToUint64();
+    data.m_eResult = success ? k_EResultOK : k_EResultFail; // TODO: based on doc, real steam tests needed
+    data.m_steamIDUser = steam_id_user;
+
+    // appid 756800 expects both: a callback (global event occurring in the Steam environment),
+    // and a callresult (the specific result of this function call)
+    // otherwise it will lock-up and hang at startup
+    SteamAPICall_t ret{};
+    if (api_id == k_uAPICallInvalid) {
+        ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1);
+    }
+    else {
+        ret = callback_results->addCallResult(api_id, data.k_iCallback, &data, sizeof(data), 0.1);
+    }
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.1);
+    return ret;
+}
 
 // Ask the server to send down this user's data and achievements for this game
 STEAM_CALL_BACK( UserStatsReceived_t )
@@ -311,13 +331,13 @@ bool Steam_User_Stats::GetStat( const char *pchName, int32 *pData )
     auto stats_data = stats_config.find(stat_name);
     if (stats_config.end() == stats_data && settings->allow_unknown_stats) {
         Stat_config cfg{};
-        cfg.type = GameServerStats_Messages::StatInfo::STAT_TYPE_INT;
+        cfg.type = StatInfo::STAT_TYPE_INT;
         cfg.default_value_int = 0;
         stats_data = settings->setStatDefiniton(stat_name, cfg);
     }
 
     if (stats_config.end() == stats_data) return false;
-    if (stats_data->second.type != GameServerStats_Messages::StatInfo::STAT_TYPE_INT) return false;
+    if (stats_data->second.type != StatInfo::STAT_TYPE_INT) return false;
 
     auto cached_stat = stats_cache_int.find(stat_name);
     if (cached_stat != stats_cache_int.end()) {
@@ -350,13 +370,13 @@ bool Steam_User_Stats::GetStat( const char *pchName, float *pData )
     auto stats_data = stats_config.find(stat_name);
     if (stats_config.end() == stats_data && settings->allow_unknown_stats) {
         Stat_config cfg{};
-        cfg.type = GameServerStats_Messages::StatInfo::STAT_TYPE_FLOAT;
+        cfg.type = StatInfo::STAT_TYPE_FLOAT;
         cfg.default_value_float = 0;
         stats_data = settings->setStatDefiniton(stat_name, cfg);
     }
 
     if (stats_config.end() == stats_data) return false;
-    if (stats_data->second.type == GameServerStats_Messages::StatInfo::STAT_TYPE_INT) return false;
+    if (stats_data->second.type == StatInfo::STAT_TYPE_INT) return false;
 
     auto cached_stat = stats_cache_float.find(stat_name);
     if (cached_stat != stats_cache_float.end()) {
@@ -387,7 +407,7 @@ bool Steam_User_Stats::SetStat( const char *pchName, int32 nData )
     auto ret = set_stat_internal(pchName, nData );
     if (ret.success && ret.notify_server ) {
         auto &new_stat = (*pending_server_updates.mutable_user_stats())[ret.internal_name];
-        new_stat.set_stat_type(GameServerStats_Messages::StatInfo::STAT_TYPE_INT);
+        new_stat.set_stat_type(StatInfo::STAT_TYPE_INT);
         new_stat.set_value_int(ret.current_val);
 
         if (settings->immediate_gameserver_stats) send_updated_stats();
@@ -475,16 +495,17 @@ SteamAPICall_t Steam_User_Stats::RequestUserStats( CSteamID steamIDUser )
     //    load_achievements();
     //}
 
-    UserStatsReceived_t data{};
-    data.m_nGameID = settings->get_local_game_id().ToUint64();
-    data.m_eResult = k_EResultOK;
-    data.m_steamIDUser = steamIDUser;
-    // appid 756800 expects both: a callback (global event occurring in the Steam environment),
-    // and a callresult (the specific result of this function call)
-    // otherwise it will lock-up and hang at startup
-    auto ret = callback_results->addCallResult(data.k_iCallback, &data, sizeof(data), 0.1);
-    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.1);
-    return ret;
+    if (steamIDUser == settings->get_local_steam_id()) {
+        return trigger_user_stats_received(steamIDUser);
+    }
+
+    Pending_User_Stats_Request pusr{};
+    pusr.api_id = callback_results->reserveCallResult();
+    pusr.created_time = std::chrono::high_resolution_clock::now();
+    pusr.is_sent = false;
+    pending_user_stats_requests[steamIDUser.ConvertToUint64()] = pusr;
+
+    return pusr.api_id;
 }
 
 
@@ -497,9 +518,28 @@ bool Steam_User_Stats::GetUserStat( CSteamID steamIDUser, const char *pchName, i
     if (!pchName) return false;
 
     if (steamIDUser == settings->get_local_steam_id()) {
-        GetStat(pchName, pData);
-    } else {
+        return GetStat(pchName, pData);
+    }
+
+    if (pData)
         *pData = 0;
+
+    std::string stat_name = common_helpers::to_lower(pchName);
+    const auto &stats_config = settings->getStats();
+    auto stats_data = stats_config.find(stat_name);
+    if (stats_data != stats_config.end()) {
+        if (stats_data->second.type != StatInfo::STAT_TYPE_INT)
+            return false;
+    }
+
+    auto it_rusd = received_user_stats_data.find(steamIDUser.ConvertToUint64());
+    if (it_rusd != received_user_stats_data.end()) {
+        auto stats_map = it_rusd->second.user_stats();
+        auto it_user_data = stats_map.find(stat_name);
+        if (it_user_data != stats_map.end()) {
+            if (pData)
+                *pData = it_user_data->second.value_int();
+        }
     }
 
     return true;
@@ -513,9 +553,28 @@ bool Steam_User_Stats::GetUserStat( CSteamID steamIDUser, const char *pchName, f
     if (!pchName) return false;
 
     if (steamIDUser == settings->get_local_steam_id()) {
-        GetStat(pchName, pData);
-    } else {
-        *pData = 0;
+        return GetStat(pchName, pData);
+    }
+
+    if (pData)
+        *pData = 0.0f;
+
+    std::string stat_name = common_helpers::to_lower(pchName);
+    const auto &stats_config = settings->getStats();
+    auto stats_data = stats_config.find(stat_name);
+    if (stats_data != stats_config.end()) {
+        if (stats_data->second.type == StatInfo::STAT_TYPE_INT)
+            return false;
+    }
+
+    auto it_rusd = received_user_stats_data.find(steamIDUser.ConvertToUint64());
+    if (it_rusd != received_user_stats_data.end()) {
+        auto stats_map = it_rusd->second.user_stats();
+        auto it_user_data = stats_map.find(stat_name);
+        if (it_user_data != stats_map.end()) {
+            if (pData)
+                *pData = it_user_data->second.value_float();
+        }
     }
 
     return true;
@@ -538,12 +597,12 @@ bool Steam_User_Stats::ResetAllStats( bool bAchievementsToo )
 
             switch (stat.second.type)
             {
-            case GameServerStats_Messages::StatInfo::STAT_TYPE_INT:
+            case StatInfo::STAT_TYPE_INT:
                 new_stat.set_value_int(stat.second.default_value_int);
             break;
 
-            case GameServerStats_Messages::StatInfo::STAT_TYPE_AVGRATE:
-            case GameServerStats_Messages::StatInfo::STAT_TYPE_FLOAT:
+            case StatInfo::STAT_TYPE_AVGRATE:
+            case StatInfo::STAT_TYPE_FLOAT:
                 new_stat.set_value_float(stat.second.default_value_float);
             break;
             
@@ -630,7 +689,7 @@ bool Steam_User_Stats::GetGlobalStat( const char *pchStatName, int64 *pData )
     const auto &stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
     if (stats_data != stats_config.end()) {
-        if (stats_data->second.type != GameServerStats_Messages::StatInfo::STAT_TYPE_INT)
+        if (stats_data->second.type != StatInfo::STAT_TYPE_INT)
             return false;
 
         if (pData)
@@ -649,7 +708,7 @@ bool Steam_User_Stats::GetGlobalStat( const char *pchStatName, double *pData )
     const auto &stats_config = settings->getStats();
     auto stats_data = stats_config.find(stat_name);
     if (stats_data != stats_config.end()) {
-        if (stats_data->second.type == GameServerStats_Messages::StatInfo::STAT_TYPE_INT)
+        if (stats_data->second.type == StatInfo::STAT_TYPE_INT)
             return false;
 
         if (pData)
@@ -733,15 +792,15 @@ void Steam_User_Stats::network_stats_initial(Common_Message *msg)
         this_stat.set_stat_type(stat.second.type);
         switch (stat.second.type)
         {
-        case GameServerStats_Messages::StatInfo::STAT_TYPE_INT: {
+        case StatInfo::STAT_TYPE_INT: {
             int32 val = 0;
             GetStat(stat.first.c_str(), &val);
             this_stat.set_value_int(val);
         }
         break;
 
-        case GameServerStats_Messages::StatInfo::STAT_TYPE_AVGRATE: // we set the float value also for avg
-        case GameServerStats_Messages::StatInfo::STAT_TYPE_FLOAT: {
+        case StatInfo::STAT_TYPE_AVGRATE: // we set the float value also for avg
+        case StatInfo::STAT_TYPE_FLOAT: {
             float val = 0;
             GetStat(stat.first.c_str(), &val);
             this_stat.set_value_float(val);
@@ -804,13 +863,13 @@ void Steam_User_Stats::network_stats_updated(Common_Message *msg)
     for (auto &new_stat : new_user_data.user_stats()) {
         switch (new_stat.second.stat_type())
         {
-        case GameServerStats_Messages::StatInfo::STAT_TYPE_INT: {
+        case StatInfo::STAT_TYPE_INT: {
             set_stat_internal(new_stat.first.c_str(), new_stat.second.value_int());
         }
         break;
         
-        case GameServerStats_Messages::StatInfo::STAT_TYPE_AVGRATE:
-        case GameServerStats_Messages::StatInfo::STAT_TYPE_FLOAT: {
+        case StatInfo::STAT_TYPE_AVGRATE:
+        case StatInfo::STAT_TYPE_FLOAT: {
             set_stat_internal(new_stat.first.c_str(), new_stat.second.value_float());
             // non-INT values could have avg values
             if (new_stat.second.has_value_avg()) {
@@ -838,6 +897,91 @@ void Steam_User_Stats::network_stats_updated(Common_Message *msg)
     PRINT_DEBUG("server sent updated user stats, %zu stats, %zu achievements",
         new_user_data.user_stats().size(), new_user_data.user_achievements().size()
     );
+}
+
+void Steam_User_Stats::send_pending_user_stats_requests()
+{
+    if (!pending_user_stats_requests.empty()) {
+        for (auto it_pusr = pending_user_stats_requests.begin(); it_pusr != pending_user_stats_requests.end();) {
+            if (check_timedout(it_pusr->second.created_time, 3.0)) {
+                PRINT_DEBUG("send_pending_user_stats_requests time out");
+                trigger_user_stats_received(CSteamID(it_pusr->first), it_pusr->second.api_id);
+                it_pusr = pending_user_stats_requests.erase(it_pusr);
+                continue;
+            }
+            if (!it_pusr->second.is_sent) {
+                PRINT_DEBUG("send_pending_user_stats_requests send");
+                Common_Message msg;
+                msg.set_source_id(static_cast<uint64_t>(settings->get_local_steam_id().ConvertToUint64()));
+                msg.set_dest_id(static_cast<uint64_t>(it_pusr->first));
+                Steam_User_Stats_Messages *sus_msg = new Steam_User_Stats_Messages();
+                sus_msg->set_type(Steam_User_Stats_Messages::REQUEST_USERSTATS);
+                msg.set_allocated_steam_user_stats_messages(sus_msg);
+                network->sendTo(&msg, true);
+
+                it_pusr->second.is_sent = true;
+            }
+            ++it_pusr;
+        }
+    }
+}
+
+void Steam_User_Stats::process_pending_user_stats_requests(Common_Message *msg)
+{
+    switch (msg->steam_user_stats_messages().type())
+    {
+    case Steam_User_Stats_Messages::REQUEST_USERSTATS: {
+        PRINT_DEBUG("steam_user_stats_messages REQUEST_USERSTATS");
+        Steam_User_Stats_Data *susd_alloc = new Steam_User_Stats_Data();
+
+        const auto &stats_config = settings->getStats();
+        for (const auto &sc : stats_config) {
+            std::string stats_name = sc.first;
+            StatInfo::Stat_Type stats_type = sc.second.type;
+            if (stats_type == StatInfo::STAT_TYPE_INT) {
+                int32 stats_value = 0;
+                GetStat(stats_name.c_str(), &stats_value);
+                (*susd_alloc->mutable_user_stats())[stats_name].set_value_int(stats_value);
+            }
+            else {
+                float stats_value = 0.0f;
+                GetStat(stats_name.c_str(), &stats_value);
+                (*susd_alloc->mutable_user_stats())[stats_name].set_value_float(stats_value);
+            }
+        }
+
+        Common_Message msg_;
+        msg_.set_source_id(static_cast<uint64_t>(settings->get_local_steam_id().ConvertToUint64()));
+        msg_.set_dest_id(msg->source_id());
+        Steam_User_Stats_Messages *response_message = new Steam_User_Stats_Messages();
+        response_message->set_type(Steam_User_Stats_Messages::RESPONSE_USERSTATS);
+        response_message->set_allocated_steam_user_stats_data(susd_alloc);
+        msg_.set_allocated_steam_user_stats_messages(response_message);
+        network->sendTo(&msg_, true);
+
+        break;
+    }
+    case Steam_User_Stats_Messages::RESPONSE_USERSTATS: {
+        PRINT_DEBUG("steam_user_stats_messages RESPONSE_USERSTATS");
+        if (msg->steam_user_stats_messages().has_steam_user_stats_data()) {
+            PRINT_DEBUG("received user stats messages");
+            const Steam_User_Stats_Data &received_user_stats = msg->steam_user_stats_messages().steam_user_stats_data();
+            uint64 received_steam_stats_id = static_cast<uint64>(msg->source_id());
+            auto it_pusr = pending_user_stats_requests.find(received_steam_stats_id);
+            if (it_pusr == pending_user_stats_requests.end()) {
+                PRINT_DEBUG("received but timed out, ignoring");
+            }
+            else {
+                PRINT_DEBUG("received, refreshing or adding to cache");
+                received_user_stats_data[received_steam_stats_id] = received_user_stats;
+                trigger_user_stats_received(CSteamID(received_steam_stats_id), it_pusr->second.api_id);
+                it_pusr = pending_user_stats_requests.erase(it_pusr);
+            }
+        }
+
+        break;
+    }
+    }
 }
 
 void Steam_User_Stats::network_callback_stats(Common_Message *msg)
@@ -868,4 +1012,7 @@ void Steam_User_Stats::network_callback_stats(Common_Message *msg)
         PRINT_DEBUG("unhandled type %i", (int)msg->gameserver_stats_messages().type());
     break;
     }
+
+    if (msg->has_steam_user_stats_messages())
+        process_pending_user_stats_requests(msg);
 }

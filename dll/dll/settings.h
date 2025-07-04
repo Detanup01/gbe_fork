@@ -88,7 +88,7 @@ struct Leaderboard_config {
 };
 
 struct Stat_config {
-    GameServerStats_Messages::StatInfo::Stat_Type type{};
+    StatInfo::Stat_Type type{};
     union {
         float default_value_float;
         int32 default_value_int;

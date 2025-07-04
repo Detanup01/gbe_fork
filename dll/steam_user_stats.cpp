@@ -113,6 +113,7 @@ Steam_User_Stats::Steam_User_Stats(Settings *settings, class Networking *network
     if (settings->share_leaderboards_over_network) {
         this->network->setCallback(CALLBACK_ID_LEADERBOARDS_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_leaderboards, this);
     }
+    this->network->setCallback(CALLBACK_ID_USER_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_stats, this);
     this->network->setCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_low_level, this);
     this->run_every_runcb->add(&Steam_User_Stats::steam_user_stats_run_every_runcb, this);
 }
@@ -125,6 +126,7 @@ Steam_User_Stats::~Steam_User_Stats()
     if (settings->share_leaderboards_over_network) {
         this->network->rmCallback(CALLBACK_ID_LEADERBOARDS_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_leaderboards, this);
     }
+    this->network->rmCallback(CALLBACK_ID_USER_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_stats, this);
     this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_low_level, this);
     this->run_every_runcb->remove(&Steam_User_Stats::steam_user_stats_run_every_runcb, this);
 }
@@ -195,9 +197,9 @@ ESteamUserStatType Steam_User_Stats::GetStatType( CGameID nGameID, const char *p
 
     switch (stat_info->second.type)
     {
-    case GameServerStats_Messages::StatInfo::STAT_TYPE_INT: return ESteamUserStatType::k_ESteamUserStatTypeINT;
-    case GameServerStats_Messages::StatInfo::STAT_TYPE_FLOAT: return ESteamUserStatType::k_ESteamUserStatTypeFLOAT;
-    case GameServerStats_Messages::StatInfo::STAT_TYPE_AVGRATE: return ESteamUserStatType::k_ESteamUserStatTypeAVGRATE;
+    case StatInfo::STAT_TYPE_INT: return ESteamUserStatType::k_ESteamUserStatTypeINT;
+    case StatInfo::STAT_TYPE_FLOAT: return ESteamUserStatType::k_ESteamUserStatTypeFLOAT;
+    case StatInfo::STAT_TYPE_AVGRATE: return ESteamUserStatType::k_ESteamUserStatTypeAVGRATE;
     
     default: PRINT_DEBUG("[X] unhandled type %i", (int)stat_info->second.type); break;
     }
@@ -440,6 +442,7 @@ void Steam_User_Stats::steam_run_callback()
 {
     send_updated_stats();
     load_achievements_icons();
+    send_pending_user_stats_requests();
 }
 
 
@@ -465,6 +468,25 @@ void Steam_User_Stats::network_callback_low_level(Common_Message *msg)
             board.remove_entries(steamid);
         }
         
+        // TODO: need tests on real steam
+        bool had_data = false;
+
+        auto it_res_r = received_user_stats_data.find(steamid.ConvertToUint64());
+        if (it_res_r != received_user_stats_data.end()) {
+            had_data = true;
+            it_res_r = received_user_stats_data.erase(it_res_r);
+        }
+        auto it_res_p = pending_user_stats_requests.find(steamid.ConvertToUint64());
+        if (it_res_p != pending_user_stats_requests.end()) {
+            trigger_user_stats_received(steamid, it_res_p->second.api_id);
+            it_res_p = pending_user_stats_requests.erase(it_res_p);
+        }
+        else if (had_data) {
+            UserStatsUnloaded_t data{};
+            data.m_steamIDUser = steamid;
+            callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.0);
+        }
+
         // PRINT_DEBUG("removed user %llu", (uint64)steamid.ConvertToUint64());
     }
     break;

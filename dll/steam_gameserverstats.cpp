@@ -164,7 +164,7 @@ bool Steam_GameServerStats::GetUserStat( CSteamID steamIDUser, const char *pchNa
 
     auto stat = find_stat(steamIDUser, pchName);
     if (!stat) return false;
-    if (stat->stat.stat_type() != GameServerStats_Messages::StatInfo::STAT_TYPE_INT) return false;
+    if (stat->stat.stat_type() != StatInfo::STAT_TYPE_INT) return false;
 
     if (pData) *pData = stat->stat.value_int();
     return true;
@@ -180,7 +180,7 @@ bool Steam_GameServerStats::GetUserStat( CSteamID steamIDUser, const char *pchNa
 
     auto stat = find_stat(steamIDUser, pchName);
     if (!stat) return false;
-    if (stat->stat.stat_type() == GameServerStats_Messages::StatInfo::STAT_TYPE_INT) return false;
+    if (stat->stat.stat_type() == StatInfo::STAT_TYPE_INT) return false;
 
     if (pData) *pData = stat->stat.value_float();
     return true;
@@ -216,7 +216,7 @@ bool Steam_GameServerStats::SetUserStat( CSteamID steamIDUser, const char *pchNa
 
     auto stat = find_stat(steamIDUser, pchName);
     if (!stat) return false;
-    if (stat->stat.stat_type() != GameServerStats_Messages::StatInfo::STAT_TYPE_INT) return false;
+    if (stat->stat.stat_type() != StatInfo::STAT_TYPE_INT) return false;
     if (stat->stat.value_int() == nData) return true; // don't waste time
 
     stat->dirty = true;
@@ -237,7 +237,7 @@ bool Steam_GameServerStats::SetUserStat( CSteamID steamIDUser, const char *pchNa
 
     auto stat = find_stat(steamIDUser, pchName);
     if (!stat) return false;
-    if (stat->stat.stat_type() == GameServerStats_Messages::StatInfo::STAT_TYPE_INT) return false;
+    if (stat->stat.stat_type() == StatInfo::STAT_TYPE_INT) return false;
     if (stat->stat.value_float() == fData) return true; // don't waste time
 
     stat->dirty = true;
@@ -258,7 +258,7 @@ bool Steam_GameServerStats::UpdateUserAvgRateStat( CSteamID steamIDUser, const c
 
     auto stat = find_stat(steamIDUser, pchName);
     if (!stat) return false;
-    if (stat->stat.stat_type() == GameServerStats_Messages::StatInfo::STAT_TYPE_INT) return false;
+    if (stat->stat.stat_type() == StatInfo::STAT_TYPE_INT) return false;
     // don't waste time
     if (stat->stat.has_value_avg() &&
         stat->stat.value_avg().count_this_session() == flCountThisSession &&
@@ -270,7 +270,7 @@ bool Steam_GameServerStats::UpdateUserAvgRateStat( CSteamID steamIDUser, const c
 
     // https://protobuf.dev/reference/cpp/cpp-generated/#string
     // set_allocated_xxx() takes ownership of the allocated object, no need to delete
-    auto avg_info = new GameServerStats_Messages::StatInfo::AvgStatInfo();
+    auto avg_info = new StatInfo::AvgStatInfo();
     avg_info->set_count_this_session(flCountThisSession);
     avg_info->set_session_length(dSessionLength);
     stat->stat.set_allocated_value_avg(avg_info);
