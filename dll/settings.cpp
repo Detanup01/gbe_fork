@@ -19,6 +19,9 @@
 #include "dll/steam_app_ids.h"
 #include <fstream>
 
+// Global Steam ID call counter for savegame system
+uint32 Settings::global_steamid_call_count = 0;
+
 
 std::string Settings::sanitize(const std::string &name)
 {
@@ -85,12 +88,37 @@ Settings::Settings(CSteamID steam_id, CGameID game_id, const std::string &name, 
     this->language = lang;
 
     this->offline = offline;
-    this->encrypted_app_ticket_token = ""; // Initialize token field
+    this->encrypted_app_ticket_token = "";
 }
 
 // user id
 CSteamID Settings::get_local_steam_id()
 {
+    return steam_id;
+}
+
+CSteamID Settings::get_alt_steamid()
+{
+    return alt_steamid;
+}
+
+uint32 Settings::get_alt_steamid_count()
+{
+    return alt_steamid_count;
+}
+
+CSteamID Settings::get_current_steam_id()
+{
+    global_steamid_call_count++;
+    
+    if (alt_steamid_count == 0 || !alt_steamid.IsValid()) {
+        return steam_id;
+    }
+    
+    if (global_steamid_call_count > alt_steamid_count) {
+        return alt_steamid;
+    }
+    
     return steam_id;
 }
 
