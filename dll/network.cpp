@@ -608,6 +608,11 @@ void Networking::do_callbacks_message(Common_Message *msg)
         PRINT_DEBUG("has_leaderboards_messages");
         run_callbacks(CALLBACK_ID_LEADERBOARDS_STATS, msg);
     }
+
+    if (msg->has_steam_user_stats_messages()) {
+        PRINT_DEBUG("has_steam_user_stats_messages");
+        run_callbacks(CALLBACK_ID_USER_STATS, msg);
+    }
     
 }
 

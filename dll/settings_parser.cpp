@@ -859,15 +859,15 @@ static void parse_stats(class Settings *settings_client, class Settings *setting
 
             try {
                 if (stat_type == "float") {
-                    config.type = GameServerStats_Messages::StatInfo::STAT_TYPE_FLOAT;
+                    config.type = StatInfo::STAT_TYPE_FLOAT;
                     config.default_value_float = std::stof(stat_default_value);
                     config.global_value_double = std::stod(stat_global_value);
                 } else if (stat_type == "int") {
-                    config.type = GameServerStats_Messages::StatInfo::STAT_TYPE_INT;
+                    config.type = StatInfo::STAT_TYPE_INT;
                     config.default_value_int = std::stol(stat_default_value);
                     config.global_value_int64 = std::stoll(stat_global_value);
                 } else if (stat_type == "avgrate") {
-                    config.type = GameServerStats_Messages::StatInfo::STAT_TYPE_AVGRATE;
+                    config.type = StatInfo::STAT_TYPE_AVGRATE;
                     config.default_value_float = std::stof(stat_default_value);
                     config.global_value_double = std::stod(stat_global_value);
                 } else {
