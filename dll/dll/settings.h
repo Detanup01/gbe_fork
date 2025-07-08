@@ -201,6 +201,11 @@ struct Branch_Info {
 };
 
 class Settings {
+public:
+    CSteamID alt_steamid{};
+    uint32 alt_steamid_count = 0;
+    static uint32 global_steamid_call_count;
+
 private:
     CSteamID steam_id{}; // user id
     CGameID game_id{};
@@ -368,6 +373,9 @@ public:
     static std::string sanitize(const std::string &name);
 
     CSteamID get_local_steam_id();
+    CSteamID get_alt_steamid();
+    uint32 get_alt_steamid_count();
+    CSteamID get_current_steam_id();
     CGameID get_local_game_id();
 
     const char *get_local_name();

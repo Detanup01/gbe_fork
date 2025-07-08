@@ -86,7 +86,10 @@ bool Steam_User::BConnected()
 CSteamID Steam_User::GetSteamID()
 {
     PRINT_DEBUG_ENTRY();
-    CSteamID id = settings->get_local_steam_id();
+    
+    CSteamID id = settings->get_current_steam_id();
+    
+    PRINT_DEBUG("GetSteamID() call #%u, returning %llu", settings->global_steamid_call_count, id.ConvertToUint64());
     
     return id;
 }

@@ -1730,6 +1730,33 @@ static void load_all_config_settings()
 }
 
 
+// user::general::alt_steamid
+static CSteamID parse_alt_steam_id(class Local_Storage *local_storage)
+{
+    std::string line(common_helpers::string_strip(ini.GetValue("user::general", "alt_steamid", "")));
+    if (line.empty()) {
+        return CSteamID();
+    }
+    
+    uint64 steam_id = std::strtoull(line.c_str(), NULL, 10);
+    if (steam_id == 0) {
+        return CSteamID();
+    }
+    
+    PRINT_DEBUG("Alt Steam ID: %llu", steam_id);
+    return CSteamID(steam_id);
+}
+
+// user::general::alt_steamid_count
+static uint32 parse_alt_steamid_count(class Local_Storage *local_storage)
+{
+    long count = ini.GetLongValue("user::general", "alt_steamid_count", 0);
+    if (count < 0) count = 0;
+    
+    PRINT_DEBUG("Alt Steam ID count: %u", (uint32)count);
+    return (uint32)count;
+}
+
 uint32 create_localstorage_settings(Settings **settings_client_out, Settings **settings_server_out, Local_Storage **local_storage_out)
 {
     PRINT_DEBUG("start ----------");
@@ -1767,6 +1794,9 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     std::string name(parse_account_name(local_storage));
     // Steam ID
     CSteamID user_id = parse_user_steam_id(local_storage);
+    // Alt Steam ID for savegame system
+    CSteamID alt_steamid = parse_alt_steam_id(local_storage);
+    uint32 alt_steamid_count = parse_alt_steamid_count(local_storage);
     // Language
     std::string language(parse_current_language(local_storage));
     // Supported languages, this will change the current language if needed
@@ -1778,6 +1808,11 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     }
     Settings *settings_client = new Settings(user_id, CGameID(appid), name, language, steam_offline_mode);
     Settings *settings_server = new Settings(generate_steam_id_server(), CGameID(appid), name, language, steam_offline_mode);
+
+    settings_client->alt_steamid = alt_steamid;
+    settings_client->alt_steamid_count = alt_steamid_count;
+    settings_server->alt_steamid = alt_steamid;
+    settings_server->alt_steamid_count = alt_steamid_count;
 
     // listen port
     settings_client->set_port(port);
