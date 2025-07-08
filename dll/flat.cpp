@@ -15,7 +15,7 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#ifndef STEAMCLIENT_DLL
+#if !defined(STEAMCLIENT_DLL) || defined(STEAMCLIENT_HYBRID)
 #define STEAM_API_FUNCTIONS_IMPL
 #include "dll/dll.h"
 #include "steam/steam_api_flat.h"

@@ -48,7 +48,7 @@
 
 #ifdef STEAM_API_EXPORTS
 #ifdef STEAM_API_FUNCTIONS_IMPL
-#ifdef STEAMCLIENT_DLL
+#if defined(STEAMCLIENT_DLL) && !defined(STEAMCLIENT_HYBRID)
 #define S_API static
 #else
 #define S_API S_API_EXPORT
