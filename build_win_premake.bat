@@ -12,15 +12,12 @@ if defined NUMBER_OF_PROCESSORS (
 )
 
 set /a "BUILD_DEPS=0"
-set /a "BUILD_HYBRID_ONLY=0"
 
 :args_loop
   if "%~1" equ "" (
     goto :args_loop_end
   ) else if "%~1" equ "--deps" (
     set /a "BUILD_DEPS=1"
-  ) else if "%~1" equ "--hybrid" (
-    set /a "BUILD_HYBRID_ONLY=1"
   ) else if "%~1" equ "--help" (
     goto :help_page
   ) else (
@@ -78,15 +75,9 @@ set /a "BUILD_HYBRID_ONLY=0"
   )
 
   :: build .sln
-  if %BUILD_HYBRID_ONLY% equ 1 (
-    set "BUILD_TYPES=release"
-    set "BUILD_PLATFORMS=x64"
-    set "BUILD_TARGETS=steamclient_hybrid"
-  ) else (
-    set "BUILD_TYPES=debug release"
-    set "BUILD_PLATFORMS=x64 Win32"
-    set "BUILD_TARGETS=api_regular api_experimental steamclient_experimental steamclient_hybrid tool_lobby_connect tool_generate_interfaces lib_steamnetworkingsockets lib_game_overlay_renderer steamclient_experimental_stub steamclient_experimental_extra steamclient_experimental_loader tool_file_dos_stub_changer test_crash_printer"
-  )
+  set "BUILD_TYPES=release debug"
+  set "BUILD_PLATFORMS=x64 Win32"
+  set "BUILD_TARGETS=api_regular api_experimental steamclient_experimental_stub steamclient_experimental steamclient_experimental_loader steamclient_experimental_extra lib_game_overlay_renderer tool_lobby_connect tool_generate_interfaces"
 
   for %%A in (%BUILD_TYPES%) do (
     set "BUILD_TYPE=%%A"
@@ -117,6 +108,5 @@ set /a "BUILD_HYBRID_ONLY=0"
   echo:"%~nx0" [switches]
   echo:switches:
   echo:  --deps: rebuild third-party dependencies
-  echo:  --hybrid: build only steamclient_hybrid target (x64 release)
   echo:  --help: show this page
   goto :end_script
