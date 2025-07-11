@@ -63,22 +63,12 @@ int main() {
         SteamAPI_RunCallbacks();
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
-	
-    int friend_count = SteamFriends()->GetFriendCount(k_EFriendFlagAll);
-    
-    /*
-    std::cout << "People on the network: " << friend_count << "\n";
-    for (int i = 0; i < friend_count; ++i) {
-        CSteamID id = SteamFriends()->GetFriendByIndex(i, k_EFriendFlagAll);
-        const char *name = SteamFriends()->GetFriendPersonaName(id);
-        
-        FriendGameInfo_t friend_info = {};
-        SteamFriends()->GetFriendGamePlayed(id, &friend_info);
-        std::cout << name << " is playing: " << friend_info.m_gameID.AppID() << std::endl;
-    }
-    */
     
 	title();
+
+	int friend_count = SteamFriends()->GetFriendCount(k_EFriendFlagAll);
+
+	std::cout << "People on the network: " << friend_count << "\n";
 	
     std::vector<std::pair<std::string, uint32>> arguments;
     for (int i = 0; i < friend_count; ++i) {
@@ -89,6 +79,8 @@ int main() {
         SteamFriends()->GetFriendGamePlayed(id, &friend_info);
         auto appid = friend_info.m_gameID.AppID();
 		
+		std::cout << " - " << name << " is playing " << appid << "\n";
+
         if (strlen(connect) > 0) {
             std::cout << arguments.size() << " - " << name << " is playing " << appid << " (" << connect << ").\n";
             arguments.emplace_back(connect, appid);
