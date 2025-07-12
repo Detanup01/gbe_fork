@@ -20,6 +20,7 @@
 
 #include "base.h"
 #include "auth.h"
+#include "voicechat.h"
 
 class Steam_User :
 public ISteamUser004,
@@ -49,10 +50,9 @@ public ISteamUser
 	class SteamCallResults *callback_results{};
     Local_Storage *local_storage{};
 
-	bool recording = false;
-	std::chrono::high_resolution_clock::time_point last_get_voice{};
 	std::string encrypted_app_ticket{};
 	Auth_Manager *auth_manager{};
+    VoiceChat* voicechat{};
     std::map<std::string, std::string> registry{};
     std::string registry_nullptr{};
 
