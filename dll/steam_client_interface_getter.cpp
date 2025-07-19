@@ -96,7 +96,20 @@ ISteamGameStats *Steam_Client::GetISteamGameStats( HSteamUser hSteamUser, HSteam
 ISteamUser *Steam_Client::GetISteamUser( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
     PRINT_DEBUG("%s", pchVersion);
-    if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
+
+    if (!steam_pipes.count(hSteamPipe)) {
+        // Fallback for steamclient_experimental build: if pipe 1 is requested but not found,
+        // and we have other valid pipes, continue execution instead of returning NULL
+        if (hSteamPipe == 1 && !steam_pipes.empty()) {
+            // Continue with function execution using available pipes
+        } else {
+            return NULL;
+        }
+    }
+
+    if (!hSteamUser) {
+        return NULL;
+    }
 
     if (strcmp(pchVersion, "SteamUser004") == 0) {
         return reinterpret_cast<ISteamUser *>(static_cast<ISteamUser004 *>(steam_user)); // sdk 0.99u
