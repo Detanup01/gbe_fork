@@ -4,6 +4,7 @@ Fork of https://gitlab.com/Mr_Goldberg/goldberg_emulator
 ### Feel free to make a PR.
 
 ---
+[TEST]
 
 :red_circle:  
 
