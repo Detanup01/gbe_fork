@@ -202,28 +202,28 @@ struct Branch_Info {
 
 struct OldP2pBehavior {
     enum class EPacketShareMode {
-        // if the sending type is unreliable (UDP), share packets between gameserver and client
-        // otherwise, don't share packets
-        DEFAULT,
-
-        // always share packets between gameserver and client
-        ALWAYS_SHARE,
-
         // never share packets between gameserver and client
         NEVER_SHARE,
+
+        // always share packets between gameserver and client, this is needed for some older games
+        ALWAYS_SHARE,
+
+        // if the sending type is unreliable (UDP), share packets between gameserver and client
+        // otherwise, don't share packets
+        MIXED,
 
         _LAST,
     };
 
     static EPacketShareMode to_share_mode(int val) {
         if (val < 0 || val >= (unsigned)EPacketShareMode::_LAST) {
-            return EPacketShareMode::DEFAULT;
+            return EPacketShareMode::NEVER_SHARE;
         }
 
         return (EPacketShareMode)val;
     }
 
-    EPacketShareMode mode = EPacketShareMode::DEFAULT;
+    EPacketShareMode mode = EPacketShareMode::NEVER_SHARE;
 };
 
 class Settings {

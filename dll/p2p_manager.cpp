@@ -274,7 +274,16 @@ std::optional<std::tuple<
 
             switch (my_settings->old_p2p_behavior.mode) {
             default:
-            case OldP2pBehavior::EPacketShareMode::DEFAULT: {
+            case OldP2pBehavior::EPacketShareMode::NEVER_SHARE: {
+                can_share_packet = false;
+            }
+
+            case OldP2pBehavior::EPacketShareMode::ALWAYS_SHARE: {
+                can_share_packet = true;
+            }
+            break;
+
+            case OldP2pBehavior::EPacketShareMode::MIXED: {
                 // appids (353090, 301300) do this:
                 // - send packet from client >>> to gameserver
                 // - use the **client** to check for these packets
@@ -286,18 +295,8 @@ std::optional<std::tuple<
                 // and they do not need the gameserver to share its packets with the client
                 // even multiplayer in appid 248390 won't work if packets were shared
                 can_share_packet =
-                    packet_it->send_type == EP2PSend::k_EP2PSendUnreliable ||
-                    packet_it->send_type == EP2PSend::k_EP2PSendUnreliableNoDelay;
-            }
-            break;
-
-            case OldP2pBehavior::EPacketShareMode::ALWAYS_SHARE: {
-                can_share_packet = true;
-            }
-            break;
-            
-            case OldP2pBehavior::EPacketShareMode::NEVER_SHARE: {
-                can_share_packet = false;
+                    EP2PSend::k_EP2PSendUnreliable == packet_it->send_type ||
+                    EP2PSend::k_EP2PSendUnreliableNoDelay == packet_it->send_type;
             }
             break;
             }
