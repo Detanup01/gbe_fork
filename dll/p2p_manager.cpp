@@ -544,15 +544,27 @@ bool P2p_Manager::accept_session(CSteamID my_id, CSteamID steamIDRemote)
 {
     std::lock_guard lock(p2p_mtx);
 
-    auto conn = get_connection(steamIDRemote, my_id);
-    if (!conn) {
-        PRINT_DEBUG("[X] no connection from=[%llu], I am=[%llu]", steamIDRemote.ConvertToUint64(), my_id.ConvertToUint64());
+    // https://partner.steamgames.com/doc/api/ISteamNetworking#AcceptP2PSessionWithUser
+    // "Returns: bool
+    // true upon success; false only if steamIDRemote is invalid."
+    if (!steamIDRemote.IsValid()) {
+        PRINT_DEBUG(
+            "[X] bad remote steam ID [%llu], I am=[%llu]",
+            steamIDRemote.ConvertToUint64(), my_id.ConvertToUint64()
+        );
         return false;
     }
 
+    // NOTE: don't call get_connection() here, appid 632360 attempts to close the connection first
+    // by calling Steam_Networking::CloseP2PSessionWithUser(), before calling this function!
+    // and it expects success
+    auto conn = create_connection(steamIDRemote, my_id);
     if (!conn->is_accepted) {
         conn->is_accepted = true;
-        PRINT_DEBUG("accepted new session from=[%llu], I am=[%llu]", steamIDRemote.ConvertToUint64(), my_id.ConvertToUint64());    
+        PRINT_DEBUG(
+            "accepted new session from=[%llu], I am=[%llu]",
+            steamIDRemote.ConvertToUint64(), my_id.ConvertToUint64()
+        );
     }
     return true;
 }
@@ -690,9 +702,8 @@ void P2p_Manager::network_low_level(Common_Message *msg)
     const CSteamID my_dest_id = (uint64)msg->dest_id(); // this is us
 
     switch (msg->low_level().type()) {
-        case Low_Level::CONNECT: {
-
-        }
+        case Low_Level::CONNECT:
+        // nothing
         break;
 
         case Low_Level::DISCONNECT: {
