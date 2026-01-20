@@ -269,17 +269,18 @@ void parse_cloud_save(CSimpleIniA *ini, class Settings *settings_client, class S
         if (default_cloud_dir.empty()) {
             PRINT_DEBUG("[X] cannot resolve default cloud save dir");
         } else if (!std::filesystem::is_directory(default_cloud_dir)) {
-            std::error_code ec;
-            if (std::filesystem::create_directories(default_cloud_dir, ec)) {
-                PRINT_DEBUG(
-                    "successfully created default cloud save dir '%s'",
-                    default_cloud_dir.u8string().c_str()
-                );
-            } else {
+            try {
+                if (std::filesystem::create_directories(default_cloud_dir)) {
+                    PRINT_DEBUG(
+                        "successfully created default cloud save dir '%s'",
+                        default_cloud_dir.u8string().c_str()
+                    );
+                }
+            } catch (const std::filesystem::filesystem_error& e) {
                 PRINT_DEBUG(
                     "[X] failed to create default cloud save dir '%s': '%s'",
                     default_cloud_dir.u8string().c_str(),
-                    ec.message().c_str()
+                    e.what()
                 );
                 // TODO crash the program here, or just print and move on?
             }
