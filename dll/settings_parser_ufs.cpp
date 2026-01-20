@@ -282,7 +282,6 @@ void parse_cloud_save(CSimpleIniA *ini, class Settings *settings_client, class S
                     default_cloud_dir.u8string().c_str(),
                     e.what()
                 );
-                // TODO crash the program here, or just print and move on?
             }
         }
     }
