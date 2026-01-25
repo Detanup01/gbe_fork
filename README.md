@@ -67,7 +67,9 @@ You can also find instructions here in [README.release.md](./post_build/README.r
 
 ### For Windows:
 * You need Windows 10 or 8.1 + WDK
-* Using Visual Studio, install `Visual Studio 2022 Community`: https://visualstudio.microsoft.com/vs/community/
+* Using Visual Studio, install `Visual Studio 17 2022 Community`: https://aka.ms/vs/17/release/vs_community.exe
+   * community edition is no longer listed in [the "older downloads" page](https://visualstudio.microsoft.com/vs/older-downloads/), only "professional" and "enterprise", but [the direct download link](https://aka.ms/vs/17/release/vs_community.exe) still works
+   * Visual Studio 18 2026 will not work!
    * Select the Workload `Desktop development with C++`
    * In the `Individual componenets` scroll to the buttom and select the **latest** version of `Windows XX SDK (XX.X...)`  
       For example `Windows 11 SDK (10.0.22621.0)`
@@ -145,6 +147,7 @@ Open CMD in the repo folder, then run the following
   set "CMAKE_GENERATOR=Visual Studio 17 2022"
   third-party\common\win\premake\premake5.exe --file=premake5-deps.lua --64-build --32-build   --all-ext --all-build --verbose --os=windows vs2022
   ```
+  * note: In Powershell, use `$env:CMAKE_GENERATOR="..."` instead of `set ...`
 * To build using `MSYS2` **this is currently experimental and will not work due to ABI differences**  
   <details>
     <summary>steps</summary>
@@ -203,6 +206,10 @@ Open CMD in the repo folder, then run the following
 
   msbuild /nologo /v:n /p:Configuration=release,Platform=x64 gbe.sln
   ```
+
+  To build a specific component, add the `/t:component_name` argument to the end of the above command.
+
+  To build in debug mode, use `Configuration=debug` instead of `Configuration=release`.
   
 * For `MSYS2` **this is currently experimental and will not work due to ABI differences**  
   <details>
