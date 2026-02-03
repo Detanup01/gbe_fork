@@ -172,8 +172,6 @@ local common_files = {
     "src/common/dbg_log.cpp",
 }
 
-
-
 local overlay_files = {
     "src/overlay/**.cpp",
 }
@@ -181,10 +179,6 @@ local overlay_files = {
 local overlay_experimental_files = {
     "overlay_experimental/**.cpp",
 }
-
-
-
-
 
 local detours_files = {
     "src/libraries/detours/**.cpp"
