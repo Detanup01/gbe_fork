@@ -1,153 +1,116 @@
 <#
 .SYNOPSIS
-    Interactive Build Script for GBE Fork (TUI Style)
+    Simple Build Wrapper for GBE Fork
 .DESCRIPTION
-    Provides a menu-driven interface for building the project, managing dependencies,
-    and configuring build options using xmake.
+    Lightweight wrapper around xmake for building the project.
+    All dependency management and protobuf generation is now handled natively by xmake.
+.PARAMETER Arch
+    Target architecture (x86 or x64). Default: x64
+.PARAMETER Mode
+    Build mode (debug or release). Default: release
+.PARAMETER Clean
+    Clean before building
+.PARAMETER Rebuild
+    Force rebuild all targets
+.PARAMETER Target
+    Specific target to build (optional)
+.EXAMPLE
+    .\build.ps1
+    .\build.ps1 -Arch x64 -Mode debug
+    .\build.ps1 -Clean -Rebuild
+    .\build.ps1 -Target api_experimental
 #>
+
+param(
+    [ValidateSet("x86", "x64")]
+    [string]$Arch = "x64",
+    
+    [ValidateSet("debug", "release")]
+    [string]$Mode = "release",
+    
+    [switch]$Clean,
+    [switch]$Rebuild,
+    [string]$Target = ""
+)
 
 $ErrorActionPreference = "Stop"
 
-# --- Configuration ---
-$Global:XmakePath = "xmake" 
-$Global:Arch = "x64"
-$Global:Mode = "release"
-$Global:Plat = "windows"
-
-# --- Colors ---
-$ColorHeader = "Cyan"
-$ColorOption = "Yellow"
-$ColorSuccess = "Green"
-$ColorError = "Red"
-$ColorInfo = "Gray"
-
-# --- Helper Functions ---
-
-function Show-BuildHeader {
-    Clear-Host
-    Write-Host "============================================================" -ForegroundColor $ColorHeader
-    Write-Host "                GBE FORK BUILD SYSTEM                       " -ForegroundColor $ColorHeader
-    Write-Host "============================================================" -ForegroundColor $ColorHeader
-    Write-Host ""
-    Write-Host " Architecture: " -NoNewline
-    Write-Host $Global:Arch -ForegroundColor $ColorSuccess -NoNewline
-    Write-Host " | Mode: " -NoNewline
-    Write-Host $Global:Mode -ForegroundColor $ColorSuccess
-    Write-Host ""
-}
-
-function Test-XmakeInstalled {
-    if (-not (Get-Command "xmake" -ErrorAction SilentlyContinue)) {
-        Write-Host "Error: xmake is not found in PATH." -ForegroundColor $ColorError
-        Write-Host "Please install xmake (checking winget...)" -ForegroundColor $ColorInfo
-        if (Get-Command "winget" -ErrorAction SilentlyContinue) {
-            $choice = Read-Host "Install xmake via winget? (Y/N)"
-            if ($choice -eq 'Y' -or $choice -eq 'y') {
-                winget install xmake
-                Write-Host "Please restart the script after installation." -ForegroundColor $ColorHeader
-                exit
-            }
+# Check if xmake is installed
+if (-not (Get-Command "xmake" -ErrorAction SilentlyContinue)) {
+    Write-Host "Error: xmake is not found in PATH" -ForegroundColor Red
+    Write-Host "Please install xmake: https://xmake.io/#/guide/installation" -ForegroundColor Yellow
+    
+    if (Get-Command "winget" -ErrorAction SilentlyContinue) {
+        $choice = Read-Host "Install xmake via winget? (Y/N)"
+        if ($choice -eq 'Y' -or $choice -eq 'y') {
+            Write-Host "Installing xmake..." -ForegroundColor Cyan
+            winget install xmake
+            Write-Host "Please restart your terminal and run this script again" -ForegroundColor Green
+            exit 0
         }
-        Write-Host "Aborting." -ForegroundColor $ColorError
-        exit 1
     }
+    
+    exit 1
 }
 
-function Invoke-ExternalCommand {
-    param($Cmd, [string[]]$Arguments)
-    $ArgsStr = $Arguments -join " "
-    Write-Host "> $Cmd $ArgsStr" -ForegroundColor $ColorInfo
-    Write-Host ""
-    & $Cmd $Arguments
+Write-Host "================================" -ForegroundColor Cyan
+Write-Host "  GBE Fork Build System" -ForegroundColor Cyan
+Write-Host "================================" -ForegroundColor Cyan
+Write-Host "Architecture: $Arch" -ForegroundColor Yellow
+Write-Host "Mode: $Mode" -ForegroundColor Yellow
+Write-Host ""
+
+# Clean if requested
+if ($Clean) {
+    Write-Host "Cleaning build artifacts..." -ForegroundColor Yellow
+    xmake clean -a
     if ($LASTEXITCODE -ne 0) {
-        Write-Host ""
-        Write-Host "Command failed with exit code $LASTEXITCODE" -ForegroundColor $ColorError
-        return $false
+        Write-Host "Clean failed" -ForegroundColor Red
+        exit $LASTEXITCODE
     }
-    return $true
-}
-
-function Wait-ForUser {
+    Write-Host "Clean complete" -ForegroundColor Green
     Write-Host ""
-    Read-Host "Press Enter to continue..."
 }
 
-# --- Actions ---
-
-function Initialize-BuildDeps {
-    Show-BuildHeader
-    Write-Host "Installing Dependencies..." -ForegroundColor $ColorHeader
-    Write-Host "Running custom dependency setup..." -ForegroundColor $ColorInfo
-    Write-Host ""
-    
-    # Run custom dependency script
-    & "$PSScriptRoot\setup_deps.ps1" -Arch $Global:Arch -Mode $Global:Mode
-    
-    # Run xmake package installation (will prompt if not using -y)
-    Write-Host ""
-    Write-Host "Installing xmake packages..." -ForegroundColor $ColorInfo
-    if (Invoke-ExternalCommand "xmake" @("f", "-p", "$Global:Plat", "-a", "$Global:Arch", "-m", "$Global:Mode", "-c", "-y")) {
-        Write-Host "Dependencies installed successfully!" -ForegroundColor $ColorSuccess
-    } else {
-        Write-Host "Note: Some dependencies may have failed. Check output above." -ForegroundColor $ColorError
-    }
-    Wait-ForUser
+# Configure xmake
+Write-Host "Configuring build..." -ForegroundColor Yellow
+$configArgs = @("f", "-p", "windows", "-a", "$Arch", "-m", "$Mode", "-y")
+if ($Rebuild) {
+    $configArgs += "-c"
 }
 
-function Invoke-Protogen {
-    Show-BuildHeader
-    Write-Host "Generating Protobuf Files..." -ForegroundColor $ColorHeader
-    
-    # Find protoc from xmake packages
-    $ProtocPath = Get-ChildItem "$env:LOCALAPPDATA\.xmake\packages\p\protobuf-cpp" -Recurse -Filter "protoc.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
-    
-    if (-not $ProtocPath) {
-        Write-Host "Error: protoc not found in xmake packages" -ForegroundColor $ColorError
-        Write-Host "Please run 'Install/Build Dependencies' first" -ForegroundColor $ColorInfo
-        Wait-ForUser
-        return
-    }
-    
-    Write-Host "Using protoc: $($ProtocPath.FullName)" -ForegroundColor $ColorInfo
-    
-    # Create output directory
-    $ProtoOutDir = "proto_gen\win"
-    New-Item -ItemType Directory -Force -Path $ProtoOutDir | Out-Null
-    
-    # Generate proto files
-    Get-ChildItem proto\*.proto | ForEach-Object {
-        Write-Host "Generating: $($_.Name)" -ForegroundColor $ColorInfo
-        & $ProtocPath.FullName --proto_path="$PWD\proto" --cpp_out="$PWD\$ProtoOutDir" "$($_.FullName)"
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "Failed to generate proto for $($_.Name)" -ForegroundColor $ColorError
-            Wait-ForUser
-            return
-        }
-    }
-    
-    Write-Host "Protobufs generated successfully!" -ForegroundColor $ColorSuccess
-    Wait-ForUser
+xmake @configArgs
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Configuration failed" -ForegroundColor Red
+    exit $LASTEXITCODE
 }
 
-function Edit-BuildConfiguration {
-    while ($true) {
-        Show-BuildHeader
-        Write-Host "CONFIGURATION MENU" -ForegroundColor $ColorHeader
-        Write-Host "------------------" -ForegroundColor $ColorInfo
-        Write-Host "1. Toggle Architecture (Current: $($Global:Arch))" -ForegroundColor $ColorOption
-        Write-Host "2. Toggle Mode (Current: $($Global:Mode))" -ForegroundColor $ColorOption
-        Write-Host "3. Apply Configuration (Run xmake f)" -ForegroundColor $ColorSuccess
-        Write-Host "4. Back to Main Menu" -ForegroundColor $ColorInfo
-        Write-Host ""
-        
-        $choice = Read-Host "Choose an option"
-        
-        switch ($choice) {
-            '1' { 
-                if ($Global:Arch -eq "x64") { $Global:Arch = "x86" } else { $Global:Arch = "x64" }
-            }
-            '2' {
-                if ($Global:Mode -eq "release") { $Global:Mode = "debug" } else { $Global:Mode = "release" }
+Write-Host "Configuration complete" -ForegroundColor Green
+Write-Host ""
+
+# Build
+Write-Host "Building..." -ForegroundColor Yellow
+$buildArgs = @()
+if ($Rebuild) {
+    $buildArgs += "-r"
+}
+$buildArgs += "-a"  # Build all targets
+if ($Target) {
+    $buildArgs = @($Target)  # Override to build specific target
+}
+
+xmake @buildArgs
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Build failed" -ForegroundColor Red
+    exit $LASTEXITCODE
+}
+
+Write-Host ""
+Write-Host "================================" -ForegroundColor Green
+Write-Host "  Build Successful!" -ForegroundColor Green
+Write-Host "================================" -ForegroundColor Green
+Write-Host "Output directory: build/win/$Mode/$Arch" -ForegroundColor Cyan
+
             }
             '3' {
                 Show-BuildHeader

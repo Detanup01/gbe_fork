@@ -5,7 +5,7 @@
 #include <string_view>
 #include <unordered_map>
 #include <vector>
-#include "dll/settings.h"
+#include "src/core/settings.h"
 #include "InGameOverlay/ImGui/imgui.h"
 
 

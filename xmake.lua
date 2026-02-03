@@ -6,6 +6,10 @@ set_project("gbe")
 set_version("1.0.0")
 set_xmakever("2.8.0")
 
+-- Centralize all build artifacts to .build/ directory
+set_targetdir(".build/$(mode)/$(plat)/$(arch)")
+set_objectdir(".build/.objs")
+
 --------------------------------------------------------------------------------
 -- DEPENDENCIES
 --------------------------------------------------------------------------------
@@ -16,6 +20,72 @@ add_requires("protobuf-cpp", {system = false, configs = {shared = false}})
 add_requires("libopus", {system = false, configs = {shared = false}})
 add_requires("portaudio", {system = false, configs = {shared = false}})
 add_requires("utfcpp v3.2.1", {system = false})
+
+-- Git-based dependencies with build scripts
+add_requires("libssq latest", {system = false, configs = {cmake = true, shared = false}})
+add_requires("ingame_overlay latest", {system = false, configs = {cmake = true, shared = false}})
+
+--------------------------------------------------------------------------------
+-- CUSTOM PACKAGE DEFINITIONS
+--------------------------------------------------------------------------------
+
+package("libssq")
+    set_homepage("https://github.com/BinaryAlien/libssq")
+    set_description("Source Query library")
+    set_license("MIT")
+    
+    add_urls("https://github.com/BinaryAlien/libssq.git")
+    add_versions("latest", "main")
+    
+    add_deps("cmake")
+    
+    on_install(function (package)
+        -- Apply MSVC compatibility patch
+        io.gsub("src/error.c", "NULL,%s+%);", "NULL);")
+        
+        local configs = {"-DBUILD_SHARED_LIBS=OFF"}
+        import("package.tools.cmake").install(package, configs)
+    end)
+package_end()
+
+package("ingame_overlay")
+    set_homepage("https://github.com/Rustbeard86/ingame_overlay")
+    set_description("In-game overlay with ImGui")
+    set_license("MIT")
+    
+    add_urls("https://github.com/Rustbeard86/ingame_overlay.git", {submodules = true})
+    add_versions("latest", "master")
+    
+    add_deps("cmake")
+
+    on_install("windows", function (package)
+        local configs = {
+            "-DBUILD_SHARED_LIBS=OFF",
+            "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded"
+        }
+        
+        import("package.tools.cmake").install(package, configs)
+        
+        -- 1. Correct Header Copy
+        -- Your tree shows headers are already in 'include/InGameOverlay' in source
+        os.cp("include/InGameOverlay", package:installdir("include"))
+        
+        -- 2. Robust Library Copy
+        -- We found: ingame_overlay.lib, minhook.x64.lib, and system.lib
+        for _, filepath in ipairs(os.files("**.lib")) do
+            local filename = path.filename(filepath):lower()
+            if filename:find("ingame_overlay") or 
+               filename:find("minhook") or 
+               filename:find("system") then
+                os.trycp(filepath, package:installdir("lib"))
+            end
+        end
+    end)
+
+    on_test(function (package)
+        assert(package:has_cxxincludes("InGameOverlay/RendererHook.h"))
+    end)
+package_end()
 
 --------------------------------------------------------------------------------
 -- OPTIONS
@@ -136,12 +206,9 @@ local function get_proto_dir()
     return path.join(os.projectdir(), "proto_gen", os_iden)
 end
 
--- Note: Proto generation is handled by build.ps1 script
--- Run ".\build.ps1" and select option 2 to generate proto files
-
 -- Common include directories (new structure)
 local common_include = {
-    ".",  -- Root directory for dll/ includes
+    ".",  -- Root directory for src/core/ includes
     "include",
     "include/gbe",
     "include/gbe/common",
@@ -149,10 +216,10 @@ local common_include = {
     "include/sdk",
     "src/core",
     "src/common",
-    "proto_gen/" .. os_iden,
     "src/libraries",
     "src/libraries/utfcpp",
-    "overlay_experimental",  -- For overlay/steam_overlay.h
+    "src/overlay/experimental",  -- For overlay/steam_overlay.h
+    "$(builddir)",  -- For generated protobuf files
 }
 -- Note: utfcpp might be provided by package now, need to check include path
 
@@ -165,7 +232,7 @@ local windows_syslibs = {
 -- Common source files (new structure)
 local common_files = {
     "src/core/**.cpp",
-    "proto_gen/" .. os_iden .. "/**.cc",
+    "src/proto/*.proto",  -- Protobuf files (will be auto-generated)
     "src/libraries/**.cpp", "src/libraries/**.c",
     "src/crash_printer/" .. os_iden .. ".cpp",
     "src/common/common_helpers.cpp",
@@ -177,7 +244,7 @@ local overlay_files = {
 }
 
 local overlay_experimental_files = {
-    "overlay_experimental/**.cpp",
+    "src/overlay/experimental/**.cpp",
 }
 
 local detours_files = {
@@ -224,6 +291,9 @@ end
 target("api_regular")
     set_kind("shared")
     
+    -- Add protobuf rule for automatic .proto compilation
+    add_rules("protobuf.cpp")
+    
     -- Output name based on arch
     if is_plat("windows") then
         on_load(function (target)
@@ -238,7 +308,7 @@ target("api_regular")
     end
     
     -- Output directory
-    set_targetdir("build/" .. os_iden .. "/$(mode)/regular/$(arch)")
+    set_targetdir(".build/$(mode)/regular/$(arch)")
     
     -- Common include directories and defines
     add_includedirs(common_include)
@@ -250,11 +320,8 @@ target("api_regular")
     remove_files(detours_files)
     remove_files("src/core/wrap.cpp")  -- Windows only
     
-    -- Link libraries (libssq handled by external script)
-    add_packages("zlib", "libcurl", "protobuf-cpp", "mbedtls", "libopus", "portaudio", "utfcpp")
-    add_includedirs("third_party/libssq/include")
-    add_linkdirs("third_party/libssq/lib/$(mode)")
-    add_links("ssq")
+    -- Link libraries (using xmake packages)
+    add_packages("zlib", "libcurl", "protobuf-cpp", "mbedtls", "libopus", "portaudio", "utfcpp", "libssq")
     
     if is_plat("windows") then
         add_syslinks(windows_syslibs)
@@ -263,9 +330,9 @@ target("api_regular")
         if get_config("winrsrc") then
             on_load(function (target)
                 if target:is_arch("x86") then
-                    target:add("files", "resources/win/api/32/resources.rc")
+                    target:add("files", "src/resources/win/api/32/resources.rc")
                 else
-                    target:add("files", "resources/win/api/64/resources.rc")
+                    target:add("files", "src/resources/win/api/64/resources.rc")
                 end
             end)
         end
@@ -288,6 +355,9 @@ target_end()
 target("api_experimental")
     set_kind("shared")
     
+    -- Add protobuf rule for automatic .proto compilation
+    add_rules("protobuf.cpp")
+    
     -- Output name based on arch
     if is_plat("windows") then
         on_load(function (target)
@@ -302,7 +372,7 @@ target("api_experimental")
     end
     
     -- Output directory
-    set_targetdir("build/" .. os_iden .. "/$(mode)/experimental/$(arch)")
+    set_targetdir(".build/$(mode)/experimental/$(arch)")
     
     -- Common include directories and defines
     add_includedirs(common_include)
@@ -316,14 +386,11 @@ target("api_experimental")
     -- Source files
     add_files(common_files)
     add_files(overlay_experimental_files)
-    remove_files("third_party/detours/uimports.cc")
+    remove_files("src/third_party/detours/uimports.cc")
     remove_files("src/core/wrap.cpp")  -- Windows only
     
-    -- Link libraries (libssq and ingame_overlay handled by external script)
-    add_packages("zlib", "libcurl", "protobuf-cpp", "mbedtls", "libopus", "portaudio", "utfcpp")
-    add_includedirs("third_party/libssq/include", "third_party/ingame_overlay/include")
-    add_linkdirs("third_party/libssq/lib/$(mode)", "third_party/ingame_overlay/lib/$(mode)")
-    add_links("ssq", "ingame_overlay", "minhook.x64", "system")
+    -- Link libraries (using xmake packages)
+    add_packages("zlib", "libcurl", "protobuf-cpp", "mbedtls", "libopus", "portaudio", "utfcpp", "libssq", "ingame_overlay")
 
     if is_plat("windows") then
         add_syslinks(windows_syslibs)
@@ -332,9 +399,9 @@ target("api_experimental")
         if get_config("winrsrc") then
             on_load(function (target)
                 if target:is_arch("x86") then
-                    target:add("files", "resources/win/api/32/resources.rc")
+                    target:add("files", "src/resources/win/api/32/resources.rc")
                 else
-                    target:add("files", "resources/win/api/64/resources.rc")
+                    target:add("files", "src/resources/win/api/64/resources.rc")
                 end
             end)
         end
@@ -353,6 +420,10 @@ target_end()
 target("steamclient_experimental")
     set_kind("shared")
     
+    -- Add protobuf rule for automatic .proto compilation
+    add_rules("protobuf.cpp")
+    
+    
     -- Output name based on arch
     if is_plat("windows") then
         on_load(function (target)
@@ -367,10 +438,10 @@ target("steamclient_experimental")
     
     add_defines(common_emu_defines)
     
-    set_targetdir("build/" .. os_iden .. "/$(mode)/steamclient_experimental")
+    set_targetdir(".build/$(mode)/steamclient_experimental")
     else
         set_basename("steamclient")
-        set_targetdir("build/" .. os_iden .. "/$(mode)/experimental/$(arch)")
+        set_targetdir(".build/$(mode)/experimental/$(arch)")
     end
     
     -- Extra defines
@@ -380,15 +451,12 @@ target("steamclient_experimental")
     -- Source files
     add_files(common_files)
     add_files(overlay_experimental_files)
-    remove_files("third_party/detours/uimports.cc")
+    remove_files("src/third_party/detours/uimports.cc")
     remove_files("src/core/flat.cpp")
     remove_files("src/core/wrap.cpp")  -- Windows only
     
-    -- Link libraries (libssq and ingame_overlay handled by external script)
-    add_packages("zlib", "libcurl", "protobuf-cpp", "mbedtls", "libopus", "portaudio", "utfcpp")
-    add_includedirs("third_party/libssq/include", "third_party/ingame_overlay/include")
-    add_linkdirs("third_party/libssq/lib/$(mode)", "third_party/ingame_overlay/lib/$(mode)")
-    add_links("ssq", "ingame_overlay", "minhook.x64", "system")
+    -- Link libraries (using xmake packages)
+    add_packages("zlib", "libcurl", "protobuf-cpp", "mbedtls", "libopus", "portaudio", "utfcpp", "libssq", "ingame_overlay")
     
     if is_plat("windows") then
         add_syslinks(windows_syslibs)
@@ -397,9 +465,9 @@ target("steamclient_experimental")
         if get_config("winrsrc") then
             on_load(function (target)
                 if target:is_arch("x86") then
-                    target:add("files", "resources/win/client/32/resources.rc")
+                    target:add("files", "src/resources/win/client/32/resources.rc")
                 else
-                    target:add("files", "resources/win/client/64/resources.rc")
+                    target:add("files", "src/resources/win/client/64/resources.rc")
                 end
             end)
         end
@@ -418,8 +486,11 @@ target_end()
 target("tool_lobby_connect")
     set_kind("binary")
     
+    -- Add protobuf rule for automatic .proto compilation
+    add_rules("protobuf.cpp")
+    
     set_basename("lobby_connect_$(arch)")
-    set_targetdir("build/" .. os_iden .. "/$(mode)/tools/lobby_connect")
+    set_targetdir(".build/$(mode)/tools/lobby_connect")
     
     -- Include directories
     add_includedirs(common_include)
@@ -432,16 +503,13 @@ target("tool_lobby_connect")
     -- Source files
     add_files(common_files)
     add_files("src/tools/lobby_connect/lobby_connect.cpp")
-    remove_files("third_party/gamepad/**")
+    remove_files("src/third_party/gamepad/**")
     remove_files("src/libraries/gamepad/**")
     remove_files(detours_files)
     remove_files("src/core/flat.cpp")
     
-    -- Link libraries (libssq handled by external script)
-    add_packages("zlib", "libcurl", "protobuf-cpp", "mbedtls", "libopus", "portaudio", "utfcpp")
-    add_includedirs("third_party/libssq/include")
-    add_linkdirs("third_party/libssq/lib/$(mode)")
-    add_links("ssq")
+    -- Link libraries (using xmake packages)
+    add_packages("zlib", "libcurl", "protobuf-cpp", "mbedtls", "libopus", "portaudio", "utfcpp", "libssq")
 
     if is_plat("windows") then
         add_syslinks(windows_syslibs)
@@ -451,9 +519,9 @@ target("tool_lobby_connect")
         if get_config("winrsrc") then
             on_load(function (target)
                 if target:is_arch("x86") then
-                    target:add("files", "resources/win/launcher/32/resources.rc")
+                    target:add("files", "src/src/resources/win/launcher/32/resources.rc")
                 else
-                    target:add("files", "resources/win/launcher/64/resources.rc")
+                    target:add("files", "src/src/resources/win/launcher/64/resources.rc")
                 end
             end)
         end
@@ -472,13 +540,13 @@ target("tool_generate_interfaces")
     set_kind("binary")
     
     set_basename("generate_interfaces_$(arch)")
-    set_targetdir("build/" .. os_iden .. "/$(mode)/tools/generate_interfaces")
+    set_targetdir(".build/$(mode)/tools/generate_interfaces")
     
     -- Source files
     add_files("src/tools/generate_interfaces/generate_interfaces.cpp")
     add_files("src/common/common_helpers.cpp")
     
-    add_includedirs("include/gbe/common", "src/common", "third_party", "third_party/utfcpp")
+    add_includedirs("include/gbe/common", "src/common")
     add_packages("utfcpp")
     
     -- Modes
@@ -492,14 +560,14 @@ target("lib_steamnetworkingsockets")
     set_kind("shared")
     
     set_basename("libsteamnetworkingsockets")
-    set_targetdir("build/" .. os_iden .. "/$(mode)/steamnetworkingsockets/$(arch)")
+    set_targetdir(".build/$(mode)/steamnetworkingsockets/$(arch)")
     
     -- Source files
     add_files("src/networking/**.cpp")
     add_files("src/common/dbg_log.cpp")
     add_files("src/common/common_helpers.cpp")
     
-    add_includedirs("include/sdk", "include/gbe/common", "src/common", "third_party", "third_party/utfcpp")
+    add_includedirs("include/sdk", "include/gbe/common", "src/common")
     add_packages("utfcpp")
 
     -- Modes
@@ -511,6 +579,9 @@ target_end()
 --------------------------------------------------------------------------------
 target("lib_game_overlay_renderer")
     set_kind("shared")
+    
+    -- Add protobuf rule for automatic .proto compilation
+    add_rules("protobuf.cpp")
     
     -- Output name based on arch
     if is_plat("windows") then
@@ -526,28 +597,26 @@ target("lib_game_overlay_renderer")
     
     add_defines(common_emu_defines)
     
-    set_targetdir("build/" .. os_iden .. "/$(mode)/steamclient_experimental")
+    set_targetdir(".build/$(mode)/steamclient_experimental")
     else
         set_basename("gameoverlayrenderer")
-        set_targetdir("build/" .. os_iden .. "/$(mode)/gameoverlayrenderer/$(arch)")
+        set_targetdir(".build/$(mode)/gameoverlayrenderer/$(arch)")
     end
     
     -- Source files
     add_files("src/game_overlay_renderer/**.cpp")
+    add_files("src/proto/*.proto")  -- Need protobuf generation
     
-    add_includedirs("dll", "include/gbe/common", "src/common", "libs")
-    add_packages("zlib", "libcurl", "protobuf-cpp", "mbedtls", "libopus", "portaudio", "utfcpp")
-    add_includedirs("third_party/libssq/include")
-    add_linkdirs("third_party/libssq/lib/$(mode)")
-    add_links("ssq")
+    add_includedirs("src/core", "include/gbe/common", "src/common")
+    add_packages("zlib", "libcurl", "protobuf-cpp", "mbedtls", "libopus", "portaudio", "utfcpp", "libssq")
     
     -- Windows resources
     if is_plat("windows") and get_config("winrsrc") then
         on_load(function (target)
             if target:is_arch("x86") then
-                target:add("files", "resources/win/game_overlay_renderer/32/resources.rc")
+                target:add("files", "src/src/resources/win/game_overlay_renderer/32/resources.rc")
             else
-                target:add("files", "resources/win/game_overlay_renderer/64/resources.rc")
+                target:add("files", "src/src/resources/win/game_overlay_renderer/64/resources.rc")
             end
         end)
     end
@@ -561,8 +630,11 @@ target_end()
 --------------------------------------------------------------------------------
 if is_plat("windows") then
 
+
+--[[
 --------------------------------------------------------------------------------
 -- TARGET: steamclient_experimental_stub
+-- DISABLED: Source file doesn't exist in new structure
 --------------------------------------------------------------------------------
 target("steamclient_experimental_stub")
 set_kind("shared")
@@ -585,9 +657,9 @@ set_targetdir("build/" .. os_iden .. "/$(mode)/experimental/$(arch)")
     if get_config("winrsrc") then
         on_load(function (target)
             if target:is_arch("x86") then
-                target:add("files", "resources/win/client/32/resources.rc")
+                target:add("files", "src/resources/win/client/32/resources.rc")
             else
-                target:add("files", "resources/win/client/64/resources.rc")
+                target:add("files", "src/resources/win/client/64/resources.rc")
             end
         end)
     end
@@ -595,6 +667,8 @@ set_targetdir("build/" .. os_iden .. "/$(mode)/experimental/$(arch)")
     -- Modes
     add_rules("mode.debug", "mode.release")
 target_end()
+--]]
+
 
 --------------------------------------------------------------------------------
 -- TARGET: steamclient_experimental_extra
@@ -608,25 +682,25 @@ target("steamclient_experimental_extra")
     
     add_defines(common_emu_defines)
     
-    set_targetdir("build/" .. os_iden .. "/$(mode)/steamclient_experimental/extra_dlls")
+    set_targetdir(".build/$(mode)/steamclient_experimental/extra_dlls")
     
     -- Source files
     add_files("src/tools/steamclient_loader/win/extra_protection/**.cpp")
     add_files("src/common/pe_helpers.cpp")
     add_files("src/common/common_helpers.cpp")
     add_files(detours_files)
-    remove_files("third_party/detours/uimports.cc")
+    remove_files("src/third_party/detours/uimports.cc")
     
-    add_includedirs("include/gbe/common", "src/common", "third_party", "third_party/utfcpp")
+    add_includedirs("include/gbe/common", "src/common")
     add_packages("utfcpp")
     
     -- Windows resources
     if get_config("winrsrc") then
         on_load(function (target)
             if target:is_arch("x86") then
-                target:add("files", "resources/win/client/32/resources.rc")
+                target:add("files", "src/resources/win/client/32/resources.rc")
             else
-                target:add("files", "resources/win/client/64/resources.rc")
+                target:add("files", "src/resources/win/client/64/resources.rc")
             end
         end)
     end

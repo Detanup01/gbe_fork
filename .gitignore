@@ -5,14 +5,15 @@
 # xmake
 .xmake/
 
-# Build output
-/build/
+# Build output (centralized to .build/)
+.build/
 
-# Protobuf generated
-/proto_gen/
-
-# Third-party dependencies (submodules)
-/third-party/
+# xmake package cache (fetched during build)
+build/
+build_deps/
+proto_gen/
+third_party/
+third-party/
 
 # Python virtual environments
 **/.venv/
@@ -20,8 +21,6 @@
 **/.py*/
 **/.env*/
 
-# xmake package build output
-**/build_*/
-
-# testing *.log files
+# Log files
 *.log
+

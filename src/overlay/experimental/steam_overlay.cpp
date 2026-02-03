@@ -15,8 +15,8 @@
 
 #include "InGameOverlay/RendererDetector.h"
 
-#include "dll/dll.h"
-#include "dll/settings_parser.h"
+#include "src/core/dll.h"
+#include "src/core/settings_parser.h"
 
 // translation
 #include "overlay/steam_overlay_translations.h"
