@@ -15,8 +15,8 @@
 
 #include "InGameOverlay/RendererDetector.h"
 
-#include "dll/dll.h"
-#include "dll/settings_parser.h"
+#include "dll.h"
+#include "settings_parser.h"
 
 // translation
 #include "overlay/steam_overlay_translations.h"
@@ -1093,7 +1093,7 @@ void Steam_Overlay::build_notifications(float width, float height)
                         ImGui::TableNextRow(ImGuiTableRowFlags_None, settings->overlay_appearance.icon_size);
 
                         ImGui::TableSetColumnIndex(0);
-                        ImGui::Image((ImTextureID)(uintptr_t)icon_rsrc->GetResourceId(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
+                        ImGui::Image(icon_rsrc->GetResourceId(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
 
                         ImGui::TableSetColumnIndex(1);
                         ImGui::TextWrapped("%s", it->message.c_str());
@@ -1495,7 +1495,7 @@ void Steam_Overlay::render_main_window()
                             auto &icon_rsrc = achieved ? x.icon : x.icon_gray;
                             if (icon_rsrc->GetResourceId() != 0) {
                                 ImGui::Image(
-                                    (ImTextureID)(uintptr_t)icon_rsrc->GetResourceId(),
+                                    icon_rsrc->GetResourceId(),
                                     ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size)
                                 );
                             }

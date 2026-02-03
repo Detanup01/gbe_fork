@@ -2,31 +2,26 @@
 **/.vs
 **/.vscode
 
-# PYTHON
-**/.venv
-**/__pycache__
+# xmake
+.xmake/
 
-# PROTOBUF
-/proto_gen
+# Build output
+/build/
 
-# SPECIFIC
-/build
-/third-party
+# Protobuf generated
+/proto_gen/
 
-# TOOLS
+# Third-party dependencies (submodules)
+/third-party/
 
-# generate_emu_config
-/tools/generate_emu_config/.py*/
-/tools/generate_emu_config/.env*/
-/tools/generate_emu_config/bin
+# Python virtual environments
+**/.venv/
+**/__pycache__/
+**/.py*/
+**/.env*/
 
-/tools/generate_emu_config/backup/
-/tools/generate_emu_config/login_temp/
-/tools/generate_emu_config/output/
-/tools/generate_emu_config/**/my_login.txt
-/tools/generate_emu_config/top_owners_ids.txt
+# xmake package build output
+**/build_*/
 
-# migrate_gse
-/tools/migrate_gse/.py*/
-/tools/migrate_gse/.env*/
-/tools/migrate_gse/bin
+# testing *.log files
+*.log

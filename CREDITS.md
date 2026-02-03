@@ -1,4 +1,5 @@
 # Many thanks for these sources
+
 - [third-party\build\win\cert\openssl](#third-partybuildwincertopenssl)
 - [third-party\build\win\cert\signtool](#third-partybuildwincertsigntool)
 - [third-party\common\linux\premake](#third-partycommonlinuxpremake)
@@ -30,11 +31,11 @@
 
 #### INFO
 
-https://github.com/openssl/openssl
+<https://github.com/openssl/openssl>
 
-VERSION: https://github.com/openssl/openssl/tree/openssl-3.3.1
+VERSION: <https://github.com/openssl/openssl/tree/openssl-3.3.1>
 
-Pre-compiled binaries provided by Shining Light Productions (https://slproweb.com/products/Win32OpenSSL.html)
+Pre-compiled binaries provided by Shining Light Productions (<https://slproweb.com/products/Win32OpenSSL.html>)
 
 #### LICENSE
 
@@ -219,7 +220,7 @@ Pre-compiled binaries provided by Shining Light Productions (https://slproweb.co
 
 #### INFO
 
-https://learn.microsoft.com/en-us/windows/win32/seccrypto/signtool
+<https://learn.microsoft.com/en-us/windows/win32/seccrypto/signtool>
 
 VERSION: Windows SDK 10.0.22621.0
 
@@ -227,9 +228,9 @@ VERSION: Windows SDK 10.0.22621.0
 
 #### INFO
 
-https://github.com/premake/premake-core
+<https://github.com/premake/premake-core>
 
-VERSION: https://github.com/premake/premake-core/releases/tag/v5.0.0-beta2
+VERSION: <https://github.com/premake/premake-core/releases/tag/v5.0.0-beta2>
 
 #### LICENSE
 
@@ -265,9 +266,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #### INFO
 
-https://github.com/premake/premake-core
+<https://github.com/premake/premake-core>
 
-VERSION: https://github.com/premake/premake-core/releases/tag/v5.0.0-beta2
+VERSION: <https://github.com/premake/premake-core/releases/tag/v5.0.0-beta2>
 
 #### LICENSE
 
@@ -303,9 +304,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #### INFO
 
-https://github.com/microsoft/vswhere
+<https://github.com/microsoft/vswhere>
 
-VERSION: https://github.com/microsoft/vswhere/releases/tag/3.1.7
+VERSION: <https://github.com/microsoft/vswhere/releases/tag/3.1.7>
 
 #### LICENSE
 
@@ -322,9 +323,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #### INFO
 
-https://github.com/curl/curl
+<https://github.com/curl/curl>
 
-VERSION: https://github.com/curl/curl/releases/tag/curl-8_9_1
+VERSION: <https://github.com/curl/curl/releases/tag/curl-8_9_1>
 
 #### LICENSE
 
@@ -355,9 +356,9 @@ in this Software without prior written authorization of the copyright holder.
 
 #### INFO
 
-https://github.com/Nemirtingas/ingame_overlay
+<https://github.com/Nemirtingas/ingame_overlay>
 
-VERSION: https://github.com/Nemirtingas/ingame_overlay/tree/16260d812154d6f8a4ecdbaf78449c0b7d2fd098
+VERSION: <https://github.com/Nemirtingas/ingame_overlay/tree/16260d812154d6f8a4ecdbaf78449c0b7d2fd098>
 
 #### LICENSE
 
@@ -514,7 +515,7 @@ Source.
   The Corresponding Source for a work in source code form is that
 same work.
 
-  2. Basic Permissions.
+  1. Basic Permissions.
 
   All rights granted under this License are granted for the term of
 copyright on the Program, and are irrevocable provided the stated
@@ -539,7 +540,7 @@ your copyrighted material outside their relationship with you.
 the conditions stated below.  Sublicensing is not allowed; section 10
 makes it unnecessary.
 
-  3. Protecting Users' Legal Rights From Anti-Circumvention Law.
+  1. Protecting Users' Legal Rights From Anti-Circumvention Law.
 
   No covered work shall be deemed part of an effective technological
 measure under any applicable law fulfilling obligations under article
@@ -555,7 +556,7 @@ modification of the work as a means of enforcing, against the work's
 users, your or third parties' legal rights to forbid circumvention of
 technological measures.
 
-  4. Conveying Verbatim Copies.
+  1. Conveying Verbatim Copies.
 
   You may convey verbatim copies of the Program's source code as you
 receive it, in any medium, provided that you conspicuously and
@@ -568,7 +569,7 @@ recipients a copy of this License along with the Program.
   You may charge any price or no price for each copy that you convey,
 and you may offer support or warranty protection for a fee.
 
-  5. Conveying Modified Source Versions.
+  1. Conveying Modified Source Versions.
 
   You may convey a work based on the Program, or the modifications to
 produce it from the Program, in the form of source code under the
@@ -605,7 +606,7 @@ beyond what the individual works permit.  Inclusion of a covered work
 in an aggregate does not cause this License to apply to the other
 parts of the aggregate.
 
-  6. Conveying Non-Source Forms.
+  1. Conveying Non-Source Forms.
 
   You may convey a covered work in object code form under the terms
 of sections 4 and 5, provided that you also convey the
@@ -703,7 +704,7 @@ documented (and with an implementation available to the public in
 source code form), and must require no special password or key for
 unpacking, reading or copying.
 
-  7. Additional Terms.
+  1. Additional Terms.
 
   "Additional permissions" are terms that supplement the terms of this
 License by making exceptions from one or more of its conditions.
@@ -767,7 +768,7 @@ where to find the applicable terms.
 form of a separately written license, or stated as exceptions;
 the above requirements apply either way.
 
-  8. Termination.
+  1. Termination.
 
   You may not propagate or modify a covered work except as expressly
 provided under this License.  Any attempt otherwise to propagate or
@@ -795,7 +796,7 @@ this License.  If your rights have been terminated and not permanently
 reinstated, you do not qualify to receive new licenses for the same
 material under section 10.
 
-  9. Acceptance Not Required for Having Copies.
+  1. Acceptance Not Required for Having Copies.
 
   You are not required to accept this License in order to receive or
 run a copy of the Program.  Ancillary propagation of a covered work
@@ -806,7 +807,7 @@ modify any covered work.  These actions infringe copyright if you do
 not accept this License.  Therefore, by modifying or propagating a
 covered work, you indicate your acceptance of this License to do so.
 
-  10. Automatic Licensing of Downstream Recipients.
+  1. Automatic Licensing of Downstream Recipients.
 
   Each time you convey a covered work, the recipient automatically
 receives a license from the original licensors, to run, modify and
@@ -831,7 +832,7 @@ rights granted under this License, and you may not initiate litigation
 any patent claim is infringed by making, using, selling, offering for
 sale, or importing the Program or any portion of it.
 
-  11. Patents.
+  1. Patents.
 
   A "contributor" is a copyright holder who authorizes use under this
 License of the Program or a work on which the Program is based.  The
@@ -900,7 +901,7 @@ or that patent license was granted, prior to 28 March 2007.
 any implied license or other defenses to infringement that may
 otherwise be available to you under applicable patent law.
 
-  12. No Surrender of Others' Freedom.
+  1. No Surrender of Others' Freedom.
 
   If conditions are imposed on you (whether by court order, agreement or
 otherwise) that contradict the conditions of this License, they do not
@@ -912,7 +913,7 @@ to collect a royalty for further conveying from those to whom you convey
 the Program, the only way you could satisfy both those terms and this
 License would be to refrain entirely from conveying the Program.
 
-  13. Use with the GNU Affero General Public License.
+  1. Use with the GNU Affero General Public License.
 
   Notwithstanding any other provision of this License, you have
 permission to link or combine any covered work with a work licensed
@@ -923,7 +924,7 @@ but the special requirements of the GNU Affero General Public License,
 section 13, concerning interaction through a network will apply to the
 combination as such.
 
-  14. Revised Versions of this License.
+  1. Revised Versions of this License.
 
   The Free Software Foundation may publish revised and/or new versions of
 the GNU General Public License from time to time.  Such new versions will
@@ -949,7 +950,7 @@ permissions.  However, no additional obligations are imposed on any
 author or copyright holder as a result of your choosing to follow a
 later version.
 
-  15. Disclaimer of Warranty.
+  1. Disclaimer of Warranty.
 
   THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY
 APPLICABLE LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT
@@ -960,7 +961,7 @@ PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM
 IS WITH YOU.  SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF
 ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
 
-  16. Limitation of Liability.
+  1. Limitation of Liability.
 
   IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
 WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS
@@ -972,7 +973,7 @@ PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS),
 EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGES.
 
-  17. Interpretation of Sections 15 and 16.
+  1. Interpretation of Sections 15 and 16.
 
   If the disclaimer of warranty and limitation of liability provided
 above cannot be given local legal effect according to their terms,
@@ -1020,7 +1021,7 @@ notice like this when it starts in an interactive mode:
     This is free software, and you are welcome to redistribute it
     under certain conditions; type `show c' for details.
 
-The hypothetical commands `show w' and `show c' should show the appropriate
+The hypothetical commands `show w' and`show c' should show the appropriate
 parts of the General Public License.  Of course, your program's commands
 might be different; for a GUI interface, you would use an "about box".
 
@@ -1040,9 +1041,9 @@ Public License instead of this License.  But first, please read
 
 #### INFO
 
-https://github.com/BinaryAlien/libssq
+<https://github.com/BinaryAlien/libssq>
 
-VERSION: https://github.com/BinaryAlien/libssq/releases/tag/v3.0.0
+VERSION: <https://github.com/BinaryAlien/libssq/releases/tag/v3.0.0>
 
 #### LICENSE
 
@@ -1071,9 +1072,9 @@ SOFTWARE.
 
 #### INFO
 
-https://github.com/Mbed-TLS/mbedtls
+<https://github.com/Mbed-TLS/mbedtls>
 
-VERSION: https://github.com/Mbed-TLS/mbedtls/releases/tag/v3.6.0
+VERSION: <https://github.com/Mbed-TLS/mbedtls/releases/tag/v3.6.0>
 
 #### LICENSE
 
@@ -1083,7 +1084,6 @@ This means that users may choose which of these licenses they take the code
 under.
 
 The full text of each of these licenses is given below.
-
 
                                  Apache License
                            Version 2.0, January 2004
@@ -1287,9 +1287,7 @@ The full text of each of these licenses is given below.
    See the License for the specific language governing permissions and
    limitations under the License.
 
-
 ===============================================================================
-
 
                     GNU GENERAL PUBLIC LICENSE
                        Version 2, June 1991
@@ -1352,7 +1350,7 @@ modification follow.
                     GNU GENERAL PUBLIC LICENSE
    TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
-  0. This License applies to any program or other work which contains
+  1. This License applies to any program or other work which contains
 a notice placed by the copyright holder saying it may be distributed
 under the terms of this General Public License.  The "Program", below,
 refers to any such program or work, and a "work based on the Program"
@@ -1380,7 +1378,7 @@ along with the Program.
 You may charge a fee for the physical act of transferring a copy, and
 you may at your option offer warranty protection in exchange for a fee.
 
-  2. You may modify your copy or copies of the Program or any portion
+  1. You may modify your copy or copies of the Program or any portion
 of it, thus forming a work based on the Program, and copy and
 distribute such modifications or work under the terms of Section 1
 above, provided that you also meet all of these conditions:
@@ -1424,7 +1422,7 @@ with the Program (or with a work based on the Program) on a volume of
 a storage or distribution medium does not bring the other work under
 the scope of this License.
 
-  3. You may copy and distribute the Program (or a work based on it,
+  1. You may copy and distribute the Program (or a work based on it,
 under Section 2) in object code or executable form under the terms of
 Sections 1 and 2 above provided that you also do one of the following:
 
@@ -1462,7 +1460,7 @@ access to copy the source code from the same place counts as
 distribution of the source code, even though third parties are not
 compelled to copy the source along with the object code.
 
-  4. You may not copy, modify, sublicense, or distribute the Program
+  1. You may not copy, modify, sublicense, or distribute the Program
 except as expressly provided under this License.  Any attempt
 otherwise to copy, modify, sublicense or distribute the Program is
 void, and will automatically terminate your rights under this License.
@@ -1470,7 +1468,7 @@ However, parties who have received copies, or rights, from you under
 this License will not have their licenses terminated so long as such
 parties remain in full compliance.
 
-  5. You are not required to accept this License, since you have not
+  2. You are not required to accept this License, since you have not
 signed it.  However, nothing else grants you permission to modify or
 distribute the Program or its derivative works.  These actions are
 prohibited by law if you do not accept this License.  Therefore, by
@@ -1479,7 +1477,7 @@ Program), you indicate your acceptance of this License to do so, and
 all its terms and conditions for copying, distributing or modifying
 the Program or works based on it.
 
-  6. Each time you redistribute the Program (or any work based on the
+  3. Each time you redistribute the Program (or any work based on the
 Program), the recipient automatically receives a license from the
 original licensor to copy, distribute or modify the Program subject to
 these terms and conditions.  You may not impose any further
@@ -1487,7 +1485,7 @@ restrictions on the recipients' exercise of the rights granted herein.
 You are not responsible for enforcing compliance by third parties to
 this License.
 
-  7. If, as a consequence of a court judgment or allegation of patent
+  4. If, as a consequence of a court judgment or allegation of patent
 infringement or for any other reason (not limited to patent issues),
 conditions are imposed on you (whether by court order, agreement or
 otherwise) that contradict the conditions of this License, they do not
@@ -1519,7 +1517,7 @@ impose that choice.
 This section is intended to make thoroughly clear what is believed to
 be a consequence of the rest of this License.
 
-  8. If the distribution and/or use of the Program is restricted in
+  1. If the distribution and/or use of the Program is restricted in
 certain countries either by patents or by copyrighted interfaces, the
 original copyright holder who places the Program under this License
 may add an explicit geographical distribution limitation excluding
@@ -1527,7 +1525,7 @@ those countries, so that distribution is permitted only in or among
 countries not thus excluded.  In such case, this License incorporates
 the limitation as if written in the body of this License.
 
-  9. The Free Software Foundation may publish revised and/or new versions
+  2. The Free Software Foundation may publish revised and/or new versions
 of the General Public License from time to time.  Such new versions will
 be similar in spirit to the present version, but may differ in detail to
 address new problems or concerns.
@@ -1540,7 +1538,7 @@ Software Foundation.  If the Program does not specify a version number of
 this License, you may choose any version ever published by the Free Software
 Foundation.
 
-  10. If you wish to incorporate parts of the Program into other free
+  1. If you wish to incorporate parts of the Program into other free
 programs whose distribution conditions are different, write to the author
 to ask for permission.  For software which is copyrighted by the Free
 Software Foundation, write to the Free Software Foundation; we sometimes
@@ -1550,7 +1548,7 @@ of promoting the sharing and reuse of software generally.
 
                             NO WARRANTY
 
-  11. BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
+  2. BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
 FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW.  EXCEPT WHEN
 OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES
 PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED
@@ -1560,7 +1558,7 @@ TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE
 PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING,
 REPAIR OR CORRECTION.
 
-  12. IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
+  3. IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
 WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
 REDISTRIBUTE THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES,
 INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING
@@ -1610,9 +1608,9 @@ when it starts in an interactive mode:
     This is free software, and you are welcome to redistribute it
     under certain conditions; type `show c' for details.
 
-The hypothetical commands `show w' and `show c' should show the appropriate
+The hypothetical commands `show w' and`show c' should show the appropriate
 parts of the General Public License.  Of course, the commands you use may
-be called something other than `show w' and `show c'; they could even be
+be called something other than `show w' and`show c'; they could even be
 mouse-clicks or menu items--whatever suits your program.
 
 You should also get your employer (if you work as a programmer) or your
@@ -1635,9 +1633,9 @@ Public License instead of this License.
 
 #### INFO
 
-https://github.com/protocolbuffers/protobuf
+<https://github.com/protocolbuffers/protobuf>
 
-VERSION: https://github.com/protocolbuffers/protobuf/releases/tag/v27.3
+VERSION: <https://github.com/protocolbuffers/protobuf/releases/tag/v27.3>
 
 #### LICENSE
 
@@ -1649,7 +1647,7 @@ met:
 
     * Redistributions of source code must retain the above copyright
 notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above
+    *Redistributions in binary form must reproduce the above
 copyright notice, this list of conditions and the following disclaimer
 in the documentation and/or other materials provided with the
 distribution.
@@ -1678,9 +1676,9 @@ support library is itself covered by the above license.
 
 #### INFO
 
-https://github.com/madler/zlib
+<https://github.com/madler/zlib>
 
-VERSION: https://github.com/madler/zlib/releases/tag/v1.3.1
+VERSION: <https://github.com/madler/zlib/releases/tag/v1.3.1>
 
 #### LICENSE
 
@@ -1709,13 +1707,14 @@ SOFTWARE.
 
 #### INFO
 
-https://sourceforge.net/projects/p7zip/
+<https://sourceforge.net/projects/p7zip/>
 
-VERSION: https://sourceforge.net/projects/p7zip/files/p7zip/16.02/
+VERSION: <https://sourceforge.net/projects/p7zip/files/p7zip/16.02/>
 
 #### LICENSE
 
   7-Zip
+
   ~~~~~
   License for use and distribution
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1736,8 +1735,7 @@ VERSION: https://sourceforge.net/projects/p7zip/files/p7zip/16.02/
     You can use 7-Zip on any computer, including a computer in a commercial
     organization. You don't need to register or pay for 7-Zip.
 
-
-  GNU LGPL information
+GNU LGPL information
   --------------------
 
     This library is free software; you can redistribute it and/or
@@ -1753,10 +1751,7 @@ VERSION: https://sourceforge.net/projects/p7zip/files/p7zip/16.02/
     You can receive a copy of the GNU Lesser General Public License from
     http://www.gnu.org/
 
-
-
-
-  BSD 3-clause License
+BSD 3-clause License
   --------------------
 
     The "BSD 3-clause License" is used for the code in 7z.dll that implements LZFSE data decompression.
@@ -1784,10 +1779,7 @@ VERSION: https://sourceforge.net/projects/p7zip/files/p7zip/16.02/
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     ----
 
-
-
-
-  unRAR license restriction
+unRAR license restriction
   -------------------------
 
     The decompression engine for RAR archives was developed using source
@@ -1802,7 +1794,6 @@ VERSION: https://sourceforge.net/projects/p7zip/files/p7zip/16.02/
       stated in the documentation and source comments that the code may
       not be used to develop a RAR (WinRAR) compatible archiver.
 
-
   --
   Igor Pavlov
 
@@ -1810,9 +1801,9 @@ VERSION: https://sourceforge.net/projects/p7zip/files/p7zip/16.02/
 
 #### INFO
 
-https://gitlab.kitware.com/cmake/cmake
+<https://gitlab.kitware.com/cmake/cmake>
 
-VERSION: https://github.com/Kitware/CMake/releases/tag/v3.30.2
+VERSION: <https://github.com/Kitware/CMake/releases/tag/v3.30.2>
 
 #### LICENSE
 
@@ -1823,12 +1814,11 @@ VERSION: https://github.com/Kitware/CMake/releases/tag/v3.30.2
  Everyone is permitted to copy and distribute verbatim copies
  of this license document, but changing it is not allowed.
 
-
   This version of the GNU Lesser General Public License incorporates
 the terms and conditions of version 3 of the GNU General Public
 License, supplemented by the additional permissions listed below.
 
-  0. Additional Definitions.
+  1. Additional Definitions.
 
   As used herein, "this License" refers to version 3 of the GNU Lesser
 General Public License, and the "GNU GPL" refers to version 3 of the GNU
@@ -1862,7 +1852,7 @@ Application, but excluding the System Libraries of the Combined Work.
   You may convey a covered work under sections 3 and 4 of this License
 without being bound by section 3 of the GNU GPL.
 
-  2. Conveying Modified Versions.
+  1. Conveying Modified Versions.
 
   If you modify a copy of the Library, and, in your modifications, a
 facility refers to a function or data to be supplied by an Application
@@ -1878,7 +1868,7 @@ version:
    b) under the GNU GPL, with none of the additional permissions of
    this License applicable to that copy.
 
-  3. Object Code Incorporating Material from Library Header Files.
+  1. Object Code Incorporating Material from Library Header Files.
 
   The object code form of an Application may incorporate material from
 a header file that is part of the Library.  You may convey such object
@@ -1894,7 +1884,7 @@ layouts and accessors, or small macros, inline functions and templates
    b) Accompany the object code with a copy of the GNU GPL and this license
    document.
 
-  4. Combined Works.
+  1. Combined Works.
 
   You may convey a Combined Work under terms of your choice that,
 taken together, effectively do not restrict modification of the
@@ -1943,7 +1933,7 @@ the following:
    Information in the manner specified by section 6 of the GNU GPL
    for conveying Corresponding Source.)
 
-  5. Combined Libraries.
+  1. Combined Libraries.
 
   You may place library facilities that are a work based on the
 Library side by side in a single library together with other library
@@ -1959,7 +1949,7 @@ choice, if you do both of the following:
    is a work based on the Library, and explaining where to find the
    accompanying uncombined form of the same work.
 
-  6. Revised Versions of the GNU Lesser General Public License.
+  1. Revised Versions of the GNU Lesser General Public License.
 
   The Free Software Foundation may publish revised and/or new versions
 of the GNU Lesser General Public License from time to time. Such new
@@ -1986,13 +1976,14 @@ Library.
 
 #### INFO
 
-https://www.7-zip.org/
+<https://www.7-zip.org/>
 
-VERSION: https://sourceforge.net/projects/sevenzip/files/7-Zip/24.08/
+VERSION: <https://sourceforge.net/projects/sevenzip/files/7-Zip/24.08/>
 
 #### LICENSE
 
   7-Zip
+
   ~~~~~
   License for use and distribution
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2013,8 +2004,7 @@ VERSION: https://sourceforge.net/projects/sevenzip/files/7-Zip/24.08/
     You can use 7-Zip on any computer, including a computer in a commercial
     organization. You don't need to register or pay for 7-Zip.
 
-
-  GNU LGPL information
+GNU LGPL information
   --------------------
 
     This library is free software; you can redistribute it and/or
@@ -2030,10 +2020,7 @@ VERSION: https://sourceforge.net/projects/sevenzip/files/7-Zip/24.08/
     You can receive a copy of the GNU Lesser General Public License from
     http://www.gnu.org/
 
-
-
-
-  BSD 3-clause License
+BSD 3-clause License
   --------------------
 
     The "BSD 3-clause License" is used for the code in 7z.dll that implements LZFSE data decompression.
@@ -2061,10 +2048,7 @@ VERSION: https://sourceforge.net/projects/sevenzip/files/7-Zip/24.08/
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     ----
 
-
-
-
-  unRAR license restriction
+unRAR license restriction
   -------------------------
 
     The decompression engine for RAR archives was developed using source
@@ -2079,7 +2063,6 @@ VERSION: https://sourceforge.net/projects/sevenzip/files/7-Zip/24.08/
       stated in the documentation and source comments that the code may
       not be used to develop a RAR (WinRAR) compatible archiver.
 
-
   --
   Igor Pavlov
 
@@ -2087,9 +2070,9 @@ VERSION: https://sourceforge.net/projects/sevenzip/files/7-Zip/24.08/
 
 #### INFO
 
-https://gitlab.kitware.com/cmake/cmake
+<https://gitlab.kitware.com/cmake/cmake>
 
-VERSION: https://github.com/Kitware/CMake/releases/tag/v3.30.2
+VERSION: <https://github.com/Kitware/CMake/releases/tag/v3.30.2>
 
 #### LICENSE
 
@@ -2100,12 +2083,11 @@ VERSION: https://github.com/Kitware/CMake/releases/tag/v3.30.2
  Everyone is permitted to copy and distribute verbatim copies
  of this license document, but changing it is not allowed.
 
-
   This version of the GNU Lesser General Public License incorporates
 the terms and conditions of version 3 of the GNU General Public
 License, supplemented by the additional permissions listed below.
 
-  0. Additional Definitions.
+  1. Additional Definitions.
 
   As used herein, "this License" refers to version 3 of the GNU Lesser
 General Public License, and the "GNU GPL" refers to version 3 of the GNU
@@ -2139,7 +2121,7 @@ Application, but excluding the System Libraries of the Combined Work.
   You may convey a covered work under sections 3 and 4 of this License
 without being bound by section 3 of the GNU GPL.
 
-  2. Conveying Modified Versions.
+  1. Conveying Modified Versions.
 
   If you modify a copy of the Library, and, in your modifications, a
 facility refers to a function or data to be supplied by an Application
@@ -2155,7 +2137,7 @@ version:
    b) under the GNU GPL, with none of the additional permissions of
    this License applicable to that copy.
 
-  3. Object Code Incorporating Material from Library Header Files.
+  1. Object Code Incorporating Material from Library Header Files.
 
   The object code form of an Application may incorporate material from
 a header file that is part of the Library.  You may convey such object
@@ -2171,7 +2153,7 @@ layouts and accessors, or small macros, inline functions and templates
    b) Accompany the object code with a copy of the GNU GPL and this license
    document.
 
-  4. Combined Works.
+  1. Combined Works.
 
   You may convey a Combined Work under terms of your choice that,
 taken together, effectively do not restrict modification of the
@@ -2220,7 +2202,7 @@ the following:
    Information in the manner specified by section 6 of the GNU GPL
    for conveying Corresponding Source.)
 
-  5. Combined Libraries.
+  1. Combined Libraries.
 
   You may place library facilities that are a work based on the
 Library side by side in a single library together with other library
@@ -2236,7 +2218,7 @@ choice, if you do both of the following:
    is a work based on the Library, and explaining where to find the
    accompanying uncombined form of the same work.
 
-  6. Revised Versions of the GNU Lesser General Public License.
+  1. Revised Versions of the GNU Lesser General Public License.
 
   The Free Software Foundation may publish revised and/or new versions
 of the GNU Lesser General Public License from time to time. Such new
@@ -2263,9 +2245,9 @@ Library.
 
 #### INFO
 
-https://github.com/microsoft/Detours
+<https://github.com/microsoft/Detours>
 
-VERSION: https://github.com/microsoft/Detours/tree/4b8c659f549b0ab21cf649377c7a84eb708f5e68
+VERSION: <https://github.com/microsoft/Detours/tree/4b8c659f549b0ab21cf649377c7a84eb708f5e68>
 
 #### LICENSE
 
@@ -2295,9 +2277,9 @@ SOFTWARE.
 
 #### INFO
 
-https://github.com/nlohmann/fifo_map
+<https://github.com/nlohmann/fifo_map>
 
-VERSION: https://github.com/nlohmann/fifo_map/tree/d732aaf9a315415ae8fd7eb11e3a4c1f80e42a48
+VERSION: <https://github.com/nlohmann/fifo_map/tree/d732aaf9a315415ae8fd7eb11e3a4c1f80e42a48>
 
 #### LICENSE
 
@@ -2327,7 +2309,7 @@ SOFTWARE.
 
 #### INFO
 
-https://github.com/mtwilliams/libgamepad
+<https://github.com/mtwilliams/libgamepad>
 
 VERSION: ????
 
@@ -2358,7 +2340,7 @@ THE SOFTWARE.
 
 #### INFO
 
-https://github.com/ocornut/imgui
+<https://github.com/ocornut/imgui>
 
 VERSION: ????
 
@@ -2390,9 +2372,9 @@ SOFTWARE.
 
 #### INFO
 
-https://github.com/nlohmann/json
+<https://github.com/nlohmann/json>
 
-VERSION: https://github.com/nlohmann/json/releases/tag/v3.11.3
+VERSION: <https://github.com/nlohmann/json/releases/tag/v3.11.3>
 
 #### LICENSE
 
@@ -2421,20 +2403,22 @@ SOFTWARE.
 ### libs\sha
 
 #### INFO
-https://github.com/vog/sha1
 
-VERSION: https://github.com/vog/sha1/tree/3f8a4aa032d144309d00dbfe972906a49b3631b9
+<https://github.com/vog/sha1>
+
+VERSION: <https://github.com/vog/sha1/tree/3f8a4aa032d144309d00dbfe972906a49b3631b9>
 
 #### LICENSE
+
 PUBLIC DOMAIN
 
 ### libs\simpleini
 
 #### INFO
 
-https://github.com/brofield/simpleini
+<https://github.com/brofield/simpleini>
 
-VERSION: https://github.com/brofield/simpleini/releases/tag/v4.22
+VERSION: <https://github.com/brofield/simpleini/releases/tag/v4.22>
 
 #### LICENSE
 
@@ -2463,14 +2447,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #### INFO
 
-https://github.com/nothings/stb
+<https://github.com/nothings/stb>
 
-VERSION: https://github.com/nothings/stb/tree/f75e8d1cad7d90d72ef7a4661f1b994ef78b4e31
+VERSION: <https://github.com/nothings/stb/tree/f75e8d1cad7d90d72ef7a4661f1b994ef78b4e31>
 
 #### LICENSE
 
-This software is available under 2 licenses -- choose whichever you prefer.
+This software is available under 2 licenses -- choose whichever you prefer
 ------------------------------------------------------------------------------
+
 ALTERNATIVE A - MIT License
 Copyright (c) 2017 Sean Barrett
 Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -2487,9 +2472,10 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+SOFTWARE
 ------------------------------------------------------------------------------
-ALTERNATIVE B - Public Domain (www.unlicense.org)
+
+ALTERNATIVE B - Public Domain (<www.unlicense.org>)
 This is free and unencumbered software released into the public domain.
 Anyone is free to copy, modify, publish, use, compile, sell, or distribute this
 software, either in source code form or as a compiled binary, for any purpose,
@@ -2511,9 +2497,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #### INFO
 
-https://github.com/nemtrif/utfcpp
+<https://github.com/nemtrif/utfcpp>
 
-VERSION: https://github.com/nemtrif/utfcpp/releases/tag/v4.0.5
+VERSION: <https://github.com/nemtrif/utfcpp/releases/tag/v4.0.5>
 
 #### LICENSE
 
@@ -2545,7 +2531,7 @@ DEALINGS IN THE SOFTWARE.
 
 #### INFO
 
-https://github.com/Rat431/ColdAPI_Steam
+<https://github.com/Rat431/ColdAPI_Steam>
 
 Original version of ColdClientLoader by Rat431.
 
@@ -2553,5 +2539,4 @@ Original version of ColdClientLoader by Rat431.
 
 #### INFO
 
-https://partner.steamgames.com/doc/sdk
-
+<https://partner.steamgames.com/doc/sdk>
