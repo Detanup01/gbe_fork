@@ -96,19 +96,29 @@ git submodule update --init --recursive --remote
 
 ## Building
 
-### Quick Start (Interactive)
+### Quick Start
 
-Use the interactive build script:
+Use the build wrapper script for a streamlined build experience:
 
 ```powershell
 .\build.ps1
 ```
 
-This interactive script provides a menu to:
-1. Install dependencies (xmake packages + custom deps)
-2. Generate protobuf files (required before first build)
-3. Build all targets or select specific ones
-4. Configure architecture (x64/x86) and mode (debug/release)
+This will configure and build the project with default settings (x64, release mode).
+
+**Command-line options:**
+```powershell
+.\build.ps1 -Arch x64 -Mode release       # Specify architecture and mode
+.\build.ps1 -Clean                        # Clean before building
+.\build.ps1 -Rebuild                      # Force rebuild all targets
+.\build.ps1 -Target api_experimental      # Build specific target only
+```
+
+The script handles:
+- xmake configuration
+- Protobuf generation (automatic via xmake)
+- Dependency installation (automatic via xmake packages)
+- Building all or specific targets
 
 ### Command-Line Build
 
