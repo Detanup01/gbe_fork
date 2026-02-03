@@ -90,7 +90,8 @@ Write-Host ""
 
 # Build
 Write-Host "Building..." -ForegroundColor Yellow
-$buildArgs = @()
+$buildArgs = @("build")  # Start with build command
+
 if ($Rebuild) {
     $buildArgs += "-r"
 }
@@ -101,7 +102,7 @@ if ($Target) {
     $buildArgs += "-a"  # Build all targets
 }
 
-xmake @buildArgs
+& xmake @buildArgs
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Build failed" -ForegroundColor Red
     exit $LASTEXITCODE
