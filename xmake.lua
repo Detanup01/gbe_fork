@@ -1,6 +1,5 @@
 -- gbe_fork xmake build configuration
--- Migrated from premake5.lua
--- Targets MSVC 14.50 with C++26
+-- C++26 with MSVC or GCC/Clang
 
 set_project("gbe")
 set_version("1.0.0")
@@ -206,7 +205,7 @@ local function get_proto_dir()
     return path.join(os.projectdir(), "proto_gen", os_iden)
 end
 
--- Common include directories (new structure)
+-- Common include directories
 local common_include = {
     ".",  -- Root directory for src/core/ includes
     "include",
@@ -218,10 +217,9 @@ local common_include = {
     "src/common",
     "src/libraries",
     "src/libraries/utfcpp",
-    "src/overlay/experimental",  -- For overlay/steam_overlay.h
+    "src/overlay/experimental",
     "$(builddir)",  -- For generated protobuf files
 }
--- Note: utfcpp might be provided by package now, need to check include path
 
 -- Windows system libraries
 local windows_syslibs = {
@@ -229,7 +227,7 @@ local windows_syslibs = {
     "Xinput", "Gdi32", "Dwmapi", "OpenGL32", "Shell32"
 }
 
--- Common source files (new structure)
+-- Common source files
 local common_files = {
     "src/core/**.cpp",
     "src/proto/*.proto",  -- Protobuf files (will be auto-generated)
@@ -631,10 +629,11 @@ target_end()
 if is_plat("windows") then
 
 
+
 --[[
 --------------------------------------------------------------------------------
--- TARGET: steamclient_experimental_stub
--- DISABLED: Source file doesn't exist in new structure
+-- TARGET: steamclient_experimental_stub (DISABLED)
+-- This target is currently disabled as it's not needed in the current build
 --------------------------------------------------------------------------------
 target("steamclient_experimental_stub")
 set_kind("shared")
@@ -647,11 +646,10 @@ on_load(function (target)
     end
 end)
     
-set_targetdir("build/" .. os_iden .. "/$(mode)/experimental/$(arch)")
+set_targetdir(".build/$(mode)/experimental/$(arch)")
     
--- Source files
--- Note: steamclient.cpp doesn't exist in new structure, this target may need updating
--- add_files("steamclient/steamclient.cpp")
+-- This target builds an empty stub DLL
+-- The actual steamclient implementation is in steamclient_experimental target
     
 -- Windows resources
     if get_config("winrsrc") then
