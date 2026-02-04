@@ -93,7 +93,12 @@ if ($Help) {
     Write-Host "EXAMPLES:" -ForegroundColor Yellow
     Write-Host "  .\build.ps1                      Standard Release build"
     Write-Host "  .\build.ps1 -All                 Comprehensive build (All Archs/Modes/Steps)"
-    Write-Host "  .\build.ps1 -Target api_exp -Sign [Win] Build experimental API and sign it"
+    Write-Host "  .\build.ps1 -Target api_experimental -Sign [Win] Build experimental API and sign it"
+    Write-Host ""
+    Write-Host "TARGETS:" -ForegroundColor Yellow
+    Write-Host "  - api_regular, api_experimental, steamclient_experimental, tool_lobby_connect,"
+    Write-Host "    tool_generate_interfaces, lib_steamnetworkingsockets, lib_game_overlay_renderer,"
+    Write-Host "    steamclient_experimental_extra"
     Write-Host ""
     exit 0
 }
