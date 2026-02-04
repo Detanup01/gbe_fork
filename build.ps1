@@ -35,6 +35,9 @@ param(
     [switch]$CleanCache,
     [switch]$Rebuild,
     [string]$Target = "",
+    [switch]$Sign,
+    [switch]$DosStub,
+    [switch]$Resources,
     [switch]$Help
 )
 
@@ -56,11 +59,17 @@ if ($Help) {
     Write-Host "  -CleanCache            Clean xmake package cache (forces re-fetch of dependencies)"
     Write-Host "  -Rebuild               Force rebuild all targets"
     Write-Host "  -Target <name>         Build specific target (default: all targets)"
+    Write-Host "  -Sign                  Sign binaries with fake certificate"
+    Write-Host "  -DosStub               Apply DOS stub manipulation"
+    Write-Host "  -Resources             Add Windows resources (version info etc)"
     Write-Host "  -Help                  Display this help message"
     Write-Host ""
     Write-Host "EXAMPLES:" -ForegroundColor Yellow
     Write-Host "  .\build.ps1"
     Write-Host "    Build all targets in release mode for x64"
+    Write-Host ""
+    Write-Host "  .\build.ps1 -Mode both -Sign -Resources"
+    Write-Host "    Build both Release and Debug with signing and resources enabled"
     Write-Host ""
     Write-Host "  .\build.ps1 -Arch x86 -Mode debug"
     Write-Host "    Build all targets in debug mode for x86"
@@ -71,8 +80,8 @@ if ($Help) {
     Write-Host "  .\build.ps1 -CleanCache -Rebuild"
     Write-Host "    Clear dependency cache and rebuild (useful after updating git dependencies)"
     Write-Host ""
-    Write-Host "  .\build.ps1 -Target api_experimental"
-    Write-Host "    Build only the api_experimental target"
+    Write-Host "  .\build.ps1 -Target api_experimental -Sign"
+    Write-Host "    Build only the api_experimental target and sign it"
     Write-Host ""
     Write-Host "TARGETS:" -ForegroundColor Yellow
     Write-Host "  api_regular                    - Regular Steam API emulator"
@@ -169,6 +178,15 @@ foreach ($currentMode in $modesToBuild) {
     if ($Rebuild) {
         $configArgs += "-c"
     }
+    if ($Sign) {
+        $configArgs += "--winsign=y"
+    }
+    if ($DosStub) {
+        $configArgs += "--dosstub=y"
+    }
+    if ($Resources) {
+        $configArgs += "--winrsrc=y"
+    }
 
     xmake @configArgs
     if ($LASTEXITCODE -ne 0) {
@@ -205,5 +223,12 @@ Write-Host ""
 Write-Host "================================" -ForegroundColor Green
 Write-Host "  Build Successful!" -ForegroundColor Green
 Write-Host "================================" -ForegroundColor Green
-Write-Host "Output directory: .build/$Mode/windows/$Arch" -ForegroundColor Cyan
+if ($Mode -eq "both") {
+    Write-Host "Output directories:" -ForegroundColor Cyan
+    Write-Host "  .build/debug/windows/$Arch" -ForegroundColor Gray
+    Write-Host "  .build/release/windows/$Arch" -ForegroundColor Gray
+}
+else {
+    Write-Host "Output directory: .build/$Mode/windows/$Arch" -ForegroundColor Cyan
+}
 
