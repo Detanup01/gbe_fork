@@ -25,7 +25,7 @@
 #>
 
 param(
-    [ValidateSet("x86", "x64")]
+    [ValidateSet("x86", "x64", "both")]
     [string]$Arch = "x64",
     
     [ValidateSet("debug", "release", "both")]
@@ -49,49 +49,56 @@ if ($Help) {
     Write-Host "GBE Fork Build System" -ForegroundColor Cyan
     Write-Host "=====================" -ForegroundColor Cyan
     Write-Host ""
+    Write-Host "The build script orchestrates the build process for multiple architectures and modes."
+    Write-Host "By default, it builds all projects for the current configuration."
+    Write-Host ""
     Write-Host "USAGE:" -ForegroundColor Yellow
     Write-Host "  .\build.ps1 [OPTIONS]"
     Write-Host ""
-    Write-Host "OPTIONS:" -ForegroundColor Yellow
-    Write-Host "  -Arch <x86|x64>        Target architecture (default: x64)"
+    Write-Host "OPTIONS (All optional):" -ForegroundColor Yellow
+    Write-Host "  -Arch <x86|x64|both>   Target architecture (default: x64)"
+    Write-Host "                         'both' will sequentially build for x86 and x64"
+    Write-Host ""
     Write-Host "  -Mode <debug|release|both> Build mode (default: release)"
-    Write-Host "  -Clean                 Clean build artifacts before building"
-    Write-Host "  -CleanCache            Clean xmake package cache (forces re-fetch of dependencies)"
-    Write-Host "  -Rebuild               Force rebuild all targets"
-    Write-Host "  -Target <name>         Build specific target (default: all targets)"
-    Write-Host "  -Sign                  Sign binaries with fake certificate"
-    Write-Host "  -DosStub               Apply DOS stub manipulation"
-    Write-Host "  -Resources             Add Windows resources (version info etc)"
+    Write-Host "                         'both' will sequentially build for debug and release"
+    Write-Host ""
+    Write-Host "  -Target <name>         Build a specific target instead of all (default: all)"
+    Write-Host "                         See 'TARGETS' section below for available names"
+    Write-Host ""
+    Write-Host "  -Sign                  Enable fake certificate signing for binaries"
+    Write-Host "  -DosStub               Enable DOS stub manipulation tool"
+    Write-Host "  -Resources             Enable Windows resource compiler (embed version info)"
+    Write-Host ""
+    Write-Host "  -Clean                 Delete existing build artifacts before starting"
+    Write-Host "  -CleanCache            Force re-fetch all external dependencies (xmake packages)"
+    Write-Host "  -Rebuild               Force re-compilation of all source files"
     Write-Host "  -Help                  Display this help message"
     Write-Host ""
     Write-Host "EXAMPLES:" -ForegroundColor Yellow
     Write-Host "  .\build.ps1"
-    Write-Host "    Build all targets in release mode for x64"
+    Write-Host "    -> Build ALL targets for x64 in Release mode (The Standard Build)"
     Write-Host ""
-    Write-Host "  .\build.ps1 -Mode both -Sign -Resources"
-    Write-Host "    Build both Release and Debug with signing and resources enabled"
+    Write-Host "  .\build.ps1 -Mode both -Sign"
+    Write-Host "    -> Build ALL targets for x64 in both Debug and Release, with signing"
     Write-Host ""
-    Write-Host "  .\build.ps1 -Arch x86 -Mode debug"
-    Write-Host "    Build all targets in debug mode for x86"
+    Write-Host "  .\build.ps1 -Arch both -Mode both"
+    Write-Host "    -> Build EVERYTHING: all targets, all architectures, all modes (Comprehensive Build)"
     Write-Host ""
-    Write-Host "  .\build.ps1 -Clean -Rebuild"
-    Write-Host "    Clean and rebuild all targets"
+    Write-Host "  .\build.ps1 -Target api_experimental -Mode debug -Arch x86"
+    Write-Host "    -> Build ONLY 'api_experimental' for x86 in Debug mode"
     Write-Host ""
-    Write-Host "  .\build.ps1 -CleanCache -Rebuild"
-    Write-Host "    Clear dependency cache and rebuild (useful after updating git dependencies)"
-    Write-Host ""
-    Write-Host "  .\build.ps1 -Target api_experimental -Sign"
-    Write-Host "    Build only the api_experimental target and sign it"
+    Write-Host "  .\build.ps1 -Clean -Resources -DosStub"
+    Write-Host "    -> Clean previous build then build x64 Release with resources and DOS stub manipulation"
     Write-Host ""
     Write-Host "TARGETS:" -ForegroundColor Yellow
-    Write-Host "  api_regular                    - Regular Steam API emulator"
-    Write-Host "  api_experimental               - Experimental Steam API with overlay support"
-    Write-Host "  steamclient_experimental       - Experimental steamclient DLL"
-    Write-Host "  tool_lobby_connect             - Lobby connection tool"
-    Write-Host "  tool_generate_interfaces       - Interface generation tool"
-    Write-Host "  lib_steamnetworkingsockets     - Steam networking sockets library"
-    Write-Host "  lib_game_overlay_renderer      - Game overlay renderer"
-    Write-Host "  steamclient_experimental_extra - Extra protection DLL"
+    Write-Host "  - api_regular                    : Regular Steam API emulator"
+    Write-Host "  - api_experimental               : Experimental Steam API with overlay support"
+    Write-Host "  - steamclient_experimental       : Experimental steamclient DLL"
+    Write-Host "  - tool_lobby_connect             : Lobby connection tool"
+    Write-Host "  - tool_generate_interfaces       : Interface generation tool"
+    Write-Host "  - lib_steamnetworkingsockets     : Steam networking sockets library"
+    Write-Host "  - lib_game_overlay_renderer      : Game overlay renderer"
+    Write-Host "  - steamclient_experimental_extra : Extra protection DLL"
     Write-Host ""
     exit 0
 }
@@ -123,13 +130,19 @@ if (Get-Command "ninja" -ErrorAction SilentlyContinue) {
 Write-Host "================================" -ForegroundColor Cyan
 Write-Host "  GBE Fork Build System" -ForegroundColor Cyan
 Write-Host "================================" -ForegroundColor Cyan
-Write-Host "Architecture: $Arch" -ForegroundColor Yellow
-Write-Host "Mode: $Mode" -ForegroundColor Yellow
-if ($hasNinja) {
-    Write-Host "Build Ninja:  Found (Used for dependencies)" -ForegroundColor Green
+Write-Host "Architectures to build : $Arch" -ForegroundColor Yellow
+Write-Host "Modes to build         : $Mode" -ForegroundColor Yellow
+if ($Target) {
+    Write-Host "Target filter          : $Target" -ForegroundColor Yellow
 }
 else {
-    Write-Host "Build Ninja:  Not Found (Optional)" -ForegroundColor Gray
+    Write-Host "Target filter          : All Targets" -ForegroundColor Yellow
+}
+if ($hasNinja) {
+    Write-Host "Build Ninja            : Found (Used for dependencies)" -ForegroundColor Green
+}
+else {
+    Write-Host "Build Ninja            : Not Found (Optional)" -ForegroundColor Gray
 }
 Write-Host ""
 
@@ -158,6 +171,15 @@ if ($Clean) {
     Write-Host ""
 }
 
+# Prepare the list of architectures to build
+$archsToBuild = @()
+if ($Arch -eq "both") {
+    $archsToBuild = @("x86", "x64")
+}
+else {
+    $archsToBuild = @($Arch)
+}
+
 # Prepare the list of modes to build
 $modesToBuild = @()
 if ($Mode -eq "both") {
@@ -167,55 +189,61 @@ else {
     $modesToBuild = @($Mode)
 }
 
-foreach ($currentMode in $modesToBuild) {
-    Write-Host "============================" -ForegroundColor Cyan
-    Write-Host "  Building mode: $currentMode" -ForegroundColor Yellow
-    Write-Host "============================" -ForegroundColor Cyan
+$successPaths = @()
 
-    # Configure xmake
-    Write-Host "Configuring build for $currentMode..." -ForegroundColor Yellow
-    $configArgs = @("f", "-p", "windows", "-a", "$Arch", "-m", "$currentMode", "-y")
-    if ($Rebuild) {
-        $configArgs += "-c"
-    }
-    if ($Sign) {
-        $configArgs += "--winsign=y"
-    }
-    if ($DosStub) {
-        $configArgs += "--dosstub=y"
-    }
-    if ($Resources) {
-        $configArgs += "--winrsrc=y"
-    }
+foreach ($currentArch in $archsToBuild) {
+    foreach ($currentMode in $modesToBuild) {
+        Write-Host "============================" -ForegroundColor Cyan
+        Write-Host "  Building: $currentArch | $currentMode" -ForegroundColor Yellow
+        Write-Host "============================" -ForegroundColor Cyan
 
-    xmake @configArgs
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Configuration failed for $currentMode" -ForegroundColor Red
-        exit $LASTEXITCODE
-    }
+        # Configure xmake
+        Write-Host "Configuring build for $currentArch $currentMode..." -ForegroundColor Yellow
+        $configArgs = @("f", "-p", "windows", "-a", "$currentArch", "-m", "$currentMode", "-y")
+        if ($Rebuild) {
+            $configArgs += "-c"
+        }
+        if ($Sign) {
+            $configArgs += "--winsign=y"
+        }
+        if ($DosStub) {
+            $configArgs += "--dosstub=y"
+        }
+        if ($Resources) {
+            $configArgs += "--winrsrc=y"
+        }
 
-    Write-Host "Configuration for $currentMode complete" -ForegroundColor Green
-    Write-Host ""
+        xmake @configArgs
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "Configuration failed for $currentArch $currentMode" -ForegroundColor Red
+            exit $LASTEXITCODE
+        }
 
-    # Build
-    Write-Host "Building $currentMode..." -ForegroundColor Yellow
-    $buildArgs = @("build")  # Start with build command
+        Write-Host "Configuration for $currentArch $currentMode complete" -ForegroundColor Green
+        Write-Host ""
 
-    if ($Rebuild) {
-        $buildArgs += "-r"
-    }
+        # Build
+        Write-Host "Building $currentArch $currentMode..." -ForegroundColor Yellow
+        $buildArgs = @("build")  # Start with build command
 
-    if ($Target) {
-        $buildArgs += $Target  # Build specific target
-    }
-    else {
-        $buildArgs += "-a"  # Build all targets
-    }
+        if ($Rebuild) {
+            $buildArgs += "-r"
+        }
 
-    & xmake @buildArgs
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Build failed for $currentMode" -ForegroundColor Red
-        exit $LASTEXITCODE
+        if ($Target) {
+            $buildArgs += $Target  # Build specific target
+        }
+        else {
+            $buildArgs += "-a"  # Build all targets
+        }
+
+        & xmake @buildArgs
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "Build failed for $currentArch $currentMode" -ForegroundColor Red
+            exit $LASTEXITCODE
+        }
+        
+        $successPaths += ".build/$currentMode/windows/$currentArch"
     }
 }
 
@@ -223,12 +251,9 @@ Write-Host ""
 Write-Host "================================" -ForegroundColor Green
 Write-Host "  Build Successful!" -ForegroundColor Green
 Write-Host "================================" -ForegroundColor Green
-if ($Mode -eq "both") {
-    Write-Host "Output directories:" -ForegroundColor Cyan
-    Write-Host "  .build/debug/windows/$Arch" -ForegroundColor Gray
-    Write-Host "  .build/release/windows/$Arch" -ForegroundColor Gray
+Write-Host "Output directories:" -ForegroundColor Cyan
+foreach ($path in $successPaths) {
+    Write-Host "  - $path" -ForegroundColor Gray
 }
-else {
-    Write-Host "Output directory: .build/$Mode/windows/$Arch" -ForegroundColor Cyan
-}
+Write-Host ""
 
