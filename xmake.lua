@@ -379,7 +379,7 @@ target("api_experimental")
     
     -- Extra defines
     add_defines("EMU_OVERLAY", "EMU_EXPERIMENTAL_BUILD")
-    add_cxxflags([[/DIMGUI_USER_CONFIG="InGameOverlay/ImGui/imconfig.h"]])  -- Use overlay's ImGui config
+    add_cxxflags([[/DIMGUI_USER_CONFIG="InGameOverlay/ImGuiConfig.h"]])  -- Use overlay's ImGui config
     
     -- Source files
     add_files(common_files)
@@ -392,6 +392,7 @@ target("api_experimental")
 
     if is_plat("windows") then
         add_syslinks(windows_syslibs)
+        add_syslinks("Ntdll")
         
         -- Windows resources
         if get_config("winrsrc") then
@@ -444,7 +445,7 @@ target("steamclient_experimental")
     
     -- Extra defines
     add_defines("STEAMCLIENT_DLL", "EMU_OVERLAY", "EMU_EXPERIMENTAL_BUILD")
-    add_cxxflags([[/DIMGUI_USER_CONFIG="InGameOverlay/ImGui/imconfig.h"]])  -- Use overlay's ImGui config
+    add_cxxflags([[/DIMGUI_USER_CONFIG="InGameOverlay/ImGuiConfig.h"]])  -- Use overlay's ImGui config
     
     -- Source files
     add_files(common_files)
@@ -458,6 +459,7 @@ target("steamclient_experimental")
     
     if is_plat("windows") then
         add_syslinks(windows_syslibs)
+        add_syslinks("Ntdll")
         
         -- Windows resources
         if get_config("winrsrc") then
