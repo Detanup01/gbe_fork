@@ -187,7 +187,7 @@ void Steam_Networking_Sockets::set_steamnetconnectioninfo(std::map<HSteamNetConn
     pInfo->m_hListenSocket = connect_socket->second.listen_socket_id;
     pInfo->m_addrRemote.Clear(); //TODO
     if (connect_socket->second.real_port != SNS_DISABLED_PORT) {
-        pInfo->m_addrRemote.SetIPv4(network->getIP(connect_socket->second.remote_identity.GetSteamID()), connect_socket->first);
+        pInfo->m_addrRemote.SetIPv4(network->getIP(connect_socket->second.remote_identity.GetSteamID()), connect_socket->second.real_port);
     }
 
     pInfo->m_idPOPRemote = 0;
@@ -195,7 +195,7 @@ void Steam_Networking_Sockets::set_steamnetconnectioninfo(std::map<HSteamNetConn
     pInfo->m_eState = convert_status(connect_socket->second.status);
     pInfo->m_eEndReason = 0; //TODO
     pInfo->m_szEndDebug[0] = 0;
-    snprintf(pInfo->m_szConnectionDescription, sizeof(pInfo->m_szConnectionDescription), "%u", connect_socket->first);
+    snprintf(pInfo->m_szConnectionDescription, sizeof(pInfo->m_szConnectionDescription), "%u", connect_socket->second.real_port);
 
     //Note some games might not allocate a struct the whole size of SteamNetConnectionInfo_t when calling GetConnectionInfo
     //keep this in mind in future interface updates
