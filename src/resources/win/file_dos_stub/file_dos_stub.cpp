@@ -3,7 +3,7 @@
 #include <vector>
 #include <filesystem>
 
-#include "pe_helpers/pe_helpers.hpp"
+#include "pe_helpers.hpp"
 
 static size_t get_file_size(std::fstream &file)
 {

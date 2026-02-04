@@ -101,25 +101,23 @@ option("emubuild")
     set_description("Set the EMU_BUILD_STRING")
 option_end()
 
-if is_plat("windows") then
-    option("dosstub")
-        set_default(false)
-        set_showmenu(true)
-        set_description("Change the DOS stub of the Windows builds")
-    option_end()
+option("dosstub")
+    set_default(false)
+    set_showmenu(true)
+    set_description("Change the DOS stub of the Windows builds")
+option_end()
 
-    option("winsign")
-        set_default(false)
-        set_showmenu(true)
-        set_description("Sign Windows builds with a fake certificate")
-    option_end()
+option("winsign")
+    set_default(false)
+    set_showmenu(true)
+    set_description("Sign Windows builds with a fake certificate")
+option_end()
 
-    option("winrsrc")
-        set_default(false)
-        set_showmenu(true)
-        set_description("Add resources to Windows builds")
-    option_end()
-end
+option("winrsrc")
+    set_default(false)
+    set_showmenu(true)
+    set_description("Add resources to Windows builds")
+option_end()
 
 --------------------------------------------------------------------------------
 -- TOOLCHAIN CONFIGURATION FUNCTIONS
@@ -186,6 +184,35 @@ function configure_release()
     set_optimize("faster")
     add_defines("NDEBUG", "EMU_RELEASE_BUILD")
 end
+
+-- Rule to apply post-build actions (dosstub and winsign)
+rule("post_build_actions")
+    after_build(function (target)
+        if is_plat("windows") then
+            local dosstub = get_config("dosstub")
+            local winsign = get_config("winsign")
+            
+            if dosstub then
+                local tool_name = "tool_file_dos_stub"
+                import("core.project.project")
+                local tool_target = project.target(tool_name)
+                if tool_target then
+                    local tool_path = tool_target:targetfile()
+                    local target_path = path.absolute(target:targetfile())
+                    print("Applying DOS stub manipulation to %s", target_path)
+                    os.runv(tool_path, {target_path})
+                end
+            end
+            
+            if winsign then
+                local script_path = path.join(os.projectdir(), "src/third_party/build/win/cert/sign_helper.bat")
+                local target_path = path.absolute(target:targetfile())
+                print("Applying fake certificate signing to %s", target_path)
+                os.runv(script_path, {target_path})
+            end
+        end
+    end)
+rule_end()
 
 --------------------------------------------------------------------------------
 -- PLATFORM DETECTION
@@ -340,10 +367,9 @@ target("api_regular")
     
     -- Modes
     add_rules("mode.debug", "mode.release")
-    if is_mode("debug") then
-        configure_debug()
-    else
-        configure_release()
+    add_rules("post_build_actions")
+    if is_plat("windows") then
+        add_deps("tool_file_dos_stub")
     end
 target_end()
 
@@ -411,6 +437,10 @@ target("api_experimental")
     
     -- Modes
     add_rules("mode.debug", "mode.release")
+    add_rules("post_build_actions")
+    if is_plat("windows") then
+        add_deps("tool_file_dos_stub")
+    end
 target_end()
 
 --------------------------------------------------------------------------------
@@ -478,6 +508,10 @@ target("steamclient_experimental")
     
     -- Modes
     add_rules("mode.debug", "mode.release")
+    add_rules("post_build_actions")
+    if is_plat("windows") then
+        add_deps("tool_file_dos_stub")
+    end
 target_end()
 
 --------------------------------------------------------------------------------
@@ -519,9 +553,9 @@ target("tool_lobby_connect")
         if get_config("winrsrc") then
             on_load(function (target)
                 if target:is_arch("x86") then
-                    target:add("files", "src/src/resources/win/launcher/32/resources.rc")
+                    target:add("files", "src/resources/win/launcher/32/resources.rc")
                 else
-                    target:add("files", "src/src/resources/win/launcher/64/resources.rc")
+                    target:add("files", "src/resources/win/launcher/64/resources.rc")
                 end
             end)
         end
@@ -530,6 +564,28 @@ target("tool_lobby_connect")
     end
     
     -- Modes
+    add_rules("mode.debug", "mode.release")
+    add_rules("post_build_actions")
+    if is_plat("windows") then
+        add_deps("tool_file_dos_stub")
+    end
+target_end()
+
+--------------------------------------------------------------------------------
+-- TARGET: tool_file_dos_stub
+--------------------------------------------------------------------------------
+target("tool_file_dos_stub")
+    set_kind("binary")
+    set_basename("file_dos_stub_$(arch)")
+    set_targetdir(".build/$(mode)/tools/file_dos_stub")
+    
+    add_files("src/resources/win/file_dos_stub/file_dos_stub.cpp")
+    add_files("src/common/pe_helpers.cpp")
+    add_files("src/common/common_helpers.cpp")
+    
+    add_includedirs("include/gbe/common", "src/common")
+    add_packages("utfcpp")
+    
     add_rules("mode.debug", "mode.release")
 target_end()
 
@@ -551,6 +607,10 @@ target("tool_generate_interfaces")
     
     -- Modes
     add_rules("mode.debug", "mode.release")
+    add_rules("post_build_actions")
+    if is_plat("windows") then
+        add_deps("tool_file_dos_stub")
+    end
 target_end()
 
 --------------------------------------------------------------------------------
@@ -572,6 +632,10 @@ target("lib_steamnetworkingsockets")
 
     -- Modes
     add_rules("mode.debug", "mode.release")
+    add_rules("post_build_actions")
+    if is_plat("windows") then
+        add_deps("tool_file_dos_stub")
+    end
 target_end()
 
 --------------------------------------------------------------------------------
@@ -614,15 +678,19 @@ target("lib_game_overlay_renderer")
     if is_plat("windows") and get_config("winrsrc") then
         on_load(function (target)
             if target:is_arch("x86") then
-                target:add("files", "src/src/resources/win/game_overlay_renderer/32/resources.rc")
+                target:add("files", "src/resources/win/game_overlay_renderer/32/resources.rc")
             else
-                target:add("files", "src/src/resources/win/game_overlay_renderer/64/resources.rc")
+                target:add("files", "src/resources/win/game_overlay_renderer/64/resources.rc")
             end
         end)
     end
     
     -- Modes
     add_rules("mode.debug", "mode.release")
+    add_rules("post_build_actions")
+    if is_plat("windows") then
+        add_deps("tool_file_dos_stub")
+    end
 target_end()
 
 --------------------------------------------------------------------------------
@@ -711,6 +779,10 @@ target("steamclient_experimental_extra")
     
     -- Modes
     add_rules("mode.debug", "mode.release")
+    add_rules("post_build_actions")
+    if is_plat("windows") then
+        add_deps("tool_file_dos_stub")
+    end
 target_end()
 
 end -- is_plat("windows")
