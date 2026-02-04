@@ -1,6 +1,7 @@
 -- gbe_fork xmake build configuration
 -- C++17 with MSVC or GCC/Clang
 set_languages("c++17")
+add_cxflags("/Zc:__cplusplus")
 
 set_project("gbe")
 set_version("1.0.0")

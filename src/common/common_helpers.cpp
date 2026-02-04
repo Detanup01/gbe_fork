@@ -1,5 +1,5 @@
 #include "common_helpers.hpp"
-#include "utf8.h"
+#include "utf8.h" // NOLINT(misc-include-cleaner)
 #include <algorithm>
 #include <cctype>
 #include <cwchar>

@@ -2,7 +2,6 @@
 
 #include "action_manifest.h"
 #include "backend.h"
-#include "steam_api.h"
 
 #include <map>
 #include <mutex>
@@ -23,7 +22,7 @@ using AnalogActionHandle = ControllerAnalogActionHandle_t;
  */
 struct ActionMap {
   // Maps DigitalActionHandle to a set of hardware buttons
-  std::map<DigitalActionHandle, std::set<int>> digital_mappings;
+  std::map<DigitalActionHandle, std::vector<int>> digital_mappings;
 
   // Maps AnalogActionHandle to hardware axis index and mode
   struct AnalogMapping {
@@ -99,8 +98,8 @@ private:
   // Helper to walk the stack
   ActionMap::AnalogMapping *ResolveAnalogMapping(ControllerHandle controller,
                                                  AnalogActionHandle action);
-  std::set<int> *ResolveDigitalMapping(ControllerHandle controller,
-                                       DigitalActionHandle action);
+  std::vector<int> *ResolveDigitalMapping(ControllerHandle controller,
+                                          DigitalActionHandle action);
 };
 
 } // namespace gbe::input

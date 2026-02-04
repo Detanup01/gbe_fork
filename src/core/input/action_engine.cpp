@@ -73,7 +73,7 @@ void ActionEngine::LoadFromVDF(const ActionManifest &manifest) {
             GetDigitalActionHandle(action_node->key.c_str());
         for (const auto &mapping : s_origin_mappings) {
           if (action_node->value == mapping.token && !mapping.is_axis) {
-            action_set.digital_mappings[action_handle].insert(
+            action_set.digital_mappings[action_handle].push_back(
                 mapping.hardware_id);
             break;
           }
@@ -100,6 +100,7 @@ void ActionEngine::LoadFromVDF(const ActionManifest &manifest) {
 }
 
 ActionSetHandle ActionEngine::GetActionSetHandle(const char *name) {
+  std::lock_guard<std::recursive_mutex> lock(m_mutex);
   auto it = m_set_names.find(name);
   if (it != m_set_names.end())
     return it->second;
@@ -109,6 +110,7 @@ ActionSetHandle ActionEngine::GetActionSetHandle(const char *name) {
 }
 
 DigitalActionHandle ActionEngine::GetDigitalActionHandle(const char *name) {
+  std::lock_guard<std::recursive_mutex> lock(m_mutex);
   auto it = m_digital_names.find(name);
   if (it != m_digital_names.end())
     return it->second;
@@ -118,6 +120,7 @@ DigitalActionHandle ActionEngine::GetDigitalActionHandle(const char *name) {
 }
 
 AnalogActionHandle ActionEngine::GetAnalogActionHandle(const char *name) {
+  std::lock_guard<std::recursive_mutex> lock(m_mutex);
   auto it = m_analog_names.find(name);
   if (it != m_analog_names.end())
     return it->second;
@@ -203,8 +206,8 @@ ActionEngine::GetActiveActionSetLayers(ControllerHandle controller) {
   return m_contexts[controller].active_layers;
 }
 
-std::set<int> *ActionEngine::ResolveDigitalMapping(ControllerHandle controller,
-                                                   DigitalActionHandle action) {
+std::vector<int> *ActionEngine::ResolveDigitalMapping(ControllerHandle controller,
+                                                      DigitalActionHandle action) {
   const auto &ctx = m_contexts[controller];
   for (auto it = ctx.active_layers.rbegin(); it != ctx.active_layers.rend();
        ++it) {
@@ -238,7 +241,7 @@ ControllerDigitalActionData_t
 ActionEngine::GetDigitalActionData(ControllerHandle controller,
                                    DigitalActionHandle action) {
   ControllerDigitalActionData_t data = {};
-  std::set<int> *mapping = ResolveDigitalMapping(controller, action);
+  std::vector<int> *mapping = ResolveDigitalMapping(controller, action);
   if (!mapping)
     return data;
 
@@ -320,7 +323,7 @@ void ActionEngine::LoadFromSettings(const Controller_Settings &settings) {
         if (digital_it != s_legacy_button_strings.end()) {
           DigitalActionHandle digital_handle =
               GetDigitalActionHandle(action_name.c_str());
-          action_set.digital_mappings[digital_handle].insert(
+          action_set.digital_mappings[digital_handle].push_back(
               digital_it->second);
         } else {
           auto analog_it = s_legacy_analog_strings.find(btn_str);
