@@ -43,6 +43,7 @@ param(
     [switch]$CleanCache,
     [switch]$Rebuild,
     [string]$Target = "",
+    [int]$Jobs = 0,
     [switch]$Sign,
     [switch]$DosStub,
     [switch]$Resources,
@@ -213,23 +214,35 @@ foreach ($currentArch in $archsToBuild) {
 
         # Build
         Write-Host "Building $Plat $currentArch $currentMode..." -ForegroundColor Yellow
-        $buildArgs = @("build")  # Start with build command
-
-        if ($Rebuild) {
-            $buildArgs += "-r"
+        
+        $xmakeArgs = @()
+        if ($Jobs -gt 0) {
+            $xmakeArgs += "-j"
+            $xmakeArgs += "$Jobs"
         }
-
+        $xmakeArgs += "build"
+        if ($Rebuild) {
+            $xmakeArgs += "-r"
+        }
+        
         if ($Target) {
-            $buildArgs += $Target  # Build specific target
+            $targets = $Target.Split(',')
+            foreach ($t in $targets) {
+                if ($t.Trim()) {
+                    $xmakeArgs += $t.Trim()
+                }
+            }
         }
         else {
-            $buildArgs += "-a"  # Build all targets
+            $xmakeArgs += "-a"
         }
 
-        & xmake @buildArgs
-        if ($LASTEXITCODE -ne 0) {
+        Write-Host "Executing: xmake $($xmakeArgs -join ' ')" -ForegroundColor Gray
+        $process = Start-Process -FilePath "xmake" -ArgumentList $xmakeArgs -Wait -NoNewWindow -PassThru
+        
+        if ($process.ExitCode -ne 0) {
             Write-Host "Build failed for $Plat $currentArch $currentMode" -ForegroundColor Red
-            exit $LASTEXITCODE
+            exit $process.ExitCode
         }
         
         $successPaths += ".build/$currentMode/$Plat/$currentArch"

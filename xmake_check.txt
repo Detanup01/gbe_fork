@@ -1,0 +1,15 @@
+[0mchecking for platform ... [38;2;0;255;0;1mwindows[0m
+[0mchecking for architecture ... [38;2;0;255;0;1mx64[0m
+[0mchecking for Microsoft C/C++ Compiler (x64) ... [38;2;0;255;0;1mok[0m
+[0mchecking for Microsoft Visual Studio (x64) version ... [38;2;0;255;0;1m2026[0m
+[0m[1;38;2;255;255;0;1mnote: [0minstall or modify (m) these packages (pass -y to skip confirm)?[0m
+[0m  [38;2;255;255;0m->[0m zlib v1.3.1 [2m[toolchains:"msvc", runtimes:"MT", license:zlib][0m
+[0m  [38;2;255;255;0m->[0m mbedtls v3.6.1 [2m[toolchains:"msvc", runtimes:"MT", license:Apache-2.0][0m
+[0m  [38;2;255;255;0m->[0m libcurl 8.11.0 [2m[toolchains:"msvc", tls:"mbedtls", runtimes:"MT", license:MIT][0m
+[0m  [38;2;255;255;0m->[0m abseil 20260107.0 [2m[toolchains:"msvc", runtimes:"MT", from:protobuf-cpp, license:Apache-2.0][0m
+[0m  [38;2;255;255;0m->[0m protobuf-cpp 33.2 [2m[toolchains:"msvc", runtimes:"MT", license:BSD-3-Clause][0m
+[0m  [38;2;255;255;0m->[0m libopus v1.5.2 [2m[toolchains:"msvc", runtimes:"MT", license:BSD-3-Clause][0m
+[0m  [38;2;255;255;0m->[0m portaudio 2024.08.25 [2m[toolchains:"msvc", runtimes:"MT"][0m
+[0m  [38;2;255;255;0m->[0m libssq latest [2m[toolchains:"msvc", cmake:y, runtimes:"MT", license:MIT][0m
+[0m  [38;2;255;255;0m->[0m ingame_overlay latest [2m[toolchains:"msvc", cmake:y, runtimes:"MT", license:MIT][0m
+[0mplease input: [1my[0m (y/n/m)[0m

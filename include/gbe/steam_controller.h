@@ -20,25 +20,6 @@
 
 #include "base.h"
 
-
-struct Controller_Map {
-    std::map<ControllerDigitalActionHandle_t, std::set<int>> active_digital{};
-    std::map<ControllerAnalogActionHandle_t, std::pair<std::set<int>, enum EInputSourceMode>> active_analog{};
-};
-
-struct Controller_Action {
-    ControllerHandle_t controller_handle{};
-    struct Controller_Map active_map{};
-    ControllerDigitalActionHandle_t active_set{};
-
-    Controller_Action(ControllerHandle_t controller_handle);
-
-    void activate_action_set(ControllerDigitalActionHandle_t active_set, std::map<ControllerActionSetHandle_t, struct Controller_Map> &controller_maps);
-    std::set<int> button_id(ControllerDigitalActionHandle_t handle);
-    std::pair<std::set<int>, enum EInputSourceMode> analog_id(ControllerAnalogActionHandle_t handle);
-};
-
-
 struct Rumble_Thread_Data {
     std::condition_variable rumble_thread_cv{};
     bool kill_rumble_thread{};
@@ -82,27 +63,15 @@ public ISteamInput005,
 public ISteamInput
 // ---
 {
-    static const std::map<std::string, int> button_strings;
-    static const std::map<std::string, int> analog_strings;
-    static const std::map<std::string, enum EInputSourceMode> analog_input_modes;
 
     class Settings *settings{};
     class SteamCallResults *callback_results{};
     class SteamCallBacks *callbacks{};
     class RunEveryRunCB *run_every_runcb{};
 
-    std::map<std::string, ControllerActionSetHandle_t> action_handles{};
-    std::map<std::string, ControllerDigitalActionHandle_t> digital_action_handles{};
-    std::map<std::string, ControllerAnalogActionHandle_t> analog_action_handles{};
-
-    std::map<ControllerActionSetHandle_t, struct Controller_Map> controller_maps{};
-    std::map<ControllerHandle_t, struct Controller_Action> controllers{};
-
+    // Legacy maps removed - functionality moved to ActionEngine
     std::map<EInputActionOrigin, std::string> steaminput_glyphs{};
     std::map<EControllerActionOrigin, std::string> steamcontroller_glyphs{};
-
-    std::thread background_rumble_thread{};
-    Rumble_Thread_Data *rumble_thread_data{};
 
     bool disabled{};
     bool initialized{};
@@ -166,16 +135,13 @@ public:
     // Returns the number of handles written to handlesOut
     int GetConnectedControllers( ControllerHandle_t *handlesOut );
 
-
     // Invokes the Steam overlay and brings up the binding screen
     // Returns false is overlay is disabled / unavailable, or the user is not in Big Picture mode
     bool ShowBindingPanel( ControllerHandle_t controllerHandle );
 
-
     // ACTION SETS
     // Lookup the handle for an Action Set. Best to do this once on startup, and store the handles for all future API calls.
     ControllerActionSetHandle_t GetActionSetHandle( const char *pszActionSetName );
-
 
     // Reconfigure the controller to use the specified action set (ie 'Menu', 'Walk' or 'Drive')
     // This is cheap, and can be safely called repeatedly. It's often easier to repeatedly call it in
@@ -183,7 +149,6 @@ public:
     void ActivateActionSet( ControllerHandle_t controllerHandle, ControllerActionSetHandle_t actionSetHandle );
 
     ControllerActionSetHandle_t GetCurrentActionSet( ControllerHandle_t controllerHandle );
-
 
     void ActivateActionSetLayer( ControllerHandle_t controllerHandle, ControllerActionSetHandle_t actionSetLayerHandle );
 
@@ -193,16 +158,12 @@ public:
 
     int GetActiveActionSetLayers( ControllerHandle_t controllerHandle, ControllerActionSetHandle_t *handlesOut );
 
-
-
     // ACTIONS
     // Lookup the handle for a digital action. Best to do this once on startup, and store the handles for all future API calls.
     ControllerDigitalActionHandle_t GetDigitalActionHandle( const char *pszActionName );
 
-
     // Returns the current state of the supplied digital game action
     ControllerDigitalActionData_t GetDigitalActionData( ControllerHandle_t controllerHandle, ControllerDigitalActionHandle_t digitalActionHandle );
-
 
     // Get the origin(s) for a digital action within an action set. Returns the number of origins supplied in originsOut. Use this to display the appropriate on-screen prompt for the action.
     // originsOut should point to a STEAM_CONTROLLER_MAX_ORIGINS sized array of EControllerActionOrigin handles
@@ -216,20 +177,16 @@ public:
     // Lookup the handle for an analog action. Best to do this once on startup, and store the handles for all future API calls.
     ControllerAnalogActionHandle_t GetAnalogActionHandle( const char *pszActionName );
 
-
     // Returns the current state of these supplied analog game action
     ControllerAnalogActionData_t GetAnalogActionData( ControllerHandle_t controllerHandle, ControllerAnalogActionHandle_t analogActionHandle );
-
 
     // Get the origin(s) for an analog action within an action set. Returns the number of origins supplied in originsOut. Use this to display the appropriate on-screen prompt for the action.
     // originsOut should point to a STEAM_CONTROLLER_MAX_ORIGINS sized array of EControllerActionOrigin handles
     int GetAnalogActionOrigins( ControllerHandle_t controllerHandle, ControllerActionSetHandle_t actionSetHandle, ControllerAnalogActionHandle_t analogActionHandle, EControllerActionOrigin *originsOut );
 
     int GetAnalogActionOrigins( InputHandle_t inputHandle, InputActionSetHandle_t actionSetHandle, InputAnalogActionHandle_t analogActionHandle, EInputActionOrigin *originsOut );
-
-        
+ 
     void StopAnalogActionMomentum( ControllerHandle_t controllerHandle, ControllerAnalogActionHandle_t eAction );
-
 
     // Trigger a haptic pulse on a controller
     void TriggerHapticPulse( ControllerHandle_t controllerHandle, ESteamControllerPad eTargetPad, unsigned short usDurationMicroSec );
@@ -245,7 +202,6 @@ public:
 
     void Legacy_TriggerRepeatedHapticPulse( InputHandle_t inputHandle, ESteamControllerPad eTargetPad, unsigned short usDurationMicroSec, unsigned short usOffMicroSec, unsigned short unRepeat, unsigned int nFlags );
 
-
     // Send a haptic pulse, works on Steam Deck and Steam Controller devices
     void TriggerSimpleHapticEvent( InputHandle_t inputHandle, EControllerHapticLocation eHapticLocation, uint8 nIntensity, char nGainDB, uint8 nOtherIntensity, char nOtherGainDB );
 
@@ -258,25 +214,20 @@ public:
     // Set the controller LED color on supported controllers.  
     void SetLEDColor( ControllerHandle_t controllerHandle, uint8 nColorR, uint8 nColorG, uint8 nColorB, unsigned int nFlags );
 
-
     // Returns the associated gamepad index for the specified controller, if emulating a gamepad
     int GetGamepadIndexForController( ControllerHandle_t ulControllerHandle );
-
 
     // Returns the associated controller handle for the specified emulated gamepad
     ControllerHandle_t GetControllerForGamepadIndex( int nIndex );
 
-
     // Returns raw motion data from the specified controller
     ControllerMotionData_t GetMotionData( ControllerHandle_t controllerHandle );
-
 
     // Attempt to display origins of given action in the controller HUD, for the currently active action set
     // Returns false is overlay is disabled / unavailable, or the user is not in Big Picture mode
     bool ShowDigitalActionOrigins( ControllerHandle_t controllerHandle, ControllerDigitalActionHandle_t digitalActionHandle, float flScale, float flXPosition, float flYPosition );
 
     bool ShowAnalogActionOrigins( ControllerHandle_t controllerHandle, ControllerAnalogActionHandle_t analogActionHandle, float flScale, float flXPosition, float flYPosition );
-
 
     // Returns a localized string (from Steam's language setting) for the specified origin
     const char *GetStringForActionOrigin( EControllerActionOrigin eOrigin );
@@ -327,9 +278,6 @@ public:
 
     // Set the trigger effect for a DualSense controller
     void SetDualSenseTriggerEffect( InputHandle_t inputHandle, const ScePadTriggerEffectParam *pParam );
-
 };
-
-
 
 #endif // __INCLUDED_STEAM_CONTROLLER_H__

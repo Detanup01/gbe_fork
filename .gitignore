@@ -8,6 +8,9 @@
 # Build output (centralized to .build/)
 .build/
 
+# clangd cache
+.cache/
+
 # xmake package cache (fetched during build)
 build/
 build_deps/
