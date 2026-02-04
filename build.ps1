@@ -16,6 +16,8 @@
     Switch: Enables DOS stub manipulation for Windows binaries.
 .PARAMETER Resources
     Switch: Enables compilation and linking of Windows resources (.rc/.res).
+.PARAMETER All
+    Switch: Meta-switch that enables -Arch both, -Mode both, -Sign, -DosStub, and -Resources.
 .PARAMETER Clean
     Switch: Deletes build artifacts before starting.
 .PARAMETER CleanCache
@@ -26,11 +28,8 @@
     .\build.ps1
     Build ALL targets for x64 in Release mode.
 .EXAMPLE
-    .\build.ps1 -Arch both -Mode both -Sign
-    Build everything for both architectures and both modes, with binaries signed.
-.EXAMPLE
-    .\build.ps1 -Target api_experimental -Mode debug
-    Build only the experimental API in debug mode.
+    .\build.ps1 -All
+    Build EVERYTHING: both architectures, both modes, with all post-build steps enabled.
 #>
 
 param(
@@ -47,10 +46,20 @@ param(
     [switch]$Sign,
     [switch]$DosStub,
     [switch]$Resources,
+    [switch]$All,
     [switch]$Help
 )
 
 $ErrorActionPreference = "Stop"
+
+# Handle Meta-switch logic
+if ($All) {
+    $Arch = "both"
+    $Mode = "both"
+    $Sign = $true
+    $DosStub = $true
+    $Resources = $true
+}
 
 # Display help if requested
 if ($Help) {
@@ -58,56 +67,31 @@ if ($Help) {
     Write-Host "GBE Fork Build System" -ForegroundColor Cyan
     Write-Host "=====================" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "The build script orchestrates the build process for multiple architectures and modes."
-    Write-Host "By default, it builds all projects for the current configuration."
+    Write-Host "SYNTAX:" -ForegroundColor Yellow
+    Write-Host "  .\build.ps1 [-Arch <x86|x64|both>] [-Mode <debug|release|both>] [-Target <name>]"
+    Write-Host "              [-Sign] [-DosStub] [-Resources] [-All] [-Clean] [-CleanCache] [-Rebuild] [-Help]"
     Write-Host ""
-    Write-Host "USAGE:" -ForegroundColor Yellow
-    Write-Host "  .\build.ps1 [OPTIONS]"
-    Write-Host ""
-    Write-Host "OPTIONS (All optional):" -ForegroundColor Yellow
-    Write-Host "  -Arch <x86|x64|both>   Target architecture (default: x64)"
-    Write-Host "                         'both' will sequentially build for x86 and x64"
-    Write-Host ""
-    Write-Host "  -Mode <debug|release|both> Build mode (default: release)"
-    Write-Host "                         'both' will sequentially build for debug and release"
-    Write-Host ""
-    Write-Host "  -Target <name>         Build a specific target instead of all (default: all)"
-    Write-Host "                         See 'TARGETS' section below for available names"
-    Write-Host ""
-    Write-Host "  -Sign                  Enable fake certificate signing for binaries"
-    Write-Host "  -DosStub               Enable DOS stub manipulation tool"
-    Write-Host "  -Resources             Enable Windows resource compiler (embed version info)"
-    Write-Host ""
-    Write-Host "  -Clean                 Delete existing build artifacts before starting"
-    Write-Host "  -CleanCache            Force re-fetch all external dependencies (xmake packages)"
-    Write-Host "  -Rebuild               Force re-compilation of all source files"
-    Write-Host "  -Help                  Display this help message"
+    Write-Host "OPTIONS:" -ForegroundColor Yellow
+    Write-Host "  -Arch        Target architecture selection (Default: x64)"
+    Write-Host "  -Mode        Build configuration selection (Default: release)"
+    Write-Host "  -Target      Specific project to build (Default: all targets)"
+    Write-Host "  -Sign        Enable fake certificate signing"
+    Write-Host "  -DosStub     Enable DOS stub manipulation"
+    Write-Host "  -Resources   Enable compilation of Windows resources"
+    Write-Host "  -All         Complete Build: builds both archs/modes with all polish steps"
+    Write-Host "  -Clean       Wipe build artifacts before starting"
+    Write-Host "  -Rebuild     Force full re-compilation"
+    Write-Host "  -Help        Display this message"
     Write-Host ""
     Write-Host "EXAMPLES:" -ForegroundColor Yellow
-    Write-Host "  .\build.ps1"
-    Write-Host "    -> Build ALL targets for x64 in Release mode (The Standard Build)"
-    Write-Host ""
-    Write-Host "  .\build.ps1 -Mode both -Sign"
-    Write-Host "    -> Build ALL targets for x64 in both Debug and Release, with signing"
-    Write-Host ""
-    Write-Host "  .\build.ps1 -Arch both -Mode both"
-    Write-Host "    -> Build EVERYTHING: all targets, all architectures, all modes (Comprehensive Build)"
-    Write-Host ""
-    Write-Host "  .\build.ps1 -Target api_experimental -Mode debug -Arch x86"
-    Write-Host "    -> Build ONLY 'api_experimental' for x86 in Debug mode"
-    Write-Host ""
-    Write-Host "  .\build.ps1 -Clean -Resources -DosStub"
-    Write-Host "    -> Clean previous build then build x64 Release with resources and DOS stub manipulation"
+    Write-Host "  .\build.ps1                      Standard Release build (x64)"
+    Write-Host "  .\build.ps1 -All                 Comprehensive build (All Archs/Modes/Steps)"
+    Write-Host "  .\build.ps1 -Target api_exp -Sign Only build experimental API and sign it"
     Write-Host ""
     Write-Host "TARGETS:" -ForegroundColor Yellow
-    Write-Host "  - api_regular                    : Regular Steam API emulator"
-    Write-Host "  - api_experimental               : Experimental Steam API with overlay support"
-    Write-Host "  - steamclient_experimental       : Experimental steamclient DLL"
-    Write-Host "  - tool_lobby_connect             : Lobby connection tool"
-    Write-Host "  - tool_generate_interfaces       : Interface generation tool"
-    Write-Host "  - lib_steamnetworkingsockets     : Steam networking sockets library"
-    Write-Host "  - lib_game_overlay_renderer      : Game overlay renderer"
-    Write-Host "  - steamclient_experimental_extra : Extra protection DLL"
+    Write-Host "  - api_regular, api_experimental, steamclient_experimental, tool_lobby_connect,"
+    Write-Host "    tool_generate_interfaces, lib_steamnetworkingsockets, lib_game_overlay_renderer,"
+    Write-Host "    steamclient_experimental_extra"
     Write-Host ""
     exit 0
 }
