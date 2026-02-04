@@ -28,7 +28,7 @@ param(
     [ValidateSet("x86", "x64")]
     [string]$Arch = "x64",
     
-    [ValidateSet("debug", "release")]
+    [ValidateSet("debug", "release", "both")]
     [string]$Mode = "release",
     
     [switch]$Clean,
@@ -51,7 +51,7 @@ if ($Help) {
     Write-Host ""
     Write-Host "OPTIONS:" -ForegroundColor Yellow
     Write-Host "  -Arch <x86|x64>        Target architecture (default: x64)"
-    Write-Host "  -Mode <debug|release>  Build mode (default: release)"
+    Write-Host "  -Mode <debug|release|both> Build mode (default: release)"
     Write-Host "  -Clean                 Clean build artifacts before building"
     Write-Host "  -CleanCache            Clean xmake package cache (forces re-fetch of dependencies)"
     Write-Host "  -Rebuild               Force rebuild all targets"
@@ -149,41 +149,56 @@ if ($Clean) {
     Write-Host ""
 }
 
-# Configure xmake
-Write-Host "Configuring build..." -ForegroundColor Yellow
-$configArgs = @("f", "-p", "windows", "-a", "$Arch", "-m", "$Mode", "-y")
-if ($Rebuild) {
-    $configArgs += "-c"
-}
-
-xmake @configArgs
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Configuration failed" -ForegroundColor Red
-    exit $LASTEXITCODE
-}
-
-Write-Host "Configuration complete" -ForegroundColor Green
-Write-Host ""
-
-# Build
-Write-Host "Building..." -ForegroundColor Yellow
-$buildArgs = @("build")  # Start with build command
-
-if ($Rebuild) {
-    $buildArgs += "-r"
-}
-
-if ($Target) {
-    $buildArgs += $Target  # Build specific target
+# Prepare the list of modes to build
+$modesToBuild = @()
+if ($Mode -eq "both") {
+    $modesToBuild = @("debug", "release")
 }
 else {
-    $buildArgs += "-a"  # Build all targets
+    $modesToBuild = @($Mode)
 }
 
-& xmake @buildArgs
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Build failed" -ForegroundColor Red
-    exit $LASTEXITCODE
+foreach ($currentMode in $modesToBuild) {
+    Write-Host "============================" -ForegroundColor Cyan
+    Write-Host "  Building mode: $currentMode" -ForegroundColor Yellow
+    Write-Host "============================" -ForegroundColor Cyan
+
+    # Configure xmake
+    Write-Host "Configuring build for $currentMode..." -ForegroundColor Yellow
+    $configArgs = @("f", "-p", "windows", "-a", "$Arch", "-m", "$currentMode", "-y")
+    if ($Rebuild) {
+        $configArgs += "-c"
+    }
+
+    xmake @configArgs
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Configuration failed for $currentMode" -ForegroundColor Red
+        exit $LASTEXITCODE
+    }
+
+    Write-Host "Configuration for $currentMode complete" -ForegroundColor Green
+    Write-Host ""
+
+    # Build
+    Write-Host "Building $currentMode..." -ForegroundColor Yellow
+    $buildArgs = @("build")  # Start with build command
+
+    if ($Rebuild) {
+        $buildArgs += "-r"
+    }
+
+    if ($Target) {
+        $buildArgs += $Target  # Build specific target
+    }
+    else {
+        $buildArgs += "-a"  # Build all targets
+    }
+
+    & xmake @buildArgs
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Build failed for $currentMode" -ForegroundColor Red
+        exit $LASTEXITCODE
+    }
 }
 
 Write-Host ""
