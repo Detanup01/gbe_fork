@@ -285,6 +285,7 @@ add_rules("mode.debug", "mode.release")
 
 -- Language and runtime settings
 if is_plat("windows") then
+    set_toolchains("msvc")
     set_languages("c++latest", "c17")
     set_runtimes("MT")
     
