@@ -105,11 +105,23 @@ if (-not (Get-Command "xmake" -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
+# Check for Ninja
+$hasNinja = $false
+if (Get-Command "ninja" -ErrorAction SilentlyContinue) {
+    $hasNinja = $true
+}
+
 Write-Host "================================" -ForegroundColor Cyan
 Write-Host "  GBE Fork Build System" -ForegroundColor Cyan
 Write-Host "================================" -ForegroundColor Cyan
 Write-Host "Architecture: $Arch" -ForegroundColor Yellow
 Write-Host "Mode: $Mode" -ForegroundColor Yellow
+if ($hasNinja) {
+    Write-Host "Build Ninja:  Found (Used for dependencies)" -ForegroundColor Green
+}
+else {
+    Write-Host "Build Ninja:  Not Found (Optional)" -ForegroundColor Gray
+}
 Write-Host ""
 
 # Clean package cache if requested
