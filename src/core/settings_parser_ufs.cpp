@@ -269,16 +269,21 @@ void parse_cloud_save(CSimpleIniA *ini, class Settings *settings_client, class S
         auto default_cloud_dir = factory_default_cloud_dir(ini, settings_client, settings_server, local_storage);
         if (default_cloud_dir.empty()) {
             PRINT_DEBUG("[X] cannot resolve default cloud save dir");
-        } else if (std::filesystem::is_directory(default_cloud_dir) || std::filesystem::create_directories(default_cloud_dir)) {
-            PRINT_DEBUG(
-                "successfully created default cloud save dir '%s'",
-                default_cloud_dir.u8string().c_str()
-            );
         } else {
-            PRINT_DEBUG(
-                "[X] failed to create default cloud save dir '%s'",
-                default_cloud_dir.u8string().c_str()
-            );
+            try {
+                if (std::filesystem::create_directories(default_cloud_dir)) {
+                    PRINT_DEBUG(
+                        "successfully created default cloud save dir '%s'",
+                        default_cloud_dir.u8string().c_str()
+                    );
+                }
+            } catch (const std::filesystem::filesystem_error& e) {
+                PRINT_DEBUG(
+                    "[X] failed to create default cloud save dir '%s': '%s'",
+                    default_cloud_dir.u8string().c_str(),
+                    e.what()
+                );
+            }
         }
     }
 
@@ -309,10 +314,12 @@ void parse_cloud_save(CSimpleIniA *ini, class Settings *settings_client, class S
         // create specific dir
         if (common_helpers::str_find(dirname, "{::") == static_cast<size_t>(-1)) {
             auto dirname_p = std::filesystem::u8path(dirname);
-            if (std::filesystem::is_directory(dirname_p) || std::filesystem::create_directories(dirname_p)) {
-                PRINT_DEBUG("    successfully created cloud save dir");
-            } else {
-                PRINT_DEBUG("    [X] failed to create cloud save dir");
+            try {
+                if (std::filesystem::is_directory(dirname_p) || std::filesystem::create_directories(dirname_p)) {
+                    PRINT_DEBUG("    successfully created cloud save dir");
+                }
+            } catch (const std::filesystem::filesystem_error& e) {
+                PRINT_DEBUG("    [X] failed to create cloud save dir: '%s'", e.what());
             }
         } else {
             PRINT_DEBUG("    [X] cloud save dir has unprocessed identifiers, skipping");
