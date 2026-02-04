@@ -1,27 +1,36 @@
 <#
 .SYNOPSIS
-    Simple Build Wrapper for GBE Fork
+    Comprehensive Build Orchestrator for GBE Fork
 .DESCRIPTION
-    Lightweight wrapper around xmake for building the project.
-    All dependency management and protobuf generation is now handled natively by xmake.
+    A powerful wrapper around xmake that manages multi-architecture and multi-mode builds.
+    Handles configuration, cleaning, signing, and post-build artifact manipulation.
 .PARAMETER Arch
-    Target architecture (x86 or x64). Default: x64
+    Target architecture: 'x86', 'x64', or 'both' (default: x64).
 .PARAMETER Mode
-    Build mode (debug or release). Default: release
-.PARAMETER Clean
-    Clean before building
-.PARAMETER CleanCache
-    Clean xmake package cache (forces re-fetch of dependencies)
-.PARAMETER Rebuild
-    Force rebuild all targets
+    Build configuration: 'debug', 'release', or 'both' (default: release).
 .PARAMETER Target
-    Specific target to build (optional)
+    Specific target name to build (optional). If omitted, builds all targets.
+.PARAMETER Sign
+    Switch: Enables fake certificate signing via sign_helper.bat.
+.PARAMETER DosStub
+    Switch: Enables DOS stub manipulation for Windows binaries.
+.PARAMETER Resources
+    Switch: Enables compilation and linking of Windows resources (.rc/.res).
+.PARAMETER Clean
+    Switch: Deletes build artifacts before starting.
+.PARAMETER CleanCache
+    Switch: Forces re-fetch of all external xmake dependencies.
+.PARAMETER Rebuild
+    Switch: Forces full re-compilation of all source files.
 .EXAMPLE
     .\build.ps1
-    .\build.ps1 -Arch x64 -Mode debug
-    .\build.ps1 -Clean -Rebuild
-    .\build.ps1 -CleanCache
-    .\build.ps1 -Target api_experimental
+    Build ALL targets for x64 in Release mode.
+.EXAMPLE
+    .\build.ps1 -Arch both -Mode both -Sign
+    Build everything for both architectures and both modes, with binaries signed.
+.EXAMPLE
+    .\build.ps1 -Target api_experimental -Mode debug
+    Build only the experimental API in debug mode.
 #>
 
 param(
