@@ -1,5 +1,6 @@
 -- gbe_fork xmake build configuration
--- C++26 with MSVC or GCC/Clang
+-- C++17 with MSVC or GCC/Clang
+set_languages("c++17")
 
 set_project("gbe")
 set_version("1.0.0")
@@ -19,6 +20,7 @@ add_requires("protobuf-cpp", {system = false, configs = {shared = false}})
 add_requires("libopus", {system = false, configs = {shared = false}})
 add_requires("portaudio", {system = false, configs = {shared = false}})
 add_requires("utfcpp v3.2.1", {system = false})
+add_requires("libsdl3", {system = false, configs = {shared = false}})
 
 -- Git-based dependencies with build scripts
 add_requires("libssq latest", {system = false, configs = {cmake = true, shared = false}})
@@ -282,6 +284,7 @@ local detours_files = {
 
 -- Add mode rules for debug/release
 add_rules("mode.debug", "mode.release")
+add_rules("plugin.compile_commands.autoupdate", {outputdir = "."})
 
 -- Language and runtime settings
 if is_plat("windows") then
@@ -347,7 +350,7 @@ target("api_regular")
     remove_files("src/core/wrap.cpp")  -- Windows only
     
     -- Link libraries (using xmake packages)
-    add_packages("zlib", "libcurl", "protobuf-cpp", "mbedtls", "libopus", "portaudio", "utfcpp", "libssq")
+    add_packages("zlib", "libcurl", "protobuf-cpp", "mbedtls", "libopus", "portaudio", "utfcpp", "libssq", "libsdl3")
     
     if is_plat("windows") then
         add_syslinks(windows_syslibs)
@@ -415,7 +418,7 @@ target("api_experimental")
     remove_files("src/core/wrap.cpp")  -- Windows only
     
     -- Link libraries (using xmake packages)
-    add_packages("zlib", "libcurl", "protobuf-cpp", "mbedtls", "libopus", "portaudio", "utfcpp", "libssq", "ingame_overlay")
+    add_packages("zlib", "libcurl", "protobuf-cpp", "mbedtls", "libopus", "portaudio", "utfcpp", "libssq", "ingame_overlay", "libsdl3")
 
     if is_plat("windows") then
         add_syslinks(windows_syslibs)
@@ -486,7 +489,7 @@ target("steamclient_experimental")
     remove_files("src/core/wrap.cpp")  -- Windows only
     
     -- Link libraries (using xmake packages)
-    add_packages("zlib", "libcurl", "protobuf-cpp", "mbedtls", "libopus", "portaudio", "utfcpp", "libssq", "ingame_overlay")
+    add_packages("zlib", "libcurl", "protobuf-cpp", "mbedtls", "libopus", "portaudio", "utfcpp", "libssq", "ingame_overlay", "libsdl3")
     
     if is_plat("windows") then
         add_syslinks(windows_syslibs)
@@ -544,7 +547,7 @@ target("tool_lobby_connect")
     remove_files("src/core/flat.cpp")
     
     -- Link libraries (using xmake packages)
-    add_packages("zlib", "libcurl", "protobuf-cpp", "mbedtls", "libopus", "portaudio", "utfcpp", "libssq")
+    add_packages("zlib", "libcurl", "protobuf-cpp", "mbedtls", "libopus", "portaudio", "utfcpp", "libssq", "libsdl3")
 
     if is_plat("windows") then
         add_syslinks(windows_syslibs)
