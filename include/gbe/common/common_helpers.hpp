@@ -1,57 +1,55 @@
 #pragma once
 
+#include <chrono>
+#include <condition_variable>
 #include <cstdlib>
+#include <filesystem>
+#include <fstream>
+#include <functional>
+#include <mutex>
 #include <string>
 #include <string_view>
-#include <fstream>
-#include <filesystem>
-#include <chrono>
-#include <vector>
-#include <functional>
 #include <thread>
-#include <mutex>
-#include <condition_variable>
+#include <vector>
 
 namespace common_helpers {
 
-class KillableWorker
-{
+class KillableWorker {
 private:
-    std::thread thread_obj{};
+  std::thread thread_obj{};
 
-    // don't run immediately, wait some time
-    std::chrono::milliseconds initial_delay{};
-    // time between each invokation
-    std::chrono::milliseconds polling_time{};
+  // don't run immediately, wait some time
+  std::chrono::milliseconds initial_delay{};
+  // time between each invokation
+  std::chrono::milliseconds polling_time{};
 
-    std::function<bool()> should_kill{};
+  std::function<bool()> should_kill{};
 
-    std::function<bool(void *)> thread_job;
+  std::function<bool(void *)> thread_job;
 
-    std::mutex kill_thread_mutex{};
-    std::condition_variable kill_thread_cv{};
-    bool kill_thread{};
-    
-    void thread_proc(void *data);
+  std::mutex kill_thread_mutex{};
+  std::condition_variable kill_thread_cv{};
+  bool kill_thread{};
+
+  void thread_proc(void *data);
 
 public:
-    KillableWorker(
-        std::function<bool(void *)> thread_proc = {},
-        std::chrono::milliseconds initial_delay = {},
-        std::chrono::milliseconds polling_time = {},
-        std::function<bool()> should_kill = {});
-    ~KillableWorker();
+  KillableWorker(std::function<bool(void *)> thread_proc = {},
+                 std::chrono::milliseconds initial_delay = {},
+                 std::chrono::milliseconds polling_time = {},
+                 std::function<bool()> should_kill = {});
+  ~KillableWorker();
 
-    KillableWorker& operator=(const KillableWorker &other);
+  KillableWorker &operator=(const KillableWorker &other);
 
-    // spawn the thread if necessary
-    bool start(void *data = nullptr);
-    // kill the thread if necessary
-    void kill();
+  // spawn the thread if necessary
+  bool start(void *data = nullptr);
+  // kill the thread if necessary
+  void kill();
 };
 
-bool create_dir(std::string_view dir);
-bool create_dir(std::wstring_view dir);
+bool create_dir(std::string_view directory_path);
+bool create_dir(std::wstring_view directory_path);
 
 void write(std::ofstream &file, std::string_view data);
 
@@ -81,8 +79,10 @@ std::wstring to_lower(std::wstring_view wstr);
 std::string to_upper(std::string_view str);
 std::wstring to_upper(std::wstring_view wstr);
 
-std::string to_absolute(std::string_view path, std::string_view base = std::string_view());
-std::wstring to_absolute(std::wstring_view path, std::wstring_view base = std::wstring_view());
+std::string to_absolute(std::string_view path,
+                        std::string_view base = std::string_view());
+std::wstring to_absolute(std::wstring_view path,
+                         std::wstring_view base = std::wstring_view());
 
 bool file_exist(const std::filesystem::path &filepath);
 bool file_exist(const std::string &filepath);
@@ -108,8 +108,14 @@ std::string get_utc_time();
 std::wstring to_wstr(std::string_view str);
 std::string to_str(std::wstring_view wstr);
 
-std::string str_replace_all(std::string_view source, std::string_view substr, std::string_view replace, bool case_insensitive = true);
-size_t str_find(std::string_view str_src, std::string_view str_query, size_t start = 0, bool case_insensitive = true);
-std::vector<std::string> str_split(std::string_view str, std::string_view splitter, bool ignore_empty = true, bool case_insensitive = true);
+std::string str_replace_all(std::string_view source, std::string_view substr,
+                            std::string_view replace,
+                            bool case_insensitive = true);
+size_t str_find(std::string_view str_src, std::string_view str_query,
+                size_t start = 0, bool case_insensitive = true);
+std::vector<std::string> str_split(std::string_view str,
+                                   std::string_view splitter,
+                                   bool ignore_empty = true,
+                                   bool case_insensitive = true);
 
-}
+} // namespace common_helpers
