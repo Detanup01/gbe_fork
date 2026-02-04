@@ -224,7 +224,7 @@ local common_include = {
 -- Windows system libraries
 local windows_syslibs = {
     "Ws2_32", "Iphlpapi", "Wldap32", "Winmm", "Bcrypt", "Dbghelp",
-    "Xinput", "Gdi32", "Dwmapi", "OpenGL32", "Shell32"
+    "Xinput", "Gdi32", "Dwmapi", "OpenGL32", "Shell32", "User32", "Advapi32"
 }
 
 -- Common source files
@@ -694,15 +694,19 @@ target("steamclient_experimental_extra")
     add_includedirs("include/gbe/common", "src/common")
     add_packages("utfcpp")
     
-    -- Windows resources
-    if get_config("winrsrc") then
-        on_load(function (target)
-            if target:is_arch("x86") then
-                target:add("files", "src/resources/win/client/32/resources.rc")
-            else
-                target:add("files", "src/resources/win/client/64/resources.rc")
-            end
-        end)
+    if is_plat("windows") then
+        add_syslinks(windows_syslibs)
+        
+        -- Windows resources
+        if get_config("winrsrc") then
+            on_load(function (target)
+                if target:is_arch("x86") then
+                    target:add("files", "src/resources/win/client/32/resources.rc")
+                else
+                    target:add("files", "src/resources/win/client/64/resources.rc")
+                end
+            end)
+        end
     end
     
     -- Modes
