@@ -43,13 +43,7 @@ void SDL3Backend::Shutdown() {
   if (m_poll_thread.joinable()) {
     m_poll_thread.join();
   }
-  // No need to close specific gamepads here as the thread loop cleans up or we
-  // can do it safely here if we want. But since we are shutting down,
-  // SDL_QuitSubSystem will likely handle it or we should clear our map. Since
-  // m_gamepads is now managed on the thread, we shouldn't touch it here without
-  // protection, but thread is joined so it's safe. Actually, let's clear it.
-  // but wait, m_gamepads is now used in PollLoop. We can let the thread cleanup
-  // or just SDL_Quit.
+  // Cleanup is handled by the PollLoop thread upon exit and SDL_QuitSubSystem.
   SDL_QuitSubSystem(SDL_INIT_GAMEPAD);
 }
 
@@ -138,14 +132,8 @@ void SDL3Backend::PollLoop() {
     // Swap to shared state
     {
       std::lock_guard<std::mutex> lock(m_mutex);
-      m_cached_states =
-          new_states; // Assigns from our local reusable map (copy).
-      // Optimally we'd double buffer the map itself but copying map of < 10
-      // items is negligible compared to alloc. But wait, m_cached_states =
-      // new_states does allocate nodes if size increases. If size is stable, it
-      // might reuse nodes depending on STL implementation but usually
-      // rebalances. For true 0-alloc we need a fixed size array or custom
-      // container, but this is already much better.
+      // Update the shared, double-buffered state cache.
+      m_cached_states = new_states;
     }
 
     // 1ms sleep to yield (~1000Hz polling)
@@ -180,29 +168,6 @@ ControllerState SDL3Backend::GetControllerState(ControllerHandle handle) const {
 
 void SDL3Backend::SetRumble(ControllerHandle handle, uint16_t left_speed,
                             uint16_t right_speed, uint32_t duration_ms) {
-  // This is tricky. SDL_RumbleGamepad is thread-safe?
-  // Usually SDL functions that take a pointer need to be careful.
-  // But we don't have the pointer here readily available safely?
-  // We have it in m_cached_states, but that pointer is owned by the thread.
-  // SDL3 docs say: "SDL_RumbleGamepad() is thread-safe."
-  // So we can use the pointer from cache if we trust it's still valid.
-  // The thread might close it effectively invalidating the pointer?
-  // Yes, if we are unlucky, the thread closes it while we use it.
-  // However, for this task <0.1ms, we can optimize later.
-  // Ideally we post a "Rumble Command" to the thread.
-  // For now, let's grab the pointer and hope.
-  // actually, if we access m_cached_states under lock, the pointer is valid-ish
-  // but the underlying object might be closed by SDL on the other thread right
-  // after? No, we hold the lock, so the thread can't update/close it yet? No,
-  // the thread closes it then updates the map. Wait, the thread does: local
-  // update -> swap map. So m_cached_states only changes when we swap. If the
-  // thread closes the gamepad, it does so on its local copy, then eventually
-  // updates m_cached_states. So if it's in m_cached_states, it WAS open at the
-  // time of swap. But is it STILL open? The thread keeps it open in
-  // `local_gamepads` until the loop exits or it disconnects. If it disconnects,
-  // the next swap will remove it from m_cached_states. So if it is in
-  // m_cached_states, it is likely valid.
-
   SDL_Gamepad *gamepad = nullptr;
   {
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -212,6 +177,10 @@ void SDL3Backend::SetRumble(ControllerHandle handle, uint16_t left_speed,
     }
   }
 
+  // TODO: There is a potential race condition here if the background thread
+  // closes the gamepad handle between our lock release and this call.
+  // For absolute thread safety, a command queue should be implemented to
+  // process rumble requests on the polling thread.
   if (gamepad) {
     SDL_RumbleGamepad(gamepad, left_speed, right_speed, duration_ms);
   }

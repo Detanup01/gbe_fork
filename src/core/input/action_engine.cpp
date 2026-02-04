@@ -3,7 +3,6 @@
 #include "settings.h"
 #include <algorithm>
 
-
 namespace gbe::input {
 
 struct ActionOriginMapping {
@@ -292,8 +291,7 @@ static const std::map<std::string, int> s_legacy_analog_strings = {
     {"RTRIGGER", 1}, // TRIGGER_RIGHT
     {"LJOY", 0},     // STICK_LEFT (Axis index 0/1)
     {"RJOY", 2},     // STICK_RIGHT (Axis index 2/3)
-    {"DPAD", 10}, // Special case? No, DPAD is usually buttons. Legacy mapped it
-                  // to pseudo-axis. Ignoring for now.
+    {"DPAD", 10},    // Legacy DPAD-as-axis mapping (Unsupported)
 };
 
 static const std::map<std::string, EInputSourceMode> s_legacy_analog_modes = {
