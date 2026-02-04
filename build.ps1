@@ -52,6 +52,12 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# Detect Platform
+$Plat = "windows"
+if ($IsLinux -or $PSVersionTable.OS -like "*Linux*") {
+    $Plat = "linux"
+}
+
 # Handle Meta-switch logic
 if ($All) {
     $Arch = "both"
@@ -66,6 +72,7 @@ if ($Help) {
     Write-Host ""
     Write-Host "GBE Fork Build System" -ForegroundColor Cyan
     Write-Host "=====================" -ForegroundColor Cyan
+    Write-Host "Detected Platform: $Plat" -ForegroundColor Gray
     Write-Host ""
     Write-Host "SYNTAX:" -ForegroundColor Yellow
     Write-Host "  .\build.ps1 [-Arch <x86|x64|both>] [-Mode <debug|release|both>] [-Target <name>]"
@@ -75,23 +82,18 @@ if ($Help) {
     Write-Host "  -Arch        Target architecture selection (Default: x64)"
     Write-Host "  -Mode        Build configuration selection (Default: release)"
     Write-Host "  -Target      Specific project to build (Default: all targets)"
-    Write-Host "  -Sign        Enable fake certificate signing"
-    Write-Host "  -DosStub     Enable DOS stub manipulation"
-    Write-Host "  -Resources   Enable compilation of Windows resources"
+    Write-Host "  -Sign        [Win] Enable fake certificate signing"
+    Write-Host "  -DosStub     [Win] Enable DOS stub manipulation"
+    Write-Host "  -Resources   [Win] Enable compilation of Windows resources"
     Write-Host "  -All         Complete Build: builds both archs/modes with all polish steps"
     Write-Host "  -Clean       Wipe build artifacts before starting"
     Write-Host "  -Rebuild     Force full re-compilation"
     Write-Host "  -Help        Display this message"
     Write-Host ""
     Write-Host "EXAMPLES:" -ForegroundColor Yellow
-    Write-Host "  .\build.ps1                      Standard Release build (x64)"
+    Write-Host "  .\build.ps1                      Standard Release build"
     Write-Host "  .\build.ps1 -All                 Comprehensive build (All Archs/Modes/Steps)"
-    Write-Host "  .\build.ps1 -Target api_exp -Sign Only build experimental API and sign it"
-    Write-Host ""
-    Write-Host "TARGETS:" -ForegroundColor Yellow
-    Write-Host "  - api_regular, api_experimental, steamclient_experimental, tool_lobby_connect,"
-    Write-Host "    tool_generate_interfaces, lib_steamnetworkingsockets, lib_game_overlay_renderer,"
-    Write-Host "    steamclient_experimental_extra"
+    Write-Host "  .\build.ps1 -Target api_exp -Sign [Win] Build experimental API and sign it"
     Write-Host ""
     exit 0
 }
@@ -101,7 +103,7 @@ if (-not (Get-Command "xmake" -ErrorAction SilentlyContinue)) {
     Write-Host "Error: xmake is not found in PATH" -ForegroundColor Red
     Write-Host "Please install xmake: https://xmake.io/#/guide/installation" -ForegroundColor Yellow
     
-    if (Get-Command "winget" -ErrorAction SilentlyContinue) {
+    if ($Plat -eq "windows" -and (Get-Command "winget" -ErrorAction SilentlyContinue)) {
         $choice = Read-Host "Install xmake via winget? (Y/N)"
         if ($choice -eq 'Y' -or $choice -eq 'y') {
             Write-Host "Installing xmake..." -ForegroundColor Cyan
@@ -123,6 +125,7 @@ if (Get-Command "ninja" -ErrorAction SilentlyContinue) {
 Write-Host "================================" -ForegroundColor Cyan
 Write-Host "  GBE Fork Build System" -ForegroundColor Cyan
 Write-Host "================================" -ForegroundColor Cyan
+Write-Host "Platform detection     : $Plat" -ForegroundColor Green
 Write-Host "Architectures to build : $Arch" -ForegroundColor Yellow
 Write-Host "Modes to build         : $Mode" -ForegroundColor Yellow
 if ($Target) {
@@ -165,34 +168,22 @@ if ($Clean) {
 }
 
 # Prepare the list of architectures to build
-$archsToBuild = @()
-if ($Arch -eq "both") {
-    $archsToBuild = @("x86", "x64")
-}
-else {
-    $archsToBuild = @($Arch)
-}
+$archsToBuild = if ($Arch -eq "both") { @("x86", "x64") } else { @($Arch) }
 
 # Prepare the list of modes to build
-$modesToBuild = @()
-if ($Mode -eq "both") {
-    $modesToBuild = @("debug", "release")
-}
-else {
-    $modesToBuild = @($Mode)
-}
+$modesToBuild = if ($Mode -eq "both") { @("debug", "release") } else { @($Mode) }
 
 $successPaths = @()
 
 foreach ($currentArch in $archsToBuild) {
     foreach ($currentMode in $modesToBuild) {
         Write-Host "============================" -ForegroundColor Cyan
-        Write-Host "  Building: $currentArch | $currentMode" -ForegroundColor Yellow
+        Write-Host "  Building: $Plat | $currentArch | $currentMode" -ForegroundColor Yellow
         Write-Host "============================" -ForegroundColor Cyan
 
         # Configure xmake
-        Write-Host "Configuring build for $currentArch $currentMode..." -ForegroundColor Yellow
-        $configArgs = @("f", "-p", "windows", "-a", "$currentArch", "-m", "$currentMode", "-y")
+        Write-Host "Configuring build for $Plat $currentArch $currentMode..." -ForegroundColor Yellow
+        $configArgs = @("f", "-p", "$Plat", "-a", "$currentArch", "-m", "$currentMode", "-y")
         if ($Rebuild) {
             $configArgs += "-c"
         }
@@ -208,15 +199,15 @@ foreach ($currentArch in $archsToBuild) {
 
         xmake @configArgs
         if ($LASTEXITCODE -ne 0) {
-            Write-Host "Configuration failed for $currentArch $currentMode" -ForegroundColor Red
+            Write-Host "Configuration failed for $Plat $currentArch $currentMode" -ForegroundColor Red
             exit $LASTEXITCODE
         }
 
-        Write-Host "Configuration for $currentArch $currentMode complete" -ForegroundColor Green
+        Write-Host "Configuration for $Plat $currentArch $currentMode complete" -ForegroundColor Green
         Write-Host ""
 
         # Build
-        Write-Host "Building $currentArch $currentMode..." -ForegroundColor Yellow
+        Write-Host "Building $Plat $currentArch $currentMode..." -ForegroundColor Yellow
         $buildArgs = @("build")  # Start with build command
 
         if ($Rebuild) {
@@ -232,11 +223,11 @@ foreach ($currentArch in $archsToBuild) {
 
         & xmake @buildArgs
         if ($LASTEXITCODE -ne 0) {
-            Write-Host "Build failed for $currentArch $currentMode" -ForegroundColor Red
+            Write-Host "Build failed for $Plat $currentArch $currentMode" -ForegroundColor Red
             exit $LASTEXITCODE
         }
         
-        $successPaths += ".build/$currentMode/windows/$currentArch"
+        $successPaths += ".build/$currentMode/$Plat/$currentArch"
     }
 }
 
