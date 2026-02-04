@@ -257,7 +257,7 @@ ActionEngine::GetDigitalActionData(ControllerHandle controller,
 ControllerAnalogActionData_t
 ActionEngine::GetAnalogActionData(ControllerHandle controller,
                                   AnalogActionHandle action) {
-  ControllerAnalogActionData_t data = {0};
+  ControllerAnalogActionData_t data = {};
   ActionMap::AnalogMapping *mapping = ResolveAnalogMapping(controller, action);
   if (!mapping)
     return data;

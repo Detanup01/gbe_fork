@@ -3,12 +3,12 @@
 #include "action_manifest.h"
 #include "backend.h"
 #include "steam_api.h"
+
 #include <map>
 #include <mutex>
 #include <set>
 #include <string>
 #include <vector>
-
 
 struct Controller_Settings;
 
