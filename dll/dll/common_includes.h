@@ -148,7 +148,7 @@ static inline void reset_LastError()
 #endif
 
 // Other libs includes
-#include "gamepad/gamepad.h"
+// #include "gamepad/gamepad.h"
 
 // Steamsdk includes
 #include "steam/steam_api.h"

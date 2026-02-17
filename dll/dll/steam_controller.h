@@ -17,9 +17,10 @@
 
 #ifndef __INCLUDED_STEAM_CONTROLLER_H__
 #define __INCLUDED_STEAM_CONTROLLER_H__
+#define GAMEPAD_COUNT 4
 
 #include "base.h"
-
+#include "gamepad_provider/gamepad_provider.hpp"
 
 struct Controller_Map {
     std::map<ControllerDigitalActionHandle_t, std::set<int>> active_digital{};
@@ -30,10 +31,13 @@ struct Controller_Action {
     ControllerHandle_t controller_handle{};
     struct Controller_Map active_map{};
     ControllerDigitalActionHandle_t active_set{};
+    std::map<ControllerActionSetHandle_t, struct Controller_Map> active_layers{};
 
     Controller_Action(ControllerHandle_t controller_handle);
 
     void activate_action_set(ControllerDigitalActionHandle_t active_set, std::map<ControllerActionSetHandle_t, struct Controller_Map> &controller_maps);
+    void activate_action_set_layer(ControllerActionSetHandle_t active_layer, std::map<ControllerActionSetHandle_t, struct Controller_Map> &controller_maps);
+    void deactivate_action_set_layer(ControllerActionSetHandle_t active_layer);
     std::set<int> button_id(ControllerDigitalActionHandle_t handle);
     std::pair<std::set<int>, enum EInputSourceMode> analog_id(ControllerAnalogActionHandle_t handle);
 };
@@ -101,6 +105,7 @@ public ISteamInput
     std::map<EInputActionOrigin, std::string> steaminput_glyphs{};
     std::map<EControllerActionOrigin, std::string> steamcontroller_glyphs{};
 
+    std::thread sdl_thread{};
     std::thread background_rumble_thread{};
     Rumble_Thread_Data *rumble_thread_data{};
 
@@ -108,7 +113,8 @@ public ISteamInput
     bool initialized{};
     bool explicitly_call_run_frame{};
 
-    void set_handles(std::map<std::string, std::map<std::string, std::pair<std::set<std::string>, std::string>>> action_sets);
+    void set_handles(std::map<std::string, std::map<std::string, std::pair<std::set<std::string>, std::string>>> action_sets,
+        std::map<std::string, std::map<std::string, std::pair<std::set<std::string>, std::string>>> action_set_layers);
 
     void RunCallbacks();
 
