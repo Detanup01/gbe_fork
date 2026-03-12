@@ -17,6 +17,7 @@
 
 #include "dll/network.h"
 #include "dll/dll.h"
+#include "dll/relay_transport.h"
 
 #define MAX_BROADCASTS 16
 static int number_broadcasts = -1;
@@ -25,6 +26,7 @@ static uint32_t lower_range_ips[MAX_BROADCASTS];
 static uint32_t upper_range_ips[MAX_BROADCASTS];
 
 #define BROADCAST_INTERVAL 5.0
+#define RELAY_REDISCOVERY_INTERVAL 1.0
 #define HEARTBEAT_TIMEOUT 20.0
 #define USER_TIMEOUT 20.0
 
@@ -650,6 +652,129 @@ struct Connection *Networking::new_connection(CSteamID search_id, uint32 appid)
     return &(connections[connections.size() - 1]);
 }
 
+struct Connection *Networking::find_or_create_connection(CSteamID search_id, uint32 appid)
+{
+    Connection *conn = find_connection(search_id, appid);
+    if (conn && conn->appid == appid) return conn;
+    return new_connection(search_id, appid);
+}
+
+void Networking::relay_mark_peer_online(Common_Message *msg, IP_PORT ip_port)
+{
+    if (!msg || !msg->source_id()) return;
+
+    CSteamID source_id((uint64)msg->source_id());
+    if (std::find(ids.begin(), ids.end(), source_id) != ids.end()) {
+        return;
+    }
+
+    uint32 msg_appid = this->appid;
+    if (msg->has_announce() && msg->announce().appid()) {
+        msg_appid = msg->announce().appid();
+    } else if (msg->has_gameserver() && msg->gameserver().appid()) {
+        msg_appid = msg->gameserver().appid();
+    }
+
+    Connection *conn = find_or_create_connection(source_id, msg_appid);
+    if (!conn) return;
+
+    bool notify_online = !conn->connected;
+    conn->appid = msg_appid;
+    conn->last_received = std::chrono::high_resolution_clock::now();
+    conn->tcp_ip_port = ip_port;
+    conn->udp_ip_port = ip_port;
+    conn->udp_pinged = true;
+    conn->connected = true;
+
+    if (notify_online) {
+        run_callback_user(source_id, true, msg_appid);
+    }
+}
+
+void Networking::relay_mark_peer_offline(const std::vector<CSteamID> &peer_ids)
+{
+    if (peer_ids.empty()) return;
+
+    auto conn = std::begin(connections);
+    while (conn != std::end(connections)) {
+        bool matched = false;
+        for (const auto &peer_id : peer_ids) {
+            if (std::find(conn->ids.begin(), conn->ids.end(), peer_id) != conn->ids.end()) {
+                matched = true;
+                break;
+            }
+        }
+
+        if (!matched) {
+            ++conn;
+            continue;
+        }
+
+        if (conn->connected) {
+            for (const auto &id : conn->ids) {
+                run_callback_user(id, false, conn->appid);
+            }
+        }
+
+        kill_tcp_socket(conn->tcp_socket_incoming);
+        kill_tcp_socket(conn->tcp_socket_outgoing);
+        conn = connections.erase(conn);
+    }
+
+    trigger_relay_rediscovery("peer offline");
+}
+
+void Networking::relay_dispatch_messages()
+{
+    if (!relay_transport) return;
+
+    std::vector<CSteamID> disconnected_ids{};
+    uint32 disconnected_ip = 0;
+    uint16 disconnected_port = 0;
+    while (relay_transport->PollDisconnect(disconnected_ids, disconnected_ip, disconnected_port)) {
+        relay_mark_peer_offline(disconnected_ids);
+    }
+
+    Common_Message msg{};
+    IP_PORT ip_port{};
+    bool reliable = false;
+    while (relay_transport->PollPacket(&msg, &ip_port, &reliable)) {
+        if (!msg.source_id()) {
+            continue;
+        }
+
+        relay_mark_peer_online(&msg, ip_port);
+
+        if (msg.has_announce()) {
+            handle_announce(&msg, ip_port);
+        } else if (msg.has_low_level()) {
+            handle_low_level_udp(&msg, ip_port);
+        } else {
+            msg.set_source_ip(ntohl(ip_port.ip));
+            msg.set_source_port(ntohs(ip_port.port));
+            do_callbacks_message(&msg);
+        }
+    }
+}
+
+void Networking::trigger_relay_rediscovery(const char *reason)
+{
+    if (!relay_transport) return;
+
+    auto now = std::chrono::high_resolution_clock::now();
+    if (!check_timedout(last_relay_rediscovery, RELAY_REDISCOVERY_INTERVAL)) {
+        return;
+    }
+
+    last_relay_rediscovery = now;
+    last_broadcast = std::chrono::high_resolution_clock::time_point{};
+    PRINT_DEBUG("relay rediscovery requested: %s", reason ? reason : "unknown");
+
+    if (relay_transport->ready()) {
+        send_announce_broadcasts();
+    }
+}
+
 bool Networking::handle_announce(Common_Message *msg, IP_PORT ip_port)
 {
     Connection *conn = find_connection((uint64)msg->source_id(), msg->announce().appid());
@@ -679,15 +804,18 @@ bool Networking::handle_announce(Common_Message *msg, IP_PORT ip_port)
         PRINT_DEBUG("%p %u %u " "%" PRIu64 "", conn, conn ? conn->appid : (uint32)0, msg->announce().peers(i).appid(), msg->announce().peers(i).id());
         if (!conn || conn->appid != msg->announce().peers(i).appid()) {
             Common_Message msg_ = create_announce(true);
-
-            size_t size = msg_.ByteSizeLong();
-            char *buffer = new char[size];
-            msg_.SerializeToArray(buffer, static_cast<int>(size));
-            IP_PORT ipp;
+            IP_PORT ipp{};
             ipp.ip = msg->announce().peers(i).ip();
             ipp.port = htons(msg->announce().peers(i).udp_port());
-            send_packet_to(udp_socket, ipp, buffer, static_cast<unsigned long>(size));
-            delete[] buffer;
+            if (relay_transport) {
+                relay_transport->SendToEndpoint(&msg_, ntohl(ipp.ip), ntohs(ipp.port), false);
+            } else {
+                size_t size = msg_.ByteSizeLong();
+                char *buffer = new char[size];
+                msg_.SerializeToArray(buffer, static_cast<int>(size));
+                send_packet_to(udp_socket, ipp, buffer, static_cast<unsigned long>(size));
+                delete[] buffer;
+            }
         }
     }
 
@@ -695,20 +823,28 @@ bool Networking::handle_announce(Common_Message *msg, IP_PORT ip_port)
 
     if (msg->announce().type() == Announce::PING) {
         Common_Message msg = create_announce(false);
-        size_t size = msg.ByteSizeLong(); 
-        char *buffer = new char[size];
-        msg.SerializeToArray(buffer, static_cast<int>(size));
-        send_packet_to(udp_socket, ip_port, buffer, static_cast<unsigned long>(size));
-        delete[] buffer;
-
-        //send ping packet if not pinged
-        if (!conn->udp_pinged) {
-            Common_Message msg = create_announce(true);
+        if (relay_transport) {
+            relay_transport->SendToEndpoint(&msg, ntohl(ip_port.ip), ntohs(ip_port.port), false);
+        } else {
             size_t size = msg.ByteSizeLong(); 
             char *buffer = new char[size];
             msg.SerializeToArray(buffer, static_cast<int>(size));
             send_packet_to(udp_socket, ip_port, buffer, static_cast<unsigned long>(size));
             delete[] buffer;
+        }
+
+        //send ping packet if not pinged
+        if (!conn->udp_pinged) {
+            Common_Message msg = create_announce(true);
+            if (relay_transport) {
+                relay_transport->SendToEndpoint(&msg, ntohl(ip_port.ip), ntohs(ip_port.port), false);
+            } else {
+                size_t size = msg.ByteSizeLong();
+                char *buffer = new char[size];
+                msg.SerializeToArray(buffer, static_cast<int>(size));
+                send_packet_to(udp_socket, ip_port, buffer, static_cast<unsigned long>(size));
+                delete[] buffer;
+            }
         }
     } else if (msg->announce().type() == Announce::PONG) {
         conn->udp_ip_port = ip_port;
@@ -739,17 +875,35 @@ bool Networking::handle_low_level_udp(Common_Message *msg, IP_PORT ip_port)
 
 #define NUM_TCP_WAITING 128
 
-Networking::Networking(CSteamID id, uint32 appid, uint16 port, std::set<IP_PORT> *custom_broadcasts, bool disable_sockets)
+Networking::Networking(CSteamID id, uint32 appid, uint16 port, std::set<IP_PORT> *custom_broadcasts, bool disable_sockets, Settings *settings)
 {
+    query_socket = udp_socket = tcp_socket = static_cast<sock_t>(~0);
     tcp_port = udp_port = port;
     own_ip = 0x7F000001;
     last_run = std::chrono::high_resolution_clock::now();
+    last_broadcast = std::chrono::high_resolution_clock::time_point{};
+    last_relay_rediscovery = std::chrono::high_resolution_clock::time_point{};
     this->appid = appid;
 
     if (disable_sockets) {
         enabled = false;
         udp_socket = -1;
         tcp_socket = -1;
+        return;
+    }
+
+    if (settings && settings->enable_relay && !settings->relay_host.empty() && settings->relay_tcp_port != 0 && settings->relay_udp_port != 0) {
+        relay_transport = new Relay_Transport(settings->relay_host, settings->relay_tcp_port, settings->relay_udp_port, port, appid, id);
+
+        if (curl_global_init(CURL_GLOBAL_ALL) == 0) {
+            PRINT_DEBUG("CURL successful");
+        } else {
+            PRINT_DEBUG("CURL: could not initialize");
+        }
+
+        enabled = relay_transport->enabled();
+        ids.push_back(id);
+        reset_last_error();
         return;
     }
 
@@ -854,6 +1008,8 @@ Networking::~Networking()
 
     kill_socket(udp_socket);
     kill_socket(tcp_socket);
+    delete relay_transport;
+    relay_transport = nullptr;
 
     curl_global_cleanup();
 }
@@ -878,7 +1034,7 @@ Common_Message Networking::create_announce(bool request)
         }
     }
 
-    announce->set_tcp_port(tcp_port);
+    announce->set_tcp_port(relay_transport && relay_transport->ready() ? relay_transport->virtual_port() : tcp_port);
     announce->set_appid(this->appid);
     for (auto &id : ids) announce->add_ids(id.ConvertToUint64());
     Common_Message msg;
@@ -890,6 +1046,17 @@ Common_Message Networking::create_announce(bool request)
 void Networking::send_announce_broadcasts()
 {
     Common_Message msg = create_announce(true);
+
+    if (relay_transport) {
+        bool sent = relay_transport->SendBroadcast(&msg);
+        last_broadcast = std::chrono::high_resolution_clock::now();
+        if (sent) {
+            PRINT_DEBUG("sent relay broadcasts");
+        } else {
+            PRINT_DEBUG("relay broadcast skipped because relay transport is not ready");
+        }
+        return;
+    }
 
     size_t size = msg.ByteSizeLong(); 
     std::vector<char> buffer(size);
@@ -912,6 +1079,36 @@ void Networking::Run()
     last_run = now;
 
     if (!enabled || ids.size() == 0) {
+        return;
+    }
+
+    if (relay_transport) {
+        relay_transport->Run();
+        bool relay_ready = relay_transport->ready();
+        if (relay_ready && !relay_ready_last_run) {
+            trigger_relay_rediscovery("relay session restored");
+        }
+        relay_ready_last_run = relay_ready;
+
+        if (relay_ready) {
+            own_ip = relay_transport->virtual_ip();
+        }
+
+        if (check_timedout(last_broadcast, BROADCAST_INTERVAL)) {
+            send_announce_broadcasts();
+        }
+
+        relay_dispatch_messages();
+
+        std::vector<Common_Message> local_send_copy = local_send;
+        local_send.clear();
+        for (auto &m : local_send_copy) {
+            m.set_source_ip(own_ip);
+            m.set_source_port(relay_transport->ready() ? relay_transport->virtual_port() : udp_port);
+            do_callbacks_message(&m);
+        }
+
+        reset_last_error();
         return;
     }
 
@@ -1122,6 +1319,7 @@ void Networking::Run()
                 kill_tcp_socket(conn->tcp_socket_incoming);
                 conn = connections.erase(conn);
                 PRINT_DEBUG("USER TIMEOUT");
+                trigger_relay_rediscovery("peer timeout");
             } else {
                 ++conn;
             }
@@ -1132,6 +1330,7 @@ void Networking::Run()
         if (!(conn.tcp_socket_incoming.received_data || conn.tcp_socket_outgoing.received_data)) {
             if (conn.connected) for (auto &steam_id : conn.ids) run_callback_user(steam_id, false, conn.appid);
             conn.connected = false;
+            trigger_relay_rediscovery("peer disconnected");
         }
     }
 
@@ -1148,6 +1347,9 @@ void Networking::addListenId(CSteamID id)
 
     PRINT_DEBUG("ADDED ID %llu", (uint64)id.ConvertToUint64());
     ids.push_back(id);
+    if (relay_transport) {
+        relay_transport->add_listen_id(id);
+    }
     send_announce_broadcasts();
     return;
 }
@@ -1155,10 +1357,17 @@ void Networking::addListenId(CSteamID id)
 void Networking::setAppID(uint32 appid)
 {
     this->appid = appid;
+    if (relay_transport) {
+        relay_transport->set_appid(appid);
+    }
 }
 
 bool Networking::sendToIPPort(Common_Message *msg, uint32 ip, uint16 port, bool reliable)
 {
+    if (relay_transport) {
+        return relay_transport->SendToEndpoint(msg, ip, port, reliable);
+    }
+
     bool is_local_ip = ((ip >> 24) == 0x7F);
     uint32_t local_ip = getIP(ids.front());
     PRINT_DEBUG("%X %u %X", ip, is_local_ip, local_ip);
@@ -1215,6 +1424,10 @@ bool Networking::sendTo(Common_Message *msg, bool reliable, Connection *conn)
 
     if (!conn) {
         conn = find_connection(dest_id, this->appid);
+    }
+
+    if (!ret && relay_transport) {
+        ret = relay_transport->Send(msg, reliable);
     }
 
     if (!ret && conn) {
@@ -1346,6 +1559,12 @@ uint32 Networking::getOwnIP()
 
 void Networking::startQuery(IP_PORT ip_port)
 {
+    if (relay_transport) {
+        PRINT_DEBUG("source query is unsupported in relay mode");
+        query_alive = false;
+        return;
+    }
+
     if (ip_port.port <= 1024)
         return;
 
@@ -1412,5 +1631,6 @@ void Networking::shutDownQuery()
 
 bool Networking::isQueryAlive()
 {
+    if (relay_transport) return false;
     return query_alive;
 }

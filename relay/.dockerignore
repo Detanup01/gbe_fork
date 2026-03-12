@@ -1,0 +1,9 @@
+.git
+.gitignore
+README.md
+compose.yaml
+Dockerfile
+*.exe
+*.test
+bin/
+dist/

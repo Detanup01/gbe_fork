@@ -58,6 +58,7 @@
 #include <filesystem>
 #include <optional>
 #include <numeric>
+#include <limits>
 
 // common includes
 #include "common_helpers/common_helpers.hpp"

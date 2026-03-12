@@ -1,0 +1,13 @@
+services:
+  goldberg-relay:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: goldberg-relay
+    restart: unless-stopped
+    ports:
+      - "23010:23010/tcp"
+      - "23011:23011/udp"
+    volumes:
+      - ./config.example.json:/app/config.json:ro
+    command: ["-config", "/app/config.json"]

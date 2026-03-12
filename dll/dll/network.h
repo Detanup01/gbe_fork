@@ -96,6 +96,9 @@ struct Connection {
     std::chrono::high_resolution_clock::time_point last_received{};
 };
 
+class Settings;
+class Relay_Transport;
+
 class Networking
 {
     bool enabled = false;
@@ -105,10 +108,13 @@ class Networking
     uint16 udp_port{}, tcp_port{};
     uint32 own_ip{};
     std::vector<struct Connection> connections{};
+    Relay_Transport *relay_transport{};
 
     std::vector<CSteamID> ids;
     uint32 appid;
     std::chrono::high_resolution_clock::time_point last_broadcast;
+    std::chrono::high_resolution_clock::time_point last_relay_rediscovery;
+    bool relay_ready_last_run = false;
     std::vector<IP_PORT> custom_broadcasts;
 
     std::vector<struct TCP_Socket> accepted;
@@ -119,6 +125,11 @@ class Networking
 
     struct Connection *find_connection(CSteamID id, uint32 appid = 0);
     struct Connection *new_connection(CSteamID id, uint32 appid);
+    struct Connection *find_or_create_connection(CSteamID id, uint32 appid);
+    void relay_mark_peer_online(Common_Message *msg, IP_PORT ip_port);
+    void relay_mark_peer_offline(const std::vector<CSteamID> &peer_ids);
+    void relay_dispatch_messages();
+    void trigger_relay_rediscovery(const char *reason);
 
     bool handle_announce(Common_Message *msg, IP_PORT ip_port);
     bool handle_low_level_udp(Common_Message *msg, IP_PORT ip_port);
@@ -134,7 +145,7 @@ class Networking
 
 
 public:
-    Networking(CSteamID id, uint32 appid, uint16 port, std::set<IP_PORT> *custom_broadcasts, bool disable_sockets);
+    Networking(CSteamID id, uint32 appid, uint16 port, std::set<IP_PORT> *custom_broadcasts, bool disable_sockets, Settings *settings = nullptr);
     ~Networking();
     
     //NOTE: for all functions ips/ports are passed/returned in host byte order

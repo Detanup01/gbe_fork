@@ -1,0 +1,12 @@
+{
+  "listen_address": "0.0.0.0",
+  "tcp_port": 23010,
+  "udp_port": 23011,
+  "session_timeout": 120000000000,
+  "cleanup_interval": 10000000000,
+  "max_packet_size": 4096,
+  "rate_limit_per_second": 5000,
+  "rate_burst": 10000,
+  "log_level": "debug",
+  "log_format": "json"
+}

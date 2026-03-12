@@ -1603,6 +1603,26 @@ static void parse_simple_features(class Settings *settings_client, class Setting
     settings_client->disable_networking = ini.GetBoolValue("main::connectivity", "disable_networking", settings_client->disable_networking);
     settings_server->disable_networking = ini.GetBoolValue("main::connectivity", "disable_networking", settings_server->disable_networking);
 
+    settings_client->enable_relay = ini.GetBoolValue("main::connectivity", "enable_relay", settings_client->enable_relay);
+    settings_server->enable_relay = ini.GetBoolValue("main::connectivity", "enable_relay", settings_server->enable_relay);
+
+    settings_client->relay_host = common_helpers::string_strip(ini.GetValue("main::connectivity", "relay_host", settings_client->relay_host.c_str()));
+    settings_server->relay_host = common_helpers::string_strip(ini.GetValue("main::connectivity", "relay_host", settings_server->relay_host.c_str()));
+
+    {
+        long val_client = ini.GetLongValue("main::connectivity", "relay_tcp_port", settings_client->relay_tcp_port);
+        settings_client->relay_tcp_port = static_cast<uint16>(std::clamp<long>(val_client, 0, std::numeric_limits<uint16>::max()));
+        long val_server = ini.GetLongValue("main::connectivity", "relay_tcp_port", settings_server->relay_tcp_port);
+        settings_server->relay_tcp_port = static_cast<uint16>(std::clamp<long>(val_server, 0, std::numeric_limits<uint16>::max()));
+    }
+
+    {
+        long val_client = ini.GetLongValue("main::connectivity", "relay_udp_port", settings_client->relay_udp_port);
+        settings_client->relay_udp_port = static_cast<uint16>(std::clamp<long>(val_client, 0, std::numeric_limits<uint16>::max()));
+        long val_server = ini.GetLongValue("main::connectivity", "relay_udp_port", settings_server->relay_udp_port);
+        settings_server->relay_udp_port = static_cast<uint16>(std::clamp<long>(val_server, 0, std::numeric_limits<uint16>::max()));
+    }
+
     settings_client->disable_sharing_stats_with_gameserver = ini.GetBoolValue("main::connectivity", "disable_sharing_stats_with_gameserver", settings_client->disable_sharing_stats_with_gameserver);
     settings_server->disable_sharing_stats_with_gameserver = ini.GetBoolValue("main::connectivity", "disable_sharing_stats_with_gameserver", settings_server->disable_sharing_stats_with_gameserver);
     

@@ -153,6 +153,28 @@ An example is provided in `steam_settings.EXAMPLE\custom_broadcasts.EXAMPLE.txt`
 
 ---
 
+## Public Relay Mode:
+To route Goldberg networking through a public relay instead of LAN discovery/direct peer sockets, configure these values in `configs.main.ini`:
+
+- `disable_lan_only=1`
+- `enable_relay=1`
+- `relay_host=<public DNS or IPv4>`
+- `relay_tcp_port=<relay TCP port>`
+- `relay_udp_port=<relay UDP port>`
+
+When relay mode is enabled, Goldberg keeps the same internal Steam interfaces but transports discovery and peer traffic through the configured relay server.
+
+Notes:
+
+- relay mode replaces the old LAN transport path, it does not combine with it
+- `custom_broadcasts.txt` is still for the LAN/custom-broadcast path only
+- `matchmaking_server_details_via_source_query=1` is not supported in relay mode, Goldberg falls back to the non-query behavior
+- the bundled Go relay config/example lives in the `relay` directory
+
+For future maintenance when rebasing against upstream Goldberg, see `RELAY_REBASE.md` in the repository root.
+
+---
+
 ## Achievements, Items or Inventory:
 Create a file named `items.json` and/or `achievements.json` inside the `steam_settings` folder which will contain every item/achievement you want to have in your game.
 

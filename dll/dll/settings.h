@@ -250,6 +250,10 @@ public:
 
     //networking
     bool disable_networking = false;
+    bool enable_relay = false;
+    std::string relay_host{};
+    uint16 relay_tcp_port = 23010;
+    uint16 relay_udp_port = 23011;
 
     //gameserver source query
     bool disable_source_query = false;
