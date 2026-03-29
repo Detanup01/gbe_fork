@@ -22,7 +22,6 @@
 #include <curl/curl.h>
 
 #define DEFAULT_PORT 47584
-#define NUM_QUERY_PORTS 10
 
 #if defined(STEAM_WIN32)
 typedef unsigned int sock_t;
