@@ -428,6 +428,19 @@ ControllerActionSetHandle_t Steam_Controller::GetActionSetHandle( const char *ps
 void Steam_Controller::ActivateActionSet( ControllerHandle_t controllerHandle, ControllerActionSetHandle_t actionSetHandle )
 {
     PRINT_DEBUG("%llu %llu", controllerHandle, actionSetHandle);
+    {
+        static FILE* logf = nullptr;
+        if (!logf) logf = fopen("gbe_action_log.txt", "a");
+        if (logf) {
+            // find action set name
+            std::string set_name = "UNKNOWN";
+            for (auto &ah : action_handles) {
+                if (ah.second == actionSetHandle) { set_name = ah.first; break; }
+            }
+            fprintf(logf, "ActivateActionSet: controller=%llu set=%llu name=%s\n", controllerHandle, actionSetHandle, set_name.c_str());
+            fflush(logf);
+        }
+    }
     if (controllerHandle == STEAM_CONTROLLER_HANDLE_ALL_CONTROLLERS) {
         for (auto & c: controllers) {
             c.second.activate_action_set(actionSetHandle, controller_maps);
@@ -598,13 +611,37 @@ int Steam_Controller::GetDigitalActionOrigins( InputHandle_t inputHandle, InputA
 {
     PRINT_DEBUG_ENTRY();
     auto controller = controllers.find(inputHandle);
-    if (controller == controllers.end()) return 0;
+    if (controller == controllers.end()) {
+        static FILE* logf = nullptr;
+        if (!logf) logf = fopen("gbe_action_log.txt", "a");
+        if (logf) { fprintf(logf, "GetDigitalActionOrigins: controller %llu NOT FOUND\n", inputHandle); fflush(logf); }
+        return 0;
+    }
 
     auto map = controller_maps.find(actionSetHandle);
-    if (map == controller_maps.end()) return 0;
+    if (map == controller_maps.end()) {
+        static FILE* logf = nullptr;
+        if (!logf) logf = fopen("gbe_action_log.txt", "a");
+        if (logf) { fprintf(logf, "GetDigitalActionOrigins: actionSet %llu NOT FOUND in controller_maps\n", actionSetHandle); fflush(logf); }
+        return 0;
+    }
 
     auto a = map->second.active_digital.find(digitalActionHandle);
-    if (a == map->second.active_digital.end()) return 0;
+    if (a == map->second.active_digital.end()) {
+        static FILE* logf = nullptr;
+        if (!logf) logf = fopen("gbe_action_log.txt", "a");
+        if (logf) {
+            // find action name
+            std::string act_name = "?";
+            for (auto &dah : digital_action_handles) { if (dah.second == digitalActionHandle) { act_name = dah.first; break; } }
+            std::string set_name = "?";
+            for (auto &ah : action_handles) { if (ah.second == actionSetHandle) { set_name = ah.first; break; } }
+            fprintf(logf, "GetDigitalActionOrigins: handle %llu (%s) NOT in active_digital of set %llu (%s) [set has %zu digital entries]\n",
+                    digitalActionHandle, act_name.c_str(), actionSetHandle, set_name.c_str(), map->second.active_digital.size());
+            fflush(logf);
+        }
+        return 0;
+    }
 
     int count = 0;
     for (auto button: a->second) {
@@ -1043,6 +1080,11 @@ const char* Steam_Controller::GetGlyphForActionOrigin( EControllerActionOrigin e
 const char* Steam_Controller::GetGlyphForActionOrigin( EInputActionOrigin eOrigin )
 {
     PRINT_DEBUG("steaminput %i", eOrigin);
+    {
+        static FILE* logf = nullptr;
+        if (!logf) logf = fopen("gbe_action_log.txt", "a");
+        if (logf) { fprintf(logf, "GetGlyphForActionOrigin: origin=%d\n", (int)eOrigin); fflush(logf); }
+    }
     if (steaminput_glyphs.empty()) {
         std::string dir = settings->glyphs_directory;
         steaminput_glyphs[k_EInputActionOrigin_XBox360_A] = dir + "button_a.png";
@@ -1134,6 +1176,11 @@ const char* Steam_Controller::GetStringForXboxOrigin( EXboxOrigin eOrigin )
 const char* Steam_Controller::GetGlyphForXboxOrigin( EXboxOrigin eOrigin )
 {
     PRINT_DEBUG_TODO();
+    {
+        static FILE* logf = nullptr;
+        if (!logf) logf = fopen("gbe_action_log.txt", "a");
+        if (logf) { fprintf(logf, "GetGlyphForXboxOrigin: origin=%d\n", (int)eOrigin); fflush(logf); }
+    }
     return "";
 }
 
@@ -1220,6 +1267,11 @@ EControllerActionOrigin Steam_Controller::GetActionOriginFromXboxOrigin_( Contro
 EInputActionOrigin Steam_Controller::GetActionOriginFromXboxOrigin( InputHandle_t inputHandle, EXboxOrigin eOrigin )
 {
     PRINT_DEBUG("eOrigin %d", eOrigin);
+    {
+        static FILE* logf = nullptr;
+        if (!logf) logf = fopen("gbe_action_log.txt", "a");
+        if (logf) { fprintf(logf, "GetActionOriginFromXboxOrigin: xbox=%d -> ps4=%d\n", (int)eOrigin, (int)xbox_origin_to_ps4(eOrigin)); fflush(logf); }
+    }
     return xbox_origin_to_ps4(eOrigin);
 }
 
