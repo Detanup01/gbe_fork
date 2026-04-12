@@ -483,11 +483,24 @@ ControllerDigitalActionHandle_t Steam_Controller::GetDigitalActionHandle( const 
     std::string upper_action_name(pszActionName);
     std::transform(upper_action_name.begin(), upper_action_name.end(), upper_action_name.begin(),[](unsigned char c){ return std::toupper(c); });
 
+    // DS2 debug: log all action handle lookups to file
+    {
+        static FILE* logf = nullptr;
+        if (!logf) logf = fopen("gbe_action_log.txt", "a");
+        if (logf) { fprintf(logf, "GetDigitalActionHandle: \"%s\" (upper: \"%s\")\n", pszActionName, upper_action_name.c_str()); fflush(logf); }
+    }
+
     auto handle = digital_action_handles.find(upper_action_name);
     if (handle == digital_action_handles.end()) {
         //apparently GetDigitalActionHandle also works with analog handles
         handle = analog_action_handles.find(upper_action_name);
-        if (handle == analog_action_handles.end()) return 0;
+        if (handle == analog_action_handles.end()) {
+            // Log misses
+            static FILE* logf2 = nullptr;
+            if (!logf2) logf2 = fopen("gbe_action_log.txt", "a");
+            if (logf2) { fprintf(logf2, "  -> NOT FOUND: \"%s\"\n", upper_action_name.c_str()); fflush(logf2); }
+            return 0;
+        }
     }
 
     PRINT_DEBUG("%s ret %llu", pszActionName, handle->second);
@@ -702,8 +715,20 @@ ControllerAnalogActionHandle_t Steam_Controller::GetAnalogActionHandle( const ch
     std::string upper_action_name(pszActionName);
     std::transform(upper_action_name.begin(), upper_action_name.end(), upper_action_name.begin(),[](unsigned char c){ return std::toupper(c); });
 
+    // DS2 debug: log analog action handle lookups
+    {
+        static FILE* logf = nullptr;
+        if (!logf) logf = fopen("gbe_action_log.txt", "a");
+        if (logf) { fprintf(logf, "GetAnalogActionHandle: \"%s\" (upper: \"%s\")\n", pszActionName, upper_action_name.c_str()); fflush(logf); }
+    }
+
     auto handle = analog_action_handles.find(upper_action_name);
-    if (handle == analog_action_handles.end()) return 0;
+    if (handle == analog_action_handles.end()) {
+        static FILE* logf2 = nullptr;
+        if (!logf2) logf2 = fopen("gbe_action_log.txt", "a");
+        if (logf2) { fprintf(logf2, "  -> ANALOG NOT FOUND: \"%s\"\n", upper_action_name.c_str()); fflush(logf2); }
+        return 0;
+    }
 
     return handle->second;
 }
