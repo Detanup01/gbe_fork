@@ -415,8 +415,18 @@ ControllerActionSetHandle_t Steam_Controller::GetActionSetHandle( const char *ps
     std::transform(upper_action_name.begin(), upper_action_name.end(), upper_action_name.begin(),[](unsigned char c){ return std::toupper(c); });
 
     auto set_handle = action_handles.find(upper_action_name);
-    if (set_handle == action_handles.end()) return 0;
+    if (set_handle == action_handles.end()) {
+        static FILE* logf = nullptr;
+        if (!logf) logf = fopen("gbe_action_log.txt", "a");
+        if (logf) { fprintf(logf, "GetActionSetHandle: \"%s\" NOT FOUND\n", pszActionSetName); fflush(logf); }
+        return 0;
+    }
 
+    {
+        static FILE* logf = nullptr;
+        if (!logf) logf = fopen("gbe_action_log.txt", "a");
+        if (logf) { fprintf(logf, "GetActionSetHandle: \"%s\" -> %llu\n", pszActionSetName, set_handle->second); fflush(logf); }
+    }
     PRINT_DEBUG("%s ret %llu", pszActionSetName, set_handle->second);
     return set_handle->second;
 }
