@@ -223,7 +223,7 @@ Steam_Controller::Steam_Controller(class Settings *settings, class SteamCallResu
     set_handles(settings->controller_settings.action_sets);
     disabled = !settings->controller_settings.enabled && action_handles.empty();
     initialized = false;
-    
+
     this->run_every_runcb->add(&Steam_Controller::steam_run_every_runcb, this);
 }
 
@@ -819,7 +819,7 @@ int Steam_Controller::GetAnalogActionOrigins( InputHandle_t inputHandle, InputAc
     return count;
 }
 
-    
+
 void Steam_Controller::StopAnalogActionMomentum( ControllerHandle_t controllerHandle, ControllerAnalogActionHandle_t eAction )
 {
     PRINT_DEBUG("%llu %llu", controllerHandle, eAction);
@@ -865,7 +865,7 @@ void Steam_Controller::TriggerSimpleHapticEvent( InputHandle_t inputHandle, ECon
     PRINT_DEBUG_TODO();
 }
 
-// Tigger a vibration event on supported controllers.  
+// Tigger a vibration event on supported controllers.
 void Steam_Controller::TriggerVibration( ControllerHandle_t controllerHandle, unsigned short usLeftSpeed, unsigned short usRightSpeed )
 {
     PRINT_DEBUG("%hu %hu", usLeftSpeed, usRightSpeed);
@@ -898,7 +898,7 @@ void Steam_Controller::TriggerVibrationExtended( InputHandle_t inputHandle, unsi
     //TODO trigger impulse rumbles
 }
 
-// Set the controller LED color on supported controllers.  
+// Set the controller LED color on supported controllers.
 void Steam_Controller::SetLEDColor( ControllerHandle_t controllerHandle, uint8 nColorR, uint8 nColorG, uint8 nColorB, unsigned int nFlags )
 {
     PRINT_DEBUG_TODO();
@@ -972,7 +972,7 @@ const char* Steam_Controller::GetStringForAnalogActionName( InputAnalogActionHan
     return "Button String";
 }
 
-// Get a local path to art for on-screen glyph for a particular origin 
+// Get a local path to art for on-screen glyph for a particular origin
 const char* Steam_Controller::GetGlyphForActionOrigin( EControllerActionOrigin eOrigin )
 {
     PRINT_DEBUG("%i", eOrigin);
@@ -1057,7 +1057,7 @@ const char* Steam_Controller::GetGlyphForActionOrigin( EInputActionOrigin eOrigi
     return glyph->second.c_str();
 }
 
-// Get a local path to a PNG file for the provided origin's glyph. 
+// Get a local path to a PNG file for the provided origin's glyph.
 const char* Steam_Controller::GetGlyphPNGForActionOrigin( EInputActionOrigin eOrigin, ESteamInputGlyphSize eSize, uint32 unFlags )
 {
     PRINT_DEBUG_TODO();
@@ -1065,7 +1065,7 @@ const char* Steam_Controller::GetGlyphPNGForActionOrigin( EInputActionOrigin eOr
     return GetGlyphForActionOrigin(eOrigin);
 }
 
-// Get a local path to a SVG file for the provided origin's glyph. 
+// Get a local path to a SVG file for the provided origin's glyph.
 const char* Steam_Controller::GetGlyphSVGForActionOrigin( EInputActionOrigin eOrigin, uint32 unFlags )
 {
     PRINT_DEBUG_TODO();
@@ -1086,7 +1086,7 @@ ESteamInputType Steam_Controller::GetInputTypeForHandle( ControllerHandle_t cont
     PRINT_DEBUG("%llu", controllerHandle);
     auto controller = controllers.find(controllerHandle);
     if (controller == controllers.end()) return k_ESteamInputType_Unknown;
-    
+
     // Playstation
     if (settings->controller_settings.controller_type_override == "PS3") return k_ESteamInputType_PS3Controller;
     if (settings->controller_settings.controller_type_override == "PS4") return k_ESteamInputType_PS4Controller;
@@ -1112,32 +1112,110 @@ const char* Steam_Controller::GetGlyphForXboxOrigin( EXboxOrigin eOrigin )
     return "";
 }
 
+// Xbox origin → PS4 EInputActionOrigin translation table
+static EInputActionOrigin xbox_origin_to_ps4(EXboxOrigin eOrigin)
+{
+    switch (eOrigin) {
+        case k_EXboxOrigin_A: return k_EInputActionOrigin_PS4_X;
+        case k_EXboxOrigin_B: return k_EInputActionOrigin_PS4_Circle;
+        case k_EXboxOrigin_X: return k_EInputActionOrigin_PS4_Square;
+        case k_EXboxOrigin_Y: return k_EInputActionOrigin_PS4_Triangle;
+        case k_EXboxOrigin_LeftBumper: return k_EInputActionOrigin_PS4_LeftBumper;
+        case k_EXboxOrigin_RightBumper: return k_EInputActionOrigin_PS4_RightBumper;
+        case k_EXboxOrigin_Menu: return k_EInputActionOrigin_PS4_Options;
+        case k_EXboxOrigin_View: return k_EInputActionOrigin_PS4_Share;
+        case k_EXboxOrigin_LeftTrigger_Pull: return k_EInputActionOrigin_PS4_LeftTrigger_Pull;
+        case k_EXboxOrigin_LeftTrigger_Click: return k_EInputActionOrigin_PS4_LeftTrigger_Click;
+        case k_EXboxOrigin_RightTrigger_Pull: return k_EInputActionOrigin_PS4_RightTrigger_Pull;
+        case k_EXboxOrigin_RightTrigger_Click: return k_EInputActionOrigin_PS4_RightTrigger_Click;
+        case k_EXboxOrigin_LeftStick_Move: return k_EInputActionOrigin_PS4_LeftStick_Move;
+        case k_EXboxOrigin_LeftStick_Click: return k_EInputActionOrigin_PS4_LeftStick_Click;
+        case k_EXboxOrigin_LeftStick_DPadNorth: return k_EInputActionOrigin_PS4_LeftStick_DPadNorth;
+        case k_EXboxOrigin_LeftStick_DPadSouth: return k_EInputActionOrigin_PS4_LeftStick_DPadSouth;
+        case k_EXboxOrigin_LeftStick_DPadWest: return k_EInputActionOrigin_PS4_LeftStick_DPadWest;
+        case k_EXboxOrigin_LeftStick_DPadEast: return k_EInputActionOrigin_PS4_LeftStick_DPadEast;
+        case k_EXboxOrigin_RightStick_Move: return k_EInputActionOrigin_PS4_RightStick_Move;
+        case k_EXboxOrigin_RightStick_Click: return k_EInputActionOrigin_PS4_RightStick_Click;
+        case k_EXboxOrigin_RightStick_DPadNorth: return k_EInputActionOrigin_PS4_RightStick_DPadNorth;
+        case k_EXboxOrigin_RightStick_DPadSouth: return k_EInputActionOrigin_PS4_RightStick_DPadSouth;
+        case k_EXboxOrigin_RightStick_DPadWest: return k_EInputActionOrigin_PS4_RightStick_DPadWest;
+        case k_EXboxOrigin_RightStick_DPadEast: return k_EInputActionOrigin_PS4_RightStick_DPadEast;
+        case k_EXboxOrigin_DPad_North: return k_EInputActionOrigin_PS4_DPad_North;
+        case k_EXboxOrigin_DPad_South: return k_EInputActionOrigin_PS4_DPad_South;
+        case k_EXboxOrigin_DPad_West: return k_EInputActionOrigin_PS4_DPad_West;
+        case k_EXboxOrigin_DPad_East: return k_EInputActionOrigin_PS4_DPad_East;
+        default: return k_EInputActionOrigin_None;
+    }
+}
+
+// Xbox360 EInputActionOrigin → PS4 EInputActionOrigin translation
+static EInputActionOrigin xbox360_input_origin_to_ps4(EInputActionOrigin eSourceOrigin)
+{
+    switch (eSourceOrigin) {
+        case k_EInputActionOrigin_XBox360_A: return k_EInputActionOrigin_PS4_X;
+        case k_EInputActionOrigin_XBox360_B: return k_EInputActionOrigin_PS4_Circle;
+        case k_EInputActionOrigin_XBox360_X: return k_EInputActionOrigin_PS4_Square;
+        case k_EInputActionOrigin_XBox360_Y: return k_EInputActionOrigin_PS4_Triangle;
+        case k_EInputActionOrigin_XBox360_LeftBumper: return k_EInputActionOrigin_PS4_LeftBumper;
+        case k_EInputActionOrigin_XBox360_RightBumper: return k_EInputActionOrigin_PS4_RightBumper;
+        case k_EInputActionOrigin_XBox360_Start: return k_EInputActionOrigin_PS4_Options;
+        case k_EInputActionOrigin_XBox360_Back: return k_EInputActionOrigin_PS4_Share;
+        case k_EInputActionOrigin_XBox360_LeftTrigger_Pull: return k_EInputActionOrigin_PS4_LeftTrigger_Pull;
+        case k_EInputActionOrigin_XBox360_LeftTrigger_Click: return k_EInputActionOrigin_PS4_LeftTrigger_Click;
+        case k_EInputActionOrigin_XBox360_RightTrigger_Pull: return k_EInputActionOrigin_PS4_RightTrigger_Pull;
+        case k_EInputActionOrigin_XBox360_RightTrigger_Click: return k_EInputActionOrigin_PS4_RightTrigger_Click;
+        case k_EInputActionOrigin_XBox360_LeftStick_Move: return k_EInputActionOrigin_PS4_LeftStick_Move;
+        case k_EInputActionOrigin_XBox360_LeftStick_Click: return k_EInputActionOrigin_PS4_LeftStick_Click;
+        case k_EInputActionOrigin_XBox360_LeftStick_DPadNorth: return k_EInputActionOrigin_PS4_LeftStick_DPadNorth;
+        case k_EInputActionOrigin_XBox360_LeftStick_DPadSouth: return k_EInputActionOrigin_PS4_LeftStick_DPadSouth;
+        case k_EInputActionOrigin_XBox360_LeftStick_DPadWest: return k_EInputActionOrigin_PS4_LeftStick_DPadWest;
+        case k_EInputActionOrigin_XBox360_LeftStick_DPadEast: return k_EInputActionOrigin_PS4_LeftStick_DPadEast;
+        case k_EInputActionOrigin_XBox360_RightStick_Move: return k_EInputActionOrigin_PS4_RightStick_Move;
+        case k_EInputActionOrigin_XBox360_RightStick_Click: return k_EInputActionOrigin_PS4_RightStick_Click;
+        case k_EInputActionOrigin_XBox360_RightStick_DPadNorth: return k_EInputActionOrigin_PS4_RightStick_DPadNorth;
+        case k_EInputActionOrigin_XBox360_RightStick_DPadSouth: return k_EInputActionOrigin_PS4_RightStick_DPadSouth;
+        case k_EInputActionOrigin_XBox360_RightStick_DPadWest: return k_EInputActionOrigin_PS4_RightStick_DPadWest;
+        case k_EInputActionOrigin_XBox360_RightStick_DPadEast: return k_EInputActionOrigin_PS4_RightStick_DPadEast;
+        case k_EInputActionOrigin_XBox360_DPad_North: return k_EInputActionOrigin_PS4_DPad_North;
+        case k_EInputActionOrigin_XBox360_DPad_South: return k_EInputActionOrigin_PS4_DPad_South;
+        case k_EInputActionOrigin_XBox360_DPad_West: return k_EInputActionOrigin_PS4_DPad_West;
+        case k_EInputActionOrigin_XBox360_DPad_East: return k_EInputActionOrigin_PS4_DPad_East;
+        default: return eSourceOrigin; // pass through unknown origins
+    }
+}
+
 EControllerActionOrigin Steam_Controller::GetActionOriginFromXboxOrigin_( ControllerHandle_t controllerHandle, EXboxOrigin eOrigin )
 {
-    PRINT_DEBUG_TODO();
-    return k_EControllerActionOrigin_None;
+    PRINT_DEBUG("eOrigin %d", eOrigin);
+    // Cast through the EInputActionOrigin translation
+    EInputActionOrigin ps4 = xbox_origin_to_ps4(eOrigin);
+    return (EControllerActionOrigin)ps4;
 }
 
 EInputActionOrigin Steam_Controller::GetActionOriginFromXboxOrigin( InputHandle_t inputHandle, EXboxOrigin eOrigin )
 {
-    PRINT_DEBUG_TODO();
-    return k_EInputActionOrigin_None;
+    PRINT_DEBUG("eOrigin %d", eOrigin);
+    return xbox_origin_to_ps4(eOrigin);
 }
 
 EControllerActionOrigin Steam_Controller::TranslateActionOrigin( ESteamInputType eDestinationInputType, EControllerActionOrigin eSourceOrigin )
 {
-    PRINT_DEBUG_TODO();
-    return k_EControllerActionOrigin_None;
+    PRINT_DEBUG("dest %d source %d", eDestinationInputType, eSourceOrigin);
+    if (eDestinationInputType == k_ESteamInputType_XBox360Controller)
+        return eSourceOrigin;
+    // Translate Xbox360 origins to PS4
+    return (EControllerActionOrigin)xbox360_input_origin_to_ps4((EInputActionOrigin)eSourceOrigin);
 }
 
 EInputActionOrigin Steam_Controller::TranslateActionOrigin( ESteamInputType eDestinationInputType, EInputActionOrigin eSourceOrigin )
 {
     PRINT_DEBUG("steaminput destinationinputtype %d sourceorigin %d", eDestinationInputType, eSourceOrigin );
- 
+
     if (eDestinationInputType == k_ESteamInputType_XBox360Controller)
         return eSourceOrigin;
- 
-    return k_EInputActionOrigin_None;
+
+    // Translate Xbox360 origins to PS4 for any non-Xbox destination
+    return xbox360_input_origin_to_ps4(eSourceOrigin);
 }
 
 bool Steam_Controller::GetControllerBindingRevision( ControllerHandle_t controllerHandle, int *pMajor, int *pMinor )
@@ -1158,7 +1236,7 @@ uint32 Steam_Controller::GetRemotePlaySessionID( InputHandle_t inputHandle )
     return 0;
 }
 
-// Get a bitmask of the Steam Input Configuration types opted in for the current session. Returns ESteamInputConfigurationEnableType values.?	
+// Get a bitmask of the Steam Input Configuration types opted in for the current session. Returns ESteamInputConfigurationEnableType values.?
 // Note: user can override the settings from the Steamworks Partner site so the returned values may not exactly match your default configuration
 uint16 Steam_Controller::GetSessionInputConfigurationSettings()
 {
