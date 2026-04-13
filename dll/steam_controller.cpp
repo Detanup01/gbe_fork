@@ -65,6 +65,9 @@ std::pair<std::set<int>, enum EInputSourceMode> Controller_Action::analog_id(Con
 
 
 
+// Forward declaration for PS4 origin translation
+static EInputActionOrigin xbox360_input_origin_to_ps4(EInputActionOrigin eSourceOrigin);
+
 const std::map<std::string, int> Steam_Controller::button_strings = {
     {"DUP", BUTTON_DPAD_UP},
     {"DDOWN", BUTTON_DPAD_DOWN},
