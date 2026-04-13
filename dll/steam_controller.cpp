@@ -743,6 +743,14 @@ int Steam_Controller::GetDigitalActionOrigins( InputHandle_t inputHandle, InputA
         }
     }
 
+    // Translate Xbox360 origins to PS4 when controller type is set to PS4
+    if (settings->controller_settings.controller_type_override == "PS4" ||
+        settings->controller_settings.controller_type_override == "PS5") {
+        for (int i = 0; i < count; ++i) {
+            originsOut[i] = xbox360_input_origin_to_ps4(originsOut[i]);
+        }
+    }
+
     return count;
 }
 
@@ -885,6 +893,14 @@ int Steam_Controller::GetAnalogActionOrigins( InputHandle_t inputHandle, InputAc
         ++count;
         if (count >= STEAM_INPUT_MAX_ORIGINS) {
             break;
+        }
+    }
+
+    // Translate Xbox360 origins to PS4 when controller type is set to PS4
+    if (settings->controller_settings.controller_type_override == "PS4" ||
+        settings->controller_settings.controller_type_override == "PS5") {
+        for (int i = 0; i < count; ++i) {
+            originsOut[i] = xbox360_input_origin_to_ps4(originsOut[i]);
         }
     }
 
