@@ -1,0 +1,71 @@
+name: "Quick build (api_experimental x64 release)"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: "write"
+
+env:
+  PREMAKE_ACTION: "vs2022"
+  DEPS_CACHE_KEY: "emu-deps-win"
+  DEPS_CACHE_DIR: "build/deps/win"
+  THIRD_PARTY_BASE_DIR: "third-party"
+  MAX_PARALLEL_JOBS: 4
+
+jobs:
+  build:
+    name: "api_experimental x64 release"
+    runs-on: "windows-2022"
+
+    steps:
+      - name: "Ensure LF line ending"
+        shell: "cmd"
+        run: |
+          git config --local core.autocrlf false
+          git config --system core.autocrlf false
+          git config --global core.autocrlf false
+
+      - name: "Add MSBuild to PATH"
+        uses: microsoft/setup-msbuild@v3
+
+      - name: "Checkout branch"
+        uses: actions/checkout@v6
+
+      - name: "Restore deps"
+        uses: actions/cache@v5
+        with:
+          key: "${{ env.DEPS_CACHE_KEY }}-${{ env.PREMAKE_ACTION }}"
+          path: "${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}"
+
+      - name: "Clone third-party build helpers (common/win)"
+        uses: actions/checkout@v6
+        with:
+          ref: "third-party/common/win"
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/common/win"
+
+      - name: "Clone third-party deps (build/win)"
+        uses: actions/checkout@v6
+        with:
+          ref: "third-party/build/win"
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/build/win"
+
+      - name: "Generate project files"
+        shell: "cmd"
+        run: |
+          "${{env.THIRD_PARTY_BASE_DIR}}\common\win\premake\premake5.exe" --file=premake5.lua --genproto --emubuild=${{ github.sha }} --dosstub --winrsrc --winsign --os=windows vs2022
+
+      - name: "Build target"
+        shell: "cmd"
+        working-directory: "${{ github.workspace }}/build/project/vs2022/win"
+        run: |
+          msbuild /nologo /target:api_experimental /m:1 -p:CL_MPCount=${{ env.MAX_PARALLEL_JOBS }} /v:n /p:Configuration=release,Platform=x64 gbe.sln
+
+      - name: "Upload artifact"
+        uses: actions/upload-artifact@v7
+        with:
+          name: "steam_api64-experimental-${{ github.sha }}"
+          path: "build/win"
+          if-no-files-found: "error"
+          compression-level: 9
+          retention-days: 1
