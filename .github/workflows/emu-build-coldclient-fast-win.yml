@@ -1,0 +1,116 @@
+name: "Build coldclient (fast, Windows)"
+
+# Slimmed-down counterpart to `emu-build-all-win.yml`. Builds only the projects
+# needed for the "steamclient_experimental" (a.k.a. cold-client) flow, in x64
+# release only. Cuts the full 38-job matrix down to 4 jobs, so an iteration
+# finishes in roughly the time of a single project in the full workflow.
+#
+# Targets built:
+#   - steamclient_experimental         the drop-in replacement for steamclient64.dll
+#   - steamclient_experimental_loader  the loader exe (ColdClientLoader.exe equivalent)
+#   - steamclient_experimental_extra   the steam_api shim some games expect next to it
+#   - lib_game_overlay_renderer        gameoverlayrenderer64.dll (for in-game overlay)
+#
+# If you only need steamclient64.dll (the DLL the patch in this repo actually
+# affects), grab only the `emu-win-steamclient_experimental-release-x64-<sha>`
+# artifact; it completes in ~2–4 min independently of the other three jobs.
+
+on:
+  workflow_dispatch:
+    # allows manual trigger
+
+permissions:
+  contents: "write"
+
+env:
+  PREMAKE_ACTION: "vs2022"
+  DEPS_CACHE_KEY: "emu-deps-win"
+  DEPS_CACHE_DIR: "build/deps/win"
+
+  THIRD_PARTY_BASE_DIR: "third-party"
+
+  # https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories
+  MAX_PARALLEL_JOBS: 4
+
+jobs:
+  # Reuse the exact same deps job as the full workflow so the cache key matches.
+  # First run after forking will build deps (~10 min) and populate the cache;
+  # every subsequent run is a cache hit and returns immediately.
+  deps:
+    name: "Restore or build deps"
+    if: ${{ !cancelled() }}
+    uses: "./.github/workflows/emu-deps-win.yml"
+
+  coldclient-fast-build:
+    name: "build"
+    needs: ["deps"]
+    runs-on: "windows-2022"
+    if: ${{ !cancelled() }}
+    continue-on-error: true
+
+    strategy:
+      fail-fast: false
+      matrix:
+        prj:
+          - "steamclient_experimental"
+          - "steamclient_experimental_loader"
+          - "steamclient_experimental_extra"
+          - "lib_game_overlay_renderer"
+        arch: ["x64"]
+        cfg: ["release"]
+
+    steps:
+      # on Windows Git will auto change line ending to CRLF, not preferable
+      - name: "Ensure LF line ending"
+        shell: "cmd"
+        working-directory: "${{ github.workspace }}"
+        run: |
+          git config --local core.autocrlf false
+          git config --system core.autocrlf false
+          git config --global core.autocrlf false
+
+      - name: "Add MSBuild to PATH"
+        uses: microsoft/setup-msbuild@v3
+
+      - name: "Checkout branch"
+        uses: actions/checkout@v6
+
+      - name: "Restore deps"
+        id: "emu-deps-cache-step"
+        uses: actions/cache@v5
+        with:
+          key: "${{ env.DEPS_CACHE_KEY }}-${{ env.PREMAKE_ACTION }}"
+          path: "${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}"
+
+      - name: "Clone third-party build helpers (common/win)"
+        uses: actions/checkout@v6
+        with:
+          ref: "third-party/common/win"
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/common/win"
+
+      - name: "Clone third-party deps (build/win)"
+        uses: actions/checkout@v6
+        with:
+          ref: "third-party/build/win"
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/build/win"
+
+      - name: "Generate project files"
+        shell: "cmd"
+        working-directory: "${{ github.workspace }}"
+        run: |
+          "${{env.THIRD_PARTY_BASE_DIR}}\common\win\premake\premake5.exe" --file=premake5.lua --genproto --emubuild=${{ github.sha }} --dosstub --winrsrc --winsign --os=windows vs2022
+
+      - name: "Build target"
+        shell: "cmd"
+        working-directory: "${{ github.workspace }}/build/project/vs2022/win"
+        run: |
+          msbuild /nologo /target:${{ matrix.prj }} /m:1 -p:CL_MPCount=${{ env.MAX_PARALLEL_JOBS }} /v:n /p:Configuration=${{ matrix.cfg }},Platform=${{ matrix.arch }} gbe.sln
+
+      - name: "Upload target package"
+        uses: actions/upload-artifact@v7
+        with:
+          name: "emu-win-${{ matrix.prj }}-${{ matrix.cfg }}-${{ matrix.arch }}-${{ github.sha }}"
+          path: "build/win"
+          if-no-files-found: "error"
+          compression-level: 9
+          retention-days: 1
