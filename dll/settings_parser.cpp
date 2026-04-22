@@ -1673,6 +1673,9 @@ static void parse_simple_features(class Settings *settings_client, class Setting
     settings_client->free_weekend = ini.GetBoolValue("main::misc", "free_weekend", settings_client->free_weekend);
     settings_server->free_weekend = ini.GetBoolValue("main::misc", "free_weekend", settings_server->free_weekend);
 
+    settings_client->exit_on_missing_iface = ini.GetBoolValue("main::misc", "exit_on_missing_iface", settings_client->exit_on_missing_iface);
+    settings_server->exit_on_missing_iface = ini.GetBoolValue("main::misc", "exit_on_missing_iface", settings_server->exit_on_missing_iface);
+
     settings_client->use_32bit_inventory_item_ids = ini.GetBoolValue("main::misc", "use_32bit_inventory_item_ids", settings_client->use_32bit_inventory_item_ids);
     settings_server->use_32bit_inventory_item_ids = ini.GetBoolValue("main::misc", "use_32bit_inventory_item_ids", settings_server->use_32bit_inventory_item_ids);
 }

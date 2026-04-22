@@ -377,6 +377,13 @@ public:
     // free weekend
     bool free_weekend = false;
 
+    // when the emu cannot resolve a requested Steam interface version (either because
+    // it's truly unknown, or because a caller's ISteamClient vtable layout drifted and
+    // the version-string fallback dispatcher also failed), terminate the process via
+    // std::exit(0x4155149) instead of returning NULL. Useful for strict diagnosis;
+    // the default (false) matches real steamclient.dll behaviour.
+    bool exit_on_missing_iface = false;
+
     // voice chat
     bool enable_voice_chat = false;
 

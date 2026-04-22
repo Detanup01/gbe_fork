@@ -18,6 +18,13 @@
 #include "dll/steam_client.h"
 
 
+// Reentrance guard for redispatch_by_version(). Set while we are recursing into
+// GetISteamGenericInterface() from a GetISteam* handler that couldn't resolve
+// its pchVersion directly (e.g. due to ISteamClient vtable ABI drift in the
+// caller). See redispatch_by_version() at the bottom of this file.
+static thread_local bool s_in_iface_redispatch = false;
+
+
 // retrieves the ISteamBilling interface associated with the handle
 ISteamBilling *Steam_Client::GetISteamBilling( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
@@ -30,7 +37,11 @@ ISteamBilling *Steam_Client::GetISteamBilling( HSteamUser hSteamUser, HSteamPipe
         return reinterpret_cast<ISteamBilling *>(static_cast<ISteamBilling *>(steam_billing));
     }
 
+    if (auto *p = redispatch_by_version(hSteamUser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamBilling *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 void *Steam_Client::GetISteamBilling_old( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
@@ -49,7 +60,11 @@ ISteamAppDisableUpdate *Steam_Client::GetISteamAppDisableUpdate( HSteamUser hSte
         return reinterpret_cast<ISteamAppDisableUpdate *>(static_cast<ISteamAppDisableUpdate *>(steam_app_disable_update));
     }
 
+    if (auto *p = redispatch_by_version(hSteamUser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamAppDisableUpdate *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // retrieves the ISteamTimeline interface associated with the handle
@@ -68,7 +83,11 @@ ISteamTimeline *Steam_Client::GetISteamTimeline( HSteamUser hSteamUser, HSteamPi
         return reinterpret_cast<ISteamTimeline *>(static_cast<ISteamTimeline *>(steam_timeline));
     }
 
+    if (auto *p = redispatch_by_version(hSteamUser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamTimeline *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // retrieves the ISteamGameStats interface associated with the handle
@@ -89,7 +108,11 @@ ISteamGameStats *Steam_Client::GetISteamGameStats( HSteamUser hSteamUser, HSteam
         return reinterpret_cast<ISteamGameStats *>(static_cast<ISteamGameStats *>(steam_gamestats_tmp));
     }
 
+    if (auto *p = redispatch_by_version(hSteamUser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamGameStats *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // retrieves the ISteamUser interface associated with the handle
@@ -173,7 +196,11 @@ ISteamUser *Steam_Client::GetISteamUser( HSteamUser hSteamUser, HSteamPipe hStea
         return reinterpret_cast<ISteamUser *>(static_cast<ISteamUser *>(steam_user_tmp));
     }
 
+    if (auto *p = redispatch_by_version(hSteamUser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamUser *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // retrieves the ISteamGameServer interface associated with the handle
@@ -218,7 +245,11 @@ ISteamGameServer *Steam_Client::GetISteamGameServer( HSteamUser hSteamUser, HSte
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer *>(steam_gameserver));
     }
     
+    if (auto *p = redispatch_by_version(hSteamUser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamGameServer *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // returns the ISteamFriends interface
@@ -265,7 +296,11 @@ ISteamFriends *Steam_Client::GetISteamFriends( HSteamUser hSteamUser, HSteamPipe
         return reinterpret_cast<ISteamFriends *>(static_cast<ISteamFriends *>(steam_friends));
     }
     
+    if (auto *p = redispatch_by_version(hSteamUser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamFriends *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // returns the ISteamUtils interface
@@ -305,7 +340,14 @@ ISteamUtils *Steam_Client::GetISteamUtils( HSteamPipe hSteamPipe, const char *pc
         return reinterpret_cast<ISteamUtils *>(static_cast<ISteamUtils *>(steam_utils_temp));
     }
     
+    // NOTE: GetISteamUtils has no hSteamUser parameter; pass 0 to redispatch.
+    // GetISteamGenericInterface tolerates a null user only for version strings
+    // starting with "SteamUtils" or "SteamNetworkingUtils", or for server pipes.
+    if (auto *p = redispatch_by_version(0, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamUtils *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // returns the ISteamMatchmaking interface
@@ -334,7 +376,11 @@ ISteamMatchmaking *Steam_Client::GetISteamMatchmaking( HSteamUser hSteamUser, HS
         return reinterpret_cast<ISteamMatchmaking *>(static_cast<ISteamMatchmaking *>(steam_matchmaking));
     }
     
+    if (auto *p = redispatch_by_version(hSteamUser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamMatchmaking *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // returns the ISteamMatchmakingServers interface
@@ -349,7 +395,11 @@ ISteamMatchmakingServers *Steam_Client::GetISteamMatchmakingServers( HSteamUser 
         return reinterpret_cast<ISteamMatchmakingServers *>(static_cast<ISteamMatchmakingServers *>(steam_matchmaking_servers));
     }
     
+    if (auto *p = redispatch_by_version(hSteamUser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamMatchmakingServers *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // returns the a generic interface
@@ -550,7 +600,14 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
     }
     
     PRINT_DEBUG("No interface: %s", pchVersion);
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    // If we got here via redispatch_by_version from another getter, skip the
+    // missing-interface report: the outer getter will log it once with its own
+    // (more informative) caller name, so reporting again here would just produce
+    // a duplicate EMU_MISSING_INTERFACE.txt entry and a duplicate MessageBox.
+    if (!s_in_iface_redispatch) {
+        report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    }
+    return nullptr;
 }
 
 // returns the ISteamUserStats interface
@@ -587,7 +644,11 @@ ISteamUserStats *Steam_Client::GetISteamUserStats( HSteamUser hSteamUser, HSteam
         return reinterpret_cast<ISteamUserStats *>(static_cast<ISteamUserStats *>(steam_user_stats));
     }
 
+    if (auto *p = redispatch_by_version(hSteamUser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamUserStats *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // returns the ISteamGameServerStats interface
@@ -600,7 +661,11 @@ ISteamGameServerStats *Steam_Client::GetISteamGameServerStats( HSteamUser hSteam
         return reinterpret_cast<ISteamGameServerStats *>(static_cast<ISteamGameServerStats *>(steam_gameserverstats));
     }
 
+    if (auto *p = redispatch_by_version(hSteamuser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamGameServerStats *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // returns apps interface
@@ -636,7 +701,11 @@ ISteamApps *Steam_Client::GetISteamApps( HSteamUser hSteamUser, HSteamPipe hStea
         return reinterpret_cast<ISteamApps *>(static_cast<ISteamApps *>(steam_apps_temp));
     }
 
+    if (auto *p = redispatch_by_version(hSteamUser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamApps *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // networking
@@ -667,7 +736,11 @@ ISteamNetworking *Steam_Client::GetISteamNetworking( HSteamUser hSteamUser, HSte
         return reinterpret_cast<ISteamNetworking *>(static_cast<ISteamNetworking *>(steam_networking_temp));
     }
 
+    if (auto *p = redispatch_by_version(hSteamUser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamNetworking *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // remote storage
@@ -710,7 +783,11 @@ ISteamRemoteStorage *Steam_Client::GetISteamRemoteStorage( HSteamUser hSteamuser
         return reinterpret_cast<ISteamRemoteStorage *>(static_cast<ISteamRemoteStorage *>(steam_remote_storage));
     }
 
+    if (auto *p = redispatch_by_version(hSteamuser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamRemoteStorage *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // user screenshots
@@ -727,7 +804,11 @@ ISteamScreenshots *Steam_Client::GetISteamScreenshots( HSteamUser hSteamuser, HS
         return reinterpret_cast<ISteamScreenshots *>(static_cast<ISteamScreenshots *>(steam_screenshots));
     }
     
+    if (auto *p = redispatch_by_version(hSteamuser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamScreenshots *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 
@@ -752,7 +833,11 @@ ISteamHTTP *Steam_Client::GetISteamHTTP( HSteamUser hSteamuser, HSteamPipe hStea
         return reinterpret_cast<ISteamHTTP *>(static_cast<ISteamHTTP *>(steam_http_temp));
     }
 
+    if (auto *p = redispatch_by_version(hSteamuser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamHTTP *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // Deprecated - the ISteamUnifiedMessages interface is no longer intended for public consumption.
@@ -765,7 +850,11 @@ void *Steam_Client::DEPRECATED_GetISteamUnifiedMessages( HSteamUser hSteamuser, 
         return reinterpret_cast<void *>(static_cast<ISteamUnifiedMessages *>(steam_unified_messages));
     }
 
+    if (auto *p = redispatch_by_version(hSteamuser, hSteamPipe, pchVersion)) {
+        return p;
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 ISteamUnifiedMessages *Steam_Client::GetISteamUnifiedMessages( HSteamUser hSteamuser, HSteamPipe hSteamPipe, const char *pchVersion )
@@ -777,7 +866,11 @@ ISteamUnifiedMessages *Steam_Client::GetISteamUnifiedMessages( HSteamUser hSteam
         return reinterpret_cast<ISteamUnifiedMessages *>(static_cast<ISteamUnifiedMessages *>(steam_unified_messages));
     }
 
+    if (auto *p = redispatch_by_version(hSteamuser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamUnifiedMessages *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // Exposes the ISteamController interface
@@ -806,7 +899,11 @@ ISteamController *Steam_Client::GetISteamController( HSteamUser hSteamUser, HSte
         return reinterpret_cast<ISteamController *>(static_cast<ISteamController *>(steam_controller));
     }
 
+    if (auto *p = redispatch_by_version(hSteamUser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamController *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // Exposes the ISteamUGC interface
@@ -869,7 +966,11 @@ ISteamUGC *Steam_Client::GetISteamUGC( HSteamUser hSteamUser, HSteamPipe hSteamP
         return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC *>(steam_ugc_temp));
     }
 
+    if (auto *p = redispatch_by_version(hSteamUser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamUGC *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // returns app list interface, only available on specially registered apps
@@ -882,7 +983,11 @@ ISteamAppList *Steam_Client::GetISteamAppList( HSteamUser hSteamUser, HSteamPipe
         return reinterpret_cast<ISteamAppList *>(static_cast<ISteamAppList *>(steam_applist));
     }
 
+    if (auto *p = redispatch_by_version(hSteamUser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamAppList *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // Music Player
@@ -895,7 +1000,11 @@ ISteamMusic *Steam_Client::GetISteamMusic( HSteamUser hSteamuser, HSteamPipe hSt
         return reinterpret_cast<ISteamMusic *>(static_cast<ISteamMusic *>(steam_music));
     }
 
+    if (auto *p = redispatch_by_version(hSteamuser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamMusic *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // Music Player Remote
@@ -908,7 +1017,11 @@ ISteamMusicRemote *Steam_Client::GetISteamMusicRemote(HSteamUser hSteamuser, HSt
         return reinterpret_cast<ISteamMusicRemote *>(static_cast<ISteamMusicRemote *>(steam_musicremote));
     }
 
+    if (auto *p = redispatch_by_version(hSteamuser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamMusicRemote *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // html page display
@@ -929,7 +1042,11 @@ ISteamHTMLSurface *Steam_Client::GetISteamHTMLSurface(HSteamUser hSteamuser, HSt
         return reinterpret_cast<ISteamHTMLSurface *>(static_cast<ISteamHTMLSurface *>(steam_HTMLsurface));
     }
 
+    if (auto *p = redispatch_by_version(hSteamuser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamHTMLSurface *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // inventory
@@ -953,7 +1070,11 @@ ISteamInventory *Steam_Client::GetISteamInventory( HSteamUser hSteamuser, HSteam
         return reinterpret_cast<ISteamInventory *>(static_cast<ISteamInventory *>(steam_inventory_temp));
     }
 
+    if (auto *p = redispatch_by_version(hSteamuser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamInventory *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // Video
@@ -972,7 +1093,11 @@ ISteamVideo *Steam_Client::GetISteamVideo( HSteamUser hSteamuser, HSteamPipe hSt
         return reinterpret_cast<ISteamVideo *>(static_cast<ISteamVideo *>(steam_video));
     }
 
+    if (auto *p = redispatch_by_version(hSteamuser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamVideo *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // Parental controls
@@ -985,7 +1110,11 @@ ISteamParentalSettings *Steam_Client::GetISteamParentalSettings( HSteamUser hSte
         return reinterpret_cast<ISteamParentalSettings *>(static_cast<ISteamParentalSettings *>(steam_parental));
     }
 
+    if (auto *p = redispatch_by_version(hSteamuser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamParentalSettings *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 ISteamMasterServerUpdater *Steam_Client::GetISteamMasterServerUpdater( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
@@ -997,7 +1126,11 @@ ISteamMasterServerUpdater *Steam_Client::GetISteamMasterServerUpdater( HSteamUse
         return reinterpret_cast<ISteamMasterServerUpdater *>(static_cast<ISteamMasterServerUpdater *>(steam_masterserver_updater));
     }
 
+    if (auto *p = redispatch_by_version(hSteamUser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamMasterServerUpdater *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 ISteamContentServer *Steam_Client::GetISteamContentServer( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
@@ -1017,7 +1150,11 @@ ISteamGameSearch *Steam_Client::GetISteamGameSearch( HSteamUser hSteamuser, HSte
         return reinterpret_cast<ISteamGameSearch *>(static_cast<ISteamGameSearch *>(steam_game_search));
     }
 
+    if (auto *p = redispatch_by_version(hSteamuser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamGameSearch *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // Exposes the Steam Input interface for controller support
@@ -1036,7 +1173,11 @@ ISteamInput *Steam_Client::GetISteamInput( HSteamUser hSteamUser, HSteamPipe hSt
         return reinterpret_cast<ISteamInput *>(static_cast<ISteamInput *>(steam_controller));
     }
 
+    if (auto *p = redispatch_by_version(hSteamUser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamInput *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 // Steam Parties interface
@@ -1049,7 +1190,11 @@ ISteamParties *Steam_Client::GetISteamParties( HSteamUser hSteamUser, HSteamPipe
         return reinterpret_cast<ISteamParties *>(static_cast<ISteamParties *>(steam_parties));
     }
 
+    if (auto *p = redispatch_by_version(hSteamUser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamParties *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 ISteamRemotePlay *Steam_Client::GetISteamRemotePlay( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
@@ -1067,7 +1212,11 @@ ISteamRemotePlay *Steam_Client::GetISteamRemotePlay( HSteamUser hSteamUser, HSte
         return reinterpret_cast<ISteamRemotePlay *>(static_cast<ISteamRemotePlay *>(steam_remoteplay));
     }
 
+    if (auto *p = redispatch_by_version(hSteamUser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamRemotePlay *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 ISteamAppTicket *Steam_Client::GetAppTicket( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
@@ -1079,7 +1228,11 @@ ISteamAppTicket *Steam_Client::GetAppTicket( HSteamUser hSteamUser, HSteamPipe h
         return reinterpret_cast<ISteamAppTicket *>(static_cast<ISteamAppTicket *>(steam_app_ticket));
     }
 
+    if (auto *p = redispatch_by_version(hSteamUser, hSteamPipe, pchVersion)) {
+        return reinterpret_cast<ISteamAppTicket *>(p);
+    }
     report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return nullptr;
 }
 
 void Steam_Client::report_missing_impl(std::string_view itf, std::string_view caller)
@@ -1127,5 +1280,22 @@ void Steam_Client::report_missing_impl(std::string_view itf, std::string_view ca
 void Steam_Client::report_missing_impl_and_exit(std::string_view itf, std::string_view caller)
 {
     report_missing_impl(itf, caller);
-    std::exit(0x4155149); // MISSING :)
+    // Real steamclient.dll returns NULL for unknown interface versions. We mirror
+    // that behaviour by default and only hard-exit when explicitly requested via
+    // [main::misc] exit_on_missing_iface=1, which is useful for strict diagnosis.
+    if (settings_client && settings_client->exit_on_missing_iface) {
+        std::exit(0x4155149); // MISSING :)
+    }
+}
+
+void *Steam_Client::redispatch_by_version(HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion)
+{
+    if (!pchVersion || s_in_iface_redispatch) return nullptr;
+    s_in_iface_redispatch = true;
+    void *p = nullptr;
+    try {
+        p = GetISteamGenericInterface(hSteamUser, hSteamPipe, pchVersion);
+    } catch (...) { }
+    s_in_iface_redispatch = false;
+    return p;
 }

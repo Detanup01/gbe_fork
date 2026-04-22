@@ -334,8 +334,7 @@ static void *create_client_interface(const char *ver)
         client_ptr->report_missing_impl(ver, EMU_FUNC_NAME);
     }
     
-    PRINT_DEBUG("%s interface is not SteamClient, returning nullptr!", ver);
-    // Original steam returns 0 here.
+    client_ptr->report_missing_impl_and_exit(ver, EMU_FUNC_NAME);
     return nullptr;
 }
 

@@ -424,7 +424,22 @@ public:
     // older sdk ----------------------------------------------------------
 
     void report_missing_impl(std::string_view itf, std::string_view caller);
-    [[noreturn]] void report_missing_impl_and_exit(std::string_view itf, std::string_view caller);
+    // Logs the missing interface to EMU_MISSING_INTERFACE.txt (same as report_missing_impl)
+    // and, if the INI setting `[main::misc] exit_on_missing_iface=1` is active, hard-exits
+    // the process for diagnostic purposes. Otherwise returns normally, matching real
+    // steamclient.dll behaviour (NULL for unknown interface versions).
+    void report_missing_impl_and_exit(std::string_view itf, std::string_view caller);
+
+    // ABI-safe fallback used when a GetISteam* handler is entered with a pchVersion
+    // that doesn't belong to its own interface family (e.g. due to ISteamClient vtable
+    // layout drift between the caller and the emulator). Re-dispatches through the
+    // canonical prefix router in GetISteamGenericInterface() and returns the result
+    // as an opaque void*. Callers reinterpret_cast the pointer to their own declared
+    // return type; from the game's perspective the pointer is whatever its vtable
+    // slot originally promised, so the type mismatch on the emu side is a no-op.
+    // Returns NULL if the version string is not recognised, or if a redispatch is
+    // already in progress on this thread (reentrance guard).
+    void *redispatch_by_version(HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion);
 
     HSteamPipe get_pipe_for_user(HSteamUser hUser);
 
