@@ -62,6 +62,7 @@ message Lobby_Messages {
         CHANGE_OWNER = 2;
         MEMBER_DATA = 3;
         CHAT_MESSAGE = 4;
+        DATA_REQUEST = 5;
     }
 
     Types type = 2;

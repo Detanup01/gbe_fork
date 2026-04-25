@@ -86,6 +86,7 @@ public ISteamMatchmaking
     std::chrono::high_resolution_clock::time_point lobby_last_search{};
     SteamAPICall_t search_call_api_id{};
     bool searching{};
+    bool search_waiting_for_initial_sync{};
 
     std::vector<struct Chat_Entry> chat_entries{};
     std::vector<struct Data_Requested> data_requested{};
@@ -99,7 +100,8 @@ public ISteamMatchmaking
     static bool leave_lobby(Lobby *lobby, CSteamID id);
 
     Lobby *get_lobby(CSteamID id);
-    void send_lobby_data();
+    void send_lobby(Lobby const& lobby, CSteamID dest_id);
+    void send_lobby_data(CSteamID dest_id = k_steamIDNil);
 
     void trigger_lobby_dataupdate(CSteamID lobby, CSteamID member, bool success, double cb_timeout=0.005, bool send_changed_lobby=true);
     void trigger_lobby_member_join_leave(CSteamID lobby, CSteamID member, bool leaving, bool success, double cb_timeout=0.0);

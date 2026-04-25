@@ -28,6 +28,7 @@
 #define FILTER_MAX_DEFAULT 4096
 
 #define LOBBY_SEARCH_TIMEOUT 0.2 //Tested on real steam
+#define LOBBY_SEARCH_CONNECT_TIMEOUT 0.75
 
 
 google::protobuf::Map<std::string,std::string>::const_iterator Steam_Matchmaking::caseinsensitive_find(const ::google::protobuf::Map< ::std::string, ::std::string >& map, std::string key)
@@ -55,7 +56,20 @@ Lobby* Steam_Matchmaking::get_lobby(CSteamID id)
     return &(*lobby);
 }
 
-void Steam_Matchmaking::send_lobby_data()
+void Steam_Matchmaking::send_lobby(Lobby const& lobby, CSteamID dest_id)
+{
+    Common_Message msg = Common_Message();
+    msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
+    msg.set_allocated_lobby(new Lobby(lobby));
+    if (dest_id.IsValid()) {
+        msg.set_dest_id(dest_id.ConvertToUint64());
+        network->sendTo(&msg, true);
+    } else {
+        network->sendToAllIndividuals(&msg, true);
+    }
+}
+
+void Steam_Matchmaking::send_lobby_data(CSteamID dest_id)
 {
     if (lobbies.size()) {
         PRINT_DEBUG("lobbies %zu", lobbies.size());
@@ -64,10 +78,7 @@ void Steam_Matchmaking::send_lobby_data()
     for(auto & l: lobbies) {
         if (get_lobby_member(&l, settings->get_local_steam_id()) && l.owner() == settings->get_local_steam_id().ConvertToUint64() && !l.deleted()) {
             PRINT_DEBUG("lobby " "%" PRIu64 "", l.room_id());
-            Common_Message msg = Common_Message();
-            msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
-            msg.set_allocated_lobby(new Lobby(l));
-            network->sendToAllIndividuals(&msg, true);
+            send_lobby(l, dest_id);
         }
     }
 }
@@ -479,6 +490,11 @@ SteamAPICall_t Steam_Matchmaking::RequestLobbyList()
     filter_max_results_copy = filter_max_results;
     filter_values.clear();
     filter_max_results = FILTER_MAX_DEFAULT;
+    // Give discovery a chance to receive the first announce burst.
+    search_waiting_for_initial_sync = !network->hasConnectedIndividualAccounts();
+    if (search_waiting_for_initial_sync) {
+        network->sendAnnounceBroadcastsNow();
+    }
     searching = true;
     if (search_call_api_id) callback_results->rmCallBack(search_call_api_id, NULL);
     search_call_api_id = callback_results->reserveCallResult();
@@ -1043,10 +1059,34 @@ bool Steam_Matchmaking::RequestLobbyData( CSteamID steamIDLobby )
     PRINT_DEBUG("%llu", steamIDLobby.ConvertToUint64());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    struct Data_Requested requested{};
-    requested.lobby_id = steamIDLobby;
-    requested.requested = std::chrono::high_resolution_clock::now();
-    data_requested.push_back(requested);
+    if (get_lobby(steamIDLobby)) {
+        trigger_lobby_dataupdate(steamIDLobby, steamIDLobby, true);
+        return true;
+    }
+
+    auto existing_request = std::find_if(data_requested.begin(), data_requested.end(), [&steamIDLobby](Data_Requested const& item) {
+        return item.lobby_id == steamIDLobby;
+    });
+    if (existing_request != data_requested.end()) {
+        existing_request->requested = std::chrono::high_resolution_clock::now();
+    } else {
+        struct Data_Requested requested{};
+        requested.lobby_id = steamIDLobby;
+        requested.requested = std::chrono::high_resolution_clock::now();
+        data_requested.push_back(requested);
+    }
+
+    if (!network->hasConnectedIndividualAccounts()) {
+        network->sendAnnounceBroadcastsNow();
+    }
+
+    Lobby_Messages *message = new Lobby_Messages();
+    message->set_type(Lobby_Messages::DATA_REQUEST);
+    Common_Message msg{};
+    msg.set_allocated_lobby_messages(message);
+    msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
+    msg.mutable_lobby_messages()->set_id(steamIDLobby.ConvertToUint64());
+    network->sendToAllIndividuals(&msg, true);
     return true;
 }
 
@@ -1474,17 +1514,25 @@ void Steam_Matchmaking::RunCallbacks()
                 callback_results->addCallResult(search_call_api_id, data.k_iCallback, &data, sizeof(data));
                 callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
                 search_call_api_id = 0;
+                search_waiting_for_initial_sync = false;
             }
         }
     }
 
-    if (searching && check_timedout(lobby_last_search, LOBBY_SEARCH_TIMEOUT)) {
+    double lobby_search_timeout = LOBBY_SEARCH_TIMEOUT;
+    if (search_waiting_for_initial_sync && filtered_lobbies.empty()) {
+        // Allow one longer search window while the first peer connection comes up.
+        lobby_search_timeout = LOBBY_SEARCH_CONNECT_TIMEOUT;
+    }
+
+    if (searching && check_timedout(lobby_last_search, lobby_search_timeout)) {
         PRINT_DEBUG("LOBBY_SEARCH_TIMEOUT %zu", filtered_lobbies.size());
         LobbyMatchList_t data{};
         data.m_nLobbiesMatching = static_cast<uint32>(filtered_lobbies.size());
         callback_results->addCallResult(search_call_api_id, data.k_iCallback, &data, sizeof(data));
         callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
         searching = false;
+        search_waiting_for_initial_sync = false;
         search_call_api_id = 0;
     }
 
@@ -1560,6 +1608,7 @@ void Steam_Matchmaking::Callback(Common_Message *msg)
     if (msg->has_lobby()) {
         PRINT_DEBUG("GOT A LOBBY appid: %u " "%" PRIu64 "", msg->lobby().appid(), msg->lobby().owner());
         if (msg->lobby().owner() != settings->get_local_steam_id().ConvertToUint64() && msg->lobby().appid() == settings->get_local_game_id().AppID()) {
+            search_waiting_for_initial_sync = false;
             Lobby *lobby = get_lobby((uint64)msg->lobby().room_id());
             if (!lobby) {
                 size_t old_size = lobbies.size();
@@ -1712,12 +1761,22 @@ void Steam_Matchmaking::Callback(Common_Message *msg)
                     }
                 }
             }
+
+            if (msg->lobby_messages().type() == Lobby_Messages::DATA_REQUEST) {
+                PRINT_DEBUG("LOBBY MESSAGE: DATA REQUEST");
+                if (lobby->owner() == settings->get_local_steam_id().ConvertToUint64()) {
+                    // Only the owner answers targeted lobby data requests.
+                    send_lobby(*lobby, (uint64)msg->source_id());
+                }
+            }
         }
     }
 
     if (msg->has_low_level()) {
         if (msg->low_level().type() == Low_Level::CONNECT) {
-            
+            if (msg->source_id() != settings->get_local_steam_id().ConvertToUint64()) {
+                send_lobby_data((uint64)msg->source_id());
+            }
         }
 
         if (msg->low_level().type() == Low_Level::DISCONNECT) {
