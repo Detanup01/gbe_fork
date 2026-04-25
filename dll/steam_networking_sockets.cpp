@@ -16,6 +16,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "dll/steam_networking_sockets.h"
+#include "dll/steam_networking_utils.h"
 
 
 void Steam_Networking_Sockets::steam_callback(void *object, Common_Message *msg)
@@ -231,6 +232,8 @@ void Steam_Networking_Sockets::launch_callback(HSteamNetConnection m_hConn, enum
     data.m_eOldState = convert_status(old_status);
     set_steamnetconnectioninfo(connect_socket, &data.m_info);
     callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    // Also deliver the callback through the global config hook.
+    Steam_Networking_Utils::InvokeConnectionStatusChanged(&data);
 }
 
 
@@ -364,7 +367,11 @@ HSteamNetConnection Steam_Networking_Sockets::ConnectByIPAddress( const SteamNet
     SteamNetworkingIdentity ip_id;
     ip_id.SetIPAddr(address);
     HSteamNetConnection socket = new_connect_socket(ip_id, SNS_DISABLED_PORT, address.m_port);
-    send_packet_new_connection(socket);
+    if (socket != k_HSteamNetConnection_Invalid) {
+        send_packet_new_connection(socket);
+        // Mirror the initial connection state transition immediately.
+        launch_callback(socket, CONNECT_SOCKET_NO_CONNECTION);
+    }
     return socket;
 }
 
@@ -375,7 +382,11 @@ HSteamNetConnection Steam_Networking_Sockets::ConnectByIPAddress( const SteamNet
     SteamNetworkingIdentity ip_id;
     ip_id.SetIPAddr(*address);
     HSteamNetConnection socket = new_connect_socket(ip_id, SNS_DISABLED_PORT, address->m_port);
-    send_packet_new_connection(socket);
+    if (socket != k_HSteamNetConnection_Invalid) {
+        send_packet_new_connection(socket);
+        // Mirror the initial connection state transition immediately.
+        launch_callback(socket, CONNECT_SOCKET_NO_CONNECTION);
+    }
     return socket;
 }
 
@@ -386,7 +397,11 @@ HSteamNetConnection Steam_Networking_Sockets::ConnectByIPAddress( const SteamNet
     SteamNetworkingIdentity ip_id;
     ip_id.SetIPAddr(address);
     HSteamNetConnection socket = new_connect_socket(ip_id, SNS_DISABLED_PORT, address.m_port);
-    send_packet_new_connection(socket);
+    if (socket != k_HSteamNetConnection_Invalid) {
+        send_packet_new_connection(socket);
+        // Mirror the initial connection state transition immediately.
+        launch_callback(socket, CONNECT_SOCKET_NO_CONNECTION);
+    }
     return socket;
 }
 
@@ -444,7 +459,11 @@ HSteamNetConnection Steam_Networking_Sockets::ConnectP2P( const SteamNetworkingI
     }
 
     HSteamNetConnection socket = new_connect_socket(identityRemote, nVirtualPort, SNS_DISABLED_PORT);
-    send_packet_new_connection(socket);
+    if (socket != k_HSteamNetConnection_Invalid) {
+        send_packet_new_connection(socket);
+        // Mirror the initial connection state transition immediately.
+        launch_callback(socket, CONNECT_SOCKET_NO_CONNECTION);
+    }
     return socket;
 }
 
@@ -1312,6 +1331,8 @@ ESteamNetworkingAvailability Steam_Networking_Sockets::InitAuthentication()
     data.m_eAvail = k_ESteamNetworkingAvailability_Current;
     memcpy(data.m_debugMsg, "OK", 3);
     callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    // Also deliver the callback through the global config hook.
+    Steam_Networking_Utils::InvokeAuthStatusChanged(&data);
     return k_ESteamNetworkingAvailability_Current;
 }
 
@@ -2083,7 +2104,6 @@ void Steam_Networking_Sockets::RunCallbacks()
 {
     // PRINT_DEBUG_ENTRY();
 
-    //TODO: timeout unaccepted connections after a few seconds or so
     auto current_time = std::chrono::steady_clock::now();
     auto socket_conn = std::begin(sbcs->connect_sockets);
     while (socket_conn != std::end(sbcs->connect_sockets)) {
@@ -2091,6 +2111,11 @@ void Steam_Networking_Sockets::RunCallbacks()
             send_packet_new_connection(socket_conn->first);
             socket_conn->second.connect_request_last_sent = current_time;
             socket_conn->second.connect_requests_sent += 1;
+        } else if (socket_conn->second.connect_requests_sent >= 10 && socket_conn->second.status == CONNECT_SOCKET_CONNECTING && (std::chrono::duration_cast<std::chrono::milliseconds>(current_time - socket_conn->second.connect_request_last_sent).count() > 3000)) {
+            // Stop retrying once the pending connect request has timed out locally.
+            enum connect_socket_status old_status = socket_conn->second.status;
+            socket_conn->second.status = CONNECT_SOCKET_TIMEDOUT;
+            launch_callback(socket_conn->first, old_status);
         }
 
         ++socket_conn;

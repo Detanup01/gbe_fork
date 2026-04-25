@@ -36,6 +36,9 @@ public ISteamNetworkingUtils
     FSteamNetworkingSocketsDebugOutput debug_function{};
     bool relay_initialized = false;
     bool init_relay = true; //  Initializing relay immediately when we ask for it. Fixing Elden Ring SeamlessCoop
+    static FnSteamNetConnectionStatusChanged connection_status_changed_callback;
+    static FnSteamNetAuthenticationStatusChanged auth_status_changed_callback;
+    static FnSteamRelayNetworkStatusChanged relay_network_status_changed_callback;
     // NOTE from Detanup01: They should call InitializeRelayAccess BTW. Whoever write that mod cannot read valve docs.
     /*
     Valve docs:
@@ -56,6 +59,10 @@ public ISteamNetworkingUtils
 public:
     Steam_Networking_Utils(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, class RunEveryRunCB *run_every_runcb);
     ~Steam_Networking_Utils();
+
+    static void InvokeConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t *data);
+    static void InvokeAuthStatusChanged(SteamNetAuthenticationStatus_t *data);
+    static void InvokeRelayNetworkStatusChanged(SteamRelayNetworkStatus_t *data);
 
     /// Allocate and initialize a message object.  Usually the reason
     /// you call this is to pass it to ISteamNetworkingSockets::SendMessages.
