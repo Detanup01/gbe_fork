@@ -1,63 +1,3 @@
-#include "overlay/steam_overlay_stats.h"
-// translation
-#include "overlay/steam_overlay_translations.h"
-#include <utility>
-
-
-Steam_Overlay_Stats::Steam_Overlay_Stats(class Settings* settings):
-    settings(settings)
-{
-    show_fps = settings->overlay_always_show_fps;
-    show_frametime = settings->overlay_always_show_frametime;
-    show_playtime = settings->overlay_always_show_playtime;
-}
-
-bool Steam_Overlay_Stats::show_any_stats() const
-{
-    return show_fps || show_frametime || show_playtime;
-}
-
-void Steam_Overlay_Stats::update_frametime(const std::chrono::high_resolution_clock::time_point &now)
-{
-    running_frametime_ms += static_cast<unsigned>(
-        std::chrono::duration_cast<std::chrono::milliseconds>(now - last_frame_timepoint).count()
-    );
-    last_frame_timepoint = now;
-    if (last_frametime_idx >= (settings->overlay_fps_avg_window - 1)) {
-        last_frametime_idx = 0;
-        active_frametime_ms = static_cast<float>(running_frametime_ms) / settings->overlay_fps_avg_window;
-        if (running_frametime_ms > 0) {
-            active_fps = static_cast<unsigned>((1000 * settings->overlay_fps_avg_window) / running_frametime_ms);
-        } else { // happens when avg window =1, no idea why!
-            active_fps = 999;
-        }
-        running_frametime_ms = 0;
-    } else {
-        ++last_frametime_idx;
-    }
-}
-
-void Steam_Overlay_Stats::update_playtime(const std::chrono::high_resolution_clock::time_point &now)
-{
-    const auto update_duration_sec = std::chrono::duration_cast<std::chrono::seconds>(
-        now - last_playtime
-    ).count();
-    if (update_duration_sec < 1) return;
-
-    last_playtime = now;
-
-    const auto time_duration_sec = (unsigned long long)std::chrono::duration_cast<std::chrono::seconds>(
-        now - initial_time
-    ).count();
-    active_playtime_sec = static_cast<unsigned>(time_duration_sec % 60);
-
-    const auto time_duration_min = time_duration_sec / 60;
-    active_playtime_min = static_cast<unsigned>(time_duration_min % 60);
-
-    const auto time_duration_hr = time_duration_min / 60;
-    active_playtime_hr = static_cast<unsigned>(time_duration_hr % 24);
-}
-
 void Steam_Overlay_Stats::render_stats(int current_language)
 {
     auto now = std::chrono::high_resolution_clock::now();
@@ -67,8 +7,6 @@ void Steam_Overlay_Stats::render_stats(int current_language)
     if (show_playtime) {
         update_playtime(now);
     }
-
-    ImGui::PushFont(font);
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, settings->overlay_appearance.notification_rounding);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
@@ -141,11 +79,12 @@ void Steam_Overlay_Stats::render_stats(int current_language)
             ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize |
             ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoInputs |
             ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollWithMouse)) {
+        ImGui::PushFont(font);
         ImGui::TextWrapped("%s", stats_txt.c_str());
+        ImGui::PopFont();
     }
     ImGui::End();
 
     ImGui::PopStyleColor(2);
     ImGui::PopStyleVar(2);
-    ImGui::PopFont();
 }
