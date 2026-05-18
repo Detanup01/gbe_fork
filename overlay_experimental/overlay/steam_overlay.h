@@ -169,10 +169,13 @@ class Steam_Overlay
 
     std::vector<InGameOverlay::ToggleKey> toggle_keys{};
 
-    // font stuff
+    // font stuff - now supporting independent font sizes
     ImFontAtlas fonts_atlas{};
     ImFont *font_default{};
     ImFont *font_notif{};
+    ImFont *font_fps{}; // separate font for FPS display
+    ImFont *font_ach_title{}; // separate font for achievement title
+    ImFont *font_ach_desc{}; // separate font for achievement description
     ImFontConfig font_cfg{};
     ImFontGlyphRangesBuilder font_builder{};
     ImVector<ImWchar> ranges{};
