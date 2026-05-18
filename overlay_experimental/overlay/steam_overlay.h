@@ -177,6 +177,9 @@ class Steam_Overlay
     ImFont *font_fps{}; // separate font for FPS display
     ImFont *font_ach_title{}; // separate font for achievement title
     ImFont *font_ach_desc{}; // separate font for achievement description
+    float font_size_fps = 0.0f;
+    float font_size_ach_title = 0.0f;
+    float font_size_ach_desc = 0.0f;
     ImFontConfig font_cfg{};
     ImFontGlyphRangesBuilder font_builder{};
     ImVector<ImWchar> ranges{};
@@ -218,7 +221,7 @@ class Steam_Overlay
     void add_ach_progressbar(const Overlay_Achievement &ach);
     ImVec4 get_notification_bg_rgba_safe();
     void build_notifications(float width, float height);
-    void draw_scaled_wrapped_text(ImFont *font, float size, const char *text, bool faux_bold = false);
+    void draw_scaled_wrapped_text(ImFont *font, float base_size, float size, const char *text, bool faux_bold = false);
     
     void request_renderer_detector();
     void set_renderer_hook_timeout();

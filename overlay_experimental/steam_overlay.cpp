@@ -401,7 +401,11 @@ void Steam_Overlay::create_fonts()
     font_fps = add_overlay_font(font_size_fps);
     font_ach_title = add_overlay_font(font_size_ach_title);
     font_ach_desc = add_overlay_font(font_size_ach_desc);
+    this->font_size_fps = font_size_fps;
+    this->font_size_ach_title = font_size_ach_title;
+    this->font_size_ach_desc = font_size_ach_desc;
     stats.font = font_fps;
+    stats.font_size = font_size_fps;
 
     bool res = fonts_atlas.IsBuilt();
     PRINT_DEBUG("isbuilt fonts atlas (result=%i)", (int)res);
@@ -1123,16 +1127,16 @@ ImVec4 Steam_Overlay::get_notification_bg_rgba_safe()
     );
 }
 
-void Steam_Overlay::draw_scaled_wrapped_text(ImFont *font, float size, const char *text, bool faux_bold)
+void Steam_Overlay::draw_scaled_wrapped_text(ImFont *font, float base_size, float size, const char *text, bool faux_bold)
 {
     if (!text || !text[0]) return;
 
-    if (!font || font->FontSize <= 0.0f) {
+    if (!font || base_size <= 0.0f) {
         ImGui::TextWrapped("%s", text);
         return;
     }
 
-    const float scale = size / font->FontSize;
+    const float scale = size / base_size;
     const ImVec2 text_pos = ImGui::GetCursorScreenPos();
     const float wrap_width = ImGui::GetContentRegionAvail().x;
 
@@ -1233,6 +1237,7 @@ void Steam_Overlay::build_notifications(float width, float height)
                         ImGui::TableSetColumnIndex(1);
                         draw_scaled_wrapped_text(
                             font_ach_title,
+                            font_size_ach_title,
                             effective_overlay_font_size(settings->overlay_appearance, settings->overlay_appearance.font_size_ach_title),
                             ach.title.c_str(),
                             settings->overlay_appearance.font_ach_title_bold
@@ -1240,6 +1245,7 @@ void Steam_Overlay::build_notifications(float width, float height)
                         if (ach.description.size()) {
                             draw_scaled_wrapped_text(
                                 font_ach_desc,
+                                font_size_ach_desc,
                                 effective_overlay_font_size(settings->overlay_appearance, settings->overlay_appearance.font_size_ach_desc),
                                 ach.description.c_str()
                             );
@@ -1249,6 +1255,7 @@ void Steam_Overlay::build_notifications(float width, float height)
                     } else {
                         draw_scaled_wrapped_text(
                             font_ach_title,
+                            font_size_ach_title,
                             effective_overlay_font_size(settings->overlay_appearance, settings->overlay_appearance.font_size_ach_title),
                             ach.title.c_str(),
                             settings->overlay_appearance.font_ach_title_bold
@@ -1256,6 +1263,7 @@ void Steam_Overlay::build_notifications(float width, float height)
                         if (ach.description.size()) {
                             draw_scaled_wrapped_text(
                                 font_ach_desc,
+                                font_size_ach_desc,
                                 effective_overlay_font_size(settings->overlay_appearance, settings->overlay_appearance.font_size_ach_desc),
                                 ach.description.c_str()
                             );

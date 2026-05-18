@@ -34,6 +34,7 @@ private:
 
 public:
     ImFont *font = nullptr;
+    float font_size = 0.0f;
     bool show_fps = false;
     bool show_frametime = false;
     bool show_playtime = false;

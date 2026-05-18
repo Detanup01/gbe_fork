@@ -73,8 +73,8 @@ void Steam_Overlay_Stats::render_stats(int current_language)
     const float font_size = settings->overlay_appearance.font_size_fps > 0.0f
         ? settings->overlay_appearance.font_size_fps
         : settings->overlay_appearance.font_size;
-    const float font_scale = font && font->FontSize > 0.0f
-        ? std::max(font_size / font->FontSize, 0.1f)
+    const float font_scale = font && this->font_size > 0.0f
+        ? std::max(font_size / this->font_size, 0.1f)
         : 1.0f;
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, settings->overlay_appearance.notification_rounding);
