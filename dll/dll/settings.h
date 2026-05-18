@@ -132,6 +132,7 @@ struct Overlay_Appearance {
     float font_size_fps = 0.0f;
     float font_size_ach_title = 0.0f;
     float font_size_ach_desc = 0.0f;
+    bool font_ach_title_bold = false;
     
     float icon_size = 64.0f;
 

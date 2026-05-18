@@ -11,9 +11,11 @@
 #include <string>
 #include <sstream>
 #include <cctype>
+#include <cstring>
 #include <utility>
 #include <unordered_set>
 #include <unordered_map>
+#include <limits>
 
 #include "InGameOverlay/RendererDetector.h"
 
@@ -33,6 +35,25 @@ static constexpr int max_window_id = 10000;
 static constexpr int base_notif_window_id  = 0 * max_window_id;
 static constexpr int base_friend_window_id = 1 * max_window_id;
 static constexpr int base_friend_item_id   = 2 * max_window_id;
+
+static float effective_overlay_font_size(const Overlay_Appearance &appearance, float configured_size)
+{
+    return configured_size > 0.0f ? configured_size : appearance.font_size;
+}
+
+static ImVec2 calc_text_size_for_font(ImFont *font, float size, const char *text, float wrap_width)
+{
+    if (!text || !text[0]) return {};
+    if (!font) return ImGui::CalcTextSize(text, nullptr, false, wrap_width);
+
+    return font->CalcTextSizeA(
+        size,
+        std::numeric_limits<float>::max(),
+        wrap_width,
+        text,
+        text + strlen(text)
+    );
+}
 
 // look for the column 'API language code' here: https://partner.steamgames.com/doc/store/localization/languages
 static constexpr const char* valid_languages[] = {
@@ -939,23 +960,19 @@ void Steam_Overlay::set_next_notification_pos(std::pair<float, float> scrn_size,
 
         const auto &ach = noti.ach.value();
         const float ach_text_width = noti_width - padding_all_sides - global_style.ItemSpacing.x - settings->overlay_appearance.icon_size;
-        ImGui::PushFont(font_ach_title);
-        float new_msg_height = ImGui::CalcTextSize(
+        float new_msg_height = calc_text_size_for_font(
+            font_ach_title,
+            effective_overlay_font_size(settings->overlay_appearance, settings->overlay_appearance.font_size_ach_title),
             ach.title.c_str(),
-            ach.title.c_str() + ach.title.size(),
-            false,
             ach_text_width
         ).y;
-        ImGui::PopFont();
         if (ach.description.size()) {
-            ImGui::PushFont(font_ach_desc);
-            new_msg_height += global_style.ItemSpacing.y + ImGui::CalcTextSize(
+            new_msg_height += global_style.ItemSpacing.y + calc_text_size_for_font(
+                font_ach_desc,
+                effective_overlay_font_size(settings->overlay_appearance, settings->overlay_appearance.font_size_ach_desc),
                 ach.description.c_str(),
-                ach.description.c_str() + ach.description.size(),
-                false,
                 ach_text_width
             ).y;
-            ImGui::PopFont();
         }
         const float new_noti_height = new_msg_height;
 
@@ -1106,6 +1123,39 @@ ImVec4 Steam_Overlay::get_notification_bg_rgba_safe()
     );
 }
 
+void Steam_Overlay::draw_scaled_wrapped_text(ImFont *font, float size, const char *text, bool faux_bold)
+{
+    if (!text || !text[0]) return;
+
+    if (!font || font->FontSize <= 0.0f) {
+        ImGui::TextWrapped("%s", text);
+        return;
+    }
+
+    const float scale = size / font->FontSize;
+    const ImVec2 text_pos = ImGui::GetCursorScreenPos();
+    const float wrap_width = ImGui::GetContentRegionAvail().x;
+
+    ImGui::PushFont(font);
+    ImGui::SetWindowFontScale(scale);
+    ImGui::TextWrapped("%s", text);
+    ImGui::SetWindowFontScale(1.0f);
+    ImGui::PopFont();
+
+    if (faux_bold) {
+        const ImU32 color = ImGui::GetColorU32(ImGuiCol_Text);
+        ImGui::GetWindowDrawList()->AddText(
+            font,
+            size,
+            ImVec2(text_pos.x + 1.0f, text_pos.y),
+            color,
+            text,
+            nullptr,
+            wrap_width
+        );
+    }
+}
+
 void Steam_Overlay::build_notifications(float width, float height)
 {
     auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
@@ -1181,24 +1231,34 @@ void Steam_Overlay::build_notifications(float width, float height)
                         ImGui::Image(icon_rsrc->GetResourceId(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
 
                         ImGui::TableSetColumnIndex(1);
-                        ImGui::PushFont(font_ach_title);
-                        ImGui::TextWrapped("%s", ach.title.c_str());
-                        ImGui::PopFont();
+                        draw_scaled_wrapped_text(
+                            font_ach_title,
+                            effective_overlay_font_size(settings->overlay_appearance, settings->overlay_appearance.font_size_ach_title),
+                            ach.title.c_str(),
+                            settings->overlay_appearance.font_ach_title_bold
+                        );
                         if (ach.description.size()) {
-                            ImGui::PushFont(font_ach_desc);
-                            ImGui::TextWrapped("%s", ach.description.c_str());
-                            ImGui::PopFont();
+                            draw_scaled_wrapped_text(
+                                font_ach_desc,
+                                effective_overlay_font_size(settings->overlay_appearance, settings->overlay_appearance.font_size_ach_desc),
+                                ach.description.c_str()
+                            );
                         }
 
                         ImGui::EndTable();
                     } else {
-                        ImGui::PushFont(font_ach_title);
-                        ImGui::TextWrapped("%s", ach.title.c_str());
-                        ImGui::PopFont();
+                        draw_scaled_wrapped_text(
+                            font_ach_title,
+                            effective_overlay_font_size(settings->overlay_appearance, settings->overlay_appearance.font_size_ach_title),
+                            ach.title.c_str(),
+                            settings->overlay_appearance.font_ach_title_bold
+                        );
                         if (ach.description.size()) {
-                            ImGui::PushFont(font_ach_desc);
-                            ImGui::TextWrapped("%s", ach.description.c_str());
-                            ImGui::PopFont();
+                            draw_scaled_wrapped_text(
+                                font_ach_desc,
+                                effective_overlay_font_size(settings->overlay_appearance, settings->overlay_appearance.font_size_ach_desc),
+                                ach.description.c_str()
+                            );
                         }
                     }
 
@@ -1657,9 +1717,22 @@ void Steam_Overlay::render_main_window()
 
                 ImGui::Separator();
 
-                ImGui::Text("%s", translationRestartTheGameToApply[current_language]);
+                ImGui::Text("%s", "Overlay font sizes");
+                ImGui::TextWrapped("%s", "Changes apply immediately. Use 0 to inherit Font_Size from configs.overlay.ini.");
+                ImGui::SliderFloat("FPS##overlay_font_size_fps", &settings->overlay_appearance.font_size_fps, 0.0f, 64.0f, "%.1f");
+                ImGui::SliderFloat("Achievement title##overlay_font_size_ach_title", &settings->overlay_appearance.font_size_ach_title, 0.0f, 64.0f, "%.1f");
+                ImGui::SliderFloat("Achievement description##overlay_font_size_ach_desc", &settings->overlay_appearance.font_size_ach_desc, 0.0f, 64.0f, "%.1f");
+                ImGui::Checkbox("Bold achievement title##overlay_font_ach_title_bold", &settings->overlay_appearance.font_ach_title_bold);
+                if (ImGui::Button("Preview achievement notification##overlay_font_preview_achievement")) {
+                    show_test_achievement();
+                }
+
+                ImGui::Separator();
+
+                ImGui::TextWrapped("%s", "Username and language may still require a restart. Overlay font changes apply immediately.");
                 if (ImGui::Button(translationSave[current_language])) {
                     save_settings = true;
+                    save_overlay_appearance = true;
                     show_settings = false;
                 }
             }
@@ -2207,6 +2280,27 @@ void Steam_Overlay::steam_run_callback()
         get_steam_client()->settings_client->set_language(language_text);
         get_steam_client()->settings_server->set_language(language_text);
         steamFriends->resend_friend_data();
+    }
+
+    if (save_overlay_appearance) {
+        save_overlay_appearance = false;
+
+        save_overlay_appearance_settings(
+            get_steam_client()->local_storage,
+            settings->overlay_appearance.font_size_fps,
+            settings->overlay_appearance.font_size_ach_title,
+            settings->overlay_appearance.font_size_ach_desc,
+            settings->overlay_appearance.font_ach_title_bold
+        );
+
+        get_steam_client()->settings_client->overlay_appearance.font_size_fps = settings->overlay_appearance.font_size_fps;
+        get_steam_client()->settings_server->overlay_appearance.font_size_fps = settings->overlay_appearance.font_size_fps;
+        get_steam_client()->settings_client->overlay_appearance.font_size_ach_title = settings->overlay_appearance.font_size_ach_title;
+        get_steam_client()->settings_server->overlay_appearance.font_size_ach_title = settings->overlay_appearance.font_size_ach_title;
+        get_steam_client()->settings_client->overlay_appearance.font_size_ach_desc = settings->overlay_appearance.font_size_ach_desc;
+        get_steam_client()->settings_server->overlay_appearance.font_size_ach_desc = settings->overlay_appearance.font_size_ach_desc;
+        get_steam_client()->settings_client->overlay_appearance.font_ach_title_bold = settings->overlay_appearance.font_ach_title_bold;
+        get_steam_client()->settings_server->overlay_appearance.font_ach_title_bold = settings->overlay_appearance.font_ach_title_bold;
     }
 
     steam_run_callback_update_my_lobby();

@@ -102,6 +102,62 @@ static void save_global_ini_value(class Local_Storage *local_storage, const char
     
 }
 
+static bool save_ini_value_to_file(const std::string &full_path, const char *section, const char *key, IniValue val, const char *comment = nullptr) {
+    CSimpleIniA new_ini{};
+    new_ini.SetUnicode();
+    new_ini.SetSpaces(false);
+
+    {
+        std::ifstream ini_file(std::filesystem::u8path(full_path), std::ios::binary | std::ios::in);
+        if (!ini_file.is_open()) return false;
+
+        new_ini.LoadData(ini_file);
+    }
+
+    std::string comment_str{};
+    if (comment && comment[0]) {
+        comment_str.append("# ").append(comment);
+        comment = comment_str.c_str();
+    }
+
+    switch (val.type)
+    {
+    case IniValue::Type::STR:
+        new_ini.SetValue(section, key, val.val_str, comment);
+    break;
+
+    case IniValue::Type::BOOL:
+        new_ini.SetBoolValue(section, key, val.val_bool, comment);
+    break;
+
+    case IniValue::Type::DOUBLE:
+        new_ini.SetDoubleValue(section, key, val.val_double, comment);
+    break;
+
+    case IniValue::Type::LONG:
+        new_ini.SetLongValue(section, key, val.val_long, comment);
+    break;
+
+    default: break;
+    }
+
+    std::string ini_buff{};
+    if (new_ini.Save(ini_buff, false) != SI_OK) return false;
+
+    std::ofstream ini_file(std::filesystem::u8path(full_path), std::ios::binary | std::ios::out | std::ios::trunc);
+    if (!ini_file.is_open()) return false;
+
+    ini_file.write(ini_buff.data(), ini_buff.size());
+    return !!ini_file;
+}
+
+static void save_overlay_ini_value(class Local_Storage *local_storage, const char *section, const char *key, IniValue val, const char *comment = nullptr) {
+    const std::string local_overlay_ini(Local_Storage::get_game_settings_path() + config_ini_overlay);
+    if (save_ini_value_to_file(local_overlay_ini, section, key, val, comment)) return;
+
+    save_global_ini_value(local_storage, config_ini_overlay, section, key, val, comment);
+}
+
 static void merge_ini(const CSimpleIniA &new_ini, bool overwrite = false) {
     std::list<CSimpleIniA::Entry> sections{};
     new_ini.GetAllSections(sections);
@@ -272,6 +328,10 @@ static void load_overlay_appearance(class Settings *settings_client, class Setti
                 float nfont_size = std::stof(value, NULL);
                 settings_client->overlay_appearance.font_size_ach_desc = nfont_size;
                 settings_server->overlay_appearance.font_size_ach_desc = nfont_size;
+            } else if (name.compare("Font_Achievement_Title_Bold") == 0) {
+                bool val = ini.GetBoolValue("overlay::appearance", name.c_str(), false);
+                settings_client->overlay_appearance.font_ach_title_bold = val;
+                settings_server->overlay_appearance.font_ach_title_bold = val;
             } else if (name.compare("Icon_Size") == 0) {
                 float nicon_size = std::stof(value, NULL);
                 settings_client->overlay_appearance.icon_size = nicon_size;
@@ -2039,6 +2099,38 @@ void save_global_settings(class Local_Storage *local_storage, const char *name, 
         config_ini_user,
         "user::general", "language", IniValue(language),
         "the language reported to the game, default is 'english', check 'API language code' in https://partner.steamgames.com/doc/store/localization/languages"
+    );
+}
+
+void save_overlay_appearance_settings(
+    class Local_Storage *local_storage,
+    float font_size_fps,
+    float font_size_ach_title,
+    float font_size_ach_desc,
+    bool font_ach_title_bold)
+{
+    save_overlay_ini_value(
+        local_storage,
+        "overlay::appearance", "Font_Size_FPS", IniValue(static_cast<double>(font_size_fps)),
+        "font size for the FPS, frametime, and playtime overlay; <= 0 uses Font_Size"
+    );
+
+    save_overlay_ini_value(
+        local_storage,
+        "overlay::appearance", "Font_Size_Achievement_Title", IniValue(static_cast<double>(font_size_ach_title)),
+        "font size for achievement notification titles; <= 0 uses Font_Size"
+    );
+
+    save_overlay_ini_value(
+        local_storage,
+        "overlay::appearance", "Font_Size_Achievement_Description", IniValue(static_cast<double>(font_size_ach_desc)),
+        "font size for achievement notification descriptions; <= 0 uses Font_Size"
+    );
+
+    save_overlay_ini_value(
+        local_storage,
+        "overlay::appearance", "Font_Achievement_Title_Bold", IniValue(font_ach_title_bold),
+        "draw achievement notification titles with a bold effect"
     );
 }
 

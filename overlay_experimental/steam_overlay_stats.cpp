@@ -1,6 +1,7 @@
 #include "overlay/steam_overlay_stats.h"
 // translation
 #include "overlay/steam_overlay_translations.h"
+#include <algorithm>
 #include <utility>
 
 
@@ -69,6 +70,12 @@ void Steam_Overlay_Stats::render_stats(int current_language)
     }
 
     ImGui::PushFont(font);
+    const float font_size = settings->overlay_appearance.font_size_fps > 0.0f
+        ? settings->overlay_appearance.font_size_fps
+        : settings->overlay_appearance.font_size;
+    const float font_scale = font && font->FontSize > 0.0f
+        ? std::max(font_size / font->FontSize, 0.1f)
+        : 1.0f;
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, settings->overlay_appearance.notification_rounding);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
@@ -126,7 +133,7 @@ void Steam_Overlay_Stats::render_stats(int current_language)
     );
     auto &global_style = ImGui::GetStyle();
     const float padding_all_sides = global_style.WindowPadding.y + global_style.WindowPadding.x;
-    const auto stats_box = ImVec2(msg_box.x + padding_all_sides, msg_box.y + padding_all_sides);
+    const auto stats_box = ImVec2(msg_box.x * font_scale + padding_all_sides, msg_box.y * font_scale + padding_all_sides);
     ImGui::SetNextWindowSize(stats_box);
 
     auto &io = ImGui::GetIO();
@@ -141,7 +148,9 @@ void Steam_Overlay_Stats::render_stats(int current_language)
             ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize |
             ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoInputs |
             ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollWithMouse)) {
+        ImGui::SetWindowFontScale(font_scale);
         ImGui::TextWrapped("%s", stats_txt.c_str());
+        ImGui::SetWindowFontScale(1.0f);
     }
     ImGui::End();
 

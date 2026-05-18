@@ -137,6 +137,7 @@ class Steam_Overlay
 
     char username_text[256]{};
     std::atomic<bool> save_settings = false;
+    std::atomic<bool> save_overlay_appearance = false;
 
     int current_language = 0;
 
@@ -217,6 +218,7 @@ class Steam_Overlay
     void add_ach_progressbar(const Overlay_Achievement &ach);
     ImVec4 get_notification_bg_rgba_safe();
     void build_notifications(float width, float height);
+    void draw_scaled_wrapped_text(ImFont *font, float size, const char *text, bool faux_bold = false);
     
     void request_renderer_detector();
     void set_renderer_hook_timeout();
