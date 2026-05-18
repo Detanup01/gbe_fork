@@ -260,6 +260,18 @@ static void load_overlay_appearance(class Settings *settings_client, class Setti
                 float nfont_size = std::stof(value, NULL);
                 settings_client->overlay_appearance.font_size = nfont_size;
                 settings_server->overlay_appearance.font_size = nfont_size;
+            } else if (name.compare("Font_Size_FPS") == 0) {
+                float nfont_size = std::stof(value, NULL);
+                settings_client->overlay_appearance.font_size_fps = nfont_size;
+                settings_server->overlay_appearance.font_size_fps = nfont_size;
+            } else if (name.compare("Font_Size_Achievement_Title") == 0) {
+                float nfont_size = std::stof(value, NULL);
+                settings_client->overlay_appearance.font_size_ach_title = nfont_size;
+                settings_server->overlay_appearance.font_size_ach_title = nfont_size;
+            } else if (name.compare("Font_Size_Achievement_Description") == 0) {
+                float nfont_size = std::stof(value, NULL);
+                settings_client->overlay_appearance.font_size_ach_desc = nfont_size;
+                settings_server->overlay_appearance.font_size_ach_desc = nfont_size;
             } else if (name.compare("Icon_Size") == 0) {
                 float nicon_size = std::stof(value, NULL);
                 settings_client->overlay_appearance.icon_size = nicon_size;

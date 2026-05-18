@@ -129,10 +129,9 @@ struct Overlay_Appearance {
 
     std::string font_override{}; // path to a custom user-provided TTF font
     float font_size = 16.0f;
-    // independent font sizes
-    float font_size_fps = 16.0f;
-    float font_size_ach_title = 18.0f;
-    float font_size_ach_desc = 14.0f;
+    float font_size_fps = 0.0f;
+    float font_size_ach_title = 0.0f;
+    float font_size_ach_desc = 0.0f;
     
     float icon_size = 64.0f;
 
