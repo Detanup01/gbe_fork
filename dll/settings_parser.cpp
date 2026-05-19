@@ -1640,6 +1640,16 @@ static void parse_overlay_general_config(class Settings *settings_client, class 
             settings_server->overlay_fps_avg_window = val;        
         }
     }
+
+    // Achievement notification delay (in seconds, converted to milliseconds)
+    {
+        auto val = ini.GetLongValue("overlay::general", "Achievement_Notification_Delay", -1);
+        if (val >= 0) {
+            settings_client->achievement_notification_delay_ms = static_cast<int>(val * 1000);
+            settings_server->achievement_notification_delay_ms = static_cast<int>(val * 1000);
+            PRINT_DEBUG("Setting achievement notification delay to %i ms", settings_client->achievement_notification_delay_ms);
+        }
+    }
     
 }
 

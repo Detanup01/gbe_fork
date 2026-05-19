@@ -379,6 +379,8 @@ public:
     bool overlay_always_show_playtime = false;
     // keys used to toggle the overlay, default = Shift + Tab
     std::vector<std::string> overlay_toggle_keys{};
+    // minimum time interval between achievement notifications (in milliseconds)
+    int achievement_notification_delay_ms = 0;
 
     // free weekend
     bool free_weekend = false;

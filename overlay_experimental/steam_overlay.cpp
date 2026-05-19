@@ -1320,15 +1320,76 @@ void Steam_Overlay::post_achievement_notification(Overlay_Achievement &ach, bool
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     if (!Ready()) return;
 
-    bool achieved = !for_progress; // for progress notifications we want to load the gray icon
-    // force upload to GPU if the pagination is request-based
-    try_load_ach_icon(ach, achieved, settings->paginated_achievements_icons == 0);
-    submit_notification(
-        for_progress ? notification_type::achievement_progress : notification_type::achievement,
-        ach.title + "\n" + ach.description,
-        {},
-        &ach
-    );
+    // Get current time
+    auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+
+    // Calculate scheduled show time based on rate limiting
+    std::chrono::milliseconds scheduled_show_time;
+    int delay_ms = settings->achievement_notification_delay_ms;
+
+    if (delay_ms <= 0) {
+        // No delay - show immediately
+        scheduled_show_time = now;
+    } else {
+        // Apply rate limiting: earliest show time is last_scheduled_show_time + delay
+        scheduled_show_time = std::max(now, last_scheduled_show_time + std::chrono::milliseconds(delay_ms));
+    }
+
+    // Create scheduled achievement entry
+    ScheduledAchievement scheduled_ach;
+    scheduled_ach.ach = ach;
+    scheduled_ach.for_progress = for_progress;
+    scheduled_ach.trigger_time = now;
+    scheduled_ach.scheduled_show_time = scheduled_show_time;
+
+    // Add to queue
+    achievement_queue.push_back(scheduled_ach);
+
+    // Update last scheduled show time for next item
+    last_scheduled_show_time = scheduled_show_time;
+
+    PRINT_DEBUG("Achievement queued: '%s', scheduled for %lld ms, delay=%d ms", 
+                ach.name.c_str(), (long long)scheduled_show_time.count(), delay_ms);
+}
+
+void Steam_Overlay::process_achievement_queue()
+{
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (!Ready()) return;
+    if (achievement_queue.empty()) return;
+
+    // Get current time
+    auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+
+    // Process all ready achievements
+    while (!achievement_queue.empty()) {
+        auto& scheduled_ach = achievement_queue.front();
+
+        // Check if it's time to show this notification
+        if (scheduled_ach.scheduled_show_time <= now) {
+            // Show the notification
+            bool achieved = !scheduled_ach.for_progress;
+            // force upload to GPU if the pagination is request-based
+            try_load_ach_icon(scheduled_ach.ach, achieved, settings->paginated_achievements_icons == 0);
+
+            submit_notification(
+                scheduled_ach.for_progress ? notification_type::achievement_progress : notification_type::achievement,
+                scheduled_ach.ach.title + "\n" + scheduled_ach.ach.description,
+                {},
+                &scheduled_ach.ach
+            );
+
+            PRINT_DEBUG("Achievement shown: '%s' at %lld ms", 
+                        scheduled_ach.ach.name.c_str(), (long long)now.count());
+
+            // Remove from queue
+            achievement_queue.pop_front();
+        } else {
+            // This achievement is not ready yet, and queue is ordered by scheduled time,
+            // so no more achievements will be ready either
+            break;
+        }
+    }
 }
 
 bool Steam_Overlay::try_load_ach_icon(Overlay_Achievement &ach, bool achieved, bool upload_new_icon_to_gpu)
@@ -1365,6 +1426,9 @@ void Steam_Overlay::overlay_render_proc()
     std::lock_guard lock(overlay_mutex);
 
     if (!Ready()) return;
+
+    // Process achievement queue to show scheduled notifications
+    process_achievement_queue();
 
     if (show_overlay) {
         render_main_window();

@@ -4,6 +4,7 @@
 #include "dll/base.h"
 #include <map>
 #include <queue>
+#include <deque>
 
 #ifdef EMU_OVERLAY
 
@@ -148,6 +149,16 @@ class Steam_Overlay
     // used when the button "Invite all" is clicked
     std::atomic<bool> invite_all_friends_clicked = false;
 
+    // Rate-limiting queue for achievement notifications
+    struct ScheduledAchievement {
+        Overlay_Achievement ach;
+        bool for_progress;
+        std::chrono::milliseconds trigger_time; // when the achievement was triggered
+        std::chrono::milliseconds scheduled_show_time; // when the notification should be shown
+    };
+    std::deque<ScheduledAchievement> achievement_queue{};
+    std::chrono::milliseconds last_scheduled_show_time{}; // tracks the last scheduled show time for spacing
+
     bool overlay_state_changed = false;
 
     std::atomic<bool> i_have_lobby = false;
@@ -290,6 +301,9 @@ public:
     void FriendDisconnect(Friend _friend);
 
     void AddAchievementNotification(const std::string &ach_name, nlohmann::json const& ach, bool for_progress);
+
+    // Rate-limiting queue functions
+    void process_achievement_queue();
 };
 
 #else // EMU_OVERLAY
@@ -324,6 +338,7 @@ public:
     void FriendDisconnect(Friend _friend) {}
 
     void AddAchievementNotification(const std::string &ach_name, nlohmann::json const& ach, bool for_progress) {}
+    void process_achievement_queue() {}
 };
 
 #endif // EMU_OVERLAY
