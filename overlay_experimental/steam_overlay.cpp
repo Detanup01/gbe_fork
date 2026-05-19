@@ -1326,6 +1326,8 @@ void Steam_Overlay::post_achievement_notification(Overlay_Achievement &ach, bool
     std::chrono::milliseconds scheduled_show_time;
     int delay_ms = settings->achievement_notification_delay_ms;
 
+    PRINT_DEBUG("Achievement delay: %d ms", delay_ms);
+
     if (delay_ms <= 0) {
         // No delay - show immediately
         scheduled_show_time = now;
@@ -1365,6 +1367,10 @@ void Steam_Overlay::process_achievement_queue()
         auto& scheduled_ach = achievement_queue.front();
 
         // Check if it's time to show this notification
+        PRINT_DEBUG("Queue check: scheduled=%lld, now=%lld, diff=%lld",
+                    (long long)scheduled_ach.scheduled_show_time.count(),
+                    (long long)now.count(),
+                    (long long)(now - scheduled_ach.scheduled_show_time).count());
         if (scheduled_ach.scheduled_show_time <= now) {
             // Show the notification
             bool achieved = !scheduled_ach.for_progress;
