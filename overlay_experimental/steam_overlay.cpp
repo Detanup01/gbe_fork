@@ -359,13 +359,14 @@ void Steam_Overlay::create_fonts()
     font_builder.BuildRanges(&ranges);
     font_cfg.GlyphRanges = ranges.Data;
 
-    auto add_overlay_font = [this](float size) {
+    auto add_overlay_font = [this](float size, const std::string &custom_font = "") {
         font_cfg.SizePixels = size;
         font_cfg.MergeMode = false;
 
+        const std::string &font_path = custom_font.empty() ? settings->overlay_appearance.font_override : custom_font;
         ImFont *font = nullptr;
-        if (settings->overlay_appearance.font_override.size()) {
-            font = fonts_atlas.AddFontFromFileTTF(settings->overlay_appearance.font_override.c_str(), size, &font_cfg);
+        if (font_path.size()) {
+            font = fonts_atlas.AddFontFromFileTTF(font_path.c_str(), size, &font_cfg);
             if (font) {
                 font_cfg.MergeMode = true; // merge next font into the custom font
             }
@@ -378,8 +379,8 @@ void Steam_Overlay::create_fonts()
 
     font_notif = font_default = add_overlay_font(font_size);
     font_fps = add_overlay_font(font_size_fps);
-    font_ach_title = add_overlay_font(font_size_ach_title);
-    font_ach_desc = add_overlay_font(font_size_ach_desc);
+    font_ach_title = add_overlay_font(font_size_ach_title, settings->overlay_appearance.font_override_ach_title);
+    font_ach_desc = add_overlay_font(font_size_ach_desc, settings->overlay_appearance.font_override_ach_desc);
     stats.font = font_fps;
 
     bool res = fonts_atlas.IsBuilt();
