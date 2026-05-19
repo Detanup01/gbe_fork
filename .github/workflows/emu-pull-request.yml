@@ -24,6 +24,11 @@ jobs:
     if: ${{ !cancelled() }}
     uses: "./.github/workflows/emu-build-all-win.yml"
 
+  emu-win-all-vs22:
+    name: "win vs22"
+    if: ${{ !cancelled() }}
+    uses: "./.github/workflows/emu-build-all-win-vs22.yml"
+
   emu-linux-all:
     name: "linux"
     if: ${{ !cancelled() }}

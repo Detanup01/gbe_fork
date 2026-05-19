@@ -72,7 +72,7 @@ jobs:
       # release (debug + release modes) if this is a tag push
       - name: "Release"
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: "build/package/win/**/*"
 
@@ -161,7 +161,7 @@ jobs:
       # release (debug + release modes) if this is a tag push
       - name: "Release"
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: "build/package/linux/**/*"
 
@@ -231,7 +231,7 @@ jobs:
       # release tag
       - name: "Release"
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: "tools/migrate_gse/bin/package/win/**/*"
 
@@ -283,7 +283,7 @@ jobs:
       # release tag
       - name: "Release"
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: "tools/migrate_gse/bin/package/linux/**/*"
 
@@ -294,6 +294,165 @@ jobs:
         with:
           name: "release-migrate_gse-linux-${{ github.sha }}"
           path: "tools/migrate_gse/bin/package/linux/**/*"
+          if-no-files-found: "error"
+          compression-level: 9
+          retention-days: 7
+
+  emu-win-all-vs22:
+    name: "Emu win all vs22"
+    if: ${{ !cancelled() }}
+    uses: "./.github/workflows/emu-build-all-win-vs22.yml"
+
+  emu-win-prep-vs22:
+    needs: ["emu-win-all-vs22"]
+    runs-on: "windows-2022"
+    steps:
+      # on Windows Git will auto change line ending to CRLF, not preferable
+      - name: "Ensure LF line ending"
+        shell: "cmd"
+        working-directory: "${{ github.workspace }}"
+        run: |
+          git config --local core.autocrlf false
+          git config --system core.autocrlf false
+          git config --global core.autocrlf false
+
+      # we need branch because it has package scripts
+      - name: "Checkout branch"
+        uses: actions/checkout@v6
+
+      - name: "Clone third-party deps (deps/win)"
+        uses: actions/checkout@v6
+        with:
+          ref: "third-party/deps/win"
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/win"
+
+      # download artifacts
+      - name: "Download emu build artifacts (Win)"
+        uses: actions/download-artifact@v8
+        with:
+          path: "build/win"
+          pattern: "emu-win-vs22-*-${{ github.sha }}"
+          merge-multiple: true
+
+      # print files
+      - name: "Print files"
+        shell: "cmd"
+        working-directory: "${{ github.workspace }}"
+        run: |
+          dir /s /b /a:-d build\win
+
+      # package (release mode)
+      - name: "Package build (release)"
+        shell: "cmd"
+        working-directory: "${{ github.workspace }}"
+        run: package_win.bat vs2022\release
+
+      # package (debug mode)
+      - name: "Package build (debug)"
+        shell: "cmd"
+        working-directory: "${{ github.workspace }}"
+        run: package_win.bat vs2022\debug 1
+
+      # Rename
+      - name: "Rename"
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: "cmd"
+        working-directory: "build/package/win/vs2022"
+        run: |
+          ren emu-win-debug.7z emu-win-debug-vs22.7z
+          ren emu-win-release.7z emu-win-release-vs22.7z
+          
+      # release (debug + release modes) if this is a tag push
+      - name: "Release"
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v3
+        with:
+          files: "build/package/win/**/*"
+
+      # upload artifacts/packages if this is a manual run
+      - name: "Upload release package"
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: "release-emu-win-vs22-release-${{ github.sha }}"
+          path: "build/package/win/vs2022/*release*"
+          if-no-files-found: "error"
+          compression-level: 0
+          retention-days: 7
+
+      - name: "Upload debug package"
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: "release-emu-win-vs22-debug-${{ github.sha }}"
+          path: "build/package/win/vs2022/*debug*"
+          if-no-files-found: "error"
+          compression-level: 0
+          retention-days: 7
+
+  migrate_gse_script-win-vs22:
+    name: "Migrate GSE win vs22"
+    if: ${{ !cancelled() }}
+    uses: "./.github/workflows/migrate_gse-build-win-vs22.yml"
+
+  migrate_gse_script-win-prep-vs22:
+    needs: ["migrate_gse_script-win-vs22"]
+    runs-on: "windows-2022"
+    steps:
+      # on Windows Git will auto change line ending to CRLF, not preferable
+      - name: "Ensure LF line ending"
+        shell: "cmd"
+        working-directory: "${{ github.workspace }}"
+        run: |
+          git config --local core.autocrlf false
+          git config --system core.autocrlf false
+          git config --global core.autocrlf false
+
+      # we need branch because it has package scripts
+      - name: "Checkout branch"
+        uses: actions/checkout@v6
+
+      - name: "Clone third-party deps (deps/win)"
+        uses: actions/checkout@v6
+        with:
+          ref: "third-party/deps/win"
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/win"
+
+      # download artifacts
+      - name: "Download script build artifacts (Win)"
+        uses: actions/download-artifact@v8
+        with:
+          path: "tools/migrate_gse/bin/win"
+          pattern: "migrate_gse-win-vs22-*"
+          merge-multiple: true
+
+      # package
+      - name: "Package script"
+        shell: "cmd"
+        working-directory: "tools/migrate_gse"
+        run: package_win.bat
+
+      # Rename
+      - name: "Rename"
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: "cmd"
+        working-directory: "tools/migrate_gse/bin/package/win"
+        run: ren migrate_gse-win.7z migrate_gse-win-vs22.7z
+        
+      # release tag
+      - name: "Release"
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v3
+        with:
+          files: "tools/migrate_gse/bin/package/win/**/*"
+
+      # upload artifact/package if this is a manual run
+      - name: "Upload release package"
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: "release-migrate_gse-win-vs22-${{ github.sha }}"
+          path: "tools/migrate_gse/bin/package/win/**/*"
           if-no-files-found: "error"
           compression-level: 9
           retention-days: 7

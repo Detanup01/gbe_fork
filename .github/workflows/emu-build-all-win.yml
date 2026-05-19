@@ -60,6 +60,14 @@ jobs:
             arch: x64
 
     steps:
+      # clone branch
+      - name: "Checkout branch"
+        uses: actions/checkout@v6
+
+      # ensure we have msbuild
+      - name: "Add MSBuild to PATH"
+        uses: microsoft/setup-msbuild@v3
+
       # on Windows Git will auto change line ending to CRLF, not preferable
       - name: "Ensure LF line ending"
         shell: "cmd"
@@ -68,14 +76,6 @@ jobs:
           git config --local core.autocrlf false
           git config --system core.autocrlf false
           git config --global core.autocrlf false
-
-      # ensure we have msbuild
-      - name: "Add MSBuild to PATH"
-        uses: microsoft/setup-msbuild@v3
-
-      # clone branch
-      - name: "Checkout branch"
-        uses: actions/checkout@v6
 
       # deps
       - name: "Restore deps"
