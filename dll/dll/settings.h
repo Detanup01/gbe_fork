@@ -128,10 +128,13 @@ struct Overlay_Appearance {
     constexpr const static NotificationPosition default_pos = NotificationPosition::top_right;
 
     std::string font_override{}; // path to a custom user-provided TTF font
+    std::string font_override_ach_title{}; // path to custom font for achievement title
+    std::string font_override_ach_desc{}; // path to custom font for achievement description
     float font_size = 16.0f;
     float font_size_fps = 0.0f;
     float font_size_ach_title = 0.0f;
     float font_size_ach_desc = 0.0f;
+    bool font_ach_title_bold = false;
     
     float icon_size = 64.0f;
 
