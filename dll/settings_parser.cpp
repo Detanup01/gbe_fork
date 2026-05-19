@@ -256,6 +256,44 @@ static void load_overlay_appearance(class Settings *settings_client, class Setti
                 } else {
                     PRINT_DEBUG("  ERROR font file '%s' doesn't exist and will be ignored", value.c_str());
                 }
+            } else if (name.compare("Font_Override_Achievement_Title") == 0) {
+                value = common_helpers::string_strip(value);
+                std::string nfont_override(common_helpers::to_absolute(value, Local_Storage::get_game_settings_path() + "fonts"));
+                if (!common_helpers::file_exist(nfont_override)) {
+                    nfont_override.clear();
+                }
+                if (nfont_override.empty()) {
+                    nfont_override = common_helpers::to_absolute(value, local_storage->get_global_settings_path() + "fonts");
+                    if (!common_helpers::file_exist(nfont_override)) {
+                        nfont_override.clear();
+                    }
+                }
+                if (nfont_override.size()) {
+                    settings_client->overlay_appearance.font_override_ach_title = nfont_override;
+                    settings_server->overlay_appearance.font_override_ach_title = nfont_override;
+                    PRINT_DEBUG("  loaded font '%s'", nfont_override.c_str());
+                } else {
+                    PRINT_DEBUG("  ERROR font file '%s' doesn't exist and will be ignored", value.c_str());
+                }
+            } else if (name.compare("Font_Override_Achievement_Description") == 0) {
+                value = common_helpers::string_strip(value);
+                std::string nfont_override(common_helpers::to_absolute(value, Local_Storage::get_game_settings_path() + "fonts"));
+                if (!common_helpers::file_exist(nfont_override)) {
+                    nfont_override.clear();
+                }
+                if (nfont_override.empty()) {
+                    nfont_override = common_helpers::to_absolute(value, local_storage->get_global_settings_path() + "fonts");
+                    if (!common_helpers::file_exist(nfont_override)) {
+                        nfont_override.clear();
+                    }
+                }
+                if (nfont_override.size()) {
+                    settings_client->overlay_appearance.font_override_ach_desc = nfont_override;
+                    settings_server->overlay_appearance.font_override_ach_desc = nfont_override;
+                    PRINT_DEBUG("  loaded font '%s'", nfont_override.c_str());
+                } else {
+                    PRINT_DEBUG("  ERROR font file '%s' doesn't exist and will be ignored", value.c_str());
+                }
             } else if (name.compare("Font_Size") == 0) {
                 float nfont_size = std::stof(value, NULL);
                 settings_client->overlay_appearance.font_size = nfont_size;
