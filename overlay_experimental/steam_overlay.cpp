@@ -1379,9 +1379,7 @@ void Steam_Overlay::process_achievement_queue()
             );
 
             // Play sound when notification is actually shown (delayed with queue)
-            if (!scheduled_ach.for_progress) {
-                notify_sound_user_achievement();
-            }
+            notify_sound_user_achievement();
 
             PRINT_DEBUG("Achievement shown: '%s' at %lld ms", 
                         scheduled_ach.ach.name.c_str(), (long long)now.count());
