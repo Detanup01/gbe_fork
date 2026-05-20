@@ -735,8 +735,7 @@ void Steam_Overlay::show_test_achievement()
     }
 
     post_achievement_notification(ach, for_progress);
-    // here we always play the sound for testing
-    notify_sound_user_achievement();
+    // sound is now played when notification is actually shown (delayed with queue)
 }
 
 void Steam_Overlay::build_friend_context_menu(Friend const& frd, friend_window_state& state)
@@ -1378,6 +1377,11 @@ void Steam_Overlay::process_achievement_queue()
                 {},
                 &scheduled_ach.ach
             );
+
+            // Play sound when notification is actually shown (delayed with queue)
+            if (!scheduled_ach.for_progress) {
+                notify_sound_user_achievement();
+            }
 
             PRINT_DEBUG("Achievement shown: '%s' at %lld ms", 
                         scheduled_ach.ach.name.c_str(), (long long)now.count());
@@ -2093,7 +2097,7 @@ void Steam_Overlay::AddAchievementNotification(const std::string &ach_name, nloh
 
             if (a.achieved && !for_progress) { // here we don't show the progress indications
                 post_achievement_notification(a, for_progress);
-                notify_sound_user_achievement();
+                // sound is now played when notification is actually shown (delayed with queue)
             } else if (for_progress && !settings->disable_overlay_achievement_progress) { // progress indication is shown for locked achievements only
                 // post notification if this isn't a progress, or a progress and the user didn't disable these notifications
                 post_achievement_notification(a, for_progress);
