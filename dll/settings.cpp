@@ -123,6 +123,13 @@ const char *Settings::get_local_name()
     return name.c_str();
 }
 
+const char *Settings::get_local_persona_name()
+{
+    // fall back to the account name when no distinct display name was configured
+    if (persona_name.empty()) return name.c_str();
+    return persona_name.c_str();
+}
+
 const char *Settings::get_language()
 {
     return language.c_str();
@@ -131,6 +138,11 @@ const char *Settings::get_language()
 void Settings::set_local_name(const char *name)
 {
     this->name = name;
+}
+
+void Settings::set_local_persona_name(const char *persona_name)
+{
+    this->persona_name = persona_name;
 }
 
 void Settings::set_language(const char *language)

@@ -693,6 +693,15 @@ static std::string parse_account_name(class Local_Storage *local_storage)
     return std::string(name);
 }
 
+// user::general::persona_name
+// the display name shown in-game (GetPersonaName). empty means fall back to the account name.
+static std::string parse_persona_name()
+{
+    auto name = ini.GetValue("user::general", "persona_name");
+    if (!name || !name[0]) return {};
+    return std::string(name);
+}
+
 // user::general::account_steamid
 static CSteamID parse_user_steam_id(class Local_Storage *local_storage)
 {
@@ -1933,6 +1942,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     uint16 port = parse_listen_port(local_storage);
     // Acount name
     std::string name(parse_account_name(local_storage));
+    // Persona name (display name shown in-game), empty falls back to the account name
+    std::string persona_name(parse_persona_name());
     // Steam ID
     CSteamID user_id = parse_user_steam_id(local_storage);
     
@@ -1951,6 +1962,9 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     }
     Settings *settings_client = new Settings(user_id, CGameID(appid), name, language, steam_offline_mode);
     Settings *settings_server = new Settings(generate_steam_id_server(), CGameID(appid), name, language, true); // server starts logged out
+
+    settings_client->set_local_persona_name(persona_name.c_str());
+    settings_server->set_local_persona_name(persona_name.c_str());
 
     settings_client->alt_steamid = alt_steamid;
     settings_client->alt_steamid_count = alt_steamid_count;
