@@ -197,8 +197,8 @@ const char* Steam_Friends::GetPersonaName()
 {
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    const char *local_name = settings->get_local_name();
-    
+    const char *local_name = settings->get_local_persona_name();
+
     return local_name;
 }
 
@@ -379,7 +379,7 @@ const char* Steam_Friends::GetFriendPersonaName( CSteamID steamIDFriend )
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     const char *name = "Unknown User";
     if (steamIDFriend == settings->get_local_steam_id()) {
-        name = settings->get_local_name();
+        name = settings->get_local_persona_name();
     } else {
         Friend *f = find_friend(steamIDFriend);
         if (f) name = f->name().c_str();
@@ -1451,7 +1451,7 @@ void Steam_Friends::RunCallbacks()
         msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
         Friend *f = new Friend(us);
         f->set_id(settings->get_local_steam_id().ConvertToUint64());
-        f->set_name(settings->get_local_name());
+        f->set_name(settings->get_local_persona_name());
         f->set_appid(settings->get_local_game_id().AppID());
         f->set_lobby_id(settings->get_lobby().ConvertToUint64());
         msg.set_allocated_friend_(f);
@@ -1482,10 +1482,10 @@ void Steam_Friends::Callback(Common_Message *msg)
             msg_.set_dest_id(msg->source_id());
             Friend *f = new Friend(us);
             f->set_id(settings->get_local_steam_id().ConvertToUint64());
-            f->set_name(settings->get_local_name());
+            f->set_name(settings->get_local_persona_name());
             f->set_appid(settings->get_local_game_id().AppID());
             f->set_lobby_id(settings->get_lobby().ConvertToUint64());
-            
+
             int avatar_number = GetLargeFriendAvatar(settings->get_local_steam_id());
             auto avatar_info = settings->get_image(avatar_number);
             if (avatar_info && avatar_info->data.size()) {

@@ -212,7 +212,8 @@ class Settings {
 private:
     CSteamID steam_id{}; // user id
     CGameID game_id{};
-    std::string name{};
+    std::string name{}; // account / login name
+    std::string persona_name{}; // display name returned by GetPersonaName(), falls back to 'name' when empty
     std::string language{}; // default "english"
     CSteamID lobby_id = k_steamIDNil;
 
@@ -409,6 +410,9 @@ public:
 
     const char *get_local_name();
     void set_local_name(const char *name);
+
+    const char *get_local_persona_name();
+    void set_local_persona_name(const char *persona_name);
 
     const char *get_language();
     void set_language(const char *language);
