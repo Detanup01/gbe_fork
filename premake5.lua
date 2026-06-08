@@ -241,6 +241,7 @@ local x32_deps_overlay_include = {
     path.join(deps_dir, "ingame_overlay/install32/include"),
     path.join(deps_dir, "ingame_overlay/deps/System/install32/include"),
     path.join(deps_dir, "ingame_overlay/deps/mini_detour/install32/include"),
+    path.join(deps_dir, "ingame_overlay/deps/ImGui"),
 }
 
 local x64_deps_include = {
@@ -258,6 +259,7 @@ local x64_deps_overlay_include = {
     path.join(deps_dir, "ingame_overlay/install64/include"),
     path.join(deps_dir, "ingame_overlay/deps/System/install64/include"),
     path.join(deps_dir, "ingame_overlay/deps/mini_detour/install64/include"),
+    path.join(deps_dir, "ingame_overlay/deps/ImGui"),
 }
 
 
@@ -302,7 +304,7 @@ end
 
 local zlib_archive_name = 'z'
 if os.target() == 'windows' then
-    zlib_archive_name = 'zs' -- even on MinGw we need this name
+    zlib_archive_name = 'zlibstatic' -- even on MinGw we need this name
 end
 
 local sdl_name = 'SDL3'
@@ -384,7 +386,7 @@ table_append(deps_link, {
     "absl_random_distributions"                   .. static_postfix,
     "absl_random_internal_distribution_test_util" .. static_postfix,
     "absl_random_internal_platform"               .. static_postfix,
-    "absl_random_internal_entropy_pool"           .. static_postfix,
+    "absl_random_internal_pool_urbg"              .. static_postfix,
     "absl_random_internal_randen"                 .. static_postfix,
     "absl_random_internal_randen_hwaes"           .. static_postfix,
     "absl_random_internal_randen_hwaes_impl"      .. static_postfix,
