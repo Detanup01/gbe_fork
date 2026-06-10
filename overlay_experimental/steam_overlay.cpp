@@ -30,10 +30,10 @@
 #include "fonts/RawAwesome6.hpp"
 #include "overlay/notification.h"
 
-#include "imgui_internal.h"
+#include "InGameOverlay/ImGui/imgui_internal.h"
 
 #include <curl/curl.h>
-#include "overlay/json.hpp"
+#include "json/json.hpp"
 #include <fstream>
 #pragma comment(lib, "version.lib")
 
@@ -56,6 +56,8 @@ static constexpr int base_friend_item_id = 2 * max_window_id;
 static bool friends_pinned = false;
 static bool achievements_pinned = false;
 static bool settings_pinned = false;
+static bool pending_close_overlay = false;
+static bool history_pinned = false;
 static bool g_allow_direct_join = false;
 
 static std::unordered_set<uint64_t> g_muted_users;
@@ -552,7 +554,7 @@ static bool RenderAvatarPickerPopup(Steam_Overlay* overlay)
 
     ImGui::PushStyleColor(ImGuiCol_PopupBg, RedAccentTheme::BgPopup);
     ImGui::PushStyleColor(ImGuiCol_Border, RedAccentTheme::Border);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, RedAccentTheme::PopupRound);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
 
     bool avatar_picker_open = true;
     if (ImGui::BeginPopupModal("Select Avatar Image", &avatar_picker_open, ImGuiWindowFlags_NoResize)) {
@@ -706,7 +708,7 @@ static bool RenderAvatarPickerPopup(Steam_Overlay* overlay)
 
 static bool SteamButton(const char* label, const ImVec2& size = ImVec2(0.0f, 0.0f), bool primary = false)
 {
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, RedAccentTheme::ButtonRound);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 12.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(12.0f, 8.0f));
 
@@ -1279,8 +1281,7 @@ static bool BeginPopupWindowAnimated(const char* id, bool* p_open, ImGuiWindowFl
     const float base_alpha = ImGui::GetStyle().Alpha;
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, base_alpha * state.t);
 
-    bool imgui_open = true;
-    bool opened = ImGui::Begin(id, &imgui_open, local_flags);
+    bool opened = ImGui::Begin(id, nullptr, local_flags);
 
     if (opened) {
         state.last_pos = ImGui::GetWindowPos();
@@ -1288,10 +1289,6 @@ static bool BeginPopupWindowAnimated(const char* id, bool* p_open, ImGuiWindowFl
     }
 
     ImGui::PopStyleVar();
-
-    if (p_open && !imgui_open) {
-        *p_open = false;
-    }
 
     return opened;
 }
@@ -1317,14 +1314,14 @@ bool ToggleButton(const char* str_id, bool* v)
     bool changed = false;
     if (ImGui::IsItemClicked()) {
         *v = !*v;
-        ImGui::GetStateStorage()->SetFloat(ImGui::GetID(str_id), ImGui::GetTime());
+        ImGui::GetStateStorage()->SetFloat(ImGui::GetID(str_id), static_cast<float>(ImGui::GetTime()));
         changed = true;
     }
 
     const bool hovered = ImGui::IsItemHovered();
 
     float start_time = ImGui::GetStateStorage()->GetFloat(ImGui::GetID(str_id), 0.0f);
-    float current_time = ImGui::GetTime();
+    float current_time = static_cast<float>(ImGui::GetTime());
     float animation_progress = (current_time - start_time) * 8.0f;
 
     float target_t = *v ? 1.0f : 0.0f;
@@ -1395,14 +1392,16 @@ bool DrawSetting(const char* name, bool* value)
 
     ImGui::BeginGroup();
 
-    ImGui::SetCursorPos(start_pos);
-    ImGui::AlignTextToFramePadding();
-    ImGui::TextUnformatted(visible_name.c_str());
-
     float toggle_x = start_pos.x + content_w - toggle_width - right_gap;
     if (toggle_x < start_pos.x + 120.0f) {
         toggle_x = start_pos.x + 120.0f;
     }
+
+    ImGui::SetCursorPos(start_pos);
+    ImGui::AlignTextToFramePadding();
+    ImGui::PushTextWrapPos(toggle_x - 10.0f);
+    ImGui::TextUnformatted(visible_name.c_str());
+    ImGui::PopTextWrapPos();
 
     float toggle_y = start_pos.y + (ImGui::GetTextLineHeight() - toggle_height) * 0.5f;
     if (toggle_y < start_pos.y) {
@@ -1422,7 +1421,7 @@ bool DrawSetting(const char* name, bool* value)
 bool BeginModernWindow(const char* title, ImVec2 size, bool* p_open, int /*current_language*/, bool* p_pinned = nullptr, bool /*show_nav_bar*/ = false, bool animate = false)
 {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, RedAccentTheme::WindowRound);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 12.0f));
     ImGui::PushStyleColor(ImGuiCol_WindowBg, RedAccentTheme::BgElevated);
     ImGui::PushStyleColor(ImGuiCol_Border, RedAccentTheme::Border);
@@ -1540,18 +1539,21 @@ void EndModernWindow()
     ImGui::PopStyleVar(3);
 }
 
+static bool g_steam_panel_active = false;
+static bool g_steam_panel_inner_active = false;
+
 static bool BeginSteamPanel(
     const char* id,
     const char* title,
     const ImVec2& size = ImVec2(0, 0),
     ImGuiWindowFlags extra_flags = 0)
 {
-    g_steam_panel_outer_open = false;
-    g_steam_panel_inner_open = false;
+    g_steam_panel_active = false;
+    g_steam_panel_inner_active = false;
 
     ImGui::PushStyleColor(ImGuiCol_ChildBg, RedAccentTheme::BgElevated);
     ImGui::PushStyleColor(ImGuiCol_Border, RedAccentTheme::BorderSoft);
-    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, RedAccentTheme::CardRound);
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 10.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(18.0f, 16.0f));
 
     ImVec2 panel_size = size;
@@ -1562,7 +1564,7 @@ static bool BeginSteamPanel(
     const float header_height = 42.0f;
     const float body_offset_y = 50.0f;
 
-    g_steam_panel_outer_open = ImGui::BeginChild(
+    bool outer_opened = ImGui::BeginChild(
         id,
         panel_size,
         true,
@@ -1571,9 +1573,14 @@ static bool BeginSteamPanel(
         ImGuiWindowFlags_NoScrollWithMouse
     );
 
-    if (!g_steam_panel_outer_open) {
+    if (!outer_opened) {
+        ImGui::EndChild();
+        ImGui::PopStyleVar(2);
+        ImGui::PopStyleColor(2);
         return false;
     }
+
+    g_steam_panel_active = true;
 
     ImDrawList* dl = ImGui::GetWindowDrawList();
     ImVec2 pmin = ImGui::GetWindowPos();
@@ -1601,40 +1608,51 @@ static bool BeginSteamPanel(
     ImGui::SetCursorPos(ImVec2(10.0f, body_offset_y));
 
     std::string body_id = std::string(id) + "##Body";
-    g_steam_panel_inner_open = ImGui::BeginChild(
+    bool inner_opened = ImGui::BeginChild(
         body_id.c_str(),
         ImVec2(0.0f, 0.0f),
         false,
         ImGuiWindowFlags_AlwaysUseWindowPadding | extra_flags
     );
 
-    if (g_steam_panel_inner_open) {
-        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 4.0f);
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
+    if (!inner_opened) {
+        ImGui::EndChild();
+        ImGui::EndChild();
+        ImGui::PopStyleVar(2);
+        ImGui::PopStyleColor(2);
+        g_steam_panel_active = false;
+        return false;
     }
 
-    return g_steam_panel_inner_open;
+    g_steam_panel_inner_active = true;
+
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 4.0f);
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
+
+    return true;
 }
 
 static void EndSteamPanel()
 {
-    if (g_steam_panel_inner_open) {
+    if (g_steam_panel_inner_active) {
         ImGui::EndChild();
+        g_steam_panel_inner_active = false;
     }
 
-    if (g_steam_panel_outer_open) {
+    if (g_steam_panel_active) {
         ImGui::EndChild();
+        g_steam_panel_active = false;
+        ImGui::PopStyleVar(2);
+        ImGui::PopStyleColor(2);
     }
-
-    g_steam_panel_inner_open = false;
-    g_steam_panel_outer_open = false;
-
-    ImGui::PopStyleVar(2);
-    ImGui::PopStyleColor(2);
 }
+
+static bool g_flat_panel_active = false;
 
 static bool BeginFlatPanel(const char* id, const ImVec2& size = ImVec2(0, 0))
 {
+    g_flat_panel_active = false;
+
     ImGui::PushStyleColor(ImGuiCol_ChildBg, RedAccentTheme::SurfaceTransparent);
     ImGui::PushStyleColor(ImGuiCol_Border, RedAccentTheme::BorderSoft);
     ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 12.0f);
@@ -1654,29 +1672,39 @@ static bool BeginFlatPanel(const char* id, const ImVec2& size = ImVec2(0, 0))
         ImGuiWindowFlags_NoScrollWithMouse
     );
 
-    if (opened) {
-        ImDrawList* dl = ImGui::GetWindowDrawList();
-        ImVec2 min = ImGui::GetWindowPos();
-        ImVec2 max = ImVec2(min.x + ImGui::GetWindowSize().x, min.y + ImGui::GetWindowSize().y);
-
-        dl->AddRect(
-            min,
-            max,
-            ImGui::GetColorU32(RedAccentTheme::BorderSoft),
-            12.0f,
-            0,
-            1.0f
-        );
+    if (!opened) {
+        ImGui::EndChild();
+        ImGui::PopStyleVar(2);
+        ImGui::PopStyleColor(2);
+        return false;
     }
 
-    return opened;
+    g_flat_panel_active = true;
+
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+    ImVec2 min = ImGui::GetWindowPos();
+    ImVec2 max = ImVec2(min.x + ImGui::GetWindowSize().x, min.y + ImGui::GetWindowSize().y);
+
+    dl->AddRect(
+        min,
+        max,
+        ImGui::GetColorU32(RedAccentTheme::BorderSoft),
+        12.0f,
+        0,
+        1.0f
+    );
+
+    return true;
 }
 
 static void EndFlatPanel()
 {
-    ImGui::EndChild();
-    ImGui::PopStyleVar(2);
-    ImGui::PopStyleColor(2);
+    if (g_flat_panel_active) {
+        ImGui::EndChild();
+        ImGui::PopStyleVar(2);
+        ImGui::PopStyleColor(2);
+        g_flat_panel_active = false;
+    }
 }
 
 static void DrawRadialBackground(ImDrawList* dl, const ImVec2& size)
@@ -1732,7 +1760,6 @@ static void DrawOverlayBackgroundFx(ImDrawList* dl, const ImVec2& display_size, 
 
     for (int i = 0; i < count; ++i) {
         float seed = (float)i * 17.371f;
-        float px, py;
 
         float offset_x = wind * t * 0.5f;
         float offset_y = turbulence * std::sin(t * 0.5f + seed) * 20.0f;
@@ -2098,6 +2125,15 @@ void Steam_Overlay::create_fonts()
     fonts_atlas.Flags |= ImFontAtlasFlags_NoPowerOfTwoHeight;
 
     float font_size = settings->overlay_appearance.font_size;
+    float font_size_fps = settings->overlay_appearance.font_size_fps > 0.0f
+        ? settings->overlay_appearance.font_size_fps
+        : font_size;
+    float font_size_ach_title = settings->overlay_appearance.font_size_ach_title > 0.0f
+        ? settings->overlay_appearance.font_size_ach_title
+        : font_size;
+    float font_size_ach_desc = settings->overlay_appearance.font_size_ach_desc > 0.0f
+        ? settings->overlay_appearance.font_size_ach_desc
+        : font_size;
 
     font_cfg.FontDataOwnedByAtlas = false;
     font_cfg.PixelSnapH = true;
@@ -2160,36 +2196,41 @@ void Steam_Overlay::create_fonts()
     font_builder.BuildRanges(&ranges);
     font_cfg.GlyphRanges = ranges.Data;
 
-    if (settings->overlay_appearance.font_override.size()) {
-        fonts_atlas.AddFontFromFileTTF(
-            settings->overlay_appearance.font_override.c_str(),
-            font_size,
-            &font_cfg
-        );
+    auto add_overlay_font = [this](float size, const std::string &custom_font = "") {
+        font_cfg.SizePixels = size;
+        font_cfg.MergeMode = false;
+
+        const std::string &font_path = custom_font.empty() ? settings->overlay_appearance.font_override : custom_font;
+        ImFont *font = nullptr;
+        if (font_path.size()) {
+            font = fonts_atlas.AddFontFromFileTTF(font_path.c_str(), size, &font_cfg);
+            if (font) {
+                font_cfg.MergeMode = true; // merge next font into the custom font
+            }
+        }
+
+        ImFont *fallback_font = fonts_atlas.AddFontFromMemoryCompressedTTF(unifont_compressed_data, unifont_compressed_size, size, &font_cfg);
+        
         font_cfg.MergeMode = true;
-    }
+        font_cfg.PixelSnapH = true;
+        static const ImWchar icon_ranges[] = { 0xe000, 0xf8ff, 0 };
 
-    ImFont* font = fonts_atlas.AddFontFromMemoryCompressedTTF(
-        unifont_compressed_data,
-        unifont_compressed_size,
-        font_size,
-        &font_cfg
-    );
+        fonts_atlas.AddFontFromMemoryCompressedTTF(
+            FontAwesome6Solid_compressed_data,
+            FontAwesome6Solid_compressed_size,
+            size,
+            &font_cfg,
+            icon_ranges
+        );
 
-    font_cfg.MergeMode = true;
-    font_cfg.PixelSnapH = true;
-    static const ImWchar icon_ranges[] = { 0xe000, 0xf8ff, 0 };
+        return font ? font : fallback_font;
+    };
 
-    fonts_atlas.AddFontFromMemoryCompressedTTF(
-        FontAwesome6Solid_compressed_data,
-        FontAwesome6Solid_compressed_size,
-        font_size,
-        &font_cfg,
-        icon_ranges
-    );
-
-    font_notif = font_default = font;
-    stats.font = font;
+    font_notif = font_default = add_overlay_font(font_size);
+    font_fps = add_overlay_font(font_size_fps);
+    font_ach_title = add_overlay_font(font_size_ach_title, settings->overlay_appearance.font_override_ach_title);
+    font_ach_desc = add_overlay_font(font_size_ach_desc, settings->overlay_appearance.font_override_ach_desc);
+    stats.font = font_fps;
 
     bool res = fonts_atlas.Build();
 
@@ -2284,7 +2325,7 @@ void Steam_Overlay::overlay_state_hook(bool ready)
             PRINT_DEBUG("late init ImGui");
 
             ImGuiIO& io = ImGui::GetIO();
-            io.IniFilename = "imgui_overlay_layout.ini";
+            io.IniFilename = nullptr;
 
             ImGuiStyle& style = ImGui::GetStyle();
             ImVec4* colors = style.Colors;
@@ -2292,10 +2333,10 @@ void Steam_Overlay::overlay_state_hook(bool ready)
             style.WindowRounding = RedAccentTheme::WindowRound;
             style.ChildRounding = RedAccentTheme::CardRound;
             style.FrameRounding = RedAccentTheme::FrameRound;
-            style.PopupRounding = RedAccentTheme::PopupRound;
+            style.PopupRounding = 8.0f;
             style.ScrollbarRounding = 999.0f;
             style.GrabRounding = 999.0f;
-            style.TabRounding = 8.0f;
+            style.TabRounding = RedAccentTheme::ButtonRound;
 
             style.WindowPadding = ImVec2(12.0f, 12.0f);
             style.FramePadding = ImVec2(10.0f, 7.0f);
@@ -2349,8 +2390,8 @@ void Steam_Overlay::overlay_state_hook(bool ready)
             colors[ImGuiCol_SeparatorActive] = RedAccentTheme::Border;
 
             colors[ImGuiCol_ScrollbarBg] = ImVec4(0, 0, 0, 0);
-            colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.937f, 0.267f, 0.267f, 0.4f);
-            colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.937f, 0.267f, 0.267f, 0.6f);
+            colors[ImGuiCol_ScrollbarGrab] = ImVec4(RedAccentTheme::Accent.x, RedAccentTheme::Accent.y, RedAccentTheme::Accent.z, 0.25f);
+            colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(RedAccentTheme::Accent.x, RedAccentTheme::Accent.y, RedAccentTheme::Accent.z, 0.45f);
             colors[ImGuiCol_ScrollbarGrabActive] = RedAccentTheme::Accent;
 
             colors[ImGuiCol_ResizeGrip] = ImVec4(1, 1, 1, 0.06f);
@@ -2371,10 +2412,6 @@ void Steam_Overlay::overlay_state_hook(bool ready)
                     io.MouseDrawCursor = true;
                     io.WantCaptureMouse = true;
                     io.WantCaptureKeyboard = true;
-
-#ifdef _WIN32
-                    ShowCursor(FALSE);
-#endif
                 }
             }
         }
@@ -2434,10 +2471,6 @@ void Steam_Overlay::obscure_game_input(bool state, bool force) {
             io.WantCaptureMouse = true;
             io.WantCaptureKeyboard = true;
 
-#ifdef _WIN32
-            ShowCursor(FALSE);
-#endif
-
             if (_renderer) _renderer->HideAppInputs(true);
             PRINT_DEBUG("obscured app input (count=%u, force=%i)", obscure_cursor_requests.load(), (int)force);
         }
@@ -2449,10 +2482,6 @@ void Steam_Overlay::obscure_game_input(bool state, bool force) {
             io.MouseDrawCursor = false;
             io.WantCaptureMouse = false;
             io.WantCaptureKeyboard = false;
-
-#ifdef _WIN32
-            ShowCursor(TRUE);
-#endif
             
             if (_renderer) _renderer->HideAppInputs(false);
             PRINT_DEBUG("restored app input (count=0, force=1)");
@@ -2464,10 +2493,6 @@ void Steam_Overlay::obscure_game_input(bool state, bool force) {
                 io.MouseDrawCursor = false;
                 io.WantCaptureMouse = false;
                 io.WantCaptureKeyboard = false;
-
-#ifdef _WIN32
-                ShowCursor(TRUE);
-#endif
 
                 if (_renderer) _renderer->HideAppInputs(false);
                 PRINT_DEBUG("restored app input (count=0, force=0)");
@@ -2583,7 +2608,8 @@ bool Steam_Overlay::submit_notification(
     }
 
     Notification notif{};
-    notif.start_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+    notif.active = false;
+    notif.start_time = std::chrono::milliseconds(0);
     notif.id = id;
     notif.type = (uint8)type;
     notif.message = msg;
@@ -2592,21 +2618,6 @@ bool Steam_Overlay::submit_notification(
 
     notifications.emplace_back(notif);
     allow_renderer_frame_processing(true);
-    switch (type) {
-    case notification_type::invite:
-        obscure_game_input(true);
-        break;
-
-    case notification_type::achievement_progress:
-    case notification_type::achievement:
-    case notification_type::auto_accept_invite:
-    case notification_type::message:
-        break;
-
-    default:
-        PRINT_DEBUG("error unhandled type %i", (int)type);
-        break;
-    }
 
     return true;
 }
@@ -3025,12 +3036,19 @@ float Steam_Overlay::animate_factor(std::chrono::milliseconds elapsed, std::chro
 
     float factor = 0.0f;
     if (elapsed < animation_duration) {
-        factor = 1.0f - (static_cast<float>(elapsed.count()) / animation_duration.count());
+        float t = static_cast<float>(elapsed.count()) / animation_duration.count();
+        t = std::clamp(t, 0.0f, 1.0f);
+        // Cubic ease-out: progress = 1 - (1 - t)^3, factor = (1 - t)^3
+        float one_minus_t = 1.0f - t;
+        factor = one_minus_t * one_minus_t * one_minus_t;
     }
     else {
         auto steady_time = animation_duration + duration;
         if (elapsed > steady_time) {
-            factor = static_cast<float>((elapsed - steady_time).count()) / animation_duration.count();
+            float t = static_cast<float>((elapsed - steady_time).count()) / animation_duration.count();
+            t = std::clamp(t, 0.0f, 1.0f);
+            // Cubic ease-in: factor = t^3
+            factor = t * t * t;
         }
     }
 
@@ -3069,6 +3087,34 @@ void Steam_Overlay::build_notifications(float width, float height)
     auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
     std::queue<Friend> friend_actions_temp{};
 
+    // Count currently active, non-expired notifications
+    int active_count = 0;
+    for (const auto& item : notifications) {
+        if (item.active && !item.expired) {
+            active_count++;
+        }
+    }
+
+    // Activate inactive, non-expired notifications up to the cap of 4
+    if (active_count < 4) {
+        for (auto& item : notifications) {
+            if (!item.active && !item.expired) {
+                item.active = true;
+                item.start_time = now;
+                active_count++;
+
+                // If this is an invite, obscure the game input now that it becomes active
+                if ((notification_type)item.type == notification_type::invite) {
+                    obscure_game_input(true);
+                }
+
+                if (active_count >= 4) {
+                    break;
+                }
+            }
+        }
+    }
+
     ImGui::PushFont(font_notif);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, settings->overlay_appearance.notification_rounding);
 
@@ -3077,6 +3123,9 @@ void Steam_Overlay::build_notifications(float width, float height)
     int visible_invite_count = 0;
 
     for (auto it = notifications.begin(); it != notifications.end(); ++it) {
+        if (!it->active) {
+            continue;
+        }
         auto noti_duration = get_notification_duration((notification_type)it->type);
         if (noti_duration.count() <= 0) {
             it->expired = true;
@@ -3166,12 +3215,28 @@ void Steam_Overlay::build_notifications(float width, float height)
                     ImGui::Image(icon_rsrc->GetResourceId(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
 
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextWrapped("%s", it->message.c_str());
+                    ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x);
+                    ImGui::PushFont(font_ach_title);
+                    ImGui::TextWrapped("%s", ach.title.c_str());
+                    ImGui::PopFont();
+                    if (ach.description.size()) {
+                        ImGui::PushFont(font_ach_desc);
+                        ImGui::TextWrapped("%s", ach.description.c_str());
+                        ImGui::PopFont();
+                    }
+                    ImGui::PopTextWrapPos();
 
                     ImGui::EndTable();
                 }
                 else {
-                    ImGui::TextWrapped("%s", it->message.c_str());
+                    ImGui::PushFont(font_ach_title);
+                    ImGui::TextWrapped("%s", ach.title.c_str());
+                    ImGui::PopFont();
+                    if (ach.description.size()) {
+                        ImGui::PushFont(font_ach_desc);
+                        ImGui::TextWrapped("%s", ach.description.c_str());
+                        ImGui::PopFont();
+                    }
                 }
 
                 if ((notification_type)it->type == notification_type::achievement_progress) {
@@ -3267,6 +3332,26 @@ void Steam_Overlay::build_notifications(float width, float height)
                 break;
             }
 
+            // Archive to notification history (lightweight copy, no pointers/GPU resources)
+            {
+                NotificationHistoryEntry entry{};
+                // Use actual achievement unlock time when available,
+                // otherwise fall back to the notification display time.
+                if (item.ach.has_value() && item.ach->unlock_time > 0) {
+                    entry.timestamp = std::chrono::milliseconds(
+                        static_cast<long long>(item.ach->unlock_time) * 1000);
+                } else {
+                    entry.timestamp = item.start_time;
+                }
+                entry.type = item.type;
+                entry.message = item.message;
+                if (notification_history.size() >= MAX_NOTIFICATION_HISTORY) {
+                    notification_history.pop_front();
+                }
+                notification_history.push_back(std::move(entry));
+                notification_history_cache_dirty = true;
+            }
+
             return true;
         }
 
@@ -3320,14 +3405,79 @@ void Steam_Overlay::post_achievement_notification(Overlay_Achievement& ach, bool
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
     if (!Ready()) return;
 
-    bool achieved = !for_progress;
-    try_load_ach_icon(ach, achieved, settings->paginated_achievements_icons == 0);
-    submit_notification(
-        for_progress ? notification_type::achievement_progress : notification_type::achievement,
-        ach.title + "\n" + ach.description,
-        {},
-        &ach
-    );
+    // Get current time
+    auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+
+    // Calculate scheduled show time based on rate limiting
+    std::chrono::milliseconds scheduled_show_time;
+    int delay_ms = settings->achievement_notification_delay_ms;
+
+    if (delay_ms <= 0) {
+        // No delay - show immediately
+        scheduled_show_time = now;
+    } else {
+        // Apply rate limiting: earliest show time is last_scheduled_show_time + delay
+        scheduled_show_time = std::max(now, last_scheduled_show_time + std::chrono::milliseconds(delay_ms));
+    }
+
+    // Create scheduled achievement entry
+    ScheduledAchievement scheduled_ach;
+    scheduled_ach.ach = ach;
+    scheduled_ach.for_progress = for_progress;
+    scheduled_ach.trigger_time = now;
+    scheduled_ach.scheduled_show_time = scheduled_show_time;
+
+    // Add to queue
+    achievement_queue.push_back(scheduled_ach);
+
+    // Update last scheduled show time for next item
+    last_scheduled_show_time = scheduled_show_time;
+
+    PRINT_DEBUG("Achievement queued: '%s', scheduled for %lld ms, delay=%d ms", 
+                ach.name.c_str(), (long long)scheduled_show_time.count(), delay_ms);
+}
+
+void Steam_Overlay::process_achievement_queue()
+{
+    std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
+    if (!Ready()) return;
+    if (achievement_queue.empty()) return;
+
+    // Get current time
+    auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+
+    // Process all ready achievements
+    while (!achievement_queue.empty()) {
+        auto& scheduled_ach = achievement_queue.front();
+
+        // Check if it's time to show this notification
+        if (scheduled_ach.scheduled_show_time <= now) {
+            // Show the notification
+            bool achieved = !scheduled_ach.for_progress;
+            // force upload to GPU if the pagination is request-based
+            try_load_ach_icon(scheduled_ach.ach, achieved, settings->paginated_achievements_icons == 0);
+
+            submit_notification(
+                scheduled_ach.for_progress ? notification_type::achievement_progress : notification_type::achievement,
+                scheduled_ach.ach.title + "\n" + scheduled_ach.ach.description,
+                {},
+                &scheduled_ach.ach
+            );
+
+            // Play sound when notification is actually shown (delayed with queue)
+            notify_sound_user_achievement();
+
+            PRINT_DEBUG("Achievement shown: '%s' at %lld ms", 
+                        scheduled_ach.ach.name.c_str(), (long long)now.count());
+
+            // Remove from queue
+            achievement_queue.pop_front();
+        } else {
+            // This achievement is not ready yet, and queue is ordered by scheduled time,
+            // so no more achievements will be ready either
+            break;
+        }
+    }
 }
 
 bool Steam_Overlay::try_load_ach_icon(Overlay_Achievement& ach, bool achieved, bool upload_new_icon_to_gpu)
@@ -3362,6 +3512,15 @@ void Steam_Overlay::overlay_render_proc()
     std::lock_guard lock(overlay_mutex);
 
     if (!Ready()) return;
+
+    process_achievement_queue();
+    
+    if (pending_close_overlay) {
+        if (!ImGui::GetCurrentContext() || !ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+            pending_close_overlay = false;
+            ShowOverlay(false);
+        }
+    }
 
     if (show_overlay) {
         if (obscure_cursor_requests == 0) {
@@ -3439,12 +3598,15 @@ void Steam_Overlay::render_main_window()
         ImGuiWindowFlags_NoMove |
         ImGuiWindowFlags_NoCollapse |
         ImGuiWindowFlags_NoSavedSettings |
-        ImGuiWindowFlags_NoScrollbar;
+        ImGuiWindowFlags_NoScrollbar |
+        ImGuiWindowFlags_NoBringToFrontOnFocus |
+        ImGuiWindowFlags_NoNavFocus |
+        ImGuiWindowFlags_NoFocusOnAppearing;
 if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
     ImDrawList* dl = ImGui::GetWindowDrawList();
-        DrawRadialBackground(dl, io.DisplaySize);
+        // DrawRadialBackground(dl, io.DisplaySize);
 
-        DrawRedGlowEffect(dl, io.DisplaySize, time_acc);
+        // DrawRedGlowEffect(dl, io.DisplaySize, time_acc);
 
         dl->AddRectFilledMultiColor(
             ImVec2(0.0f, 0.0f),
@@ -3469,8 +3631,8 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
         const float close_btn_size = 40.0f;
 
         const float menu_total_w =
-            icon_btn_size * 4.0f +
-            icon_spacing * 3.0f;
+            icon_btn_size * 5.0f +
+            icon_spacing * 4.0f;
 
         const float menu_start_x = (io.DisplaySize.x - menu_total_w) * 0.5f;
 
@@ -3499,13 +3661,13 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                 ImDrawList* btn_dl = ImGui::GetWindowDrawList();
                 ImVec2 min = ImGui::GetItemRectMin();
                 ImVec2 max = ImGui::GetItemRectMax();
-                float rounding = 12.0f;
+                float rounding = RedAccentTheme::ButtonRound;
 
                 if (hover_t > 0.001f || active) {
                     btn_dl->AddRect(
                         min,
                         max,
-                        ImGui::GetColorU32(ImVec4(0.937f, 0.267f, 0.267f, 0.4f + hover_t * 0.3f)),
+                        ImGui::GetColorU32(ImVec4(RedAccentTheme::Accent.x, RedAccentTheme::Accent.y, RedAccentTheme::Accent.z, 0.4f + hover_t * 0.3f)),
                         rounding,
                         0,
                         1.5f
@@ -3516,7 +3678,7 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                     btn_dl->AddRectFilled(
                         ImVec2(min.x - 2.0f, min.y - 2.0f),
                         ImVec2(max.x + 2.0f, max.y + 2.0f),
-                        ImGui::GetColorU32(ImVec4(0.937f, 0.267f, 0.267f, 0.05f * hover_t)),
+                        ImGui::GetColorU32(ImVec4(RedAccentTheme::Accent.x, RedAccentTheme::Accent.y, RedAccentTheme::Accent.z, 0.05f * hover_t)),
                         rounding + 2.0f
                     );
                 }
@@ -3565,8 +3727,8 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
 
         ImVec2 underline_start = ImVec2(title_pos.x, title_pos.y + title_size.y + 4.0f);
         ImVec2 underline_end = ImVec2(title_pos.x + title_size.x + status_full_size.x + 12.0f, title_pos.y + title_size.y + 4.0f);
-        title_dl->AddRectFilled(underline_start, ImVec2(underline_end.x, underline_end.y + 2.0f), ImGui::GetColorU32(ImVec4(0.937f, 0.267f, 0.267f, 0.35f)), 2.0f);
-        title_dl->AddRectFilled(ImVec2(underline_start.x, underline_start.y - 1.0f), ImVec2(underline_end.x, underline_start.y), ImGui::GetColorU32(ImVec4(0.937f, 0.267f, 0.267f, 0.15f)), 1.0f);
+        title_dl->AddRectFilled(underline_start, ImVec2(underline_end.x, underline_end.y + 2.0f), ImGui::GetColorU32(ImVec4(RedAccentTheme::Accent.x, RedAccentTheme::Accent.y, RedAccentTheme::Accent.z, 0.35f)), 2.0f);
+        title_dl->AddRectFilled(ImVec2(underline_start.x, underline_start.y - 1.0f), ImVec2(underline_end.x, underline_start.y), ImGui::GetColorU32(ImVec4(RedAccentTheme::Accent.x, RedAccentTheme::Accent.y, RedAccentTheme::Accent.z, 0.15f)), 1.0f);
 
         ImGui::EndGroup();
 
@@ -3606,6 +3768,13 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
             show_settings = !show_settings;
         }
 
+        ImGui::SameLine(0.0f, icon_spacing);
+
+        if (DrawTopIconButton("##TopHistory", ICON_FA_CLOCK, "Notification History", show_notification_history || history_pinned))
+        {
+            show_notification_history = !show_notification_history;
+        }
+
         ImGui::SetCursorPos(ImVec2(io.DisplaySize.x - close_btn_size - 18.0f, topbar_y));
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 12.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
@@ -3617,7 +3786,7 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
         ImGui::PushStyleColor(ImGuiCol_Text, RedAccentTheme::Accent);
 
         if (ImGui::Button(ICON_FA_XMARK "##TopBarCloseOverlay", ImVec2(close_btn_size, close_btn_size))) {
-            ShowOverlay(false);
+            pending_close_overlay = true;
         }
 
         if (ImGui::IsItemHovered()) {
@@ -3689,7 +3858,7 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                     ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 14.0f);
                     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(18.0f, 18.0f));
 
-                    if (ImGui::BeginChild("ProfileHeroCard", ImVec2(0, 170), true, ImGuiWindowFlags_NoScrollbar)) {
+                    if (ImGui::BeginChild("ProfileHeroCard", ImVec2(0, 240), true, ImGuiWindowFlags_NoScrollbar)) {
                         ImGui::BeginGroup();
                         DrawEditableProfileAvatar(this, local_name, avatar_size);
                         ImGui::EndGroup();
@@ -4107,7 +4276,22 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
 
                 ImGui::BeginChild("AchListChild", ImVec2(0, 0), false);
 
-                for (auto& x : achievements) {
+                // Build sorted index lists: unlocked by time desc, locked in API order
+                std::vector<size_t> unlocked_idx, locked_idx;
+                unlocked_idx.reserve(achievements.size());
+                locked_idx.reserve(achievements.size());
+                for (size_t i = 0; i < achievements.size(); ++i) {
+                    if (achievements[i].achieved)
+                        unlocked_idx.push_back(i);
+                    else
+                        locked_idx.push_back(i);
+                }
+                std::sort(unlocked_idx.begin(), unlocked_idx.end(),
+                    [this](size_t a, size_t b) {
+                        return achievements[a].unlock_time > achievements[b].unlock_time;
+                    });
+
+                auto render_ach = [this](Overlay_Achievement& x) {
                     bool has_table = false;
                     bool achieved = x.achieved;
                     bool hidden = x.hidden && !achieved;
@@ -4148,9 +4332,21 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
 
                     if (hidden) {
                         ImGui::TextColored(RedAccentTheme::TextDim, "%s", translationHiddenAchievement[current_language]);
+                        ImGui::SameLine();
+                        ImGui::PushID(&x);
+                        ImGui::SmallButton("Show");
+                        bool show = ImGui::IsItemActive();
+                        ImGui::PopID();
+                        if (show) {
+                            ImGui::PushFont(font_ach_desc);
+                            ImGui::TextWrapped("%s", x.description.c_str());
+                            ImGui::PopFont();
+                        }
                     }
                     else {
+                        ImGui::PushFont(font_ach_desc);
                         ImGui::TextWrapped("%s", x.description.c_str());
+                        ImGui::PopFont();
                     }
 
                     if (achieved) {
@@ -4186,6 +4382,30 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                     ImGui::PopStyleColor(2);
 
                     ImGui::Spacing();
+                };
+
+                // --- Unlocked section ---
+                if (ImGui::CollapsingHeader("Unlocked Achievements", ImGuiTreeNodeFlags_DefaultOpen)) {
+                    if (unlocked_idx.empty()) {
+                        ImGui::TextDisabled("No achievements unlocked yet.");
+                        ImGui::Spacing();
+                    } else {
+                        for (auto idx : unlocked_idx) {
+                            render_ach(achievements[idx]);
+                        }
+                    }
+                }
+
+                // --- Locked section ---
+                if (ImGui::CollapsingHeader("Locked Achievements", ImGuiTreeNodeFlags_DefaultOpen)) {
+                    if (locked_idx.empty()) {
+                        ImGui::TextDisabled("All achievements unlocked!");
+                        ImGui::Spacing();
+                    } else {
+                        for (auto idx : locked_idx) {
+                            render_ach(achievements[idx]);
+                        }
+                    }
                 }
 
                 ImGui::EndChild();
@@ -4305,7 +4525,7 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                         if (BeginSteamPanel(
                             "HUDCard",
                             ICON_FA_CHART_SIMPLE " HUD ELEMENTS",
-                            ImVec2(0, 390)
+                            ImVec2(0, 0)
                         )) {
                             if (ImGui::CollapsingHeader("Overlay Stats", ImGuiTreeNodeFlags_DefaultOpen)) {
                                 bool old_show_fps = stats.show_fps;
@@ -4607,6 +4827,91 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
             }
 
             ImGui::PopStyleVar();
+        }
+        EndModernWindow();
+    }
+
+    if (show_notification_history || history_pinned) {
+        if (BeginModernWindow("Notification History", ImVec2(560, 480), &show_notification_history, current_language, &history_pinned, false, true)) {
+            if (SteamButton("Clear All", ImVec2(120, 32), false)) {
+                notification_history.clear();
+                notification_history_cache.clear();
+                notification_history_cache_dirty = false;
+            }
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            if (notification_history.empty()) {
+                ImGui::TextDisabled("No notifications yet");
+            } else {
+                ImGui::BeginChild("##history_scroll", ImVec2(0, 0), false, ImGuiWindowFlags_AlwaysUseWindowPadding);
+
+                // Rebuild cache only when history actually changes
+                if (notification_history_cache_dirty) {
+                    notification_history_cache.clear();
+                    notification_history_cache.reserve(notification_history.size());
+
+                    for (auto it = notification_history.rbegin(); it != notification_history.rend(); ++it) {
+                        // Format timestamp HH:MM:SS in local timezone
+                        const time_t total_sec = std::chrono::duration_cast<std::chrono::seconds>(it->timestamp).count();
+                        struct tm local_tm_buf{};
+#ifdef _MSC_VER
+                        localtime_s(&local_tm_buf, &total_sec);
+#else
+                        localtime_r(&total_sec, &local_tm_buf);
+#endif
+                        const auto hr = local_tm_buf.tm_hour;
+                        const auto min = local_tm_buf.tm_min;
+                        const auto sec = local_tm_buf.tm_sec;
+
+                        // Type label
+                        const char *type_label = "?";
+                        switch ((notification_type)it->type) {
+                            case notification_type::message: type_label = "Chat"; break;
+                            case notification_type::invite: type_label = "Invite"; break;
+                            case notification_type::achievement: type_label = "Achievement"; break;
+                            case notification_type::achievement_progress: type_label = "Progress"; break;
+                            case notification_type::auto_accept_invite: type_label = "Auto-Invite"; break;
+                        }
+
+                        // For achievements the message contains "title\ndescription"
+                        // Replace newline with inline separator for compact display
+                        std::string display_msg = it->message;
+                        if (it->type == static_cast<uint8>(notification_type::achievement) ||
+                            it->type == static_cast<uint8>(notification_type::achievement_progress)) {
+                            size_t pos = display_msg.find('\n');
+                            if (pos != std::string::npos) {
+                                display_msg.replace(pos, 1, " - ");
+                            }
+                        }
+
+                        char time_buf[16];
+                        snprintf(time_buf, sizeof(time_buf), "[%02d:%02d:%02d]", hr, min, sec);
+                        std::string line = std::string(time_buf) + "  " + type_label + "  " + display_msg;
+
+                        notification_history_cache.push_back(std::move(line));
+                    }
+                    notification_history_cache_dirty = false;
+                }
+
+                // Render from cache
+                int id_counter = 0;
+                for (const auto &line : notification_history_cache) {
+                    ImGui::PushStyleColor(ImGuiCol_ChildBg, RedAccentTheme::BgElevated);
+                    ImGui::PushStyleColor(ImGuiCol_Border, RedAccentTheme::Border);
+                    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 10.0f);
+                    
+                    std::string entryId = "##hist_entry_" + std::to_string(id_counter++);
+                    ImGui::BeginChild(entryId.c_str(), ImVec2(0, 48), true, ImGuiWindowFlags_AlwaysUseWindowPadding);
+                    ImGui::TextWrapped("%s", line.c_str());
+                    ImGui::EndChild();
+                    
+                    ImGui::PopStyleVar();
+                    ImGui::PopStyleColor(2);
+                    ImGui::Spacing();
+                }
+                ImGui::EndChild();
+            }
         }
         EndModernWindow();
     }
@@ -4932,8 +5237,6 @@ void Steam_Overlay::AddAchievementNotification(const std::string& ach_name, nloh
 
     PRINT_DEBUG("'%s' %i", ach_name.c_str(), (int)for_progress);
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (!Ready()) return;
-
     for (auto& a : achievements) {
         if (a.name == ach_name) {
             try {
@@ -4946,9 +5249,11 @@ void Steam_Overlay::AddAchievementNotification(const std::string& ach_name, nloh
             }
             catch (...) {}
 
+            // Only queue/show notification if overlay is ready
+            if (!Ready()) return;
+
             if (a.achieved && !for_progress) {
                 post_achievement_notification(a, for_progress);
-                notify_sound_user_achievement();
             }
             else if (for_progress && !settings->disable_overlay_achievement_progress) {
                 post_achievement_notification(a, for_progress);

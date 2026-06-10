@@ -14,7 +14,7 @@
 #include "InGameOverlay/ImGui/imgui.h"
 #include "overlay/steam_overlay_stats.h"
 #include <curl/curl.h>
-#include "json.hpp"
+#include "json/json.hpp"
 
 static constexpr size_t max_chat_len = 768;
 
@@ -86,6 +86,7 @@ struct Notification
     int id{};
     uint8 type{};
     bool expired = false;
+    bool active = false;
     std::chrono::milliseconds start_time{};
     std::string message{};
     std::pair<const Friend, friend_window_state>* frd{};
