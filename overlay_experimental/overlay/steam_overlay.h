@@ -143,6 +143,7 @@ class Steam_Overlay
     std::atomic<bool> save_settings = false;
 
     int current_language = 0;
+    int selected_language = 0;
 
     std::queue<Friend> has_friend_action{};
     std::vector<Notification> notifications{};
@@ -263,6 +264,8 @@ public:
     ~Steam_Overlay();
 
     bool Ready() const;
+    class Settings* GetSettings() const { return settings; }
+    int GetCurrentLanguage() const { return current_language; }
     bool NeedPresent() const;
 
     void SetNotificationPosition(ENotificationPosition eNotificationPosition);
@@ -295,6 +298,7 @@ public:
     ~Steam_Overlay() {}
 
     bool Ready() const { return false; }
+    int GetCurrentLanguage() const { return 0; }
     bool NeedPresent() const { return false; }
 
     void SetNotificationPosition(ENotificationPosition eNotificationPosition) {}

@@ -294,20 +294,45 @@ static bool g_profile_avatar_dirty = true;
 static std::filesystem::path g_avatar_picker_current_dir;
 static std::filesystem::path g_avatar_picker_selected_file;
 static bool g_open_avatar_picker_popup = false;
+static Local_Storage* g_local_storage = nullptr;
 
 static std::filesystem::path GetGoldbergSettingsPath()
 {
+    if (g_local_storage) {
+        return std::filesystem::path(utf8_decode(g_local_storage->get_global_settings_path()));
+    }
+
+#ifdef _WIN32
+    std::wstring appdata_path;
+    WCHAR szPath[MAX_PATH] = {};
+    if (SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_APPDATA, NULL, 0, szPath))) {
+        appdata_path = szPath;
+    } else {
+        const wchar_t* appdata_env = _wgetenv(L"APPDATA");
+        if (appdata_env && *appdata_env) {
+            appdata_path = appdata_env;
+        }
+    }
+
+    std::wstring folder_name = utf8_decode(Local_Storage::get_saves_folder_name());
+    if (!appdata_path.empty()) {
+        return std::filesystem::path(appdata_path) / folder_name / L"settings";
+    }
+    return std::filesystem::path(folder_name) / L"settings";
+#else
     const char* appdata = std::getenv("APPDATA");
+    std::string folder_name = Local_Storage::get_saves_folder_name();
     if (appdata && *appdata) {
-        return std::filesystem::path(appdata) / "GSE Saves" / "settings";
+        return std::filesystem::path(appdata) / folder_name / "settings";
     }
 
     const char* home = std::getenv("HOME");
     if (home && *home) {
-        return std::filesystem::path(home) / ".config" / "GSE Saves" / "settings";
+        return std::filesystem::path(home) / ".config" / folder_name / "settings";
     }
 
-    return std::filesystem::path("GSE Saves") / "settings";
+    return std::filesystem::path(folder_name) / "settings";
+#endif
 }
 
 static bool IsSupportedAvatarImageFile(const std::filesystem::path& p)
@@ -336,21 +361,11 @@ static std::filesystem::path FindGoldbergAvatarPath()
 }
 
 #ifdef _WIN32
-static std::wstring Utf8ToWide(const std::string& s)
-{
-    if (s.empty()) return {};
-    int needed = MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, nullptr, 0);
-    if (needed <= 0) return {};
-    std::wstring out((size_t)needed - 1, L'\0');
-    MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, &out[0], needed);
-    return out;
-}
-
 static bool LoadImageFileRGBA(const std::filesystem::path& path, std::vector<unsigned char>& out_rgba, int& out_w, int& out_h)
 {
     if (!EnsureGdiPlusStarted()) return false;
 
-    const std::wstring wide_path = Utf8ToWide(path.u8string());
+    const std::wstring wide_path = utf8_decode(path.u8string());
     if (wide_path.empty()) return false;
 
     Gdiplus::Bitmap bitmap(wide_path.c_str());
@@ -421,7 +436,6 @@ bool Steam_Overlay::reload_profile_avatar_resource()
         return false;
     }
 
-    g_profile_avatar_rsrc->SetAutoLoad(InGameOverlay::ResourceAutoLoad_t::OnUse);
     g_profile_avatar_rsrc->AttachResource((void*)g_profile_avatar_rgba.data(), g_profile_avatar_w, g_profile_avatar_h);
 
     g_profile_avatar_dirty = false;
@@ -480,6 +494,38 @@ static void DrawProfileAvatarFallback(const std::string& name, const ImVec2& siz
     ImGui::Dummy(size);
 }
 
+static void InitializeAvatarPickerDir(Settings* settings)
+{
+    if (!g_avatar_picker_current_dir.empty()) return;
+
+    if (settings && !settings->overlay_avatar_picker_default_path.empty()) {
+        std::string path_str = settings->overlay_avatar_picker_default_path;
+        std::filesystem::path custom_path = std::filesystem::path(utf8_decode(path_str));
+        std::error_code ec;
+        if (std::filesystem::exists(custom_path, ec)) {
+            g_avatar_picker_current_dir = custom_path;
+            return;
+        }
+    }
+
+#ifdef _WIN32
+    const wchar_t* userprofile = _wgetenv(L"USERPROFILE");
+    if (userprofile && *userprofile) {
+        g_avatar_picker_current_dir = std::filesystem::path(userprofile) / L"Pictures";
+    }
+    else {
+        g_avatar_picker_current_dir = std::filesystem::path(L"C:\\");
+    }
+#else
+    g_avatar_picker_current_dir = std::filesystem::current_path();
+#endif
+
+    std::error_code ec;
+    if (!std::filesystem::exists(g_avatar_picker_current_dir, ec)) {
+        g_avatar_picker_current_dir = std::filesystem::current_path();
+    }
+}
+
 static bool DrawEditableProfileAvatar(Steam_Overlay* overlay, const std::string& display_name, float avatar_size)
 {
     const ImVec2 size(avatar_size, avatar_size);
@@ -518,28 +564,11 @@ static bool DrawEditableProfileAvatar(Steam_Overlay* overlay, const std::string&
             edit_icon
         );
 
-        ImGui::SetTooltip("Change avatar");
+        ImGui::SetTooltip("%s", translationChangeAvatar[overlay ? overlay->GetCurrentLanguage() : 0]);
     }
 
     if (clicked) {
-        if (g_avatar_picker_current_dir.empty()) {
-#ifdef _WIN32
-            const char* userprofile = std::getenv("USERPROFILE");
-            if (userprofile && *userprofile) {
-                g_avatar_picker_current_dir = std::filesystem::path(userprofile) / "Pictures";
-            }
-            else {
-                g_avatar_picker_current_dir = std::filesystem::path("C:\\");
-            }
-#else
-            g_avatar_picker_current_dir = std::filesystem::current_path();
-#endif
-            std::error_code ec;
-            if (!std::filesystem::exists(g_avatar_picker_current_dir, ec)) {
-                g_avatar_picker_current_dir = std::filesystem::current_path();
-            }
-        }
-
+        InitializeAvatarPickerDir(overlay ? overlay->GetSettings() : nullptr);
         g_open_avatar_picker_popup = true;
     }
 
@@ -550,14 +579,15 @@ static bool RenderAvatarPickerPopup(Steam_Overlay* overlay)
 {
     bool changed = false;
 
-    ImGui::SetNextWindowSize(ImVec2(760.0f, 520.0f), ImGuiCond_Appearing);
+    ImGui::SetNextWindowSize(ImVec2(760.0f, 580.0f), ImGuiCond_Appearing);
 
     ImGui::PushStyleColor(ImGuiCol_PopupBg, RedAccentTheme::BgPopup);
     ImGui::PushStyleColor(ImGuiCol_Border, RedAccentTheme::Border);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
 
     bool avatar_picker_open = true;
-    if (ImGui::BeginPopupModal("Select Avatar Image", &avatar_picker_open, ImGuiWindowFlags_NoResize)) {
+    std::string modal_title = std::string(translationSelectAvatarImage[overlay ? overlay->GetCurrentLanguage() : 0]) + "###Select Avatar Image";
+    if (ImGui::BeginPopupModal(modal_title.c_str(), &avatar_picker_open, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
         ImGui::Spacing();
 
         ImGui::TextWrapped("%s", g_avatar_picker_current_dir.u8string().c_str());
@@ -565,34 +595,46 @@ static bool RenderAvatarPickerPopup(Steam_Overlay* overlay)
 
 #ifdef _WIN32
         {
-            const char* drive_items[] = { "C:\\", "D:\\", "E:\\", "F:\\", "G:\\" };
+            std::vector<std::string> drive_items;
+            DWORD mask = GetLogicalDrives();
+            for (int i = 0; i < 26; ++i) {
+                if (mask & (1 << i)) {
+                    char letter = 'A' + i;
+                    drive_items.push_back(std::string(1, letter) + ":\\");
+                }
+            }
+            if (drive_items.empty()) {
+                drive_items = { "C:\\" };
+            }
+
             int current_drive_idx = -1;
 
             std::string current_dir_upper = g_avatar_picker_current_dir.u8string();
             std::transform(current_dir_upper.begin(), current_dir_upper.end(), current_dir_upper.begin(),
                 [](unsigned char c) { return (char)std::toupper(c); });
 
-            for (int i = 0; i < IM_ARRAYSIZE(drive_items); ++i) {
+            for (size_t i = 0; i < drive_items.size(); ++i) {
                 std::string drive_upper = drive_items[i];
                 std::transform(drive_upper.begin(), drive_upper.end(), drive_upper.begin(),
                     [](unsigned char c) { return (char)std::toupper(c); });
 
                 if (current_dir_upper.rfind(drive_upper, 0) == 0) {
-                    current_drive_idx = i;
+                    current_drive_idx = (int)i;
                     break;
                 }
             }
 
             ImGui::SetNextItemWidth(140.0f);
-            if (ImGui::BeginCombo("##AvatarDriveSelect", current_drive_idx >= 0 ? drive_items[current_drive_idx] : "Select drive")) {
-                for (int i = 0; i < IM_ARRAYSIZE(drive_items); ++i) {
-                    const bool selected = (current_drive_idx == i);
+            const char* current_drive_str = current_drive_idx >= 0 ? drive_items[current_drive_idx].c_str() : translationSelectDrive[overlay ? overlay->GetCurrentLanguage() : 0];
+            if (ImGui::BeginCombo("##AvatarDriveSelect", current_drive_str)) {
+                for (size_t i = 0; i < drive_items.size(); ++i) {
+                    const bool selected = (current_drive_idx == (int)i);
                     std::error_code drive_ec;
                     if (!std::filesystem::exists(std::filesystem::path(drive_items[i]), drive_ec)) {
                         continue;
                     }
 
-                    if (ImGui::Selectable(drive_items[i], selected)) {
+                    if (ImGui::Selectable(drive_items[i].c_str(), selected)) {
                         g_avatar_picker_current_dir = std::filesystem::path(drive_items[i]);
                         g_avatar_picker_selected_file.clear();
                     }
@@ -607,7 +649,8 @@ static bool RenderAvatarPickerPopup(Steam_Overlay* overlay)
         }
 #endif
 
-        if (SteamButton(ICON_FA_ARROW_UP " Up", ImVec2(90.0f, 32.0f), false)) {
+        std::string up_label = std::string(ICON_FA_ARROW_UP " ") + translationUp[overlay ? overlay->GetCurrentLanguage() : 0];
+        if (SteamButton(up_label.c_str(), ImVec2(90.0f, 32.0f), false)) {
             if (g_avatar_picker_current_dir.has_parent_path()) {
                 g_avatar_picker_current_dir = g_avatar_picker_current_dir.parent_path();
                 g_avatar_picker_selected_file.clear();
@@ -616,7 +659,7 @@ static bool RenderAvatarPickerPopup(Steam_Overlay* overlay)
 
         ImGui::Spacing();
 
-        float footer_reserved_height = 92.0f;
+        float footer_reserved_height = 140.0f;
         float file_list_height = ImGui::GetContentRegionAvail().y - footer_reserved_height;
         if (file_list_height < 140.0f) {
             file_list_height = 140.0f;
@@ -667,17 +710,18 @@ static bool RenderAvatarPickerPopup(Steam_Overlay* overlay)
         ImGui::Spacing();
 
         if (!g_avatar_picker_selected_file.empty()) {
-            ImGui::TextColored(RedAccentTheme::TextMuted, "SELECTED");
+            ImGui::TextColored(RedAccentTheme::TextMuted, "%s", translationSelected[overlay ? overlay->GetCurrentLanguage() : 0]);
             ImGui::TextWrapped("%s", g_avatar_picker_selected_file.u8string().c_str());
         }
         else {
-            ImGui::TextColored(RedAccentTheme::TextDim, "Select a .png, .jpg, or .jpeg image.");
+            ImGui::TextColored(RedAccentTheme::TextDim, "%s", translationSelectSupportedImage[overlay ? overlay->GetCurrentLanguage() : 0]);
         }
 
         ImGui::Spacing();
 
         if (!g_avatar_picker_selected_file.empty()) {
-            if (SteamButton(ICON_FA_CHECK " Use Selected Image", ImVec2(210.0f, 36.0f), true)) {
+            std::string use_selected_label = std::string(ICON_FA_CHECK " ") + translationUseSelectedImage[overlay ? overlay->GetCurrentLanguage() : 0];
+            if (SteamButton(use_selected_label.c_str(), ImVec2(210.0f, 36.0f), true)) {
                 if (CopySelectedAvatarToGoldberg(g_avatar_picker_selected_file)) {
                     if (overlay) {
                         overlay->reload_profile_avatar_resource();
@@ -689,7 +733,8 @@ static bool RenderAvatarPickerPopup(Steam_Overlay* overlay)
             ImGui::SameLine();
         }
 
-        if (SteamButton(ICON_FA_XMARK " Cancel", ImVec2(120.0f, 36.0f), false)) {
+        std::string cancel_label = std::string(ICON_FA_XMARK " ") + translationCancel[overlay ? overlay->GetCurrentLanguage() : 0];
+        if (SteamButton(cancel_label.c_str(), ImVec2(120.0f, 36.0f), false)) {
             ImGui::CloseCurrentPopup();
         }
 
@@ -768,47 +813,17 @@ static bool SteamButton(const char* label, const ImVec2& size = ImVec2(0.0f, 0.0
 
 static std::filesystem::path GetBroadcastsPath()
 {
-    const char* appdata = std::getenv("APPDATA");
-    if (appdata && *appdata) {
-        return std::filesystem::path(appdata) / "GSE Saves" / "settings" / "custom_broadcasts.txt";
-    }
-
-    const char* home = std::getenv("HOME");
-    if (home && *home) {
-        return std::filesystem::path(home) / ".config" / "GSE Saves" / "settings" / "custom_broadcasts.txt";
-    }
-
-    return std::filesystem::path("GSE Saves") / "settings" / "custom_broadcasts.txt";
+    return GetGoldbergSettingsPath() / "custom_broadcasts.txt";
 }
 
 static std::filesystem::path GetGBEConfigPath()
 {
-    const char* appdata = std::getenv("APPDATA");
-    if (appdata && *appdata) {
-        return std::filesystem::path(appdata) / "GSE Saves" / "settings" / "gbe.cfg";
-    }
-
-    const char* home = std::getenv("HOME");
-    if (home && *home) {
-        return std::filesystem::path(home) / ".config" / "GSE Saves" / "settings" / "gbe.cfg";
-    }
-
-    return std::filesystem::path("GSE Saves") / "settings" / "gbe.cfg";
+    return GetGoldbergSettingsPath() / "gbe.cfg";
 }
 
 static std::filesystem::path GetMainConfigPath()
 {
-    const char* appdata = std::getenv("APPDATA");
-    if (appdata && *appdata) {
-        return std::filesystem::path(appdata) / "GSE Saves" / "settings" / "configs.main.ini";
-    }
-
-    const char* home = std::getenv("HOME");
-    if (home && *home) {
-        return std::filesystem::path(home) / ".config" / "GSE Saves" / "settings" / "configs.main.ini";
-    }
-
-    return std::filesystem::path("GSE Saves") / "settings" / "configs.main.ini";
+    return GetGoldbergSettingsPath() / "configs.main.ini";
 }
 
 static int LoadBroadcastListenPort()
@@ -1223,11 +1238,21 @@ static std::unordered_map<std::string, ImVec2> popup_anim_offsets;
 
 static PopupAnimState& GetPopupAnimState(const char* id)
 {
-    return popup_anim_states[std::string(id)];
+    const char* stable_id = id;
+    const char* id_marker = strstr(id, "###");
+    if (id_marker) {
+        stable_id = id_marker + 3;
+    }
+    return popup_anim_states[std::string(stable_id)];
 }
 
 static bool BeginPopupWindowAnimated(const char* id, bool* p_open, ImGuiWindowFlags flags, bool force_open = false, float slide_px = 10.0f)
 {
+    const char* stable_id = id;
+    const char* id_marker = strstr(id, "###");
+    if (id_marker) {
+        stable_id = id_marker + 3;
+    }
     PopupAnimState& state = GetPopupAnimState(id);
     const double now = ImGui::GetTime();
     const float dt = state.last_time > 0.0 ? static_cast<float>(now - state.last_time) : 0.0f;
@@ -1252,7 +1277,7 @@ static bool BeginPopupWindowAnimated(const char* id, bool* p_open, ImGuiWindowFl
     }
 
     if (state.t == 0.0f) {
-        popup_anim_offsets[std::string(id)] = ImGui::GetMousePos();
+        popup_anim_offsets[std::string(stable_id)] = ImGui::GetMousePos();
     }
 
     ImGuiWindowFlags local_flags = flags;
@@ -1268,7 +1293,7 @@ static bool BeginPopupWindowAnimated(const char* id, bool* p_open, ImGuiWindowFl
             );
         }
         else {
-            auto offset_it = popup_anim_offsets.find(std::string(id));
+            auto offset_it = popup_anim_offsets.find(std::string(stable_id));
             if (offset_it != popup_anim_offsets.end()) {
                 ImGui::SetNextWindowPos(
                     ImVec2(offset_it->second.x, offset_it->second.y + (1.0f - state.t) * slide_px),
@@ -1436,7 +1461,12 @@ bool BeginModernWindow(const char* title, ImVec2 size, bool* p_open, int /*curre
     ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
 
     if (!(p_pinned && *p_pinned)) {
-        ImGuiWindow* existing_window = ImGui::FindWindowByName(title);
+        const char* stable_id = title;
+        const char* id_marker = strstr(title, "###");
+        if (id_marker) {
+            stable_id = id_marker + 3;
+        }
+        ImGuiWindow* existing_window = ImGui::FindWindowByName(stable_id);
         if (existing_window) {
             ImVec2 clamped_pos = ClampWindowToScreen(existing_window->Pos, existing_window->Size, ImGui::GetIO().DisplaySize);
             ImGui::SetNextWindowPos(clamped_pos, ImGuiCond_Always);
@@ -1485,8 +1515,19 @@ bool BeginModernWindow(const char* title, ImVec2 size, bool* p_open, int /*curre
             );
         }
 
+        const char* display_title = title;
+        char clean_title[256];
+        const char* id_marker = strstr(title, "###");
+        if (id_marker) {
+            size_t len = id_marker - title;
+            if (len >= sizeof(clean_title)) len = sizeof(clean_title) - 1;
+            memcpy(clean_title, title, len);
+            clean_title[len] = '\0';
+            display_title = clean_title;
+        }
+
         ImGui::SetCursorPos(ImVec2(14.0f, title_y));
-        ImGui::TextColored(RedAccentTheme::Text, "%s", title);
+        ImGui::TextColored(RedAccentTheme::Text, "%s", display_title);
 
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 1.0f));
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);
@@ -2002,6 +2043,7 @@ Steam_Overlay::Steam_Overlay(Settings* settings, Local_Storage* local_storage, S
     network(network),
     stats(Steam_Overlay_Stats(settings))
 {
+    g_local_storage = local_storage;
     if (settings->disable_overlay) return;
 
     renderer_hook_init_thread = common_helpers::KillableWorker(
@@ -2047,6 +2089,7 @@ Steam_Overlay::Steam_Overlay(Settings* settings, Local_Storage* local_storage, S
 
         ++i;
     }
+    selected_language = current_language;
 
     this->network->setCallback(CALLBACK_ID_STEAM_MESSAGES, settings->get_local_steam_id(), &Steam_Overlay::overlay_networking_callback, this);
     this->run_every_runcb->add(&Steam_Overlay::overlay_run_callback, this);
@@ -2140,8 +2183,11 @@ void Steam_Overlay::create_fonts()
     font_cfg.OversampleH = 1;
     font_cfg.OversampleV = 1;
     font_cfg.SizePixels = font_size;
+#if IMGUI_VERSION_NUM >= 19140
+    font_cfg.GlyphExtraAdvanceX = settings->overlay_appearance.font_glyph_extra_spacing_x;
+#else
     font_cfg.GlyphExtraSpacing.x = settings->overlay_appearance.font_glyph_extra_spacing_x;
-    font_cfg.GlyphExtraSpacing.y = settings->overlay_appearance.font_glyph_extra_spacing_y;
+#endif
 
     for (const auto& ach : achievements) {
         font_builder.AddText(ach.title.c_str());
@@ -2190,6 +2236,73 @@ void Steam_Overlay::create_fonts()
         font_builder.AddText(translationFrametimeUnitDisplay[i]);
         font_builder.AddText(translationPlaytimeCheckbox[i]);
         font_builder.AddText(translationPlaytimeDisplay[i]);
+        font_builder.AddText(translationSelectAvatarImage[i]);
+        font_builder.AddText(translationSelectDrive[i]);
+        font_builder.AddText(translationUp[i]);
+        font_builder.AddText(translationSelected[i]);
+        font_builder.AddText(translationSelectSupportedImage[i]);
+        font_builder.AddText(translationUseSelectedImage[i]);
+        font_builder.AddText(translationCancel[i]);
+        font_builder.AddText(translationDirectJoinForcedOffOffline[i]);
+        font_builder.AddText(translationDirectJoinFriendsCanJoin[i]);
+        font_builder.AddText(translationDirectJoinHidden[i]);
+        font_builder.AddText(translation24HourFormat[i]);
+        font_builder.AddText(translationActiveEffect[i]);
+        font_builder.AddText(translationAddIp[i]);
+        font_builder.AddText(translationAddIpLabel[i]);
+        font_builder.AddText(translationBackgroundFx[i]);
+        font_builder.AddText(translationBroadcastListenPort[i]);
+        font_builder.AddText(translationBroadcasts[i]);
+        font_builder.AddText(translationCategories[i]);
+        font_builder.AddText(translationChangeAvatar[i]);
+        font_builder.AddText(translationColorSettings[i]);
+        font_builder.AddText(translationColorVariation[i]);
+        font_builder.AddText(translationCurrentList[i]);
+        font_builder.AddText(translationDirectJoinDisabled[i]);
+        font_builder.AddText(translationDirectJoinEnabled[i]);
+        font_builder.AddText(translationEffectType[i]);
+        font_builder.AddText(translationEnableBgEffects[i]);
+        font_builder.AddText(translationFriendsAndProfile[i]);
+        font_builder.AddText(translationFxBubbles[i]);
+        font_builder.AddText(translationFxParticles[i]);
+        font_builder.AddText(translationFxRain[i]);
+        font_builder.AddText(translationFxSnow[i]);
+        font_builder.AddText(translationFxStars[i]);
+        font_builder.AddText(translationGbePort[i]);
+        font_builder.AddText(translationGeneral[i]);
+        font_builder.AddText(translationHideHudWhenOverlayOpen[i]);
+        font_builder.AddText(translationHudElements[i]);
+        font_builder.AddText(translationMaxParticlesPerformance[i]);
+        font_builder.AddText(translationMaxSize[i]);
+        font_builder.AddText(translationMinSize[i]);
+        font_builder.AddText(translationMovementSettings[i]);
+        font_builder.AddText(translationNoAchievementsAvailable[i]);
+        font_builder.AddText(translationNotes[i]);
+        font_builder.AddText(translationNotificationHistory[i]);
+        font_builder.AddText(translationOptimizePerformance[i]);
+        font_builder.AddText(translationOverlayStats[i]);
+        font_builder.AddText(translationParticleAlpha[i]);
+        font_builder.AddText(translationParticleColor[i]);
+        font_builder.AddText(translationParticleCount[i]);
+        font_builder.AddText(translationParticleSettings[i]);
+        font_builder.AddText(translationParticleSpeed[i]);
+        font_builder.AddText(translationParticlesCount[i]);
+        font_builder.AddText(translationPerformance[i]);
+        font_builder.AddText(translationPreviewInfo[i]);
+        font_builder.AddText(translationRainLength[i]);
+        font_builder.AddText(translationRainSettings[i]);
+        font_builder.AddText(translationRainTilt[i]);
+        font_builder.AddText(translationRemoveAll[i]);
+        font_builder.AddText(translationRemoveSelected[i]);
+        font_builder.AddText(translationResetToDefaults[i]);
+        font_builder.AddText(translationSnowDrift[i]);
+        font_builder.AddText(translationSnowSettings[i]);
+        font_builder.AddText(translationStarSettings[i]);
+        font_builder.AddText(translationStarTwinkleSpeed[i]);
+        font_builder.AddText(translationSwirlIntensity[i]);
+        font_builder.AddText(translationSystemClock[i]);
+        font_builder.AddText(translationTurbulence[i]);
+        font_builder.AddText(translationWindStrength[i]);
     }
     font_builder.AddRanges(fonts_atlas.GetGlyphRangesDefault());
 
@@ -2231,8 +2344,6 @@ void Steam_Overlay::create_fonts()
     font_ach_title = add_overlay_font(font_size_ach_title, settings->overlay_appearance.font_override_ach_title);
     font_ach_desc = add_overlay_font(font_size_ach_desc, settings->overlay_appearance.font_override_ach_desc);
     stats.font = font_fps;
-
-    bool res = fonts_atlas.Build();
 
     reset_LastError();
 }
@@ -3498,7 +3609,6 @@ bool Steam_Overlay::try_load_ach_icon(Overlay_Achievement& ach, bool achieved, b
     auto image_info = settings->get_image(icon_handle);
     if (image_info) {
         int icon_size = static_cast<int>(settings->overlay_appearance.icon_size);
-        icon_rsrc->SetAutoLoad(InGameOverlay::ResourceAutoLoad_t::OnUse);
         icon_rsrc->AttachResource((void*)image_info->data.c_str(), icon_size, icon_size);
 
         PRINT_DEBUG("'%s' (result=%i)", ach.name.c_str(), (int)icon_rsrc->GetResourceId() != 0);
@@ -3770,7 +3880,7 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
 
         ImGui::SameLine(0.0f, icon_spacing);
 
-        if (DrawTopIconButton("##TopHistory", ICON_FA_CLOCK, "Notification History", show_notification_history || history_pinned))
+        if (DrawTopIconButton("##TopHistory", ICON_FA_CLOCK, translationNotificationHistory[current_language], show_notification_history || history_pinned))
         {
             show_notification_history = !show_notification_history;
         }
@@ -3802,7 +3912,7 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
     ImGui::PopStyleVar(4);
 
     if (show_friends || friends_pinned) {
-        if (BeginModernWindow("Friends & Profile", ImVec2(560, 650), &show_friends, current_language, &friends_pinned, false, true)) {
+        if (BeginModernWindow((std::string(translationFriendsAndProfile[current_language]) + "###FriendsAndProfileWindow").c_str(), ImVec2(560, 650), &show_friends, current_language, &friends_pinned, false, true)) {
 
             if (BeginFlatPanel("FriendsTopTabsSimple", ImVec2(0, 58))) {
                 const float gap = 10.0f;
@@ -3888,28 +3998,12 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                         ImGui::PopStyleVar(2);
                         ImGui::PopStyleColor(2);
                         ImGui::TextColored(RedAccentTheme::TextDim, "SteamID64: %" PRIu64, settings->get_local_steam_id().ConvertToUint64());
-                        ImGui::TextColored(RedAccentTheme::TextDim, "Language: %s", valid_languages[current_language]);
+                        ImGui::TextColored(RedAccentTheme::TextDim, "%s: %s", translationLanguage[current_language], valid_languages[current_language]);
                         ImGui::Spacing();
 
-                        if (SteamButton(ICON_FA_PEN " Change Avatar", ImVec2(170.0f, 34.0f), false)) {
-                            if (g_avatar_picker_current_dir.empty()) {
-#ifdef _WIN32
-                                const char* userprofile = std::getenv("USERPROFILE");
-                                if (userprofile && *userprofile) {
-                                    g_avatar_picker_current_dir = std::filesystem::path(userprofile) / "Pictures";
-                                }
-                                else {
-                                    g_avatar_picker_current_dir = std::filesystem::path("C:\\");
-                                }
-#else
-                                g_avatar_picker_current_dir = std::filesystem::current_path();
-#endif
-                                std::error_code ec;
-                                if (!std::filesystem::exists(g_avatar_picker_current_dir, ec)) {
-                                    g_avatar_picker_current_dir = std::filesystem::current_path();
-                                }
-                            }
-
+                        std::string change_avatar_btn = std::string(ICON_FA_PEN " ") + translationChangeAvatar[current_language];
+                        if (SteamButton(change_avatar_btn.c_str(), ImVec2(170.0f, 34.0f), false)) {
+                            InitializeAvatarPickerDir(settings);
                             g_open_avatar_picker_popup = true;
                         }
 
@@ -3924,7 +4018,7 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                     ImGui::TextColored(
                         g_allow_direct_join ? ImVec4(0.42f, 0.85f, 0.52f, 1.0f) : RedAccentTheme::Accent,
                         "%s",
-                        g_allow_direct_join ? "Direct join is enabled." : "Direct join is disabled."
+                        g_allow_direct_join ? translationDirectJoinEnabled[current_language] : translationDirectJoinDisabled[current_language]
                     );
 
                     if (g_overlay_presence == OverlayPresenceState::Online) {
@@ -3965,10 +4059,10 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                     ImGui::TextColored(
                         RedAccentTheme::TextDim,
                         g_overlay_presence == OverlayPresenceState::Offline
-                        ? "Direct join is forced off while you are offline."
+                        ? translationDirectJoinForcedOffOffline[current_language]
                         : (g_allow_direct_join
-                            ? "Friends can use Join Game on you when you are joinable."
-                            : "Join Game is hidden from friends. You can still invite people manually.")
+                            ? translationDirectJoinFriendsCanJoin[current_language]
+                            : translationDirectJoinHidden[current_language])
                     );
 
                     ImGui::Spacing();
@@ -4252,7 +4346,8 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                 EndSteamPanel();
             }
             if (g_open_avatar_picker_popup) {
-                ImGui::OpenPopup("Select Avatar Image");
+                std::string modal_title = std::string(translationSelectAvatarImage[current_language]) + "###Select Avatar Image";
+                ImGui::OpenPopup(modal_title.c_str());
                 g_open_avatar_picker_popup = false;
             }
             RenderAvatarPickerPopup(this);
@@ -4261,7 +4356,7 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
     }
 
     if (show_achievements || achievements_pinned) {
-        if (BeginModernWindow("Achievements", ImVec2(640, 620), &show_achievements, current_language, &achievements_pinned, false, true)) {
+        if (BeginModernWindow((std::string(translationAchievements[current_language]) + "###AchievementsWindow").c_str(), ImVec2(640, 620), &show_achievements, current_language, &achievements_pinned, false, true)) {
 
             if (SteamButton(translationTestAchievement[current_language], ImVec2(220, 32), true)) {
                 show_test_achievement();
@@ -4385,9 +4480,9 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                 };
 
                 // --- Unlocked section ---
-                if (ImGui::CollapsingHeader("Unlocked Achievements", ImGuiTreeNodeFlags_DefaultOpen)) {
+                if (ImGui::CollapsingHeader(translationUnlocked[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
                     if (unlocked_idx.empty()) {
-                        ImGui::TextDisabled("No achievements unlocked yet.");
+                        ImGui::TextDisabled(translationNoUnlockedAchievements[current_language]);
                         ImGui::Spacing();
                     } else {
                         for (auto idx : unlocked_idx) {
@@ -4397,9 +4492,9 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                 }
 
                 // --- Locked section ---
-                if (ImGui::CollapsingHeader("Locked Achievements", ImGuiTreeNodeFlags_DefaultOpen)) {
+                if (ImGui::CollapsingHeader(translationLocked[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
                     if (locked_idx.empty()) {
-                        ImGui::TextDisabled("All achievements unlocked!");
+                        ImGui::TextDisabled(translationAllAchievementsUnlocked[current_language]);
                         ImGui::Spacing();
                     } else {
                         for (auto idx : locked_idx) {
@@ -4411,14 +4506,14 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                 ImGui::EndChild();
             }
             else {
-                ImGui::TextColored(RedAccentTheme::TextDim, "No achievements available for this game.");
+                ImGui::TextColored(RedAccentTheme::TextDim, "%s", translationNoAchievementsAvailable[current_language]);
             }
         }
         EndModernWindow();
     }
 
     if (show_settings || settings_pinned) {
-        if (BeginModernWindow("Settings", ImVec2(900, 640), &show_settings, current_language, &settings_pinned, false, true)) {
+        if (BeginModernWindow((std::string(translationSettings[current_language]) + "###SettingsWindow").c_str(), ImVec2(900, 640), &show_settings, current_language, &settings_pinned, false, true)) {
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(12.0f, 12.0f));
 
             if (ImGui::BeginTable("SettingsGrid", 2, ImGuiTableFlags_SizingFixedFit)) {
@@ -4429,15 +4524,16 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
 
                 ImGui::TableSetColumnIndex(0);
                 {
-                    if (BeginSteamPanel("SettingsSidebarCard", ICON_FA_LIST " CATEGORIES", ImVec2(0, 0),
+                    std::string categories_title = std::string(ICON_FA_LIST " ") + translationCategories[current_language];
+                    if (BeginSteamPanel("SettingsSidebarCard", categories_title.c_str(), ImVec2(0, 0),
                         ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
                     {
                         ImGui::Dummy(ImVec2(0.0f, 2.0f));
 
-                        if (SteamButton("General", ImVec2(-1, 38), settings_tab == 0)) settings_tab = 0;
-                        if (SteamButton("HUD Elements", ImVec2(-1, 38), settings_tab == 1)) settings_tab = 1;
-                        if (SteamButton("Broadcasts", ImVec2(-1, 38), settings_tab == 2)) settings_tab = 2;
-                        if (SteamButton("Background FX", ImVec2(-1, 38), settings_tab == 3)) settings_tab = 3;
+                        if (SteamButton(translationGeneral[current_language], ImVec2(-1, 38), settings_tab == 0)) settings_tab = 0;
+                        if (SteamButton(translationHudElements[current_language], ImVec2(-1, 38), settings_tab == 1)) settings_tab = 1;
+                        if (SteamButton(translationBroadcasts[current_language], ImVec2(-1, 38), settings_tab == 2)) settings_tab = 2;
+                        if (SteamButton(translationBackgroundFx[current_language], ImVec2(-1, 38), settings_tab == 3)) settings_tab = 3;
                     }
                     EndSteamPanel();
                 }
@@ -4445,9 +4541,10 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                 ImGui::TableSetColumnIndex(1);
                 {
                     if (settings_tab == 0) {
-                        if (BeginSteamPanel("GeneralCard", ICON_FA_SLIDERS " GENERAL", ImVec2(0, 0))) {
+                        std::string general_title = std::string(ICON_FA_SLIDERS " ") + translationGeneral[current_language];
+                        if (BeginSteamPanel("GeneralCard", general_title.c_str(), ImVec2(0, 0))) {
                             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(12.0f, 12.0f));
-                            if (ImGui::CollapsingHeader("Profile Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
+                            if (ImGui::CollapsingHeader(translationProfileSettings[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
                                 ImGui::TextWrapped("%s", translationGlobalSettingsWindowDescription[current_language]);
                                 ImGui::Spacing();
 
@@ -4475,11 +4572,11 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                                     ImGui::TableNextColumn();
                                     ImGui::SetNextItemWidth(-1);
 
-                                    if (ImGui::BeginCombo("##language_combo", valid_languages[current_language])) {
+                                    if (ImGui::BeginCombo("##language_combo", valid_languages[selected_language])) {
                                         for (int i = 0; i < static_cast<int>(sizeof(valid_languages) / sizeof(valid_languages[0])); ++i) {
-                                            const bool selected = (current_language == i);
+                                            const bool selected = (selected_language == i);
                                             if (ImGui::Selectable(valid_languages[i], selected)) {
-                                                current_language = i;
+                                                selected_language = i;
                                             }
                                             if (selected) {
                                                 ImGui::SetItemDefaultFocus();
@@ -4495,13 +4592,13 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                                 ImGui::TextColored(
                                     RedAccentTheme::TextDim,
                                     translationSelectedLanguage[current_language],
-                                    valid_languages[current_language]
+                                    valid_languages[selected_language]
                                 );
                             }
 
                             ImGui::Spacing();
 
-                            if (ImGui::CollapsingHeader("Notes", ImGuiTreeNodeFlags_DefaultOpen)) {
+                            if (ImGui::CollapsingHeader(translationNotes[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
                                 ImGui::TextColored(
                                     RedAccentTheme::Accent,
                                     "%s",
@@ -4522,12 +4619,13 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                     }
 
                     if (settings_tab == 1) {
+                        std::string hud_title = std::string(ICON_FA_CHART_SIMPLE " ") + translationHudElements[current_language];
                         if (BeginSteamPanel(
                             "HUDCard",
-                            ICON_FA_CHART_SIMPLE " HUD ELEMENTS",
+                            hud_title.c_str(),
                             ImVec2(0, 0)
                         )) {
-                            if (ImGui::CollapsingHeader("Overlay Stats", ImGuiTreeNodeFlags_DefaultOpen)) {
+                            if (ImGui::CollapsingHeader(translationOverlayStats[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
                                 bool old_show_fps = stats.show_fps;
                                 bool old_show_frametime = stats.show_frametime;
                                 bool old_show_playtime = stats.show_playtime;
@@ -4553,16 +4651,16 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                                 }
                                 ImGui::Spacing();
 
-                                if (DrawSetting("System Clock", &g_show_clock_hud)) {
+                                if (DrawSetting(translationSystemClock[current_language], &g_show_clock_hud)) {
                                     if (g_show_clock_hud) allow_renderer_frame_processing(true);
                                     else allow_renderer_frame_processing(false);
                                 }
                                 ImGui::Spacing();
 
-                                DrawSetting("24 Hour Format", &g_use_24h_clock);
+                                DrawSetting(translation24HourFormat[current_language], &g_use_24h_clock);
                                 ImGui::Spacing();
 
-                                DrawSetting("Hide HUD When Overlay Open", &g_hide_hud_when_overlay_open);
+                                DrawSetting(translationHideHudWhenOverlayOpen[current_language], &g_hide_hud_when_overlay_open);
 
                                 if (old_show_fps != stats.show_fps ||
                                     old_show_frametime != stats.show_frametime ||
@@ -4579,7 +4677,8 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                     }
 
                     if (settings_tab == 2) {
-                        if (BeginSteamPanel("BroadcastsCard", ICON_FA_TOWER_BROADCAST " CUSTOM BROADCAST IPS", ImVec2(0, 0))) {
+                        std::string broadcasts_title = std::string(ICON_FA_TOWER_BROADCAST " ") + translationBroadcasts[current_language];
+                        if (BeginSteamPanel("BroadcastsCard", broadcasts_title.c_str(), ImVec2(0, 0))) {
                             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(12.0f, 12.0f));
 
                             static bool broadcasts_loaded = false;
@@ -4621,7 +4720,7 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                                 }
                             }
 
-                            ImGui::TextColored(RedAccentTheme::TextMuted, "BROADCAST LISTEN PORT");
+                            ImGui::TextColored(RedAccentTheme::TextMuted, "%s", translationBroadcastListenPort[current_language]);
                             ImGui::SetNextItemWidth(160.0f);
 
                             if (ImGui::InputText("##BroadcastListenPort", g_broadcast_port_text, sizeof(g_broadcast_port_text), ImGuiInputTextFlags_CharsDecimal)) {
@@ -4629,15 +4728,15 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                                 g_broadcast_port_dirty = true;
                             }
                             ImGui::SameLine();
-                            ImGui::TextColored(RedAccentTheme::TextDim, "GBE port");
+                            ImGui::TextColored(RedAccentTheme::TextDim, "%s", translationGbePort[current_language]);
 
                             ImGui::Spacing();
 
-                            ImGui::TextColored(RedAccentTheme::TextMuted, "ADD IP");
+                            ImGui::TextColored(RedAccentTheme::TextMuted, "%s", translationAddIpLabel[current_language]);
                             ImGui::SetNextItemWidth(-1);
                             ImGui::InputTextWithHint("##broadcast_ip_input", "e.g. 192.168.1.50", broadcast_input, sizeof(broadcast_input));
 
-                            if (SteamButton("Add IP", ImVec2(120, 32), true)) {
+                            if (SteamButton(translationAddIp[current_language], ImVec2(120, 32), true)) {
                                 std::string candidate = TrimString(broadcast_input);
                                 if (!candidate.empty()) {
                                     bool exists = std::find(broadcasts_list.begin(), broadcasts_list.end(), candidate) != broadcasts_list.end();
@@ -4659,7 +4758,7 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                             }
 
                             ImGui::Spacing();
-                            ImGui::TextColored(RedAccentTheme::TextMuted, "CURRENT LIST");
+                            ImGui::TextColored(RedAccentTheme::TextMuted, "%s", translationCurrentList[current_language]);
 
                             ImGui::BeginChild(
                                 "BroadcastsList",
@@ -4688,8 +4787,8 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                                 ImGui::SetCursorPosX(ImGui::GetCursorPosX() + footer_start_x);
                             }
 
-                            const char* remove_selected_txt = "Remove Selected";
-                            const char* remove_all_txt = "Remove All";
+                            const char* remove_selected_txt = translationRemoveSelected[current_language];
+                            const char* remove_all_txt = translationRemoveAll[current_language];
 
                             float btn_h = 32.0f;
                             float gap = 10.0f;
@@ -4735,15 +4834,22 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                     }
 
                     if (settings_tab == 3) {
-                        if (BeginSteamPanel("BackgroundFxCard", ICON_FA_WAND_MAGIC_SPARKLES " BACKGROUND FX", ImVec2(0, 0))) {
+                        std::string bg_fx_title = std::string(ICON_FA_WAND_MAGIC_SPARKLES " ") + translationBackgroundFx[current_language];
+                        if (BeginSteamPanel("BackgroundFxCard", bg_fx_title.c_str(), ImVec2(0, 0))) {
                             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(12.0f, 12.0f));
 
-                            DrawSetting("Enable Background Effects", &g_bg_fx_settings.enabled);
+                            DrawSetting(translationEnableBgEffects[current_language], &g_bg_fx_settings.enabled);
                             ImGui::Spacing();
 
                             if (g_bg_fx_settings.enabled) {
-                                ImGui::TextColored(RedAccentTheme::TextMuted, "EFFECT TYPE");
-                                const char* fx_types[] = { "Snow", "Rain", "Particles", "Stars", "Bubbles" };
+                                ImGui::TextColored(RedAccentTheme::TextMuted, "%s", translationEffectType[current_language]);
+                                const char* fx_types[] = {
+                                    translationFxSnow[current_language],
+                                    translationFxRain[current_language],
+                                    translationFxParticles[current_language],
+                                    translationFxStars[current_language],
+                                    translationFxBubbles[current_language]
+                                };
                                 ImGui::SetNextItemWidth(-1);
                                 if (ImGui::BeginCombo("##fx_type", fx_types[g_bg_fx_settings.type])) {
                                     for (int i = 0; i < 5; ++i) {
@@ -4756,46 +4862,46 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                                 }
                                 ImGui::Spacing();
 
-                                if (ImGui::CollapsingHeader("Particle Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
-                                    ImGui::SliderInt("Particle Count", &g_bg_fx_settings.particle_count, 10, g_bg_fx_settings.max_particles);
-                                    ImGui::SliderFloat("Particle Speed", &g_bg_fx_settings.particle_speed, 0.2f, 3.0f);
-                                    ImGui::SliderFloat("Min Size", &g_bg_fx_settings.particle_size_min, 0.5f, 5.0f);
-                                    ImGui::SliderFloat("Max Size", &g_bg_fx_settings.particle_size_max, 1.0f, 8.0f);
-                                    ImGui::SliderFloat("Particle Alpha", &g_bg_fx_settings.particle_alpha, 0.05f, 0.8f);
+                                if (ImGui::CollapsingHeader(translationParticleSettings[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
+                                    ImGui::SliderInt(translationParticleCount[current_language], &g_bg_fx_settings.particle_count, 10, g_bg_fx_settings.max_particles);
+                                    ImGui::SliderFloat(translationParticleSpeed[current_language], &g_bg_fx_settings.particle_speed, 0.2f, 3.0f);
+                                    ImGui::SliderFloat(translationMinSize[current_language], &g_bg_fx_settings.particle_size_min, 0.5f, 5.0f);
+                                    ImGui::SliderFloat(translationMaxSize[current_language], &g_bg_fx_settings.particle_size_max, 1.0f, 8.0f);
+                                    ImGui::SliderFloat(translationParticleAlpha[current_language], &g_bg_fx_settings.particle_alpha, 0.05f, 0.8f);
                                 }
 
-                                if (ImGui::CollapsingHeader("Color Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
-                                    ImGui::ColorEdit4("Particle Color", (float*)&g_bg_fx_settings.particle_color);
-                                    ImGui::SliderFloat("Color Variation", &g_bg_fx_settings.color_variation, 0.0f, 0.8f);
+                                if (ImGui::CollapsingHeader(translationColorSettings[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
+                                    ImGui::ColorEdit4(translationParticleColor[current_language], (float*)&g_bg_fx_settings.particle_color);
+                                    ImGui::SliderFloat(translationColorVariation[current_language], &g_bg_fx_settings.color_variation, 0.0f, 0.8f);
                                 }
 
-                                if (ImGui::CollapsingHeader("Movement Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
-                                    ImGui::SliderFloat("Wind Strength", &g_bg_fx_settings.wind_strength, -2.0f, 2.0f);
-                                    ImGui::SliderFloat("Turbulence", &g_bg_fx_settings.turbulence, 0.0f, 1.5f);
-                                    ImGui::SliderFloat("Swirl Intensity", &g_bg_fx_settings.swirl_intensity, 0.0f, 2.0f);
+                                if (ImGui::CollapsingHeader(translationMovementSettings[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
+                                    ImGui::SliderFloat(translationWindStrength[current_language], &g_bg_fx_settings.wind_strength, -2.0f, 2.0f);
+                                    ImGui::SliderFloat(translationTurbulence[current_language], &g_bg_fx_settings.turbulence, 0.0f, 1.5f);
+                                    ImGui::SliderFloat(translationSwirlIntensity[current_language], &g_bg_fx_settings.swirl_intensity, 0.0f, 2.0f);
                                 }
 
                                 if (g_bg_fx_settings.type == 0) {
-                                    if (ImGui::CollapsingHeader("Snow Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
-                                        ImGui::SliderFloat("Snow Drift", &g_bg_fx_settings.snow_drift, 0.0f, 40.0f);
+                                    if (ImGui::CollapsingHeader(translationSnowSettings[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
+                                        ImGui::SliderFloat(translationSnowDrift[current_language], &g_bg_fx_settings.snow_drift, 0.0f, 40.0f);
                                     }
                                 }
                                 else if (g_bg_fx_settings.type == 1) {
-                                    if (ImGui::CollapsingHeader("Rain Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
-                                        ImGui::SliderFloat("Rain Length", &g_bg_fx_settings.rain_length, 5.0f, 25.0f);
-                                        ImGui::SliderFloat("Rain Tilt", &g_bg_fx_settings.rain_tilt, 0.0f, 15.0f);
+                                    if (ImGui::CollapsingHeader(translationRainSettings[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
+                                        ImGui::SliderFloat(translationRainLength[current_language], &g_bg_fx_settings.rain_length, 5.0f, 25.0f);
+                                        ImGui::SliderFloat(translationRainTilt[current_language], &g_bg_fx_settings.rain_tilt, 0.0f, 15.0f);
                                     }
                                 }
                                 else if (g_bg_fx_settings.type == 3) {
-                                    if (ImGui::CollapsingHeader("Star Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
-                                        ImGui::SliderFloat("Twinkle Speed", &g_bg_fx_settings.star_twinkle_speed, 0.5f, 5.0f);
+                                    if (ImGui::CollapsingHeader(translationStarSettings[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
+                                        ImGui::SliderFloat(translationStarTwinkleSpeed[current_language], &g_bg_fx_settings.star_twinkle_speed, 0.5f, 5.0f);
                                     }
                                 }
 
-                                if (ImGui::CollapsingHeader("Performance", ImGuiTreeNodeFlags_DefaultOpen)) {
-                                    DrawSetting("Optimize for Performance", &g_bg_fx_settings.use_optimization);
+                                if (ImGui::CollapsingHeader(translationPerformance[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
+                                    DrawSetting(translationOptimizePerformance[current_language], &g_bg_fx_settings.use_optimization);
                                     if (g_bg_fx_settings.use_optimization) {
-                                        ImGui::SliderInt("Max Particles (Performance)", &g_bg_fx_settings.max_particles, 50, 300);
+                                        ImGui::SliderInt(translationMaxParticlesPerformance[current_language], &g_bg_fx_settings.max_particles, 50, 300);
                                         if (g_bg_fx_settings.particle_count > g_bg_fx_settings.max_particles) {
                                             g_bg_fx_settings.particle_count = g_bg_fx_settings.max_particles;
                                         }
@@ -4806,12 +4912,12 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                                 ImGui::Separator();
                                 ImGui::Spacing();
 
-                                ImGui::TextColored(RedAccentTheme::TextMuted, "Preview Information");
-                                ImGui::TextColored(RedAccentTheme::TextDim, "Active Effect: %s", fx_types[g_bg_fx_settings.type]);
-                                ImGui::TextColored(RedAccentTheme::TextDim, "Particles: %d / %d", g_bg_fx_settings.particle_count, g_bg_fx_settings.max_particles);
+                                ImGui::TextColored(RedAccentTheme::TextMuted, "%s", translationPreviewInfo[current_language]);
+                                ImGui::TextColored(RedAccentTheme::TextDim, translationActiveEffect[current_language], fx_types[g_bg_fx_settings.type]);
+                                ImGui::TextColored(RedAccentTheme::TextDim, translationParticlesCount[current_language], g_bg_fx_settings.particle_count, g_bg_fx_settings.max_particles);
 
                                 ImGui::Spacing();
-                                if (SteamButton("Reset to Defaults", ImVec2(180, 34), false)) {
+                                if (SteamButton(translationResetToDefaults[current_language], ImVec2(180, 34), false)) {
                                     g_bg_fx_settings = BackgroundFxSettings();
                                     SaveGBEConfig();
                                 }
@@ -4832,7 +4938,7 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
     }
 
     if (show_notification_history || history_pinned) {
-        if (BeginModernWindow("Notification History", ImVec2(560, 480), &show_notification_history, current_language, &history_pinned, false, true)) {
+        if (BeginModernWindow((std::string(translationNotificationHistory[current_language]) + "###NotificationHistoryWindow").c_str(), ImVec2(560, 480), &show_notification_history, current_language, &history_pinned, false, true)) {
             if (SteamButton("Clear All", ImVec2(120, 32), false)) {
                 notification_history.clear();
                 notification_history_cache.clear();
@@ -5433,7 +5539,7 @@ void Steam_Overlay::steam_run_callback()
     if (save_settings) {
         save_settings = false;
 
-        const char* language_text = valid_languages[current_language];
+        const char* language_text = valid_languages[selected_language];
         save_global_settings(get_steam_client()->local_storage, username_text, language_text);
         get_steam_client()->settings_client->set_local_name(username_text);
         get_steam_client()->settings_server->set_local_name(username_text);
