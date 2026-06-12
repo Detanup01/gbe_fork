@@ -767,7 +767,7 @@ const char translationAccept[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"ยอมรับ",
 
 	// 26 - Turkish
-  u8"Kabul Et",
+  u8"Kabul et",
 
 	// 27 - Ukrainian
   u8"Прийняти",
@@ -1461,6 +1461,102 @@ const char translationSettings[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   
 };
 
+const char translationHistory[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"History",
+
+	// 1 - Arabic
+  u8"History",
+
+	// 2 - Bulgarian
+  u8"History",
+
+	// 3 - Simplified Chinese
+  u8"历史记录",
+
+	// 4 - Traditional Chinese
+  u8"History",
+
+	// 5 - Czech
+  u8"History",
+
+	// 6 - Danish
+  u8"History",
+
+	// 7 - Dutch
+  u8"History",
+
+	// 8 - Finnish
+  u8"History",
+
+	// 9 - French
+  u8"History",
+
+	// 10 - German
+  u8"History",
+
+	// 11 - Greek
+  u8"History",
+
+	// 12 - Hungarian
+  u8"History",
+
+	// 13 - Italian
+  u8"History",
+
+	// 14 - Japanese
+  u8"History",
+
+	// 15 - Korean
+  u8"History",
+
+	// 16 - Norwegian
+  u8"History",
+
+	// 17 - Polish
+  u8"History",
+
+	// 18 - Portuguese
+  u8"History",
+
+	// 19 - Brazilian Portuguese
+  u8"History",
+
+	// 20 - Romanian
+  u8"History",
+
+	// 21 - Russian
+  u8"History",
+
+	// 22 - Spanish
+  u8"History",
+
+	// 23 - Latin American
+  u8"History",
+
+	// 24 - Swedish
+  u8"History",
+
+	// 25 - Thai
+  u8"History",
+
+	// 26 - Turkish
+  u8"Geçmiş",
+
+	// 27 - Ukrainian
+  u8"History",
+
+	// 28 - Vietnamese
+  u8"History",
+
+	// 29 - Croatian
+  u8"History",
+  
+  // 30 - Indonesian
+  u8"History",
+  
+};
+
 // C:\Program Files (x86)\Steam\resource\overlay_*.txt
 // steam_menu_friends_view
 const char translationFriends[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -1556,6 +1652,678 @@ const char translationFriends[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   
   // 30 - Indonesian
   u8"Teman",
+
+};
+
+const char translationNoNotification[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"No notifications yet",
+
+	// 1 - Arabic
+  u8"No notifications yet",
+
+	// 2 - Bulgarian
+  u8"No notifications yet",
+
+	// 3 - Simplified Chinese
+  u8"暂无通知",
+
+	// 4 - Traditional Chinese
+  u8"No notifications yet",
+
+	// 5 - Czech
+  u8"No notifications yet",
+
+	// 6 - Danish
+  u8"No notifications yet",
+
+	// 7 - Dutch
+  u8"No notifications yet",
+
+	// 8 - Finnish
+  u8"No notifications yet",
+
+	// 9 - French
+  u8"No notifications yet",
+
+	// 10 - German
+  u8"No notifications yet",
+
+	// 11 - Greek
+  u8"No notifications yet",
+
+	// 12 - Hungarian
+  u8"No notifications yet",
+
+	// 13 - Italian
+  u8"No notifications yet",
+
+	// 14 - Japanese
+  u8"No notifications yet",
+
+	// 15 - Korean
+  u8"No notifications yet",
+
+	// 16 - Norwegian
+  u8"No notifications yet",
+
+	// 17 - Polish
+  u8"No notifications yet",
+
+	// 18 - Portuguese
+  u8"No notifications yet",
+
+	// 19 - Brazilian Portuguese
+  u8"No notifications yet",
+
+	// 20 - Romanian
+  u8"No notifications yet",
+
+	// 21 - Russian
+  u8"No notifications yet",
+
+	// 22 - Spanish
+  u8"No notifications yet",
+
+	// 23 - Latin American
+  u8"No notifications yet",
+
+	// 24 - Swedish
+  u8"No notifications yet",
+
+	// 25 - Thai
+  u8"No notifications yet",
+
+	// 26 - Turkish
+  u8"Henüz bildirim yok",
+
+	// 27 - Ukrainian
+  u8"No notifications yet",
+
+	// 28 - Vietnamese
+  u8"No notifications yet",
+
+	// 29 - Croatian
+  u8"No notifications yet",
+  
+  // 30 - Indonesian
+  u8"No notifications yet",
+
+};
+
+const char translationClearAll[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"Clear All",
+
+	// 1 - Arabic
+  u8"Clear All",
+
+	// 2 - Bulgarian
+  u8"Clear All",
+
+	// 3 - Simplified Chinese
+  u8"清除所有通知",
+
+	// 4 - Traditional Chinese
+  u8"Clear All",
+
+	// 5 - Czech
+  u8"Clear All",
+
+	// 6 - Danish
+  u8"Clear All",
+
+	// 7 - Dutch
+  u8"Clear All",
+
+	// 8 - Finnish
+  u8"Clear All",
+
+	// 9 - French
+  u8"Clear All",
+
+	// 10 - German
+  u8"Clear All",
+
+	// 11 - Greek
+  u8"Clear All",
+
+	// 12 - Hungarian
+  u8"Clear All",
+
+	// 13 - Italian
+  u8"Clear All",
+
+	// 14 - Japanese
+  u8"Clear All",
+
+	// 15 - Korean
+  u8"Clear All",
+
+	// 16 - Norwegian
+  u8"Clear All",
+
+	// 17 - Polish
+  u8"Clear All",
+
+	// 18 - Portuguese
+  u8"Clear All",
+
+	// 19 - Brazilian Portuguese
+  u8"Clear All",
+
+	// 20 - Romanian
+  u8"Clear All",
+
+	// 21 - Russian
+  u8"Clear All",
+
+	// 22 - Spanish
+  u8"Clear All",
+
+	// 23 - Latin American
+  u8"Clear All",
+
+	// 24 - Swedish
+  u8"Clear All",
+
+	// 25 - Thai
+  u8"Clear All",
+
+	// 26 - Turkish
+  u8"Hepsini Temizle",
+
+	// 27 - Ukrainian
+  u8"Clear All",
+
+	// 28 - Vietnamese
+  u8"Clear All",
+
+	// 29 - Croatian
+  u8"Clear All",
+  
+  // 30 - Indonesian
+  u8"Clear All",
+
+};
+
+const char translationShow[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"Show",
+
+	// 1 - Arabic
+  u8"Show",
+
+	// 2 - Bulgarian
+  u8"Show",
+
+	// 3 - Simplified Chinese
+  u8"显示",
+
+	// 4 - Traditional Chinese
+  u8"Show",
+
+	// 5 - Czech
+  u8"Show",
+
+	// 6 - Danish
+  u8"Show",
+
+	// 7 - Dutch
+  u8"Show",
+
+	// 8 - Finnish
+  u8"Show",
+
+	// 9 - French
+  u8"Show",
+
+	// 10 - German
+  u8"Show",
+
+	// 11 - Greek
+  u8"Show",
+
+	// 12 - Hungarian
+  u8"Show",
+
+	// 13 - Italian
+  u8"Show",
+
+	// 14 - Japanese
+  u8"Show",
+
+	// 15 - Korean
+  u8"Show",
+
+	// 16 - Norwegian
+  u8"Show",
+
+	// 17 - Polish
+  u8"Show",
+
+	// 18 - Portuguese
+  u8"Show",
+
+	// 19 - Brazilian Portuguese
+  u8"Show",
+
+	// 20 - Romanian
+  u8"Show",
+
+	// 21 - Russian
+  u8"Show",
+
+	// 22 - Spanish
+  u8"Show",
+
+	// 23 - Latin American
+  u8"Show",
+
+	// 24 - Swedish
+  u8"Show",
+
+	// 25 - Thai
+  u8"Show",
+
+	// 26 - Turkish
+  u8"Göster",
+
+	// 27 - Ukrainian
+  u8"Show",
+
+	// 28 - Vietnamese
+  u8"Show",
+
+	// 29 - Croatian
+  u8"Show",
+  
+  // 30 - Indonesian
+  u8"Show",
+
+};
+
+const char translationUnlocked[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"Unlocked",
+
+	// 1 - Arabic
+  u8"Unlocked",
+
+	// 2 - Bulgarian
+  u8"Unlocked",
+
+	// 3 - Simplified Chinese
+  u8"已解锁",
+
+	// 4 - Traditional Chinese
+  u8"Unlocked",
+
+	// 5 - Czech
+  u8"Unlocked",
+
+	// 6 - Danish
+  u8"Unlocked",
+
+	// 7 - Dutch
+  u8"Unlocked",
+
+	// 8 - Finnish
+  u8"Unlocked",
+
+	// 9 - French
+  u8"Unlocked",
+
+	// 10 - German
+  u8"Unlocked",
+
+	// 11 - Greek
+  u8"Unlocked",
+
+	// 12 - Hungarian
+  u8"Unlocked",
+
+	// 13 - Italian
+  u8"Unlocked",
+
+	// 14 - Japanese
+  u8"Unlocked",
+
+	// 15 - Korean
+  u8"Unlocked",
+
+	// 16 - Norwegian
+  u8"Unlocked",
+
+	// 17 - Polish
+  u8"Unlocked",
+
+	// 18 - Portuguese
+  u8"Unlocked",
+
+	// 19 - Brazilian Portuguese
+  u8"Unlocked",
+
+	// 20 - Romanian
+  u8"Unlocked",
+
+	// 21 - Russian
+  u8"Unlocked",
+
+	// 22 - Spanish
+  u8"Unlocked",
+
+	// 23 - Latin American
+  u8"Unlocked",
+
+	// 24 - Swedish
+  u8"Unlocked",
+
+	// 25 - Thai
+  u8"Unlocked",
+
+	// 26 - Turkish
+  u8"Kazanılmış Başarımlar",
+
+	// 27 - Ukrainian
+  u8"Unlocked",
+
+	// 28 - Vietnamese
+  u8"Unlocked",
+
+	// 29 - Croatian
+  u8"Unlocked",
+  
+  // 30 - Indonesian
+  u8"Unlocked",
+
+};
+
+const char translationNoUnlockedAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"No achievements unlocked yet",
+
+	// 1 - Arabic
+  u8"No achievements unlocked yet",
+
+	// 2 - Bulgarian
+  u8"No achievements unlocked yet",
+
+	// 3 - Simplified Chinese
+  u8"暂无已解锁成就",
+
+	// 4 - Traditional Chinese
+  u8"No achievements unlocked yet",
+
+	// 5 - Czech
+  u8"No achievements unlocked yet",
+
+	// 6 - Danish
+  u8"No achievements unlocked yet",
+
+	// 7 - Dutch
+  u8"No achievements unlocked yet",
+
+	// 8 - Finnish
+  u8"No achievements unlocked yet",
+
+	// 9 - French
+  u8"No achievements unlocked yet",
+
+	// 10 - German
+  u8"No achievements unlocked yet",
+
+	// 11 - Greek
+  u8"No achievements unlocked yet",
+
+	// 12 - Hungarian
+  u8"No achievements unlocked yet",
+
+	// 13 - Italian
+  u8"No achievements unlocked yet",
+
+	// 14 - Japanese
+  u8"No achievements unlocked yet",
+
+	// 15 - Korean
+  u8"No achievements unlocked yet",
+
+	// 16 - Norwegian
+  u8"No achievements unlocked yet",
+
+	// 17 - Polish
+  u8"No achievements unlocked yet",
+
+	// 18 - Portuguese
+  u8"No achievements unlocked yet",
+
+	// 19 - Brazilian Portuguese
+  u8"No achievements unlocked yet",
+
+	// 20 - Romanian
+  u8"No achievements unlocked yet",
+
+	// 21 - Russian
+  u8"No achievements unlocked yet",
+
+	// 22 - Spanish
+  u8"No achievements unlocked yet",
+
+	// 23 - Latin American
+  u8"No achievements unlocked yet",
+
+	// 24 - Swedish
+  u8"No achievements unlocked yet",
+
+	// 25 - Thai
+  u8"No achievements unlocked yet",
+
+	// 26 - Turkish
+  u8"Henüz hiçbir başarım kazanılmadı",
+
+	// 27 - Ukrainian
+  u8"No achievements unlocked yet",
+
+	// 28 - Vietnamese
+  u8"No achievements unlocked yet",
+
+	// 29 - Croatian
+  u8"No achievements unlocked yet",
+  
+  // 30 - Indonesian
+  u8"No achievements unlocked yet",
+
+};
+
+const char translationLocked[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"Locked",
+
+	// 1 - Arabic
+  u8"Locked",
+
+	// 2 - Bulgarian
+  u8"Locked",
+
+	// 3 - Simplified Chinese
+  u8"未解锁",
+
+	// 4 - Traditional Chinese
+  u8"Locked",
+
+	// 5 - Czech
+  u8"Locked",
+
+	// 6 - Danish
+  u8"Locked",
+
+	// 7 - Dutch
+  u8"Locked",
+
+	// 8 - Finnish
+  u8"Locked",
+
+	// 9 - French
+  u8"Locked",
+
+	// 10 - German
+  u8"Locked",
+
+	// 11 - Greek
+  u8"Locked",
+
+	// 12 - Hungarian
+  u8"Locked",
+
+	// 13 - Italian
+  u8"Locked",
+
+	// 14 - Japanese
+  u8"Locked",
+
+	// 15 - Korean
+  u8"Locked",
+
+	// 16 - Norwegian
+  u8"Locked",
+
+	// 17 - Polish
+  u8"Locked",
+
+	// 18 - Portuguese
+  u8"Locked",
+
+	// 19 - Brazilian Portuguese
+  u8"Locked",
+
+	// 20 - Romanian
+  u8"Locked",
+
+	// 21 - Russian
+  u8"Locked",
+
+	// 22 - Spanish
+  u8"Locked",
+
+	// 23 - Latin American
+  u8"Locked",
+
+	// 24 - Swedish
+  u8"Locked",
+
+	// 25 - Thai
+  u8"Locked",
+
+	// 26 - Turkish
+  u8"Kazanılmamış Başarımlar",
+
+	// 27 - Ukrainian
+  u8"Locked",
+
+	// 28 - Vietnamese
+  u8"Locked",
+
+	// 29 - Croatian
+  u8"Locked",
+  
+  // 30 - Indonesian
+  u8"Locked",
+
+};
+
+const char translationAllAchievementsUnlocked[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"All achievements unlocked!",
+
+	// 1 - Arabic
+  u8"All achievements unlocked!",
+
+	// 2 - Bulgarian
+  u8"All achievements unlocked!",
+
+	// 3 - Simplified Chinese
+  u8"已解锁所有成就！",
+
+	// 4 - Traditional Chinese
+  u8"All achievements unlocked!",
+
+	// 5 - Czech
+  u8"All achievements unlocked!",
+
+	// 6 - Danish
+  u8"All achievements unlocked!",
+
+	// 7 - Dutch
+  u8"All achievements unlocked!",
+
+	// 8 - Finnish
+  u8"All achievements unlocked!",
+
+	// 9 - French
+  u8"All achievements unlocked!",
+
+	// 10 - German
+  u8"All achievements unlocked!",
+
+	// 11 - Greek
+  u8"All achievements unlocked!",
+
+	// 12 - Hungarian
+  u8"All achievements unlocked!",
+
+	// 13 - Italian
+  u8"All achievements unlocked!",
+
+	// 14 - Japanese
+  u8"All achievements unlocked!",
+
+	// 15 - Korean
+  u8"All achievements unlocked!",
+
+	// 16 - Norwegian
+  u8"All achievements unlocked!",
+
+	// 17 - Polish
+  u8"All achievements unlocked!",
+
+	// 18 - Portuguese
+  u8"All achievements unlocked!",
+
+	// 19 - Brazilian Portuguese
+  u8"All achievements unlocked!",
+
+	// 20 - Romanian
+  u8"All achievements unlocked!",
+
+	// 21 - Russian
+  u8"All achievements unlocked!",
+
+	// 22 - Spanish
+  u8"All achievements unlocked!",
+
+	// 23 - Latin American
+  u8"All achievements unlocked!",
+
+	// 24 - Swedish
+  u8"All achievements unlocked!",
+
+	// 25 - Thai
+  u8"All achievements unlocked!",
+
+	// 26 - Turkish
+  u8"Tüm başarılar kazanıldı!",
+
+	// 27 - Ukrainian
+  u8"All achievements unlocked!",
+
+	// 28 - Vietnamese
+  u8"All achievements unlocked!",
+
+	// 29 - Croatian
+  u8"All achievements unlocked!",
+  
+  // 30 - Indonesian
+  u8"All achievements unlocked!",
 
 };
 
@@ -2023,7 +2791,7 @@ const char translationAchievedOn[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BU
   u8"สำเร็จเมื่อ %s",
 
 	// 26 - Turkish
-  u8"%s tarihinde elde edildi",
+  u8"%s tarihinde kazanıldı",
 
 	// 27 - Ukrainian
   u8"отримано %s",
@@ -2119,7 +2887,7 @@ const char translationNotAchieved[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
   u8"ยังไม่สำเร็จ",
 
 	// 26 - Turkish
-  u8"Başarılmadı",
+  u8"Kazanılmadı",
 
 	// 27 - Ukrainian
   u8"не отримано",

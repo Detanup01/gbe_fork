@@ -2069,6 +2069,7 @@ Steam_Overlay::Steam_Overlay(Settings* settings, Local_Storage* local_storage, S
     LoadGBEConfig(stats);
     InitBroadcastPortEditor();
     strncpy(username_text, settings->get_local_name(), sizeof(username_text));
+    username_text[sizeof(username_text) - 1] = '\0';
 
     this->warn_local_save =
         !settings->disable_overlay_warning_any && !settings->disable_overlay_warning_local_save && settings->overlay_warn_local_save;
@@ -3608,8 +3609,7 @@ bool Steam_Overlay::try_load_ach_icon(Overlay_Achievement& ach, bool achieved, b
     }
     auto image_info = settings->get_image(icon_handle);
     if (image_info) {
-        int icon_size = static_cast<int>(settings->overlay_appearance.icon_size);
-        icon_rsrc->AttachResource((void*)image_info->data.c_str(), icon_size, icon_size);
+        icon_rsrc->AttachResource((void*)image_info->data.c_str(), image_info->width, image_info->height);
 
         PRINT_DEBUG("'%s' (result=%i)", ach.name.c_str(), (int)icon_rsrc->GetResourceId() != 0);
     }
