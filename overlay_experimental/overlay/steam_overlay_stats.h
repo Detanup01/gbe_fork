@@ -5,6 +5,7 @@
 
 #include <chrono>
 #include "dll/settings.h"
+#undef BLOCK_SIZE
 #include "InGameOverlay/ImGui/imgui.h"
 
 class Steam_Overlay_Stats {

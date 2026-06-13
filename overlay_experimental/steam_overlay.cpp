@@ -30,6 +30,7 @@
 #include "fonts/RawAwesome6.hpp"
 #include "overlay/notification.h"
 
+#undef BLOCK_SIZE
 #include "InGameOverlay/ImGui/imgui_internal.h"
 
 #include <curl/curl.h>

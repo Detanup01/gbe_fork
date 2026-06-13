@@ -11,6 +11,7 @@
 #include <atomic>
 #include <memory>
 #include "InGameOverlay/RendererHook.h"
+#undef BLOCK_SIZE
 #include "InGameOverlay/ImGui/imgui.h"
 #include "overlay/steam_overlay_stats.h"
 #include <curl/curl.h>
