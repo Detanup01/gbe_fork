@@ -377,6 +377,7 @@ public:
     bool overlay_always_show_fps = false;
     bool overlay_always_show_frametime = false;
     bool overlay_always_show_playtime = false;
+    std::string overlay_avatar_picker_default_path = "";
     // keys used to toggle the overlay, default = Shift + Tab
     std::vector<std::string> overlay_toggle_keys{};
     // minimum time interval between achievement notifications (in milliseconds)

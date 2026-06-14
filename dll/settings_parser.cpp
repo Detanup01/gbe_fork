@@ -1635,6 +1635,9 @@ static void parse_overlay_general_config(class Settings *settings_client, class 
     settings_client->overlay_always_show_playtime = ini.GetBoolValue("overlay::general", "overlay_always_show_playtime", settings_client->overlay_always_show_playtime);
     settings_server->overlay_always_show_playtime = ini.GetBoolValue("overlay::general", "overlay_always_show_playtime", settings_server->overlay_always_show_playtime);
 
+    settings_client->overlay_avatar_picker_default_path = common_helpers::string_strip(ini.GetValue("overlay::general", "avatar_picker_default_path", ""));
+    settings_server->overlay_avatar_picker_default_path = common_helpers::string_strip(ini.GetValue("overlay::general", "avatar_picker_default_path", ""));
+
     {
         auto val = ini.GetLongValue("overlay::general", "fps_averaging_window", settings_client->overlay_fps_avg_window);
         if (val > 0) {
