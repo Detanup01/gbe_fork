@@ -86,15 +86,6 @@ static bool g_hide_hud_when_overlay_open = false;
 static ImVec2 g_clock_hud_pos = ImVec2(0.0f, 0.0f);
 static bool g_clock_hud_pos_initialized = false;
 
-static constexpr const char* kBackgroundFxLabels[] = {
-    "Off",
-    "Snow",
-    "Rain",
-    "Particles",
-    "Stars",
-    "Bubbles"
-};
-
 static constexpr float kWindowSnapDistance = 18.0f;
 
 enum class OverlayPresenceState {
@@ -178,36 +169,6 @@ static constexpr const char* valid_languages[] = {
     "indonesian",
 };
 
-
-struct BackgroundFxSettings {
-    bool enabled = true;
-    int type = 0;
-
-    int particle_count = 80;
-    float particle_speed = 1.0f;
-    float particle_size_min = 1.0f;
-    float particle_size_max = 3.0f;
-    float particle_alpha = 0.22f;
-
-    ImVec4 particle_color = ImVec4(0.937f, 0.267f, 0.267f, 1.0f);
-    float color_variation = 0.3f;
-
-    float wind_strength = 0.0f;
-    float turbulence = 0.0f;
-    float swirl_intensity = 0.0f;
-
-    float rain_length = 10.0f;
-    float rain_tilt = 5.0f;
-
-    float snow_drift = 18.0f;
-
-    float star_twinkle_speed = 2.2f;
-
-    bool use_optimization = true;
-    int max_particles = 200;
-};
-
-static BackgroundFxSettings g_bg_fx_settings;
 
 namespace RedAccentTheme
 {
@@ -1013,25 +974,7 @@ static void SaveGBEConfig()
 
     file << "show_clock_hud=" << (g_show_clock_hud ? "1" : "0") << "\n";
     file << "use_24h_clock=" << (g_use_24h_clock ? "1" : "0") << "\n";
-    file << "hide_hud_when_overlay_open=" << (g_hide_hud_when_overlay_open ? "1" : "0") << "\n";
-
-    file << "bgfx_enabled=" << (g_bg_fx_settings.enabled ? "1" : "0") << "\n";
-    file << "bgfx_type=" << g_bg_fx_settings.type << "\n";
-    file << "bgfx_particle_count=" << g_bg_fx_settings.particle_count << "\n";
-    file << "bgfx_particle_speed=" << g_bg_fx_settings.particle_speed << "\n";
-    file << "bgfx_particle_size_min=" << g_bg_fx_settings.particle_size_min << "\n";
-    file << "bgfx_particle_size_max=" << g_bg_fx_settings.particle_size_max << "\n";
-    file << "bgfx_particle_alpha=" << g_bg_fx_settings.particle_alpha << "\n";
-    file << "bgfx_color_variation=" << g_bg_fx_settings.color_variation << "\n";
-    file << "bgfx_wind_strength=" << g_bg_fx_settings.wind_strength << "\n";
-    file << "bgfx_turbulence=" << g_bg_fx_settings.turbulence << "\n";
-    file << "bgfx_swirl_intensity=" << g_bg_fx_settings.swirl_intensity << "\n";
-    file << "bgfx_rain_length=" << g_bg_fx_settings.rain_length << "\n";
-    file << "bgfx_rain_tilt=" << g_bg_fx_settings.rain_tilt << "\n";
-    file << "bgfx_snow_drift=" << g_bg_fx_settings.snow_drift << "\n";
-    file << "bgfx_star_twinkle_speed=" << g_bg_fx_settings.star_twinkle_speed << "\n";
-
-    for (uint64_t id : g_muted_users) {
+    file << "hide_hud_when_overlay_open=" << (g_hide_hud_when_overlay_open ? "1" : "0") << "\n";    for (uint64_t id : g_muted_users) {
         file << "muted=" << id << "\n";
     }
 
@@ -1069,52 +1012,6 @@ static void LoadGBEConfig(Steam_Overlay_Stats& stats)
         else if (line.rfind("hide_hud_when_overlay_open=", 0) == 0) {
             std::string value = line.substr(strlen("hide_hud_when_overlay_open="));
             g_hide_hud_when_overlay_open = (value == "1");
-        }
-        else if (line.rfind("bgfx_enabled=", 0) == 0) {
-            std::string value = line.substr(strlen("bgfx_enabled="));
-            g_bg_fx_settings.enabled = (value == "1");
-        }
-        else if (line.rfind("bgfx_type=", 0) == 0) {
-            g_bg_fx_settings.type = std::stoi(line.substr(strlen("bgfx_type=")));
-        }
-        else if (line.rfind("bgfx_particle_count=", 0) == 0) {
-            g_bg_fx_settings.particle_count = std::stoi(line.substr(strlen("bgfx_particle_count=")));
-        }
-        else if (line.rfind("bgfx_particle_speed=", 0) == 0) {
-            g_bg_fx_settings.particle_speed = std::stof(line.substr(strlen("bgfx_particle_speed=")));
-        }
-        else if (line.rfind("bgfx_particle_size_min=", 0) == 0) {
-            g_bg_fx_settings.particle_size_min = std::stof(line.substr(strlen("bgfx_particle_size_min=")));
-        }
-        else if (line.rfind("bgfx_particle_size_max=", 0) == 0) {
-            g_bg_fx_settings.particle_size_max = std::stof(line.substr(strlen("bgfx_particle_size_max=")));
-        }
-        else if (line.rfind("bgfx_particle_alpha=", 0) == 0) {
-            g_bg_fx_settings.particle_alpha = std::stof(line.substr(strlen("bgfx_particle_alpha=")));
-        }
-        else if (line.rfind("bgfx_color_variation=", 0) == 0) {
-            g_bg_fx_settings.color_variation = std::stof(line.substr(strlen("bgfx_color_variation=")));
-        }
-        else if (line.rfind("bgfx_wind_strength=", 0) == 0) {
-            g_bg_fx_settings.wind_strength = std::stof(line.substr(strlen("bgfx_wind_strength=")));
-        }
-        else if (line.rfind("bgfx_turbulence=", 0) == 0) {
-            g_bg_fx_settings.turbulence = std::stof(line.substr(strlen("bgfx_turbulence=")));
-        }
-        else if (line.rfind("bgfx_swirl_intensity=", 0) == 0) {
-            g_bg_fx_settings.swirl_intensity = std::stof(line.substr(strlen("bgfx_swirl_intensity=")));
-        }
-        else if (line.rfind("bgfx_rain_length=", 0) == 0) {
-            g_bg_fx_settings.rain_length = std::stof(line.substr(strlen("bgfx_rain_length=")));
-        }
-        else if (line.rfind("bgfx_rain_tilt=", 0) == 0) {
-            g_bg_fx_settings.rain_tilt = std::stof(line.substr(strlen("bgfx_rain_tilt=")));
-        }
-        else if (line.rfind("bgfx_snow_drift=", 0) == 0) {
-            g_bg_fx_settings.snow_drift = std::stof(line.substr(strlen("bgfx_snow_drift=")));
-        }
-        else if (line.rfind("bgfx_star_twinkle_speed=", 0) == 0) {
-            g_bg_fx_settings.star_twinkle_speed = std::stof(line.substr(strlen("bgfx_star_twinkle_speed=")));
         }
         else if (line.rfind("muted=", 0) == 0) {
             std::string value = line.substr(strlen("muted="));
@@ -1447,7 +1344,7 @@ bool DrawSetting(const char* name, bool* value)
 bool BeginModernWindow(const char* title, ImVec2 size, bool* p_open, int /*current_language*/, bool* p_pinned = nullptr, bool /*show_nav_bar*/ = false, bool animate = false)
 {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, RedAccentTheme::WindowRound);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 12.0f));
     ImGui::PushStyleColor(ImGuiCol_WindowBg, RedAccentTheme::BgElevated);
     ImGui::PushStyleColor(ImGuiCol_Border, RedAccentTheme::Border);
@@ -1786,106 +1683,6 @@ static void DrawRedGlowEffect(ImDrawList* dl, const ImVec2& size, float time)
     );
 }
 
-static void DrawOverlayBackgroundFx(ImDrawList* dl, const ImVec2& display_size, float overlay_alpha)
-{
-    if (!dl) return;
-    if (overlay_alpha <= 0.001f) return;
-    if (!g_bg_fx_settings.enabled) return;
-
-    const float t = (float)ImGui::GetTime();
-    const int count = g_bg_fx_settings.particle_count;
-
-    const float speed_factor = g_bg_fx_settings.particle_speed;
-    const float wind = g_bg_fx_settings.wind_strength;
-    const float turbulence = g_bg_fx_settings.turbulence;
-    const float swirl = g_bg_fx_settings.swirl_intensity;
-
-    for (int i = 0; i < count; ++i) {
-        float seed = (float)i * 17.371f;
-
-        float offset_x = wind * t * 0.5f;
-        float offset_y = turbulence * std::sin(t * 0.5f + seed) * 20.0f;
-
-        if (swirl > 0.0f) {
-            float angle = t * swirl * 0.5f + seed;
-            float radius = (float)(i % 100) * 0.05f;
-            offset_x += std::cos(angle) * radius * display_size.x * 0.3f;
-            offset_y += std::sin(angle) * radius * display_size.y * 0.3f;
-        }
-
-        float x = std::fmod(seed * 53.0f + t * (8.0f + (i % 7) * speed_factor) + offset_x, display_size.x + 80.0f) - 40.0f;
-        float y = std::fmod(seed * 97.0f + t * (18.0f + (i % 11) * 3.0f * speed_factor) + offset_y, display_size.y + 120.0f) - 60.0f;
-
-        ImVec4 color = g_bg_fx_settings.particle_color;
-        if (g_bg_fx_settings.color_variation > 0.0f) {
-            float variation = (std::sin(seed * 3.14159f) * g_bg_fx_settings.color_variation);
-            color.x = std::clamp(color.x + variation, 0.0f, 1.0f);
-            color.y = std::clamp(color.y + variation * 0.8f, 0.0f, 1.0f);
-            color.z = std::clamp(color.z + variation * 0.6f, 0.0f, 1.0f);
-        }
-
-        color.w = g_bg_fx_settings.particle_alpha * overlay_alpha;
-
-        switch (g_bg_fx_settings.type) {
-        case 0: {
-            float radius = g_bg_fx_settings.particle_size_min + (float)(i % 10) / 10.0f * (g_bg_fx_settings.particle_size_max - g_bg_fx_settings.particle_size_min);
-            float drift = std::sin(t * 0.7f + seed) * g_bg_fx_settings.snow_drift;
-            dl->AddCircleFilled(
-                ImVec2(x + drift, y),
-                radius,
-                ImGui::GetColorU32(color)
-            );
-            break;
-        }
-        case 1: {
-            float len = g_bg_fx_settings.rain_length + (float)(i % 5) * 3.0f;
-            float tilt = g_bg_fx_settings.rain_tilt;
-            float rain_x = std::fmod(seed * 67.0f + t * (220.0f + (i % 9) * 15.0f * speed_factor), display_size.x + 140.0f) - 70.0f;
-            float rain_y = std::fmod(seed * 31.0f + t * (340.0f + (i % 13) * 18.0f * speed_factor), display_size.y + 180.0f) - 90.0f;
-            dl->AddLine(
-                ImVec2(rain_x, rain_y),
-                ImVec2(rain_x - tilt, rain_y + len),
-                ImGui::GetColorU32(color),
-                1.0f
-            );
-            break;
-        }
-        case 2: {
-            float radius = g_bg_fx_settings.particle_size_min + (float)(i % 3) * (g_bg_fx_settings.particle_size_max - g_bg_fx_settings.particle_size_min) / 3.0f;
-            float px = x + std::sin(t * 0.8f + seed * 0.25f) * 22.0f;
-            float py = y + std::cos(t * 0.6f + seed * 0.18f) * 16.0f;
-            dl->AddCircleFilled(
-                ImVec2(px, py),
-                radius,
-                ImGui::GetColorU32(color)
-            );
-            break;
-        }
-        case 3: {
-            float star_x = std::fmod(seed * 73.0f + t * (52.0f + (i % 5) * 6.0f * speed_factor), display_size.x + 100.0f) - 50.0f;
-            float star_y = std::fmod(seed * 43.0f + t * (92.0f + (i % 7) * 7.0f * speed_factor), display_size.y + 140.0f) - 70.0f;
-            float a = 0.10f + 0.12f * (0.5f + 0.5f * std::sin(t * g_bg_fx_settings.star_twinkle_speed + seed));
-            ImU32 col = ImGui::GetColorU32(ImVec4(color.x, color.y, color.z, a * overlay_alpha));
-            dl->AddLine(ImVec2(star_x - 3.0f, star_y), ImVec2(star_x + 3.0f, star_y), col, 1.0f);
-            dl->AddLine(ImVec2(star_x, star_y - 3.0f), ImVec2(star_x, star_y + 3.0f), col, 1.0f);
-            break;
-        }
-        case 4: {
-            float bubble_x = x + std::sin(seed + t * 0.9f) * 10.0f;
-            float bubble_y = display_size.y - std::fmod(seed * 59.0f + t * (40.0f + (i % 6) * 5.0f * speed_factor), display_size.y + 120.0f) + 60.0f;
-            float radius = g_bg_fx_settings.particle_size_min + (float)(i % 4) * (g_bg_fx_settings.particle_size_max - g_bg_fx_settings.particle_size_min) / 4.0f;
-            dl->AddCircle(
-                ImVec2(bubble_x, bubble_y),
-                radius,
-                ImGui::GetColorU32(color),
-                0,
-                1.0f
-            );
-            break;
-        }
-        }
-    }
-}
 
 static void RenderClockHUD(bool overlay_open)
 {
@@ -2249,62 +2046,28 @@ void Steam_Overlay::create_fonts()
         font_builder.AddText(translationDirectJoinFriendsCanJoin[i]);
         font_builder.AddText(translationDirectJoinHidden[i]);
         font_builder.AddText(translation24HourFormat[i]);
-        font_builder.AddText(translationActiveEffect[i]);
         font_builder.AddText(translationAddIp[i]);
         font_builder.AddText(translationAddIpLabel[i]);
-        font_builder.AddText(translationBackgroundFx[i]);
         font_builder.AddText(translationBroadcastListenPort[i]);
         font_builder.AddText(translationBroadcasts[i]);
         font_builder.AddText(translationCategories[i]);
         font_builder.AddText(translationChangeAvatar[i]);
         font_builder.AddText(translationColorSettings[i]);
-        font_builder.AddText(translationColorVariation[i]);
         font_builder.AddText(translationCurrentList[i]);
         font_builder.AddText(translationDirectJoinDisabled[i]);
         font_builder.AddText(translationDirectJoinEnabled[i]);
-        font_builder.AddText(translationEffectType[i]);
-        font_builder.AddText(translationEnableBgEffects[i]);
         font_builder.AddText(translationFriendsAndProfile[i]);
-        font_builder.AddText(translationFxBubbles[i]);
-        font_builder.AddText(translationFxParticles[i]);
-        font_builder.AddText(translationFxRain[i]);
-        font_builder.AddText(translationFxSnow[i]);
-        font_builder.AddText(translationFxStars[i]);
         font_builder.AddText(translationGbePort[i]);
         font_builder.AddText(translationGeneral[i]);
         font_builder.AddText(translationHideHudWhenOverlayOpen[i]);
         font_builder.AddText(translationHudElements[i]);
-        font_builder.AddText(translationMaxParticlesPerformance[i]);
-        font_builder.AddText(translationMaxSize[i]);
-        font_builder.AddText(translationMinSize[i]);
-        font_builder.AddText(translationMovementSettings[i]);
         font_builder.AddText(translationNoAchievementsAvailable[i]);
         font_builder.AddText(translationNotes[i]);
         font_builder.AddText(translationNotificationHistory[i]);
-        font_builder.AddText(translationOptimizePerformance[i]);
         font_builder.AddText(translationOverlayStats[i]);
-        font_builder.AddText(translationParticleAlpha[i]);
-        font_builder.AddText(translationParticleColor[i]);
-        font_builder.AddText(translationParticleCount[i]);
-        font_builder.AddText(translationParticleSettings[i]);
-        font_builder.AddText(translationParticleSpeed[i]);
-        font_builder.AddText(translationParticlesCount[i]);
-        font_builder.AddText(translationPerformance[i]);
-        font_builder.AddText(translationPreviewInfo[i]);
-        font_builder.AddText(translationRainLength[i]);
-        font_builder.AddText(translationRainSettings[i]);
-        font_builder.AddText(translationRainTilt[i]);
         font_builder.AddText(translationRemoveAll[i]);
         font_builder.AddText(translationRemoveSelected[i]);
-        font_builder.AddText(translationResetToDefaults[i]);
-        font_builder.AddText(translationSnowDrift[i]);
-        font_builder.AddText(translationSnowSettings[i]);
-        font_builder.AddText(translationStarSettings[i]);
-        font_builder.AddText(translationStarTwinkleSpeed[i]);
-        font_builder.AddText(translationSwirlIntensity[i]);
         font_builder.AddText(translationSystemClock[i]);
-        font_builder.AddText(translationTurbulence[i]);
-        font_builder.AddText(translationWindStrength[i]);
     }
     font_builder.AddRanges(fonts_atlas.GetGlyphRangesDefault());
 
@@ -3088,6 +2851,7 @@ void Steam_Overlay::set_next_notification_pos(std::pair<float, float> scrn_size,
     if ((notification_type)noti.type != notification_type::invite) {
         noti_height += 2 * global_style.WindowPadding.y;
     }
+    noti_height += 20.0f;
 
     float x = 0.0f;
     float y = 0.0f;
@@ -3274,7 +3038,7 @@ void Steam_Overlay::build_notifications(float width, float height)
         ImGui::PushStyleColor(ImGuiCol_WindowBg, RedAccentTheme::BgPopup);
         ImGui::PushStyleColor(ImGuiCol_Text, RedAccentTheme::Text);
 
-        ImGuiWindowFlags extra_flags = ImGuiWindowFlags_NoFocusOnAppearing;
+        ImGuiWindowFlags extra_flags = ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
         switch ((notification_type)it->type) {
         case notification_type::achievement_progress:
         case notification_type::achievement:
@@ -3727,9 +3491,6 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
             ImGui::GetColorU32(ImVec4(0.00f, 0.00f, 0.00f, 0.35f)),
             ImGui::GetColorU32(ImVec4(0.00f, 0.00f, 0.00f, 0.20f))
         );
-
-        DrawOverlayBackgroundFx(dl, io.DisplaySize, overlay_alpha);
-
         dl->AddRectFilled(
             ImVec2(0.0f, 0.0f),
             ImVec2(io.DisplaySize.x, io.DisplaySize.y),
@@ -4016,12 +3777,15 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                     ImGui::PopStyleColor(2);
 
                     ImGui::Spacing();
+                    ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - 15.0f);
                     ImGui::TextColored(
                         g_allow_direct_join ? ImVec4(0.42f, 0.85f, 0.52f, 1.0f) : RedAccentTheme::Accent,
                         "%s",
                         g_allow_direct_join ? translationDirectJoinEnabled[current_language] : translationDirectJoinDisabled[current_language]
                     );
+                    ImGui::PopTextWrapPos();
 
+                    ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - 15.0f);
                     if (g_overlay_presence == OverlayPresenceState::Online) {
                         ImGui::TextColored(RedAccentTheme::TextDim, "All invites allowed and popup notifications enabled.");
                     }
@@ -4031,6 +3795,7 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                     else {
                         ImGui::TextColored(RedAccentTheme::TextDim, "No incoming invites accepted and no popup notifications.");
                     }
+                    ImGui::PopTextWrapPos();
 
                     ImGui::Spacing();
                     ImGui::Separator();
@@ -4057,6 +3822,7 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                     }
 
                     ImGui::Spacing();
+                    ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - 15.0f);
                     ImGui::TextColored(
                         RedAccentTheme::TextDim,
                         g_overlay_presence == OverlayPresenceState::Offline
@@ -4065,6 +3831,7 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                             ? translationDirectJoinFriendsCanJoin[current_language]
                             : translationDirectJoinHidden[current_language])
                     );
+                    ImGui::PopTextWrapPos();
 
                     ImGui::Spacing();
                     ImGui::Separator();
@@ -4340,7 +4107,9 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                         ImGui::TextColored(RedAccentTheme::Text, "%s", empty_title);
 
                         ImGui::SetCursorPosX((ImGui::GetCursorPosX() + (max_w - desc_w) * 0.5f));
+                        ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - 15.0f);
                         ImGui::TextColored(RedAccentTheme::TextDim, "%s", empty_desc);
+                        ImGui::PopTextWrapPos();
                         ImGui::EndGroup();
                     }
                 }
@@ -4400,7 +4169,7 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                     ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 10.0f);
 
                     std::string achCardId = "##ach_card_" + x.name;
-                    ImGui::BeginChild(achCardId.c_str(), ImVec2(0, 110), true, ImGuiWindowFlags_AlwaysUseWindowPadding);
+                    ImGui::BeginChild(achCardId.c_str(), ImVec2(0, 140), true, ImGuiWindowFlags_AlwaysUseWindowPadding);
 
                     if (x.icon->GetResourceId() != 0 || x.icon_gray->GetResourceId() != 0) {
                         if (ImGui::BeginTable(x.name.c_str(), 2, ImGuiTableFlags_SizingFixedFit)) {
@@ -4430,10 +4199,11 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                         ImGui::TextColored(RedAccentTheme::TextDim, "%s", translationHiddenAchievement[current_language]);
                         ImGui::SameLine();
                         ImGui::PushID(&x);
-                        ImGui::SmallButton("Show");
-                        bool show = ImGui::IsItemActive();
+                        if (ImGui::SmallButton(x.ui_show_hidden_desc ? "Hide" : "Show")) {
+                            x.ui_show_hidden_desc = !x.ui_show_hidden_desc;
+                        }
                         ImGui::PopID();
-                        if (show) {
+                        if (x.ui_show_hidden_desc) {
                             ImGui::PushFont(font_ach_desc);
                             ImGui::TextWrapped("%s", x.description.c_str());
                             ImGui::PopFont();
@@ -4534,7 +4304,6 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                         if (SteamButton(translationGeneral[current_language], ImVec2(-1, 38), settings_tab == 0)) settings_tab = 0;
                         if (SteamButton(translationHudElements[current_language], ImVec2(-1, 38), settings_tab == 1)) settings_tab = 1;
                         if (SteamButton(translationBroadcasts[current_language], ImVec2(-1, 38), settings_tab == 2)) settings_tab = 2;
-                        if (SteamButton(translationBackgroundFx[current_language], ImVec2(-1, 38), settings_tab == 3)) settings_tab = 3;
                     }
                     EndSteamPanel();
                 }
@@ -4590,21 +4359,25 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                                 }
 
                                 ImGui::Spacing();
+                                ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - 15.0f);
                                 ImGui::TextColored(
                                     RedAccentTheme::TextDim,
                                     translationSelectedLanguage[current_language],
                                     valid_languages[selected_language]
                                 );
+                                ImGui::PopTextWrapPos();
                             }
 
                             ImGui::Spacing();
 
                             if (ImGui::CollapsingHeader(translationNotes[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
+                                ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - 15.0f);
                                 ImGui::TextColored(
                                     RedAccentTheme::Accent,
                                     "%s",
                                     translationRestartTheGameToApply[current_language]
                                 );
+                                ImGui::PopTextWrapPos();
                             }
 
                             ImGui::Spacing();
@@ -4767,6 +4540,24 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                                 true,
                                 ImGuiWindowFlags_NoScrollWithMouse
                             );
+
+                            static float target_scroll_y = 0.0f;
+                            float scroll_y = ImGui::GetScrollY();
+                            float scroll_max_y = ImGui::GetScrollMaxY();
+                            
+                            if (ImGui::IsWindowHovered() && ImGui::GetIO().MouseWheel != 0.0f) {
+                                target_scroll_y = scroll_y - ImGui::GetIO().MouseWheel * 80.0f;
+                            }
+                            
+                            target_scroll_y = std::max(0.0f, std::min(target_scroll_y, scroll_max_y));
+                            
+                            if (ImGui::IsMouseDown(0)) {
+                                target_scroll_y = scroll_y;
+                            } else if (std::abs(scroll_y - target_scroll_y) > 0.5f) {
+                                float new_scroll = scroll_y + (target_scroll_y - scroll_y) * (15.0f * ImGui::GetIO().DeltaTime);
+                                ImGui::SetScrollY(new_scroll);
+                            }
+
                             for (size_t i = 0; i < broadcasts_list.size(); ++i) {
                                 bool selected = (broadcast_selected == static_cast<int>(i));
                                 if (ImGui::Selectable(broadcasts_list[i].c_str(), selected)) {
@@ -4831,101 +4622,6 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                             }
                         }
                         ImGui::PopStyleVar();
-                        EndSteamPanel();
-                    }
-
-                    if (settings_tab == 3) {
-                        std::string bg_fx_title = std::string(ICON_FA_WAND_MAGIC_SPARKLES " ") + translationBackgroundFx[current_language];
-                        if (BeginSteamPanel("BackgroundFxCard", bg_fx_title.c_str(), ImVec2(0, 0))) {
-                            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(12.0f, 12.0f));
-
-                            DrawSetting(translationEnableBgEffects[current_language], &g_bg_fx_settings.enabled);
-                            ImGui::Spacing();
-
-                            if (g_bg_fx_settings.enabled) {
-                                ImGui::TextColored(RedAccentTheme::TextMuted, "%s", translationEffectType[current_language]);
-                                const char* fx_types[] = {
-                                    translationFxSnow[current_language],
-                                    translationFxRain[current_language],
-                                    translationFxParticles[current_language],
-                                    translationFxStars[current_language],
-                                    translationFxBubbles[current_language]
-                                };
-                                ImGui::SetNextItemWidth(-1);
-                                if (ImGui::BeginCombo("##fx_type", fx_types[g_bg_fx_settings.type])) {
-                                    for (int i = 0; i < 5; ++i) {
-                                        if (ImGui::Selectable(fx_types[i], g_bg_fx_settings.type == i)) {
-                                            g_bg_fx_settings.type = i;
-                                            SaveGBEConfig();
-                                        }
-                                    }
-                                    ImGui::EndCombo();
-                                }
-                                ImGui::Spacing();
-
-                                if (ImGui::CollapsingHeader(translationParticleSettings[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
-                                    ImGui::SliderInt(translationParticleCount[current_language], &g_bg_fx_settings.particle_count, 10, g_bg_fx_settings.max_particles);
-                                    ImGui::SliderFloat(translationParticleSpeed[current_language], &g_bg_fx_settings.particle_speed, 0.2f, 3.0f);
-                                    ImGui::SliderFloat(translationMinSize[current_language], &g_bg_fx_settings.particle_size_min, 0.5f, 5.0f);
-                                    ImGui::SliderFloat(translationMaxSize[current_language], &g_bg_fx_settings.particle_size_max, 1.0f, 8.0f);
-                                    ImGui::SliderFloat(translationParticleAlpha[current_language], &g_bg_fx_settings.particle_alpha, 0.05f, 0.8f);
-                                }
-
-                                if (ImGui::CollapsingHeader(translationColorSettings[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
-                                    ImGui::ColorEdit4(translationParticleColor[current_language], (float*)&g_bg_fx_settings.particle_color);
-                                    ImGui::SliderFloat(translationColorVariation[current_language], &g_bg_fx_settings.color_variation, 0.0f, 0.8f);
-                                }
-
-                                if (ImGui::CollapsingHeader(translationMovementSettings[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
-                                    ImGui::SliderFloat(translationWindStrength[current_language], &g_bg_fx_settings.wind_strength, -2.0f, 2.0f);
-                                    ImGui::SliderFloat(translationTurbulence[current_language], &g_bg_fx_settings.turbulence, 0.0f, 1.5f);
-                                    ImGui::SliderFloat(translationSwirlIntensity[current_language], &g_bg_fx_settings.swirl_intensity, 0.0f, 2.0f);
-                                }
-
-                                if (g_bg_fx_settings.type == 0) {
-                                    if (ImGui::CollapsingHeader(translationSnowSettings[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
-                                        ImGui::SliderFloat(translationSnowDrift[current_language], &g_bg_fx_settings.snow_drift, 0.0f, 40.0f);
-                                    }
-                                }
-                                else if (g_bg_fx_settings.type == 1) {
-                                    if (ImGui::CollapsingHeader(translationRainSettings[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
-                                        ImGui::SliderFloat(translationRainLength[current_language], &g_bg_fx_settings.rain_length, 5.0f, 25.0f);
-                                        ImGui::SliderFloat(translationRainTilt[current_language], &g_bg_fx_settings.rain_tilt, 0.0f, 15.0f);
-                                    }
-                                }
-                                else if (g_bg_fx_settings.type == 3) {
-                                    if (ImGui::CollapsingHeader(translationStarSettings[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
-                                        ImGui::SliderFloat(translationStarTwinkleSpeed[current_language], &g_bg_fx_settings.star_twinkle_speed, 0.5f, 5.0f);
-                                    }
-                                }
-
-                                if (ImGui::CollapsingHeader(translationPerformance[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
-                                    DrawSetting(translationOptimizePerformance[current_language], &g_bg_fx_settings.use_optimization);
-                                    if (g_bg_fx_settings.use_optimization) {
-                                        ImGui::SliderInt(translationMaxParticlesPerformance[current_language], &g_bg_fx_settings.max_particles, 50, 300);
-                                        if (g_bg_fx_settings.particle_count > g_bg_fx_settings.max_particles) {
-                                            g_bg_fx_settings.particle_count = g_bg_fx_settings.max_particles;
-                                        }
-                                    }
-                                }
-
-                                ImGui::Spacing();
-                                ImGui::Separator();
-                                ImGui::Spacing();
-
-                                ImGui::TextColored(RedAccentTheme::TextMuted, "%s", translationPreviewInfo[current_language]);
-                                ImGui::TextColored(RedAccentTheme::TextDim, translationActiveEffect[current_language], fx_types[g_bg_fx_settings.type]);
-                                ImGui::TextColored(RedAccentTheme::TextDim, translationParticlesCount[current_language], g_bg_fx_settings.particle_count, g_bg_fx_settings.max_particles);
-
-                                ImGui::Spacing();
-                                if (SteamButton(translationResetToDefaults[current_language], ImVec2(180, 34), false)) {
-                                    g_bg_fx_settings = BackgroundFxSettings();
-                                    SaveGBEConfig();
-                                }
-                            }
-
-                            ImGui::PopStyleVar();
-                        }
                         EndSteamPanel();
                     }
                 }
@@ -5009,7 +4705,7 @@ if (ImGui::Begin("GBEOverlayBackground", nullptr, bgFlags)) {
                     ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 10.0f);
                     
                     std::string entryId = "##hist_entry_" + std::to_string(id_counter++);
-                    ImGui::BeginChild(entryId.c_str(), ImVec2(0, 48), true, ImGuiWindowFlags_AlwaysUseWindowPadding);
+                    ImGui::BeginChild(entryId.c_str(), ImVec2(0, 72), true, ImGuiWindowFlags_AlwaysUseWindowPadding);
                     ImGui::TextWrapped("%s", line.c_str());
                     ImGui::EndChild();
                     

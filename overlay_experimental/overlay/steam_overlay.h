@@ -72,6 +72,7 @@ struct Overlay_Achievement
     uint32 max_progress{};
     bool hidden{};
     bool achieved{};
+    bool ui_show_hidden_desc{};
     uint32 unlock_time{};
     InGameOverlay::RendererResource_t* icon{};
     InGameOverlay::RendererResource_t* icon_gray{};
