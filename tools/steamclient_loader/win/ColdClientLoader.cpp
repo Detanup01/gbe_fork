@@ -226,6 +226,8 @@ static WCHAR OrgSteamPath_hkcu_2[8192] = { 0 };
 static DWORD Size2_hkcu_2 = sizeof(OrgSteamPath_hkcu_2);
 static WCHAR OrgSteamExe_2[8192] = { 0 };
 static DWORD Size3_hkcu_2 = sizeof(OrgSteamExe_2);
+static DWORD OrgRunningAppID_hkcu_2 = 0;
+static bool orig_steam_running_appid = false;
 static bool patch_registry_hkcu_2()
 {
     HKEY Registrykey = { 0 };
@@ -236,6 +238,11 @@ static bool patch_registry_hkcu_2()
         RegQueryValueExW(Registrykey, L"SourceModInstallPath", 0, &keyType, (LPBYTE)OrgSteamModDir_hkcu_2, &Size1_hkcu_2);
         RegQueryValueExW(Registrykey, L"SteamPath", 0, &keyType, (LPBYTE)OrgSteamPath_hkcu_2, &Size2_hkcu_2);
         RegQueryValueExW(Registrykey, L"SteamExe", 0, &keyType, (LPBYTE)OrgSteamExe_2, &Size3_hkcu_2);
+        DWORD size_running = sizeof(DWORD);
+        DWORD keyTypeRunning = REG_DWORD;
+        if (RegQueryValueExW(Registrykey, L"RunningAppID", 0, &keyTypeRunning, (LPBYTE)&OrgRunningAppID_hkcu_2, &size_running) == ERROR_SUCCESS) {
+            orig_steam_running_appid = true;
+        }
         logger.write("Found previous registry entry (HKCU #2) for Steam");
     } else if (RegCreateKeyExW(HKEY_CURRENT_USER, L"Software\\Valve\\Steam", 0, 0, REG_OPTION_NON_VOLATILE,
             KEY_ALL_ACCESS, NULL, &Registrykey, NULL) == ERROR_SUCCESS) {
@@ -270,6 +277,11 @@ static void cleanup_registry_hkcu_2()
         RegSetValueExW(Registrykey, L"SourceModInstallPath", NULL, REG_SZ, (LPBYTE)OrgSteamModDir_hkcu_2, Size1_hkcu_2);
         RegSetValueExW(Registrykey, L"SteamPath", NULL, REG_SZ, (LPBYTE)OrgSteamPath_hkcu_2, Size2_hkcu_2);
         RegSetValueExW(Registrykey, L"SteamExe", NULL, REG_SZ, (LPBYTE)OrgSteamExe_2, Size3_hkcu_2);
+        if (orig_steam_running_appid) {
+            RegSetValueExW(Registrykey, L"RunningAppID", NULL, REG_DWORD, (const BYTE *)&OrgRunningAppID_hkcu_2, sizeof(DWORD));
+        } else {
+            RegDeleteValueW(Registrykey, L"RunningAppID");
+        }
 
         // Close the HKEY Handle.
         RegCloseKey(Registrykey);
