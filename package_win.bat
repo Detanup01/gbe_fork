@@ -33,9 +33,9 @@ if "%~2" equ "1" (
 
 set /a "PKG_EXE_MEM_PERCENT=90"
 set /a "PKG_EXE_DICT_SIZE_MB=384"
-set "PKG_EXE=third-party\deps\win\7za\7za.exe"
-if not exist "%PKG_EXE%" (
-  1>&2 echo:packager wasn't found
+set "PKG_EXE=7za.exe"
+where "%PKG_EXE%" >nul 2>nul || (
+  1>&2 echo:packager (7za.exe) wasn't found in PATH
   goto :end_script_with_err
 )
 

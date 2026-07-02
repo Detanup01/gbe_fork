@@ -53,272 +53,94 @@ You can also find instructions here in [README.release.md](./post_build/README.r
 <br/>
 
 # **Compiling**
-## One time setup
-### **Cloning the repo**
 
- Clone the repo and its submodules **recursively**
- ```shell
- git clone --recurse-submodules -j8 https://github.com/Detanup01/gbe_fork.git
- ```
- The switch `-j8` is optional, it allows Git to fetch up to 8 submodules
+## Prerequisites
 
- It is adviseable to always checkout submodules every now and then, to make sure they're up to date
- ```shell
- git submodule update --init --recursive --remote
- ```
-
-### For Windows:
-* You need Windows 10 or 8.1 + WDK
-* Using Visual Studio, install `Visual Studio 2022 Community`: https://visualstudio.microsoft.com/vs/community/
-   * Select the Workload `Desktop development with C++`
-   * In the `Individual componenets` scroll to the buttom and select the **latest** version of `Windows XX SDK (XX.X...)`  
-      For example `Windows 11 SDK (10.0.22621.0)`
-* Using `MSYS2` **this is currently experimental and will not work due to ABI differences**: https://www.msys2.org/  
-  <details>
-    <summary>steps</summary>
-    
-    * To build 64-bit binaries use either the [environment](https://www.msys2.org/docs/environments/) `UCRT64` or `MINGW64` then install the GCC toolchain  
-      `UCRT64`  
-      ```shell
-      pacman -S mingw-w64-ucrt-x86_64-gcc
-      ```
-      `MINGW64`  
-      ```shell
-      pacman -S mingw-w64-i686-gcc
-      ```
-    * To build 32-bit binaries use the environment `MINGW32` then install the GCC toolchain  
-      ```shell
-      pacman -S mingw-w64-i686-gcc
-      ``` 
-    
-  </details> 
-* Python 3.10 or above: https://www.python.org/downloads/windows/  
-   After installation, make sure it works
-   ```batch
-   python --version
-   ```
-* *(Optional)* Install a GUI for Git like [GitHub Desktop](https://desktop.github.com/), or [Sourcetree](https://www.sourcetreeapp.com/)
-
-### For Linux:
-
-* Ubuntu 22.04 LTS: https://ubuntu.com/download/desktop
-* Ubuntu required packages:
-  ```shell
-  sudo apt update -y
-  sudo apt install -y coreutils # echo, printf, etc...
-  sudo apt install -y build-essential
-  sudo apt install -y gcc-multilib # needed for 32-bit builds
-  sudo apt install -y g++-multilib
-  sudo apt install -y libglx-dev # needed for overlay build (header files   such as GL/glx.h)
-  sudo apt install -y libgl-dev # needed for overlay build (header files   such as GL/gl.h)
-  ```
-  *(Optional)* Additional packages
-  ```shell
-  sudo apt install -y clang # clang compiler
-  sudo apt install -y binutils # contains the tool 'readelf' mainly, and   other usefull binary stuff
-  ```
-* Python 3.10 or above
-   ```shell
-   sudo apt update -y
-   sudo apt install -y software-properties-common
-   sudo add-apt-repository ppa:deadsnakes/ppa -y
-   sudo apt update -y
-   sudo apt install -y "python3.12"
-   sudo apt install -y "python3.12-dev"
-   sudo apt install -y "python3.12-venv"
-   sudo apt install -y python3-dev
-   
-   # make sure it works
-   python3.12 --version
-   ```
-
-### **Building dependencies**
-
-These are third party libraries needed to build the emu later, they are linked with the emu during its build process.  
-You don't need to build these dependencies every time, they rarely get updated.  
-The only times you'll need to rebuild them is either when their separete build folder was accedentally deleted, or when the dependencies were updated.  
-
-<br/>
-
-#### On Windows:
-Open CMD in the repo folder, then run the following
-* To build using `Visual Studio`
-  ```batch
-  set "CMAKE_GENERATOR=Visual Studio 18 2026"
-  third-party\common\win\premake\premake5.exe --file=premake5-deps.lua --64-build --32-build   --all-ext --all-build --verbose --os=windows vs2026
-  ```
-* To build using `MSYS2` **this is currently experimental and will not work due to ABI differences**  
-  <details>
-    <summary>steps</summary>
-    
-    *(Optional)* In both cases below, you can use `Clang` compiler instead of `GCC` by running these 2 commands in the same terminal instance
-    ```shell
-    export CC="clang"
-    export CXX="clang++"
-    ```
-    * To build 64-bit binaries (`UCRT64` or `MINGW64`)
-    ```shell
-    export CMAKE_GENERATOR="MSYS Makefiles"
-    ./third-party/common/win/premake/premake5.exe --file=premake5-deps.lua --64-build --all-ext --all-build --verbose   --os=windows gmake2
-    ```
-    * To build 32-bit binaries (`MINGW32`)
-    ```shell
-    export CMAKE_GENERATOR="MSYS Makefiles"
-    ./third-party/common/win/premake/premake5.exe --file=premake5-deps.lua --32-build --all-ext --all-build --verbose   --os=windows gmake2
-    ```
-    
-  </details> 
-
-This will:
-* Extract all third party dependencies from the folder `third-party` into the folder `build\deps\win` 
-* Build all dependencies  
-
-#### On Linux:
-Open a terminal in the repo folder
-*(Optional)* You can use `Clang` compiler instead of `GCC` by running these 2 commands in the current terminal instance
+### Linux (Ubuntu/Debian)
 ```shell
-export CC="clang"
-export CXX="clang++"
+sudo apt update -y
+sudo apt install -y clang lld ninja-build cmake git python3
 ```
-Then run the following
+
+### Windows
+* Install Visual Studio 2022+ with "Desktop development with C++" workload
+* Or use MSVC + CMake from command line
+
+---
+
+## **Building**
+
+This project uses CMake with FetchContent -- all dependencies are downloaded and built automatically.  
+No submodules or manual dependency management required.
+
+### On Linux (Clang + Ninja)
 ```shell
-export CMAKE_GENERATOR="Unix Makefiles"
-./third-party/common/linux/premake/premake5 --file=premake5-deps.lua --64-build --32-build --all-ext --all-build --verbose --os=linux gmake2
+./build_linux.sh [Release|Debug]
 ```
-This will:
-* Extract all third party dependencies from the folder `third-party` into the folder `build/deps/linux` 
-* Build all dependencies (32-bit and 64-bit)  
+
+Or manually:
+```shell
+cmake -S . -B build/linux \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-linux-native.cmake \
+    -G Ninja
+cmake --build build/linux -j "$(nproc)"
+```
+
+### On Windows (MSVC)
+```shell
+cmake -S . -B build/win -G "Visual Studio 18 2026"
+cmake --build build/win --config Release
+```
+
+### Cross-compile Windows from Linux (Clang-cl + msvc-wine)
+Requires the [msvc-wine](https://github.com/mstorsjo/msvc-wine) SDK installed at `/opt/msvc` (or set `WINDOWS_SDK_PATH`).
+
+```shell
+./build_windows.sh [Release|Debug]
+```
+
+Or manually:
+```shell
+cmake -S . -B build/windows \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-linux-winsdk.cmake \
+    -DGBE_BUILD_TOOLS=ON \
+    -DGBE_BUILD_TESTS=OFF \
+    -DGBE_BUILD_STEAMCLIENT=ON \
+    -G Ninja
+cmake --build build/windows -j "$(nproc)"
+```
+
+Output: `build/windows/` → `steam_api64.dll`, `steamclient64.dll`, `GameOverlayRenderer64.dll`, etc.
+
+### CMake Options
+| Option | Default | Description |
+|--------|---------|-------------|
+| `GBE_BUILD_EXPERIMENTAL` | OFF | Build with ImGui overlay |
+| `GBE_BUILD_TESTS` | OFF | Build tests |
+| `GBE_BUILD_TOOLS` | ON | Build tools (lobby_connect, etc.) |
+| `GBE_BUILD_STEAMCLIENT` | ON | Build steamclient DLL |
 
 ---
 
-## **Building the emu**
-### On Windows:
-Open CMD in the repo folder, then run the following
-* For `Visual Studio 2022`
-  ```batch
-  third-party\common\win\premake\premake5.exe --file=premake5.lua --genproto --os=windows vs2026
-  ```  
-  You can then go to the folder `build\project\vs2026\win` and open the produced `.sln` file in Visual Studio.  
-  Or, if you prefer to do it from command line, open the `Developer Command Prompt for VS 2026` inside the above folder, then:  
-  ```batch
-  msbuild /nologo /v:n /p:Configuration=release,Platform=Win32 gbe.slnx
+## **Output**
 
-  msbuild /nologo /v:n /p:Configuration=release,Platform=x64 gbe.slnx
-  ```
-  
-* For `MSYS2` **this is currently experimental and will not work due to ABI differences**  
-  <details>
-    <summary>steps</summary>
-    
-    ```shell
-    ./third-party/common/win/premake/premake5.exe --file=premake5.lua --genproto --os=windows gmake2
-
-    cd ./build/project/gmake2/win
-    ```
-    *(Optional)* You can use `Clang` compiler instead of `GCC` by running these 2 commands in the current terminal instance
-    ```shell
-    export CC="clang"
-    export CXX="clang++"
-    ```  
-    * 64-bit build (`UCRT64` or `MINGW64`)
-      ```shell
-      make config=release_x64 -j 8 all
-      ```
-    * 32-bit build (`MINGW32`)
-      ```shell
-      make config=release_x32 -j 8 all
-      ```
-    To see all possible build targets
-    ```shell
-    make help
-    ```
-    
-  </details> 
-
-This will build a release version of the emu in the folder `build\win\<toolchain>\release`  
-An example script `build_win_premake.bat` is available, check it out  
-
-<br/>
-
-### On Linux:
-Open a terminal in the repo folder, then run the following
-```shell
-./third-party/common/linux/premake/premake5 --file=premake5.lua --genproto --os=linux gmake2
-cd ./build/project/gmake2/linux
-```  
-*(Optional)* You can use `Clang` compiler instead of `GCC` by running these 2 commands in the current terminal instance
-```shell
-export CC="clang"
-export CXX="clang++"
-```  
-Then run the following
-```shell
-make config=release_x32 -j 8 all
-make config=release_x64 -j 8 all
-```  
-
-To see all possible build targets
-```shell
-make help
-```  
-
-This will build a release version of the emu in the folder `build/linux/<toolchain>/release`  
-An example script `build_linux_premake.sh` is available, check it out  
-
----
-
-## **Using Github CI as a builder**
-
-This is really slow and mainly intended for the CI Workflow scripts, but you can use it as another outlet if you can't build locally.  
-**You have to fork the repo first**.
-
-### Initial setup
-In your fork, open the `Settings` tab from the top, then:
-* From the left side panel select `Actions` -> `General`
-* In the section `Actions permissions` select `Allow all actions and reusable workflows`
-* Scroll down, and in the section `Workflow permissions` select `Read and write permissions`
-* *(Optional)* In the section `Artifact and log retention`, you can specify the amount of days to keep the build artifacts/archives.  
-  It is recommended to set a reasonable number like 3-4 days, otherwise you may consume your packages storage if you use Github as a builder frequently, more details here: https://docs.github.com/en/get-started/learning-about-github/githubs-plans  
-
-### Manual trigger
-1. Go to the `Actions` tab in your fork
-2. Select the emu dependencies Workflow (ex: `Emu third-party dependencies (Windows) `) and run it on the **main** branch (ex: `dev`).  
-   Dependencies not created on the main branch won't be recognized by other branches or subsequent runs
-3. Select one of the Workflow scripts from the left side panel, for example `Build all emu variants (Windows)`
-3. On the top-right, select `Run workflow` -> select the desired branch (for example `dev`) -> press the button `Run workflow`
-4. When it's done, many packages (called build artifacts) will be created for that workflow.  
-   Make sure to select the workflow again to view its history, then select the last run at the very top to view its artifacts
-
-<br/>
-
-Important note:
----
-
-When you build the dependencies workflows, they will be cached to decrease the build times of the next triggers and avoid unnecessary/wasteful build process.  
-This will cause a problem if at any time the third-party dependencies were updated, in that case you need to manually delete the cache, in your fork:
-1. Go to the `Actions` tab at the top
-2. Select `Caches` from the left side panel
-3. Delete the corresponding cache
-
-<br/>
+Output files go to:
+- Linux: `build/linux/` → `libsteam_api.so`, `steamclient.so`, etc.
+- Windows (MSVC): `build/win/` → `steam_api64.dll`, `steamclient64.dll`, etc.
+- Windows (cross-compile): `build/windows/` → `steam_api64.dll`, `steamclient64.dll`, etc.
 
 ---
 
 ## ***(Optional)* Packaging**
-This step is intended for Github CI/Workflow, but you can create a package locally.
 
 ### On Windows:
-Open CMD in the repos's directory, then run this script
 ```batch
 package_win.bat <build_folder>
 ```
-`build_folder` is any folder inside `build\win`, for example: `vs2026\release`  
-The above example will create a `.7z` archive inside `build\package\win\`
 
 ### On Linux:
-Open bash terminal in the repos's directory, then run this script
 ```shell
 package_linux.sh <build_folder>
 ```
-`build_folder` is any folder inside `build/linux`, for example: `gmake2/release`  
-The above example will create a compressed `.tar` archive inside `build/package/linux/`

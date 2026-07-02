@@ -162,7 +162,7 @@ static inline void reset_LastError()
 #if defined(__LINUX__) || defined(GNUC) || defined(__MINGW32__) || defined(__MINGW64__) // MinGw
     #define EMU_FUNC_NAME __PRETTY_FUNCTION__
 #else
-    #define EMU_FUNC_NAME __FUNCTION__##"()"
+    #define EMU_FUNC_NAME __FUNCTION__ "()"
 #endif
 
 // PRINT_DEBUG definition

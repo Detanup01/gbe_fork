@@ -1,0 +1,46 @@
+name: "Build emu (Linux cross-compile to Windows)"
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: "write"
+
+jobs:
+  build:
+    name: "clang-cl + msvc-wine"
+    runs-on: "ubuntu-24.04"
+    strategy:
+      fail-fast: false
+      matrix:
+        cfg: ["Release", "Debug"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ninja-build cmake python3 git wine wine64
+
+      - name: Install msvc-wine
+        run: |
+          git clone --depth 1 https://github.com/mstorsjo/msvc-wine.git /tmp/msvc-wine
+          python3 /tmp/msvc-wine/vsdownload.py --accept-license --no-fonts --dest /opt/msvc
+          python3 /tmp/msvc-wine/install.sh /opt/msvc
+
+      - name: Build
+        run: |
+          export WINDOWS_SDK_PATH=/opt/msvc
+          export PATH="/opt/msvc/bin:$PATH"
+          ./build_windows.sh ${{ matrix.cfg }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: "emu-win-cross-${{ matrix.cfg }}-${{ github.sha }}"
+          path: "build/windows/"
+          if-no-files-found: "error"
+          compression-level: 9
+          retention-days: 7

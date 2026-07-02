@@ -11,7 +11,21 @@
 
 # SPECIFIC
 /build
-/third-party
+
+# CMAKE
+CMakeCache.txt
+CMakeFiles/
+CMakeUserPresets.json
+cmake-build-*/
+_build/
+*.cmakecache
+__cmake_systeminformation
+.ninja_deps
+.ninja_lock
+.ninja_log
+build.ninja
+Makefile
+_deps/
 
 # TOOLS
 

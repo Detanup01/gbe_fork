@@ -19,7 +19,6 @@
 */
 
 #include "steam/steam_api.h"
-#include "dll/common_includes.h"
 
 #include <iostream>
 #include <chrono>
@@ -27,10 +26,24 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <cstdlib>
+
+#define LOBBY_CONNECT_APPID ((uint32)-2)
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <windows.h>
+#include <commdlg.h>
+static bool set_env_variable(const std::string &name, const std::string &value)
+{
+    return SetEnvironmentVariableA(name.c_str(), value.c_str()) != 0;
+}
+#else
+static bool set_env_variable(const std::string &name, const std::string &value)
+{
+    return setenv(name.c_str(), value.c_str(), 1) == 0;
+}
 #endif
 
 void title() {
@@ -120,19 +133,19 @@ int main() {
 		
 		auto readLobbyFile = [&lobbyFile]() {
 			std::string data;
-			std::ifstream ifs(std::filesystem::u8path(lobbyFile));
+			std::ifstream ifs(lobbyFile);
 			if (ifs.is_open())
 				std::getline(ifs, data);
 			return data;
 		};
 		
 		auto writeLobbyFile = [&lobbyFile](const std::string& data) {
-			std::ofstream ofs(std::filesystem::u8path(lobbyFile));
+			std::ofstream ofs(lobbyFile);
 			ofs << data << "\n";
 		};
 		
 		auto fileExists = [](const std::string& filename) {
-			std::ifstream ifs(std::filesystem::u8path(filename));
+			std::ifstream ifs(filename);
 			return ifs.is_open();
 		};
 		
