@@ -69,32 +69,49 @@ add_compile_options(
     -fms-compatibility
     -fms-extensions
     -fdelayed-template-parsing
-    -Wno-c++98-compat
-    -Wno-c++98-compat-pedantic
-    -Wno-unsafe-buffer-usage
-    -Wno-padded
-    -Wno-unused-command-line-argument
-    -Wno-nonportable-system-include-path
-    -Wno-unsafe-buffer-usage-in-libc-call
-    -Wno-zero-as-null-pointer-constant
-    -Wno-invalid-offsetof
-    -Wno-implicit-int-conversion
-    -Wno-reserved-macro-identifier
-    -Wno-reserved-identifier
-    -Wno-extra-semi-stmt
-    -Wno-implicit-void-ptr-cast
-    -Wno-sign-conversion
-    -Wno-documentation-unknown-command
-    -Wno-switch-enum
-    -Wno-non-virtual-dtor
-    -Wno-signed-enum-bitfield
-    -Wno-microsoft-enum-value
-    -Wno-undef
-    -Wno-documentation
-    -Wno-old-style-cast
-    -Wno-format-signedness
-    -Wno-suggest-override
-    -Wno-language-extension-token
+    -w
+    # Suppressed warnings (listed for reference):
+    # -Wno-c++98-compat
+    # -Wno-c++98-compat-pedantic
+    # -Wno-unsafe-buffer-usage
+    # -Wno-unsafe-buffer-usage-in-libc-call
+    # -Wno-padded
+    # -Wno-unused-command-line-argument
+    # -Wno-nonportable-system-include-path
+    # -Wno-zero-as-null-pointer-constant
+    # -Wno-invalid-offsetof
+    # -Wno-implicit-int-conversion
+    # -Wno-reserved-macro-identifier
+    # -Wno-reserved-identifier
+    # -Wno-extra-semi-stmt
+    # -Wno-implicit-void-ptr-cast
+    # -Wno-sign-conversion
+    # -Wno-documentation-unknown-command
+    # -Wno-switch-enum
+    # -Wno-non-virtual-dtor
+    # -Wno-signed-enum-bitfield
+    # -Wno-microsoft-enum-value
+    # -Wno-undef
+    # -Wno-documentation
+    # -Wno-old-style-cast
+    # -Wno-format-signedness
+    # -Wno-suggest-override
+    # -Wno-language-extension-token
+    # -Wno-used-but-marked-unused
+    # -Wno-declaration-after-statement
+    # -Wno-unused-macros
+    # -Wno-cast-qual
+    # -Wno-switch-default
+    # -Wno-unknown-argument
+    # -Wno-c++-keyword
+    # -Wno-covered-switch-default
+    # -Wno-cast-function-type-strict
+    # -Wno-unique-object-duplication
+    # -Wno-newline-eof
+    # -Wno-gcc-compat
+    # -Wno-microsoft-string-literal-from-predefined
+    # -Wno-gnu-zero-variadic-macro-arguments
+    # -Wno-thread-safety-negative
     /winsysroot ${WINDOWS_SDK_PATH}
 )
 
