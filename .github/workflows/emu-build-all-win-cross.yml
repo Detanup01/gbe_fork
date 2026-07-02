@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y ninja-build cmake python3 git wine wine64
+          sudo apt-get install -y ninja-build cmake extra-cmake-modules clang lld make python3 git wine wine64 msitools libwbclient0 libwbclient-dev ca-certificates
 
       - name: Install msvc-wine
         run: |
