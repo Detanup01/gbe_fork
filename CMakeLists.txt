@@ -169,27 +169,27 @@ FetchContent_Declare(
 
 # When cross-compiling (e.g., Linux→Windows), build the protobuf libraries for the
 # target but use a host-architecture protoc binary for code generation.
+# Download a prebuilt protoc matching the exact FetchContent version to avoid
+# version mismatches with system-installed protoc packages.
 if(CMAKE_CROSSCOMPILING)
     set(protobuf_BUILD_PROTOC_BINARIES OFF CACHE BOOL "" FORCE)
 
-    # Locate a host protoc from an existing native build
-    find_program(_host_protoc protoc
-        PATHS
-            "${CMAKE_CURRENT_SOURCE_DIR}/build/linux/_deps/protobuf-build"
-            "${CMAKE_CURRENT_SOURCE_DIR}/build/linux/_deps/protobuf-build/bin"
-        NO_DEFAULT_PATH
-    )
-    if(NOT _host_protoc)
-        find_program(_host_protoc protoc)
+    if(NOT Protobuf_PROTOC_EXECUTABLE)
+        set(_protoc_ver "27.3")
+        set(_protoc_url "https://github.com/protocolbuffers/protobuf/releases/download/v${_protoc_ver}/protoc-${_protoc_ver}-linux-x86_64.zip")
+        set(_protoc_dir "${CMAKE_BINARY_DIR}/_deps/protoc-host")
+        set(_protoc_exe "${_protoc_dir}/bin/protoc")
+
+        if(NOT EXISTS "${_protoc_exe}")
+            message(STATUS "Downloading host protoc v${_protoc_ver} for code generation...")
+            file(DOWNLOAD "${_protoc_url}" "${_protoc_dir}/protoc.zip" SHOW_PROGRESS)
+            file(ARCHIVE_EXTRACT INPUT "${_protoc_dir}/protoc.zip" DESTINATION "${_protoc_dir}")
+            file(REMOVE "${_protoc_dir}/protoc.zip")
+            file(CHMOD "${_protoc_exe}" PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE)
+        endif()
+
+        set(Protobuf_PROTOC_EXECUTABLE "${_protoc_exe}" CACHE FILEPATH "Host protoc binary" FORCE)
     endif()
-    if(NOT _host_protoc)
-        message(FATAL_ERROR
-            "Cross-compiling for Windows but no host-architecture protoc found.\n"
-            "Either: (1) build for Linux first, or (2) install protoc on your system."
-        )
-    endif()
-    message(STATUS "Using host protoc: ${_host_protoc}")
-    set(Protobuf_PROTOC_EXECUTABLE "${_host_protoc}" CACHE FILEPATH "Host protoc binary" FORCE)
 else()
     set(protobuf_BUILD_PROTOC_BINARIES ON CACHE BOOL "" FORCE)
 endif()

@@ -13,7 +13,6 @@ RUN pacman-key --init && \
         make \
         cmake \
         extra-cmake-modules \
-        protobuf \
         python \
         wine \
         msitools \

@@ -1,19 +1,17 @@
 # Many thanks for these sources
-- [third-party\build\win\cert\openssl](#third-partybuildwincertopenssl)
-- [third-party\build\win\cert\signtool](#third-partybuildwincertsigntool)
-- [third-party\common\linux\premake](#third-partycommonlinuxpremake)
-- [third-party\common\win\premake](#third-partycommonwinpremake)
-- [third-party\common\win\vswhere](#third-partycommonwinvswhere)
-- [third-party\deps\common\curl](#third-partydepscommoncurl)
-- [third-party\deps\common\ingame_overlay](#third-partydepscommoningame_overlay)
-- [third-party\deps\common\libssq](#third-partydepscommonlibssq)
-- [third-party\deps\common\mbedtls](#third-partydepscommonmbedtls)
-- [third-party\deps\common\protobuf](#third-partydepscommonprotobuf)
-- [third-party\deps\common\zlib](#third-partydepscommonzlib)
-- [third-party\deps\linux\7za](#third-partydepslinux7za)
-- [third-party\deps\linux\cmake](#third-partydepslinuxcmake)
-- [third-party\deps\win\7za](#third-partydepswin7za)
-- [third-party\deps\win\cmake](#third-partydepswincmake)
+- [openssl](#third-partybuildwincertopenssl)
+- [signtool](#third-partybuildwincertsigntool)
+- [vswhere](#third-partycommonwinvswhere)
+- [curl](#third-partydepscommoncurl)
+- [ingame_overlay](#third-partydepscommoningame_overlay)
+- [libssq](#third-partydepscommonlibssq)
+- [mbedtls](#third-partydepscommonmbedtls)
+- [protobuf](#third-partydepscommonprotobuf)
+- [zlib](#third-partydepscommonzlib)
+- [7za](#third-partydepslinux7za)
+- [cmake](#third-partydepslinuxcmake)
+- [7za](#third-partydepswin7za)
+- [cmake](#third-partydepswincmake)
 - [libs\detours](#libsdetours)
 - [libs\fifo_map](#libsfifo_map)
 - [libs\gamepad](#libsgamepad)
@@ -222,82 +220,6 @@ Pre-compiled binaries provided by Shining Light Productions (https://slproweb.co
 https://learn.microsoft.com/en-us/windows/win32/seccrypto/signtool
 
 VERSION: Windows SDK 10.0.22621.0
-
-### third-party\common\linux\premake
-
-#### INFO
-
-https://github.com/premake/premake-core
-
-VERSION: https://github.com/premake/premake-core/releases/tag/v5.0.0-beta2
-
-#### LICENSE
-
-Copyright (c) 2003-2022 Jason Perkins and individual contributors.
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-  1. Redistributions of source code must retain the above copyright notice,
-     this list of conditions and the following disclaimer.
-
-  2. Redistributions in binary form must reproduce the above copyright notice,
-     this list of conditions and the following disclaimer in the documentation
-     and/or other materials provided with the distribution.
-
-  3. Neither the name of Premake nor the names of its contributors may be
-     used to endorse or promote products derived from this software without
-     specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-### third-party\common\win\premake
-
-#### INFO
-
-https://github.com/premake/premake-core
-
-VERSION: https://github.com/premake/premake-core/releases/tag/v5.0.0-beta2
-
-#### LICENSE
-
-Copyright (c) 2003-2022 Jason Perkins and individual contributors.
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-  1. Redistributions of source code must retain the above copyright notice,
-     this list of conditions and the following disclaimer.
-
-  2. Redistributions in binary form must reproduce the above copyright notice,
-     this list of conditions and the following disclaimer in the documentation
-     and/or other materials provided with the distribution.
-
-  3. Neither the name of Premake nor the names of its contributors may be
-     used to endorse or promote products derived from this software without
-     specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### third-party\common\win\vswhere
 
@@ -2554,4 +2476,3 @@ Original version of ColdClientLoader by Rat431.
 #### INFO
 
 https://partner.steamgames.com/doc/sdk
-
