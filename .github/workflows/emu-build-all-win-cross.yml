@@ -1,6 +1,7 @@
 name: "Build emu (Linux cross-compile to Windows)"
 
 on:
+  push:
   workflow_call:
   workflow_dispatch:
 
@@ -31,7 +32,7 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/mstorsjo/msvc-wine.git /tmp/msvc-wine
           python3 /tmp/msvc-wine/vsdownload.py --accept-license --dest /opt/msvc
-          python3 /tmp/msvc-wine/install.sh /opt/msvc
+          bash /tmp/msvc-wine/install.sh /opt/msvc
 
       - name: Build
         run: |
