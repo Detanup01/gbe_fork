@@ -70,6 +70,13 @@ add_compile_options(
     -fms-extensions
     -fdelayed-template-parsing
     -Wno-c++98-compat
+    -Wno-c++98-compat-pedantic
+    -Wno-unsafe-buffer-usage
+    -Wno-padded
+    -Wno-unused-command-line-argument
+    -Wno-nonportable-system-include-path
+    -Wno-unsafe-buffer-usage-in-libc-call
+    -Wno-zero-as-null-pointer-constant
     /winsysroot ${WINDOWS_SDK_PATH}
 )
 
