@@ -27,9 +27,11 @@ jobs:
       - name: Cross-compile inside container
         run: >
           podman run --rm
+          --user 0:0
+          --workdir /src
           --volume "$PWD":/src:Z
           gbe_fork
-          bash /src/build_windows.sh ${{ matrix.cfg }}
+          bash build_windows.sh ${{ matrix.cfg }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v7

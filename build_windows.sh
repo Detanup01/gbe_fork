@@ -9,7 +9,7 @@ set -euo pipefail
 BUILD_TYPE="${1:-Release}"
 shift 2>/dev/null || true
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-BUILD_DIR="${SCRIPT_DIR}/build/windows"
+BUILD_DIR="build/windows"
 JOBS="$(nproc 2>/dev/null || echo 4)"
 
 # Ensure WINDOWS_SDK_PATH is discoverable
