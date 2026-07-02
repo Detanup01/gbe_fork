@@ -77,6 +77,24 @@ add_compile_options(
     -Wno-nonportable-system-include-path
     -Wno-unsafe-buffer-usage-in-libc-call
     -Wno-zero-as-null-pointer-constant
+    -Wno-invalid-offsetof
+    -Wno-implicit-int-conversion
+    -Wno-reserved-macro-identifier
+    -Wno-reserved-identifier
+    -Wno-extra-semi-stmt
+    -Wno-implicit-void-ptr-cast
+    -Wno-sign-conversion
+    -Wno-documentation-unknown-command
+    -Wno-switch-enum
+    -Wno-non-virtual-dtor
+    -Wno-signed-enum-bitfield
+    -Wno-microsoft-enum-value
+    -Wno-undef
+    -Wno-documentation
+    -Wno-old-style-cast
+    -Wno-format-signedness
+    -Wno-suggest-override
+    -Wno-language-extension-token
     /winsysroot ${WINDOWS_SDK_PATH}
 )
 
