@@ -30,7 +30,7 @@ jobs:
 
       - name: Install msvc-wine
         run: |
-          export WINDOWS_SDK_PATH=/opt/msvc
+          export WINDOWS_SDK_PATH="$HOME/my_msvc/opt/msvc"
           mkdir -p $WINDOWS_SDK_PATH
           export WINE=$(command -v wine64 || command -v wine || false)
           $WINE wineboot
@@ -40,7 +40,7 @@ jobs:
 
       - name: Build
         run: |
-          export WINDOWS_SDK_PATH=/opt/msvc
+          export WINDOWS_SDK_PATH="$HOME/my_msvc/opt/msvc"
           export PATH=$WINDOWS_SDK_PATH/bin/x64:$PATH
           ./build_windows.sh ${{ matrix.cfg }}
 
