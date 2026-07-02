@@ -30,14 +30,18 @@ jobs:
 
       - name: Install msvc-wine
         run: |
-          git clone --depth 1 https://github.com/mstorsjo/msvc-wine.git /tmp/msvc-wine
-          python3 /tmp/msvc-wine/vsdownload.py --accept-license --dest /opt/msvc
-          bash /tmp/msvc-wine/install.sh /opt/msvc
+          export WINDOWS_SDK_PATH=/opt/msvc
+          mkdir -p $WINDOWS_SDK_PATH
+          export WINE=$(command -v wine64 || command -v wine || false)
+          $WINE wineboot
+          git clone https://github.com/mstorsjo/msvc-wine
+          ./msvc-wine/vsdownload.py --accept-license --dest $WINDOWS_SDK_PATH
+          ./msvc-wine/install.sh $WINDOWS_SDK_PATH
 
       - name: Build
         run: |
           export WINDOWS_SDK_PATH=/opt/msvc
-          export PATH="/opt/msvc/bin:$PATH"
+          export PATH=$WINDOWS_SDK_PATH/bin/x64:$PATH
           ./build_windows.sh ${{ matrix.cfg }}
 
       - name: Upload artifacts
