@@ -69,6 +69,7 @@ add_compile_options(
     -fms-compatibility
     -fms-extensions
     -fdelayed-template-parsing
+    -Wno-c++98-compat
     /winsysroot ${WINDOWS_SDK_PATH}
 )
 

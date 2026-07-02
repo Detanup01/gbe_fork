@@ -8,7 +8,7 @@ set -euo pipefail
 
 BUILD_TYPE="${1:-Release}"
 shift 2>/dev/null || true
-BUILD_DIR="build/windows"
+BUILD_DIR="${SCRIPT_DIR}/build/windows"
 JOBS="$(nproc 2>/dev/null || echo 4)"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
