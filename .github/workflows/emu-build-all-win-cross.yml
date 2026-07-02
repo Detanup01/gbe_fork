@@ -17,7 +17,7 @@ jobs:
         cfg: ["Release", "Debug"]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install dependencies
         run: |
@@ -27,7 +27,7 @@ jobs:
       - name: Install msvc-wine
         run: |
           git clone --depth 1 https://github.com/mstorsjo/msvc-wine.git /tmp/msvc-wine
-          python3 /tmp/msvc-wine/vsdownload.py --accept-license --no-fonts --dest /opt/msvc
+          python3 /tmp/msvc-wine/vsdownload.py --accept-license --dest /opt/msvc
           python3 /tmp/msvc-wine/install.sh /opt/msvc
 
       - name: Build
@@ -37,7 +37,7 @@ jobs:
           ./build_windows.sh ${{ matrix.cfg }}
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: "emu-win-cross-${{ matrix.cfg }}-${{ github.sha }}"
           path: "build/windows/"
