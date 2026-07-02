@@ -1,0 +1,59 @@
+FROM archlinux:latest
+
+RUN pacman-key --init && \
+    pacman -Syu --noconfirm && \
+    pacman -S --noconfirm \
+        base-devel \
+        sudo \
+        git \
+        clang \
+        llvm \
+        lld \
+        ninja \
+        make \
+        cmake \
+        extra-cmake-modules \
+        python \
+        wine \
+        msitools \
+        ca-certificates \
+        libwbclient \
+    && pacman -Scc --noconfirm
+
+RUN useradd -m builder && echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+RUN mkdir -p /opt/msvc && chown builder:builder /opt/msvc
+USER builder
+WORKDIR /home/builder
+RUN git clone --depth 1 https://github.com/mstorsjo/msvc-wine.git && \
+    wine wineboot 2>/dev/null; true
+RUN python3 /home/builder/msvc-wine/vsdownload.py --accept-license --dest /opt/msvc && \
+    bash /home/builder/msvc-wine/install.sh /opt/msvc || true && \
+    rm -rf /home/builder/msvc-wine && \
+    ln -sf "Windows Kits" /opt/msvc/kits 2>/dev/null; true
+
+# Create case-insensitive symlinks in the Windows SDK for .lib files
+# so that lld-link (case-sensitive on Linux) can find e.g. XINPUT9_1_0.lib
+# when the original file is Xinput9_1_0.lib.
+# Create case-insensitive symlinks for .lib files so lld-link
+# (case-sensitive on Linux) can find e.g. XINPUT9_1_0.lib when
+# the file on disk is Xinput9_1_0.lib.
+RUN for libdir in $(find /opt/msvc/kits/10/Lib -type d -name "x64"); do \
+        for f in "${libdir}"/*.lib; do \
+            [ -f "$f" ] || continue; \
+            base=$(basename "$f"); \
+            stem=${base%.*}; ext=${base##*.}; \
+            upper_stem=$(echo "$stem" | tr '[:lower:]' '[:upper:]'); \
+            upper="${upper_stem}.${ext}"; \
+            if [ "$base" != "$upper" ] && [ ! -e "${libdir}/${upper}" ]; then \
+                ln -sf "$base" "${libdir}/${upper}"; \
+            fi; \
+            upper_all=$(echo "$base" | tr '[:lower:]' '[:upper:]'); \
+            if [ "$base" != "$upper_all" ] && [ ! -e "${libdir}/${upper_all}" ]; then \
+                ln -sf "$base" "${libdir}/${upper_all}"; \
+            fi; \
+        done; \
+    done
+
+ENV WINDOWS_SDK_PATH=/opt/msvc
+ENV PATH="/opt/msvc/bin/x64:${PATH}"

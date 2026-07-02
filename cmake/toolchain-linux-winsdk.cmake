@@ -24,6 +24,9 @@ set(CMAKE_CXX_COMPILER_FRONTEND_VARIANT MSVC)
 
 set(CMAKE_RC_COMPILER llvm-rc)
 
+# Skip linking during compiler detection (avoids llvm-rc manifest issue in try_compile)
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+
 # --- locate Windows SDK ---
 set(WINDOWS_SDK_PATH "" CACHE PATH "Path to Windows SDK root (installed by msvc-wine)")
 set(CMAKE_TRY_COMPILE_PLATFORM_VARIABLES WINDOWS_SDK_PATH)

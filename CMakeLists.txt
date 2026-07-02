@@ -222,6 +222,13 @@ if(CMAKE_CROSSCOMPILING AND NOT EXISTS "${opus_SOURCE_DIR}/include/opus")
                      "${opus_SOURCE_DIR}/include/opus" SYMBOLIC)
 endif()
 
+# On cross-compile, opus' CMake finds libm on the host and propagates
+# m.lib into its INTERFACE_LINK_LIBRARIES — which doesn't exist on
+# Windows.  Strip it out.
+if(CMAKE_CROSSCOMPILING)
+    set_target_properties(opus PROPERTIES INTERFACE_LINK_LIBRARIES "")
+endif()
+
 # ---- portaudio ----
 set(CMAKE_POLICY_VERSION_MINIMUM "3.5")
 FetchContent_Declare(

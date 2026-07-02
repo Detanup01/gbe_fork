@@ -5,64 +5,34 @@ on:
   workflow_call:
   workflow_dispatch:
 
-permissions:
-  contents: "write"
-
 jobs:
   build:
-    name: "clang-cl + msvc-wine"
-    runs-on: "ubuntu-24.04"
+    runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
-        cfg: ["Release", "Debug"]
-
-    container:
-      image: archlinux:latest
+        cfg: [Release, Debug]
 
     steps:
-      - uses: actions/checkout@v6
-
-      - name: Install dependencies
+      - name: Install Podman
         run: |
-          pacman -Syu --noconfirm archlinux-keyring
-          pacman -Syu --noconfirm base-devel sudo git clang lld ninja make cmake extra-cmake-modules python wine msitools ca-certificates libwbclient
+          sudo apt-get update
+          sudo apt-get install -y podman
 
-      - name: Create build user
-        run: |
-          useradd -m builder
-          echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+      - name: Checkout repository
+        uses: actions/checkout@v6
 
-      - name: Fix permissions
-        run: chown -R builder:builder .
+      - name: Build container image
+        run: podman build -t gbe_fork -f ci/Containerfile ci/
 
-      - name: Install msvc-wine
-        run: |
-          sudo -u builder sh <<'EOF'
-          set -e
-          export WINDOWS_SDK_PATH="$HOME/my_msvc/opt/msvc"
-          mkdir -p "$WINDOWS_SDK_PATH"
-          git clone https://github.com/mstorsjo/msvc-wine.git
-          WINE=$(command -v wine64 || command -v wine || false)
-          $WINE wineboot
-          ./msvc-wine/vsdownload.py --accept-license --dest "$WINDOWS_SDK_PATH"
-          bash ./msvc-wine/install.sh "$WINDOWS_SDK_PATH"
-          EOF
-
-      - name: Build
-        run: |
-          sudo -u builder sh <<'EOF'
-          set -e
-          export WINDOWS_SDK_PATH="$HOME/my_msvc/opt/msvc"
-          export PATH="$WINDOWS_SDK_PATH/bin/x64:$PATH"
-          ./build_windows.sh ${{ matrix.cfg }}
-          EOF
+      - name: Cross-compile inside container
+        run: >
+          podman run --rm
+          --volume "$PWD":/src:Z
+          gbe_fork
+          bash /src/build_windows.sh ${{ matrix.cfg }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
         with:
           name: "emu-win-cross-${{ matrix.cfg }}-${{ github.sha }}"
           path: "build/windows/"
-          if-no-files-found: "error"
-          compression-level: 9
-          retention-days: 7
