@@ -8,9 +8,9 @@ set -euo pipefail
 
 BUILD_TYPE="${1:-Release}"
 shift 2>/dev/null || true
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BUILD_DIR="${SCRIPT_DIR}/build/windows"
 JOBS="$(nproc 2>/dev/null || echo 4)"
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Ensure WINDOWS_SDK_PATH is discoverable
 export WINDOWS_SDK_PATH="${WINDOWS_SDK_PATH:-/home/twig/my_msvc/opt/msvc}"
