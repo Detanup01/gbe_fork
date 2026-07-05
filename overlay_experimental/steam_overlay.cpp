@@ -3015,7 +3015,7 @@ void Steam_Overlay::process_captured_screenshots()
             PRINT_DEBUG("Screenshot saved: %s", filename.c_str());
             submit_notification(
                 notification_type::screenshot, 
-                std::string(translationScreenshotSaved[current_language]) + settings->overlay_appearance.screenshot_datetime_format.c_str(), &local_tm
+                std::string(translationScreenshotSaved[current_language]) + settings->overlay_appearance.screenshot_datetime_format.c_str()
             );
         } else {
             PRINT_DEBUG("Failed to save screenshot!");
