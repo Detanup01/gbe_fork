@@ -3013,7 +3013,7 @@ void Steam_Overlay::process_captured_screenshots()
 
         if (local_storage->save_screenshot(filename, item.pixels_rgb.data(), item.width, item.height, 4)) {
             PRINT_DEBUG("Screenshot saved: %s", filename.c_str());
-            submit_notification(notification_type::screenshot, translationScreenshotSaved[current_language] + filename);
+            submit_notification(notification_type::screenshot, translationScreenshotSaved[current_language] + settings->overlay_appearance.screenshot_datetime_format.c_str());
         } else {
             PRINT_DEBUG("Failed to save screenshot!");
         }
