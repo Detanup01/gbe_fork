@@ -398,6 +398,22 @@ static void load_overlay_appearance(class Settings *settings_client, class Setti
             } else if (name.compare("Achievement_Unlock_Datetime_Format") == 0) {
                 settings_client->overlay_appearance.ach_unlock_datetime_format = value;
                 settings_server->overlay_appearance.ach_unlock_datetime_format = value;
+            } else if (name.compare("Show_Notification_History") == 0) {
+                bool show = (std::stol(value, NULL) != 0);
+                settings_client->overlay_appearance.show_notification_history = show;
+                settings_server->overlay_appearance.show_notification_history = show;
+            } else if (name.compare("Show_Achievement_List") == 0) {
+                bool show = (std::stol(value, NULL) != 0);
+                settings_client->overlay_appearance.show_achievement_list = show;
+                settings_server->overlay_appearance.show_achievement_list = show;
+            } else if (name.compare("Unlocked_Expanded") == 0) {
+                bool expand = (std::stol(value, NULL) != 0);
+                settings_client->overlay_appearance.unlocked_expanded = expand;
+                settings_server->overlay_appearance.unlocked_expanded = expand;
+            } else if (name.compare("Locked_Expanded") == 0) {
+                bool expand = (std::stol(value, NULL) != 0);
+                settings_client->overlay_appearance.locked_expanded = expand;
+                settings_server->overlay_appearance.locked_expanded = expand;
             } else if (name.compare("Show_Playtime_In_User_Info") == 0) {
                 bool show = (std::stol(value, NULL) != 0);
                 settings_client->overlay_appearance.show_playtime_in_user_info = show;

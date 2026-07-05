@@ -163,6 +163,10 @@ Just look for "online json validator" on your web brower to valide your file.
 
 You can use https://steamdb.info/ to list items and attributes they have and put them into your .json, you can also use the command line tool `generate_emu_config`.
 
+In `achievements.json`, each achievement can optionally include an `unlock_percentage` field (0.0–100.0) with the global unlock rate for that achievement.  
+When present, the overlay displays it next to the achievement in the achievement list.  
+You can find achievement unlock percentages on SteamDB by checking a game's global achievement stats page (e.g. `https://steamdb.info/app/<appid>/stats/`).
+
 Keep in mind that some item are not valid to have in your inventory.  
 ---
 For example, in PayDay2 all items below `item_id` `50000` will make your game crash.  

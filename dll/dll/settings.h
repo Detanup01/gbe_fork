@@ -158,6 +158,10 @@ struct Overlay_Appearance {
     uint32 notification_duration_screenshot = 1000; // screenshot saved duration (millisec)
 
     std::string ach_unlock_datetime_format = "%Y/%m/%d - %H:%M:%S";
+    bool show_notification_history = false;
+    bool show_achievement_list = false;
+    bool unlocked_expanded = true;
+    bool locked_expanded = false;
     bool show_playtime_in_user_info = false;
     
     float background_r = 0.12f;

@@ -503,6 +503,25 @@ const char * Steam_User_Stats::GetAchievementDisplayAttribute( const char *pchNa
 }
 
 
+// Returns the global unlock percentage for an achievement from achievements.json,
+// or -1.0 if the field is not present.
+double Steam_User_Stats::GetAchievementUnlockPercentage( const char *pchName )
+{
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (!pchName || !pchName[0]) return -1.0;
+
+    auto it = defined_achievements.end();
+    try {
+        it = defined_achievements_find(pchName);
+    } catch(...) { }
+    if (defined_achievements.end() == it) return -1.0;
+
+    try {
+        return it->value("unlock_percentage", -1.0);
+    } catch(...) { return -1.0; }
+}
+
+
 // Achievement progress - triggers an AchievementProgress callback, that is all.
 // Calling this w/ N out of N progress will NOT set the achievement, the game must still do that.
 bool Steam_User_Stats::IndicateAchievementProgress( const char *pchName, uint32 nCurProgress, uint32 nMaxProgress )

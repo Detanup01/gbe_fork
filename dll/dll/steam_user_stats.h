@@ -238,6 +238,10 @@ public:
     // - "hidden" for retrieving if an achievement is hidden (returns "0" when not hidden, "1" when hidden)
     const char * GetAchievementDisplayAttribute( const char *pchName, const char *pchKey );
 
+    // Returns the global unlock percentage for an achievement from achievements.json,
+    // or -1.0 if the field is not present.
+    double GetAchievementUnlockPercentage( const char *pchName );
+
 
     // Achievement progress - triggers an AchievementProgress callback, that is all.
     // Calling this w/ N out of N progress will NOT set the achievement, the game must still do that.

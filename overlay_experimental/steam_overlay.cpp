@@ -255,6 +255,8 @@ Steam_Overlay::Steam_Overlay(Settings* settings, Local_Storage *local_storage, S
     const char *language = settings->get_language();
 
     show_user_info = settings->overlay_always_show_user_info;
+    show_notification_history = settings->overlay_appearance.show_notification_history;
+    show_achievements = settings->overlay_appearance.show_achievement_list;
 
     int i = 0;
     for (auto &lang : valid_languages) {
@@ -537,6 +539,9 @@ void Steam_Overlay::load_achievements_data()
 
         const char *hidden = steamUserStats->GetAchievementDisplayAttribute(ach.name.c_str(), "hidden");
         ach.hidden = hidden && hidden[0] == '1';
+
+        ach.unlock_percentage = static_cast<float>(
+            steamUserStats->GetAchievementUnlockPercentage(ach.name.c_str()));
 
         bool achieved = false;
         uint32 unlock_time = 0;
@@ -835,12 +840,14 @@ void Steam_Overlay::show_test_achievement()
 
     // randomly add progress
     bool for_progress = false;
-    if (common_helpers::rand_number(1000) % 2) {
+    if (common_helpers::rand_number(1000) % 4 == 0) {
         for_progress = true;
         uint32 progress = (uint32)(common_helpers::rand_number(500) / 10 + 50); // [50, 100]
         ach.max_progress = 100;
         ach.progress = progress;
         ach.achieved = false;
+    } else if (common_helpers::rand_number(1000) % 2) {
+        ach.unlock_percentage = 1.0f;
     }
 
     post_achievement_notification(ach, for_progress);
@@ -1074,7 +1081,10 @@ void Steam_Overlay::set_next_notification_pos(std::pair<float, float> scrn_size,
         float biggest_noti_height = settings->overlay_appearance.icon_size;
         if (biggest_noti_height < new_noti_height) biggest_noti_height = new_noti_height;
 
-        noti_height = biggest_noti_height;
+        // Account for table cell padding: the row needs (icon/text height) + 2*CP,
+        // but the window border clips the bottom CP.  3*CP covers both cell
+        // padding directions AND the border inset so the spacing is symmetric.
+        noti_height = biggest_noti_height + 3.0f * global_style.CellPadding.y;
 
         if ((notification_type)noti.type == notification_type::achievement_progress) {
             if (!noti.ach.value().achieved && noti.ach.value().max_progress > 0) {
@@ -1247,9 +1257,22 @@ void Steam_Overlay::build_notifications(float width, float height)
             ? settings->overlay_appearance.notification_a
             : 1.0f;
 
-        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, settings_noti_alpha));
+        const bool is_rare_achievement =
+            (notification_type)it->type == notification_type::achievement &&
+            it->ach.has_value() &&
+            it->ach->unlock_percentage >= 0.0f &&
+            it->ach->unlock_percentage <= 10.0f;
+        const bool is_achievement =
+            (notification_type)it->type == notification_type::achievement;
+
+        ImGui::PushStyleColor(ImGuiCol_Border, is_rare_achievement
+            ? ImVec4(32.0f / 255.0f, 24.0f / 255.0f, 8.0f / 255.0f, settings_noti_alpha)
+            : ImVec4(0, 0, 0, settings_noti_alpha));
         ImGui::PushStyleColor(ImGuiCol_WindowBg, get_notification_bg_rgba_safe());
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 255, 255, settings_noti_alpha * 2));
+        if (is_rare_achievement) {
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.0f);
+        }
 
         // some extra window flags for each notification type
         ImGuiWindowFlags extra_flags = ImGuiWindowFlags_NoFocusOnAppearing;
@@ -1292,7 +1315,6 @@ void Steam_Overlay::build_notifications(float width, float height)
 
                         ImGui::TableSetColumnIndex(0);
                         ImGui::Image(icon_rsrc->GetResourceId(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
-
                         ImGui::TableSetColumnIndex(1);
                         ImGui::PushFont(font_ach_title);
                         ImGui::TextWrapped("%s", ach.title.c_str());
@@ -1347,10 +1369,99 @@ void Steam_Overlay::build_notifications(float width, float height)
                 break;
             }
 
+            if (is_achievement) {
+                const ImVec2 wnd_pos = ImGui::GetWindowPos();
+                const ImVec2 wnd_size = ImGui::GetWindowSize();
+                if (is_rare_achievement) {
+                    // Glowing gold border for the notification window (same effect as the
+                    // achievement list icon): 3 semi-transparent outer rings + a solid
+                    // bright inner line.  Outer rings go in the background draw list so
+                    // they can extend past the window bounds.
+                    const float inset = 2.0f;
+                    const ImVec2 border_min(wnd_pos.x + inset, wnd_pos.y + inset);
+                    const ImVec2 border_max(wnd_pos.x + wnd_size.x - inset, wnd_pos.y + wnd_size.y - inset);
+                    const float rounding = settings->overlay_appearance.notification_rounding;
+                    const int   steps = 4;
+                    const float step_px = 1.8f;
+                    const float max_expand = step_px * (float)steps;
+
+                    // Use the foreground draw list with a clip rect that extends past
+                    // the window bounds, otherwise the window background clips the rings.
+                    ImDrawList* dl = ImGui::GetWindowDrawList();
+                    dl->PushClipRect(
+                        ImVec2(wnd_pos.x - max_expand, wnd_pos.y - max_expand),
+                        ImVec2(wnd_pos.x + wnd_size.x + max_expand,
+                               wnd_pos.y + wnd_size.y + max_expand),
+                        false);
+                    for (int i = steps; i >= 1; --i) {
+                        const float expand = step_px * (float)i;
+                        const ImVec2 lo(border_min.x - expand, border_min.y - expand);
+                        const ImVec2 hi(border_max.x + expand, border_max.y + expand);
+                        const int a = (int)(180.0f * (1.0f - (float)(i - 1) / (float)steps) * settings_noti_alpha);
+                        dl->AddRect(lo, hi, IM_COL32(218, 165, 32, a), rounding + expand, 0, 2.0f);
+                    }
+                    dl->PopClipRect();
+
+                    ImGui::GetWindowDrawList()->AddRect(
+                        border_min,
+                        border_max,
+                        IM_COL32(255, 215, 90, (int)(220.0f * settings_noti_alpha)),
+                        rounding,
+                        0,
+                        2.0f);
+                } else {
+                    const float inset = 1.0f;
+                    const ImVec2 inner_min(wnd_pos.x + inset, wnd_pos.y + inset);
+                    const ImVec2 inner_max(wnd_pos.x + wnd_size.x - inset, wnd_pos.y + wnd_size.y - inset);
+                    const ImU32 accent_color = ImGui::ColorConvertFloat4ToU32(
+                        ImVec4(1.0f, 1.0f, 1.0f, 0.82f * settings_noti_alpha));
+
+                    ImGui::GetWindowDrawList()->AddRect(
+                        inner_min,
+                        inner_max,
+                        accent_color,
+                        settings->overlay_appearance.notification_rounding,
+                        0,
+                        2.0f);
+                }
+            }
+
+            if (is_rare_achievement) {
+                const float shimmer_duration_ms = 700.0f;
+                const float shimmer_delay_ms = 450.0f;
+                const float shimmer_elapsed_ms = static_cast<float>(
+                    elapsed_notif.count() - settings->overlay_appearance.notification_animation) - shimmer_delay_ms;
+                if (shimmer_elapsed_ms >= 0.0f && shimmer_elapsed_ms <= shimmer_duration_ms) {
+                    float shimmer_t = shimmer_elapsed_ms / shimmer_duration_ms;
+                    if (shimmer_t < 0.0f) shimmer_t = 0.0f;
+                    if (shimmer_t > 1.0f) shimmer_t = 1.0f;
+
+                    const ImVec2 wnd_pos = ImGui::GetWindowPos();
+                    const ImVec2 wnd_size = ImGui::GetWindowSize();
+                    const ImVec2 wnd_max(wnd_pos.x + wnd_size.x, wnd_pos.y + wnd_size.y);
+                    const float sweep_width = wnd_size.x * 0.18f;
+                    const float sweep_x = wnd_pos.x - sweep_width + (wnd_size.x + sweep_width * 2.0f) * shimmer_t;
+                    const float alpha = (1.0f - shimmer_t) * 0.22f * settings_noti_alpha;
+
+                    ImDrawList* draw_list = ImGui::GetWindowDrawList();
+                    draw_list->PushClipRect(wnd_pos, wnd_max, true);
+                    draw_list->AddQuadFilled(
+                        ImVec2(sweep_x - sweep_width, wnd_pos.y),
+                        ImVec2(sweep_x, wnd_pos.y),
+                        ImVec2(sweep_x + sweep_width, wnd_max.y),
+                        ImVec2(sweep_x, wnd_max.y),
+                        ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 0.88f, 0.45f, alpha)));
+                    draw_list->PopClipRect();
+                }
+            }
+
         }
 
         ImGui::End();
 
+        if (is_rare_achievement) {
+            ImGui::PopStyleVar();
+        }
         ImGui::PopStyleColor(3);
     }
 
@@ -2010,6 +2121,7 @@ void Steam_Overlay::render_main_window()
         if (show_achievements && achievements.size()) {
             ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 32, ImGui::GetFontSize() * 32), ImVec2(8192, 8192));
             ImGui::SetNextWindowBgAlpha(1.0f);
+            ImGui::SetNextWindowPos(ImVec2(ImGui::GetFontSize() * 4, std::max(ImGui::GetFontSize() * 10, io.DisplaySize.y * 0.15f)), ImGuiCond_FirstUseEver);
             if (ImGui::Begin(translationAchievementWindow[current_language], &show_achievements)) {
                 ImGui::Text("%s", translationListOfAchievements[current_language]);
                 ImGui::BeginChild(translationAchievements[current_language]);
@@ -2028,11 +2140,25 @@ void Steam_Overlay::render_main_window()
                     [this](size_t a, size_t b) {
                         return achievements[a].unlock_time > achievements[b].unlock_time;
                     });
+                std::sort(locked_idx.begin(), locked_idx.end(),
+                    [this](size_t a, size_t b) {
+                        float pct_a = achievements[a].unlock_percentage;
+                        float pct_b = achievements[b].unlock_percentage;
+                        if (pct_a < 0.0f && pct_b < 0.0f) return false;
+                        if (pct_a < 0.0f) return false;
+                        if (pct_b < 0.0f) return true;
+                        return pct_a > pct_b;
+                    });
 
                 // Lambda to render a single achievement card
                 auto render_ach = [this](Overlay_Achievement &x) {
                     const bool achieved = x.achieved;
                     const bool hidden = x.hidden && !achieved;
+
+                    if (x.unlock_percentage < 0.0f && x.name.size()) {
+                        x.unlock_percentage = static_cast<float>(
+                            get_steam_client()->steam_user_stats->GetAchievementUnlockPercentage(x.name.c_str()));
+                    }
 
                     // Load only the icon matching the current state.
                     // The other variant is loaded by the background pagination or on state change.
@@ -2056,6 +2182,40 @@ void Steam_Overlay::render_main_window()
                                     icon_rsrc->GetResourceId(),
                                     ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size)
                                 );
+
+                                if (achieved && x.unlock_percentage >= 0.0f && x.unlock_percentage <= 10.0f) {
+                                    const ImVec2 icon_min = ImGui::GetItemRectMin();
+                                    const ImVec2 icon_max = ImGui::GetItemRectMax();
+                                    ImDrawList* dl = ImGui::GetWindowDrawList();
+                                    // Glowing border: a solid gold inner line + a few semi-transparent
+                                    // concentric outlines expanding outward, fading to transparent.
+                                    const float rounding = settings->overlay_appearance.notification_rounding;
+                                    const int   steps = 3;
+                                    const float step_px = 1.5f;
+                                    const float max_expand = step_px * (float)steps;
+                                    // Clip to the child window bounds on Y so the glow doesn't
+                                    // bleed when the achievement scrolls out of view, but still
+                                    // extend past the table cell on X for the full glow width.
+                                    const ImVec2 win_min = ImGui::GetWindowPos();
+                                    const ImVec2 win_max = ImVec2(
+                                        win_min.x + ImGui::GetWindowWidth(),
+                                        win_min.y + ImGui::GetWindowHeight());
+                                    dl->PushClipRect(
+                                        ImVec2(icon_min.x - max_expand, (std::max)(icon_min.y - max_expand, win_min.y)),
+                                        ImVec2(icon_max.x + max_expand, (std::min)(icon_max.y + max_expand, win_max.y)),
+                                        false);
+                                    for (int i = steps; i >= 1; --i) {
+                                        float expand = step_px * (float)i;
+                                        ImVec2 lo(icon_min.x - expand, icon_min.y - expand);
+                                        ImVec2 hi(icon_max.x + expand, icon_max.y + expand);
+                                        int a = (int)(90.0f * (1.0f - (float)(i - 1) / (float)steps));
+                                        dl->AddRect(lo, hi, IM_COL32(218, 165, 32, a), rounding + expand, 0, 2.0f);
+                                    }
+                                    // Solid bright inner line
+                                    dl->AddRect(icon_min, icon_max,
+                                                IM_COL32(255, 215, 90, 220), rounding, 0, 2.0f);
+                                    dl->PopClipRect();
+                                }
                             }
 
                             ImGui::TableSetColumnIndex(1);
@@ -2064,6 +2224,20 @@ void Steam_Overlay::render_main_window()
                     }
 
                     ImGui::Text("%s", x.title.c_str());
+                    if (x.unlock_percentage >= 0.0f) {
+                        float display_pct = x.unlock_percentage;
+                        if (display_pct < 0.1f) {
+                            display_pct = 0.1f;
+                        }
+                        char pct_buf[32];
+                        snprintf(pct_buf, sizeof(pct_buf), "%.1f%%", display_pct);
+                        ImGui::SameLine(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(pct_buf).x);
+                        if (achieved && x.unlock_percentage <= 10.0f) {
+                            ImGui::TextColored(ImVec4(218.0f / 255.0f, 165.0f / 255.0f, 32.0f / 255.0f, 1.0f), "%s", pct_buf);
+                        } else {
+                            ImGui::TextDisabled("%s", pct_buf);
+                        }
+                    }
 
                     if (hidden) {
                         ImGui::Text("%s", translationHiddenAchievement[current_language]);
@@ -2099,6 +2273,7 @@ void Steam_Overlay::render_main_window()
                     } else {
                         ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationNotAchieved[current_language]);
                     }
+
                     add_ach_progressbar(x);
 
                     if (could_create_ach_table_entry) ImGui::EndTable();
@@ -2107,7 +2282,7 @@ void Steam_Overlay::render_main_window()
                 };
 
                 // --- Unlocked section ---
-                if (ImGui::CollapsingHeader(translationUnlocked[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
+                if (ImGui::CollapsingHeader(translationUnlocked[current_language], settings->overlay_appearance.unlocked_expanded ? ImGuiTreeNodeFlags_DefaultOpen : ImGuiTreeNodeFlags_None)) {
                     if (unlocked_idx.empty()) {
                         ImGui::TextDisabled(translationNoUnlockedAchievements[current_language]);
                     } else {
@@ -2118,7 +2293,7 @@ void Steam_Overlay::render_main_window()
                 }
 
                 // --- Locked section ---
-                if (ImGui::CollapsingHeader(translationLocked[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
+                if (ImGui::CollapsingHeader(translationLocked[current_language], settings->overlay_appearance.locked_expanded ? ImGuiTreeNodeFlags_DefaultOpen : ImGuiTreeNodeFlags_None)) {
                     if (locked_idx.empty()) {
                         ImGui::TextDisabled(translationAllAchievementsUnlocked[current_language]);
                     } else {

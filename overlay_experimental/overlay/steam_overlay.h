@@ -75,6 +75,7 @@ struct Overlay_Achievement
     bool hidden{};
     bool achieved{};
     uint32 unlock_time{};
+    float unlock_percentage = -1.0f; // from achievements.json, -1 = unknown
     InGameOverlay::RendererResource_t* icon{};
     InGameOverlay::RendererResource_t* icon_gray{};
     int icon_handle = Settings::UNLOADED_IMAGE_HANDLE;
