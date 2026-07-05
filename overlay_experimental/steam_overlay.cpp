@@ -2999,7 +2999,10 @@ void Steam_Overlay::process_captured_screenshots()
 #else
         localtime_r(&now_time, &local_tm);
 #endif
-        std::strftime(buff, sizeof(buff), settings->overlay_appearance.ach_unlock_datetime_format.c_str(), &local_tm);
+        size_t written = std::strftime(buff, sizeof(buff), settings->overlay_appearance.screenshot_datetime_format.c_str(), &local_tm);
+        if (!written) {
+            std::strftime(buff, sizeof(buff), "%Y/%m/%d - %H:%M:%S", &local_tm);
+        }
         std::string filename = buff;
         for (char& c : filename) {
             if (c == ':' || c == '/' || c == '\\' || c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|') {
@@ -3432,7 +3435,10 @@ void Steam_Overlay::render_gallery_window()
 #else
                                 localtime_r(&src_item.mtime, &local_tm);
 #endif
-                                std::strftime(time_buf, sizeof(time_buf), settings->overlay_appearance.ach_unlock_datetime_format.c_str(), &local_tm);
+                                size_t written = std::strftime(time_buf, sizeof(time_buf), settings->overlay_appearance.screenshot_datetime_format.c_str(), &local_tm);
+                                if (!written) {
+                                    std::strftime(time_buf, sizeof(time_buf), "%Y/%m/%d - %H:%M:%S", &local_tm);
+                                }
                                 ImGui::TextUnformatted(time_buf);
                             } else {
                                 ImGui::TextUnformatted(src_item.filename.c_str());
