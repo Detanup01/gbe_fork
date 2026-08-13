@@ -1553,11 +1553,17 @@ void Steam_Friends::Callback(Common_Message *msg)
 
         if (msg->friend_messages().type() == Friend_Messages::GAME_INVITE) {
             PRINT_DEBUG("Got Game Invite");
-            //TODO: I'm pretty sure that the user should accept the invite before this is posted but we do like above
-            if (overlay->Ready() && !settings->hasOverlayAutoAcceptInviteFromFriend(msg->source_id()))
-            {
-                // Then we will handle it !
-                overlay->SetRichInvite(*find_friend(static_cast<uint64>(msg->source_id())), msg->friend_messages().connect_str().c_str());
+            std::string const& connect_str = msg->friend_messages().connect_str();
+
+            // Postear siempre el callback de join para que el juego lo reciba
+            GameRichPresenceJoinRequested_t data = {};
+            data.m_steamIDFriend = CSteamID((uint64)msg->source_id());
+            strncpy(data.m_rgchConnect, connect_str.c_str(), k_cchMaxRichPresenceValueLength - 1);
+            callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+
+            // Opcional: también mostrar en el overlay
+            if (overlay->Ready() && !settings->hasOverlayAutoAcceptInviteFromFriend(msg->source_id())) {
+                overlay->SetRichInvite(*find_friend((uint64)msg->source_id()), connect_str.c_str());
             }
             else
             {
