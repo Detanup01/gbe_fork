@@ -1157,6 +1157,28 @@ void Networking::setAppID(uint32 appid)
     this->appid = appid;
 }
 
+void Networking::sendAnnounceBroadcastsNow()
+{
+    send_announce_broadcasts();
+}
+
+bool Networking::hasConnectedIndividualAccounts()
+{
+    std::lock_guard<std::recursive_mutex> lock(mutex);
+
+    for (auto const &conn : connections) {
+        if (!conn.connected) continue;
+
+        for (auto const &steam_id : conn.ids) {
+            if (steam_id.BIndividualAccount()) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 bool Networking::sendToIPPort(Common_Message *msg, uint32 ip, uint16 port, bool reliable)
 {
     bool is_local_ip = ((ip >> 24) == 0x7F);

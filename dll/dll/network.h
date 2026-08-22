@@ -144,6 +144,8 @@ public:
     void addListenId(CSteamID id);
     void setAppID(uint32 appid);
     void Run();
+    void sendAnnounceBroadcastsNow();
+    bool hasConnectedIndividualAccounts();
 
     // send to a specific user, set_dest_id() must be called
     bool sendTo(Common_Message *msg, bool reliable, Connection *conn = NULL);

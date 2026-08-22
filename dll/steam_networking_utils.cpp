@@ -17,6 +17,10 @@
 
 #include "dll/steam_networking_utils.h"
 
+FnSteamNetConnectionStatusChanged Steam_Networking_Utils::connection_status_changed_callback = nullptr;
+FnSteamNetAuthenticationStatusChanged Steam_Networking_Utils::auth_status_changed_callback = nullptr;
+FnSteamRelayNetworkStatusChanged Steam_Networking_Utils::relay_network_status_changed_callback = nullptr;
+
 void Steam_Networking_Utils::steam_callback(void *object, Common_Message *msg)
 {
     // PRINT_DEBUG_ENTRY();
@@ -49,6 +53,30 @@ Steam_Networking_Utils::~Steam_Networking_Utils()
 {
     this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_Networking_Utils::steam_callback, this);
     this->run_every_runcb->remove(&Steam_Networking_Utils::steam_run_every_runcb, this);
+}
+
+void Steam_Networking_Utils::InvokeConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t *data)
+{
+    auto callback = connection_status_changed_callback;
+    if (callback && data) {
+        callback(data);
+    }
+}
+
+void Steam_Networking_Utils::InvokeAuthStatusChanged(SteamNetAuthenticationStatus_t *data)
+{
+    auto callback = auth_status_changed_callback;
+    if (callback && data) {
+        callback(data);
+    }
+}
+
+void Steam_Networking_Utils::InvokeRelayNetworkStatusChanged(SteamRelayNetworkStatus_t *data)
+{
+    auto callback = relay_network_status_changed_callback;
+    if (callback && data) {
+        callback(data);
+    }
 }
 
 void Steam_Networking_Utils::free_steam_message_data(SteamNetworkingMessage_t *pMsg)
@@ -361,8 +389,29 @@ bool Steam_Networking_Utils::SetConnectionConfigValueString( HSteamNetConnection
 bool Steam_Networking_Utils::SetConfigValue( ESteamNetworkingConfigValue eValue, ESteamNetworkingConfigScope eScopeType, intptr_t scopeObj,
     ESteamNetworkingConfigDataType eDataType, const void *pArg )
 {
-    PRINT_DEBUG("TODO %i %i " "%" PRIdPTR " %i %p", eValue, eScopeType, scopeObj, eDataType, pArg);
+    PRINT_DEBUG("%i %i " "%" PRIdPTR " %i %p", eValue, eScopeType, scopeObj, eDataType, pArg);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    // Global pointer config is used to register the networking callback hooks.
+    if (eScopeType == k_ESteamNetworkingConfig_Global && eDataType == k_ESteamNetworkingConfig_Ptr) {
+        if (eValue == k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged) {
+            connection_status_changed_callback = pArg ? *reinterpret_cast<FnSteamNetConnectionStatusChanged const *>(pArg) : nullptr;
+            PRINT_DEBUG("stored global connection status callback %p", connection_status_changed_callback);
+            return true;
+        }
+
+        if (eValue == k_ESteamNetworkingConfig_Callback_AuthStatusChanged) {
+            auth_status_changed_callback = pArg ? *reinterpret_cast<FnSteamNetAuthenticationStatusChanged const *>(pArg) : nullptr;
+            PRINT_DEBUG("stored global auth status callback %p", auth_status_changed_callback);
+            return true;
+        }
+
+        if (eValue == k_ESteamNetworkingConfig_Callback_RelayNetworkStatusChanged) {
+            relay_network_status_changed_callback = pArg ? *reinterpret_cast<FnSteamRelayNetworkStatusChanged const *>(pArg) : nullptr;
+            PRINT_DEBUG("stored global relay network status callback %p", relay_network_status_changed_callback);
+            return true;
+        }
+    }
+
     return true;
 }
 
@@ -712,6 +761,8 @@ void Steam_Networking_Utils::RunCallbacks()
         relay_initialized = true;
         SteamRelayNetworkStatus_t data = get_network_status();
         callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+        // Also deliver the callback through the global config hook.
+        InvokeRelayNetworkStatusChanged(&data);
     }
 }
 
