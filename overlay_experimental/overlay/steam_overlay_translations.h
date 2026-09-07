@@ -1182,10 +1182,10 @@ const char translationTotalTimeText[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION
   u8"Total: %s  Session: %s",
 
 	// 3 - Simplified Chinese
-  u8"Total: %s  Session: %s",
+  u8"合计: %s  会话: %s",
 
 	// 4 - Traditional Chinese
-  u8"合计: %s  会话: %s",
+  u8"總遊戲時數： %s  此遊戲階段： %s",
 
 	// 5 - Czech
   u8"Total: %s  Session: %s",
@@ -1667,7 +1667,7 @@ const char translationHistory[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8"历史记录",
 
 	// 4 - Traditional Chinese
-  u8"History",
+  u8"歷史記錄",
 
 	// 5 - Czech
   u8"History",
@@ -1763,7 +1763,7 @@ const char translationScreenshots[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
   u8"截图",
 
 	// 4 - Traditional Chinese
-  u8"Screenshots",
+  u8"螢幕擷圖",
 
 	// 5 - Czech
   u8"Screenshots",
@@ -1957,7 +1957,7 @@ const char translationNoNotification[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATIO
   u8"暂无通知",
 
 	// 4 - Traditional Chinese
-  u8"No notifications yet",
+  u8"目前尚無通知",
 
 	// 5 - Czech
   u8"No notifications yet",
@@ -2053,7 +2053,7 @@ const char translationClearAll[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"清除所有通知",
 
 	// 4 - Traditional Chinese
-  u8"Clear All",
+  u8"清除所有通知",
 
 	// 5 - Czech
   u8"Clear All",
@@ -2149,7 +2149,7 @@ const char translationHistoryChat[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
   u8"聊天",
 
 	// 4 - Traditional Chinese
-  u8"Chat",
+  u8"聊天",
 
 	// 5 - Czech
   u8"Chat",
@@ -2245,7 +2245,7 @@ const char translationHistoryInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION
   u8"邀请",
 
 	// 4 - Traditional Chinese
-  u8"Invite",
+  u8"邀請",
 
 	// 5 - Czech
   u8"Invite",
@@ -2341,7 +2341,7 @@ const char translationHistoryAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSL
   u8"成就",
 
 	// 4 - Traditional Chinese
-  u8"Achievement",
+  u8"成就",
 
 	// 5 - Czech
   u8"Achievement",
@@ -2437,7 +2437,7 @@ const char translationHistoryProgress[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"进度",
 
 	// 4 - Traditional Chinese
-  u8"Progress",
+  u8"進度",
 
 	// 5 - Czech
   u8"Progress",
@@ -2533,7 +2533,7 @@ const char translationHistoryAutoInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"自动邀请",
 
 	// 4 - Traditional Chinese
-  u8"Auto-Invite",
+  u8"自動邀請",
 
 	// 5 - Czech
   u8"Auto-Invite",
@@ -2629,7 +2629,7 @@ const char translationHistoryScreenshot[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"截图",
 
 	// 4 - Traditional Chinese
-  u8"Screenshot",
+  u8"螢幕擷圖",
 
 	// 5 - Czech
   u8"Screenshot",
@@ -2725,7 +2725,7 @@ const char translationShow[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"显示",
 
 	// 4 - Traditional Chinese
-  u8"Show",
+  u8"顯示",
 
 	// 5 - Czech
   u8"Show",
@@ -2821,7 +2821,7 @@ const char translationUnlocked[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"已解锁",
 
 	// 4 - Traditional Chinese
-  u8"Unlocked",
+  u8"已解鎖",
 
 	// 5 - Czech
   u8"Unlocked",
@@ -2917,7 +2917,7 @@ const char translationNoUnlockedAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TR
   u8"暂无已解锁成就",
 
 	// 4 - Traditional Chinese
-  u8"No achievements unlocked yet",
+  u8"尚未解鎖任何成就",
 
 	// 5 - Czech
   u8"No achievements unlocked yet",
@@ -3013,7 +3013,7 @@ const char translationLocked[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"未解锁",
 
 	// 4 - Traditional Chinese
-  u8"Locked",
+  u8"未解鎖",
 
 	// 5 - Czech
   u8"Locked",
@@ -3109,7 +3109,7 @@ const char translationAllAchievementsUnlocked[TRANSLATION_NUMBER_OF_LANGUAGES][T
   u8"已解锁所有成就！",
 
 	// 4 - Traditional Chinese
-  u8"All achievements unlocked!",
+  u8"已解鎖所有成就！",
 
 	// 5 - Czech
   u8"All achievements unlocked!",
@@ -5031,7 +5031,7 @@ const char translationScreenshotSaved[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"已保存截图：",
 
 	// 4 - Traditional Chinese
-  u8"Screenshot saved: ",
+  u8"已儲存螢幕擷圖：",
 
 	// 5 - Czech
   u8"Screenshot saved: ",
@@ -5127,7 +5127,7 @@ const char translationUnpinAll[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"取消所有置顶",
 
 	// 4 - Traditional Chinese
-  u8"Unpin all",
+  u8"取消所有釘選",
 
 	// 5 - Czech
   u8"Unpin all",
@@ -5223,7 +5223,7 @@ const char translationDeleteSelected[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATIO
   u8"删除所选项",
 
 	// 4 - Traditional Chinese
-  u8"Delete selected",
+  u8"刪除選取的螢幕擷圖",
 
 	// 5 - Czech
   u8"Delete selected",
@@ -5319,7 +5319,7 @@ const char translationOpenFolder[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BU
   u8"打开文件夹",
 
 	// 4 - Traditional Chinese
-  u8"Open Folder",
+  u8"開啟資料夾",
 
 	// 5 - Czech
   u8"Open Folder",
@@ -5415,7 +5415,7 @@ const char translationNoScreenshotsYet[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
   u8"暂无截图",
 
 	// 4 - Traditional Chinese
-  u8"No screenshots yet",
+  u8"目前尚無螢幕擷圖",
 
 	// 5 - Czech
   u8"No screenshots yet",
@@ -5511,7 +5511,7 @@ const char translationDelete[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"删除",
 
 	// 4 - Traditional Chinese
-  u8"Delete",
+  u8"刪除",
 
 	// 5 - Czech
   u8"Delete",
@@ -5607,7 +5607,7 @@ const char translationScreenshotPreview[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"截图预览",
 
 	// 4 - Traditional Chinese
-  u8"Screenshot Preview",
+  u8"預覽螢幕擷圖",
 
 	// 5 - Czech
   u8"Screenshot Preview",
@@ -5703,7 +5703,7 @@ const char translationPrev[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"< 上一项",
 
 	// 4 - Traditional Chinese
-  u8"< Prev",
+  u8"< 上一張",
 
 	// 5 - Czech
   u8"< Prev",
@@ -5799,7 +5799,7 @@ const char translationPin[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SI
   u8"置顶",
 
 	// 4 - Traditional Chinese
-  u8"Pin",
+  u8"釘選",
 
 	// 5 - Czech
   u8"Pin",
@@ -5895,7 +5895,7 @@ const char translationCrop[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"裁剪",
 
 	// 4 - Traditional Chinese
-  u8"Crop",
+  u8"裁切",
 
 	// 5 - Czech
   u8"Crop",
@@ -5991,7 +5991,7 @@ const char translationNext[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"下一项 >",
 
 	// 4 - Traditional Chinese
-  u8"Next >",
+  u8"下一張 >",
 
 	// 5 - Czech
   u8"Next >",
@@ -6087,7 +6087,7 @@ const char translationDeleteThisScreenshot[TRANSLATION_NUMBER_OF_LANGUAGES][TRAN
   u8"是否删除该截图？",
 
 	// 4 - Traditional Chinese
-  u8"Delete this screenshot?",
+  u8"要刪除這張螢幕擷圖嗎？",
 
 	// 5 - Czech
   u8"Delete this screenshot?",
@@ -6183,7 +6183,7 @@ const char translationDeleteAllScelectedScreenshots[TRANSLATION_NUMBER_OF_LANGUA
   u8"是否删除所有截图？",
 
 	// 4 - Traditional Chinese
-  u8"Delete all selected screenshots?",
+  u8"要刪除所有已選取的螢幕擷圖嗎？",
 
 	// 5 - Czech
   u8"Delete all selected screenshots?",
@@ -6279,7 +6279,7 @@ const char translationYes[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SI
   u8"是",
 
 	// 4 - Traditional Chinese
-  u8"Yes",
+  u8"是",
 
 	// 5 - Czech
   u8"Yes",
@@ -6375,7 +6375,7 @@ const char translationNo[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZ
   u8"否",
 
 	// 4 - Traditional Chinese
-  u8"No",
+  u8"否",
 
 	// 5 - Czech
   u8"No",
@@ -6471,7 +6471,7 @@ const char translationConfirmDelete[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION
   u8"确认删除",
 
 	// 4 - Traditional Chinese
-  u8"Confirm Delete",
+  u8"確認刪除",
 
 	// 5 - Czech
   u8"Confirm Delete",
@@ -6567,7 +6567,7 @@ const char translationConfirm[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8"确认",
 
 	// 4 - Traditional Chinese
-  u8"Confirm",
+  u8"確認",
 
 	// 5 - Czech
   u8"Confirm",
@@ -6663,7 +6663,7 @@ const char translationCancel[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"取消",
 
 	// 4 - Traditional Chinese
-  u8"Cancel",
+  u8"取消",
 
 	// 5 - Czech
   u8"Cancel",
@@ -6759,7 +6759,7 @@ const char translationPinnedScreenshots[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"置顶截图###pinned_ss_%llu",
 
 	// 4 - Traditional Chinese
-  u8"Pinned Screenshot###pinned_ss_%llu",
+  u8"已釘選的螢幕擷圖###pinned_ss_%llu",
 
 	// 5 - Czech
   u8"Pinned Screenshot###pinned_ss_%llu",
@@ -6855,7 +6855,7 @@ const char translationOpacity[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8"透明度",
 
 	// 4 - Traditional Chinese
-  u8"Opacity",
+  u8"不透明度",
 
 	// 5 - Czech
   u8"Opacity",
