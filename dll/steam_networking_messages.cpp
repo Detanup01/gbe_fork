@@ -383,7 +383,7 @@ void Steam_Networking_Messages::Callback(Common_Message *msg)
 {
     if (msg->has_low_level()) {
         if (msg->low_level().type() == Low_Level::CONNECT) {
-            
+
         }
 
         if (msg->low_level().type() == Low_Level::DISCONNECT) {
@@ -413,6 +413,16 @@ void Steam_Networking_Messages::Callback(Common_Message *msg)
         }
 
         if (msg->networking_messages().type() == Networking_Messages::DATA) {
+            // CONNECTION_NEW and the first DATA are sent as two independent
+            // messages with no ordering guarantee between them, so DATA can
+            // arrive first. It carries the same id_from that CONNECTION_NEW
+            // would, so let it establish the connection itself otherwise
+            // RunCallbacks() drops it for not matching yet unknown remote_id.
+            SteamNetworkingIdentity identity;
+            identity.SetSteamID64(msg->source_id());
+            auto conn = find_or_create_message_connection(identity, true, false);
+            conn->second.remote_id = msg->networking_messages().id_from();
+
             incoming_data.push_back(Common_Message(*msg));
         }
     }
