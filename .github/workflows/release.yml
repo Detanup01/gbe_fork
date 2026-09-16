@@ -73,7 +73,7 @@ jobs:
       - name: "Rename"
         if: startsWith(github.ref, 'refs/tags/')
         shell: "cmd"
-        working-directory: "build/package/win/vs2022"
+        working-directory: "build/package/win/vs2026"
         run: |
           ren emu-win-debug.7z emu-win-debug-vs26.7z
           ren emu-win-release.7z emu-win-release-vs26.7z
