@@ -69,6 +69,16 @@ jobs:
         working-directory: "${{ github.workspace }}"
         run: package_win.bat vs2026\debug 1
 
+      # Rename
+      - name: "Rename"
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: "cmd"
+        working-directory: "build/package/win/vs2022"
+        run: |
+          ren emu-win-debug.7z emu-win-debug-vs26.7z
+          ren emu-win-release.7z emu-win-release-vs26.7z
+          
+
       # release (debug + release modes) if this is a tag push
       - name: "Release"
         if: startsWith(github.ref, 'refs/tags/')
@@ -81,7 +91,7 @@ jobs:
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v7
         with:
-          name: "release-emu-win-release-${{ github.sha }}"
+          name: "release-emu-win-vs26-release-${{ github.sha }}"
           path: "build/package/win/vs2026/*release*"
           if-no-files-found: "error"
           compression-level: 0
@@ -91,7 +101,7 @@ jobs:
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v7
         with:
-          name: "release-emu-win-debug-${{ github.sha }}"
+          name: "release-emu-win-vs26-debug-${{ github.sha }}"
           path: "build/package/win/vs2026/*debug*"
           if-no-files-found: "error"
           compression-level: 0
