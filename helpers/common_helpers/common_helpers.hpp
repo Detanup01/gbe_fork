@@ -31,6 +31,7 @@ private:
     std::mutex kill_thread_mutex{};
     std::condition_variable kill_thread_cv{};
     bool kill_thread{};
+    bool kill_thread_acked{};
     
     void thread_proc(void *data);
 
