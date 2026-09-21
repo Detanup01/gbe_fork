@@ -49,7 +49,7 @@ jobs:
             # tests
             "test_gamepad_linux",
           ]
-        arch: ["ARM64"]
+        arch: ["arm64"]
         cfg: ["debug", "release"]
 
     steps:
