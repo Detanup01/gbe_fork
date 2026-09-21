@@ -12,7 +12,7 @@ local os_iden = '' -- identifier
 print(os.hostarch())
 if os.target() == "windows" then
     os_iden = 'win'
-elseif os.target() == "linux" and os.hostarch() == "AARCH64" then
+elseif os.target() == "linux" and (os.hostarch() == "AARCH64" or os.hostarch() == "ARM64") then
     os_iden = "linux-arm"
 elseif os.target() == "linux" then
     os_iden = 'linux'
