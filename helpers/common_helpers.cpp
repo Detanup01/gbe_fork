@@ -50,27 +50,36 @@ KillableWorker& KillableWorker::operator=(const KillableWorker &other)
 
 void KillableWorker::thread_proc(void *data)
 {
+    bool should_start = true;
+
     // wait for some time
     if (initial_delay.count() > 0) {
         std::unique_lock lck(kill_thread_mutex);
         if (kill_thread_cv.wait_for(lck, initial_delay, [this]{ return this->kill_thread || (this->should_kill && this->should_kill()); })) {
-            return;
+            should_start = false;
         }
     }
 
-    while (1) {
-        if (polling_time.count() > 0) {
-            std::unique_lock lck(kill_thread_mutex);
-            if (kill_thread_cv.wait_for(lck, polling_time, [this]{ return this->kill_thread || (this->should_kill && this->should_kill()); })) {
-                return;
+    if (should_start) {
+        while (1) {
+            if (polling_time.count() > 0) {
+                std::unique_lock lck(kill_thread_mutex);
+                if (kill_thread_cv.wait_for(lck, polling_time, [this]{ return this->kill_thread || (this->should_kill && this->should_kill()); })) {
+                    break;
+                }
+            }
+
+            if (thread_job(data)) { // job is done
+                break;
             }
         }
-
-        if (thread_job(data)) { // job is done
-            return;
-        }
-        
     }
+
+    {
+        std::unique_lock lck(kill_thread_mutex);
+        this->kill_thread_acked = true;
+    }
+    this->kill_thread_cv.notify_one();
 }
 
 bool KillableWorker::start(void *data)
@@ -88,12 +97,21 @@ void KillableWorker::kill()
     if (!thread_job || !thread_obj.joinable()) return; // already killed
     
     {
-        std::lock_guard lk(kill_thread_mutex);
+        std::unique_lock lk(kill_thread_mutex);
         kill_thread = true;
     }
-
     kill_thread_cv.notify_one();
-    thread_obj.join();
+
+    // We can't use join here because this will cause a deadlock if the game calls SteamAPI_Shutdown when
+    // unloading one of its DLLs.
+    //thread_obj.join();
+
+    {
+        std::unique_lock lk(kill_thread_mutex);
+        kill_thread_cv.wait(lk, [this]{ return this->kill_thread_acked; });
+    }
+
+    thread_obj.detach();
 }
 
 }
