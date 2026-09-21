@@ -9,6 +9,7 @@ require("premake", ">=5.0.0-beta8")
 -- MSYS Makefiles
 
 local os_iden = '' -- identifier
+print(os.hostarch())
 local arch = os.hostarch()
 if os.target() == "windows" then
     os_iden = 'win'
