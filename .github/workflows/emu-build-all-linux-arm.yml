@@ -90,7 +90,7 @@ jobs:
         shell: "bash"
         working-directory: "${{ github.workspace }}"
         run: |
-          sudo chmod 777 ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux-arm/premake/premake5
+          sudo chmod 777 ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake-arm/premake5
           ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake-arm/premake5 --file=premake5.lua --genproto --emubuild=${{ github.sha }} --os=linux gmake
 
       # mandatory Linux packages

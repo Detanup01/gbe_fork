@@ -86,5 +86,5 @@ jobs:
         working-directory: "${{ github.workspace }}"
         run: |
           export CMAKE_GENERATOR="Unix Makefiles"
-          sudo chmod 777 ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux-arm/premake/premake5
-          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux-arm/premake/premake5 --file=premake5-deps.lua --arm-build --all-ext --all-build --j=${{ env.MAX_PARALLEL_JOBS }} --verbose --clean --custom-extractor=7za --custom-cmake=cmake --os=linux gmake
+          sudo chmod 777 ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake-arm/premake5
+          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake-arm/premake5 --file=premake5-deps.lua --arm-build --all-ext --all-build --j=${{ env.MAX_PARALLEL_JOBS }} --verbose --clean --custom-extractor=7za --custom-cmake=cmake --os=linux gmake
