@@ -9,11 +9,10 @@ require("premake", ">=5.0.0-beta8")
 -- MSYS Makefiles
 
 local os_iden = '' -- identifier
-local is_arm = os.hostarch() == "AARCH64" or os.hostarch() == "ARM64"
 if os.target() == "windows" then
     os_iden = 'win'
-elseif os.target() == "linux" and is_arm then
-    os_iden = "linux-arm"
+elseif os.target() == "linux" and os.hostarch() == "ARM64" then
+    os_iden = 'linux-arm'
 elseif os.target() == "linux" then
     os_iden = 'linux'
 else
