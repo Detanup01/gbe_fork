@@ -221,9 +221,7 @@ end
 ---------
 local deps_dir = _OPTIONS["deps-dir"]
 local third_party_dir = path.getabsolute('third-party')
-print(deps_dir_os)
 local third_party_deps_dir = path.join(third_party_dir, 'deps', deps_dir_os)
-print(third_party_deps_dir)
 local third_party_common_dir = path.join(third_party_dir, 'deps', 'common')
 local extractor = os.realpath(path.join(third_party_deps_dir, '7z', '7z'))
 local mycmake = os.realpath(path.join(third_party_deps_dir, 'cmake', 'bin', 'cmake'))
@@ -234,6 +232,9 @@ if _OPTIONS["custom-cmake"] then
 else
     if os.host() == 'windows' then
         mycmake = mycmake .. '.exe'
+    end
+    if mycmake == nil then
+        error("cmake is fucked!" .. third_party_deps_dir)
     end
     if not os.isfile(mycmake) then
         error('cmake is missing from third-party dir, you can specify custom cmake location, run the script with --help. cmake: ' .. mycmake)
@@ -250,6 +251,9 @@ if _OPTIONS["custom-extractor"] then
 else
     if os.host() == 'windows' then
         extractor = extractor .. '.exe'
+    end
+    if extractor == nil then
+        error("extractor is fucked!" .. third_party_deps_dir)
     end
     if not extractor or not os.isfile(extractor) then
         error('extractor is missing from third-party dir. extractor: ' .. extractor)
