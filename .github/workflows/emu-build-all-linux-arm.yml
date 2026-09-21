@@ -24,7 +24,7 @@ jobs:
   deps:
     name: "Restore or build deps"
     if: ${{ !cancelled() }}
-    uses: "./.github/workflows/emu-deps-linux.yml"
+    uses: "./.github/workflows/emu-deps-linux-arm.yml"
 
   builds-matrix-linux:
     name: "build"
