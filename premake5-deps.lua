@@ -9,18 +9,19 @@ require("premake", ">=5.0.0-beta8")
 -- MSYS Makefiles
 
 local os_iden = '' -- identifier
-print(os.hostarch())
-local arch = os.hostarch()
+local deps_dir_os = ''
 if os.target() == "windows" then
     os_iden = 'win'
-elseif os.target() == "linux" and arch == "ARM64" then
-    os_iden = 'linux-arm'
+    deps_dir_os = 'win'
 elseif os.target() == "linux" then
     os_iden = 'linux'
+    deps_dir_os = 'linux'
+elseif os.target() == "linux" and os.hostarch() == "ARM64" then
+    os_iden = 'linux'
+    deps_dir_os = 'linux-arm'
 else
     error('Unsupported os target: "' .. os.target() .. '"')
 end
-
 
 -- options
 ---------
@@ -219,7 +220,7 @@ end
 ---------
 local deps_dir = _OPTIONS["deps-dir"]
 local third_party_dir = path.getabsolute('third-party')
-local third_party_deps_dir = path.join(third_party_dir, 'deps', os_iden)
+local third_party_deps_dir = path.join(third_party_dir, 'deps', deps_dir_os)
 local third_party_common_dir = path.join(third_party_dir, 'deps', 'common')
 local extractor = os.realpath(path.join(third_party_deps_dir, '7z', '7z'))
 local mycmake = os.realpath(path.join(third_party_deps_dir, 'cmake', 'bin', 'cmake'))
