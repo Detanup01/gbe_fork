@@ -78,6 +78,7 @@ jobs:
           sudo apt install -y libglx-dev # needed for overlay build (header files such as GL/glx.h)
           sudo apt install -y libgl-dev # needed for overlay build (header files such as GL/gl.h)
           sudo apt install -y libx11-dev # needed for overlay build
+          sudo apt install -y premake 7zip cmake make
           # sudo apt install -y binutils # (optional) contains the tool 'readelf' mainly, and other usefull binary stuff
 
       - name: "Build deps"
@@ -86,5 +87,4 @@ jobs:
         working-directory: "${{ github.workspace }}"
         run: |
           export CMAKE_GENERATOR="Unix Makefiles"
-          sudo chmod 777 ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5
-          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5-deps.lua --arm-build --all-ext --all-build --j=${{ env.MAX_PARALLEL_JOBS }} --verbose --clean --os=linux gmake
+          premake5 --file=premake5-deps.lua --arm-build --all-ext --all-build --j=${{ env.MAX_PARALLEL_JOBS }} --verbose --clean --custom-extractor=7za --custom-cmake=cmake --os=linux gmake
