@@ -45,7 +45,7 @@ chmod 777 "$premake_exe"
 # build deps
 if [[ $BUILD_DEPS = 1 ]]; then
   export CMAKE_GENERATOR="Unix Makefiles"
-  "$premake_exe" --file="premake5-deps.lua" --all-ext --all-build --64-build --32-build --verbose --clean --j=$build_threads --os=linux gmake2 || {
+  "$premake_exe" --file="premake5-deps.lua" --all-ext --all-build --64-build --32-build --arm-build --verbose --clean --j=$build_threads --os=linux gmake2 || {
     exit 1;
   }
 fi
@@ -70,6 +70,11 @@ make -j $build_threads config=debug_x32 || {
   exit 1;
 }
 
+echo; echo building debug arm64
+make -j $build_threads config=debug_arm64 || {
+  exit 1;
+}
+
 echo; echo building release x64
 make -j $build_threads config=release_x64 || {
   exit 1;
@@ -77,6 +82,11 @@ make -j $build_threads config=release_x64 || {
 
 echo; echo building release x32
 make -j $build_threads config=release_x32 || {
+  exit 1;
+}
+
+echo; echo building release arm64
+make -j $build_threads config=release_arm64 || {
   exit 1;
 }
 

@@ -26,7 +26,14 @@ static void print_stacktrace(std::ofstream &file, CONTEXT* context) {
 
     STACKFRAME stack_frame{};
 
-#ifdef _WIN64
+#if defined(_ARM64_)
+    constexpr DWORD machine_type = IMAGE_FILE_MACHINE_ARM64;
+    DWORD64 symbol_displacement = 0;
+
+    stack_frame.AddrPC.Offset = context->Pc;
+    stack_frame.AddrFrame.Offset = context->Fp;
+    stack_frame.AddrStack.Offset = context->Sp;
+#elif defined(_WIN64)
     constexpr DWORD machine_type = IMAGE_FILE_MACHINE_AMD64;
     DWORD64 symbol_displacement = 0;
 
