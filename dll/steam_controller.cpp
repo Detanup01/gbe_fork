@@ -274,7 +274,8 @@ bool Steam_Controller::Init( const char *pchAbsolutePathToControllerConfigVDF )
 
 bool Steam_Controller::Init()
 {
-    return Init(true);
+    PRINT_DEBUG("(void)");
+    return Init(false);
 }
 
 bool Steam_Controller::Shutdown()
