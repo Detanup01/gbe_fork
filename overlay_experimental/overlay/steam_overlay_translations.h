@@ -168,7 +168,7 @@ const char translationCopyId[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"Copy ID",
 
 	// 21 - Russian
-  u8"Copy ID",
+  u8"Копировать SteamID",
 
 	// 22 - Spanish
   u8"Copy ID",
@@ -264,7 +264,7 @@ const char translationTestAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"Test achievement",
 
 	// 21 - Russian
-  u8"Test achievement",
+  u8"Тестовое достижение",
 
 	// 22 - Spanish
   u8"Test achievement",
@@ -458,7 +458,7 @@ const char translationInviteAll[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUF
   u8"Invite all",
 
 	// 21 - Russian
-  u8"Invite all",
+  u8"Пригласить всех",
 
 	// 22 - Spanish
   u8"Invite all",
@@ -1236,7 +1236,7 @@ const char translationTotalTimeText[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION
   u8"Total: %s  Session: %s",
 
 	// 21 - Russian
-  u8"Total: %s  Session: %s",
+  u8"Всего: %s  Сессия: %s",
 
 	// 22 - Spanish
   u8"Total: %s  Session: %s",
@@ -1428,7 +1428,7 @@ const char translationToggleUserInfo[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATIO
   u8"Toggle User Info",
 
 	// 21 - Russian
-  u8"Toggle User Info",
+  u8"Показать/скрыть информацию о пользователе",
 
 	// 22 - Spanish
   u8"Toggle User Info",
@@ -1524,7 +1524,7 @@ const char translationShowAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
   u8"Show Achievements",
 
 	// 21 - Russian
-  u8"Показать Достижения",
+  u8"Показать достижения",
 
 	// 22 - Spanish
   u8"Mostrar Logros",
@@ -1718,7 +1718,7 @@ const char translationHistory[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8"History",
 
 	// 21 - Russian
-  u8"History",
+  u8"История",
 
 	// 22 - Spanish
   u8"History",
@@ -1814,7 +1814,7 @@ const char translationScreenshots[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
   u8"Screenshots",
 
 	// 21 - Russian
-  u8"Screenshots",
+  u8"Снимки экрана",
 
 	// 22 - Spanish
   u8"Screenshots",
@@ -2008,7 +2008,7 @@ const char translationNoNotification[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATIO
   u8"No notifications yet",
 
 	// 21 - Russian
-  u8"No notifications yet",
+  u8"Уведомлений пока нет",
 
 	// 22 - Spanish
   u8"No notifications yet",
@@ -2104,7 +2104,7 @@ const char translationClearAll[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Clear All",
 
 	// 21 - Russian
-  u8"Clear All",
+  u8"Очистить всё",
 
 	// 22 - Spanish
   u8"Clear All",
@@ -2200,7 +2200,7 @@ const char translationHistoryChat[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
   u8"Chat",
 
 	// 21 - Russian
-  u8"Chat",
+  u8"Чат",
 
 	// 22 - Spanish
   u8"Chat",
@@ -2296,7 +2296,7 @@ const char translationHistoryInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION
   u8"Invite",
 
 	// 21 - Russian
-  u8"Invite",
+  u8"Пригласить",
 
 	// 22 - Spanish
   u8"Invite",
@@ -2392,7 +2392,7 @@ const char translationHistoryAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSL
   u8"Achievement",
 
 	// 21 - Russian
-  u8"Achievement",
+  u8"Достижение",
 
 	// 22 - Spanish
   u8"Achievement",
@@ -2488,7 +2488,7 @@ const char translationHistoryProgress[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"Progress",
 
 	// 21 - Russian
-  u8"Progress",
+  u8"Прогресс",
 
 	// 22 - Spanish
   u8"Progress",
@@ -2584,7 +2584,7 @@ const char translationHistoryAutoInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"Auto-Invite",
 
 	// 21 - Russian
-  u8"Auto-Invite",
+  u8"Авто-приглашение",
 
 	// 22 - Spanish
   u8"Auto-Invite",
@@ -2680,7 +2680,7 @@ const char translationHistoryScreenshot[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"Screenshot",
 
 	// 21 - Russian
-  u8"Screenshot",
+  u8"Снимок экрана",
 
 	// 22 - Spanish
   u8"Screenshot",
@@ -2776,7 +2776,7 @@ const char translationShow[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"Show",
 
 	// 21 - Russian
-  u8"Show",
+  u8"Показать",
 
 	// 22 - Spanish
   u8"Show",
@@ -2872,7 +2872,7 @@ const char translationUnlocked[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Unlocked",
 
 	// 21 - Russian
-  u8"Unlocked",
+  u8"Разблокировано",
 
 	// 22 - Spanish
   u8"Unlocked",
@@ -2968,7 +2968,7 @@ const char translationNoUnlockedAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TR
   u8"No achievements unlocked yet",
 
 	// 21 - Russian
-  u8"No achievements unlocked yet",
+  u8"Достижения пока не получены",
 
 	// 22 - Spanish
   u8"No achievements unlocked yet",
@@ -3064,7 +3064,7 @@ const char translationLocked[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"Locked",
 
 	// 21 - Russian
-  u8"Locked",
+  u8"Заблокировано",
 
 	// 22 - Spanish
   u8"Locked",
@@ -3160,7 +3160,7 @@ const char translationAllAchievementsUnlocked[TRANSLATION_NUMBER_OF_LANGUAGES][T
   u8"All achievements unlocked!",
 
 	// 21 - Russian
-  u8"All achievements unlocked!",
+  u8"Все достижения получены!",
 
 	// 22 - Spanish
   u8"All achievements unlocked!",
@@ -3256,7 +3256,7 @@ const char translationAchievementWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"Achievement Window",
 
 	// 21 - Russian
-  u8"Окно Достижений",
+  u8"Окно достижений",
 
 	// 22 - Spanish
   u8"Ventana de Logros",
@@ -3832,7 +3832,7 @@ const char translationGlobalSettingsWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRAN
   u8"Global Settings Window",
 
 	// 21 - Russian
-  u8"Окно Глобальных Настроек",
+  u8"Окно глобальных настроек",
 
 	// 22 - Spanish
   u8"Ventana de Configuración",
@@ -4216,7 +4216,7 @@ const char translationSelectedLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
   u8"Selected Language: %s",
 
 	// 21 - Russian
-  u8"Выбранный Язык: %s",
+  u8"Выбранный язык: %s",
 
 	// 22 - Spanish
   u8"Selecciona Idioma: %s",
@@ -5082,7 +5082,7 @@ const char translationScreenshotSaved[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"Screenshot saved: ",
 
 	// 21 - Russian
-  u8"Screenshot saved: ",
+  u8"Снимок экрана сохранён: ",
 
 	// 22 - Spanish
   u8"Screenshot saved: ",
@@ -5178,7 +5178,7 @@ const char translationUnpinAll[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Unpin all",
 
 	// 21 - Russian
-  u8"Unpin all",
+  u8"Открепить всё",
 
 	// 22 - Spanish
   u8"Unpin all",
@@ -5274,7 +5274,7 @@ const char translationDeleteSelected[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATIO
   u8"Delete selected",
 
 	// 21 - Russian
-  u8"Delete selected",
+  u8"Удалить выбранное",
 
 	// 22 - Spanish
   u8"Delete selected",
@@ -5370,7 +5370,7 @@ const char translationOpenFolder[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BU
   u8"Open Folder",
 
 	// 21 - Russian
-  u8"Open Folder",
+  u8"Открыть папку",
 
 	// 22 - Spanish
   u8"Open Folder",
@@ -5466,7 +5466,7 @@ const char translationNoScreenshotsYet[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
   u8"No screenshots yet",
 
 	// 21 - Russian
-  u8"No screenshots yet",
+  u8"Снимков экрана пока нет",
 
 	// 22 - Spanish
   u8"No screenshots yet",
@@ -5562,7 +5562,7 @@ const char translationDelete[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"Delete",
 
 	// 21 - Russian
-  u8"Delete",
+  u8"Удалить",
 
 	// 22 - Spanish
   u8"Delete",
@@ -5658,7 +5658,7 @@ const char translationScreenshotPreview[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"Screenshot Preview",
 
 	// 21 - Russian
-  u8"Screenshot Preview",
+  u8"Предпросмотр снимка экрана",
 
 	// 22 - Spanish
   u8"Screenshot Preview",
@@ -5754,7 +5754,7 @@ const char translationPrev[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"< Prev",
 
 	// 21 - Russian
-  u8"< Prev",
+  u8"< Пред.",
 
 	// 22 - Spanish
   u8"< Prev",
@@ -5850,7 +5850,7 @@ const char translationPin[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SI
   u8"Pin",
 
 	// 21 - Russian
-  u8"Pin",
+  u8"Закрепить",
 
 	// 22 - Spanish
   u8"Pin",
@@ -5946,7 +5946,7 @@ const char translationCrop[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"Crop",
 
 	// 21 - Russian
-  u8"Crop",
+  u8"Обрезать",
 
 	// 22 - Spanish
   u8"Crop",
@@ -6042,7 +6042,7 @@ const char translationNext[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"Next >",
 
 	// 21 - Russian
-  u8"Next >",
+  u8"След. >",
 
 	// 22 - Spanish
   u8"Next >",
@@ -6138,7 +6138,7 @@ const char translationDeleteThisScreenshot[TRANSLATION_NUMBER_OF_LANGUAGES][TRAN
   u8"Delete this screenshot?",
 
 	// 21 - Russian
-  u8"Delete this screenshot?",
+  u8"Удалить этот снимок экрана?",
 
 	// 22 - Spanish
   u8"Delete this screenshot?",
@@ -6234,7 +6234,7 @@ const char translationDeleteAllScelectedScreenshots[TRANSLATION_NUMBER_OF_LANGUA
   u8"Delete all selected screenshots?",
 
 	// 21 - Russian
-  u8"Delete all selected screenshots?",
+  u8"Удалить все выбранные снимки экрана?",
 
 	// 22 - Spanish
   u8"Delete all selected screenshots?",
@@ -6330,7 +6330,7 @@ const char translationYes[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SI
   u8"Yes",
 
 	// 21 - Russian
-  u8"Yes",
+  u8"Да",
 
 	// 22 - Spanish
   u8"Yes",
@@ -6426,7 +6426,7 @@ const char translationNo[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZ
   u8"No",
 
 	// 21 - Russian
-  u8"No",
+  u8"Нет",
 
 	// 22 - Spanish
   u8"No",
@@ -6522,7 +6522,7 @@ const char translationConfirmDelete[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION
   u8"Confirm Delete",
 
 	// 21 - Russian
-  u8"Confirm Delete",
+  u8"Подтвердить удаление",
 
 	// 22 - Spanish
   u8"Confirm Delete",
@@ -6618,7 +6618,7 @@ const char translationConfirm[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8"Confirm",
 
 	// 21 - Russian
-  u8"Confirm",
+  u8"Подтвердить",
 
 	// 22 - Spanish
   u8"Confirm",
@@ -6714,7 +6714,7 @@ const char translationCancel[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"Cancel",
 
 	// 21 - Russian
-  u8"Cancel",
+  u8"Отмена",
 
 	// 22 - Spanish
   u8"Cancel",
@@ -6810,7 +6810,7 @@ const char translationPinnedScreenshots[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"Pinned Screenshot###pinned_ss_%llu",
 
 	// 21 - Russian
-  u8"Pinned Screenshot###pinned_ss_%llu",
+  u8"Закреплённый снимок экрана###pinned_ss_%llu",
 
 	// 22 - Spanish
   u8"Pinned Screenshot###pinned_ss_%llu",
@@ -6906,7 +6906,7 @@ const char translationOpacity[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8"Opacity",
 
 	// 21 - Russian
-  u8"Opacity",
+  u8"Прозрачность",
 
 	// 22 - Spanish
   u8"Opacity",
@@ -7002,7 +7002,7 @@ const char translationAutoAcceptFriendInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TR
   u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 21 - Russian
-  u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Приглашения управляются файлом auto_accept_invite.txt!",
 
 	// 22 - Spanish
   u8"Invitations are controlled by auto_accept_invite.txt!",
@@ -7290,7 +7290,7 @@ const char translationFrametimeCheckbox[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"Frametime",
 
 	// 21 - Russian
-  u8"Frametime",
+  u8"Время кадра",
 
 	// 22 - Spanish
   u8"Frametime",
@@ -7482,7 +7482,7 @@ const char translationFrametimeUnitDisplay[TRANSLATION_NUMBER_OF_LANGUAGES][TRAN
   u8" ms",
 
 	// 21 - Russian
-  u8" ms",
+  u8" мс",
 
 	// 22 - Spanish
   u8" ms",
@@ -7578,7 +7578,7 @@ const char translationPlaytimeCheckbox[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
   u8"Playtime",
 
 	// 21 - Russian
-  u8"Playtime",
+  u8"Время игры",
 
 	// 22 - Spanish
   u8"Playtime",
