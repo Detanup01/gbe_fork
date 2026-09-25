@@ -49,7 +49,7 @@ set /a "BUILD_JOBS=-1"
   :: build deps
   if %BUILD_DEPS% equ 1 (
     set "CMAKE_GENERATOR=Visual Studio 18 2026"
-    call "%PREMAKE_EXE%" --file="premake5-deps.lua" --64-build --32-build --all-ext --all-build --j=2 --verbose --clean --os=windows vs2026 || (
+    call "%PREMAKE_EXE%" --file="premake5-deps.lua" --64-build --32-build --arm-build --all-ext --all-build --j=2 --verbose --clean --os=windows vs2026 || (
       goto :end_script_with_err
     )
     goto :end_script
@@ -98,7 +98,7 @@ set /a "BUILD_JOBS=-1"
 
   :: build .sln
   set "BUILD_TYPES=release debug"
-  set "BUILD_PLATFORMS=x64 Win32"
+  set "BUILD_PLATFORMS=x64 Win32 ARM64"
   set "BUILD_TARGETS=api_regular api_experimental steamclient_experimental_stub steamclient_experimental steamclient_experimental_loader steamclient_experimental_extra lib_game_overlay_renderer tool_lobby_connect tool_generate_interfaces"
 
   for %%A in (%BUILD_TYPES%) do (

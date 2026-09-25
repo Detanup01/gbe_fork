@@ -33,3 +33,8 @@ jobs:
     name: "linux"
     if: ${{ !cancelled() }}
     uses: "./.github/workflows/emu-build-all-linux.yml"
+
+  emu-linux-all-arm:
+    name: "linux arm"
+    if: ${{ !cancelled() }}
+    uses: "./.github/workflows/emu-build-all-linux-arm.yml"

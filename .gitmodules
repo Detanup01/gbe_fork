@@ -31,4 +31,8 @@
 [submodule "third-party/deps/common"]
   path = third-party/deps/common
   url = ./
-	branch = third-party/deps/common
+  branch = third-party/deps/common
+[submodule "third-party/deps/linux-arm"]
+	path = third-party/deps/linux-arm
+	url = https://github.com/Detanup01/gbe_fork.git
+	branch = third-party/deps/linux-arm

@@ -466,3 +466,92 @@ jobs:
           if-no-files-found: "error"
           compression-level: 9
           retention-days: 7
+
+  emu-linux-arm-all:
+    name: "Emu linux arm all"
+    if: ${{ !cancelled() }}
+    uses: "./.github/workflows/emu-build-all-linux-arm.yml"
+
+  emu-linux-arm-prep:
+    needs: ["emu-linux-arm-all"]
+    runs-on: "ubuntu-24.04-arm"
+    steps:
+      # we need branch because it has package scripts
+      - name: "Checkout branch"
+        uses: actions/checkout@v6
+
+      - name: "Clone third-party deps (deps/linux)"
+        uses: actions/checkout@v6
+        with:
+          ref: "third-party/deps/linux"
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/linux"
+
+      # download artifacts
+      - name: "Download emu build artifacts (linux)"
+        uses: actions/download-artifact@v8
+        with:
+          path: "build/linux"
+          pattern: "emu-linux-*-${{ github.sha }}"
+          merge-multiple: true
+
+      # fix folder permissions! not sure why this fails
+      # nested subdirs "build/linux/release" cause permission problems
+      - name: "Give all permissions to repo folder"
+        shell: "bash"
+        working-directory: "${{ github.workspace }}"
+        run: sudo chmod -R 777 "${{ github.workspace }}" && sudo chmod 777 package_linux.sh
+
+      # print files
+      - name: "Print files"
+        shell: "bash"
+        working-directory: "${{ github.workspace }}"
+        run: |
+          ls -la build/linux/*/*
+
+      # downlaod ubuntu packages
+      - name: "Download required Ubuntu packages"
+        shell: "bash"
+        working-directory: "${{ github.workspace }}"
+        run: |
+          sudo apt update || exit 1
+          sudo apt install tar -y || exit 1
+
+      # package (release mode)
+      - name: "Package build (release)"
+        shell: "bash"
+        working-directory: "${{ github.workspace }}"
+        run: ./package_linux.sh gmake/release
+
+      # package (debug mode)
+      - name: "Package build (debug)"
+        shell: "bash"
+        working-directory: "${{ github.workspace }}"
+        run: ./package_linux.sh gmake/debug 1
+
+      # release (debug + release modes) if this is a tag push
+      - name: "Release"
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v3
+        with:
+          files: "build/package/linux/**/*"
+
+      # upload artifacts/packages if this is a manual run
+      - name: "Upload release package"
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: "release-emu-linux-release-${{ github.sha }}"
+          path: "build/package/linux/gmake/*release*"
+          if-no-files-found: "error"
+          compression-level: 0
+          retention-days: 7
+
+      - name: "Upload debug package"
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: "release-emu-linux-debug-${{ github.sha }}"
+          path: "build/package/linux/gmake/*debug*"
+          if-no-files-found: "error"
+          compression-level: 0
+          retention-days: 7

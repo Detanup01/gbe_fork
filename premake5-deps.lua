@@ -9,14 +9,20 @@ require("premake", ">=5.0.0-beta8")
 -- MSYS Makefiles
 
 local os_iden = '' -- identifier
+local deps_dir_os = ''
 if os.target() == "windows" then
     os_iden = 'win'
+    deps_dir_os = 'win'
 elseif os.target() == "linux" then
     os_iden = 'linux'
+    deps_dir_os = 'linux'
 else
     error('Unsupported os target: "' .. os.target() .. '"')
 end
 
+if os.target() == "linux" and os.hostarch() == "ARM64" then
+    deps_dir_os = 'linux-arm'
+end
 
 -- options
 ---------
@@ -138,6 +144,11 @@ newoption {
     trigger = "64-build",
     description = "Build for 64-bit arch",
 }
+newoption {
+    category = "build",
+    trigger = "arm-build",
+    description = "Build for 64-bit ARM arch",
+}
 
 newoption {
     category = "build",
@@ -210,7 +221,7 @@ end
 ---------
 local deps_dir = _OPTIONS["deps-dir"]
 local third_party_dir = path.getabsolute('third-party')
-local third_party_deps_dir = path.join(third_party_dir, 'deps', os_iden)
+local third_party_deps_dir = path.join(third_party_dir, 'deps', deps_dir_os)
 local third_party_common_dir = path.join(third_party_dir, 'deps', 'common')
 local extractor = os.realpath(path.join(third_party_deps_dir, '7za', '7za'))
 local mycmake = os.realpath(path.join(third_party_deps_dir, 'cmake', 'bin', 'cmake'))
@@ -221,6 +232,9 @@ if _OPTIONS["custom-cmake"] then
 else
     if os.host() == 'windows' then
         mycmake = mycmake .. '.exe'
+    end
+    if mycmake == nil then
+        error("cmake is null!" .. third_party_deps_dir)
     end
     if not os.isfile(mycmake) then
         error('cmake is missing from third-party dir, you can specify custom cmake location, run the script with --help. cmake: ' .. mycmake)
@@ -237,6 +251,9 @@ if _OPTIONS["custom-extractor"] then
 else
     if os.host() == 'windows' then
         extractor = extractor .. '.exe'
+    end
+    if extractor == nil then
+        error("extractor is null!" .. third_party_deps_dir)
     end
     if not extractor or not os.isfile(extractor) then
         error('extractor is missing from third-party dir. extractor: ' .. extractor)
@@ -260,14 +277,13 @@ local cmake_common_defs = {
 }
 
 
-local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_flags_init)
+local function cmake_build(dep_folder, arch_iden, extra_cmd_defs, c_flags_init, cxx_flags_init)
     local dep_base = path.getabsolute(path.join(deps_dir, dep_folder))
-    local arch_iden = ''
-    if is_32 then
-        arch_iden = '32'
-    else
-        arch_iden = '64'
+    local is_32 = false
+    if arch_iden == '32' then
+        is_32 = true
     end
+
 
     print('\n\nbuilding dep: "' .. dep_base .. '"')
     
@@ -311,6 +327,8 @@ local function cmake_build(dep_folder, is_32, extra_cmd_defs, c_flags_init, cxx_
         if cmake_generator == "" and os.host() == 'windows' or cmake_generator:find("Visual Studio") then
             if is_32 then
                 cmd_gen = cmd_gen .. ' -A Win32'
+            elseif arch_iden == 'arm' then
+                cmd_gen = cmd_gen .. ' -A ARM64'
             else
                 cmd_gen = cmd_gen .. ' -A x64'
             end
@@ -540,10 +558,13 @@ end
 -------
 if _OPTIONS["build-ssq"] or _OPTIONS["all-build"] then
     if _OPTIONS["32-build"] then
-        cmake_build('libssq', true)
+        cmake_build('libssq', "32")
     end
     if _OPTIONS["64-build"] then
-        cmake_build('libssq', false)
+        cmake_build('libssq', "64")
+    end
+    if _OPTIONS["arm-build"] then
+        cmake_build('libssq', "arm")
     end
 end
 if _OPTIONS["build-zlib"] or _OPTIONS["all-build"] then
@@ -551,10 +572,13 @@ if _OPTIONS["build-zlib"] or _OPTIONS["all-build"] then
         "ZLIB_BUILD_EXAMPLES=OFF",
     }
     if _OPTIONS["32-build"] then
-        cmake_build('zlib', true, zlib_common_defs)
+        cmake_build('zlib', "32", zlib_common_defs)
     end
     if _OPTIONS["64-build"] then
-        cmake_build('zlib', false, zlib_common_defs)
+        cmake_build('zlib', "64", zlib_common_defs)
+    end
+    if _OPTIONS["arm-build"] then
+        cmake_build('zlib', "arm", zlib_common_defs)
     end
 end
 
@@ -634,6 +658,13 @@ local wild_zlib_64 = {
     'ZLIB_INCLUDE_DIR="' .. path.join(deps_dir, 'zlib', 'install64', 'include') .. '"',
     'ZLIB_LIBRARY="' .. wild_zlib_path_64 .. '"',
 }
+local wild_zlib_path_arm = path.join(deps_dir, 'zlib', 'installarm', 'lib', zlib_name)
+local wild_zlib_arm = {
+    'ZLIB_USE_STATIC_LIBS=ON',
+    'ZLIB_ROOT="' .. path.join(deps_dir, 'zlib', 'installarm') .. '"',
+    'ZLIB_INCLUDE_DIR="' .. path.join(deps_dir, 'zlib', 'installarm', 'include') .. '"',
+    'ZLIB_LIBRARY="' .. wild_zlib_path_arm .. '"',
+}
 
 if _OPTIONS["build-mbedtls"] or _OPTIONS["all-build"] then
     local mbedtls_common_defs = {
@@ -657,10 +688,13 @@ if _OPTIONS["build-mbedtls"] or _OPTIONS["all-build"] then
     end
 
     if _OPTIONS["32-build"] then
-        cmake_build('mbedtls', true, mbedtls_common_defs, mbedtls_32_bit_fixes)
+        cmake_build('mbedtls', "32", mbedtls_common_defs, mbedtls_32_bit_fixes)
     end
     if _OPTIONS["64-build"] then
-        cmake_build('mbedtls', false, mbedtls_common_defs)
+        cmake_build('mbedtls', "64", mbedtls_common_defs)
+    end
+    if _OPTIONS["arm-build"] then
+        cmake_build('mbedtls', "arm", mbedtls_common_defs)
     end
 end
 
@@ -698,7 +732,7 @@ if _OPTIONS["build-curl"] or _OPTIONS["all-build"] then
     end
 
     if _OPTIONS["32-build"] then
-        cmake_build('curl', true, merge_list(curl_common_defs, merge_list(wild_zlib_32, {
+        cmake_build('curl', "32", merge_list(curl_common_defs, merge_list(wild_zlib_32, {
             'MBEDTLS_INCLUDE_DIRS="' .. path.join(deps_dir, 'mbedtls', 'install32', 'include') .. '"',
             'MBEDTLS_LIBRARY="' .. path.join(deps_dir, 'mbedtls', 'install32', 'lib', mbedtls_name) .. '"',
             'MBEDCRYPTO_LIBRARY="' .. path.join(deps_dir, 'mbedtls', 'install32', 'lib', mbedcrypto_name) .. '"',
@@ -706,11 +740,19 @@ if _OPTIONS["build-curl"] or _OPTIONS["all-build"] then
         })))
     end
     if _OPTIONS["64-build"] then
-        cmake_build('curl', false, merge_list(curl_common_defs, merge_list(wild_zlib_64, {
+        cmake_build('curl', "64", merge_list(curl_common_defs, merge_list(wild_zlib_64, {
             'MBEDTLS_INCLUDE_DIRS="' .. path.join(deps_dir, 'mbedtls', 'install64', 'include') .. '"',
             'MBEDTLS_LIBRARY="' .. path.join(deps_dir, 'mbedtls', 'install64', 'lib', mbedtls_name) .. '"',
             'MBEDCRYPTO_LIBRARY="' .. path.join(deps_dir, 'mbedtls', 'install64', 'lib', mbedcrypto_name) .. '"',
             'MBEDX509_LIBRARY="' .. path.join(deps_dir, 'mbedtls', 'install64', 'lib', mbedx509_name) .. '"',
+        })))
+    end
+    if _OPTIONS["arm-build"] then
+        cmake_build('curl', "arm", merge_list(curl_common_defs, merge_list(wild_zlib_arm, {
+            'MBEDTLS_INCLUDE_DIRS="' .. path.join(deps_dir, 'mbedtls', 'installarm', 'include') .. '"',
+            'MBEDTLS_LIBRARY="' .. path.join(deps_dir, 'mbedtls', 'installarm', 'lib', mbedtls_name) .. '"',
+            'MBEDCRYPTO_LIBRARY="' .. path.join(deps_dir, 'mbedtls', 'installarm', 'lib', mbedcrypto_name) .. '"',
+            'MBEDX509_LIBRARY="' .. path.join(deps_dir, 'mbedtls', 'installarm', 'lib', mbedx509_name) .. '"',
         })))
     end
 end
@@ -735,10 +777,13 @@ if _OPTIONS["build-protobuf"] or _OPTIONS["all-build"] then
     end
 
     if _OPTIONS["32-build"] then
-        cmake_build('protobuf', true, merge_list(proto_common_defs, wild_zlib_32))
+        cmake_build('protobuf', "32", merge_list(proto_common_defs, wild_zlib_32))
     end
     if _OPTIONS["64-build"] then
-        cmake_build('protobuf', false, merge_list(proto_common_defs, wild_zlib_64))
+        cmake_build('protobuf', "64", merge_list(proto_common_defs, wild_zlib_64))
+    end
+    if _OPTIONS["arm-build"] then
+        cmake_build('protobuf', "arm", merge_list(proto_common_defs, wild_zlib_arm))
     end
 end
 
@@ -774,26 +819,37 @@ if _OPTIONS["build-ingame_overlay"] or _OPTIONS["all-build"] then
     end
 
     if _OPTIONS["32-build"] then
-        cmake_build('ingame_overlay/deps/System', true, {
+        cmake_build('ingame_overlay/deps/System', "32", {
             'SYSTEM_BUILD_TESTS=OFF',
             'SYSTEM_DYNAMIC_RUNTIME=OFF',
         }, nil, ingame_overlay_fixes)
-        cmake_build('ingame_overlay/deps/mini_detour', true, {
+        cmake_build('ingame_overlay/deps/mini_detour', "32", {
             'MINIDETOUR_BUILD_TESTS=OFF',
             'MINIDETOUR_DYNAMIC_RUNTIME=OFF',
         })
-        cmake_build('ingame_overlay', true, ingame_overlay_common_defs, nil, ingame_overlay_fixes)
+        cmake_build('ingame_overlay', "32", ingame_overlay_common_defs, nil, ingame_overlay_fixes)
     end
     if _OPTIONS["64-build"] then
-        cmake_build('ingame_overlay/deps/System', false, {
+        cmake_build('ingame_overlay/deps/System', "64", {
             'SYSTEM_BUILD_TESTS=OFF',
             'SYSTEM_DYNAMIC_RUNTIME=OFF',
         }, nil, ingame_overlay_fixes)
-        cmake_build('ingame_overlay/deps/mini_detour', false, {
+        cmake_build('ingame_overlay/deps/mini_detour', "64", {
             'MINIDETOUR_BUILD_TESTS=OFF',
             'MINIDETOUR_DYNAMIC_RUNTIME=OFF',
         })
-        cmake_build('ingame_overlay', false, ingame_overlay_common_defs, nil, ingame_overlay_fixes)
+        cmake_build('ingame_overlay', "64", ingame_overlay_common_defs, nil, ingame_overlay_fixes)
+    end
+    if _OPTIONS["arm-build"] then
+        cmake_build('ingame_overlay/deps/System', "arm", {
+            'SYSTEM_BUILD_TESTS=OFF',
+            'SYSTEM_DYNAMIC_RUNTIME=OFF',
+        }, nil, ingame_overlay_fixes)
+        cmake_build('ingame_overlay/deps/mini_detour', "arm", {
+            'MINIDETOUR_BUILD_TESTS=OFF',
+            'MINIDETOUR_DYNAMIC_RUNTIME=OFF',
+        })
+        cmake_build('ingame_overlay', "arm", ingame_overlay_common_defs, nil, ingame_overlay_fixes)
     end
 end
 
@@ -807,10 +863,13 @@ if _OPTIONS["build-opus"] or _OPTIONS["all-build"] then
     }
 
     if _OPTIONS["32-build"] then
-        cmake_build('opus', true, opus_common_defs)
+        cmake_build('opus', "32", opus_common_defs)
     end
     if _OPTIONS["64-build"] then
-        cmake_build('opus', false, opus_common_defs)
+        cmake_build('opus', "64", opus_common_defs)
+    end
+    if _OPTIONS["arm-build"] then
+        cmake_build('opus', "arm", opus_common_defs)
     end
 end
 
@@ -833,10 +892,13 @@ if _OPTIONS["build-portaudio"] or _OPTIONS["all-build"] then
     }
 
     if _OPTIONS["32-build"] then
-        cmake_build('portaudio', true, portaudio_common_defs)
+        cmake_build('portaudio', "32", portaudio_common_defs)
     end
     if _OPTIONS["64-build"] then
-        cmake_build('portaudio', false, portaudio_common_defs)
+        cmake_build('portaudio', "64", portaudio_common_defs)
+    end
+    if _OPTIONS["arm-build"] then
+        cmake_build('portaudio', "arm", portaudio_common_defs)
     end
 end
 
@@ -853,9 +915,12 @@ if _OPTIONS["build-sdl"] or _OPTIONS["all-build"] then
     }
 
     if _OPTIONS["32-build"] then
-        cmake_build('sdl', true, sdl_common_defs)
+        cmake_build('sdl', "32", sdl_common_defs)
     end
     if _OPTIONS["64-build"] then
-        cmake_build('sdl', false, sdl_common_defs)
+        cmake_build('sdl', "64", sdl_common_defs)
+    end
+    if _OPTIONS["arm-build"] then
+        cmake_build('sdl', "arm", sdl_common_defs)
     end
 end

@@ -153,8 +153,11 @@ local build_dir = _OPTIONS["build-dir"]
 
 local function genproto()
     local deps_install_prefix = ''
-    if os.is64bit() then
+    local harch = os.hostarch()
+    if harch == "x86_64" then
         deps_install_prefix = 'install64'
+    elseif harch == "ARM64" or harch == "AARCH64" then
+        deps_install_prefix = 'installarm'
     else
         deps_install_prefix = 'install32'
     end
@@ -258,6 +261,23 @@ local x64_deps_overlay_include = {
     path.join(deps_dir, "ingame_overlay/install64/include"),
     path.join(deps_dir, "ingame_overlay/deps/System/install64/include"),
     path.join(deps_dir, "ingame_overlay/deps/mini_detour/install64/include"),
+}
+
+local arm_deps_include = {
+    path.join(deps_dir, "libssq/include"),
+    path.join(deps_dir, "curl/installarm/include"),
+    path.join(deps_dir, "protobuf/installarm/include"),
+    path.join(deps_dir, "zlib/installarm/include"),
+    path.join(deps_dir, "mbedtls/installarm/include"),
+    path.join(deps_dir, "opus/installarm/include"),
+    path.join(deps_dir, "portaudio/installarm/include"),
+    path.join(deps_dir, "sdl/installarm/include"),
+}
+
+local arm_deps_overlay_include = {
+    path.join(deps_dir, "ingame_overlay/installarm/include"),
+    path.join(deps_dir, "ingame_overlay/deps/System/installarm/include"),
+    path.join(deps_dir, "ingame_overlay/deps/mini_detour/installarm/include"),
 }
 
 
@@ -455,11 +475,13 @@ local overlay_link = {
 ---------
 local x32_ssq_libdir = path.join(deps_dir, "libssq/build32")
 local x64_ssq_libdir = path.join(deps_dir, "libssq/build64")
+local arm_ssq_libdir = path.join(deps_dir, "libssq/buildarm")
 
 local cmake_generator = os.getenv("CMAKE_GENERATOR") or ""
 if cmake_generator == "" and os.host() == 'windows' or cmake_generator:find("Visual Studio") then
     x32_ssq_libdir = x32_ssq_libdir .. "/Release"
     x64_ssq_libdir = x64_ssq_libdir .. "/Release"
+    arm_ssq_libdir = arm_ssq_libdir .. "/Release"
 end
 
 local x32_deps_libdir = {
@@ -497,6 +519,24 @@ local x64_deps_overlay_libdir = {
     path.join(deps_dir, "ingame_overlay/deps/mini_detour/install64/lib"),
 }
 
+local arm_deps_libdir = {
+    arm_ssq_libdir,
+    path.join(deps_dir, "curl/installarm/lib"),
+    path.join(deps_dir, "protobuf/installarm/lib"),
+    path.join(deps_dir, "zlib/installarm/lib"),
+    path.join(deps_dir, "mbedtls/installarm/lib"),
+    path.join(deps_dir, "ingame_overlay/installarm/lib"),
+    path.join(deps_dir, "opus/installarm/lib"),
+    path.join(deps_dir, "portaudio/installarm/lib"),
+    path.join(deps_dir, "sdl/installarm/lib"),
+}
+
+local arm_deps_overlay_libdir = {
+    path.join(deps_dir, "ingame_overlay/installarm/lib"),
+    path.join(deps_dir, "ingame_overlay/deps/System/installarm/lib"),
+    path.join(deps_dir, "ingame_overlay/deps/mini_detour/installarm/lib"),
+}
+
 -- generate proto
 if _OPTIONS["genproto"] then
     if genproto() then
@@ -528,7 +568,7 @@ end
 
 filter {} -- reset the filter and remove all active keywords
 configurations { "debug", "release", }
-platforms { "x64", "x86", }
+platforms { "x64", "x86", "ARM64" }
 language "C++"
 cppdialect "C++17"
 cdialect "C17"
@@ -572,9 +612,11 @@ vpaths { -- just for visual niceness, see: https://premake.github.io/docs/vpaths
 -- arch
 ---------
 filter { "platforms:x86", }
-    architecture "x86" 
+    architecture "x86"
 filter { "platforms:x64", }
     architecture "x86_64"
+filter { "platforms:ARM64", }
+    architecture "ARM64"
 filter {} -- reset the filter and remove all active keywords
 
 
@@ -703,6 +745,12 @@ filter { 'options:incdeps', "platforms:x64", }
         table_postfix_items(x64_deps_include, '/**.hxx'),
         table_postfix_items(x64_deps_include, '/**.hpp'),
     }
+filter { 'options:incdeps', "platforms:ARM64", }
+    files {
+        table_postfix_items(arm_deps_include, '/**.h'),
+        table_postfix_items(arm_deps_include, '/**.hxx'),
+        table_postfix_items(arm_deps_include, '/**.hpp'),
+    }
 filter {} -- reset the filter and remove all active keywords
 
 
@@ -762,6 +810,8 @@ project "api_regular"
         targetname "steam_api"
     filter { "system:windows", "platforms:x64", }
         targetname "steam_api64"
+    filter { "system:windows", "platforms:ARM64" }
+        targetname "steam_apiARM" -- if you ever need windows ARM64
     filter { "system:not windows", }
         targetname "libsteam_api"
 
@@ -778,6 +828,11 @@ project "api_regular"
             x64_deps_include,
         }
 
+    -- arm include dir
+    filter { "platforms:ARM64", }
+        includedirs {
+            arm_deps_include,
+        }
 
     -- common source & header files
     ---------
@@ -804,6 +859,11 @@ project "api_regular"
             "resources/win/api/64/resources.rc"
         }
 
+    -- Windows arm common source files
+    filter { "system:windows", "platforms:ARM64", "options:winrsrc", }
+        files {
+            "resources/win/api/64/resources.rc"
+        }
 
     -- libs to link
     ---------
@@ -832,6 +892,12 @@ project "api_regular"
         libdirs {
             x64_deps_libdir,
         }
+
+    -- x64 libs search dir
+    filter { "platforms:ARM64", }
+        libdirs {
+            arm_deps_libdir,
+        }
 -- End api_regular
 
 
@@ -849,6 +915,8 @@ project "api_experimental"
         targetname "steam_api"
     filter { "system:windows", "platforms:x64", }
         targetname "steam_api64"
+    filter { "system:windows", "platforms:ARM64" }
+        targetname "steam_apiARM" -- if you ever need windows ARM64
     filter { "system:not windows", }
         targetname "libsteam_api"
 
@@ -876,7 +944,12 @@ project "api_experimental"
             x64_deps_include,
             x64_deps_overlay_include,
         }
-
+    -- arm include dir
+    filter { "platforms:ARM64", }
+        includedirs {
+            arm_deps_include,
+            arm_deps_overlay_include,
+        }
 
     -- common source & header files
     ---------
@@ -901,6 +974,12 @@ project "api_experimental"
             table_postfix_items(x64_deps_overlay_include, '/**.hxx'),
             table_postfix_items(x64_deps_overlay_include, '/**.hpp'),
         }
+    filter { 'options:incdeps', "platforms:ARM64", }
+        files {
+            table_postfix_items(arm_deps_overlay_include, '/**.h'),
+            table_postfix_items(arm_deps_overlay_include, '/**.hxx'),
+            table_postfix_items(arm_deps_overlay_include, '/**.hpp'),
+        }
     -- Windows common source files
     filter { "system:windows", }
         removefiles {
@@ -913,6 +992,11 @@ project "api_experimental"
         }
     -- Windows x64 common source files
     filter { "system:windows", "platforms:x64", "options:winrsrc", }
+        files {
+            "resources/win/api/64/resources.rc"
+        }
+    -- Windows x64 common source files
+    filter { "system:windows", "platforms:ARM64", "options:winrsrc", }
         files {
             "resources/win/api/64/resources.rc"
         }
@@ -957,6 +1041,12 @@ project "api_experimental"
             x64_deps_libdir,
             x64_deps_overlay_libdir,
         }
+    -- arm libs search dir
+    filter { "platforms:ARM64", }
+        libdirs {
+            arm_deps_libdir,
+            arm_deps_overlay_libdir,
+        }
 -- End api_experimental
 
 
@@ -980,6 +1070,8 @@ project "steamclient_experimental"
         targetname "steamclient"
     filter { "system:windows", "platforms:x64", }
         targetname "steamclient64"
+    filter { "system:windows", "platforms:ARM64" }
+        targetname "steamclientARM" -- if you ever need windows ARM64
     filter { "system:not windows", }
         targetname "steamclient"
     
@@ -1009,6 +1101,12 @@ project "steamclient_experimental"
             x64_deps_overlay_include,
         }
 
+    -- arm include dir
+    filter { "platforms:ARM64", }
+        includedirs {
+            arm_deps_include,
+            arm_deps_overlay_include,
+        }
 
     -- common source & header files
     ---------
@@ -1034,6 +1132,12 @@ project "steamclient_experimental"
             table_postfix_items(x64_deps_overlay_include, '/**.hxx'),
             table_postfix_items(x64_deps_overlay_include, '/**.hpp'),
         }
+    filter { 'options:incdeps', "platforms:ARM64", }
+        files {
+            table_postfix_items(arm_deps_overlay_include, '/**.h'),
+            table_postfix_items(arm_deps_overlay_include, '/**.hxx'),
+            table_postfix_items(arm_deps_overlay_include, '/**.hpp'),
+        }
     -- Windows common source files
     filter { "system:windows", }
         removefiles {
@@ -1046,6 +1150,11 @@ project "steamclient_experimental"
         }
     -- Windows x64 common source files
     filter { "system:windows", "platforms:x64", "options:winrsrc", }
+        files {
+            "resources/win/client/64/resources.rc"
+        }
+    -- Windows arm common source files
+    filter { "system:windows", "platforms:ARM64", "options:winrsrc", }
         files {
             "resources/win/client/64/resources.rc"
         }
@@ -1089,6 +1198,12 @@ project "steamclient_experimental"
             x64_deps_libdir,
             x64_deps_overlay_libdir,
         }
+    -- arm libs search dir
+    filter { "platforms:ARM64", }
+        libdirs {
+            arm_deps_libdir,
+            arm_deps_overlay_libdir,
+        }
 -- End steamclient_experimental
 
 
@@ -1127,6 +1242,11 @@ project "tool_lobby_connect"
             x64_deps_include,
         }
 
+    -- x64 include dir
+    filter { "platforms:ARM64", }
+        includedirs {
+            arm_deps_include,
+        }
 
     -- common source & header files
     ---------
@@ -1150,7 +1270,11 @@ project "tool_lobby_connect"
         files {
             "resources/win/launcher/64/resources.rc"
         }
-
+    -- Windows arm common source files
+    filter { "system:windows", "platforms:ARM64", "options:winrsrc", }
+        files {
+            "resources/win/launcher/64/resources.rc"
+        }
 
     -- libs to link
     ---------
@@ -1179,6 +1303,11 @@ project "tool_lobby_connect"
     filter { "platforms:x64", }
         libdirs {
             x64_deps_libdir,
+        }
+    -- arm libs search dir
+    filter { "platforms:ARM64", }
+        libdirs {
+            arm_deps_libdir,
         }
 -- End tool_lobby_connect
 
@@ -1242,6 +1371,8 @@ project "lib_game_overlay_renderer"
         targetname "GameOverlayRenderer"
     filter { "system:windows", "platforms:x64", }
         targetname "GameOverlayRenderer64"
+    filter { "system:windows", "platforms:ARM64", }
+        targetname "GameOverlayRendererARM"
     filter { "system:not windows", }
         targetname "gameoverlayrenderer"
 
@@ -1260,6 +1391,11 @@ project "lib_game_overlay_renderer"
             x64_deps_include,
         }
 
+    -- arm include dir
+    filter { "platforms:ARM64", }
+        includedirs {
+            arm_deps_include,
+        }
 
     -- common source & header files
     ---------
@@ -1276,6 +1412,11 @@ project "lib_game_overlay_renderer"
         }
     -- x64 common source files
     filter { "system:windows", "platforms:x64", "options:winrsrc", }
+        files {
+            "resources/win/game_overlay_renderer/64/resources.rc"
+        }
+    -- x64 common source files
+    filter { "system:windows", "platforms:ARM64", "options:winrsrc", }
         files {
             "resources/win/game_overlay_renderer/64/resources.rc"
         }
@@ -1302,7 +1443,8 @@ project "steamclient_experimental_stub"
         targetname "steamclient"
     filter { "platforms:x64", }
         targetname "steamclient64"
-
+    filter { "platforms:ARM64", }
+        targetname "steamclientARM"
 
     -- common source & header files
     ---------
@@ -1317,6 +1459,11 @@ project "steamclient_experimental_stub"
         }
     -- x64 common source files
     filter { "platforms:x64", "options:winrsrc", }
+        files {
+            "resources/win/client/64/resources.rc"
+        }
+    -- arm common source files
+    filter { "platforms:ARM64", "options:winrsrc", }
         files {
             "resources/win/client/64/resources.rc"
         }
@@ -1342,6 +1489,11 @@ project "steamclient_experimental_extra"
     filter { "platforms:x64", }
         includedirs {
             x64_deps_include,
+        }
+    -- x64 include dir
+    filter { "platforms:ARM64", }
+        includedirs {
+            arm_deps_include,
         }
 
 
@@ -1369,13 +1521,18 @@ project "steamclient_experimental_extra"
         files {
             "resources/win/client/64/resources.rc"
         }
+    -- arm common source files
+    filter { "platforms:ARM64", "options:winrsrc", }
+        files {
+            "resources/win/client/64/resources.rc"
+        }
 -- End steamclient_experimental_extra
 
 
 -- Project lib_steam_old
 project "lib_steam_old"
     -- https://premake.github.io/docs/Configurations-and-Platforms/#per-project-configurations
-    removeplatforms { "x64" }
+    removeplatforms { "x64", "ARM64" }
 
     kind "SharedLib"
     location "%{wks.location}/%{prj.name}"
@@ -1461,7 +1618,11 @@ project "steamclient_experimental_loader"
         files {
             "resources/win/launcher/64/resources.rc"
         }
-
+    -- arm common source files
+    filter { "platforms:ARM64", "options:winrsrc", }
+        files {
+            "resources/win/launcher/64/resources.rc"
+        }
 
     -- libs to link
     ---------
@@ -1573,7 +1734,11 @@ project "steamclient_regular"
         includedirs {
             x64_deps_include,
         }
-
+    -- x64 include dir
+    filter { "platforms:ARM64", }
+        includedirs {
+            arm_deps_include,
+        }
 
     -- common source & header files
     ---------
@@ -1605,6 +1770,11 @@ project "steamclient_regular"
     filter { "platforms:x64", }
         libdirs {
             x64_deps_libdir,
+        }
+    -- arm libs search dir
+    filter { "platforms:ARM64", }
+        libdirs {
+            arm_deps_libdir,
         }
 -- End steamclient_regular
 
