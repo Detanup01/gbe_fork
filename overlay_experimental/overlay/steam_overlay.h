@@ -166,6 +166,10 @@ class Steam_Overlay
     bool notification_history_cache_dirty = false;
     // used when the button "Invite all" is clicked
     std::atomic<bool> invite_all_friends_clicked = false;
+    // the lobby the game passed to the last OpenOverlayInvite() call
+    // (ActivateGameOverlayInviteDialog()). invite_friend() must send the invitation
+    // to this specific lobby, not the last joined one
+    std::atomic<uint64> invite_lobby_id{};
 
     // Rate-limiting queue for achievement notifications
     struct ScheduledAchievement {
