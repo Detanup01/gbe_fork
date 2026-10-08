@@ -167,9 +167,11 @@ void Steam_Overlay_Stats::render_stats(int current_language)
     auto &io = ImGui::GetIO();
     const auto anchor_point_x = stats_box.x * settings->overlay_stats_pos_x;
     const auto anchor_point_y = stats_box.y * settings->overlay_stats_pos_y;
+    // a box at the top of the screen moves below the overlay's top bar while it is shown
+    const float top_extra = top_inset * (1.0f - settings->overlay_stats_pos_y);
     ImGui::SetNextWindowPos({
         io.DisplaySize.x * settings->overlay_stats_pos_x - anchor_point_x,
-        io.DisplaySize.y * settings->overlay_stats_pos_y - anchor_point_y
+        top_extra + (io.DisplaySize.y - top_extra) * settings->overlay_stats_pos_y - anchor_point_y
     });
 
     if (ImGui::Begin("wnd_fps_frametime", nullptr,

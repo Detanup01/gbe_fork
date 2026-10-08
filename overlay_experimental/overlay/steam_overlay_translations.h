@@ -7705,5 +7705,490 @@ const char translationPlaytimeDisplay[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   
 };
 
+// title of the user info panel
+const char translationUserInfo[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"User Info",
+
+	// 1 - Arabic
+  u8"User Info",
+
+	// 2 - Bulgarian
+  u8"User Info",
+
+	// 3 - Simplified Chinese
+  u8"User Info",
+
+	// 4 - Traditional Chinese
+  u8"User Info",
+
+	// 5 - Czech
+  u8"User Info",
+
+	// 6 - Danish
+  u8"User Info",
+
+	// 7 - Dutch
+  u8"User Info",
+
+	// 8 - Finnish
+  u8"User Info",
+
+	// 9 - French
+  u8"User Info",
+
+	// 10 - German
+  u8"User Info",
+
+	// 11 - Greek
+  u8"User Info",
+
+	// 12 - Hungarian
+  u8"User Info",
+
+	// 13 - Italian
+  u8"User Info",
+
+	// 14 - Japanese
+  u8"User Info",
+
+	// 15 - Korean
+  u8"User Info",
+
+	// 16 - Norwegian
+  u8"User Info",
+
+	// 17 - Polish
+  u8"User Info",
+
+	// 18 - Portuguese
+  u8"User Info",
+
+	// 19 - Brazilian Portuguese
+  u8"User Info",
+
+	// 20 - Romanian
+  u8"User Info",
+
+	// 21 - Russian
+  u8"User Info",
+
+	// 22 - Spanish
+  u8"User Info",
+
+	// 23 - Latin American
+  u8"User Info",
+
+	// 24 - Swedish
+  u8"User Info",
+
+	// 25 - Thai
+  u8"User Info",
+
+	// 26 - Turkish
+  u8"User Info",
+
+	// 27 - Ukrainian
+  u8"User Info",
+
+	// 28 - Vietnamese
+  u8"User Info",
+
+	// 29 - Croatian
+  u8"User Info",
+
+  // 30 - Indonesian
+  u8"User Info",
+
+};
+
+// top bar of the overlay, next to the button that closes it
+const char translationBackToGame[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"Back to Game",
+
+	// 1 - Arabic
+  u8"Back to Game",
+
+	// 2 - Bulgarian
+  u8"Back to Game",
+
+	// 3 - Simplified Chinese
+  u8"Back to Game",
+
+	// 4 - Traditional Chinese
+  u8"Back to Game",
+
+	// 5 - Czech
+  u8"Back to Game",
+
+	// 6 - Danish
+  u8"Back to Game",
+
+	// 7 - Dutch
+  u8"Back to Game",
+
+	// 8 - Finnish
+  u8"Back to Game",
+
+	// 9 - French
+  u8"Back to Game",
+
+	// 10 - German
+  u8"Back to Game",
+
+	// 11 - Greek
+  u8"Back to Game",
+
+	// 12 - Hungarian
+  u8"Back to Game",
+
+	// 13 - Italian
+  u8"Back to Game",
+
+	// 14 - Japanese
+  u8"Back to Game",
+
+	// 15 - Korean
+  u8"Back to Game",
+
+	// 16 - Norwegian
+  u8"Back to Game",
+
+	// 17 - Polish
+  u8"Back to Game",
+
+	// 18 - Portuguese
+  u8"Back to Game",
+
+	// 19 - Brazilian Portuguese
+  u8"Back to Game",
+
+	// 20 - Romanian
+  u8"Back to Game",
+
+	// 21 - Russian
+  u8"Back to Game",
+
+	// 22 - Spanish
+  u8"Back to Game",
+
+	// 23 - Latin American
+  u8"Back to Game",
+
+	// 24 - Swedish
+  u8"Back to Game",
+
+	// 25 - Thai
+  u8"Back to Game",
+
+	// 26 - Turkish
+  u8"Back to Game",
+
+	// 27 - Ukrainian
+  u8"Back to Game",
+
+	// 28 - Vietnamese
+  u8"Back to Game",
+
+	// 29 - Croatian
+  u8"Back to Game",
+
+  // 30 - Indonesian
+  u8"Back to Game",
+
+};
+
+// session playtime in the top bar of the overlay
+const char translationPlaytimeLabelLine[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 1 - Arabic
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 2 - Bulgarian
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 3 - Simplified Chinese
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 4 - Traditional Chinese
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 5 - Czech
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 6 - Danish
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 7 - Dutch
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 8 - Finnish
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 9 - French
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 10 - German
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 11 - Greek
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 12 - Hungarian
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 13 - Italian
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 14 - Japanese
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 15 - Korean
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 16 - Norwegian
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 17 - Polish
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 18 - Portuguese
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 19 - Brazilian Portuguese
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 20 - Romanian
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 21 - Russian
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 22 - Spanish
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 23 - Latin American
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 24 - Swedish
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 25 - Thai
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 26 - Turkish
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 27 - Ukrainian
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 28 - Vietnamese
+  u8"Playtime: %02u:%02u:%02u",
+
+	// 29 - Croatian
+  u8"Playtime: %02u:%02u:%02u",
+
+  // 30 - Indonesian
+  u8"Playtime: %02u:%02u:%02u",
+
+};
+
+// friends panel without any friend
+const char translationNoFriends[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"No friends to show",
+
+	// 1 - Arabic
+  u8"No friends to show",
+
+	// 2 - Bulgarian
+  u8"No friends to show",
+
+	// 3 - Simplified Chinese
+  u8"No friends to show",
+
+	// 4 - Traditional Chinese
+  u8"No friends to show",
+
+	// 5 - Czech
+  u8"No friends to show",
+
+	// 6 - Danish
+  u8"No friends to show",
+
+	// 7 - Dutch
+  u8"No friends to show",
+
+	// 8 - Finnish
+  u8"No friends to show",
+
+	// 9 - French
+  u8"No friends to show",
+
+	// 10 - German
+  u8"No friends to show",
+
+	// 11 - Greek
+  u8"No friends to show",
+
+	// 12 - Hungarian
+  u8"No friends to show",
+
+	// 13 - Italian
+  u8"No friends to show",
+
+	// 14 - Japanese
+  u8"No friends to show",
+
+	// 15 - Korean
+  u8"No friends to show",
+
+	// 16 - Norwegian
+  u8"No friends to show",
+
+	// 17 - Polish
+  u8"No friends to show",
+
+	// 18 - Portuguese
+  u8"No friends to show",
+
+	// 19 - Brazilian Portuguese
+  u8"No friends to show",
+
+	// 20 - Romanian
+  u8"No friends to show",
+
+	// 21 - Russian
+  u8"No friends to show",
+
+	// 22 - Spanish
+  u8"No friends to show",
+
+	// 23 - Latin American
+  u8"No friends to show",
+
+	// 24 - Swedish
+  u8"No friends to show",
+
+	// 25 - Thai
+  u8"No friends to show",
+
+	// 26 - Turkish
+  u8"No friends to show",
+
+	// 27 - Ukrainian
+  u8"No friends to show",
+
+	// 28 - Vietnamese
+  u8"No friends to show",
+
+	// 29 - Croatian
+  u8"No friends to show",
+
+  // 30 - Indonesian
+  u8"No friends to show",
+
+};
+
+// achievements panel of a game without achievements
+const char translationNoAchievementsConfigured[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"This game has no achievements",
+
+	// 1 - Arabic
+  u8"This game has no achievements",
+
+	// 2 - Bulgarian
+  u8"This game has no achievements",
+
+	// 3 - Simplified Chinese
+  u8"This game has no achievements",
+
+	// 4 - Traditional Chinese
+  u8"This game has no achievements",
+
+	// 5 - Czech
+  u8"This game has no achievements",
+
+	// 6 - Danish
+  u8"This game has no achievements",
+
+	// 7 - Dutch
+  u8"This game has no achievements",
+
+	// 8 - Finnish
+  u8"This game has no achievements",
+
+	// 9 - French
+  u8"This game has no achievements",
+
+	// 10 - German
+  u8"This game has no achievements",
+
+	// 11 - Greek
+  u8"This game has no achievements",
+
+	// 12 - Hungarian
+  u8"This game has no achievements",
+
+	// 13 - Italian
+  u8"This game has no achievements",
+
+	// 14 - Japanese
+  u8"This game has no achievements",
+
+	// 15 - Korean
+  u8"This game has no achievements",
+
+	// 16 - Norwegian
+  u8"This game has no achievements",
+
+	// 17 - Polish
+  u8"This game has no achievements",
+
+	// 18 - Portuguese
+  u8"This game has no achievements",
+
+	// 19 - Brazilian Portuguese
+  u8"This game has no achievements",
+
+	// 20 - Romanian
+  u8"This game has no achievements",
+
+	// 21 - Russian
+  u8"This game has no achievements",
+
+	// 22 - Spanish
+  u8"This game has no achievements",
+
+	// 23 - Latin American
+  u8"This game has no achievements",
+
+	// 24 - Swedish
+  u8"This game has no achievements",
+
+	// 25 - Thai
+  u8"This game has no achievements",
+
+	// 26 - Turkish
+  u8"This game has no achievements",
+
+	// 27 - Ukrainian
+  u8"This game has no achievements",
+
+	// 28 - Vietnamese
+  u8"This game has no achievements",
+
+	// 29 - Croatian
+  u8"This game has no achievements",
+
+  // 30 - Indonesian
+  u8"This game has no achievements",
+
+};
+
 
 #endif // _STEAM_OVERLAY_TRANSLATIONS_H
