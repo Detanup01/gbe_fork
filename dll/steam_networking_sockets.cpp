@@ -147,6 +147,31 @@ bool Steam_Networking_Sockets::send_packet_new_connection(HSteamNetConnection m_
     return false;
 }
 
+bool Steam_Networking_Sockets::send_packet_connection_accepted(std::map<HSteamNetConnection, Connect_Socket>::iterator connect_socket)
+{
+    // like send_packet_new_connection, but always acknowledges with CONNECTION_ACCEPTED.
+    // used for "simultaneous open" coalescing: when both peers dial each other on the same
+    // (identity, virtual port), real Steam binds both dials into a single session, so we
+    // bind our existing outgoing connection to the remote's dial and acknowledge it directly,
+    // instead of creating a second, separate (and crossed) connection pair.
+    Common_Message msg;
+    msg.set_source_id(connect_socket->second.created_by.ConvertToUint64());
+    msg.set_allocated_networking_sockets(new Networking_Sockets);
+    msg.mutable_networking_sockets()->set_type(Networking_Sockets::CONNECTION_ACCEPTED);
+    msg.mutable_networking_sockets()->set_virtual_port(connect_socket->second.virtual_port);
+    msg.mutable_networking_sockets()->set_real_port(connect_socket->second.real_port);
+    msg.mutable_networking_sockets()->set_connection_id_from(connect_socket->first);
+    msg.mutable_networking_sockets()->set_connection_id(connect_socket->second.remote_id);
+
+    uint64_t steam_id = connect_socket->second.remote_identity.GetSteamID64();
+    if (steam_id) {
+        msg.set_dest_id(steam_id);
+        return network->sendTo(&msg, true);
+    }
+
+    return false;
+}
+
 std::string Steam_Networking_Sockets::get_version() const
 {
     return version;
@@ -231,7 +256,7 @@ void Steam_Networking_Sockets::set_steamnetconnectioninfo_001(std::map<HSteamNet
     //keep this in mind in future interface updates
 }
 
-void Steam_Networking_Sockets::launch_callback(HSteamNetConnection m_hConn, enum connect_socket_status old_status)
+void Steam_Networking_Sockets::launch_callback(HSteamNetConnection m_hConn, enum connect_socket_status old_status, double cb_timeout)
 {
     auto connect_socket = sbcs->connect_sockets.find(m_hConn);
     if (connect_socket == sbcs->connect_sockets.end()) return;
@@ -240,7 +265,7 @@ void Steam_Networking_Sockets::launch_callback(HSteamNetConnection m_hConn, enum
     data.m_hConn = connect_socket->first;
     data.m_eOldState = convert_status(old_status);
     set_steamnetconnectioninfo(connect_socket, &data.m_info);
-    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), cb_timeout);
 }
 
 
@@ -2233,7 +2258,7 @@ void Steam_Networking_Sockets::Callback(Common_Message *msg)
                 if (connect_socket.second.remote_identity.GetSteamID64() == msg->source_id()) {
                     enum connect_socket_status old_status = connect_socket.second.status;
                     connect_socket.second.status = CONNECT_SOCKET_TIMEDOUT;
-                    launch_callback(connect_socket.first, old_status);
+                    launch_callback(connect_socket.first, old_status, 0.0);
                 }
             }
         }
@@ -2255,10 +2280,37 @@ void Steam_Networking_Sockets::Callback(Common_Message *msg)
             if (conn != sbcs->listen_sockets.end()) {
                 auto connect_socket = std::find_if(sbcs->connect_sockets.begin(), sbcs->connect_sockets.end(), [msg](const auto &in) {return in.second.remote_identity.GetSteamID64() == msg->source_id() && (in.second.status == CONNECT_SOCKET_NOT_ACCEPTED || in.second.status == CONNECT_SOCKET_CONNECTED) && in.second.remote_id == msg->networking_sockets().connection_id_from();});
                 if (connect_socket == sbcs->connect_sockets.end()) {
-                    SteamNetworkingIdentity identity;
-                    identity.SetSteamID64(msg->source_id());
-                    HSteamNetConnection new_connection = new_connect_socket(identity, virtual_port, real_port, CONNECT_SOCKET_NOT_ACCEPTED, conn->socket_id, static_cast<HSteamNetConnection>(msg->networking_sockets().connection_id_from()));
-                    launch_callback(new_connection, CONNECT_SOCKET_NO_CONNECTION);
+                    // "simultaneous open": if we already have an outgoing P2P dial to this peer
+                    // on the same virtual port (still connecting and not yet bound to a remote
+                    // connection), bind it to the remote's dial and acknowledge directly.
+                    // Real Steam coalesces both dials into one session; creating a second,
+                    // independent pair here would cross the data paths (each side would end up
+                    // reading the connection the other side never uses).
+                    auto outgoing_socket = std::find_if(sbcs->connect_sockets.begin(), sbcs->connect_sockets.end(), [&msg, &virtual_port](const auto &in) {
+                        return virtual_port != SNS_DISABLED_PORT
+                            && in.second.listen_socket_id == k_HSteamListenSocket_Invalid
+                            && in.second.remote_identity.GetSteamID64() == msg->source_id()
+                            && in.second.virtual_port == virtual_port
+                            && (in.second.status == CONNECT_SOCKET_CONNECTING || in.second.status == CONNECT_SOCKET_CONNECTED)
+                            && (in.second.remote_id == k_HSteamNetConnection_Invalid || in.second.remote_id == static_cast<HSteamNetConnection>(msg->networking_sockets().connection_id_from()));
+                    });
+                    if (outgoing_socket != sbcs->connect_sockets.end()) {
+                        PRINT_DEBUG("coalescing simultaneous connection request with outgoing connection %u", outgoing_socket->first);
+                        if (outgoing_socket->second.remote_id == k_HSteamNetConnection_Invalid) {
+                            outgoing_socket->second.remote_id = static_cast<HSteamNetConnection>(msg->networking_sockets().connection_id_from());
+                        }
+                        // keep status CONNECTING, it flips to CONNECTED when the remote's ack arrives
+                        send_packet_connection_accepted(outgoing_socket);
+                    } else {
+                        SteamNetworkingIdentity identity;
+                        identity.SetSteamID64(msg->source_id());
+                        HSteamNetConnection new_connection = new_connect_socket(identity, virtual_port, real_port, CONNECT_SOCKET_NOT_ACCEPTED, conn->socket_id, static_cast<HSteamNetConnection>(msg->networking_sockets().connection_id_from()));
+                        launch_callback(new_connection, CONNECT_SOCKET_NO_CONNECTION);
+                    }
+                } else if (connect_socket->second.listen_socket_id == k_HSteamListenSocket_Invalid && connect_socket->second.status == CONNECT_SOCKET_CONNECTED) {
+                    // re-request for an already coalesced/connected outgoing dial:
+                    // our earlier ack may have been lost (plain UDP), re-acknowledge
+                    send_packet_connection_accepted(connect_socket);
                 }
             }
 
@@ -2295,7 +2347,10 @@ void Steam_Networking_Sockets::Callback(Common_Message *msg)
                 if (connect_socket->second.remote_identity.GetSteamID64() == msg->source_id() && connect_socket->second.status == CONNECT_SOCKET_CONNECTED) {
                     enum connect_socket_status old_status = connect_socket->second.status;
                     connect_socket->second.status = CONNECT_SOCKET_CLOSED;
-                    launch_callback(connect_socket->first, old_status);
+                    // Deliver close notifications in this RunCallbacks cycle. Delaying them
+                    // can let the game consume its disconnect payload and tear down its
+                    // connection state before the status callback runs.
+                    launch_callback(connect_socket->first, old_status, 0.0);
                 }
             }
         }

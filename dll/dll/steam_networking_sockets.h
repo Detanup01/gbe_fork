@@ -112,6 +112,7 @@ public ISteamNetworkingSockets
     struct Listen_Socket *get_connection_socket(HSteamListenSocket id);
 
     bool send_packet_new_connection(HSteamNetConnection m_hConn);
+    bool send_packet_connection_accepted(std::map<HSteamNetConnection, Connect_Socket>::iterator connect_socket);
 
     HSteamListenSocket new_listen_socket(int nSteamConnectVirtualPort, int real_port);
 
@@ -121,7 +122,7 @@ public ISteamNetworkingSockets
     void set_steamnetconnectioninfo_001(std::map<HSteamNetConnection, Connect_Socket>::iterator connect_socket, SteamNetConnectionInfo001_t* pInfo);
 
 
-    void launch_callback(HSteamNetConnection m_hConn, enum connect_socket_status old_status);
+    void launch_callback(HSteamNetConnection m_hConn, enum connect_socket_status old_status, double cb_timeout = DEFAULT_CB_TIMEOUT);
 
     void Callback(Common_Message *msg);
 
