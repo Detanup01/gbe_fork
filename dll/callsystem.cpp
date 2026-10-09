@@ -94,14 +94,15 @@ void SteamCallResults::rmCallCompleted(class CCallbackBase *cb)
     }
 }
 
-void SteamCallResults::addCallBack(SteamAPICall_t api_call, class CCallbackBase *cb)
+bool SteamCallResults::addCallBack(SteamAPICall_t api_call, class CCallbackBase *cb)
 {
     auto cb_result = std::find_if(callresults.begin(), callresults.end(), [api_call](struct Steam_Call_Result const& item) { return item.api_call == api_call; });
-    if (cb_result != callresults.end()) {
-        cb_result->callbacks.push_back(cb);
-        CCallbackMgr::SetRegister(cb, cb->GetICallback());
-        PRINT_DEBUG("new cb for call result [api id=%llu, result k_iCallback=%i] %p", api_call, cb ? (cb->GetICallback()) : -1, cb);
-    }
+    if (cb_result == callresults.end() || cb_result->to_delete) return false;
+
+    cb_result->callbacks.push_back(cb);
+    CCallbackMgr::SetRegister(cb, cb->GetICallback());
+    PRINT_DEBUG("new cb for call result [api id=%llu, result k_iCallback=%i] %p", api_call, cb ? (cb->GetICallback()) : -1, cb);
+    return true;
 }
 
 bool SteamCallResults::exists(SteamAPICall_t api_call) const
@@ -318,6 +319,9 @@ void SteamCallResults::runCallResults()
 
 
 
+static constexpr size_t UNHANDLED_CB_RESULTS_LIMIT = 8;
+static constexpr double UNHANDLED_CB_RESULTS_TIMEOUT = 1.0;
+
 SteamCallBacks::SteamCallBacks(SteamCallResults *results)
 {
     this->results = results;
@@ -332,42 +336,68 @@ void SteamCallBacks::addCallBack(int iCallback, class CCallbackBase *cb)
         return;
     }
 
-    if (std::find(callbacks[iCallback].callbacks.begin(), callbacks[iCallback].callbacks.end(), cb) == callbacks[iCallback].callbacks.end()) {
-        callbacks[iCallback].callbacks.push_back(cb);
+    auto &cb_back = callbacks[iCallback];
+    if (std::find(cb_back.callbacks.begin(), cb_back.callbacks.end(), cb) == cb_back.callbacks.end()) {
+        cb_back.callbacks.push_back(cb);
         PRINT_DEBUG("new cb for callback [result k_iCallback=%i] %p", iCallback, cb);
         CCallbackMgr::SetRegister(cb, iCallback);
-        for (auto & res: callbacks[iCallback].results) {
-            //TODO: timeout?
-            SteamAPICall_t api_id = results->addCallResult(iCallback, &(res[0]), static_cast<unsigned long>(res.size()), 0.0, false);
-            results->addCallBack(api_id, cb);
+
+        auto pending_results = std::move(cb_back.pending_results);
+        cb_back.pending_results.clear();
+        auto now = std::chrono::high_resolution_clock::now();
+        size_t replayed = 0;
+        for (auto &pending_result : pending_results) {
+            if (!check_timedout(pending_result.created, UNHANDLED_CB_RESULTS_TIMEOUT, now)) {
+                // Reuse the already queued callback result when it is still pending;
+                // otherwise recreate it so a late registration still receives it once.
+                if (!results->addCallBack(pending_result.api_id, cb)) {
+                    SteamAPICall_t api_id = results->addCallResult(iCallback, pending_result.result.data(), static_cast<unsigned long>(pending_result.result.size()), 0.0, false);
+                    results->addCallBack(api_id, cb);
+                }
+
+                ++replayed;
+            }
         }
+
+        if (replayed) PRINT_DEBUG("replaying %zu unhandled cb results for %i", replayed, iCallback);
     }
 }
 
 void SteamCallBacks::addCBResult(int iCallback, void *result, unsigned int size, double timeout, bool dont_post_if_already)
 {
+    auto &cb_back = callbacks[iCallback];
     if (dont_post_if_already) {
-        for (auto & r : callbacks[iCallback].results) {
-            if (r.size() == size) {
-                if (memcmp(&(r[0]), result, size) == 0) {
-                    //cb already posted
-                    return;
-                }
+        for (auto &pending_result : cb_back.pending_results) {
+            if (pending_result.result.size() == size && memcmp(pending_result.result.data(), result, size) == 0) {
+                //cb already posted
+                return;
             }
         }
     }
 
-    std::vector<char> temp{};
-    temp.resize(size);
-    memcpy(&(temp[0]), result, size);
-    callbacks[iCallback].results.push_back(temp);
-    for (auto cb: callbacks[iCallback].callbacks) {
-        SteamAPICall_t api_id = results->addCallResult(iCallback, result, size, timeout, false);
-        results->addCallBack(api_id, cb);
+    SteamAPICall_t api_id = k_uAPICallInvalid;
+    if (cb_back.callbacks.empty()) {
+        // Keep one callback result in the regular result queue even before the game
+        // registers its callback. If registration happens within the short pending
+        // window below, attach it to this result rather than queueing it again.
+        api_id = results->addCallResult(iCallback, result, size, timeout, false);
+    } else {
+        for (auto cb: cb_back.callbacks) {
+            SteamAPICall_t current_api_id = results->addCallResult(iCallback, result, size, timeout, false);
+            results->addCallBack(current_api_id, cb);
+            if (api_id == k_uAPICallInvalid) api_id = current_api_id;
+        }
     }
 
-    if (callbacks[iCallback].callbacks.empty()) {
-        results->addCallResult(iCallback, result, size, timeout, false);
+    Steam_Call_Back_Pending_Result pending_result{};
+    pending_result.api_id = api_id;
+    pending_result.result.resize(size);
+    memcpy(pending_result.result.data(), result, size);
+    pending_result.created = std::chrono::high_resolution_clock::now();
+    cb_back.pending_results.push_back(std::move(pending_result));
+
+    if (cb_back.pending_results.size() > UNHANDLED_CB_RESULTS_LIMIT) {
+        cb_back.pending_results.erase(cb_back.pending_results.begin(), cb_back.pending_results.end() - UNHANDLED_CB_RESULTS_LIMIT);
     }
 }
 
@@ -405,8 +435,19 @@ void SteamCallBacks::rmCallBack(int iCallback, class CCallbackBase *cb)
 
 void SteamCallBacks::runCallBacks()
 {
-    for (auto & c : callbacks) {
-        c.second.results.clear();
+    auto now = std::chrono::high_resolution_clock::now();
+    for (auto &c : callbacks) {
+        if (!c.second.callbacks.empty()) {
+            c.second.pending_results.clear();
+            continue;
+        }
+
+        auto &pending_results = c.second.pending_results;
+        pending_results.erase(
+            std::remove_if(pending_results.begin(), pending_results.end(), [now](const Steam_Call_Back_Pending_Result &pending_result) {
+                return check_timedout(pending_result.created, UNHANDLED_CB_RESULTS_TIMEOUT, now);
+            }),
+            pending_results.end());
     }
 }
 
