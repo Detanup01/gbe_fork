@@ -462,6 +462,8 @@ void Steam_Overlay::create_fonts()
         font_builder.AddText(translationPlaytimeCheckbox[i]);
         font_builder.AddText(translationPlaytimeDisplay[i]);
         font_builder.AddText(translationUserInfo[i]);
+        font_builder.AddText(translationSteamId[i]);
+        font_builder.AddText(translationAppId[i]);
         font_builder.AddText(translationBackToGame[i]);
         font_builder.AddText(translationPlaytimeLabelLine[i]);
         font_builder.AddText(translationNoFriends[i]);
@@ -1869,7 +1871,7 @@ void Steam_Overlay::overlay_render_proc()
 
     if (stats.show_any_stats()) {
         // below the clock and the date of the overlay's top bar while it is shown
-        stats.top_inset = show_overlay ? std::floor(ImGui::GetFontSize() * 5.0f) : 0.0f;
+        stats.top_inset = show_overlay ? std::floor(ImGui::GetFontSize() * 4.5f) : 0.0f;
         stats.render_stats(current_language);
     }
 
@@ -2165,10 +2167,11 @@ void Steam_Overlay::render_main_window()
 #else
             localtime_r(&now_time, &now_tm);
 #endif
+            // 24-hour clock and the day before the month, written out: readable wherever the user is from
             char clock_buf[16]{};
-            std::strftime(clock_buf, sizeof(clock_buf), "%I:%M %p", &now_tm);
+            std::strftime(clock_buf, sizeof(clock_buf), "%H:%M", &now_tm);
             char date_buf[64]{};
-            std::strftime(date_buf, sizeof(date_buf), "%a, %B %d, %Y", &now_tm);
+            std::strftime(date_buf, sizeof(date_buf), "%a, %d %B %Y", &now_tm);
 
             ImGui::SetCursorPos(ImVec2(pad, pad));
             ImGui::BeginGroup();
@@ -2300,10 +2303,15 @@ void Steam_Overlay::render_main_window()
             ImGui::SetNextWindowPos(ImVec2(left_x, left_top_y), ImGuiCond_FirstUseEver);
             ImGui::SetNextWindowBgAlpha(1.0f);
             if (ImGui::Begin(translationUserInfo[current_language], &show_user_info, ImGuiWindowFlags_NoCollapse)) {
-                ImGui::TextWrapped(translationUserPlaying[current_language],
-                    settings->get_local_name(),
-                    settings->get_local_steam_id().ConvertToUint64(),
-                    settings->get_local_game_id().AppID());
+                // one line per value: a dim label, then the value
+                auto info_line = [](const char *label, const std::string &value) {
+                    ImGui::TextDisabled("%s", label);
+                    ImGui::SameLine();
+                    ImGui::TextWrapped("%s", value.c_str());
+                };
+                info_line(translationUsername[current_language], settings->get_local_name());
+                info_line(translationSteamId[current_language], std::to_string(settings->get_local_steam_id().ConvertToUint64()));
+                info_line(translationAppId[current_language], std::to_string(settings->get_local_game_id().AppID()));
 
                 if (settings->record_playtime && playtime_counter && settings->overlay_appearance.show_playtime_in_user_info) {
                     uint64_t session_sec = playtime_counter->session_seconds();
@@ -2320,6 +2328,9 @@ void Steam_Overlay::render_main_window()
                     snprintf(total_buf, sizeof(total_buf), translationTotalTime[current_language], total_h, total_m);
                     snprintf(session_buf, sizeof(session_buf), "%02u:%02u:%02u", hh, mm, ss);
 
+                    ImGui::Spacing();
+                    ImGui::Separator();
+                    ImGui::Spacing();
                     ImGui::TextWrapped(translationTotalTimeText[current_language], total_buf, session_buf);
                 }
             }
@@ -2342,7 +2353,7 @@ void Steam_Overlay::render_main_window()
                 if (notification_history.empty()) {
                     ImGui::TextDisabled(translationNoNotification[current_language]);
                 } else {
-                    ImGui::BeginChild("##history_scroll", ImGui::GetContentRegionAvail(), true);
+                    ImGui::BeginChild("##history_scroll", ImGui::GetContentRegionAvail(), ImGuiChildFlags_None);
 
                     // Rebuild cache only when history actually changes
                     if (notification_history_cache_dirty) {
@@ -2384,11 +2395,12 @@ void Steam_Overlay::render_main_window()
                                 }
                             }
 
+                            // time, kind and message separated by tabs: they are drawn in different styles below
                             std::string line = (std::ostringstream{}
-                                << "[" << std::setw(2) << std::setfill('0') << hr << ":"
+                                << std::setw(2) << std::setfill('0') << hr << ":"
                                 << std::setw(2) << std::setfill('0') << min << ":"
-                                << std::setw(2) << std::setfill('0') << sec << "] "
-                                << type_label << "  "
+                                << std::setw(2) << std::setfill('0') << sec << '\t'
+                                << type_label << '\t'
                                 << display_msg).str();
 
                             notification_history_cache.push_back(std::move(line));
@@ -2396,10 +2408,21 @@ void Steam_Overlay::render_main_window()
                         notification_history_cache_dirty = false;
                     }
 
-                    // Render from cache
+                    // Render from cache: the time (dim) and the kind (accent color) on one line, the message under them
                     for (const auto &line : notification_history_cache) {
-                        ImGui::TextWrapped("%s", line.c_str());
+                        const size_t time_end = line.find('\t');
+                        const size_t kind_end = time_end == std::string::npos ? std::string::npos : line.find('\t', time_end + 1);
+                        if (kind_end == std::string::npos) {
+                            ImGui::TextWrapped("%s", line.c_str());
+                        } else {
+                            ImGui::TextDisabled("%.*s", (int)time_end, line.c_str());
+                            ImGui::SameLine();
+                            ImGui::TextColored(ImVec4(0.102f, 0.624f, 1.0f, 1.0f), "%.*s", (int)(kind_end - time_end - 1), line.c_str() + time_end + 1);
+                            ImGui::TextWrapped("%s", line.c_str() + kind_end + 1);
+                        }
+                        ImGui::Spacing();
                         ImGui::Separator();
+                        ImGui::Spacing();
                     }
                     ImGui::EndChild();
                 }
@@ -2481,8 +2504,9 @@ void Steam_Overlay::render_main_window()
                     ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.239f, 0.267f, 0.314f, 1.0f)); // #3d4450
                     ImGui::ProgressBar(fraction, ImVec2(-1.0f, 6.0f), "");
                     ImGui::PopStyleColor();
+                    ImGui::Spacing();
                 }
-                ImGui::Text("%s", translationListOfAchievements[current_language]);
+                ImGui::TextDisabled("%s", translationListOfAchievements[current_language]);
                 ImGui::BeginChild(translationAchievements[current_language]);
 
                 // Build sorted index lists: unlocked by time desc, locked in API order
@@ -2678,7 +2702,7 @@ void Steam_Overlay::render_main_window()
             float settings_h = left_h;
             if (settings->overlay_show_button_settings) {
                 // the user name and the language need more room: down to the toolbar if needed
-                settings_h = (std::max)(left_h, (std::min)(fs * 36.0f, toolbar_y - pad - settings_y));
+                settings_h = (std::max)(left_h, (std::min)(fs * 38.0f, toolbar_y - pad - settings_y));
             }
             ImGui::SetNextWindowSizeConstraints(left_min_size, ImVec2(8192, 8192));
             ImGui::SetNextWindowSize(ImVec2(left_w, settings_h), ImGuiCond_FirstUseEver);
@@ -2718,13 +2742,15 @@ void Steam_Overlay::render_main_window()
 
                     ImGui::Separator();
 
+                    // the fields go under their labels and fill the panel: some translations of the labels are long
                     ImGui::Text("%s", translationUsername[current_language]);
-                    ImGui::SameLine();
+                    ImGui::SetNextItemWidth(-FLT_MIN);
                     ImGui::InputText("##username", username_text, sizeof(username_text), 0);
 
                     ImGui::Separator();
 
                     ImGui::Text("%s", translationLanguage[current_language]);
+                    ImGui::SetNextItemWidth(-FLT_MIN);
                     ImGui::ListBox("##language", &current_language, valid_languages, sizeof(valid_languages) / sizeof(valid_languages[0]), 7);
                     ImGui::Text(translationSelectedLanguage[current_language], valid_languages[current_language]);
 
@@ -2766,26 +2792,29 @@ void Steam_Overlay::render_main_window()
 
         bool show_warning = warn_local_save || warn_bad_appid;
         if (show_warning) {
-            ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 32, ImGui::GetFontSize() * 32), ImVec2(8192, 8192));
+            // as wide as before, as tall as its text
+            ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 32, 0.0f), ImVec2(8192, 8192));
+            ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 32, 0.0f), ImGuiCond_FirstUseEver);
             ImGui::SetNextWindowFocus();
             ImGui::SetNextWindowBgAlpha(1.0f);
             ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.35f), ImGuiCond_FirstUseEver, ImVec2(0.5f, 0.5f));
             if (ImGui::Begin(translationWarning[current_language], &show_warning, ImGuiWindowFlags_NoCollapse)) {
+                const ImVec4 warning_color(0.937f, 0.325f, 0.314f, 1.0f); // a red that stays readable on the dark panel
                 if (warn_bad_appid) {
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255),
+                    ImGui::TextColored(warning_color,
                         "%s %s %s",
                         translationWarning[current_language], translationWarning[current_language], translationWarning[current_language]);
                     ImGui::TextWrapped("%s", translationWarningDescription_badAppid[current_language]);
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255),
+                    ImGui::TextColored(warning_color,
                         "%s %s %s",
                         translationWarning[current_language], translationWarning[current_language], translationWarning[current_language]);
                 }
                 if (warn_local_save) {
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255),
+                    ImGui::TextColored(warning_color,
                         "%s %s %s",
                         translationWarning[current_language], translationWarning[current_language], translationWarning[current_language]);
                     ImGui::TextWrapped("%s", translationWarningDescription_localSave[current_language]);
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255),
+                    ImGui::TextColored(warning_color,
                         "%s %s %s",
                         translationWarning[current_language], translationWarning[current_language], translationWarning[current_language]);
                 }
@@ -3674,16 +3703,17 @@ void Steam_Overlay::render_gallery_window()
                     ImGui::EndPopup();
                 }
 
-                // Checkbox with text beside it, width limited to thumbnail width
+                // Checkbox with text beside it, width limited to the cell
                 // (with an outline, on the dark panel it is hard to see without one)
                 ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
                 ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
                 ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.36f, 0.40f, 0.47f, 1.0f));
                 ImGui::Checkbox("##sel", &item.selected);
                 ImGui::PopStyleColor();
+                ImGui::SameLine(0, ImGui::GetStyle().ItemInnerSpacing.x);
+                ImGui::AlignTextToFramePadding(); // centered on the checkbox
                 ImGui::PopStyleVar(2);
-                ImGui::SameLine(0, 0);
-                ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + thumb_width);
+                ImGui::PushTextWrapPos(0.0f); // the whole cell: a default name fits on one line
                 // Show filename (without .png extension) below thumbnail
                 {
                     std::string label = item.filename;

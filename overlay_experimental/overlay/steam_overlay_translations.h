@@ -7802,6 +7802,199 @@ const char translationUserInfo[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
 
 };
 
+// labels of the user info panel
+const char translationSteamId[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"Steam ID:",
+
+	// 1 - Arabic
+  u8"Steam ID:",
+
+	// 2 - Bulgarian
+  u8"Steam ID:",
+
+	// 3 - Simplified Chinese
+  u8"Steam ID:",
+
+	// 4 - Traditional Chinese
+  u8"Steam ID:",
+
+	// 5 - Czech
+  u8"Steam ID:",
+
+	// 6 - Danish
+  u8"Steam ID:",
+
+	// 7 - Dutch
+  u8"Steam ID:",
+
+	// 8 - Finnish
+  u8"Steam ID:",
+
+	// 9 - French
+  u8"Steam ID:",
+
+	// 10 - German
+  u8"Steam ID:",
+
+	// 11 - Greek
+  u8"Steam ID:",
+
+	// 12 - Hungarian
+  u8"Steam ID:",
+
+	// 13 - Italian
+  u8"Steam ID:",
+
+	// 14 - Japanese
+  u8"Steam ID:",
+
+	// 15 - Korean
+  u8"Steam ID:",
+
+	// 16 - Norwegian
+  u8"Steam ID:",
+
+	// 17 - Polish
+  u8"Steam ID:",
+
+	// 18 - Portuguese
+  u8"Steam ID:",
+
+	// 19 - Brazilian Portuguese
+  u8"Steam ID:",
+
+	// 20 - Romanian
+  u8"Steam ID:",
+
+	// 21 - Russian
+  u8"Steam ID:",
+
+	// 22 - Spanish
+  u8"Steam ID:",
+
+	// 23 - Latin American
+  u8"Steam ID:",
+
+	// 24 - Swedish
+  u8"Steam ID:",
+
+	// 25 - Thai
+  u8"Steam ID:",
+
+	// 26 - Turkish
+  u8"Steam ID:",
+
+	// 27 - Ukrainian
+  u8"Steam ID:",
+
+	// 28 - Vietnamese
+  u8"Steam ID:",
+
+	// 29 - Croatian
+  u8"Steam ID:",
+
+  // 30 - Indonesian
+  u8"Steam ID:",
+
+};
+
+const char translationAppId[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"App ID:",
+
+	// 1 - Arabic
+  u8"App ID:",
+
+	// 2 - Bulgarian
+  u8"App ID:",
+
+	// 3 - Simplified Chinese
+  u8"App ID:",
+
+	// 4 - Traditional Chinese
+  u8"App ID:",
+
+	// 5 - Czech
+  u8"App ID:",
+
+	// 6 - Danish
+  u8"App ID:",
+
+	// 7 - Dutch
+  u8"App ID:",
+
+	// 8 - Finnish
+  u8"App ID:",
+
+	// 9 - French
+  u8"App ID:",
+
+	// 10 - German
+  u8"App ID:",
+
+	// 11 - Greek
+  u8"App ID:",
+
+	// 12 - Hungarian
+  u8"App ID:",
+
+	// 13 - Italian
+  u8"App ID:",
+
+	// 14 - Japanese
+  u8"App ID:",
+
+	// 15 - Korean
+  u8"App ID:",
+
+	// 16 - Norwegian
+  u8"App ID:",
+
+	// 17 - Polish
+  u8"App ID:",
+
+	// 18 - Portuguese
+  u8"App ID:",
+
+	// 19 - Brazilian Portuguese
+  u8"App ID:",
+
+	// 20 - Romanian
+  u8"App ID:",
+
+	// 21 - Russian
+  u8"App ID:",
+
+	// 22 - Spanish
+  u8"App ID:",
+
+	// 23 - Latin American
+  u8"App ID:",
+
+	// 24 - Swedish
+  u8"App ID:",
+
+	// 25 - Thai
+  u8"App ID:",
+
+	// 26 - Turkish
+  u8"App ID:",
+
+	// 27 - Ukrainian
+  u8"App ID:",
+
+	// 28 - Vietnamese
+  u8"App ID:",
+
+	// 29 - Croatian
+  u8"App ID:",
+
+  // 30 - Indonesian
+  u8"App ID:",
+
+};
+
 // top bar of the overlay, next to the button that closes it
 const char translationBackToGame[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
