@@ -1870,8 +1870,10 @@ void Steam_Overlay::overlay_render_proc()
     }
 
     if (stats.show_any_stats()) {
-        // below the clock and the date of the overlay's top bar while it is shown
-        stats.top_inset = show_overlay ? std::floor(ImGui::GetFontSize() * 4.5f) : 0.0f;
+        // below the lines of the overlay's top bar while it is shown (one more when it shows the playtime)
+        float top_inset = std::floor(ImGui::GetFontSize() * 4.5f);
+        if (settings->record_playtime && playtime_counter) top_inset += ImGui::GetTextLineHeightWithSpacing();
+        stats.top_inset = show_overlay ? top_inset : 0.0f;
         stats.render_stats(current_language);
     }
 
@@ -1984,8 +1986,22 @@ uint32 Steam_Overlay::apply_global_style_color()
 // Try to make this function as short as possible or it might affect game's fps.
 void Steam_Overlay::render_main_window()
 {
+    // the graphics API the overlay hooked, by its short name (the library name is the full path of a DLL)
+    const char *renderer_name = "Unknown";
+    if (_renderer != nullptr) {
+        switch (_renderer->GetRendererHookType()) {
+            case InGameOverlay::RendererHookType_t::DirectX9:  renderer_name = "DX9";    break;
+            case InGameOverlay::RendererHookType_t::DirectX10: renderer_name = "DX10";   break;
+            case InGameOverlay::RendererHookType_t::DirectX11: renderer_name = "DX11";   break;
+            case InGameOverlay::RendererHookType_t::DirectX12: renderer_name = "DX12";   break;
+            case InGameOverlay::RendererHookType_t::OpenGL:    renderer_name = "OpenGL"; break;
+            case InGameOverlay::RendererHookType_t::Vulkan:    renderer_name = "Vulkan"; break;
+            case InGameOverlay::RendererHookType_t::Metal:     renderer_name = "Metal";  break;
+            default: break;
+        }
+    }
     char tmp[TRANSLATION_BUFFER_SIZE]{};
-    snprintf(tmp, sizeof(tmp), translationRenderer[current_language], (_renderer == nullptr ? "Unknown" : _renderer->GetLibraryName()));
+    snprintf(tmp, sizeof(tmp), translationRenderer[current_language], renderer_name);
     std::string windowTitle{};
     // Note: don't translate this, project and author names are nouns, they must be kept intact for proper referral
     // think of it as translating "Protobuf - Google"
@@ -2130,7 +2146,8 @@ void Steam_Overlay::render_main_window()
         const float pad = std::floor(fs * 0.9f + 0.5f);
         const float tile = std::floor(fs * 2.5f + 0.5f); // edge of a toolbar button
         const float top_y = std::floor(fs * 5.5f);
-        const float left_top_y = std::floor(fs * 8.2f);
+        // (one line lower when the top bar also shows the playtime)
+        const float left_top_y = std::floor(fs * 8.2f) + (settings->record_playtime && playtime_counter ? ImGui::GetTextLineHeightWithSpacing() : 0.0f);
         const float toolbar_y = std::floor(io.DisplaySize.y - std::floor(pad * 2.5f + 0.5f) - tile);
         const float room_h = (std::max)(fs * 10.0f, toolbar_y - pad - top_y);
         const float right_h = (std::min)(fs * 20.0f, (room_h - pad) * 0.5f); // Friends and History share the right column
@@ -2158,7 +2175,7 @@ void Steam_Overlay::render_main_window()
         const bool show_stats_checkboxes = settings->overlay_show_checkbox_fps ||
             settings->overlay_show_checkbox_frametime || settings->overlay_show_checkbox_playtime;
 
-        // top bar, left: the clock, the date and the playtime of this session
+        // top bar, left: the clock, the date, the playtime of this session and the renderer
         {
             time_t now_time = time(nullptr);
             struct tm now_tm{};
@@ -2167,11 +2184,11 @@ void Steam_Overlay::render_main_window()
 #else
             localtime_r(&now_time, &now_tm);
 #endif
-            // 24-hour clock and the day before the month, written out: readable wherever the user is from
+            // a 24-hour clock and a date in numbers, day first: strftime writes the names of days and months in English only
             char clock_buf[16]{};
             std::strftime(clock_buf, sizeof(clock_buf), "%H:%M", &now_tm);
             char date_buf[64]{};
-            std::strftime(date_buf, sizeof(date_buf), "%a, %d %B %Y", &now_tm);
+            std::strftime(date_buf, sizeof(date_buf), "%d.%m.%Y", &now_tm);
 
             ImGui::SetCursorPos(ImVec2(pad, pad));
             ImGui::BeginGroup();
@@ -2186,6 +2203,7 @@ void Steam_Overlay::render_main_window()
                 unsigned hh = static_cast<unsigned>(session_sec / 3600);
                 ImGui::Text(translationPlaytimeLabelLine[current_language], hh, mm, ss);
             }
+            ImGui::TextUnformatted(tmp); // "Renderer: DX11" and so on, formatted at the start of this function
             ImGui::PopStyleColor();
             ImGui::EndGroup();
         }
