@@ -11,6 +11,7 @@
 #include <string>
 #include <sstream>
 #include <cctype>
+#include <cstring>
 #include <cmath>
 #include <utility>
 #include <unordered_set>
@@ -21,6 +22,9 @@
 
 #ifdef __WINDOWS__
 #include <shellapi.h>
+#elif defined(__LINUX__)
+#include <langinfo.h> // the system's date format
+#include <locale.h>
 #endif
 
 #include "InGameOverlay/RendererDetector.h"
@@ -465,6 +469,11 @@ void Steam_Overlay::create_fonts()
         font_builder.AddText(translationSteamId[i]);
         font_builder.AddText(translationAppId[i]);
         font_builder.AddText(translationBackToGame[i]);
+        font_builder.AddText(translationClockTooltip[i]);
+        font_builder.AddText(translationDateTooltip[i]);
+        font_builder.AddText(translationDay[i]);
+        font_builder.AddText(translationMonth[i]);
+        font_builder.AddText(translationYear[i]);
         font_builder.AddText(translationPlaytimeLabelLine[i]);
         font_builder.AddText(translationNoFriends[i]);
         font_builder.AddText(translationNoAchievementsConfigured[i]);
@@ -1870,10 +1879,8 @@ void Steam_Overlay::overlay_render_proc()
     }
 
     if (stats.show_any_stats()) {
-        // below the lines of the overlay's top bar while it is shown (one more when it shows the playtime)
-        float top_inset = std::floor(ImGui::GetFontSize() * 4.5f);
-        if (settings->record_playtime && playtime_counter) top_inset += ImGui::GetTextLineHeightWithSpacing();
-        stats.top_inset = show_overlay ? top_inset : 0.0f;
+        // (while the overlay is shown, render_main_window() keeps it below the lines of the top bar)
+        if (!show_overlay) stats.top_inset = 0.0f;
         stats.render_stats(current_language);
     }
 
@@ -2114,6 +2121,78 @@ void Steam_Overlay::render_main_window()
         }
     };
 
+    // the clock and the date look like a seven-segment display: digits, ':', '.', '/', '-' and spaces, `h` pixels tall.
+    // The segments that are off stay faintly visible, like on a real display. `extra` pixels are shared out between the
+    // characters, to fill a given width. Returns the width of the text; without a draw list it only measures it
+    auto draw_segments = [](ImDrawList *dl, ImVec2 pos, float h, const char *text, ImU32 on, ImU32 off, float extra) {
+        // the segments of the digits 0..9: bit 0 is the top one, then clockwise around the digit, bit 6 is the middle one
+        static const unsigned char digit_segments[10] = { 0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F };
+        const float t = (std::max)(2.0f, std::floor(h * 0.14f + 0.5f)); // thickness of a segment
+        const float w = std::floor(h * 0.56f + 0.5f); // width of a digit
+        const float space = std::floor(h * 0.2f + 0.5f); // between two characters
+        const float notch = t * 0.2f; // between two segments
+        // a segment with pointed ends: across from x0 to x1 at the height yc, or down from y0 to y1 at xc
+        auto across = [&](float x0, float x1, float yc, ImU32 col) {
+            const ImVec2 pts[6] = {
+                ImVec2(x0 + notch, yc), ImVec2(x0 + t * 0.5f + notch, yc - t * 0.5f), ImVec2(x1 - t * 0.5f - notch, yc - t * 0.5f),
+                ImVec2(x1 - notch, yc), ImVec2(x1 - t * 0.5f - notch, yc + t * 0.5f), ImVec2(x0 + t * 0.5f + notch, yc + t * 0.5f),
+            };
+            dl->AddConvexPolyFilled(pts, 6, col);
+        };
+        auto down = [&](float xc, float y0, float y1, ImU32 col) {
+            const ImVec2 pts[6] = {
+                ImVec2(xc, y0 + notch), ImVec2(xc + t * 0.5f, y0 + t * 0.5f + notch), ImVec2(xc + t * 0.5f, y1 - t * 0.5f - notch),
+                ImVec2(xc, y1 - notch), ImVec2(xc - t * 0.5f, y1 - t * 0.5f - notch), ImVec2(xc - t * 0.5f, y0 + t * 0.5f + notch),
+            };
+            dl->AddConvexPolyFilled(pts, 6, col);
+        };
+        const float top = pos.y + t * 0.5f, middle = pos.y + h * 0.5f, bottom = pos.y + h - t * 0.5f;
+        const float gaps = (std::max)(1.0f, static_cast<float>(std::strlen(text)) - 1.0f);
+        float x = pos.x, gap_index = 0.0f;
+        for (const char *c = text; *c; ++c) {
+            if (c != text) {
+                x += space + std::floor(extra * (gap_index + 1.0f) / gaps) - std::floor(extra * gap_index / gaps);
+                gap_index += 1.0f;
+            }
+            if (*c >= '0' && *c <= '9') {
+                if (dl) {
+                    const unsigned char s = digit_segments[*c - '0'];
+                    const float left = x + t * 0.5f, right = x + w - t * 0.5f;
+                    across(left, right, top, (s & 0x01) ? on : off);
+                    down(right, top, middle, (s & 0x02) ? on : off);
+                    down(right, middle, bottom, (s & 0x04) ? on : off);
+                    across(left, right, bottom, (s & 0x08) ? on : off);
+                    down(left, middle, bottom, (s & 0x10) ? on : off);
+                    down(left, top, middle, (s & 0x20) ? on : off);
+                    across(left, right, middle, (s & 0x40) ? on : off);
+                }
+                x += w;
+            } else if (*c == ':' || *c == '.') {
+                if (dl && *c == ':') {
+                    dl->AddRectFilled(ImVec2(x, std::floor(pos.y + h * 0.3f - t * 0.5f)), ImVec2(x + t, std::floor(pos.y + h * 0.3f + t * 0.5f)), on);
+                    dl->AddRectFilled(ImVec2(x, std::floor(pos.y + h * 0.7f - t * 0.5f)), ImVec2(x + t, std::floor(pos.y + h * 0.7f + t * 0.5f)), on);
+                } else if (dl) {
+                    dl->AddRectFilled(ImVec2(x, pos.y + h - t), ImVec2(x + t, pos.y + h), on);
+                }
+                x += t;
+            } else if (*c == '-') {
+                const float dash = std::floor(w * 0.6f + 0.5f);
+                if (dl) across(x, x + dash, middle, on);
+                x += dash;
+            } else if (*c == '/') {
+                const float slash = std::floor(w * 0.5f + 0.5f);
+                if (dl) {
+                    const ImVec2 pts[4] = { ImVec2(x + slash - t, pos.y), ImVec2(x + slash, pos.y), ImVec2(x + t, pos.y + h), ImVec2(x, pos.y + h) };
+                    dl->AddConvexPolyFilled(pts, 4, on);
+                }
+                x += slash;
+            } else {
+                x += std::floor(w * 0.5f + 0.5f); // a space
+            }
+        }
+        return x - pos.x;
+    };
+
     ImGui::SetNextWindowPos({ 0, 0 });
     ImGui::SetNextWindowSize({ io.DisplaySize.x, io.DisplaySize.y });
     // the main window only holds the top bar and the toolbar: the game shows through a dimmed backdrop
@@ -2146,8 +2225,106 @@ void Steam_Overlay::render_main_window()
         const float pad = std::floor(fs * 0.9f + 0.5f);
         const float tile = std::floor(fs * 2.5f + 0.5f); // edge of a toolbar button
         const float top_y = std::floor(fs * 5.5f);
-        // (one line lower when the top bar also shows the playtime)
-        const float left_top_y = std::floor(fs * 8.2f) + (settings->record_playtime && playtime_counter ? ImGui::GetTextLineHeightWithSpacing() : 0.0f);
+
+        // top bar, left (drawn further below): the clock, the date, the playtime of this session and the renderer.
+        // The clock and the date look like a seven-segment display, the clock as wide as the date: together a rectangle
+        time_t now_time = time(nullptr);
+        struct tm now_tm{};
+#ifdef _MSC_VER
+        localtime_s(&now_tm, &now_time);
+#else
+        localtime_r(&now_time, &now_tm);
+#endif
+        // the clock: hours and minutes of the local time, 24-hour
+        char clock_buf[16]{};
+        std::strftime(clock_buf, sizeof(clock_buf), "%H:%M", &now_tm);
+
+        // the date: the day, the month and the year as numbers, in the order and with the separators of the system's
+        // short date format (a month written as a name is shown as a number too). The format is read once, written
+        // with the letters d, M and y
+        static const std::string date_format = []() {
+            std::string format{};
+#if defined(__WINDOWS__)
+            wchar_t buf[80]{};
+            if (GetLocaleInfoW(LOCALE_USER_DEFAULT, LOCALE_SSHORTDATE, buf, 80) > 0) {
+                bool quoted = false; // text between quotes is not a part of the date
+                for (const wchar_t *c = buf; *c; ++c) {
+                    if (*c == L'\'') quoted = !quoted;
+                    else if (!quoted && *c < 0x80) format += static_cast<char>(*c);
+                }
+            }
+#elif defined(__LINUX__)
+            locale_t loc = newlocale(LC_TIME_MASK, "", static_cast<locale_t>(0));
+            if (loc) {
+                // a strftime format, such as "%d.%m.%Y"
+                for (const char *c = nl_langinfo_l(D_FMT, loc); *c; ++c) {
+                    if (*c != '%' || !c[1]) {
+                        if (static_cast<unsigned char>(*c) < 0x80) format += *c;
+                        continue;
+                    }
+                    switch (*++c) {
+                        case 'd': format += "dd"; break;
+                        case 'e': format += "d"; break;
+                        case 'm': case 'b': case 'B': case 'h': format += "MM"; break;
+                        case 'Y': format += "yyyy"; break;
+                        case 'y': format += "yy"; break;
+                        case 'D': format += "MM/dd/yy"; break;
+                        case 'F': format += "yyyy-MM-dd"; break;
+                        default: break; // the day of the week and the like are not shown
+                    }
+                }
+                freelocale(loc);
+            }
+#endif
+            // ISO 8601 when the system's format can't be read
+            return format.find_first_of("dMy") == std::string::npos ? std::string("yyyy-MM-dd") : format;
+        }();
+        // the numbers with the separators between them, and the names of the parts in the same order for the tooltip.
+        // The day and the month always have two digits: the date keeps its width, and so does the clock
+        std::string date_text{}, date_parts{}, separator{};
+        for (size_t i = 0; i < date_format.size();) {
+            const char letter = date_format[i];
+            size_t count = 1;
+            while (i + count < date_format.size() && date_format[i + count] == letter) ++count;
+            i += count;
+            char number[16]{};
+            const char *part = nullptr;
+            if (letter == 'd' && count <= 2) { // ("ddd" and "dddd" are the name of the day of the week)
+                snprintf(number, sizeof(number), "%02d", now_tm.tm_mday);
+                part = translationDay[current_language];
+            } else if (letter == 'M') {
+                snprintf(number, sizeof(number), "%02d", now_tm.tm_mon + 1);
+                part = translationMonth[current_language];
+            } else if (letter == 'y') {
+                snprintf(number, sizeof(number), "%02d", count <= 2 ? now_tm.tm_year % 100 : now_tm.tm_year + 1900);
+                part = translationYear[current_language];
+            } else if (letter == '.' || letter == '/' || letter == '-' || letter == ' ') {
+                separator.append(count, letter);
+            }
+            if (!part) continue;
+            if (!date_text.empty()) {
+                // (a slash where the format has nothing the display draws between two numbers: a letter, or only a space)
+                const std::string between = separator.find_first_not_of(' ') == std::string::npos ? std::string("/") : separator;
+                date_text += between;
+                date_parts += between;
+            }
+            separator.clear();
+            date_text += number;
+            date_parts += part;
+        }
+        const float date_h = std::floor(fs * 1.35f);
+        const float date_w = draw_segments(nullptr, ImVec2(), date_h, date_text.c_str(), 0, 0, 0.0f);
+        // the tallest clock that is not wider than the date (never smaller than the date), then stretched to its width
+        float clock_h = (std::max)(date_h, std::floor(date_w * 100.0f / draw_segments(nullptr, ImVec2(), 100.0f, clock_buf, 0, 0, 0.0f)));
+        while (clock_h > date_h && draw_segments(nullptr, ImVec2(), clock_h, clock_buf, 0, 0, 0.0f) > date_w) clock_h -= 1.0f;
+        const float clock_natural_w = draw_segments(nullptr, ImVec2(), clock_h, clock_buf, 0, 0, 0.0f);
+        const float clock_w = (std::max)(date_w, clock_natural_w);
+        // the stats box goes below these lines while the overlay is shown, the left column below the stats box
+        float top_bar_bottom = pad + clock_h + ImGui::GetStyle().ItemSpacing.y + date_h + ImGui::GetTextLineHeightWithSpacing();
+        if (settings->record_playtime && playtime_counter) top_bar_bottom += ImGui::GetTextLineHeightWithSpacing();
+        const float top_gap = std::floor(fs * 0.75f + 0.5f);
+        stats.top_inset = top_bar_bottom + top_gap - pad; // (the stats box keeps the same distance from the edges itself)
+        const float left_top_y = std::floor(top_bar_bottom + top_gap + fs * 2.0f + top_gap);
         const float toolbar_y = std::floor(io.DisplaySize.y - std::floor(pad * 2.5f + 0.5f) - tile);
         const float room_h = (std::max)(fs * 10.0f, toolbar_y - pad - top_y);
         const float right_h = (std::min)(fs * 20.0f, (room_h - pad) * 0.5f); // Friends and History share the right column
@@ -2175,27 +2352,21 @@ void Steam_Overlay::render_main_window()
         const bool show_stats_checkboxes = settings->overlay_show_checkbox_fps ||
             settings->overlay_show_checkbox_frametime || settings->overlay_show_checkbox_playtime;
 
-        // top bar, left: the clock, the date, the playtime of this session and the renderer
+        // top bar, left: the clock and the date (prepared above), the playtime of this session and the renderer
         {
-            time_t now_time = time(nullptr);
-            struct tm now_tm{};
-#ifdef _MSC_VER
-            localtime_s(&now_tm, &now_time);
-#else
-            localtime_r(&now_time, &now_tm);
-#endif
-            // a 24-hour clock and a date in numbers, day first: strftime writes the names of days and months in English only
-            char clock_buf[16]{};
-            std::strftime(clock_buf, sizeof(clock_buf), "%H:%M", &now_tm);
-            char date_buf[64]{};
-            std::strftime(date_buf, sizeof(date_buf), "%d.%m.%Y", &now_tm);
-
             ImGui::SetCursorPos(ImVec2(pad, pad));
             ImGui::BeginGroup();
-            // a white clock and light gray lines under it, readable over a bright game too
-            ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%s", clock_buf);
+            // a white clock and light gray lines under it, readable over a bright game too.
+            // Hovering the clock or the date tells what they show
+            ImGui::Dummy(ImVec2(clock_w, clock_h));
+            draw_segments(ImGui::GetWindowDrawList(), ImGui::GetItemRectMin(), clock_h, clock_buf,
+                ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)), ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, 0.04f)), clock_w - clock_natural_w);
+            if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s", translationClockTooltip[current_language]);
+            ImGui::Dummy(ImVec2(date_w, date_h));
+            draw_segments(ImGui::GetWindowDrawList(), ImGui::GetItemRectMin(), date_h, date_text.c_str(),
+                ImGui::GetColorU32(ImVec4(0.722f, 0.737f, 0.749f, 1.0f)), ImGui::GetColorU32(ImVec4(0.722f, 0.737f, 0.749f, 0.04f)), 0.0f);
+            if (ImGui::IsItemHovered()) ImGui::SetTooltip(translationDateTooltip[current_language], date_parts.c_str());
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.722f, 0.737f, 0.749f, 1.0f));
-            ImGui::TextUnformatted(date_buf);
             if (settings->record_playtime && playtime_counter) {
                 uint64_t session_sec = playtime_counter->session_seconds();
                 unsigned ss = static_cast<unsigned>(session_sec % 60);

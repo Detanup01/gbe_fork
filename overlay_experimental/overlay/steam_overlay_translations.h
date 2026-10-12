@@ -7714,91 +7714,91 @@ const char translationUserInfo[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"User Info",
 
 	// 2 - Bulgarian
-  u8"User Info",
+  u8"Информация за потребителя",
 
 	// 3 - Simplified Chinese
-  u8"User Info",
+  u8"用户信息",
 
 	// 4 - Traditional Chinese
-  u8"User Info",
+  u8"使用者資訊",
 
 	// 5 - Czech
-  u8"User Info",
+  u8"Informace o uživateli",
 
 	// 6 - Danish
-  u8"User Info",
+  u8"Brugeroplysninger",
 
 	// 7 - Dutch
-  u8"User Info",
+  u8"Gebruikersinfo",
 
 	// 8 - Finnish
-  u8"User Info",
+  u8"Käyttäjätiedot",
 
 	// 9 - French
-  u8"User Info",
+  u8"Infos utilisateur",
 
 	// 10 - German
-  u8"User Info",
+  u8"Benutzerinfo",
 
 	// 11 - Greek
-  u8"User Info",
+  u8"Πληροφορίες χρήστη",
 
 	// 12 - Hungarian
-  u8"User Info",
+  u8"Felhasználói adatok",
 
 	// 13 - Italian
-  u8"User Info",
+  u8"Info utente",
 
 	// 14 - Japanese
-  u8"User Info",
+  u8"ユーザー情報",
 
 	// 15 - Korean
-  u8"User Info",
+  u8"사용자 정보",
 
 	// 16 - Norwegian
-  u8"User Info",
+  u8"Brukerinformasjon",
 
 	// 17 - Polish
-  u8"User Info",
+  u8"Informacje o graczu",
 
 	// 18 - Portuguese
-  u8"User Info",
+  u8"Informações do utilizador",
 
 	// 19 - Brazilian Portuguese
-  u8"User Info",
+  u8"Informações do usuário",
 
 	// 20 - Romanian
-  u8"User Info",
+  u8"Informații utilizator",
 
 	// 21 - Russian
-  u8"User Info",
+  u8"Информация о пользователе",
 
 	// 22 - Spanish
-  u8"User Info",
+  u8"Información del usuario",
 
 	// 23 - Latin American
-  u8"User Info",
+  u8"Información del usuario",
 
 	// 24 - Swedish
-  u8"User Info",
+  u8"Användarinformation",
 
 	// 25 - Thai
-  u8"User Info",
+  u8"ข้อมูลผู้ใช้",
 
 	// 26 - Turkish
-  u8"User Info",
+  u8"Kullanıcı Bilgileri",
 
 	// 27 - Ukrainian
-  u8"User Info",
+  u8"Інформація про користувача",
 
 	// 28 - Vietnamese
-  u8"User Info",
+  u8"Thông tin người dùng",
 
 	// 29 - Croatian
-  u8"User Info",
+  u8"Podaci o korisniku",
 
   // 30 - Indonesian
-  u8"User Info",
+  u8"Info Pengguna",
 
 };
 
@@ -7814,76 +7814,76 @@ const char translationSteamId[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8"Steam ID:",
 
 	// 3 - Simplified Chinese
-  u8"Steam ID:",
+  u8"Steam ID：",
 
 	// 4 - Traditional Chinese
-  u8"Steam ID:",
+  u8"Steam ID：",
 
 	// 5 - Czech
   u8"Steam ID:",
 
 	// 6 - Danish
-  u8"Steam ID:",
+  u8"Steam-id:",
 
 	// 7 - Dutch
-  u8"Steam ID:",
+  u8"Steam-ID:",
 
 	// 8 - Finnish
-  u8"Steam ID:",
+  u8"Steam-tunnus:",
 
 	// 9 - French
-  u8"Steam ID:",
+  u8"ID Steam :",
 
 	// 10 - German
-  u8"Steam ID:",
+  u8"Steam-ID:",
 
 	// 11 - Greek
   u8"Steam ID:",
 
 	// 12 - Hungarian
-  u8"Steam ID:",
+  u8"Steam-azonosító:",
 
 	// 13 - Italian
-  u8"Steam ID:",
+  u8"ID Steam:",
 
 	// 14 - Japanese
-  u8"Steam ID:",
+  u8"Steam ID：",
 
 	// 15 - Korean
   u8"Steam ID:",
 
 	// 16 - Norwegian
-  u8"Steam ID:",
+  u8"Steam-ID:",
 
 	// 17 - Polish
   u8"Steam ID:",
 
 	// 18 - Portuguese
-  u8"Steam ID:",
+  u8"ID Steam:",
 
 	// 19 - Brazilian Portuguese
-  u8"Steam ID:",
+  u8"ID Steam:",
 
 	// 20 - Romanian
-  u8"Steam ID:",
+  u8"ID Steam:",
 
 	// 21 - Russian
   u8"Steam ID:",
 
 	// 22 - Spanish
-  u8"Steam ID:",
+  u8"ID de Steam:",
 
 	// 23 - Latin American
-  u8"Steam ID:",
+  u8"ID de Steam:",
 
 	// 24 - Swedish
-  u8"Steam ID:",
+  u8"Steam-ID:",
 
 	// 25 - Thai
   u8"Steam ID:",
 
 	// 26 - Turkish
-  u8"Steam ID:",
+  u8"Steam Kimliği:",
 
 	// 27 - Ukrainian
   u8"Steam ID:",
@@ -7895,7 +7895,7 @@ const char translationSteamId[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8"Steam ID:",
 
   // 30 - Indonesian
-  u8"Steam ID:",
+  u8"ID Steam:",
 
 };
 
@@ -7907,91 +7907,91 @@ const char translationAppId[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_
   u8"App ID:",
 
 	// 2 - Bulgarian
-  u8"App ID:",
+  u8"ID на приложението:",
 
 	// 3 - Simplified Chinese
-  u8"App ID:",
+  u8"应用 ID：",
 
 	// 4 - Traditional Chinese
-  u8"App ID:",
+  u8"應用程式 ID：",
 
 	// 5 - Czech
-  u8"App ID:",
+  u8"ID aplikace:",
 
 	// 6 - Danish
-  u8"App ID:",
+  u8"App-id:",
 
 	// 7 - Dutch
-  u8"App ID:",
+  u8"App-ID:",
 
 	// 8 - Finnish
-  u8"App ID:",
+  u8"Sovellustunnus:",
 
 	// 9 - French
-  u8"App ID:",
+  u8"ID de l'application :",
 
 	// 10 - German
-  u8"App ID:",
+  u8"App-ID:",
 
 	// 11 - Greek
-  u8"App ID:",
+  u8"Αναγνωριστικό εφαρμογής:",
 
 	// 12 - Hungarian
-  u8"App ID:",
+  u8"Alkalmazásazonosító:",
 
 	// 13 - Italian
-  u8"App ID:",
+  u8"ID applicazione:",
 
 	// 14 - Japanese
-  u8"App ID:",
+  u8"アプリ ID：",
 
 	// 15 - Korean
-  u8"App ID:",
+  u8"앱 ID:",
 
 	// 16 - Norwegian
-  u8"App ID:",
+  u8"App-ID:",
 
 	// 17 - Polish
-  u8"App ID:",
+  u8"ID aplikacji:",
 
 	// 18 - Portuguese
-  u8"App ID:",
+  u8"ID da aplicação:",
 
 	// 19 - Brazilian Portuguese
-  u8"App ID:",
+  u8"ID do aplicativo:",
 
 	// 20 - Romanian
-  u8"App ID:",
+  u8"ID aplicație:",
 
 	// 21 - Russian
-  u8"App ID:",
+  u8"ID приложения:",
 
 	// 22 - Spanish
-  u8"App ID:",
+  u8"ID de la aplicación:",
 
 	// 23 - Latin American
-  u8"App ID:",
+  u8"ID de la aplicación:",
 
 	// 24 - Swedish
-  u8"App ID:",
+  u8"App-ID:",
 
 	// 25 - Thai
-  u8"App ID:",
+  u8"รหัสแอป:",
 
 	// 26 - Turkish
-  u8"App ID:",
+  u8"Uygulama Kimliği:",
 
 	// 27 - Ukrainian
-  u8"App ID:",
+  u8"ID застосунку:",
 
 	// 28 - Vietnamese
-  u8"App ID:",
+  u8"ID ứng dụng:",
 
 	// 29 - Croatian
-  u8"App ID:",
+  u8"ID aplikacije:",
 
   // 30 - Indonesian
-  u8"App ID:",
+  u8"ID Aplikasi:",
 
 };
 
@@ -8004,91 +8004,91 @@ const char translationBackToGame[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BU
   u8"Back to Game",
 
 	// 2 - Bulgarian
-  u8"Back to Game",
+  u8"Обратно към играта",
 
 	// 3 - Simplified Chinese
-  u8"Back to Game",
+  u8"返回游戏",
 
 	// 4 - Traditional Chinese
-  u8"Back to Game",
+  u8"返回遊戲",
 
 	// 5 - Czech
-  u8"Back to Game",
+  u8"Zpět do hry",
 
 	// 6 - Danish
-  u8"Back to Game",
+  u8"Tilbage til spillet",
 
 	// 7 - Dutch
-  u8"Back to Game",
+  u8"Terug naar game",
 
 	// 8 - Finnish
-  u8"Back to Game",
+  u8"Takaisin peliin",
 
 	// 9 - French
-  u8"Back to Game",
+  u8"Retour au jeu",
 
 	// 10 - German
-  u8"Back to Game",
+  u8"Zurück zum Spiel",
 
 	// 11 - Greek
-  u8"Back to Game",
+  u8"Επιστροφή στο παιχνίδι",
 
 	// 12 - Hungarian
-  u8"Back to Game",
+  u8"Vissza a játékhoz",
 
 	// 13 - Italian
-  u8"Back to Game",
+  u8"Torna al gioco",
 
 	// 14 - Japanese
-  u8"Back to Game",
+  u8"ゲームに戻る",
 
 	// 15 - Korean
-  u8"Back to Game",
+  u8"게임으로 돌아가기",
 
 	// 16 - Norwegian
-  u8"Back to Game",
+  u8"Tilbake til spillet",
 
 	// 17 - Polish
-  u8"Back to Game",
+  u8"Powrót do gry",
 
 	// 18 - Portuguese
-  u8"Back to Game",
+  u8"Voltar ao jogo",
 
 	// 19 - Brazilian Portuguese
-  u8"Back to Game",
+  u8"Voltar ao jogo",
 
 	// 20 - Romanian
-  u8"Back to Game",
+  u8"Înapoi la joc",
 
 	// 21 - Russian
-  u8"Back to Game",
+  u8"Вернуться в игру",
 
 	// 22 - Spanish
-  u8"Back to Game",
+  u8"Volver al juego",
 
 	// 23 - Latin American
-  u8"Back to Game",
+  u8"Volver al juego",
 
 	// 24 - Swedish
-  u8"Back to Game",
+  u8"Tillbaka till spelet",
 
 	// 25 - Thai
-  u8"Back to Game",
+  u8"กลับสู่เกม",
 
 	// 26 - Turkish
-  u8"Back to Game",
+  u8"Oyuna Dön",
 
 	// 27 - Ukrainian
-  u8"Back to Game",
+  u8"Повернутися до гри",
 
 	// 28 - Vietnamese
-  u8"Back to Game",
+  u8"Quay lại trò chơi",
 
 	// 29 - Croatian
-  u8"Back to Game",
+  u8"Natrag u igru",
 
   // 30 - Indonesian
-  u8"Back to Game",
+  u8"Kembali ke Game",
 
 };
 
@@ -8101,91 +8101,573 @@ const char translationPlaytimeLabelLine[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"Playtime: %02u:%02u:%02u",
 
 	// 2 - Bulgarian
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Време за игра: %02u:%02u:%02u",
 
 	// 3 - Simplified Chinese
-  u8"Playtime: %02u:%02u:%02u",
+  u8"游玩时间：%02u:%02u:%02u",
 
 	// 4 - Traditional Chinese
-  u8"Playtime: %02u:%02u:%02u",
+  u8"遊玩時間：%02u:%02u:%02u",
 
 	// 5 - Czech
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Herní čas: %02u:%02u:%02u",
 
 	// 6 - Danish
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Spilletid: %02u:%02u:%02u",
 
 	// 7 - Dutch
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Speeltijd: %02u:%02u:%02u",
 
 	// 8 - Finnish
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Peliaika: %02u:%02u:%02u",
 
 	// 9 - French
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Temps de jeu : %02u:%02u:%02u",
 
 	// 10 - German
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Spielzeit: %02u:%02u:%02u",
 
 	// 11 - Greek
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Χρόνος παιχνιδιού: %02u:%02u:%02u",
 
 	// 12 - Hungarian
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Játékidő: %02u:%02u:%02u",
 
 	// 13 - Italian
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Tempo di gioco: %02u:%02u:%02u",
 
 	// 14 - Japanese
-  u8"Playtime: %02u:%02u:%02u",
+  u8"プレイ時間：%02u:%02u:%02u",
 
 	// 15 - Korean
-  u8"Playtime: %02u:%02u:%02u",
+  u8"플레이 시간: %02u:%02u:%02u",
 
 	// 16 - Norwegian
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Spilletid: %02u:%02u:%02u",
 
 	// 17 - Polish
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Czas grania: %02u:%02u:%02u",
 
 	// 18 - Portuguese
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Tempo de jogo: %02u:%02u:%02u",
 
 	// 19 - Brazilian Portuguese
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Tempo de jogo: %02u:%02u:%02u",
 
 	// 20 - Romanian
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Timp de joc: %02u:%02u:%02u",
 
 	// 21 - Russian
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Время игры: %02u:%02u:%02u",
 
 	// 22 - Spanish
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Tiempo de juego: %02u:%02u:%02u",
 
 	// 23 - Latin American
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Tiempo de juego: %02u:%02u:%02u",
 
 	// 24 - Swedish
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Speltid: %02u:%02u:%02u",
 
 	// 25 - Thai
-  u8"Playtime: %02u:%02u:%02u",
+  u8"เวลาเล่น: %02u:%02u:%02u",
 
 	// 26 - Turkish
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Oynama Süresi: %02u:%02u:%02u",
 
 	// 27 - Ukrainian
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Час гри: %02u:%02u:%02u",
 
 	// 28 - Vietnamese
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Thời gian chơi: %02u:%02u:%02u",
 
 	// 29 - Croatian
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Vrijeme igranja: %02u:%02u:%02u",
 
   // 30 - Indonesian
-  u8"Playtime: %02u:%02u:%02u",
+  u8"Waktu Bermain: %02u:%02u:%02u",
+
+};
+
+// tooltips of the clock and the date in the top bar of the overlay
+const char translationClockTooltip[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"Local time (24-hour clock)",
+
+	// 1 - Arabic
+  u8"Local time (24-hour clock)",
+
+	// 2 - Bulgarian
+  u8"Местно време (24-часов формат)",
+
+	// 3 - Simplified Chinese
+  u8"本地时间（24 小时制）",
+
+	// 4 - Traditional Chinese
+  u8"本地時間（24 小時制）",
+
+	// 5 - Czech
+  u8"Místní čas (24hodinový formát)",
+
+	// 6 - Danish
+  u8"Lokal tid (24-timers ur)",
+
+	// 7 - Dutch
+  u8"Lokale tijd (24-uursnotatie)",
+
+	// 8 - Finnish
+  u8"Paikallinen aika (24 tunnin kello)",
+
+	// 9 - French
+  u8"Heure locale (format 24 heures)",
+
+	// 10 - German
+  u8"Ortszeit (24-Stunden-Format)",
+
+	// 11 - Greek
+  u8"Τοπική ώρα (24ωρη μορφή)",
+
+	// 12 - Hungarian
+  u8"Helyi idő (24 órás formátum)",
+
+	// 13 - Italian
+  u8"Ora locale (formato 24 ore)",
+
+	// 14 - Japanese
+  u8"ローカル時刻（24 時間表示）",
+
+	// 15 - Korean
+  u8"현지 시간 (24시간제)",
+
+	// 16 - Norwegian
+  u8"Lokal tid (24-timers klokke)",
+
+	// 17 - Polish
+  u8"Czas lokalny (format 24-godzinny)",
+
+	// 18 - Portuguese
+  u8"Hora local (formato de 24 horas)",
+
+	// 19 - Brazilian Portuguese
+  u8"Horário local (formato de 24 horas)",
+
+	// 20 - Romanian
+  u8"Ora locală (format de 24 de ore)",
+
+	// 21 - Russian
+  u8"Местное время (24-часовой формат)",
+
+	// 22 - Spanish
+  u8"Hora local (formato de 24 horas)",
+
+	// 23 - Latin American
+  u8"Hora local (formato de 24 horas)",
+
+	// 24 - Swedish
+  u8"Lokal tid (24-timmarsformat)",
+
+	// 25 - Thai
+  u8"เวลาท้องถิ่น (รูปแบบ 24 ชั่วโมง)",
+
+	// 26 - Turkish
+  u8"Yerel saat (24 saat biçimi)",
+
+	// 27 - Ukrainian
+  u8"Місцевий час (24-годинний формат)",
+
+	// 28 - Vietnamese
+  u8"Giờ địa phương (định dạng 24 giờ)",
+
+	// 29 - Croatian
+  u8"Lokalno vrijeme (24-satni format)",
+
+  // 30 - Indonesian
+  u8"Waktu setempat (format 24 jam)",
+
+};
+
+const char translationDateTooltip[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"Date, in your system's format: %s",
+
+	// 1 - Arabic
+  u8"Date, in your system's format: %s",
+
+	// 2 - Bulgarian
+  u8"Дата във формата на системата: %s",
+
+	// 3 - Simplified Chinese
+  u8"日期（系统格式）：%s",
+
+	// 4 - Traditional Chinese
+  u8"日期（系統格式）：%s",
+
+	// 5 - Czech
+  u8"Datum ve formátu systému: %s",
+
+	// 6 - Danish
+  u8"Dato i systemets format: %s",
+
+	// 7 - Dutch
+  u8"Datum in de notatie van je systeem: %s",
+
+	// 8 - Finnish
+  u8"Päivämäärä järjestelmän muodossa: %s",
+
+	// 9 - French
+  u8"Date, au format de votre système : %s",
+
+	// 10 - German
+  u8"Datum im Format Ihres Systems: %s",
+
+	// 11 - Greek
+  u8"Ημερομηνία στη μορφή του συστήματός σας: %s",
+
+	// 12 - Hungarian
+  u8"Dátum a rendszer formátumában: %s",
+
+	// 13 - Italian
+  u8"Data, nel formato del sistema: %s",
+
+	// 14 - Japanese
+  u8"日付（システムの形式）：%s",
+
+	// 15 - Korean
+  u8"날짜 (시스템 형식): %s",
+
+	// 16 - Norwegian
+  u8"Dato i systemets format: %s",
+
+	// 17 - Polish
+  u8"Data w formacie systemowym: %s",
+
+	// 18 - Portuguese
+  u8"Data, no formato do sistema: %s",
+
+	// 19 - Brazilian Portuguese
+  u8"Data, no formato do sistema: %s",
+
+	// 20 - Romanian
+  u8"Data, în formatul sistemului: %s",
+
+	// 21 - Russian
+  u8"Дата в формате вашей системы: %s",
+
+	// 22 - Spanish
+  u8"Fecha, en el formato de tu sistema: %s",
+
+	// 23 - Latin American
+  u8"Fecha, en el formato de tu sistema: %s",
+
+	// 24 - Swedish
+  u8"Datum i systemets format: %s",
+
+	// 25 - Thai
+  u8"วันที่ตามรูปแบบของระบบ: %s",
+
+	// 26 - Turkish
+  u8"Tarih, sisteminizin biçiminde: %s",
+
+	// 27 - Ukrainian
+  u8"Дата у форматі вашої системи: %s",
+
+	// 28 - Vietnamese
+  u8"Ngày, theo định dạng của hệ thống: %s",
+
+	// 29 - Croatian
+  u8"Datum u formatu vašeg sustava: %s",
+
+  // 30 - Indonesian
+  u8"Tanggal, sesuai format sistem Anda: %s",
+
+};
+
+// parts of the date, named in the tooltip of the date
+const char translationDay[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"Day",
+
+	// 1 - Arabic
+  u8"Day",
+
+	// 2 - Bulgarian
+  u8"Ден",
+
+	// 3 - Simplified Chinese
+  u8"日",
+
+	// 4 - Traditional Chinese
+  u8"日",
+
+	// 5 - Czech
+  u8"Den",
+
+	// 6 - Danish
+  u8"Dag",
+
+	// 7 - Dutch
+  u8"Dag",
+
+	// 8 - Finnish
+  u8"Päivä",
+
+	// 9 - French
+  u8"Jour",
+
+	// 10 - German
+  u8"Tag",
+
+	// 11 - Greek
+  u8"Ημέρα",
+
+	// 12 - Hungarian
+  u8"Nap",
+
+	// 13 - Italian
+  u8"Giorno",
+
+	// 14 - Japanese
+  u8"日",
+
+	// 15 - Korean
+  u8"일",
+
+	// 16 - Norwegian
+  u8"Dag",
+
+	// 17 - Polish
+  u8"Dzień",
+
+	// 18 - Portuguese
+  u8"Dia",
+
+	// 19 - Brazilian Portuguese
+  u8"Dia",
+
+	// 20 - Romanian
+  u8"Zi",
+
+	// 21 - Russian
+  u8"День",
+
+	// 22 - Spanish
+  u8"Día",
+
+	// 23 - Latin American
+  u8"Día",
+
+	// 24 - Swedish
+  u8"Dag",
+
+	// 25 - Thai
+  u8"วัน",
+
+	// 26 - Turkish
+  u8"Gün",
+
+	// 27 - Ukrainian
+  u8"День",
+
+	// 28 - Vietnamese
+  u8"Ngày",
+
+	// 29 - Croatian
+  u8"Dan",
+
+  // 30 - Indonesian
+  u8"Hari",
+
+};
+
+const char translationMonth[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"Month",
+
+	// 1 - Arabic
+  u8"Month",
+
+	// 2 - Bulgarian
+  u8"Месец",
+
+	// 3 - Simplified Chinese
+  u8"月",
+
+	// 4 - Traditional Chinese
+  u8"月",
+
+	// 5 - Czech
+  u8"Měsíc",
+
+	// 6 - Danish
+  u8"Måned",
+
+	// 7 - Dutch
+  u8"Maand",
+
+	// 8 - Finnish
+  u8"Kuukausi",
+
+	// 9 - French
+  u8"Mois",
+
+	// 10 - German
+  u8"Monat",
+
+	// 11 - Greek
+  u8"Μήνας",
+
+	// 12 - Hungarian
+  u8"Hónap",
+
+	// 13 - Italian
+  u8"Mese",
+
+	// 14 - Japanese
+  u8"月",
+
+	// 15 - Korean
+  u8"월",
+
+	// 16 - Norwegian
+  u8"Måned",
+
+	// 17 - Polish
+  u8"Miesiąc",
+
+	// 18 - Portuguese
+  u8"Mês",
+
+	// 19 - Brazilian Portuguese
+  u8"Mês",
+
+	// 20 - Romanian
+  u8"Lună",
+
+	// 21 - Russian
+  u8"Месяц",
+
+	// 22 - Spanish
+  u8"Mes",
+
+	// 23 - Latin American
+  u8"Mes",
+
+	// 24 - Swedish
+  u8"Månad",
+
+	// 25 - Thai
+  u8"เดือน",
+
+	// 26 - Turkish
+  u8"Ay",
+
+	// 27 - Ukrainian
+  u8"Місяць",
+
+	// 28 - Vietnamese
+  u8"Tháng",
+
+	// 29 - Croatian
+  u8"Mjesec",
+
+  // 30 - Indonesian
+  u8"Bulan",
+
+};
+
+const char translationYear[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"Year",
+
+	// 1 - Arabic
+  u8"Year",
+
+	// 2 - Bulgarian
+  u8"Година",
+
+	// 3 - Simplified Chinese
+  u8"年",
+
+	// 4 - Traditional Chinese
+  u8"年",
+
+	// 5 - Czech
+  u8"Rok",
+
+	// 6 - Danish
+  u8"År",
+
+	// 7 - Dutch
+  u8"Jaar",
+
+	// 8 - Finnish
+  u8"Vuosi",
+
+	// 9 - French
+  u8"Année",
+
+	// 10 - German
+  u8"Jahr",
+
+	// 11 - Greek
+  u8"Έτος",
+
+	// 12 - Hungarian
+  u8"Év",
+
+	// 13 - Italian
+  u8"Anno",
+
+	// 14 - Japanese
+  u8"年",
+
+	// 15 - Korean
+  u8"연도",
+
+	// 16 - Norwegian
+  u8"År",
+
+	// 17 - Polish
+  u8"Rok",
+
+	// 18 - Portuguese
+  u8"Ano",
+
+	// 19 - Brazilian Portuguese
+  u8"Ano",
+
+	// 20 - Romanian
+  u8"An",
+
+	// 21 - Russian
+  u8"Год",
+
+	// 22 - Spanish
+  u8"Año",
+
+	// 23 - Latin American
+  u8"Año",
+
+	// 24 - Swedish
+  u8"År",
+
+	// 25 - Thai
+  u8"ปี",
+
+	// 26 - Turkish
+  u8"Yıl",
+
+	// 27 - Ukrainian
+  u8"Рік",
+
+	// 28 - Vietnamese
+  u8"Năm",
+
+	// 29 - Croatian
+  u8"Godina",
+
+  // 30 - Indonesian
+  u8"Tahun",
 
 };
 
@@ -8198,91 +8680,91 @@ const char translationNoFriends[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUF
   u8"No friends to show",
 
 	// 2 - Bulgarian
-  u8"No friends to show",
+  u8"Няма приятели за показване",
 
 	// 3 - Simplified Chinese
-  u8"No friends to show",
+  u8"没有可显示的好友",
 
 	// 4 - Traditional Chinese
-  u8"No friends to show",
+  u8"沒有可顯示的好友",
 
 	// 5 - Czech
-  u8"No friends to show",
+  u8"Žádní přátelé k zobrazení",
 
 	// 6 - Danish
-  u8"No friends to show",
+  u8"Ingen venner at vise",
 
 	// 7 - Dutch
-  u8"No friends to show",
+  u8"Geen vrienden om weer te geven",
 
 	// 8 - Finnish
-  u8"No friends to show",
+  u8"Ei näytettäviä kavereita",
 
 	// 9 - French
-  u8"No friends to show",
+  u8"Aucun contact à afficher",
 
 	// 10 - German
-  u8"No friends to show",
+  u8"Keine Freunde zum Anzeigen",
 
 	// 11 - Greek
-  u8"No friends to show",
+  u8"Δεν υπάρχουν φίλοι για εμφάνιση",
 
 	// 12 - Hungarian
-  u8"No friends to show",
+  u8"Nincsenek megjeleníthető barátok",
 
 	// 13 - Italian
-  u8"No friends to show",
+  u8"Nessun amico da mostrare",
 
 	// 14 - Japanese
-  u8"No friends to show",
+  u8"表示するフレンドはいません",
 
 	// 15 - Korean
-  u8"No friends to show",
+  u8"표시할 친구가 없습니다",
 
 	// 16 - Norwegian
-  u8"No friends to show",
+  u8"Ingen venner å vise",
 
 	// 17 - Polish
-  u8"No friends to show",
+  u8"Brak znajomych do wyświetlenia",
 
 	// 18 - Portuguese
-  u8"No friends to show",
+  u8"Nenhum amigo para mostrar",
 
 	// 19 - Brazilian Portuguese
-  u8"No friends to show",
+  u8"Nenhum amigo para exibir",
 
 	// 20 - Romanian
-  u8"No friends to show",
+  u8"Niciun prieten de afișat",
 
 	// 21 - Russian
-  u8"No friends to show",
+  u8"Нет друзей для отображения",
 
 	// 22 - Spanish
-  u8"No friends to show",
+  u8"No hay amigos para mostrar",
 
 	// 23 - Latin American
-  u8"No friends to show",
+  u8"No hay amigos para mostrar",
 
 	// 24 - Swedish
-  u8"No friends to show",
+  u8"Inga vänner att visa",
 
 	// 25 - Thai
-  u8"No friends to show",
+  u8"ไม่มีเพื่อนที่จะแสดง",
 
 	// 26 - Turkish
-  u8"No friends to show",
+  u8"Gösterilecek arkadaş yok",
 
 	// 27 - Ukrainian
-  u8"No friends to show",
+  u8"Немає друзів для відображення",
 
 	// 28 - Vietnamese
-  u8"No friends to show",
+  u8"Không có bạn bè để hiển thị",
 
 	// 29 - Croatian
-  u8"No friends to show",
+  u8"Nema prijatelja za prikaz",
 
   // 30 - Indonesian
-  u8"No friends to show",
+  u8"Tidak ada teman untuk ditampilkan",
 
 };
 
@@ -8295,91 +8777,91 @@ const char translationNoAchievementsConfigured[TRANSLATION_NUMBER_OF_LANGUAGES][
   u8"This game has no achievements",
 
 	// 2 - Bulgarian
-  u8"This game has no achievements",
+  u8"Тази игра няма постижения",
 
 	// 3 - Simplified Chinese
-  u8"This game has no achievements",
+  u8"此游戏没有成就",
 
 	// 4 - Traditional Chinese
-  u8"This game has no achievements",
+  u8"此遊戲沒有成就",
 
 	// 5 - Czech
-  u8"This game has no achievements",
+  u8"Tato hra nemá žádné achievementy",
 
 	// 6 - Danish
-  u8"This game has no achievements",
+  u8"Dette spil har ingen præstationer",
 
 	// 7 - Dutch
-  u8"This game has no achievements",
+  u8"Deze game heeft geen prestaties",
 
 	// 8 - Finnish
-  u8"This game has no achievements",
+  u8"Tässä pelissä ei ole saavutuksia",
 
 	// 9 - French
-  u8"This game has no achievements",
+  u8"Ce jeu n'a aucun succès",
 
 	// 10 - German
-  u8"This game has no achievements",
+  u8"Dieses Spiel hat keine Errungenschaften",
 
 	// 11 - Greek
-  u8"This game has no achievements",
+  u8"Αυτό το παιχνίδι δεν έχει επιτεύγματα",
 
 	// 12 - Hungarian
-  u8"This game has no achievements",
+  u8"Ennek a játéknak nincsenek teljesítményei",
 
 	// 13 - Italian
-  u8"This game has no achievements",
+  u8"Questo gioco non ha obiettivi",
 
 	// 14 - Japanese
-  u8"This game has no achievements",
+  u8"このゲームには実績がありません",
 
 	// 15 - Korean
-  u8"This game has no achievements",
+  u8"이 게임에는 도전 과제가 없습니다",
 
 	// 16 - Norwegian
-  u8"This game has no achievements",
+  u8"Dette spillet har ingen prestasjoner",
 
 	// 17 - Polish
-  u8"This game has no achievements",
+  u8"Ta gra nie ma osiągnięć",
 
 	// 18 - Portuguese
-  u8"This game has no achievements",
+  u8"Este jogo não tem conquistas",
 
 	// 19 - Brazilian Portuguese
-  u8"This game has no achievements",
+  u8"Este jogo não tem conquistas",
 
 	// 20 - Romanian
-  u8"This game has no achievements",
+  u8"Acest joc nu are realizări",
 
 	// 21 - Russian
-  u8"This game has no achievements",
+  u8"В этой игре нет достижений",
 
 	// 22 - Spanish
-  u8"This game has no achievements",
+  u8"Este juego no tiene logros",
 
 	// 23 - Latin American
-  u8"This game has no achievements",
+  u8"Este juego no tiene logros",
 
 	// 24 - Swedish
-  u8"This game has no achievements",
+  u8"Det här spelet har inga prestationer",
 
 	// 25 - Thai
-  u8"This game has no achievements",
+  u8"เกมนี้ไม่มีความสำเร็จ",
 
 	// 26 - Turkish
-  u8"This game has no achievements",
+  u8"Bu oyunda başarım yok",
 
 	// 27 - Ukrainian
-  u8"This game has no achievements",
+  u8"У цій грі немає досягнень",
 
 	// 28 - Vietnamese
-  u8"This game has no achievements",
+  u8"Trò chơi này không có thành tựu",
 
 	// 29 - Croatian
-  u8"This game has no achievements",
+  u8"Ova igra nema postignuća",
 
   // 30 - Indonesian
-  u8"This game has no achievements",
+  u8"Game ini tidak memiliki pencapaian",
 
 };
 
