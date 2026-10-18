@@ -122,7 +122,7 @@ jobs:
       - name: "Upload target package"
         uses: actions/upload-artifact@v7
         with:
-          name: "emu-linux-${{ matrix.prj }}-${{ matrix.cfg }}-${{ matrix.arch }}-${{ github.sha }}"
+          name: "emu-linuxarm-${{ matrix.prj }}-${{ matrix.cfg }}-${{ matrix.arch }}-${{ github.sha }}"
           path: "build/linux"
           if-no-files-found: "error"
           compression-level: 9
