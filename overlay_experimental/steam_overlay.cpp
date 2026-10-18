@@ -231,7 +231,6 @@ Steam_Overlay::Steam_Overlay(Settings* settings, Local_Storage *local_storage, S
     renderer_detector_delay_thread = common_helpers::KillableWorker(
         [this](void *){
             request_renderer_detector();
-            set_renderer_hook_timeout();
             renderer_hook_init_thread.start();
             return true;
         },
@@ -286,12 +285,7 @@ void Steam_Overlay::request_renderer_detector()
 {
     PRINT_DEBUG_ENTRY();
     // request renderer detection
-    future_renderer = InGameOverlay::DetectRenderer();
-}
-
-void Steam_Overlay::set_renderer_hook_timeout()
-{
-    renderer_hook_timeout_ctr = settings->overlay_renderer_detector_timeout_sec /*seconds*/ * 1000 /*milli per second*/ / renderer_detector_polling_ms;
+    InGameOverlay::DetectRenderer();
 }
 
 void Steam_Overlay::cleanup_renderer_hook()
@@ -302,25 +296,27 @@ void Steam_Overlay::cleanup_renderer_hook()
 
 bool Steam_Overlay::renderer_hook_proc()
 {
-    if (renderer_hook_timeout_ctr > 0 && future_renderer.wait_for(std::chrono::milliseconds(renderer_detector_polling_ms)) != std::future_status::ready) {
-        return false;
+    auto expiration_time = std::chrono::steady_clock::now() + std::chrono::seconds(settings->overlay_renderer_detector_timeout_sec);
+
+    while (std::chrono::steady_clock::now() < expiration_time && InGameOverlay::DetectRenderer()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
 
-    // free detector resources and check for failure
-    cleanup_renderer_hook();
     // exit on failure
-    bool final_chance = future_renderer.wait_for(std::chrono::milliseconds(1)) == std::future_status::ready;
+    bool final_chance = InGameOverlay::DetectRenderer();
     // again check for 'setup_overlay_called' to be extra sure that the overlay wasn't deinitialized
-    if (!setup_overlay_called || !final_chance || renderer_hook_timeout_ctr <= 0) {
-        PRINT_DEBUG("failed to detect renderer, ctr=%i, overlay was set up=%i",
-            renderer_hook_timeout_ctr, (int)setup_overlay_called
+    if (!setup_overlay_called || final_chance) {
+        PRINT_DEBUG("failed to detect renderer, overlay was set up=%i",
+            (int)setup_overlay_called
         );
+        cleanup_renderer_hook();
         return true;
     }
 
     // do a one time initialization
     // std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    _renderer = future_renderer.get();
+    _renderer = InGameOverlay::GetDetectedRenderer();
+    cleanup_renderer_hook();
     if (!_renderer) { // is this even possible?
         PRINT_DEBUG("renderer hook was null!");
         return true;
@@ -2484,7 +2480,6 @@ void Steam_Overlay::SetupOverlay()
             // "HITMAN 3" fails if the detector was started later (after a delay)
             // so request the renderer detector immediately (the old behavior)
             request_renderer_detector();
-            set_renderer_hook_timeout();
             renderer_hook_init_thread.start();
         }
     }

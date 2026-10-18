@@ -193,12 +193,10 @@ class Steam_Overlay
     // changed only when overlay is shown/hidden, true means overlay is shown
     std::atomic_uint32_t obscure_cursor_requests = 0;
     
-    std::future<InGameOverlay::RendererHook_t *> future_renderer{};
     InGameOverlay::RendererHook_t *_renderer{};
 
     common_helpers::KillableWorker renderer_detector_delay_thread{};
     common_helpers::KillableWorker renderer_hook_init_thread{};
-    int renderer_hook_timeout_ctr{};
 
     std::vector<InGameOverlay::ToggleKey> toggle_keys{};
     std::vector<InGameOverlay::ToggleKey> screenshot_keys{};
@@ -364,7 +362,6 @@ class Steam_Overlay
     void build_notifications(float width, float height);
     
     void request_renderer_detector();
-    void set_renderer_hook_timeout();
     void cleanup_renderer_hook();
     bool renderer_hook_proc();
     
