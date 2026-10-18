@@ -491,7 +491,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           path: "build/linux"
-          pattern: "emu-linux-*-${{ github.sha }}"
+          pattern: "emu-linuxarm-*-${{ github.sha }}"
           merge-multiple: true
 
       # fix folder permissions! not sure why this fails
