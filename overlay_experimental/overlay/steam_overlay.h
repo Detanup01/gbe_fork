@@ -141,7 +141,9 @@ class Steam_Overlay
     bool show_overlay = false;
     bool show_user_info = false;
     bool show_achievements = false;
+    bool show_friends = true;
     bool show_settings = false;
+    std::chrono::steady_clock::time_point overlay_opened_at{}; // start of the fade-in when the overlay opens
 
     // warn when using local save
     bool warn_local_save = false;

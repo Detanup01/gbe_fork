@@ -11,6 +11,7 @@
 #include <string>
 #include <sstream>
 #include <cctype>
+#include <cmath>
 #include <utility>
 #include <unordered_set>
 #include <unordered_map>
@@ -20,6 +21,9 @@
 
 #ifdef __WINDOWS__
 #include <shellapi.h>
+#elif defined(__LINUX__)
+#include <langinfo.h> // the system's date format
+#include <locale.h>
 #endif
 
 #include "InGameOverlay/RendererDetector.h"
@@ -86,15 +90,6 @@ static constexpr const char* valid_languages[] = {
     "croatian",
     "indonesian",
 };
-
-
-// ListBoxHeader() is deprecated and inlined inside <imgui.h>
-// Helper to calculate size from items_count and height_in_items
-static inline bool ImGuiHelper_BeginListBox(const char* label, int items_count) {
-    int min_items = items_count < 7 ? items_count : 7;
-    float height = ImGui::GetTextLineHeightWithSpacing() * (min_items + 0.25f) + ImGui::GetStyle().FramePadding.y * 2.0f;
-    return ImGui::BeginListBox(label, ImVec2(0.0f, height));
-}
 
 
 void Steam_Overlay::overlay_run_callback(void* object)
@@ -465,6 +460,19 @@ void Steam_Overlay::create_fonts()
         font_builder.AddText(translationFrametimeUnitDisplay[i]);
         font_builder.AddText(translationPlaytimeCheckbox[i]);
         font_builder.AddText(translationPlaytimeDisplay[i]);
+        font_builder.AddText(translationUserInfo[i]);
+        font_builder.AddText(translationSteamId[i]);
+        font_builder.AddText(translationAppId[i]);
+        font_builder.AddText(translationBackToGame[i]);
+        font_builder.AddText(translationExitGame[i]);
+        font_builder.AddText(translationClockTooltip[i]);
+        font_builder.AddText(translationDateTooltip[i]);
+        font_builder.AddText(translationDay[i]);
+        font_builder.AddText(translationMonth[i]);
+        font_builder.AddText(translationYear[i]);
+        font_builder.AddText(translationPlaytimeLabelLine[i]);
+        font_builder.AddText(translationNoFriends[i]);
+        font_builder.AddText(translationNoAchievementsConfigured[i]);
     }
     font_builder.AddRanges(fonts_atlas.GetGlyphRangesDefault());
 
@@ -605,6 +613,19 @@ void Steam_Overlay::overlay_state_hook(bool ready)
             ImGuiStyle &style = ImGui::GetStyle();
             // Disable round window
             style.WindowRounding = 0.0;
+            // Steam-like corners and spacing (a 5 px module), no window borders
+            style.FrameRounding = 2.0f;
+            style.GrabRounding = 2.0f;
+            style.TabRounding = 2.0f;
+            style.ScrollbarRounding = 0.0f;
+            style.WindowPadding = ImVec2(15.0f, 15.0f);
+            style.FramePadding = ImVec2(10.0f, 5.0f);
+            style.ItemSpacing = ImVec2(10.0f, 6.0f);
+            style.ItemInnerSpacing = ImVec2(6.0f, 6.0f);
+            style.IndentSpacing = 20.0f;
+            style.ScrollbarSize = 12.0f;
+            style.GrabMinSize = 10.0f;
+            style.WindowBorderSize = 0.0f;
         }
     }
 }
@@ -926,7 +947,7 @@ void Steam_Overlay::build_friend_window(Friend const& frd, friend_window_state& 
     ImGui::SetNextWindowBgAlpha(1.0f);
     // Window id is after the ###, the window title is the friend name
     std::string friend_window_id = std::move("###" + std::to_string(state.id));
-    if (ImGui::Begin((state.window_title + friend_window_id).c_str(), &show)) {
+    if (ImGui::Begin((state.window_title + friend_window_id).c_str(), &show, ImGuiWindowFlags_NoCollapse)) {
         if (state.window_state & window_state_need_attention && ImGui::IsWindowFocused()) {
             state.window_state &= ~window_state_need_attention;
         }
@@ -1043,11 +1064,13 @@ void Steam_Overlay::set_next_notification_pos(std::pair<float, float> scrn_size,
     const float padding_all_sides = 2 * (global_style.WindowPadding.y + global_style.WindowPadding.x);
 
     const float noti_width = scrn_width * Notification::width_percent;
+    // the width the text really wraps at inside the notification window
+    const float text_wrap_width = noti_width - 2.0f * global_style.WindowPadding.x;
     const float msg_height = ImGui::CalcTextSize(
         noti.message.c_str(),
         noti.message.c_str() + noti.message.size(),
         false,
-        noti_width - padding_all_sides - global_style.ItemSpacing.x
+        text_wrap_width
     ).y;
     float noti_height = msg_height;
 
@@ -1103,9 +1126,10 @@ void Steam_Overlay::set_next_notification_pos(std::pair<float, float> scrn_size,
             noti.message.c_str(),
             noti.message.c_str() + noti.message.size(),
             false,
-            noti_width - padding_all_sides - global_style.ItemSpacing.x
+            text_wrap_width
         ).y;
-        noti_height = msg_height + settings->overlay_appearance.font_size + global_style.WindowPadding.y;
+        // the message and the row with the "Join" button under it
+        noti_height = msg_height + global_style.ItemSpacing.y + ImGui::GetFrameHeight();
     }
     break;
     case notification_type::message: pos = settings->overlay_appearance.chat_msg_pos; break;
@@ -1202,7 +1226,10 @@ void Steam_Overlay::add_ach_progressbar(const Overlay_Achievement &ach)
     if (!ach.achieved && ach.max_progress > 0) {
         char buf[32]{};
         sprintf(buf, "%u/%u", ach.progress, ach.max_progress);
+        ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.102f, 0.624f, 1.0f, 1.0f)); // #1a9fff
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.239f, 0.267f, 0.314f, 1.0f));     // #3d4450
         ImGui::ProgressBar((float)ach.progress / ach.max_progress, { -1 , settings->overlay_appearance.font_size }, buf);
+        ImGui::PopStyleColor(2);
     }
 }
 
@@ -1221,11 +1248,11 @@ ImVec4 Steam_Overlay::get_notification_bg_rgba_safe()
         );
     }
 
-    // fallback to dark-gray background
+    // fallback to Steam's panel color #171a21
     return ImVec4(
-        0.12f,
-        0.14f,
-        0.21f,
+        0.090f,
+        0.102f,
+        0.129f,
         1.0f
     );
 }
@@ -1240,6 +1267,12 @@ void Steam_Overlay::build_notifications(float width, float height)
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, settings->overlay_appearance.notification_rounding);
 
     NotificationsCoords coords{};
+    if (show_overlay) {
+        // stack them clear of the overlay's top bar and toolbar
+        const float fs = ImGui::GetFontSize();
+        coords.top_left.second = coords.top_center.second = coords.top_right.second = std::floor(fs * 4.6f);
+        coords.bot_center.second = std::floor(std::floor(fs * 0.9f + 0.5f) * 2.5f + 0.5f) + std::floor(fs * 2.5f + 0.5f);
+    }
     for (auto it = notifications.begin(); it != notifications.end(); ++it) {
         auto noti_duration = get_notification_duration((notification_type)it->type);
         if (noti_duration.count() <= 0) {
@@ -1264,11 +1297,9 @@ void Steam_Overlay::build_notifications(float width, float height)
             it->ach.has_value() &&
             it->ach->unlock_percentage >= 0.0f &&
             it->ach->unlock_percentage <= 10.0f;
-        const bool is_achievement =
-            (notification_type)it->type == notification_type::achievement;
 
         ImGui::PushStyleColor(ImGuiCol_Border, is_rare_achievement
-            ? ImVec4(32.0f / 255.0f, 24.0f / 255.0f, 8.0f / 255.0f, settings_noti_alpha)
+            ? ImVec4(218.0f / 255.0f, 165.0f / 255.0f, 32.0f / 255.0f, settings_noti_alpha)
             : ImVec4(0, 0, 0, settings_noti_alpha));
         ImGui::PushStyleColor(ImGuiCol_WindowBg, get_notification_bg_rgba_safe());
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 255, 255, settings_noti_alpha * 2));
@@ -1318,13 +1349,31 @@ void Steam_Overlay::build_notifications(float width, float height)
                         ImGui::TableSetColumnIndex(0);
                         ImGui::Image(icon_rsrc->GetResourceId(), ImVec2(settings->overlay_appearance.icon_size, settings->overlay_appearance.icon_size));
                         ImGui::TableSetColumnIndex(1);
+                        {
+                            // the title and the description are centered on the icon
+                            const float wrap_w = ImGui::GetContentRegionAvail().x;
+                            ImGui::PushFont(font_ach_title);
+                            float text_h = ImGui::CalcTextSize(ach.title.c_str(), nullptr, false, wrap_w).y;
+                            ImGui::PopFont();
+                            if (ach.description.size()) {
+                                ImGui::PushFont(font_ach_desc);
+                                text_h += ImGui::GetStyle().ItemSpacing.y + ImGui::CalcTextSize(ach.description.c_str(), nullptr, false, wrap_w).y;
+                                ImGui::PopFont();
+                            }
+                            if (text_h < settings->overlay_appearance.icon_size) {
+                                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + std::floor((settings->overlay_appearance.icon_size - text_h) * 0.5f));
+                            }
+                        }
                         ImGui::PushFont(font_ach_title);
                         ImGui::TextWrapped("%s", ach.title.c_str());
                         ImGui::PopFont();
                         if (ach.description.size()) {
+                            // a step dimmer than the title
+                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.722f, 0.737f, 0.749f, (std::min)(1.0f, settings_noti_alpha * 2.0f)));
                             ImGui::PushFont(font_ach_desc);
                             ImGui::TextWrapped("%s", ach.description.c_str());
                             ImGui::PopFont();
+                            ImGui::PopStyleColor();
                         }
 
                         ImGui::EndTable();
@@ -1371,7 +1420,7 @@ void Steam_Overlay::build_notifications(float width, float height)
                 break;
             }
 
-            if (is_achievement) {
+            {
                 const ImVec2 wnd_pos = ImGui::GetWindowPos();
                 const ImVec2 wnd_size = ImGui::GetWindowSize();
                 if (is_rare_achievement) {
@@ -1412,11 +1461,12 @@ void Steam_Overlay::build_notifications(float width, float height)
                         0,
                         2.0f);
                 } else {
-                    const float inset = 1.0f;
+                    // a thin, faint outline
+                    const float inset = 0.5f;
                     const ImVec2 inner_min(wnd_pos.x + inset, wnd_pos.y + inset);
                     const ImVec2 inner_max(wnd_pos.x + wnd_size.x - inset, wnd_pos.y + wnd_size.y - inset);
                     const ImU32 accent_color = ImGui::ColorConvertFloat4ToU32(
-                        ImVec4(1.0f, 1.0f, 1.0f, 0.82f * settings_noti_alpha));
+                        ImVec4(1.0f, 1.0f, 1.0f, 0.14f * settings_noti_alpha));
 
                     ImGui::GetWindowDrawList()->AddRect(
                         inner_min,
@@ -1424,7 +1474,7 @@ void Steam_Overlay::build_notifications(float width, float height)
                         accent_color,
                         settings->overlay_appearance.notification_rounding,
                         0,
-                        2.0f);
+                        1.0f);
                 }
             }
 
@@ -1825,6 +1875,8 @@ void Steam_Overlay::overlay_render_proc()
     }
 
     if (stats.show_any_stats()) {
+        // (while the overlay is shown, render_main_window() keeps it below the lines of the top bar)
+        if (!show_overlay) stats.top_inset = 0.0f;
         stats.render_stats(current_language);
     }
 
@@ -1848,6 +1900,28 @@ uint32 Steam_Overlay::apply_global_style_color()
         style_color_stack += 1;
     }
 
+    // Steam's colors for everything the settings don't cover
+    {
+        const ImVec4 accent(0.102f, 0.624f, 1.0f, 1.0f); // #1a9fff
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.863f, 0.871f, 0.875f, 1.0f));          // #dcdedf
+        ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImVec4(0.545f, 0.573f, 0.604f, 1.0f)); // #8b929a
+        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.0f, 1.0f, 1.0f, 0.07f));
+        ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(1.0f, 1.0f, 1.0f, 0.09f));
+        ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(0.086f, 0.102f, 0.133f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_TitleBgCollapsed, ImVec4(0.086f, 0.102f, 0.133f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.086f, 0.102f, 0.133f, 0.99f));
+        ImGui::PushStyleColor(ImGuiCol_ModalWindowDimBg, ImVec4(0.0f, 0.0f, 0.0f, 0.55f));
+        ImGui::PushStyleColor(ImGuiCol_ScrollbarBg, ImVec4(0.0f, 0.0f, 0.0f, 0.18f));
+        ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, ImVec4(0.239f, 0.267f, 0.314f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabHovered, ImVec4(0.32f, 0.35f, 0.40f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabActive, accent);
+        ImGui::PushStyleColor(ImGuiCol_CheckMark, accent);
+        ImGui::PushStyleColor(ImGuiCol_SliderGrab, accent);
+        ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, ImVec4(0.0f, 0.733f, 1.0f, 1.0f)); // #00bbff
+        ImGui::PushStyleColor(ImGuiCol_PlotHistogram, accent); // progress bars
+        style_color_stack += 16;
+    }
+
     if ((settings->overlay_appearance.element_r >= 0) &&
         (settings->overlay_appearance.element_g >= 0) &&
         (settings->overlay_appearance.element_b >= 0) &&
@@ -1862,7 +1936,8 @@ uint32 Steam_Overlay::apply_global_style_color()
         ImGui::PushStyleColor(ImGuiCol_Button, colorSet);
         ImGui::PushStyleColor(ImGuiCol_FrameBg, colorSet);
         ImGui::PushStyleColor(ImGuiCol_ResizeGrip, colorSet);
-        style_color_stack += 4;
+        ImGui::PushStyleColor(ImGuiCol_Header, colorSet);
+        style_color_stack += 5;
     }
 
     if ((settings->overlay_appearance.element_hovered_r >= 0) &&
@@ -1895,9 +1970,17 @@ uint32 Steam_Overlay::apply_global_style_color()
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, colorSet);
         ImGui::PushStyleColor(ImGuiCol_FrameBgActive, colorSet);
         ImGui::PushStyleColor(ImGuiCol_ResizeGripActive, colorSet);
-        ImGui::PushStyleColor(ImGuiCol_Header, colorSet);
         ImGui::PushStyleColor(ImGuiCol_HeaderActive, colorSet);
-        style_color_stack += 5;
+        style_color_stack += 4;
+    }
+
+    // like Steam's panels: no resize triangle in the corner, it only shows under the mouse
+    {
+        ImVec4 grip_hovered = ImGui::GetStyleColorVec4(ImGuiCol_ResizeGripHovered);
+        grip_hovered.w *= 0.6f;
+        ImGui::PushStyleColor(ImGuiCol_ResizeGrip, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+        ImGui::PushStyleColor(ImGuiCol_ResizeGripHovered, grip_hovered);
+        style_color_stack += 2;
     }
 
     return style_color_stack;
@@ -1906,8 +1989,22 @@ uint32 Steam_Overlay::apply_global_style_color()
 // Try to make this function as short as possible or it might affect game's fps.
 void Steam_Overlay::render_main_window()
 {
+    // the graphics API the overlay hooked, by its short name (the library name is the full path of a DLL)
+    const char *renderer_name = "Unknown";
+    if (_renderer != nullptr) {
+        switch (_renderer->GetRendererHookType()) {
+            case InGameOverlay::RendererHookType_t::DirectX9:  renderer_name = "DX9";    break;
+            case InGameOverlay::RendererHookType_t::DirectX10: renderer_name = "DX10";   break;
+            case InGameOverlay::RendererHookType_t::DirectX11: renderer_name = "DX11";   break;
+            case InGameOverlay::RendererHookType_t::DirectX12: renderer_name = "DX12";   break;
+            case InGameOverlay::RendererHookType_t::OpenGL:    renderer_name = "OpenGL"; break;
+            case InGameOverlay::RendererHookType_t::Vulkan:    renderer_name = "Vulkan"; break;
+            case InGameOverlay::RendererHookType_t::Metal:     renderer_name = "Metal";  break;
+            default: break;
+        }
+    }
     char tmp[TRANSLATION_BUFFER_SIZE]{};
-    snprintf(tmp, sizeof(tmp), translationRenderer[current_language], (_renderer == nullptr ? "Unknown" : _renderer->GetLibraryName()));
+    snprintf(tmp, sizeof(tmp), translationRenderer[current_language], renderer_name);
     std::string windowTitle{};
     // Note: don't translate this, project and author names are nouns, they must be kept intact for proper referral
     // think of it as translating "Protobuf - Google"
@@ -1918,236 +2015,616 @@ void Steam_Overlay::render_main_window()
     ImGuiIO &io = ImGui::GetIO();
 
     ImGui::PushFont(font_default);
+    // the whole overlay fades in when it opens (~180 ms, ease-out)
+    {
+        float t = std::chrono::duration<float>(std::chrono::steady_clock::now() - overlay_opened_at).count() / 0.18f;
+        t = t < 0.0f ? 0.0f : (t > 1.0f ? 1.0f : t);
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 1.0f - (1.0f - t) * (1.0f - t) * (1.0f - t));
+    }
     uint32 style_color_stack = apply_global_style_color();
+
+    // the icons of the toolbar and of the close button: simple shapes on a 24x24 grid, scaled to the button.
+    // `cut` is the color of the button itself, it draws the gaps inside an icon
+    enum class Overlay_Icon { UserInfo, CopyId, Achievements, TestAchievement, Friends, Screenshots, History, Settings, Close };
+    auto draw_icon = [](Overlay_Icon icon, ImVec2 rect_min, ImVec2 rect_max, ImU32 paint, ImU32 cut) {
+        constexpr float pi = 3.14159265f;
+        ImDrawList *dl = ImGui::GetWindowDrawList();
+        const float size = std::floor((rect_max.x - rect_min.x) * 0.28f + 0.5f) * 2.0f; // ~56% of the button
+        const ImVec2 origin(std::floor((rect_min.x + rect_max.x - size) * 0.5f + 0.5f), std::floor((rect_min.y + rect_max.y - size) * 0.5f + 0.5f));
+        const float u = size / 24.0f;
+        auto p = [&](float x, float y) { return ImVec2(origin.x + x * u, origin.y + y * u); };
+        auto capsule = [&](float x0, float y0, float x1, float y1, float r, ImU32 col) {
+            dl->AddLine(p(x0, y0), p(x1, y1), col, 2.0f * r * u);
+            dl->AddCircleFilled(p(x0, y0), r * u, col);
+            dl->AddCircleFilled(p(x1, y1), r * u, col);
+        };
+        // head and shoulders of a person, `grow` makes it larger on every side
+        auto bust = [&](float cx, float head_y, float head_r, float body_r, float base, float grow, ImU32 col) {
+            const float cy = base - 1.6f;
+            dl->AddCircleFilled(p(cx, head_y), (head_r + grow) * u, col);
+            dl->PathArcTo(p(cx, cy), (body_r + grow) * u, pi, 2.0f * pi);
+            dl->PathArcTo(p(cx + body_r - 1.6f, cy), (1.6f + grow) * u, 0.0f, 0.5f * pi);
+            dl->PathArcTo(p(cx - body_r + 1.6f, cy), (1.6f + grow) * u, 0.5f * pi, pi);
+            dl->PathFillConvex(col);
+        };
+
+        switch (icon) {
+            case Overlay_Icon::UserInfo:
+                bust(12.0f, 6.8f, 4.0f, 8.2f, 20.2f, 0.0f, paint);
+            break;
+
+            case Overlay_Icon::CopyId: // a sheet in front of another one
+                dl->AddRect(p(9.9f, 3.9f), p(19.3f, 14.9f), paint, 0.9f * u, 0, 1.8f * u);
+                dl->AddRectFilled(p(2.1f, 6.5f), p(16.7f, 22.7f), cut, 3.5f * u);
+                dl->AddRectFilled(p(3.8f, 8.2f), p(15.0f, 21.0f), paint, 1.8f * u);
+            break;
+
+            case Overlay_Icon::Achievements: // trophy
+                dl->AddCircle(p(5.4f, 7.4f), 2.4f * u, paint, 0, 1.8f * u);
+                dl->AddCircle(p(18.6f, 7.4f), 2.4f * u, paint, 0, 1.8f * u);
+                dl->AddRectFilled(p(6.8f, 3.2f), p(17.2f, 12.0f), paint, 4.4f * u, ImDrawFlags_RoundCornersBottom);
+                dl->AddRectFilled(p(10.7f, 11.0f), p(13.3f, 17.6f), paint);
+                dl->AddRectFilled(p(7.4f, 17.5f), p(16.6f, 20.1f), paint, 0.9f * u);
+            break;
+
+            case Overlay_Icon::TestAchievement: { // flask
+                const ImVec2 glass[] = {
+                    p(10.4f, 3.6f), p(10.4f, 9.6f), p(4.0f, 19.6f), p(5.0f, 20.6f),
+                    p(19.0f, 20.6f), p(20.0f, 19.6f), p(13.6f, 9.6f), p(13.6f, 3.6f),
+                };
+                const ImVec2 liquid[] = { p(10.1f, 13.8f), p(13.9f, 13.8f), p(17.0f, 18.6f), p(7.0f, 18.6f) };
+                dl->AddPolyline(glass, IM_ARRAYSIZE(glass), paint, ImDrawFlags_None, 1.8f * u);
+                dl->AddConvexPolyFilled(liquid, IM_ARRAYSIZE(liquid), paint);
+                dl->AddRectFilled(p(7.7f, 2.3f), p(16.3f, 4.3f), paint, 0.6f * u);
+            }
+            break;
+
+            case Overlay_Icon::Friends: // two people with a gap between them
+                bust(16.6f, 6.6f, 3.1f, 5.6f, 19.8f, 0.0f, paint);
+                bust(9.0f, 7.2f, 3.7f, 6.9f, 19.8f, 1.7f, cut);
+                bust(9.0f, 7.2f, 3.7f, 6.9f, 19.8f, 0.0f, paint);
+            break;
+
+            case Overlay_Icon::Screenshots: // camera
+                dl->AddRectFilled(p(2.0f, 6.2f), p(22.0f, 20.6f), paint, 2.4f * u);
+                dl->AddRectFilled(p(7.6f, 4.3f), p(16.4f, 8.1f), paint, 1.2f * u, ImDrawFlags_RoundCornersTop);
+                dl->AddCircleFilled(p(12.0f, 13.6f), 5.0f * u, cut);
+                dl->AddCircleFilled(p(12.0f, 13.6f), 3.1f * u, paint);
+                dl->AddCircleFilled(p(18.5f, 9.8f), 0.95f * u, cut);
+            break;
+
+            case Overlay_Icon::History: // clock
+                dl->AddCircleFilled(p(12.0f, 12.0f), 9.2f * u, paint);
+                capsule(12.0f, 12.0f, 12.0f, 6.3f, 1.0f, cut);
+                capsule(12.0f, 12.0f, 16.2f, 14.6f, 1.0f, cut);
+            break;
+
+            case Overlay_Icon::Settings: // gear
+                dl->AddCircleFilled(p(12.0f, 12.0f), 7.1f * u, paint);
+                for (int i = 0; i < 8; ++i) {
+                    const float c = std::cos(i * pi / 4.0f);
+                    const float s = std::sin(i * pi / 4.0f);
+                    auto tooth = [&](float r, float t) { return p(12.0f + c * r - s * t, 12.0f + s * r + c * t); };
+                    dl->AddQuadFilled(tooth(6.25f, -1.75f), tooth(9.75f, -1.75f), tooth(9.75f, 1.75f), tooth(6.25f, 1.75f), paint);
+                }
+                dl->AddCircleFilled(p(12.0f, 12.0f), 3.3f * u, cut);
+            break;
+
+            case Overlay_Icon::Close:
+                capsule(6.2f, 6.2f, 17.8f, 17.8f, 1.35f, paint);
+                capsule(17.8f, 6.2f, 6.2f, 17.8f, 1.35f, paint);
+            break;
+        }
+    };
 
     ImGui::SetNextWindowPos({ 0, 0 });
     ImGui::SetNextWindowSize({ io.DisplaySize.x, io.DisplaySize.y });
+    // the main window only holds the top bar and the toolbar: the game shows through a dimmed backdrop
+    // and every panel is a window of its own
     if (ImGui::Begin(windowTitle.c_str(), &show,
             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
-            ImGuiWindowFlags_NoBringToFrontOnFocus)) {
-        if (show_user_info) {
-            ImGui::LabelText("##playinglabel", translationUserPlaying[current_language],
-                settings->get_local_name(),
-                settings->get_local_steam_id().ConvertToUint64(),
-                settings->get_local_game_id().AppID());
+            ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground |
+            ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
+        // the backdrop: the main background color over the whole game, darker towards the edges like Steam's.
+        // It goes into the background draw list, below every window
+        {
+            ImDrawList *dl = ImGui::GetBackgroundDrawList();
+            const ImVec4 backdrop = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+            dl->AddRectFilled(ImVec2(0, 0), io.DisplaySize, ImGui::GetColorU32(backdrop));
 
-            if (settings->record_playtime && playtime_counter && settings->overlay_appearance.show_playtime_in_user_info) {
+            const float depth = (std::min)(io.DisplaySize.x, io.DisplaySize.y) * 0.30f;
+            const ImU32 dark = ImGui::GetColorU32(ImVec4(0.0f, 0.0f, 0.0f, (std::min)(0.40f, backdrop.w * 0.73f)));
+            const ImU32 clear = ImGui::GetColorU32(ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+            dl->AddRectFilledMultiColor(ImVec2(0, 0), ImVec2(io.DisplaySize.x, depth), dark, dark, clear, clear);
+            dl->AddRectFilledMultiColor(ImVec2(0, io.DisplaySize.y - depth), io.DisplaySize, clear, clear, dark, dark);
+            dl->AddRectFilledMultiColor(ImVec2(0, 0), ImVec2(depth, io.DisplaySize.y), dark, clear, clear, dark);
+            dl->AddRectFilledMultiColor(ImVec2(io.DisplaySize.x - depth, 0), io.DisplaySize, clear, dark, dark, clear);
+        }
+
+        // where the panels open the first time (afterwards the user's own place wins), in three columns:
+        // left: User Info and Settings, center: Achievements, right: Friends and History.
+        // The sizes follow the font, on a narrow window the columns shrink so that they never overlap,
+        // and no panel runs over the top bar or the toolbar
+        const float fs = ImGui::GetFontSize();
+        const float pad = std::floor(fs * 0.9f + 0.5f);
+        const float tile = std::floor(fs * 2.5f + 0.5f); // edge of a toolbar button
+        const float top_y = std::floor(fs * 5.5f);
+
+        // top bar, left (drawn further below): a large clock, the date under it, the playtime of this session, the
+        // renderer and an "Exit Game" button
+        time_t now_time = time(nullptr);
+        struct tm now_tm{};
+#ifdef _MSC_VER
+        localtime_s(&now_tm, &now_time);
+#else
+        localtime_r(&now_time, &now_tm);
+#endif
+        // the clock: hours and minutes of the local time, 24-hour
+        char clock_buf[16]{};
+        std::strftime(clock_buf, sizeof(clock_buf), "%H:%M", &now_tm);
+
+        // the date: the day, the month and the year as numbers, in the order and with the separators of the system's
+        // short date format (a month written as a name is shown as a number too). The format is read once, written
+        // with the letters d, M and y
+        static const std::string date_format = []() {
+            std::string format{};
+#if defined(__WINDOWS__)
+            wchar_t buf[80]{};
+            if (GetLocaleInfoW(LOCALE_USER_DEFAULT, LOCALE_SSHORTDATE, buf, 80) > 0) {
+                bool quoted = false; // text between quotes is not a part of the date
+                for (const wchar_t *c = buf; *c; ++c) {
+                    if (*c == L'\'') quoted = !quoted;
+                    else if (!quoted && *c < 0x80) format += static_cast<char>(*c);
+                }
+            }
+#elif defined(__LINUX__)
+            locale_t loc = newlocale(LC_TIME_MASK, "", static_cast<locale_t>(0));
+            if (loc) {
+                // a strftime format, such as "%d.%m.%Y"
+                for (const char *c = nl_langinfo_l(D_FMT, loc); *c; ++c) {
+                    if (*c != '%' || !c[1]) {
+                        if (static_cast<unsigned char>(*c) < 0x80) format += *c;
+                        continue;
+                    }
+                    switch (*++c) {
+                        case 'd': format += "dd"; break;
+                        case 'e': format += "d"; break;
+                        case 'm': case 'b': case 'B': case 'h': format += "MM"; break;
+                        case 'Y': format += "yyyy"; break;
+                        case 'y': format += "yy"; break;
+                        case 'D': format += "MM/dd/yy"; break;
+                        case 'F': format += "yyyy-MM-dd"; break;
+                        default: break; // the day of the week and the like are not shown
+                    }
+                }
+                freelocale(loc);
+            }
+#endif
+            // ISO 8601 when the system's format can't be read
+            return format.find_first_of("dMy") == std::string::npos ? std::string("yyyy-MM-dd") : format;
+        }();
+        // the numbers with the separators between them, and the names of the parts in the same order for the tooltip
+        std::string date_text{}, date_parts{}, separator{};
+        for (size_t i = 0; i < date_format.size();) {
+            const char letter = date_format[i];
+            size_t count = 1;
+            while (i + count < date_format.size() && date_format[i + count] == letter) ++count;
+            i += count;
+            char number[16]{};
+            const char *part = nullptr;
+            if (letter == 'd' && count <= 2) { // ("ddd" and "dddd" are the name of the day of the week)
+                snprintf(number, sizeof(number), count == 2 ? "%02d" : "%d", now_tm.tm_mday);
+                part = translationDay[current_language];
+            } else if (letter == 'M') {
+                snprintf(number, sizeof(number), count == 1 ? "%d" : "%02d", now_tm.tm_mon + 1);
+                part = translationMonth[current_language];
+            } else if (letter == 'y') {
+                snprintf(number, sizeof(number), "%02d", count <= 2 ? now_tm.tm_year % 100 : now_tm.tm_year + 1900);
+                part = translationYear[current_language];
+            } else if (letter == '.' || letter == '/' || letter == '-' || letter == ' ') {
+                separator.append(count, letter);
+            }
+            if (!part) continue;
+            if (!date_text.empty()) {
+                // (a slash where the format has nothing the display draws between two numbers: a letter, or only a space)
+                const std::string between = separator.find_first_not_of(' ') == std::string::npos ? std::string("/") : separator;
+                date_text += between;
+                date_parts += between;
+            }
+            separator.clear();
+            date_text += number;
+            date_parts += part;
+        }
+        // the stats box goes below these lines while the overlay is shown, the left column below the stats box
+        // (font sizes as PushFont() takes them: before the global scale)
+        const float clock_size = std::floor(font_default->LegacySize * 2.75f + 0.5f);
+        const float date_size = std::floor(font_default->LegacySize * 1.5f + 0.5f);
+        const float text_scale = fs / font_default->LegacySize;
+        float top_bar_bottom = pad + (clock_size + date_size) * text_scale + 2.0f * ImGui::GetStyle().ItemSpacing.y + ImGui::GetTextLineHeight();
+        if (settings->record_playtime && playtime_counter) top_bar_bottom += ImGui::GetTextLineHeightWithSpacing();
+        top_bar_bottom += 2.0f * ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeight(); // the button, after a little space
+        const float top_gap = std::floor(fs * 0.75f + 0.5f);
+        stats.top_inset = top_bar_bottom + top_gap - pad; // (the stats box keeps the same distance from the edges itself)
+        const float left_top_y = std::floor(top_bar_bottom + top_gap + fs * 2.0f + top_gap);
+        const float toolbar_y = std::floor(io.DisplaySize.y - std::floor(pad * 2.5f + 0.5f) - tile);
+        const float room_h = (std::max)(fs * 10.0f, toolbar_y - pad - top_y);
+        const float right_h = (std::min)(fs * 20.0f, (room_h - pad) * 0.5f); // Friends and History share the right column
+        float left_w = fs * 20.0f;
+        float center_w = (std::min)(fs * 32.0f, io.DisplaySize.x * 0.9f);
+        float right_w = fs * 28.0f;
+        const float usable_w = io.DisplaySize.x - 4.0f * pad;
+        if (left_w + center_w + right_w > usable_w && usable_w > 0.0f) {
+            const float k = usable_w / (left_w + center_w + right_w);
+            left_w = (std::max)(fs * 10.0f, std::floor(left_w * k));
+            center_w = (std::max)(fs * 14.0f, std::floor(center_w * k));
+            right_w = (std::max)(fs * 13.0f, std::floor(right_w * k));
+        }
+        const float center_h = (std::min)(fs * 32.0f, room_h);
+        const float left_x = pad;
+        const float right_x = std::floor(io.DisplaySize.x - pad - right_w);
+        const float center_x = (std::max)(left_x + left_w + pad, (std::min)(std::floor((io.DisplaySize.x - center_w) * 0.5f), right_x - pad - center_w));
+        // the two left panels are stacked, they shrink together when they would run into the toolbar
+        float left_h = fs * 12.0f;
+        const float left_room = (std::max)(fs * 12.0f, toolbar_y - pad - left_top_y);
+        if (2.0f * left_h + pad > left_room) left_h = (std::max)(fs * 6.0f, std::floor((left_room - pad) * 0.5f));
+        // a panel can be resized, but not smaller than this (or than its first size on a small window)
+        const ImVec2 left_min_size((std::min)(fs * 20.0f, left_w), (std::min)(fs * 12.0f, left_h));
+        // the FPS/frametime/playtime checkboxes are in the settings panel
+        const bool show_stats_checkboxes = settings->overlay_show_checkbox_fps ||
+            settings->overlay_show_checkbox_frametime || settings->overlay_show_checkbox_playtime;
+
+        // top bar, left: the clock and the date (prepared above), the playtime of this session and the renderer
+        {
+            ImGui::SetCursorPos(ImVec2(pad, pad));
+            ImGui::BeginGroup();
+            // a large white clock and light gray lines under it, readable over a bright game too.
+            // Hovering the clock or the date tells what they show
+            ImGui::PushFont(font_default, clock_size);
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%s", clock_buf);
+            ImGui::PopFont();
+            if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s", translationClockTooltip[current_language]);
+            ImGui::PushFont(font_default, date_size);
+            ImGui::TextColored(ImVec4(0.722f, 0.737f, 0.749f, 1.0f), "%s", date_text.c_str());
+            ImGui::PopFont();
+            if (ImGui::IsItemHovered()) ImGui::SetTooltip(translationDateTooltip[current_language], date_parts.c_str());
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.722f, 0.737f, 0.749f, 1.0f));
+            if (settings->record_playtime && playtime_counter) {
                 uint64_t session_sec = playtime_counter->session_seconds();
                 unsigned ss = static_cast<unsigned>(session_sec % 60);
                 unsigned mm = static_cast<unsigned>((session_sec / 60) % 60);
                 unsigned hh = static_cast<unsigned>(session_sec / 3600);
-
-                uint64_t total_sec = playtime_counter->seconds();
-                unsigned total_h = static_cast<unsigned>(total_sec / 3600);
-                unsigned total_m = static_cast<unsigned>((total_sec % 3600) / 60);
-
-                char total_buf[32]{};
-                char session_buf[32]{};
-                snprintf(total_buf, sizeof(total_buf), translationTotalTime[current_language], total_h, total_m);
-                snprintf(session_buf, sizeof(session_buf), "%02u:%02u:%02u", hh, mm, ss);
-
-                ImGui::LabelText("##playtime", translationTotalTimeText[current_language], total_buf, session_buf);
+                ImGui::Text(translationPlaytimeLabelLine[current_language], hh, mm, ss);
             }
+            ImGui::TextUnformatted(tmp); // "Renderer: DX11" and so on, formatted at the start of this function
+            ImGui::PopStyleColor();
+            // Steam's "Exit Game" button: it turns red under the mouse and closes the game right away, like Steam's own
+            ImGui::Spacing();
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.886f, 0.165f, 0.153f, 1.0f)); // #e22a27
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.70f, 0.12f, 0.11f, 1.0f));
+            if (ImGui::Button(translationExitGame[current_language])) {
+                std::exit(0);
+            }
+            ImGui::PopStyleColor(2);
+            ImGui::EndGroup();
         }
 
-        ImGui::Spacing();
+        // top bar, right: "Back to Game" over the key combination that toggles the overlay, and a close button
+        {
+            std::string hotkey = "(";
+            if (settings->overlay_toggle_keys.empty()) {
+                hotkey += "Shift + Tab";
+            } else {
+                for (size_t i = 0; i < settings->overlay_toggle_keys.size(); ++i) {
+                    std::string key = settings->overlay_toggle_keys[i];
+                    if (!key.empty()) key[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(key[0])));
+                    if (i) hotkey += " + ";
+                    hotkey += key;
+                }
+            }
+            hotkey += ")";
 
-        if (settings->overlay_show_button_user_info) {
+            const ImVec2 back_size = ImGui::CalcTextSize(translationBackToGame[current_language]);
+            const ImVec2 hotkey_size = ImGui::CalcTextSize(hotkey.c_str());
+            const float text_w = (std::max)(back_size.x, hotkey_size.x);
+            // the close button is a square as tall as the two lines of text next to it
+            const float close_size = back_size.y + ImGui::GetStyle().ItemSpacing.y + hotkey_size.y;
+
+            ImGui::SetCursorPos(ImVec2(io.DisplaySize.x - pad - close_size - ImGui::GetStyle().ItemSpacing.x - text_w, pad));
+            ImGui::BeginGroup();
+            // both lines end at the same place
+            const float text_x = ImGui::GetCursorPosX();
+            ImGui::SetCursorPosX(text_x + std::floor(text_w - back_size.x + 0.5f));
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%s", translationBackToGame[current_language]);
+            ImGui::SetCursorPosX(text_x + std::floor(text_w - hotkey_size.x + 0.5f));
+            ImGui::TextColored(ImVec4(0.722f, 0.737f, 0.749f, 1.0f), "%s", hotkey.c_str());
+            ImGui::EndGroup();
             ImGui::SameLine();
-            // user clicked on "toggle user info"
-            if (ImGui::Button(translationToggleUserInfo[current_language])) {
-                show_user_info = !show_user_info;
+            if (ImGui::Button("##close_overlay", ImVec2(close_size, close_size))) {
+                show = false;
             }
+            draw_icon(Overlay_Icon::Close, ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImGui::GetColorU32(ImGuiCol_Text), 0);
         }
 
-        if (settings->overlay_show_button_achievements) {
-            ImGui::SameLine();
-            // user clicked on "show achievements"
-            if (ImGui::Button(translationShowAchievements[current_language])) {
-                show_achievements = !show_achievements;
+        // toolbar: a row of icon buttons at the bottom, the button of an open panel stays highlighted
+        {
+            struct Toolbar_Button {
+                const char *id;
+                const char *tooltip;
+                bool shown;
+                Overlay_Icon icon;
+                bool *panel; // the panel the button opens and closes, nullptr for an action
+            };
+            const Toolbar_Button buttons[] = {
+                { "##toolbar_user_info", translationToggleUserInfo[current_language], settings->overlay_show_button_user_info, Overlay_Icon::UserInfo, &show_user_info },
+                { "##toolbar_copy_id", translationCopyId[current_language], settings->overlay_show_button_copy_id, Overlay_Icon::CopyId, nullptr },
+                { "##toolbar_achievements", translationShowAchievements[current_language], settings->overlay_show_button_achievements, Overlay_Icon::Achievements, &show_achievements },
+                { "##toolbar_test_achievement", translationTestAchievement[current_language], settings->overlay_show_button_test_achievement, Overlay_Icon::TestAchievement, nullptr },
+                { "##toolbar_friends", translationFriends[current_language], true, Overlay_Icon::Friends, &show_friends },
+                { "##toolbar_screenshots", translationScreenshots[current_language], settings->overlay_show_button_screenshots, Overlay_Icon::Screenshots, &show_screenshots_window },
+                { "##toolbar_history", translationHistory[current_language], settings->overlay_show_button_history, Overlay_Icon::History, &show_notification_history },
+                { "##toolbar_settings", translationSettings[current_language], settings->overlay_show_button_settings || show_stats_checkboxes, Overlay_Icon::Settings, &show_settings },
+            };
+
+            const float gap = ImGui::GetStyle().ItemSpacing.x;
+            int count = 0;
+            for (const auto &button : buttons) {
+                if (button.shown) ++count;
             }
+            const float total_w = count * tile + (count > 1 ? (count - 1) * gap : 0.0f);
+            // on whole pixels, a fractional position blurs the edges of the buttons
+            ImGui::SetCursorPos(ImVec2(std::floor((io.DisplaySize.x - total_w) * 0.5f + 0.5f), toolbar_y));
+            ImGui::BeginGroup();
+            const ImU32 icon_color = ImGui::GetColorU32(ImVec4(0.863f, 0.871f, 0.875f, 1.0f));
+            const ImU32 icon_color_bright = ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+            bool first = true;
+            for (const auto &button : buttons) {
+                if (!button.shown) continue;
+                if (!first) ImGui::SameLine(0.0f, gap);
+                first = false;
+
+                // the button of an open panel keeps the accent color, a bit brighter under the mouse
+                const bool open = button.panel && *button.panel;
+                if (open) {
+                    const ImVec4 accent = ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive);
+                    ImGui::PushStyleColor(ImGuiCol_Button, accent);
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4((std::min)(accent.x + 0.10f, 1.0f), (std::min)(accent.y + 0.11f, 1.0f), 1.0f, accent.w));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonActive, accent);
+                }
+                const bool clicked = ImGui::Button(button.id, ImVec2(tile, tile));
+                const bool hovered = ImGui::IsItemHovered();
+                const ImU32 button_color = ImGui::GetColorU32((ImGui::IsItemActive() && hovered) ? ImGuiCol_ButtonActive : (hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button));
+                draw_icon(button.icon, ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), (open || hovered) ? icon_color_bright : icon_color, button_color);
+                if (open) ImGui::PopStyleColor(3);
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
+                    ImGui::SetTooltip("%s", button.tooltip);
+                }
+
+                if (clicked) {
+                    if (button.panel) {
+                        *button.panel = !*button.panel;
+                    } else if (button.icon == Overlay_Icon::CopyId) {
+                        // user clicked on "copy id" on themselves
+                        auto friend_id_str = std::to_string(settings->get_local_steam_id().ConvertToUint64());
+                        ImGui::SetClipboardText(friend_id_str.c_str());
+                    } else if (button.icon == Overlay_Icon::TestAchievement) {
+                        show_test_achievement();
+                    }
+                }
+            }
+            ImGui::EndGroup();
         }
 
-        if (settings->overlay_show_button_test_achievement) {
-            ImGui::SameLine();
-            // user clicked on "test achievement"
-            if (ImGui::Button(translationTestAchievement[current_language])) {
-                show_test_achievement();
-            }
-        }
+        // --- User info panel ---
+        if (show_user_info) {
+            ImGui::SetNextWindowSizeConstraints(left_min_size, ImVec2(8192, 8192));
+            ImGui::SetNextWindowSize(ImVec2(left_w, left_h), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowPos(ImVec2(left_x, left_top_y), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowBgAlpha(1.0f);
+            if (ImGui::Begin(translationUserInfo[current_language], &show_user_info, ImGuiWindowFlags_NoCollapse)) {
+                // one line per value: a dim label, then the value
+                auto info_line = [](const char *label, const std::string &value) {
+                    ImGui::TextDisabled("%s", label);
+                    ImGui::SameLine();
+                    ImGui::TextWrapped("%s", value.c_str());
+                };
+                info_line(translationUsername[current_language], settings->get_local_name());
+                info_line(translationSteamId[current_language], std::to_string(settings->get_local_steam_id().ConvertToUint64()));
+                info_line(translationAppId[current_language], std::to_string(settings->get_local_game_id().AppID()));
 
-        if (settings->overlay_show_button_copy_id) {
-            ImGui::SameLine();
-            // user clicked on "copy id" on themselves
-            if (ImGui::Button(translationCopyId[current_language])) {
-                auto friend_id_str = std::to_string(settings->get_local_steam_id().ConvertToUint64());
-                ImGui::SetClipboardText(friend_id_str.c_str());
-            }
-        }
+                if (settings->record_playtime && playtime_counter && settings->overlay_appearance.show_playtime_in_user_info) {
+                    uint64_t session_sec = playtime_counter->session_seconds();
+                    unsigned ss = static_cast<unsigned>(session_sec % 60);
+                    unsigned mm = static_cast<unsigned>((session_sec / 60) % 60);
+                    unsigned hh = static_cast<unsigned>(session_sec / 3600);
 
-        if (settings->overlay_show_button_screenshots) {
-            ImGui::SameLine();
-            // user clicked on "Screenshots"
-            if (ImGui::Button(translationScreenshots[current_language])) {
-                show_screenshots_window = !show_screenshots_window;
-            }
-		}
+                    uint64_t total_sec = playtime_counter->seconds();
+                    unsigned total_h = static_cast<unsigned>(total_sec / 3600);
+                    unsigned total_m = static_cast<unsigned>((total_sec % 3600) / 60);
 
-        if (settings->overlay_show_button_history) {
-            ImGui::SameLine();
-            // user clicked on "notification history"
-            if (ImGui::Button(translationHistory[current_language])) {
-                show_notification_history = !show_notification_history;
-            }
-        }
+                    char total_buf[32]{};
+                    char session_buf[32]{};
+                    snprintf(total_buf, sizeof(total_buf), translationTotalTime[current_language], total_h, total_m);
+                    snprintf(session_buf, sizeof(session_buf), "%02u:%02u:%02u", hh, mm, ss);
 
-        if (settings->overlay_show_button_settings) {
-            ImGui::SameLine();
-            // user clicked on "settings"
-            if (ImGui::Button(translationSettings[current_language])) {
-                show_settings = !show_settings;
+                    ImGui::Spacing();
+                    ImGui::Separator();
+                    ImGui::Spacing();
+                    ImGui::TextWrapped(translationTotalTimeText[current_language], total_buf, session_buf);
+                }
             }
+            ImGui::End();
         }
-        
-        ImGui::Spacing();
-        ImGui::Spacing();
-        // user clicked on "FPS"
-        if (settings->overlay_show_checkbox_fps) {
-            ImGui::SameLine();
-            if (ImGui::Checkbox(translationFpsCheckbox[current_language], &stats.show_fps)) {
-                allow_renderer_frame_processing(stats.show_fps);
-            }
-        }
-        
-        // user clicked on "Frametime"
-        ImGui::SameLine();
-        if (settings->overlay_show_checkbox_frametime) {
-            if (ImGui::Checkbox(translationFrametimeCheckbox[current_language], &stats.show_frametime)) {
-                allow_renderer_frame_processing(stats.show_frametime);
-            }
-        }
-        
-        // user clicked on "Playtime"
-        ImGui::SameLine();
-        if (settings->overlay_show_checkbox_playtime) {
-            if (ImGui::Checkbox(translationPlaytimeCheckbox[current_language], &stats.show_playtime)) {
-                allow_renderer_frame_processing(stats.show_playtime);
-            }
-        }
-        
-        ImGui::Spacing();
-        ImGui::Spacing();
 
         // --- Notification history panel ---
         if (show_notification_history) {
-            if (ImGui::Button(translationClearAll[current_language])) {
-                notification_history.clear();
-                notification_history_cache.clear();
-                notification_history_cache_dirty = false;
-            }
-            ImGui::Separator();
-            if (notification_history.empty()) {
-                ImGui::TextDisabled(translationNoNotification[current_language]);
-            } else {
-                ImGui::BeginChild("##history_scroll", ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 10), true);
-
-                // Rebuild cache only when history actually changes
-                if (notification_history_cache_dirty) {
+            ImGui::SetNextWindowSizeConstraints(ImVec2((std::min)(fs * 28.0f, right_w), right_h), ImVec2(8192, 8192));
+            ImGui::SetNextWindowSize(ImVec2(right_w, right_h), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowPos(ImVec2(right_x, top_y + right_h + pad), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowBgAlpha(1.0f);
+            if (ImGui::Begin(translationHistory[current_language], &show_notification_history, ImGuiWindowFlags_NoCollapse)) {
+                if (ImGui::Button(translationClearAll[current_language])) {
+                    notification_history.clear();
                     notification_history_cache.clear();
-                    notification_history_cache.reserve(notification_history.size());
-
-                    for (auto it = notification_history.rbegin(); it != notification_history.rend(); ++it) {
-                        // Format timestamp HH:MM:SS in local timezone
-                        const time_t total_sec = std::chrono::duration_cast<std::chrono::seconds>(it->timestamp).count();
-                        struct tm local_tm_buf{};
-#ifdef _MSC_VER
-                        localtime_s(&local_tm_buf, &total_sec);
-#else
-                        localtime_r(&total_sec, &local_tm_buf);
-#endif
-                        const auto hr = local_tm_buf.tm_hour;
-                        const auto min = local_tm_buf.tm_min;
-                        const auto sec = local_tm_buf.tm_sec;
-
-                        // Type label
-                        const char *type_label = "?";
-                        switch ((notification_type)it->type) {
-                            case notification_type::message: type_label = translationHistoryChat[current_language]; break;
-                            case notification_type::invite: type_label = translationHistoryInvite[current_language]; break;
-                            case notification_type::achievement: type_label = translationHistoryAchievement[current_language]; break;
-                            case notification_type::achievement_progress: type_label = translationHistoryProgress[current_language]; break;
-                            case notification_type::auto_accept_invite: type_label = translationHistoryAutoInvite[current_language]; break;
-                            case notification_type::screenshot: type_label = translationHistoryScreenshot[current_language]; break;
-                        }
-
-                        // For achievements the message contains "title\ndescription"
-                        // Replace newline with inline separator for compact display
-                        std::string display_msg = it->message;
-                        if (it->type == static_cast<uint8>(notification_type::achievement) ||
-                            it->type == static_cast<uint8>(notification_type::achievement_progress)) {
-                            size_t pos = display_msg.find('\n');
-                            if (pos != std::string::npos) {
-                                display_msg.replace(pos, 1, " — ");
-                            }
-                        }
-
-                        std::string line = (std::ostringstream{}
-                            << "[" << std::setw(2) << std::setfill('0') << hr << ":"
-                            << std::setw(2) << std::setfill('0') << min << ":"
-                            << std::setw(2) << std::setfill('0') << sec << "] "
-                            << type_label << "  "
-                            << display_msg).str();
-
-                        notification_history_cache.push_back(std::move(line));
-                    }
                     notification_history_cache_dirty = false;
                 }
+                ImGui::Separator();
+                if (notification_history.empty()) {
+                    ImGui::TextDisabled(translationNoNotification[current_language]);
+                } else {
+                    ImGui::BeginChild("##history_scroll", ImGui::GetContentRegionAvail(), ImGuiChildFlags_None);
 
-                // Render from cache
-                for (const auto &line : notification_history_cache) {
-                    ImGui::TextWrapped("%s", line.c_str());
-                    ImGui::Separator();
-                }
-                ImGui::EndChild();
-            }
-        }
+                    // Rebuild cache only when history actually changes
+                    if (notification_history_cache_dirty) {
+                        notification_history_cache.clear();
+                        notification_history_cache.reserve(notification_history.size());
 
-        ImGui::LabelText("##label", "%s", translationFriends[current_language]);
+                        for (auto it = notification_history.rbegin(); it != notification_history.rend(); ++it) {
+                            // Format timestamp HH:MM:SS in local timezone
+                            const time_t total_sec = std::chrono::duration_cast<std::chrono::seconds>(it->timestamp).count();
+                            struct tm local_tm_buf{};
+#ifdef _MSC_VER
+                            localtime_s(&local_tm_buf, &total_sec);
+#else
+                            localtime_r(&total_sec, &local_tm_buf);
+#endif
+                            const auto hr = local_tm_buf.tm_hour;
+                            const auto min = local_tm_buf.tm_min;
+                            const auto sec = local_tm_buf.tm_sec;
 
-        if (!friends.empty()) {
-            if (i_have_lobby) {
-                std::string inviteAll(translationInviteAll[current_language]);
-                inviteAll.append("##PopupInviteAllFriends");
-                if (ImGui::Button(inviteAll.c_str())) { // if btn clicked
-                    invite_all_friends_clicked = true;
-                }
-            }
+                            // Type label
+                            const char *type_label = "?";
+                            switch ((notification_type)it->type) {
+                                case notification_type::message: type_label = translationHistoryChat[current_language]; break;
+                                case notification_type::invite: type_label = translationHistoryInvite[current_language]; break;
+                                case notification_type::achievement: type_label = translationHistoryAchievement[current_language]; break;
+                                case notification_type::achievement_progress: type_label = translationHistoryProgress[current_language]; break;
+                                case notification_type::auto_accept_invite: type_label = translationHistoryAutoInvite[current_language]; break;
+                                case notification_type::screenshot: type_label = translationHistoryScreenshot[current_language]; break;
+                            }
 
-            if (ImGuiHelper_BeginListBox("##label", static_cast<int>(friends.size()))) {
-                std::for_each(friends.begin(), friends.end(), [this](std::pair<Friend const, friend_window_state> &i) {
-                    ImGui::PushID(i.second.id-base_friend_window_id+base_friend_item_id);
+                            // For achievements the message contains "title\ndescription"
+                            // Replace newline with inline separator for compact display
+                            std::string display_msg = it->message;
+                            if (it->type == static_cast<uint8>(notification_type::achievement) ||
+                                it->type == static_cast<uint8>(notification_type::achievement_progress)) {
+                                size_t pos = display_msg.find('\n');
+                                if (pos != std::string::npos) {
+                                    display_msg.replace(pos, 1, " — ");
+                                }
+                            }
 
-                    ImGui::Selectable(i.second.window_title.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick);
-                    build_friend_context_menu(i.first, i.second);
-                    if (ImGui::IsItemClicked() && ImGui::IsMouseDoubleClicked(0)) {
-                        i.second.window_state |= window_state_show;
+                            // time, kind and message separated by tabs: they are drawn in different styles below
+                            std::string line = (std::ostringstream{}
+                                << std::setw(2) << std::setfill('0') << hr << ":"
+                                << std::setw(2) << std::setfill('0') << min << ":"
+                                << std::setw(2) << std::setfill('0') << sec << '\t'
+                                << type_label << '\t'
+                                << display_msg).str();
+
+                            notification_history_cache.push_back(std::move(line));
+                        }
+                        notification_history_cache_dirty = false;
                     }
 
-                    ImGui::PopID();
-
-                    build_friend_window(i.first, i.second);
-                });
-                ImGui::EndListBox();
+                    // Render from cache: the time (dim) and the kind (accent color) on one line, the message under them
+                    for (const auto &line : notification_history_cache) {
+                        const size_t time_end = line.find('\t');
+                        const size_t kind_end = time_end == std::string::npos ? std::string::npos : line.find('\t', time_end + 1);
+                        if (kind_end == std::string::npos) {
+                            ImGui::TextWrapped("%s", line.c_str());
+                        } else {
+                            ImGui::TextDisabled("%.*s", (int)time_end, line.c_str());
+                            ImGui::SameLine();
+                            ImGui::TextColored(ImVec4(0.102f, 0.624f, 1.0f, 1.0f), "%.*s", (int)(kind_end - time_end - 1), line.c_str() + time_end + 1);
+                            ImGui::TextWrapped("%s", line.c_str() + kind_end + 1);
+                        }
+                        ImGui::Spacing();
+                        ImGui::Separator();
+                        ImGui::Spacing();
+                    }
+                    ImGui::EndChild();
+                }
             }
+            ImGui::End();
+        }
+
+        // --- Friends panel ---
+        if (show_friends) {
+            ImGui::SetNextWindowSizeConstraints(ImVec2((std::min)(fs * 24.0f, right_w), right_h), ImVec2(8192, 8192));
+            ImGui::SetNextWindowSize(ImVec2(right_w, right_h), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowPos(ImVec2(right_x, top_y), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowBgAlpha(1.0f);
+            if (ImGui::Begin(translationFriends[current_language], &show_friends, ImGuiWindowFlags_NoCollapse)) {
+                if (friends.empty()) {
+                    ImGui::TextDisabled("%s", translationNoFriends[current_language]);
+                } else {
+                    if (i_have_lobby) {
+                        std::string inviteAll(translationInviteAll[current_language]);
+                        inviteAll.append("##PopupInviteAllFriends");
+                        if (ImGui::Button(inviteAll.c_str())) { // if btn clicked
+                            invite_all_friends_clicked = true;
+                        }
+                    }
+
+                    // the list fills the panel
+                    if (ImGui::BeginListBox("##label", ImVec2(-FLT_MIN, -FLT_MIN))) {
+                        std::for_each(friends.begin(), friends.end(), [this](std::pair<Friend const, friend_window_state> &i) {
+                            ImGui::PushID(i.second.id-base_friend_window_id+base_friend_item_id);
+
+                            ImGui::Selectable(i.second.window_title.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick);
+                            if (i.second.window_state & (window_state_lobby_invite | window_state_rich_invite)) {
+                                // an invitation from this friend is waiting: a dot at the end of the row
+                                const ImVec2 row_min = ImGui::GetItemRectMin();
+                                const ImVec2 row_max = ImGui::GetItemRectMax();
+                                const float r = std::floor(ImGui::GetFontSize() * 0.28f + 0.5f);
+                                ImGui::GetWindowDrawList()->AddCircleFilled(ImVec2(row_max.x - r * 2.5f, (row_min.y + row_max.y) * 0.5f), r,
+                                    ImGui::GetColorU32(ImVec4(0.102f, 0.624f, 1.0f, 1.0f)));
+                            }
+                            build_friend_context_menu(i.first, i.second);
+                            if (ImGui::IsItemClicked() && ImGui::IsMouseDoubleClicked(0)) {
+                                i.second.window_state |= window_state_show;
+                            }
+
+                            ImGui::PopID();
+                        });
+                        ImGui::EndListBox();
+                    }
+                }
+            }
+            ImGui::End();
+        }
+
+        // the chat windows stay open whether the friends panel is shown or not
+        for (auto &i : friends) {
+            build_friend_window(i.first, i.second);
         }
 
         // user clicked on "show achievements" button
-        if (show_achievements && achievements.size()) {
-            ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 32, ImGui::GetFontSize() * 32), ImVec2(8192, 8192));
+        // (the panel also opens for a game without achievements, so the highlighted toolbar button always shows something)
+        if (show_achievements) {
+            ImGui::SetNextWindowSizeConstraints(ImVec2(center_w, center_h), ImVec2(8192, 8192));
+            ImGui::SetNextWindowSize(ImVec2(center_w, center_h), ImGuiCond_FirstUseEver);
             ImGui::SetNextWindowBgAlpha(1.0f);
-            ImGui::SetNextWindowPos(ImVec2(ImGui::GetFontSize() * 4, std::max(ImGui::GetFontSize() * 10, io.DisplaySize.y * 0.15f)), ImGuiCond_FirstUseEver);
-            if (ImGui::Begin(translationAchievementWindow[current_language], &show_achievements)) {
-                ImGui::Text("%s", translationListOfAchievements[current_language]);
+            ImGui::SetNextWindowPos(ImVec2(center_x, top_y), ImGuiCond_FirstUseEver);
+            const bool achievements_window = ImGui::Begin(translationAchievements[current_language], &show_achievements, ImGuiWindowFlags_NoCollapse);
+            if (achievements_window && achievements.empty()) {
+                ImGui::TextDisabled("%s", translationNoAchievementsConfigured[current_language]);
+            }
+            if (achievements_window && !achievements.empty()) {
+                // earned / total, with a thin progress bar under it
+                {
+                    unsigned earned = 0;
+                    for (const auto &ach : achievements) {
+                        if (ach.achieved) ++earned;
+                    }
+                    const float fraction = static_cast<float>(earned) / static_cast<float>(achievements.size());
+                    ImGui::Text("%u / %u  (%d%%)", earned, static_cast<unsigned>(achievements.size()), static_cast<int>(fraction * 100.0f + 0.5f));
+                    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.239f, 0.267f, 0.314f, 1.0f)); // #3d4450
+                    ImGui::ProgressBar(fraction, ImVec2(-1.0f, 6.0f), "");
+                    ImGui::PopStyleColor();
+                    ImGui::Spacing();
+                }
+                ImGui::TextDisabled("%s", translationListOfAchievements[current_language]);
                 ImGui::BeginChild(translationAchievements[current_language]);
 
                 // Build sorted index lists: unlocked by time desc, locked in API order
@@ -2247,7 +2724,8 @@ void Steam_Overlay::render_main_window()
                         }
                     }
 
-                    ImGui::Text("%s", x.title.c_str());
+                    // a long title wraps instead of running past the panel's edge
+                    ImGui::TextWrapped("%s", x.title.c_str());
                     if (x.unlock_percentage >= 0.0f) {
                         float display_pct = x.unlock_percentage;
                         if (display_pct < 0.1f) {
@@ -2255,7 +2733,10 @@ void Steam_Overlay::render_main_window()
                         }
                         char pct_buf[32];
                         snprintf(pct_buf, sizeof(pct_buf), "%.1f%%", display_pct);
-                        ImGui::SameLine(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(pct_buf).x);
+                        // on the title's line when there is room for it, else on its own line
+                        if (ImGui::CalcTextSize(x.title.c_str()).x + ImGui::CalcTextSize(pct_buf).x + ImGui::GetStyle().ItemSpacing.x * 2.0f < ImGui::GetContentRegionAvail().x) {
+                            ImGui::SameLine(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(pct_buf).x);
+                        }
                         if (achieved && x.unlock_percentage <= 10.0f) {
                             ImGui::TextColored(ImVec4(218.0f / 255.0f, 165.0f / 255.0f, 32.0f / 255.0f, 1.0f), "%s", pct_buf);
                         } else {
@@ -2276,7 +2757,9 @@ void Steam_Overlay::render_main_window()
                             ImGui::TextWrapped("%s", x.description.c_str());
                         }
                     } else {
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.722f, 0.737f, 0.749f, 1.0f)); // #b8bcbf, a step dimmer than the title
                         ImGui::TextWrapped("%s", x.description.c_str());
+                        ImGui::PopStyleColor();
                     }
 
                     if (achieved) {
@@ -2293,16 +2776,14 @@ void Steam_Overlay::render_main_window()
                             std::strftime(buffer, sizeof(buffer), "%Y/%m/%d - %H:%M:%S", &unlock_tm);
                         }
 
-                        ImGui::TextColored(ImVec4(0, 255, 0, 255), translationAchievedOn[current_language], buffer);
+                        ImGui::TextColored(ImVec4(0.349f, 0.749f, 0.251f, 1.0f), translationAchievedOn[current_language], buffer); // #59bf40
                     } else {
-                        ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s", translationNotAchieved[current_language]);
+                        ImGui::TextDisabled("%s", translationNotAchieved[current_language]);
                     }
 
                     add_ach_progressbar(x);
 
                     if (could_create_ach_table_entry) ImGui::EndTable();
-
-                    ImGui::Separator();
                 };
 
                 // --- Unlocked section ---
@@ -2335,28 +2816,69 @@ void Steam_Overlay::render_main_window()
 
         // user clicked on "settings" button
         if (show_settings) {
+            const float settings_y = left_top_y + left_h + pad;
+            float settings_h = left_h;
+            if (settings->overlay_show_button_settings) {
+                // the user name and the language need more room: down to the toolbar if needed
+                settings_h = (std::max)(left_h, (std::min)(fs * 38.0f, toolbar_y - pad - settings_y));
+            }
+            ImGui::SetNextWindowSizeConstraints(left_min_size, ImVec2(8192, 8192));
+            ImGui::SetNextWindowSize(ImVec2(left_w, settings_h), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowPos(ImVec2(left_x, settings_y), ImGuiCond_FirstUseEver);
             ImGui::SetNextWindowBgAlpha(1.0f);
-            if (ImGui::Begin(translationGlobalSettingsWindow[current_language], &show_settings)) {
-                ImGui::Text("%s", translationGlobalSettingsWindowDescription[current_language]);
+            if (ImGui::Begin(translationSettings[current_language], &show_settings, ImGuiWindowFlags_NoCollapse)) {
+                // the checkboxes get an outline, on the dark panel they are hard to see without one
+                ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.36f, 0.40f, 0.47f, 1.0f));
+                // user clicked on "FPS"
+                if (settings->overlay_show_checkbox_fps) {
+                    if (ImGui::Checkbox(translationFpsCheckbox[current_language], &stats.show_fps)) {
+                        allow_renderer_frame_processing(stats.show_fps);
+                    }
+                }
 
-                ImGui::Separator();
+                // user clicked on "Frametime"
+                if (settings->overlay_show_checkbox_frametime) {
+                    if (ImGui::Checkbox(translationFrametimeCheckbox[current_language], &stats.show_frametime)) {
+                        allow_renderer_frame_processing(stats.show_frametime);
+                    }
+                }
 
-                ImGui::Text("%s", translationUsername[current_language]);
-                ImGui::SameLine();
-                ImGui::InputText("##username", username_text, sizeof(username_text), 0);
+                // user clicked on "Playtime"
+                if (settings->overlay_show_checkbox_playtime) {
+                    if (ImGui::Checkbox(translationPlaytimeCheckbox[current_language], &stats.show_playtime)) {
+                        allow_renderer_frame_processing(stats.show_playtime);
+                    }
+                }
+                ImGui::PopStyleColor();
+                ImGui::PopStyleVar();
 
-                ImGui::Separator();
+                if (settings->overlay_show_button_settings) {
+                    if (show_stats_checkboxes) ImGui::Separator();
 
-                ImGui::Text("%s", translationLanguage[current_language]);
-                ImGui::ListBox("##language", &current_language, valid_languages, sizeof(valid_languages) / sizeof(valid_languages[0]), 7);
-                ImGui::Text(translationSelectedLanguage[current_language], valid_languages[current_language]);
+                    ImGui::TextWrapped("%s", translationGlobalSettingsWindowDescription[current_language]);
 
-                ImGui::Separator();
+                    ImGui::Separator();
 
-                ImGui::Text("%s", translationRestartTheGameToApply[current_language]);
-                if (ImGui::Button(translationSave[current_language])) {
-                    save_settings = true;
-                    show_settings = false;
+                    // the fields go under their labels and fill the panel: some translations of the labels are long
+                    ImGui::Text("%s", translationUsername[current_language]);
+                    ImGui::SetNextItemWidth(-FLT_MIN);
+                    ImGui::InputText("##username", username_text, sizeof(username_text), 0);
+
+                    ImGui::Separator();
+
+                    ImGui::Text("%s", translationLanguage[current_language]);
+                    ImGui::SetNextItemWidth(-FLT_MIN);
+                    ImGui::ListBox("##language", &current_language, valid_languages, sizeof(valid_languages) / sizeof(valid_languages[0]), 7);
+                    ImGui::Text(translationSelectedLanguage[current_language], valid_languages[current_language]);
+
+                    ImGui::Separator();
+
+                    ImGui::TextWrapped("%s", translationRestartTheGameToApply[current_language]);
+                    if (ImGui::Button(translationSave[current_language])) {
+                        save_settings = true;
+                        show_settings = false;
+                    }
                 }
             }
 
@@ -2368,7 +2890,8 @@ void Steam_Overlay::render_main_window()
             std::string url = show_url;
             bool show = true;
             ImGui::SetNextWindowBgAlpha(1.0f);
-            if (ImGui::Begin(URL_WINDOW_NAME, &show)) {
+            ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.45f), ImGuiCond_FirstUseEver, ImVec2(0.5f, 0.5f));
+            if (ImGui::Begin(URL_WINDOW_NAME, &show, ImGuiWindowFlags_NoCollapse)) {
                 ImGui::Text("%s", translationSteamOverlayURL[current_language]);
                 ImGui::Spacing();
 
@@ -2387,25 +2910,29 @@ void Steam_Overlay::render_main_window()
 
         bool show_warning = warn_local_save || warn_bad_appid;
         if (show_warning) {
-            ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 32, ImGui::GetFontSize() * 32), ImVec2(8192, 8192));
+            // as wide as before, as tall as its text
+            ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 32, 0.0f), ImVec2(8192, 8192));
+            ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 32, 0.0f), ImGuiCond_FirstUseEver);
             ImGui::SetNextWindowFocus();
             ImGui::SetNextWindowBgAlpha(1.0f);
-            if (ImGui::Begin(translationWarning[current_language], &show_warning)) {
+            ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.35f), ImGuiCond_FirstUseEver, ImVec2(0.5f, 0.5f));
+            if (ImGui::Begin(translationWarning[current_language], &show_warning, ImGuiWindowFlags_NoCollapse)) {
+                const ImVec4 warning_color(0.937f, 0.325f, 0.314f, 1.0f); // a red that stays readable on the dark panel
                 if (warn_bad_appid) {
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255),
+                    ImGui::TextColored(warning_color,
                         "%s %s %s",
                         translationWarning[current_language], translationWarning[current_language], translationWarning[current_language]);
                     ImGui::TextWrapped("%s", translationWarningDescription_badAppid[current_language]);
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255),
+                    ImGui::TextColored(warning_color,
                         "%s %s %s",
                         translationWarning[current_language], translationWarning[current_language], translationWarning[current_language]);
                 }
                 if (warn_local_save) {
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255),
+                    ImGui::TextColored(warning_color,
                         "%s %s %s",
                         translationWarning[current_language], translationWarning[current_language], translationWarning[current_language]);
                     ImGui::TextWrapped("%s", translationWarningDescription_localSave[current_language]);
-                    ImGui::TextColored(ImVec4(255, 0, 0, 255),
+                    ImGui::TextColored(warning_color,
                         "%s %s %s",
                         translationWarning[current_language], translationWarning[current_language], translationWarning[current_language]);
                 }
@@ -2423,6 +2950,7 @@ void Steam_Overlay::render_main_window()
     ImGui::End();
 
     if (style_color_stack) ImGui::PopStyleColor(style_color_stack);
+    ImGui::PopStyleVar(); // fade-in
     ImGui::PopFont();
 
     if (!show) {
@@ -2597,6 +3125,8 @@ void Steam_Overlay::OpenOverlayInvite(CSteamID lobbyId)
         invite_lobby_id = lobbyId.ConvertToUint64();
     }
     ShowOverlay(true);
+    // friends are invited from the friends panel
+    show_friends = true;
 }
 
 void Steam_Overlay::OpenOverlay(const char* pchDialog)
@@ -2636,6 +3166,7 @@ void Steam_Overlay::ShowOverlay(bool state)
 
     show_overlay = state;
     overlay_state_changed = true;
+    if (state) overlay_opened_at = std::chrono::steady_clock::now();
 
     PRINT_DEBUG("%i", (int)state);
 
@@ -3147,8 +3678,10 @@ void Steam_Overlay::render_gallery_window()
 
     ImGui::SetNextWindowSizeConstraints(ImVec2(400, 300), ImVec2(8192, 8192));
     ImGui::SetNextWindowSize(ImVec2(700, 500), ImGuiCond_FirstUseEver);
+    // below the overlay's top bar, a step away from the achievements panel
+    ImGui::SetNextWindowPos(ImVec2(std::floor(ImGui::GetIO().DisplaySize.x * 0.5f + ImGui::GetFontSize() * 2.5f), std::floor(ImGui::GetFontSize() * 8.0f)), ImGuiCond_FirstUseEver, ImVec2(0.5f, 0.0f));
     ImGui::SetNextWindowBgAlpha(1.0f);
-    if (ImGui::Begin(translationScreenshots[current_language], &show_screenshots_window)) {
+    if (ImGui::Begin(translationScreenshots[current_language], &show_screenshots_window, ImGuiWindowFlags_NoCollapse)) {
         // Delete/Unpin toolbar
         bool has_selection = false;
         for (auto& item : screenshot_items) {
@@ -3287,12 +3820,17 @@ void Steam_Overlay::render_gallery_window()
                     ImGui::EndPopup();
                 }
 
-                // Checkbox with text beside it, width limited to thumbnail width
+                // Checkbox with text beside it, width limited to the cell
+                // (with an outline, on the dark panel it is hard to see without one)
                 ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
+                ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.36f, 0.40f, 0.47f, 1.0f));
                 ImGui::Checkbox("##sel", &item.selected);
-                ImGui::PopStyleVar();
-                ImGui::SameLine(0, 0);
-                ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + thumb_width);
+                ImGui::PopStyleColor();
+                ImGui::SameLine(0, ImGui::GetStyle().ItemInnerSpacing.x);
+                ImGui::AlignTextToFramePadding(); // centered on the checkbox
+                ImGui::PopStyleVar(2);
+                ImGui::PushTextWrapPos(0.0f); // the whole cell: a default name fits on one line
                 // Show filename (without .png extension) below thumbnail
                 {
                     std::string label = item.filename;
@@ -4061,6 +4599,7 @@ void Steam_Overlay::render_pinned_screenshot()
         return;
 
     ImGui::PushFont(font_default);
+    uint32 style_color_stack = apply_global_style_color();
 
     // Track overlay state transitions once — applies to all pin windows.
     static bool prev_overlay_state = false;
@@ -4314,6 +4853,7 @@ void Steam_Overlay::render_pinned_screenshot()
         }
     }
 
+    if (style_color_stack) ImGui::PopStyleColor(style_color_stack);
     ImGui::PopFont();
 }
 

@@ -37,6 +37,7 @@ private:
 
 public:
     ImFont *font = nullptr;
+    float top_inset = 0.0f; // space kept free at the top of the screen while the overlay's top bar is shown
     bool show_fps = false;
     bool show_frametime = false;
     bool show_playtime = false;
