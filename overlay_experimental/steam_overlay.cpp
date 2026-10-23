@@ -468,6 +468,7 @@ void Steam_Overlay::create_fonts()
         font_builder.AddText(translationSteamId[i]);
         font_builder.AddText(translationAppId[i]);
         font_builder.AddText(translationBackToGame[i]);
+        font_builder.AddText(translationExitGame[i]);
         font_builder.AddText(translationClockTooltip[i]);
         font_builder.AddText(translationDateTooltip[i]);
         font_builder.AddText(translationDay[i]);
@@ -2153,8 +2154,8 @@ void Steam_Overlay::render_main_window()
         const float tile = std::floor(fs * 2.5f + 0.5f); // edge of a toolbar button
         const float top_y = std::floor(fs * 5.5f);
 
-        // top bar, left (drawn further below): the clock and the date on one line, then the playtime of this session and
-        // the renderer
+        // top bar, left (drawn further below): a large clock, the date under it, the playtime of this session, the
+        // renderer and an "Exit Game" button
         time_t now_time = time(nullptr);
         struct tm now_tm{};
 #ifdef _MSC_VER
@@ -2239,8 +2240,13 @@ void Steam_Overlay::render_main_window()
             date_parts += part;
         }
         // the stats box goes below these lines while the overlay is shown, the left column below the stats box
-        float top_bar_bottom = pad + ImGui::GetTextLineHeight() + ImGui::GetTextLineHeightWithSpacing();
+        // (font sizes as PushFont() takes them: before the global scale)
+        const float clock_size = std::floor(font_default->LegacySize * 2.75f + 0.5f);
+        const float date_size = std::floor(font_default->LegacySize * 1.5f + 0.5f);
+        const float text_scale = fs / font_default->LegacySize;
+        float top_bar_bottom = pad + (clock_size + date_size) * text_scale + 2.0f * ImGui::GetStyle().ItemSpacing.y + ImGui::GetTextLineHeight();
         if (settings->record_playtime && playtime_counter) top_bar_bottom += ImGui::GetTextLineHeightWithSpacing();
+        top_bar_bottom += 2.0f * ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeight(); // the button, after a little space
         const float top_gap = std::floor(fs * 0.75f + 0.5f);
         stats.top_inset = top_bar_bottom + top_gap - pad; // (the stats box keeps the same distance from the edges itself)
         const float left_top_y = std::floor(top_bar_bottom + top_gap + fs * 2.0f + top_gap);
@@ -2275,16 +2281,17 @@ void Steam_Overlay::render_main_window()
         {
             ImGui::SetCursorPos(ImVec2(pad, pad));
             ImGui::BeginGroup();
-            // a white clock, the date in light gray after a dot, and the lines under them dimmer, readable over a bright
-            // game too. Hovering the clock or the date tells what they show
+            // a large white clock and light gray lines under it, readable over a bright game too.
+            // Hovering the clock or the date tells what they show
+            ImGui::PushFont(font_default, clock_size);
             ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%s", clock_buf);
+            ImGui::PopFont();
             if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s", translationClockTooltip[current_language]);
-            ImGui::SameLine();
-            ImGui::TextColored(ImVec4(0.545f, 0.573f, 0.604f, 1.0f), "\xC2\xB7"); // a middle dot
-            ImGui::SameLine();
+            ImGui::PushFont(font_default, date_size);
             ImGui::TextColored(ImVec4(0.722f, 0.737f, 0.749f, 1.0f), "%s", date_text.c_str());
+            ImGui::PopFont();
             if (ImGui::IsItemHovered()) ImGui::SetTooltip(translationDateTooltip[current_language], date_parts.c_str());
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.545f, 0.573f, 0.604f, 1.0f)); // #8b929a
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.722f, 0.737f, 0.749f, 1.0f));
             if (settings->record_playtime && playtime_counter) {
                 uint64_t session_sec = playtime_counter->session_seconds();
                 unsigned ss = static_cast<unsigned>(session_sec % 60);
@@ -2294,6 +2301,14 @@ void Steam_Overlay::render_main_window()
             }
             ImGui::TextUnformatted(tmp); // "Renderer: DX11" and so on, formatted at the start of this function
             ImGui::PopStyleColor();
+            // Steam's "Exit Game" button: it turns red under the mouse and closes the game right away, like Steam's own
+            ImGui::Spacing();
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.886f, 0.165f, 0.153f, 1.0f)); // #e22a27
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.70f, 0.12f, 0.11f, 1.0f));
+            if (ImGui::Button(translationExitGame[current_language])) {
+                std::exit(0);
+            }
+            ImGui::PopStyleColor(2);
             ImGui::EndGroup();
         }
 

@@ -8092,6 +8092,103 @@ const char translationBackToGame[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BU
 
 };
 
+// a button under the clock and the date that closes the game
+const char translationExitGame[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"Exit Game",
+
+	// 1 - Arabic
+  u8"Exit Game",
+
+	// 2 - Bulgarian
+  u8"Изход от играта",
+
+	// 3 - Simplified Chinese
+  u8"退出游戏",
+
+	// 4 - Traditional Chinese
+  u8"結束遊戲",
+
+	// 5 - Czech
+  u8"Ukončit hru",
+
+	// 6 - Danish
+  u8"Afslut spillet",
+
+	// 7 - Dutch
+  u8"Game afsluiten",
+
+	// 8 - Finnish
+  u8"Lopeta peli",
+
+	// 9 - French
+  u8"Quitter le jeu",
+
+	// 10 - German
+  u8"Spiel beenden",
+
+	// 11 - Greek
+  u8"Έξοδος από το παιχνίδι",
+
+	// 12 - Hungarian
+  u8"Kilépés a játékból",
+
+	// 13 - Italian
+  u8"Esci dal gioco",
+
+	// 14 - Japanese
+  u8"ゲームを終了",
+
+	// 15 - Korean
+  u8"게임 종료",
+
+	// 16 - Norwegian
+  u8"Avslutt spillet",
+
+	// 17 - Polish
+  u8"Wyjdź z gry",
+
+	// 18 - Portuguese
+  u8"Sair do jogo",
+
+	// 19 - Brazilian Portuguese
+  u8"Sair do jogo",
+
+	// 20 - Romanian
+  u8"Ieșire din joc",
+
+	// 21 - Russian
+  u8"Выйти из игры",
+
+	// 22 - Spanish
+  u8"Salir del juego",
+
+	// 23 - Latin American
+  u8"Salir del juego",
+
+	// 24 - Swedish
+  u8"Avsluta spelet",
+
+	// 25 - Thai
+  u8"ออกจากเกม",
+
+	// 26 - Turkish
+  u8"Oyundan Çık",
+
+	// 27 - Ukrainian
+  u8"Вийти з гри",
+
+	// 28 - Vietnamese
+  u8"Thoát trò chơi",
+
+	// 29 - Croatian
+  u8"Izađi iz igre",
+
+  // 30 - Indonesian
+  u8"Keluar dari Game",
+
+};
+
 // session playtime in the top bar of the overlay
 const char translationPlaytimeLabelLine[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
