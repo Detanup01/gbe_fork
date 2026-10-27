@@ -151,11 +151,26 @@ end
 local deps_dir = _OPTIONS["deps-dir"]
 local build_dir = _OPTIONS["build-dir"]
 
+-- os.hostarch() reports wrong architecture when Windows is emulated
+--   (for example on windows ARM Github runners).
+-- This function tries to determine the wanted architecture for Windows by using env vars,
+--   defaulting to os.hostarch() if env vars are empty
+-- Always returns an uppercase architecture
+local function get_host_arch()
+    if os.host() == "windows" then
+        local arch = os.getenv("PROCESSOR_ARCHITEW6432") or os.getenv("PROCESSOR_ARCHITECTURE")
+        if arch and #arch > 0 then
+            return arch:upper()
+        end
+    end
+    return os.hostarch():upper()
+end
+
 local function genproto()
     local deps_install_prefix = ''
-    local harch = os.hostarch()
+    local harch = get_host_arch()
     print(harch)
-    if harch == "x86_64" then
+    if harch == "X86_64" or harch == "AMD64" then
         deps_install_prefix = 'install64'
     elseif harch == "ARM64" or harch == "AARCH64" then
         deps_install_prefix = 'installarm'
@@ -1057,7 +1072,7 @@ project "api_experimental"
 project "steamclient_experimental"
     kind "SharedLib"
     location "%{wks.location}/%{prj.name}"
-    
+
     -- targetdir
     ---------
     filter { "system:windows", }
@@ -1076,7 +1091,7 @@ project "steamclient_experimental"
         targetname "steamclientARM" -- if you ever need windows ARM64
     filter { "system:not windows", }
         targetname "steamclient"
-    
+
 
     -- defines
     ---------
@@ -1378,7 +1393,7 @@ project "lib_game_overlay_renderer"
     filter { "system:not windows", }
         targetname "gameoverlayrenderer"
 
-    
+
     -- include dir
     ---------
     -- x32 include dir
