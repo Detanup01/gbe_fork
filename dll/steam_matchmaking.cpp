@@ -1632,12 +1632,19 @@ void Steam_Matchmaking::Callback(Common_Message *msg)
                         }
                     }
 
-                    if ((joined && msg->lobby().gameserver().num_update()) || (we_are_in_lobby && (lobby->gameserver().num_update() != msg->lobby().gameserver().num_update()))) {
-                        send_gameservercreated_cb(lobby->room_id(), msg->lobby().gameserver().id(), msg->lobby().gameserver().ip(), msg->lobby().gameserver().port());
+                    const auto &in_gs = msg->lobby().gameserver();
+                    auto stored_gs = lobby->gameserver();
+                    bool have_gs_incoming = in_gs.id() != 0 && in_gs.num_update() != 0;
+                    bool gs_changed = have_gs_incoming && in_gs.num_update() != stored_gs.num_update();
+                    if ((joined || we_are_in_lobby) && gs_changed && (joined || in_gs.id() != stored_gs.id())) {
+                        send_gameservercreated_cb(lobby->room_id(), in_gs.id(), in_gs.ip(), in_gs.port());
                         trigger_lobby_dataupdate((uint64)lobby->room_id(), (uint64)lobby->room_id(), true);
                     }
 
                     *lobby = msg->lobby();
+                    // Lobby updates that omit the game server must not erase a previously announced one.
+                    if (!have_gs_incoming && stored_gs.id() != 0 && stored_gs.num_update() >= in_gs.num_update())
+                        lobby->mutable_gameserver()->CopyFrom(stored_gs);
                 }
             }
         }

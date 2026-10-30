@@ -69,7 +69,7 @@ public:
 
     void rmCallCompleted(class CCallbackBase *cb);
 
-    void addCallBack(SteamAPICall_t api_call, class CCallbackBase *cb);
+    bool addCallBack(SteamAPICall_t api_call, class CCallbackBase *cb);
 
     bool exists(SteamAPICall_t api_call) const;
 
@@ -92,9 +92,15 @@ public:
     void runCallResults();
 };
 
+struct Steam_Call_Back_Pending_Result {
+    SteamAPICall_t api_id{};
+    std::vector<char> result{};
+    std::chrono::high_resolution_clock::time_point created{};
+};
+
 struct Steam_Call_Back {
     std::vector<class CCallbackBase *> callbacks{};
-    std::vector<std::vector<char>> results{};
+    std::vector<struct Steam_Call_Back_Pending_Result> pending_results{};
 };
 
 class SteamCallBacks {

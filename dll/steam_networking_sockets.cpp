@@ -231,7 +231,7 @@ void Steam_Networking_Sockets::set_steamnetconnectioninfo_001(std::map<HSteamNet
     //keep this in mind in future interface updates
 }
 
-void Steam_Networking_Sockets::launch_callback(HSteamNetConnection m_hConn, enum connect_socket_status old_status)
+void Steam_Networking_Sockets::launch_callback(HSteamNetConnection m_hConn, enum connect_socket_status old_status, double cb_timeout)
 {
     auto connect_socket = sbcs->connect_sockets.find(m_hConn);
     if (connect_socket == sbcs->connect_sockets.end()) return;
@@ -240,7 +240,7 @@ void Steam_Networking_Sockets::launch_callback(HSteamNetConnection m_hConn, enum
     data.m_hConn = connect_socket->first;
     data.m_eOldState = convert_status(old_status);
     set_steamnetconnectioninfo(connect_socket, &data.m_info);
-    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), cb_timeout);
 }
 
 
@@ -2233,7 +2233,7 @@ void Steam_Networking_Sockets::Callback(Common_Message *msg)
                 if (connect_socket.second.remote_identity.GetSteamID64() == msg->source_id()) {
                     enum connect_socket_status old_status = connect_socket.second.status;
                     connect_socket.second.status = CONNECT_SOCKET_TIMEDOUT;
-                    launch_callback(connect_socket.first, old_status);
+                    launch_callback(connect_socket.first, old_status, 0.0);
                 }
             }
         }
@@ -2295,7 +2295,10 @@ void Steam_Networking_Sockets::Callback(Common_Message *msg)
                 if (connect_socket->second.remote_identity.GetSteamID64() == msg->source_id() && connect_socket->second.status == CONNECT_SOCKET_CONNECTED) {
                     enum connect_socket_status old_status = connect_socket->second.status;
                     connect_socket->second.status = CONNECT_SOCKET_CLOSED;
-                    launch_callback(connect_socket->first, old_status);
+                    // Deliver close notifications in this RunCallbacks cycle. Delaying them
+                    // can let the game consume its disconnect payload and tear down its
+                    // connection state before the status callback runs.
+                    launch_callback(connect_socket->first, old_status, 0.0);
                 }
             }
         }
