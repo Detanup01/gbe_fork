@@ -48,6 +48,8 @@ jobs:
             "lib_game_overlay_renderer",
             # steam old lib
             "lib_steam_old",
+            # steam old api
+            "lib_steam_api_c",
             # tools
             "tool_lobby_connect",
             "tool_generate_interfaces",
@@ -55,8 +57,10 @@ jobs:
         arch: ["x64", "Win32"]
         cfg: ["debug", "release"]
 
-        exclude:
-          - prj: lib_steam_old
+        exclude:  
+          - prj: lib_steam_old  
+            arch: x64  
+          - prj: lib_steam_api_c  
             arch: x64
 
     steps:

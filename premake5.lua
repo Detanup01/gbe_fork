@@ -1593,6 +1593,35 @@ project "lib_steam_old"
     }
 -- End lib_steam_old
 
+-- Project lib_steam_api_c
+project "lib_steam_api_c"
+    -- steam_api_c is x86 thing, so make it x86-only thing
+    removeplatforms { "x64", "ARM64" }
+
+    kind "SharedLib"
+    location "%{wks.location}/%{prj.name}"
+    targetdir(path.join(build_dir, os_iden, _ACTION, "%{cfg.buildcfg}/steam_api_c_lib"))
+    targetname "steam_api_c"
+
+    -- include dir
+    ---------
+    -- x32 include dir
+    includedirs {
+        x32_deps_include,
+    }
+
+    -- common source & header files
+    ---------
+    filter {} -- reset the filter and remove all active keywords
+    files {
+        "steam_api_c_lib/**",
+    }
+    -- x32 common source files
+    filter { "platforms:x86", "options:winrsrc", }
+        files {
+            "resources/win/api/32/resources.rc"
+        }
+-- End lib_steam_api_c
 
 -- Project steamclient_experimental_loader
 project "steamclient_experimental_loader"
