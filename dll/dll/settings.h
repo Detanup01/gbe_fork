@@ -141,14 +141,15 @@ struct Overlay_Appearance {
     float font_glyph_extra_spacing_x = 1.0f;
     float font_glyph_extra_spacing_y = 0.0f;
 
-    float notification_r = 0.12f;
-    float notification_g = 0.14f;
-    float notification_b = 0.21f;
+    // Steam's panel color #171a21
+    float notification_r = 0.090f;
+    float notification_g = 0.102f;
+    float notification_b = 0.129f;
     float notification_a = 1.0f;
 
-    float notification_rounding = 10.0f; // corners roundness for all notifications
-    float notification_margin_x = 5.0f; // horizontal margin
-    float notification_margin_y = 5.0f; // vertical margin
+    float notification_rounding = 3.0f; // corners roundness for all notifications
+    float notification_margin_x = 15.0f; // horizontal margin
+    float notification_margin_y = 15.0f; // vertical margin
     
     uint32 notification_animation = 350; // sliding animation duration (millisec)
     uint32 notification_duration_progress = 6000; // achievement progress indication duration (millisec)
@@ -165,34 +166,35 @@ struct Overlay_Appearance {
     bool locked_expanded = false;
     bool show_playtime_in_user_info = false;
     
-    float background_r = 0.12f;
+    float background_r = 0.09f;
     float background_g = 0.11f;
-    float background_b = 0.11f;
+    float background_b = 0.15f;
     float background_a = 0.55f;
 
-    float element_r = 0.30f;
-    float element_g = 0.32f;
-    float element_b = 0.40f;
+    // Steam's own overlay colors: #23262e for buttons and fields, #3d4450 when hovered, #1a9fff when active/selected
+    float element_r = 0.137f;
+    float element_g = 0.149f;
+    float element_b = 0.180f;
     float element_a = 1.0f;
 
-    float element_hovered_r = 0.278f;
-    float element_hovered_g = 0.393f;
-    float element_hovered_b = 0.602f;
+    float element_hovered_r = 0.239f;
+    float element_hovered_g = 0.267f;
+    float element_hovered_b = 0.314f;
     float element_hovered_a = 1.0f;
 
-    float element_active_r = -1.0f;
-    float element_active_g = -1.0f;
-    float element_active_b = -1.0f;
-    float element_active_a = -1.0f;
+    float element_active_r = 0.102f;
+    float element_active_g = 0.624f;
+    float element_active_b = 1.0f;
+    float element_active_a = 1.0f;
 
-    float stats_background_r = 0.0f;
-    float stats_background_g = 0.0f;
-    float stats_background_b = 0.0f;
-    float stats_background_a = 0.6f;
+    float stats_background_r = 0.05f;
+    float stats_background_g = 0.06f;
+    float stats_background_b = 0.08f;
+    float stats_background_a = 0.72f;
 
-    float stats_text_r = 0.8f;
-    float stats_text_g = 0.7f;
-    float stats_text_b = 0.0f;
+    float stats_text_r = 0.86f;
+    float stats_text_g = 0.87f;
+    float stats_text_b = 0.875f;
     float stats_text_a = 1.0f;
 
     NotificationPosition ach_earned_pos = NotificationPosition::bot_right; // achievement earned
