@@ -99,7 +99,7 @@ const char translationChat[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"Razgovor",
   
   // 30 - Indonesian
-  u8"Chat",
+  u8"Obrolan",
 
 };
 
@@ -111,7 +111,7 @@ const char translationCopyId[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"Copy ID",
 
 	// 2 - Bulgarian
-  u8"Copy ID",
+  u8"Копиране на ID",
 
 	// 3 - Simplified Chinese
   u8"复制 ID",
@@ -123,79 +123,79 @@ const char translationCopyId[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"Kopírovat ID",
 
 	// 6 - Danish
-  u8"Copy ID",
+  u8"Kopiér ID",
 
 	// 7 - Dutch
-  u8"Copy ID",
+  u8"ID kopiëren",
 
 	// 8 - Finnish
-  u8"Copy ID",
+  u8"Kopioi tunnus",
 
 	// 9 - French
   u8"Copier l'ID",
 
 	// 10 - German
-  u8"Copy ID",
+  u8"ID kopieren",
 
 	// 11 - Greek
-  u8"Copy ID",
+  u8"Αντιγραφή αναγνωριστικού",
 
 	// 12 - Hungarian
-  u8"Copy ID",
+  u8"Azonosító másolása",
 
 	// 13 - Italian
-  u8"Copy ID",
+  u8"Copia ID",
 
 	// 14 - Japanese
-  u8"Copy ID",
+  u8"IDをコピー",
 
 	// 15 - Korean
-  u8"Copy ID",
+  u8"ID 복사",
 
 	// 16 - Norwegian
-  u8"Copy ID",
+  u8"Kopier ID",
 
 	// 17 - Polish
   u8"Skopiuj ID",
 
 	// 18 - Portuguese
-  u8"Copy ID",
+  u8"Copiar ID",
 
 	// 19 - Brazilian Portuguese
   u8"Copiar ID",
 
 	// 20 - Romanian
-  u8"Copy ID",
+  u8"Copiază ID-ul",
 
 	// 21 - Russian
   u8"Копировать SteamID",
 
 	// 22 - Spanish
-  u8"Copy ID",
+  u8"Copiar ID",
 
 	// 23 - Latin American
-  u8"Copy ID",
+  u8"Copiar ID",
 
 	// 24 - Swedish
-  u8"Copy ID",
+  u8"Kopiera ID",
 
 	// 25 - Thai
-  u8"Copy ID",
+  u8"คัดลอกรหัส",
 
 	// 26 - Turkish
   u8"ID'yi Kopyala",
 
 	// 27 - Ukrainian
-  u8"Copy ID",
+  u8"Копіювати ID",
 
 	// 28 - Vietnamese
-  u8"Copy ID",
+  u8"Sao chép ID",
 
 	// 29 - Croatian
-  u8"Copy ID",
+  u8"Kopiraj ID",
   
   // 30 - Indonesian
-  u8"Copy ID",
+  u8"Salin ID",
   
 };
 
@@ -389,7 +389,7 @@ const char translationInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"Pozovi u igru",
   
   // 30 - Indonesian
-  u8"Invite to Game",
+  u8"Undang ke Permainan",
   
 };
 
@@ -401,7 +401,7 @@ const char translationInviteAll[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUF
   u8"Invite all",
 
 	// 2 - Bulgarian
-  u8"Invite all",
+  u8"Покани всички",
 
 	// 3 - Simplified Chinese
   u8"邀请全部",
@@ -413,79 +413,79 @@ const char translationInviteAll[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUF
   u8"Pozvat všechny",
 
 	// 6 - Danish
-  u8"Invite all",
+  u8"Inviter alle",
 
 	// 7 - Dutch
-  u8"Invite all",
+  u8"Iedereen uitnodigen",
 
 	// 8 - Finnish
-  u8"Invite all",
+  u8"Kutsu kaikki",
 
 	// 9 - French
   u8"Inviter tout le monde",
 
 	// 10 - German
-  u8"Invite all",
+  u8"Alle einladen",
 
 	// 11 - Greek
-  u8"Invite all",
+  u8"Πρόσκληση όλων",
 
 	// 12 - Hungarian
-  u8"Invite all",
+  u8"Mindenki meghívása",
 
 	// 13 - Italian
-  u8"Invite all",
+  u8"Invita tutti",
 
 	// 14 - Japanese
-  u8"Invite all",
+  u8"全員を招待",
 
 	// 15 - Korean
-  u8"Invite all",
+  u8"모두 초대",
 
 	// 16 - Norwegian
-  u8"Invite all",
+  u8"Inviter alle",
 
 	// 17 - Polish
   u8"Zaproś wszystkich",
 
 	// 18 - Portuguese
-  u8"Invite all",
+  u8"Convidar todos",
 
 	// 19 - Brazilian Portuguese
   u8"Convidar todos os jogadores",
 
 	// 20 - Romanian
-  u8"Invite all",
+  u8"Invită pe toți",
 
 	// 21 - Russian
   u8"Пригласить всех",
 
 	// 22 - Spanish
-  u8"Invite all",
+  u8"Invitar a todos",
 
 	// 23 - Latin American
-  u8"Invite all",
+  u8"Invitar a todos",
 
 	// 24 - Swedish
-  u8"Invite all",
+  u8"Bjud in alla",
 
 	// 25 - Thai
-  u8"Invite all",
+  u8"เชิญทั้งหมด",
 
 	// 26 - Turkish
   u8"Herkesi davet et",
 
 	// 27 - Ukrainian
-  u8"Invite all",
+  u8"Запросити всіх",
 
 	// 28 - Vietnamese
-  u8"Invite all",
+  u8"Mời tất cả",
 
 	// 29 - Croatian
-  u8"Invite all",
+  u8"Pozovi sve",
   
   // 30 - Indonesian
-  u8"Invite all",
+  u8"Undang semua",
   
 };
 
@@ -583,7 +583,7 @@ const char translationJoin[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"Prihvati poziv"
   
   // 30 - Indonesian
-  u8"Accept Game Invite",
+  u8"Terima Undangan Permainan",
   
 };
 
@@ -681,7 +681,7 @@ const char translationInvitedYouToJoinTheGame[TRANSLATION_NUMBER_OF_LANGUAGES][T
   u8"%s vas je pozvao igrati %llu"
   
   // 30 - Indonesian
-  u8"%s has invited you to play %llu",
+  u8"%s mengundang Anda untuk bermain %llu",
   
 };
 
@@ -779,7 +779,7 @@ const char translationAccept[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"Prihvati"
   
   // 30 - Indonesian
-  u8"Accept",
+  u8"Terima",
   
 };
 
@@ -877,7 +877,7 @@ const char translationRefuse[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"Ignoriraj"
   
   // 30 - Indonesian
-  u8"Ignore",
+  u8"Abaikan",
   
 };
 
@@ -975,7 +975,7 @@ const char translationSend[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"Pošalji Poruku",
   
   // 30 - Indonesian
-  u8"Send Message",
+  u8"Kirim Pesan",
   
 };
 
@@ -1939,7 +1939,7 @@ const char translationFriends[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8"Prijatelji",
   
   // 30 - Indonesian
-  u8"Friends",
+  u8"Teman",
 
 };
 

@@ -883,18 +883,21 @@ void Steam_Overlay::show_test_achievement()
 
 void Steam_Overlay::build_friend_context_menu(Friend const& frd, friend_window_state& state)
 {
-    if (ImGui::BeginPopupContextItem("Friends_ContextMenu", 1)) {
+    // a menu of plain rows like Steam's, not narrower than a short line
+    ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 10.0f, 0.0f), ImVec2(FLT_MAX, FLT_MAX));
+    // (the named flag: since ImGui 1.92.6 a literal 1 asserts when obsolete functions are disabled, as in the overlay library)
+    if (ImGui::BeginPopupContextItem("Friends_ContextMenu", ImGuiPopupFlags_MouseButtonRight)) {
         // this is set to true if any button was clicked
         // otherwise, after clicking any button, the menu will be persistent
         bool close_popup = false;
 
         // user clicked on "chat"
-        if (ImGui::Button(translationChat[current_language])) {
+        if (ImGui::Selectable(translationChat[current_language])) {
             close_popup = true;
             state.window_state |= window_state_show;
         }
         // user clicked on "copy id" on a friend
-        if (ImGui::Button(translationCopyId[current_language])) {
+        if (ImGui::Selectable(translationCopyId[current_language])) {
             close_popup = true;
             auto friend_id_str = std::to_string(frd.id());
             ImGui::SetClipboardText(friend_id_str.c_str());
@@ -904,7 +907,7 @@ void Steam_Overlay::build_friend_context_menu(Friend const& frd, friend_window_s
             // user clicked on "invite to game"
             std::string translationInvite_tmp(translationInvite[current_language]);
             translationInvite_tmp.append("##PopupInviteToGame");
-            if (i_have_lobby && ImGui::Button(translationInvite_tmp.c_str())) {
+            if (i_have_lobby && ImGui::Selectable(translationInvite_tmp.c_str())) {
                 close_popup = true;
                 state.window_state |= window_state_invite;
                 has_friend_action.push(frd);
@@ -913,7 +916,7 @@ void Steam_Overlay::build_friend_context_menu(Friend const& frd, friend_window_s
             // user clicked on "accept game invite"
             std::string translationJoin_tmp(translationJoin[current_language]);
             translationJoin_tmp.append("##PopupAcceptInvite");
-            if (state.joinable && ImGui::Button(translationJoin_tmp.c_str())) {
+            if (state.joinable && ImGui::Selectable(translationJoin_tmp.c_str())) {
                 close_popup = true;
                 // don't bother adding this friend if the button "invite all" was clicked
                 // we will send them the invitation later in Steam_Overlay::steam_run_callback()
@@ -951,19 +954,39 @@ void Steam_Overlay::build_friend_window(Friend const& frd, friend_window_state& 
     ImGui::SetNextWindowBgAlpha(1.0f);
     // Window id is after the ###, the window title is the friend name
     std::string friend_window_id = std::move("###" + std::to_string(state.id));
+    // the first time in the middle of the screen, not over the clock in the top left corner, and tall enough for a few messages
+    ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x * 0.5f, ImGui::GetIO().DisplaySize.y * 0.5f), ImGuiCond_FirstUseEver, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(width, ImGui::GetFontSize() * 24.0f), ImGuiCond_FirstUseEver);
     if (ImGui::Begin((state.window_title + friend_window_id).c_str(), &show, ImGuiWindowFlags_NoCollapse)) {
         if (state.window_state & window_state_need_attention && ImGui::IsWindowFocused()) {
             state.window_state &= ~window_state_need_attention;
         }
 
+        // the game of the friend in the title bar after the name, a step dimmer like the friends list shows it
+        {
+            const ImGuiStyle &style = ImGui::GetStyle();
+            const ImVec2 title_min = ImGui::GetWindowPos();
+            const float title_h = ImGui::GetFontSize() + style.FramePadding.y * 2.0f;
+            const std::string app_id = std::string(translationAppId[current_language]) + " " + std::to_string(frd.appid());
+            ImDrawList *dl = ImGui::GetWindowDrawList();
+            dl->PushClipRect(title_min, ImVec2(title_min.x + ImGui::GetWindowWidth() - title_h, title_min.y + title_h)); // not over the close button
+            dl->AddText(ImVec2(title_min.x + style.FramePadding.x + ImGui::CalcTextSize(state.window_title.c_str()).x + ImGui::GetFontSize(), title_min.y + style.FramePadding.y),
+                ImGui::GetColorU32(ImVec4(0.565f, 0.729f, 0.235f, 0.7f)), app_id.c_str()); // #90ba3c
+            dl->PopClipRect();
+        }
+
         // Fill this with the chat box and maybe the invitation
         if (state.window_state & (window_state_lobby_invite | window_state_rich_invite)) {
-            ImGui::LabelText("##label", translationInvitedYouToJoinTheGame[current_language], frd.name().c_str(), frd.appid());
-            ImGui::SameLine();
+            // the whole invitation on its own lines, its buttons under it
+            ImGui::TextWrapped(translationInvitedYouToJoinTheGame[current_language], frd.name().c_str(), (unsigned long long)frd.appid());
+            const ImVec4 accent = ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive);
+            ImGui::PushStyleColor(ImGuiCol_Button, accent);
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4((std::min)(accent.x + 0.10f, 1.0f), (std::min)(accent.y + 0.11f, 1.0f), 1.0f, accent.w));
             if (ImGui::Button(translationAccept[current_language])) {
                 state.window_state |= window_state_join;
                 this->has_friend_action.push(frd);
             }
+            ImGui::PopStyleColor(2);
 
             ImGui::SameLine();
             if (ImGui::Button(translationRefuse[current_language])) {
@@ -971,7 +994,12 @@ void Steam_Overlay::build_friend_window(Friend const& frd, friend_window_state& 
             }
         }
 
+        // the messages in a darker panel with room around them, still the read-only text box: they can be selected and copied
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.0f, 0.0f, 0.0f, 0.22f));
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(12.0f, 10.0f));
         ImGui::InputTextMultiline("##chat_history", &state.chat_history[0], state.chat_history.length(), { -1.0f, -2.0f * ImGui::GetFontSize() }, ImGuiInputTextFlags_ReadOnly);
+        ImGui::PopStyleVar();
+        ImGui::PopStyleColor();
         // TODO: Fix the layout of the chat line + send button.
         // It should be like this: chat input should fill the window size minus send button size (button size is fixed)
         // |------------------------------|
@@ -1010,9 +1038,14 @@ void Steam_Overlay::build_friend_window(Friend const& frd, friend_window_state& 
 
         ImGui::SameLine();
 
+        // the send button in the accent color, like Steam's
+        const ImVec4 accent = ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive);
+        ImGui::PushStyleColor(ImGuiCol_Button, accent);
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4((std::min)(accent.x + 0.10f, 1.0f), (std::min)(accent.y + 0.11f, 1.0f), 1.0f, accent.w));
         if (ImGui::Button(translationSend[current_language])) {
             send_chat_msg = true;
         }
+        ImGui::PopStyleColor(2);
 
         if (send_chat_msg) {
             if (!(state.window_state & window_state_send_message)) {
@@ -2570,12 +2603,31 @@ void Steam_Overlay::render_main_window()
                         }
                     }
 
-                    // the list fills the panel
-                    if (ImGui::BeginListBox("##label", ImVec2(-FLT_MIN, -FLT_MIN))) {
-                        std::for_each(friends.begin(), friends.end(), [this](std::pair<Friend const, friend_window_state> &i) {
+                    // the list fills the panel, with no box around it
+                    if (ImGui::BeginChild("##label")) {
+                        // rows like Steam's friends list: an avatar with a green edge (in a game), the name, and the game under it
+                        const float line_h = ImGui::GetTextLineHeight();
+                        const float avatar = std::floor(line_h * 2.0f + 4.0f);
+                        const ImU32 in_game = ImGui::GetColorU32(ImVec4(0.565f, 0.729f, 0.235f, 1.0f)); // #90ba3c
+                        const ImU32 in_game_dim = ImGui::GetColorU32(ImVec4(0.565f, 0.729f, 0.235f, 0.7f));
+                        ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImGui::GetStyleColorVec4(ImGuiCol_HeaderHovered)); // no blue flash on a click
+                        std::for_each(friends.begin(), friends.end(), [&](std::pair<Friend const, friend_window_state> &i) {
                             ImGui::PushID(i.second.id-base_friend_window_id+base_friend_item_id);
 
-                            ImGui::Selectable(i.second.window_title.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick);
+                            const ImVec2 pos = ImGui::GetCursorScreenPos();
+                            ImGui::Selectable("##friend", false, ImGuiSelectableFlags_AllowDoubleClick, ImVec2(0.0f, avatar + 4.0f));
+                            {
+                                ImDrawList *dl = ImGui::GetWindowDrawList();
+                                const ImVec2 a0(pos.x + 5.0f, pos.y + 2.0f);
+                                const ImVec2 a1(a0.x + avatar, a0.y + avatar);
+                                dl->AddRectFilled(a0, a1, ImGui::GetColorU32(ImGuiCol_FrameBg));
+                                draw_icon(Overlay_Icon::UserInfo, a0, a1, ImGui::GetColorU32(ImGuiCol_TextDisabled), 0);
+                                dl->AddRectFilled(ImVec2(a1.x, a0.y), ImVec2(a1.x + 3.0f, a1.y), in_game);
+                                const ImVec2 text(a1.x + 13.0f, a0.y + std::floor((avatar - line_h * 2.0f - 2.0f) * 0.5f));
+                                dl->AddText(text, in_game, i.first.name().c_str());
+                                const std::string app_id = std::string(translationAppId[current_language]) + " " + std::to_string(i.first.appid());
+                                dl->AddText(ImVec2(text.x, text.y + line_h + 2.0f), in_game_dim, app_id.c_str());
+                            }
                             if (i.second.window_state & (window_state_lobby_invite | window_state_rich_invite)) {
                                 // an invitation from this friend is waiting: a dot at the end of the row
                                 const ImVec2 row_min = ImGui::GetItemRectMin();
@@ -2591,8 +2643,9 @@ void Steam_Overlay::render_main_window()
 
                             ImGui::PopID();
                         });
-                        ImGui::EndListBox();
+                        ImGui::PopStyleColor();
                     }
+                    ImGui::EndChild();
                 }
             }
             ImGui::End();
@@ -3232,7 +3285,8 @@ void Steam_Overlay::FriendConnect(Friend _friend)
     int id = find_free_friend_id(friends);
     if (id != 0) {
         auto& item = friends[_friend];
-        item.window_title = std::move(_friend.name() + " " + translationPlaying[current_language] + " " + std::to_string(_friend.appid()));
+        // the name alone: the chat window shows the game after it in a dimmer color, in the current language
+        item.window_title = _friend.name();
         item.window_state = window_state_none;
         item.id = id;
         memset(item.chat_input, 0, max_chat_len);
