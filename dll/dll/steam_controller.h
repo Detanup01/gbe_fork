@@ -108,10 +108,17 @@ public ISteamInput
     bool disabled{};
     bool initialized{};
     bool explicitly_call_run_frame{};
+    // EnableDeviceCallbacks() was called: connects and disconnects are posted as callbacks
+    bool device_callbacks{};
+    // one bit per gamepad, set while the game has been told it is connected (SteamInputDeviceConnected_t)
+    unsigned int reported_devices{};
+    // one bit per gamepad, set once its SteamInputConfigurationLoaded_t was posted
+    unsigned int reported_configs{};
 
     void set_handles(std::map<std::string, std::map<std::string, std::pair<std::set<std::string>, std::string>>> action_sets);
 
     void RunCallbacks();
+    void report_device_changes();
 
     static void background_rumble(Rumble_Thread_Data *data);
     static void steam_run_every_runcb(void *object);
