@@ -296,6 +296,8 @@ bool Steam_Controller::Shutdown()
     rumble_thread_data = nullptr;
     GamepadShutdown();
     initialized = false;
+    reported_devices = 0;
+    reported_configs = 0;
     return true;
 }
 
@@ -309,9 +311,10 @@ void Steam_Controller::SetOverrideMode( const char *pchMode )
 // configurations inside of the game depot instead of using the Steam Workshop
 bool Steam_Controller::SetInputActionManifestFilePath( const char *pchInputActionManifestAbsolutePath )
 {
-    PRINT_DEBUG_TODO();
-    //TODO SteamInput005
-    return false;
+    PRINT_DEBUG("%s", pchInputActionManifestAbsolutePath ? pchInputActionManifestAbsolutePath : "(null)");
+    // The actions come from steam_settings/controller, not from this file. Report it as accepted when those actions are
+    // there: some games stop setting up Steam Input when this fails.
+    return pchInputActionManifestAbsolutePath && !disabled && !action_handles.empty();
 }
 
 bool Steam_Controller::BWaitForData( bool bWaitForever, uint32 unTimeout )
@@ -336,9 +339,65 @@ bool Steam_Controller::BNewDataAvailable()
 // callback when you enable them
 void Steam_Controller::EnableDeviceCallbacks()
 {
-    PRINT_DEBUG_TODO();
-    //TODO SteamInput005
-    return;
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    if (disabled) {
+        return;
+    }
+
+    device_callbacks = true;
+    report_device_changes();
+}
+
+// Posts SteamInputDeviceConnected_t (once EnableDeviceCallbacks() was called) for each gamepad that connected since the
+// game last heard about it and SteamInputDeviceDisconnected_t for each one that went away, and
+// SteamInputConfigurationLoaded_t once for each connected gamepad, as Steam does.
+// Some games (No Man's Sky) only use a controller after its connected callback.
+void Steam_Controller::report_device_changes()
+{
+    if (disabled || !initialized) {
+        return;
+    }
+
+    for (int i = GAMEPAD_0; i <= GAMEPAD_3; ++i) {
+        const unsigned int bit = 1u << i;
+        const bool connected = GamepadIsConnected((GAMEPAD_DEVICE)i) != GAMEPAD_FALSE;
+        const InputHandle_t handle = (InputHandle_t)i + 1;
+
+        if (device_callbacks && connected != ((reported_devices & bit) != 0)) {
+            if (connected) {
+                PRINT_DEBUG("gamepad %i connected", i);
+                reported_devices |= bit;
+
+                SteamInputDeviceConnected_t data{};
+                data.m_ulConnectedDeviceHandle = handle;
+                callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+            } else {
+                PRINT_DEBUG("gamepad %i disconnected", i);
+                reported_devices &= ~bit;
+
+                SteamInputDeviceDisconnected_t data{};
+                data.m_ulDisconnectedDeviceHandle = handle;
+                callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+            }
+        }
+
+        if (!connected) {
+            reported_configs &= ~bit;
+        } else if (!(reported_configs & bit)) {
+            reported_configs |= bit;
+
+            SteamInputConfigurationLoaded_t config{};
+            config.m_unAppID = settings->get_local_game_id().AppID();
+            config.m_ulDeviceHandle = handle;
+            config.m_ulMappingCreator = settings->get_local_steam_id();
+            config.m_unMajorRevision = 0;
+            config.m_unMinorRevision = 0;
+            config.m_bUsesSteamInputAPI = !action_handles.empty();
+            config.m_bUsesGamepadAPI = false;
+            callbacks->addCBResult(config.k_iCallback, &config, sizeof(config));
+        }
+    }
 }
 
 // Enable SteamInputActionEvent_t callbacks. Directly calls your callback function
@@ -356,12 +415,14 @@ void Steam_Controller::EnableActionEventCallbacks( SteamInputActionEventCallback
 // possible latency, you call this directly before reading controller state.
 void Steam_Controller::RunFrame(bool bReservedValue)
 {
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (disabled || !initialized) {
         return;
     }
     PRINT_DEBUG_ENTRY();
 
     GamepadUpdate();
+    report_device_changes();
 }
 
 void Steam_Controller::RunFrame()
