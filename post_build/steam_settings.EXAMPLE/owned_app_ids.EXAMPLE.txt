@@ -1,0 +1,8 @@
+1. Rename this to: owned_app_ids.txt
+2. Add the IDs of other apps the user owns (each on a separate line), besides the game and its DLCs.
+   ISteamApps::BIsSubscribedApp() and ISteamApps::GetEarliestPurchaseUnixTime() report them as owned,
+   but they are not added to the DLC list (ISteamApps::GetDLCCount()) nor to the installed depots.
+   Some Source engine games check for a Source SDK Base this way, e.g. Black Mesa asks for 215,
+   and stop with "A Source engine game is required to run mods" otherwise.
+   This is not needed when all DLCs are unlocked (unlock_all=1 in configs.app.ini) or with enable_steam_preowned_ids=1.
+215

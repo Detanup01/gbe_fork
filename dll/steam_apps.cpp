@@ -147,6 +147,7 @@ bool Steam_Apps::BIsSubscribedApp( AppId_t appID )
     if (appID == 0) return false; // steam returns false
     if (appID == UINT32_MAX) return true; // steam returns true
     if (appID == settings->get_local_game_id().AppID() || settings->hasDLC(appID)) return true; // steam returns true
+    if (settings->isAppOwned(appID)) return true;
     for (auto &d : settings->depots) {
         if (d == appID)
             return true;
@@ -183,7 +184,7 @@ uint32 Steam_Apps::GetEarliestPurchaseUnixTime( AppId_t nAppID )
         startup_time
         - std::chrono::hours(24 * 4);
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(t.time_since_epoch());
-    if (nAppID == settings->get_local_game_id().AppID() || settings->hasDLC(nAppID)) {
+    if (nAppID == settings->get_local_game_id().AppID() || settings->hasDLC(nAppID) || settings->isAppOwned(nAppID)) {
         return (uint32)duration.count();
     }
     for (auto &d : settings->depots) {
