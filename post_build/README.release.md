@@ -80,6 +80,16 @@ See the `steam_settings.EXAMPLE` folder for an example.
 
 ---
 
+## Owned apps:
+Some games check if the user owns another app that is not one of their DLCs, e.g. Black Mesa asks for a Source SDK Base (215) and stops with "A Source engine game is required to run mods" otherwise.  
+You can provide a list of app IDs the user owns with a `steam_settings\owned_app_ids.txt` file, one ID per line.  
+`ISteamApps::BIsSubscribedApp()` and `ISteamApps::GetEarliestPurchaseUnixTime()` report them as owned, but they are not added to the DLC list nor to the installed depots.  
+This is not needed when all DLCs are unlocked (`unlock_all=1` in `configs.app.ini`) or with `enable_steam_preowned_ids=1`.  
+
+See the `steam_settings.EXAMPLE` folder for an example.
+
+---
+
 ## Subscribed Groups:
 Some games like payday 2 check which groups you are subscribed in and unlock things based on that.  
 You can provide a list of subscribed groups to the game with a `steam_settings\subscribed_groups.txt` file.  

@@ -234,6 +234,9 @@ private:
     bool assume_any_app_installed = true;
     std::set<AppId_t> installed_app_ids{};
 
+    //owned app ids besides the game and its DLCs, Steam_Apps::BIsSubscribedApp()
+    std::set<AppId_t> owned_app_ids{};
+
     std::map<AppId_t, std::string> app_paths{};
     std::map<AppId_t, std::string> purchased_keys{};
     std::vector<struct Mod_entry> mods{};
@@ -475,6 +478,10 @@ public:
     void assumeAnyAppInstalled(bool val);
     void addInstalledApp(AppId_t appID);
     bool isAppInstalled(AppId_t appID) const;
+
+    //owned apps besides the game and its DLCs, used by Steam_Apps::BIsSubscribedApp()
+    void addOwnedApp(AppId_t appID);
+    bool isAppOwned(AppId_t appID) const;
 
     //App Install paths
     void setAppInstallPath(AppId_t appID, const std::string &path);

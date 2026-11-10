@@ -346,6 +346,16 @@ void Settings::addInstalledApp(AppId_t appID)
     installed_app_ids.insert(appID);
 }
 
+void Settings::addOwnedApp(AppId_t appID)
+{
+    owned_app_ids.insert(appID);
+}
+
+bool Settings::isAppOwned(AppId_t appID) const
+{
+    return owned_app_ids.count(appID) > 0;
+}
+
 bool Settings::isAppInstalled(AppId_t appID) const
 {
     if (assume_any_app_installed) return true;
